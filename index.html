@@ -1418,6 +1418,16 @@ html,body{min-width:0}
 @media(max-width:780px){.nova-nav{padding-inline:6px}.nova-tab{font-size:11px;padding:6px 8px}.nova-lang-switch{position:sticky;inset-inline-end:0;z-index:3;background:#1b2026}.nova-page-view{padding:12px}.nova-kpis{gap:8px}}
 
 
+/* v10 — keep tablet content within the visible viewport edges */
+html,body{max-width:100%;overflow-x:hidden}
+body{width:100%!important;min-width:0}
+.pos-root{box-sizing:border-box;min-width:0;max-width:100%;width:100%!important}
+.pharmacy-brand-banner,.nova-nav,.pos-root{padding-left:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}
+.pharmacy-brand-banner,.nova-nav{box-sizing:border-box}
+.modal-backdrop{width:100%!important;max-width:100%;box-sizing:border-box}
+.modal-card{min-width:0;max-width:min(100%,700px)}
+.nova-page-view,.table-container,.sidebar-body{min-width:0;box-sizing:border-box}
+
 /* v9 — tablet viewport and edge clipping repair */
 html{width:100%;height:100%;overflow:hidden}
 body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-direction:column}
