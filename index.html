@@ -1261,103 +1261,91 @@ button:focus-visible,input:focus-visible{outline:2px solid #38bdf8;outline-offse
 }
 
 
-/* NOVA Rx v3 — refined clinical light palette */
+
+/* Elsousy Pharmacy — coherent premium dark theme */
 :root{
- --bg-base:#edf3f8;--bg-panel:#ffffff;--bg-surface:#f0f5f9;--bg-surface-hover:#e4eef6;
- --bg-surface-active:#dbeaf4;--border-subtle:#d9e4ee;--border-focus:#1677b9;
- --text-main:#172c40;--text-muted:#5c7083;--text-dim:#74869a;
- --accent-cyan:#0877b9;--accent-cyan-light:#0877b9;
- --accent-green:#07836a;--accent-green-bg:#e7f6f0;--accent-green-border:#a9dfcc;
- --accent-red:#bc4050;--accent-red-bg:#fff0f1;--accent-amber:#b77c15;
- --badge-customer:#7255a9;--badge-customer-bg:#f0ebfa;--badge-product:#0877b9;--badge-product-bg:#eaf5fc;
- --shadow-sm:0 1px 3px rgba(24,49,75,.06);--shadow-md:0 5px 18px rgba(24,49,75,.09);--shadow-lg:0 15px 35px rgba(24,49,75,.14)
+ --bg-base:#091423;--bg-panel:#0d1b2e;--bg-surface:#172b42;
+ --bg-surface-hover:#203a56;--bg-surface-active:#27445e;
+ --border-subtle:#29415a;--border-focus:#299bd4;
+ --text-main:#edf5fc;--text-muted:#a8bfd1;--text-dim:#8099ae;
+ --accent-cyan:#168ec9;--accent-cyan-light:#45b8ed;
+ --accent-green:#35c69b;--accent-green-bg:#102f2b;--accent-green-border:#246557;
+ --accent-red:#f07c87;--accent-red-bg:#38212f;--accent-amber:#f1bb5d;
+ --badge-customer:#baa4ed;--badge-customer-bg:#302747;
+ --badge-product:#61c4f2;--badge-product-bg:#12374d;
+ --shadow-sm:0 2px 6px rgba(0,0,0,.15);--shadow-md:0 6px 18px rgba(0,0,0,.24);--shadow-lg:0 16px 36px rgba(0,0,0,.35)
 }
-body,.pos-root{background:#edf3f8;color:#172c40}
-.main-workspace{background:#fff;border-right:1px solid #dbe5ee}
-.customer-sidebar{background:#f5f8fc}
-.top-header,.sidebar-header{background:#fff;border-bottom:1px solid #dce6ef}
-.brand-logo,.sidebar-title{color:#18354d}
-.brand-logo span.rx{background:#e6f3fc;color:#0877b9}
-.status-pill.customer-mode{background:#f0ebfa;color:#6244a2;border-color:#ddd0f5}
-.status-pill.product-mode{background:#eaf5fc;color:#076eab;border-color:#c6e3f6}
-.btn-secondary{background:#fff;color:#28455e;border-color:#cfdeea}
-.btn-secondary:hover{background:#eaf3fa;border-color:#abc8db}
-.btn-loyalty{background:#f2edfc;color:#6644a5;border-color:#ded2f5}
-.btn-loyalty:hover{background:#e9e0fb}
-.btn-danger{background:#fff2f2;color:#b63f50;border-color:#f4cdd3}
-.search-container{background:#f7fafc;border-bottom:1px solid #e1eaf1}
-.main-search-input{background:#fff;color:#16334b;border:1px solid #c9d9e7;box-shadow:0 2px 8px rgba(18,55,85,.04)}
-.main-search-input::placeholder{color:#8799a8}
-.main-search-input:focus{border-color:#0877b9;box-shadow:0 0 0 3px rgba(8,119,185,.11)}
-.search-mode-tag.customer{background:#f0ebfa;color:#6445a0;border-color:#ddd1f4}
-.search-mode-tag.product{background:#e7f4fc;color:#086ea9;border-color:#c7e5f7}
-.suggestions-dropdown{background:#fff;border-color:#b6d8eb;box-shadow:var(--shadow-lg)}
-.suggestion-item{border-bottom:1px solid #edf2f6}
-.suggestion-item.selected,.suggestion-item:hover{background:#edf6fc;border-left-color:#0877b9}
-.sugg-primary{color:#17354d}.sugg-sub{color:#60788d}.sugg-price{color:#0877b9}
-.sugg-tag{background:#eef3f7;color:#63778b}
-.table-container{background:#fff}
-table.invoice-table th{background:#f2f6fa;color:#526a7e;border-bottom:1px solid #dce6ee}
-table.invoice-table td{color:#233c50;border-bottom:1px solid #edf1f5}
-table.invoice-table tbody tr:hover{background:#f5fafe}
-.invoice-footer{background:#fff;border-top:1px solid #dce6ef;box-shadow:0 -5px 18px rgba(22,56,85,.04)}
-.discount-controls{background:#f7fafc;border-color:#dce7f0}
-.discount-title{color:#5b7285}
-.input-grp,.qty-control{background:#fff;border-color:#d1dfeb}
-.input-grp input,.qty-input{background:#fff;color:#18354d}
-.qty-btn{color:#16628f}
-.qty-btn:hover{background:#e9f4fb;color:#0877b9}
-.totals-breakdown,.tot-row{color:#61788c}
-.tot-row span:last-child{color:#26465d}
-.tot-row.grand-total{border-color:#cbdde9;color:#123e5a}
-.tot-row.grand-total span:last-child{color:#086ba6}
-.btn-checkout{background:#0877b9;border:1px solid #0877b9;box-shadow:0 5px 13px rgba(8,119,185,.18);color:#fff}
-.btn-checkout:hover{background:#06689f;box-shadow:0 6px 14px rgba(8,119,185,.22)}
-.sidebar-body{background:#f5f8fc}
-.customer-empty-box{color:#62798b}
-@media (prefers-color-scheme:dark){body{color-scheme:light}}
-
-
-/* v4 — finish light theme in customer sidebar, history and checkout dialogs */
-.customer-empty-box{background:#fff;border:1px dashed #c5d7e5;color:#718598;border-radius:14px;padding:26px 14px}
-.customer-empty-text{color:#4f687c;font-size:14px}
-.customer-empty-sub{color:#7b8fa1;font-size:12px}
-.cust-card{background:#fff;border:1px solid #d9e5ee;border-radius:14px;padding:16px;box-shadow:0 3px 14px rgba(25,58,86,.045)}
-.cust-name{color:#17354d;font-size:17px}
-.cust-phone{color:#6c8296;font-size:13px}
-.cust-stat-pill{background:#edf4f9;color:#5b7286;border-radius:8px;padding:7px 9px;font-size:12px}
-.cust-stat-pill strong{color:#183b56}
-.cust-stat-pill.tier-gold{background:#fff5df;color:#9c6810;border:1px solid #f0d8a5}
+body,.pos-root{background:#091423;color:#edf5fc;color-scheme:dark}
+.main-workspace{background:#0d1b2e;border-right:1px solid #29415a}
+.customer-sidebar,.sidebar-body{background:#0a1728}
+.top-header,.sidebar-header{background:#10243a;border-bottom:1px solid #29415a}
+.brand-logo,.sidebar-title{color:#f1f7fc}
+.brand-logo span.rx{background:#153c5b;color:#5dc7f6}
+.status-pill.customer-mode,.search-mode-tag.customer{background:#322748;color:#d4c4fa;border-color:#66518e}
+.status-pill.product-mode,.search-mode-tag.product{background:#123b56;color:#8ad8fa;border-color:#276c93}
+.btn-secondary{background:#193049;color:#e1edf7;border-color:#33516c}
+.btn-secondary:hover{background:#25425e;border-color:#47728f}
+.btn-loyalty{background:#302747;color:#d7c5fa;border-color:#63518b}
+.btn-loyalty:hover{background:#40335c}
+.btn-danger{background:#3a2431;color:#ffb2bb;border-color:#704251}
+.search-container{background:#0d2035;border-bottom:1px solid #29415a}
+.main-search-input{background:#091827;color:#f0f7fd;border:1px solid #35536e;box-shadow:none}
+.main-search-input::placeholder{color:#829db2}
+.main-search-input:focus{border-color:#45b8ed;box-shadow:0 0 0 3px rgba(69,184,237,.14)}
+.suggestions-dropdown{background:#13283e;border-color:#39739a;box-shadow:var(--shadow-lg)}
+.suggestion-item{border-bottom:1px solid #29415a}
+.suggestion-item.selected,.suggestion-item:hover{background:#1d3a55;border-left-color:#45b8ed}
+.sugg-primary{color:#f0f7fc}.sugg-sub{color:#a6bed1}.sugg-price{color:#6bcbf5}
+.sugg-tag{background:#203a52;color:#b3cadb}
+.table-container{background:#0d1b2e}
+table.invoice-table th{background:#13283e;color:#b4c8d8;border-bottom:1px solid #29415a}
+table.invoice-table td{color:#e4eef7;border-bottom:1px solid #21364d}
+table.invoice-table tbody tr:hover{background:#172d44}
+.invoice-footer{background:#10243a;border-top:1px solid #29415a;box-shadow:0 -5px 18px rgba(0,0,0,.12)}
+.discount-controls{background:#0b1c2e;border-color:#29415a}
+.discount-title{color:#b5c9d9}
+.input-grp,.qty-control{background:#0d2034;border-color:#36536e}
+.input-grp input,.qty-input{background:#0d2034;color:#edf6fd}
+.qty-btn{color:#9edaf7}.qty-btn:hover{background:#1b3e58;color:#fff}
+.totals-breakdown,.tot-row{color:#b1c5d6}
+.tot-row span:last-child{color:#e4f0f9}
+.tot-row.grand-total{border-color:#3b5871;color:#f0f8fd}
+.tot-row.grand-total span:last-child{color:#66c9f7}
+.btn-checkout{background:#168ec9;border:1px solid #36b0e7;box-shadow:0 5px 14px rgba(0,0,0,.2);color:#fff}
+.btn-checkout:hover{background:#087cb6;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.customer-empty-box{background:#10263c;border:1px dashed #38546c;color:#a9bfd1;border-radius:14px;padding:26px 14px}
+.customer-empty-text{color:#c2d4e3;font-size:14px}.customer-empty-sub{color:#92aabe;font-size:12px}
+.cust-card{background:#12283e;border:1px solid #2c4862;border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.cust-name{color:#f3f8fd;font-size:17px}.cust-phone{color:#aac0d1;font-size:13px}
+.cust-stat-pill{background:#203950;color:#b8cede;border-radius:8px;padding:7px 9px;font-size:12px}
+.cust-stat-pill strong{color:#fff}
+.cust-stat-pill.tier-gold{background:#3c321e;color:#f5cf81;border:1px solid #7c6537}
 .cust-actions-bar{gap:8px;flex-wrap:wrap}
-.offers-section{background:#eaf8f2;border:1px solid #b9e5d2;border-radius:12px;padding:12px}
-.offers-header{color:#08795d;font-size:12px}
-.offer-item{color:#275c4c;font-size:13px}
-.history-header{color:#29465e;font-size:14px}
-.history-search-input{height:44px;background:#fff;border:1px solid #cddce8;color:#1d3c53;font-size:14px;padding:0 12px;border-radius:9px}
-.history-search-input::placeholder{color:#8a9dad}
+.offers-section{background:#12332e;border:1px solid #276c5b;border-radius:12px;padding:12px}
+.offers-header{color:#78e4bd;font-size:12px}.offer-item{color:#b5f1d9;font-size:13px}
+.history-header{color:#d9e8f3;font-size:14px}
+.history-search-input{height:44px;background:#0b2034;border:1px solid #36536e;color:#edf6fd;font-size:14px;padding:0 12px;border-radius:9px}
+.history-search-input::placeholder{color:#88a2b7}
 .invoices-scroll{max-height:none;min-height:0}
-.past-inv-card{background:#fff;border:1px solid #d9e5ee;border-radius:11px;padding:12px}
-.past-inv-meta{color:#71869a;font-size:12px;border-bottom:1px solid #e9eff4}
-.past-inv-meta strong{color:#3c607a}
-.past-item-row{color:#28465d;font-size:13px}
-.past-item-price{color:#0877b9;font-size:13px}
-.btn-add-history{width:36px;height:36px;background:#eaf5fc;border:1px solid #c6e3f5;color:#0877b9;border-radius:8px}
-.btn-add-history:hover{background:#0877b9;color:#fff}
-.modal-backdrop{background:rgba(16,34,51,.45)}
-.modal-card{background:#fff;border:1px solid #d5e3ed;border-radius:16px;color:#1d394f}
-.modal-header,.modal-footer{background:#f6f9fc;border-color:#dce7ef}
-.modal-header h3{color:#18354d;font-size:17px}
-.modal-body{color:#24445d}
-.checkout-amount-display{background:#f0f7fc;border:1px solid #d1e5f2;border-radius:12px}
-.checkout-amount-display .label{color:#5f7b90}
-.checkout-amount-display .val{color:#0877b9}
-.pay-method-btn{background:#f5f8fb;color:#36556d;border:1px solid #d2e0eb;border-radius:10px;min-height:64px}
-.pay-method-btn.active{background:#e4f3fc;color:#086ca5;border-color:#0877b9}
-.quick-cash-btn{background:#f1f6fa;border:1px solid #d3e1ec;color:#34556e;border-radius:9px;min-height:42px}
-.quick-cash-btn:hover{background:#e4f2fb;color:#0877b9}
-.change-due-box{background:#eaf8f1;border-color:#b7e4cf;border-radius:10px}
-.change-due-box span.title,.change-due-box span.amount{color:#08795d}
-.toast{background:#fff;border:1px solid #bcdceb;color:#20425b;border-radius:10px}
+.past-inv-card{background:#132b42;border:1px solid #2d4a65;border-radius:11px;padding:12px}
+.past-inv-meta{color:#9cb5c8;font-size:12px;border-bottom:1px solid #29415a}
+.past-inv-meta strong{color:#d4e7f5}
+.past-item-row{color:#d9e9f5;font-size:13px}.past-item-price{color:#6dcdf6;font-size:13px}
+.btn-add-history{width:36px;height:36px;background:#173d58;border:1px solid #346b8d;color:#81d5fb;border-radius:8px}
+.btn-add-history:hover{background:#168ec9;color:#fff}
+.modal-backdrop{background:rgba(2,9,17,.75)}
+.modal-card{background:#10243a;border:1px solid #35516b;border-radius:16px;color:#e5f0f9}
+.modal-header,.modal-footer{background:#0b1c2e;border-color:#2b4660}
+.modal-header h3{color:#f0f7fd;font-size:17px}.modal-body{color:#e1edf7}
+.checkout-amount-display{background:#0b1c2e;border:1px solid #31516c;border-radius:12px}
+.checkout-amount-display .label{color:#a7c0d2}.checkout-amount-display .val{color:#67cbf8}
+.pay-method-btn{background:#1a344c;color:#d7e8f4;border:1px solid #36546d;border-radius:10px;min-height:64px}
+.pay-method-btn.active{background:#154263;color:#fff;border-color:#4bb8ed}
+.quick-cash-btn{background:#19334b;border:1px solid #36546d;color:#d6e8f5;border-radius:9px;min-height:42px}
+.quick-cash-btn:hover{background:#234c6a;color:#fff}
+.change-due-box{background:#12332e;border-color:#276c5b;border-radius:10px}
+.change-due-box span.title,.change-due-box span.amount{color:#77e1b9}
+.toast{background:#173149;border:1px solid #3a8cb5;color:#f0f7fd;border-radius:10px}
 
 </style>
 </head>
