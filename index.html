@@ -1835,6 +1835,14 @@ body *:not(svg):not(svg *){
 .customer-sidebar .cust-purchase-price{font-size:11px;color:#8dc9e5;font-variant-numeric:tabular-nums;white-space:nowrap}
 .customer-sidebar .cust-purchase-side .btn-add-history{width:29px;height:29px;border-radius:7px;font-size:17px}
 .customer-sidebar .cust-purchase-empty{text-align:center;color:#9ba7b5;padding:18px 8px;font-size:12px}
+
+/* Compact customer purchase list */
+.customer-sidebar .invoices-scroll{gap:0!important;border:1px solid #30353d;border-radius:9px;background:#171a1f;max-height:380px!important}
+.customer-sidebar .cust-purchase-row{border:0!important;border-bottom:1px solid #30353d!important;border-radius:0!important;background:transparent!important;padding:10px 9px!important}
+.customer-sidebar .cust-purchase-row:last-child{border-bottom:0!important}
+.customer-sidebar .cust-purchase-meta{font-size:10px!important;gap:7px!important}
+.customer-sidebar .cust-purchase-side{flex-direction:row!important;align-items:center!important;gap:7px!important}
+.customer-sidebar .cust-purchase-name{font-size:12px!important;line-height:1.5!important}
 </style>
 </head>
 <body>
@@ -2029,10 +2037,10 @@ body *:not(svg):not(svg *){
             </div>
           </div>
           <details class="cust-extra-details" id="custExtraDetails">
-            <summary>تفاصيل العميل <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
+            <summary>مشتريات سابقة <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
             <div class="cust-extra-content">
               <div class="history-section">
-                <div class="history-header"><span>المنتجات اللي اشتراها</span></div>
+                
                 <input type="text" id="historySearchInput" class="history-search-input" placeholder="ابحث في المنتجات السابقة..." autocomplete="off" hidden>
                 <div id="pastInvoicesContainer" class="invoices-scroll"></div>
               </div>
@@ -2648,7 +2656,7 @@ body *:not(svg):not(svg *){
           });
         });
         const f = String(filterText || "").trim().toLocaleLowerCase();
-        const products = [...grouped.values()].filter(item => !f || item.name.toLocaleLowerCase().includes(f));
+        const products = [...grouped.values()].filter(item => !f || item.name.toLocaleLowerCase().includes(f)).sort((a,b) => b.purchases - a.purchases || String(b.lastDate).localeCompare(String(a.lastDate)));
         elements.pastInvoicesContainer.innerHTML = products.map(item => {
           const product = DEMO_PRODUCTS.find(p => p.id === item.productId);
           const price = product ? product.price : item.pastPrice;
@@ -2658,9 +2666,8 @@ body *:not(svg):not(svg *){
               <div class="cust-purchase-info">
                 <div class="cust-purchase-name" dir="auto">${item.name}</div>
                 <div class="cust-purchase-meta" dir="auto">
-                  <span>اتشترى ${item.purchases} مرة</span>
-                  <span>إجمالي ${item.totalQty} قطعة</span>
-                  <span>${date}</span>
+                  <span>آخر شراء: ${date}</span>
+                  ${item.purchases > 1 ? `<span>${item.purchases} مرات</span>` : ""}
                 </div>
               </div>
               <div class="cust-purchase-side">
