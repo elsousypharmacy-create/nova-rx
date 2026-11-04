@@ -2075,6 +2075,7 @@ body *:not(svg):not(svg *){
       <p>سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.</p>
       <form id="gateCustomerForm" autocomplete="off">
         <input id="gatePhone" type="tel" inputmode="tel" dir="ltr" placeholder="رقم موبايل العميل" aria-label="رقم موبايل العميل" required />
+        <div id="gateNewCustomerFields" hidden><input id="gateCustomerName" type="text" dir="auto" placeholder="اسم العميل (اختياري)" aria-label="اسم العميل الجديد" maxlength="100" /></div>
         <div id="gateCustomerResult" aria-live="polite"></div>
         <button type="submit" id="gateFindCustomer" class="nova-gate-primary">متابعة بالرقم</button>
       </form>
@@ -2340,6 +2341,19 @@ body *:not(svg):not(svg *){
         checkoutPaymentMethod: "cash",
         cashReceived: 0
       };
+
+      // Demo-only customer registry, persisted in this browser (no server sync).
+      const DEMO_CUSTOMERS_KEY = 'nova-rx-demo-customers-v1';
+      try {
+        const savedCustomers = JSON.parse(localStorage.getItem(DEMO_CUSTOMERS_KEY) || '[]');
+        if (Array.isArray(savedCustomers)) savedCustomers.filter(c => c && c.id && c.phone).forEach(c => {
+          if (!DEMO_CUSTOMERS.some(existing => existing.id === c.id || existing.phone === c.phone)) DEMO_CUSTOMERS.push({...c,pastInvoices:Array.isArray(c.pastInvoices)?c.pastInvoices:[]});
+        });
+      } catch (_) {}
+      function saveDemoCustomers() {
+        try { localStorage.setItem(DEMO_CUSTOMERS_KEY, JSON.stringify(DEMO_CUSTOMERS.filter(c => String(c.id).startsWith('DEMO-')))); return true; }
+        catch (_) { showToast('تعذر حفظ العميل على هذا المتصفح.', 'error'); return false; }
+      }
 
       // --- DOM ELEMENT REFERENCES ---
       const elements = {
@@ -2871,6 +2885,9 @@ body *:not(svg):not(svg *){
         if (!state.attachedCustomer && !state.customerGateSkipped) {
           document.getElementById("customerCheckoutGate").hidden = false;
           document.getElementById("gatePhone").value = "";
+          document.getElementById("gateNewCustomerFields").hidden = true;
+          document.getElementById("gateCustomerName").value = "";
+          document.getElementById("gateFindCustomer").textContent = "متابعة بالرقم";
           document.getElementById("gateCustomerResult").textContent = "";
           setTimeout(() => document.getElementById("gatePhone").focus(), 0);
           return;
@@ -3172,6 +3189,12 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           document.getElementById("customerCheckoutGate").hidden = true;
           openCheckout();
         });
+        document.getElementById("gatePhone").addEventListener("input", () => {
+          document.getElementById("gateNewCustomerFields").hidden = true;
+          document.getElementById("gateCustomerName").value = "";
+          document.getElementById("gateFindCustomer").textContent = "متابعة بالرقم";
+          document.getElementById("gateCustomerResult").textContent = "";
+        });
         document.getElementById("gateCustomerForm").addEventListener("submit", e => {
           e.preventDefault();
           const raw = document.getElementById("gatePhone").value;
@@ -3183,9 +3206,20 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           }
           let customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
           if (!customer) {
-            customer = { id:"DEMO-" + Date.now(), name:phone, phone, tier:"جديد", points:0, visits:0, pastInvoices:[] };
+            const nameField = document.getElementById("gateCustomerName");
+            const fields = document.getElementById("gateNewCustomerFields");
+            if (fields.hidden) {
+              fields.hidden = false;
+              result.textContent = "عميل جديد — ممكن تضيف اسمه أو تكمل بالرقم فقط.";
+              document.getElementById("gateFindCustomer").textContent = "تسجيل ومتابعة الدفع";
+              nameField.focus();
+              return;
+            }
+            const name = nameField.value.trim() || "عميل " + phone;
+            customer = { id:"DEMO-" + Date.now() + "-" + Math.random().toString(36).slice(2,6), name, phone, tier:"جديد", points:0, visits:0, pastInvoices:[] };
             DEMO_CUSTOMERS.push(customer);
-            showToast("تم إضافة عميل تجريبي جديد.");
+            if (!saveDemoCustomers()) { DEMO_CUSTOMERS.pop(); return; }
+            showToast("تم تسجيل العميل على هذا المتصفح.");
           }
           attachCustomer(customer);
           state.customerGatePending = false;
