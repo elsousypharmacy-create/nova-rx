@@ -1816,6 +1816,11 @@ body *:not(svg):not(svg *){
 .customer-sidebar .cust-secondary-actions{display:flex;align-items:center;gap:5px}
 .customer-sidebar .cust-secondary-row .cust-stat-pill{margin:0!important}
 .customer-sidebar .cust-secondary-actions .cust-history-search-icon,.customer-sidebar .cust-secondary-actions .cust-remove-icon{width:30px;height:30px;flex:0 0 30px}
+
+/* NOVA Rx UX pass 07 — bilingual customer identity */
+.customer-sidebar .cust-card-compact .cust-name{white-space:normal!important;overflow-wrap:anywhere!important;overflow:visible!important;text-overflow:clip!important;line-height:1.5!important}
+.customer-sidebar .cust-card-compact .cust-name-en{display:block;text-align:center;font-size:12px;line-height:1.45;color:var(--text-muted);overflow-wrap:anywhere;margin-top:2px}
+.customer-sidebar .cust-card-compact .cust-name-en[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -1996,7 +2001,7 @@ body *:not(svg):not(svg *){
           <div class="cust-card cust-card-compact">
             <div class="cust-card-top">
               <div class="cust-identity">
-                <div id="custCardName" class="cust-name" dir="auto"></div>
+                <div id="custCardName" class="cust-name" dir="auto"></div><div id="custCardNameEn" class="cust-name-en" dir="ltr" hidden></div>
                 <div id="custCardPhone" class="cust-phone" dir="ltr"></div>
               </div>
             </div>
@@ -2582,7 +2587,23 @@ body *:not(svg):not(svg *){
         elements.customerSelectedBox.style.display = "flex";
         elements.sidebarCustBadge.style.display = "block";
 
-        elements.custCardName.textContent = customer.name;
+        // Prefer explicit bilingual fields; split legacy "Arabic (English)" display names.
+        const fullName = String(customer.name || "").trim();
+        let arabicName = String(customer.nameAr || customer.arabicName || "").trim();
+        let englishName = String(customer.nameEn || customer.englishName || "").trim();
+        if (!arabicName && !englishName) {
+          const match = fullName.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+          if (match && /[\u0600-\u06FF]/.test(match[1]) && /[A-Za-z]/.test(match[2])) {
+            arabicName = match[1].trim();
+            englishName = match[2].trim();
+          } else {
+            arabicName = fullName;
+          }
+        }
+        elements.custCardName.textContent = arabicName || englishName;
+        const englishLine = document.getElementById("custCardNameEn");
+        englishLine.textContent = arabicName ? englishName : "";
+        englishLine.hidden = !(arabicName && englishName);
         elements.custCardPhone.textContent = customer.phone;
         elements.custCardTier.textContent = customer.tier;
         elements.custCardVisits.textContent = customer.visits;
