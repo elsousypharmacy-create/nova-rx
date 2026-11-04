@@ -1595,6 +1595,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .nova-command-row{padding:8px 12px}
 @media(max-width:850px){.pharmacy-brand-banner{padding-inline:8px;gap:5px}.nova-sale-heading{font-size:15px}.pharmacy-brand-banner .nova-command-actions>.btn{padding-inline:7px}.pharmacy-brand-banner #novaMenuToggle span{display:none}}
 .nova-sale-heading{display:flex;align-items:center;gap:9px}.nova-sale-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px}
+
+/* Customer profile physically on the left; invoice workspace on the right */
+@media (orientation:landscape) and (min-width:781px){
+ .pos-root{direction:ltr!important;grid-template-columns:minmax(230px,28fr) minmax(0,72fr)!important}
+ .pos-root>.customer-sidebar{grid-column:1!important;grid-row:1!important;direction:rtl!important}
+ .pos-root>.main-workspace{grid-column:2!important;grid-row:1!important;direction:rtl!important}
+}
+@media (orientation:portrait), (max-width:780px){.pos-root>.customer-sidebar{order:1}.pos-root>.main-workspace{order:0}}
 </style>
 </head>
 <body>
