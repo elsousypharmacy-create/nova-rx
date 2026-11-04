@@ -1578,6 +1578,13 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .nova-nav-row>.nova-nav-brand .pharmacy-banner-live{width:14px;height:22px;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center}
 .nova-nav-row>.nova-nav-brand .nova-refresh-icon{width:24px;height:24px;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center}
 @media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:132px!important;width:132px!important;gap:5px!important;padding:0 5px!important}.nova-nav-row>.nova-nav-brand .nova-brand-name{font-size:15px!important}.nova-nav-row>.nova-nav-brand .nova-brand-name>span{font-size:10px!important}.nova-nav-row>.nova-nav-brand .nova-refresh-icon{width:21px;height:21px}}
+
+/* Hide redundant search-mode caption while retaining its JS state updates. */
+.top-header #modePill{display:none!important}
+/* Brand controls now live in the top navigation; remove empty banner height. */
+.nova-nav-row>.nova-nav-brand{flex-basis:170px!important;width:170px!important;gap:8px!important;align-items:center!important}
+.nova-nav-row>.nova-nav-brand .pharmacy-banner-right{display:flex!important;align-items:center;gap:5px}
+@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:132px!important;width:132px!important;gap:5px!important}}
 </style>
 </head>
 <body>
@@ -1585,11 +1592,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
   
-  </nav><div class="nova-nav-brand" dir="ltr"><span class="nova-brand-name">NOVA <span>Rx</span></span></div></div>
-<div class="pharmacy-brand-banner" role="banner" dir="rtl">
-  <div class="nova-top-label">نظام نقاط البيع</div>
-  <div class="pharmacy-banner-right"><span class="pharmacy-banner-live" title="متصل" aria-label="حالة الاتصال"><b></b></span><button id="btnRefreshApp" class="nova-refresh-icon" type="button" title="إعادة تحميل الصفحة" aria-label="إعادة تحميل الصفحة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button></div>
-</div>
+  </nav><div class="nova-nav-brand" dir="ltr"><span class="nova-brand-name">NOVA <span>Rx</span></span><div class="pharmacy-banner-right"><span class="pharmacy-banner-live" title="متصل" aria-label="حالة الاتصال"><b></b></span><button id="btnRefreshApp" class="nova-refresh-icon" type="button" title="إعادة تحميل الصفحة" aria-label="إعادة تحميل الصفحة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button></div></div></div>
   
   <div id="novaPageView" class="nova-page-view" dir="rtl" hidden></div>
   <div class="pos-root">
@@ -1598,7 +1601,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
       <!-- Top App Bar -->
       <header class="top-header">
         <div class="brand-section">
-          <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" width="30" height="30" loading="eager" decoding="async"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
+          <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" width="30" height="30" loading="eager" decoding="async"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي</span></div></div>
           <span class="task-badge">TASK-001</span>
           <div id="modePill" class="status-pill customer-mode">
             <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
