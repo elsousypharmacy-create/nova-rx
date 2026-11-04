@@ -1585,6 +1585,54 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .nova-nav-row>.nova-nav-brand{flex-basis:170px!important;width:170px!important;gap:8px!important;align-items:center!important}
 .nova-nav-row>.nova-nav-brand .pharmacy-banner-right{display:flex!important;align-items:center;gap:5px}
 @media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:132px!important;width:132px!important;gap:5px!important}}
+
+/* NOVA Rx — refined graphite / sage design, replacing saturated blue UI */
+:root{
+ --bg-base:#0c0e0e;--bg-panel:#121515;--bg-surface:#1b2020;--bg-surface-hover:#252c2a;--bg-surface-active:#303a36;
+ --border-subtle:#2c3431;--border-focus:#91ad98;--text-main:#f0f3ef;--text-muted:#abb7ae;--text-dim:#849187;
+ --accent-cyan:#628b70;--accent-cyan-light:#a4c6aa;--accent-green:#83b994;
+ --badge-customer:#9db9a4;--badge-customer-bg:#202c24;--badge-product:#a4c6aa;--badge-product-bg:#1c2c22;
+}
+html,body{background:#0c0e0e!important;color:#f0f3ef!important}
+.nova-nav-row{background:#151918;border-bottom-color:#303934}
+.nova-nav-row>.nova-nav,.nova-nav-row>.nova-nav-brand{background:#151918!important}
+.nova-nav-row>.nova-nav-brand{border-inline-start-color:#303934!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name{color:#f1f3ef!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name>span{color:#a4c6aa!important}
+.nova-nav-row>.nova-nav-brand .nova-refresh-icon{color:#b6c3ba!important;background:transparent!important;border:0!important}
+.nova-nav-row>.nova-nav-brand .nova-refresh-icon:hover{background:#29342e!important;color:#f2fff5!important}
+.nova-tab{color:#a9b5ad!important;border-radius:8px}
+.nova-tab:hover{background:#252e29!important;color:#edf5ee!important}
+.nova-tab.active{background:#293b30!important;color:#c6e6cb!important;box-shadow:inset 0 0 0 1px #3e5a46}
+.nova-demo-label{background:#1b221e;color:#9ba99d;border-color:#35443a}
+.pos-root,.main-workspace,.customer-sidebar,.sidebar-body,.table-container,.nova-page-view{background:#101313!important}
+.main-workspace{background:#141817!important;border-right-color:#303934!important}
+.customer-sidebar{background:#101413!important}
+.top-header,.search-container,.sidebar-header,.table-header{background:#171c19!important;border-color:#303934!important}
+.top-header{padding-inline:16px!important}
+.search-container{padding:10px 14px!important}
+.main-search-input,.search-input,.sidebar-search-input{background:#101513!important;border-color:#3a463d!important;color:#f0f3ef!important;border-radius:9px!important}
+.main-search-input:focus,.search-input:focus,.sidebar-search-input:focus{border-color:#8aaf92!important;box-shadow:0 0 0 2px #82b18b24!important}
+.search-mode-tag.customer,.search-mode-tag.product,.status-pill.customer-mode,.status-pill.product-mode{background:#28362b!important;color:#c4dfc8!important;border-color:#45624a!important}
+.btn-primary,.btn-checkout{background:#5b8265!important;border-color:#749b7c!important;color:#fff!important;box-shadow:none!important}
+.btn-primary:hover,.btn-checkout:hover{background:#6b9474!important}
+.nova-sale-actions .nova-new-sale{background:#304d38!important;border-color:#587a60!important;color:#e7f5e8!important}
+.nova-sale-actions .nova-new-sale:hover{background:#3c6045!important}
+.nova-sale-actions .nova-held-action,.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action,.btn-secondary{background:#242b27!important;border-color:#3b4840!important;color:#d7e2d9!important}
+.nova-sale-actions .nova-held-action:hover,.nova-sale-actions .nova-customer-action:hover,.nova-sale-actions .nova-more-action:hover,.btn-secondary:hover{background:#303a33!important}
+.suggestions-dropdown,.modal-card{background:#1b221e!important;border-color:#435347!important}
+.suggestion-item.selected,.suggestion-item:hover{background:#2b3b30!important;border-left-color:#91b69a!important}
+.qty-control,.input-grp,.qty-input,.input-grp input{background:#151c18!important;border-color:#3b4840!important}
+.discount-controls,.checkout-amount-display,.modal-header,.modal-footer{background:#1a211c!important;border-color:#354239!important}
+.pay-method-btn.active{background:#2d4634!important;border-color:#7fa789!important}
+.nova-panel,.nova-kpi,.nova-card{border-color:#354139!important;background:#1a211d!important}
+.nova-page-header h1{color:#eff4ef!important}
+:focus-visible{outline-color:#a2c3a9!important}
+@media(max-width:780px){
+ .top-header{padding-inline:9px!important}
+ .search-container{padding:8px 9px!important}
+ .nova-nav-row>.nova-nav{padding-inline:6px!important}
+}
 </style>
 </head>
 <body>
