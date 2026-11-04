@@ -1548,6 +1548,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .customer-empty-box{gap:12px}
 @media(orientation:landscape) and (min-width:781px){.pos-root{grid-template-columns:minmax(0,72fr) minmax(0,28fr)!important}.main-workspace,.customer-sidebar{height:100%!important}}
 @media(orientation:landscape) and (max-width:1100px){.invoice-footer .checkout-action-box{flex-basis:120px;width:120px}}
+
+/* Single-row POS command bar: no redundant second/third header rows */
+.nova-command-row{display:flex;align-items:stretch;gap:10px;padding:10px 12px;background:#0D1117;border-bottom:1px solid #21262D;position:relative;z-index:8;min-width:0}
+.nova-command-row .search-container{flex:1 1 auto;min-width:0;padding:0;background:transparent}
+.nova-command-row .search-box-wrapper{min-width:0;height:100%}
+.nova-command-row .main-search-input{min-height:48px;height:100%}
+.nova-command-actions{display:flex;align-items:center;gap:8px;position:relative;flex:0 0 auto}
+.nova-command-actions>.btn{min-height:48px;min-width:48px;white-space:nowrap;border-radius:9px}
+.nova-command-actions #novaMoreActions{font-size:23px;line-height:1}
+.nova-more-panel{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:205px;max-width:min(280px,80vw);padding:8px;border:1px solid #30363D;border-radius:12px;background:#161B22;box-shadow:0 14px 30px #0009;z-index:20;flex-direction:column;gap:6px}
+.nova-more-panel:not([hidden]){display:flex}
+.nova-more-panel .btn{min-height:44px;width:100%;justify-content:flex-start}
+.nova-mode-compat{display:none!important}
+@media(max-width:1000px){.nova-command-row{gap:6px;padding:8px}.nova-command-actions{gap:5px}.nova-command-actions #btnNewSale{padding-inline:8px}.nova-command-row .search-hints{display:none}}
 </style>
 </head>
 <body>
@@ -1565,58 +1579,27 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
     <!-- LEFT WORKSPACE (~72%) -->
     <main class="main-workspace">
       <!-- Top App Bar -->
-      <header class="top-header">
-        <div class="brand-section">
-          <div class="brand-logo">
-            NOVA <span class="rx">Rx</span>
+      <!-- One compact command row: search + primary action + overflow menu -->
+      <div class="nova-command-row">
+        <div class="search-container">
+          <div class="search-box-wrapper">
+            <div id="searchModeTag" class="search-mode-tag customer">Customer</div>
+            <input type="text" id="mainSearchInput" class="main-search-input" placeholder="Search customer by name or phone... (Press Enter to skip)" autocomplete="off" spellcheck="false" autofocus>
+            <div class="search-hints"><span id="searchHintText">Enter: Select / Skip</span><kbd>Esc</kbd></div>
           </div>
-          <span class="task-badge">TASK-001</span>
-          <div id="modePill" class="status-pill customer-mode">
-            <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
-            <span id="modePillText">Customer Search Mode</span>
+          <div id="suggestionsBox" class="suggestions-dropdown"></div>
+        </div>
+        <div class="nova-command-actions">
+          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)"><span>＋</span> <span>New Sale</span></button>
+          <button type="button" id="novaMoreActions" class="btn btn-secondary" aria-expanded="false" aria-controls="novaMorePanel" aria-label="More actions">⋯</button>
+          <div id="novaMorePanel" class="nova-more-panel" hidden>
+            <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">Add Loyalty</button>
+            <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">Clear</button>
+            <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">Help</button>
+            <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
           </div>
         </div>
-
-        <div class="header-actions">
-          <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
-          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)">
-            <kbd>F2</kbd> New Sale
-          </button>
-          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">
-            <kbd>F3</kbd> Add Loyalty
-          </button>
-          <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">
-            <kbd>F4</kbd> Clear
-          </button>
-          <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">
-            <kbd>?</kbd> Help
-          </button>
-        </div>
-      </header>
-
-      <!-- Unified Main Search Bar -->
-      <div class="search-container">
-        <div class="search-box-wrapper">
-          <div id="searchModeTag" class="search-mode-tag customer">
-            Customer
-          </div>
-          <input 
-            type="text" 
-            id="mainSearchInput" 
-            class="main-search-input" 
-            placeholder="Search customer by name or phone... (Press Enter to skip)"
-            autocomplete="off"
-            spellcheck="false"
-            autofocus
-          >
-          <div class="search-hints">
-            <span id="searchHintText">Enter: Select / Skip</span>
-            <kbd>Esc</kbd>
-          </div>
-        </div>
-
-        <!-- Autocomplete Suggestions List -->
-        <div id="suggestionsBox" class="suggestions-dropdown"></div>
+        <div class="nova-mode-compat" hidden><div id="modePill" class="status-pill customer-mode"><span id="modePillText">Customer Search Mode</span></div></div>
       </div>
 
       <!-- Line Items Table (Dense View) -->
@@ -3039,6 +3022,16 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  if(menu&&nav){const close=()=>{nav.classList.remove('nova-nav-open');menu.setAttribute('aria-expanded','false')};menu.addEventListener('click',()=>{const open=nav.classList.toggle('nova-nav-open');menu.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('[data-page]'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.addEventListener('click',e=>{if(!nav.contains(e.target)&&!menu.contains(e.target))close()})}
  const discount=document.getElementById('novaDiscountToggle'),footer=document.querySelector('.invoice-footer');
  if(discount&&footer)discount.addEventListener('click',()=>{const open=footer.classList.toggle('nova-discount-open');discount.setAttribute('aria-expanded',String(open))});
+})();
+</script>
+<script>
+(function(){
+ const toggle=document.getElementById('novaMoreActions'),panel=document.getElementById('novaMorePanel');if(!toggle||!panel)return;
+ const close=()=>{panel.hidden=true;toggle.setAttribute('aria-expanded','false')};
+ toggle.addEventListener('click',()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden))});
+ panel.addEventListener('click',e=>{if(e.target.closest('button'))close()});
+ document.addEventListener('click',e=>{if(!toggle.contains(e.target)&&!panel.contains(e.target))close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 })();
 </script>
 </body>
