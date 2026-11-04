@@ -1507,6 +1507,21 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .customer-sidebar .sidebar-title{width:100%;justify-content:center;text-align:center;gap:7px;font-size:13px;line-height:1.2}
 .customer-sidebar #sidebarCustBadge{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%)}
 .customer-sidebar .sidebar-body{padding-top:6px}
+
+/* Compact sale toolbar — primary action, customer icon, overflow menu */
+.top-header{overflow:visible;position:relative;z-index:25}
+.nova-sale-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;overflow:visible}
+.nova-sale-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;min-height:34px;border-radius:8px;white-space:nowrap}
+.nova-sale-actions .nova-new-sale{background:#203d4c;border:1px solid #47758b;color:#e3f5ff;font-weight:700;padding:0 12px;font-size:12px}
+.nova-sale-actions .nova-new-sale:hover{background:#2b5165}
+.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action{width:34px;min-width:34px;padding:0;background:#1b242c;border:1px solid #34434c;color:#c6d7e1}
+.nova-more-wrap{position:relative;flex:none}
+.nova-more-menu{position:absolute;z-index:120;top:calc(100% + 7px);inset-inline-end:0;width:184px;background:#1b222a;border:1px solid #3b4a55;border-radius:10px;padding:5px;box-shadow:0 12px 28px rgba(0,0,0,.4)}
+.nova-more-menu[hidden]{display:none!important}
+.nova-more-item{display:block;width:100%;padding:10px 12px;text-align:start;background:transparent;border:0;border-radius:6px;color:#e4ebf0;font:600 12px Cairo,Arial,sans-serif;cursor:pointer}
+.nova-more-item:hover{background:#2a3944}
+.nova-more-danger{color:#f2b4b7}
+@media(max-width:900px){.nova-sale-actions{gap:4px}.nova-sale-actions .nova-new-sale{padding:0 8px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -1533,20 +1548,16 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
           </div>
         </div>
 
-        <div class="header-actions">
-          
-          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)">
-            <kbd>F2</kbd> New Sale
-          </button>
-          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">
-            <kbd>F3</kbd> Add Loyalty
-          </button>
-          <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">
-            <kbd>F4</kbd> Clear
-          </button>
-          <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">
-            <kbd>?</kbd> Help
-          </button>
+        <div class="header-actions nova-sale-actions">
+          <button id="btnNewSale" class="btn nova-new-sale" type="button" title="New Sale (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
+          <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="Add / Switch Customer (F3)" aria-label="Add / Switch Customer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
+          <div class="nova-more-wrap">
+            <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="More actions" title="More actions" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+            <div id="novaSaleMoreMenu" class="nova-more-menu" hidden>
+              <button id="btnClearInvoice" class="nova-more-item nova-more-danger" type="button" title="Clear Line Items (F4)">Clear Invoice</button>
+              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="View Keyboard Shortcuts">Keyboard Shortcuts</button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -2900,7 +2911,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'مؤشرات توضيحية محسوبة من فواتير العملاء التجريبية فقط':'Illustrative metrics from demo customer invoices only',
  'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن':'Preview settings — no production permissions or sync',
  'Customer Search Mode':'وضع البحث عن عميل','Product / Barcode Scan Mode':'وضع البحث عن منتج أو باركود',
- 'New Sale':'فاتورة جديدة','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
+ 'New Sale':'فاتورة جديدة','Clear Invoice':'مسح الفاتورة','Keyboard Shortcuts':'اختصارات الكيبورد','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
  'Customer':'عميل','Product':'منتج','Product & Description':'المنتج والوصف','Barcode':'الباركود','Price':'السعر','Quantity':'الكمية','Discount':'الخصم','Total':'الإجمالي',
  'Invoice is Empty':'الفاتورة فارغة','Scan product barcode or type medicine name in the search bar above.':'امسح الباركود أو ابحث باسم الدواء في الأعلى.',
  'Overall Invoice Discount':'خصم الفاتورة','Subtotal':'المجموع الفرعي','Discount Applied':'الخصم المطبق',
@@ -2976,6 +2987,17 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
  document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);apply()}));
  apply();
+})();
+</script>
+<script>
+(function(){
+ const toggle=document.getElementById('btnSaleMore');const menu=document.getElementById('novaSaleMoreMenu');
+ if(!toggle||!menu)return;
+ const close=()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false')};
+ toggle.addEventListener('click',()=>{const opening=menu.hidden;menu.hidden=!opening;toggle.setAttribute('aria-expanded',String(opening))});
+ menu.addEventListener('click',e=>{if(e.target.closest('button'))close()});
+ document.addEventListener('click',e=>{if(!e.target.closest('.nova-more-wrap'))close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 })();
 </script>
 </body>
