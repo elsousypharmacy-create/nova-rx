@@ -1702,6 +1702,27 @@ body *:not(svg):not(svg *){
   border-radius:9px!important;padding:3px!important;
  }
 }
+
+/* Identity finishing: logo is a quiet brand mark, never a button. */
+.top-header .brand-section{align-items:center!important;gap:10px!important}
+.top-header .pharmacy-banner-identity{align-self:center!important;align-items:center!important;gap:8px!important}
+.top-header .pharmacy-banner-identity>.elsousy-brand-mark{
+ width:32px!important;height:32px!important;flex:0 0 32px!important;
+ border-radius:9px!important;padding:2px!important;
+ border:1px solid #ffffff0b!important;background:#ffffff05!important;
+ box-shadow:none!important;vertical-align:middle!important;
+}
+.top-header .pharmacy-banner-copy{align-self:center!important;justify-content:center!important;gap:1px!important}
+.top-header .pharmacy-banner-copy strong{line-height:1.35!important;font-weight:700!important}
+.top-header .pharmacy-banner-copy span{line-height:1.3!important}
+@media(max-width:780px){
+ .top-header .brand-section{gap:7px!important}
+ .top-header .pharmacy-banner-identity{gap:7px!important}
+ .top-header .pharmacy-banner-identity>.elsousy-brand-mark{
+  width:30px!important;height:30px!important;flex-basis:30px!important;
+  border-radius:8px!important;padding:2px!important;
+ }
+}
 </style>
 </head>
 <body>
