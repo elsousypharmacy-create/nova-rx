@@ -1723,6 +1723,31 @@ body *:not(svg):not(svg *){
   border-radius:8px!important;padding:2px!important;
  }
 }
+
+/* Compact customer sidebar — key data at a glance; history on demand. */
+.customer-compact-layout{gap:10px!important;min-width:0}
+.customer-compact-layout .cust-card-compact{padding:13px!important;background:#171a1f!important;border:1px solid #2b3037!important;border-radius:11px!important;box-shadow:none!important}
+.customer-compact-layout .cust-card-top{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:9px!important;min-width:0}
+.customer-compact-layout .cust-identity{min-width:0;flex:1}
+.customer-compact-layout .cust-name{font-size:15px!important;font-weight:750!important;line-height:1.5!important;overflow-wrap:anywhere}
+.customer-compact-layout .cust-phone{font-size:12px!important;color:#aab3bf!important;margin-top:2px}
+.customer-compact-layout #custCardTier{flex-shrink:0;max-width:42%;font-size:10px!important;padding:3px 7px!important}
+.customer-compact-layout .cust-stats-compact{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;margin:12px 0!important}
+.customer-compact-layout .cust-stats-compact>.cust-stat-pill{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:6px!important;padding:8px 9px!important;background:#20242a!important;border:1px solid #2d333a!important;border-radius:8px!important;font-size:11px!important;color:#aeb7c2!important;min-width:0}
+.customer-compact-layout .cust-stats-compact strong{font-size:14px!important;color:#eef1f5!important}
+.customer-compact-layout .cust-actions-bar{display:flex!important;gap:7px!important;margin-top:0!important}
+.customer-compact-layout .cust-actions-bar .btn{height:32px!important;min-height:32px!important;padding:0 9px!important;border-radius:7px!important;font-size:11px!important;flex:1!important}
+.customer-compact-layout .cust-actions-bar #btnRemoveCust{flex:0 0 auto!important;background:transparent!important;border:1px solid #393c42!important;color:#c5a9a9!important}
+.customer-compact-layout .cust-extra-details{border:1px solid #2b3037!important;background:#171a1f!important;border-radius:10px!important;overflow:hidden}
+.customer-compact-layout .cust-extra-details>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 13px;cursor:pointer;list-style:none;font-size:12px;font-weight:700;color:#d9e0e9;user-select:none}
+.customer-compact-layout .cust-extra-details>summary::-webkit-details-marker{display:none}
+.customer-compact-layout .cust-detail-chevron{color:#9aa8b7;transition:transform .15s}
+.customer-compact-layout .cust-extra-details[open] .cust-detail-chevron{transform:rotate(180deg)}
+.customer-compact-layout .cust-extra-content{padding:0 11px 12px;display:flex;flex-direction:column;gap:12px}
+.customer-compact-layout .offers-section,.customer-compact-layout .history-section{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.customer-compact-layout .offers-header,.customer-compact-layout .history-header{margin-bottom:7px!important;font-size:11px!important}
+.customer-compact-layout .cust-history-hint{font-size:10px;color:#8793a0}
+.customer-compact-layout .invoices-scroll{max-height:240px!important;overflow-y:auto!important}
 </style>
 </head>
 <body>
@@ -1899,69 +1924,39 @@ body *:not(svg):not(svg *){
           </button>
         </div>
 
-        <!-- State 2: Selected Customer Card -->
-        <div id="customerSelectedBox" style="display:none; flex-direction:column; gap:12px;">
-          <!-- Customer Identity Card -->
-          <div class="cust-card">
+        <!-- State 2: Selected Customer — essential info first -->
+        <div id="customerSelectedBox" class="customer-compact-layout" style="display:none;flex-direction:column;gap:10px;">
+          <div class="cust-card cust-card-compact">
             <div class="cust-card-top">
-              <div>
-                <div id="custCardName" class="cust-name" dir="auto">Dr. Tariq Al-Mansoor</div>
-                <div id="custCardPhone" class="cust-phone">0501234567</div>
+              <div class="cust-identity">
+                <div id="custCardName" class="cust-name" dir="auto"></div>
+                <div id="custCardPhone" class="cust-phone" dir="ltr"></div>
               </div>
-              <span id="custCardTier" class="cust-stat-pill tier-gold">VIP Gold</span>
+              <span id="custCardTier" class="cust-stat-pill tier-gold"></span>
             </div>
-
-            <div class="cust-stats-row">
-              <div class="cust-stat-pill">
-                Visits: <strong id="custCardVisits">24</strong>
-              </div>
-              <div class="cust-stat-pill">
-                Points: <strong id="custCardPoints">480</strong>
-              </div>
+            <div class="cust-stats-row cust-stats-compact">
+              <div class="cust-stat-pill">الزيارات <strong id="custCardVisits">0</strong></div>
+              <div class="cust-stat-pill">النقاط <strong id="custCardPoints">0</strong></div>
             </div>
-
             <div class="cust-actions-bar">
-              <button id="btnChangeCust" class="btn btn-secondary" style="font-size:11px; padding:3px 8px; flex:1;">
-                Change (F3)
-              </button>
-              <button id="btnRemoveCust" class="btn btn-danger" style="font-size:11px; padding:3px 8px; flex:1;">
-                Detach
-              </button>
+              <button id="btnChangeCust" class="btn btn-secondary" type="button">تغيير العميل (F3)</button>
+              <button id="btnRemoveCust" class="btn btn-danger" type="button">إزالة</button>
             </div>
           </div>
-
-          <!-- Offers Section (Subtle Green Accent) -->
-          <div class="offers-section">
-            <div class="offers-header">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-              Active Loyalty Offers
+          <details class="cust-extra-details" id="custExtraDetails">
+            <summary>تفاصيل العميل <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
+            <div class="cust-extra-content">
+              <div class="offers-section">
+                <div class="offers-header">العروض المتاحة</div>
+                <div id="custOffersList" style="display:flex;flex-direction:column;gap:5px;"></div>
+              </div>
+              <div class="history-section">
+                <div class="history-header"><span>المشتريات السابقة</span><span class="cust-history-hint">اضغط + للإضافة</span></div>
+                <input type="text" id="historySearchInput" class="history-search-input" placeholder="ابحث في المشتريات..." autocomplete="off">
+                <div id="pastInvoicesContainer" class="invoices-scroll"></div>
+              </div>
             </div>
-            <div id="custOffersList" style="display:flex; flex-direction:column; gap:5px;">
-              <!-- Dynamic Offers -->
-            </div>
-          </div>
-
-          <!-- Purchase History & Invoices -->
-          <div class="history-section">
-            <div class="history-header">
-              <span>Past Purchases History</span>
-              <span style="font-size:10px; color:var(--text-dim);">Click + to re-add</span>
-            </div>
-
-            <input 
-              type="text" 
-              id="historySearchInput" 
-              class="history-search-input" 
-              placeholder="Filter past items by name..."
-              autocomplete="off"
-            >
-
-            <div id="pastInvoicesContainer" class="invoices-scroll">
-              <!-- Dynamic Past Invoices -->
-            </div>
-          </div>
+          </details>
         </div>
       </div>
     </aside>
