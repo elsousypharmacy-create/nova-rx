@@ -2884,13 +2884,9 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   const trimmed=text.trim();if(!trimmed)return text;
   const dict=lang==='en'?arToEn:enToAr;
   if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
-  let next=text;
-  // Longer UI phrases first, but do not translate user/product data
-  for(const [a,b] of Object.entries(dict).sort((a,b)=>b[0].length-a[0].length)){
-   if(a.length<7)continue;
-   if(next.includes(a))next=next.split(a).join(b);
-  }
-  return next;
+  // Only translate exact, registered UI labels. Never rewrite fragments of
+  // product names, customer data, amounts, or other dynamically rendered text.
+  return text;
  }
  function uiText(node){
   const parent=node.parentElement;
