@@ -3379,7 +3379,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  let content='';
  if(page==='products'){
  const list=filtered(products,['name','barcode','generic','category']);
- content=head(title,'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true)
+ content=head(title,'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>'
  +table(['الصنف','الباركود','السعر','الرصيد','التصنيف'],rows(list,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td>'+esc(p.stock)+'</td><td>'+esc(p.category)+'</td></tr>'));
  }else if(page==='customers'){
@@ -3402,6 +3402,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div></div>';
  }
  view.innerHTML=content;
+ const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
+ const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
@@ -3540,7 +3542,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 #novaAiPanel td input{width:100%;min-width:65px;background:#101318;color:#fff;border:1px solid #48505a;border-radius:5px;padding:5px}
 #novaAiPanel .ai-note{color:#aab6c7;font-size:12px;line-height:1.8}
 </style>
-<button id="novaAiLaunch" type="button">✦ AI المشتريات</button>
+<button id="novaAiLaunch" type="button" aria-label="طباعة استيكرات الأدوية">✦ AI الاستيكرات</button>
 <section id="novaAiPanel" role="dialog" aria-modal="true" aria-label="مراجعة فاتورة مشتريات بالذكاء الاصطناعي">
 <div class="ai-sheet">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 style="margin:0">✦ قراءة فواتير المشتريات</h3><button type="button" id="novaAiClose">إغلاق ✕</button></div>
@@ -3555,7 +3557,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 </div></section>
 <script>
 (()=>{const $=id=>document.getElementById(id),panel=$('novaAiPanel'),status=$('novaAiStatus'),table=$('novaAiTable'),tbody=table.querySelector('tbody');
-$('novaAiLaunch').onclick=()=>panel.classList.add('open');$('novaAiClose').onclick=()=>panel.classList.remove('open');
+$('novaAiLaunch').onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');$('novaAiClose').onclick=()=>panel.classList.remove('open');
 function field(v){const input=document.createElement('input');input.value=v==null?'':String(v);return input}
 $('novaAiRun').onclick=async()=>{
 const files=Array.from($('novaAiFiles').files||[]);
@@ -3573,6 +3575,25 @@ status.textContent='تم استخراج '+(result.items||[]).length+' صنف. ر
 };
 $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر الوحدة','الخصم','التشغيلة','الصلاحية','ملاحظات'],...Array.from(tbody.rows,r=>Array.from(r.querySelectorAll('input'),i=>i.value))];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='nova-purchase-review.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 })();
+</script>
+<style>
+.nova-inventory-actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 18px}
+.nova-inventory-action{border:1px solid #4772aa;background:#1e4f96;color:#fff;border-radius:10px;padding:11px 16px;font:700 13px Cairo;cursor:pointer}
+.nova-inventory-action.secondary{background:#20262f;border-color:#454e59}
+#novaLabelsPanel{display:none;position:fixed;inset:0;z-index:9100;background:#000d;padding:12px;align-items:center;justify-content:center}
+#novaLabelsPanel.open{display:flex}
+#novaLabelsPanel .labels-sheet{display:flex;flex-direction:column;width:min(1080px,100%);height:min(94dvh,960px);background:#171b20;border:1px solid #39424e;border-radius:16px;overflow:hidden}
+#novaLabelsPanel .labels-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;color:#fff;font:700 13px Cairo;direction:rtl}
+#novaLabelsPanel button,#novaLabelsPanel a{font:600 12px Cairo;color:#fff;border:1px solid #526170;background:#29313c;border-radius:8px;padding:8px 11px;text-decoration:none;cursor:pointer}
+#novaLabelsPanel iframe{width:100%;flex:1;border:0;background:white}
+@media(max-width:600px){#novaLabelsPanel{padding:3px}#novaLabelsPanel .labels-sheet{height:98dvh;border-radius:9px}}
+</style>
+<section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="طباعة استيكرات الأدوية"><div class="labels-sheet">
+<div class="labels-toolbar"><span>✦ طباعة استيكرات الأدوية</span><div style="display:flex;gap:7px"><a href="https://elsousypharmacy-create.github.io/pharmacy/labels.html" target="_blank" rel="noopener noreferrer">فتح في صفحة مستقلة</a><button id="novaLabelsClose" type="button">إغلاق ✕</button></div></div>
+<iframe title="أداة طباعة استيكرات الأدوية" loading="lazy" src="https://elsousypharmacy-create.github.io/pharmacy/labels.html"></iframe>
+</div></section>
+<script>
+(()=>{const p=document.getElementById('novaLabelsPanel');document.getElementById('novaLabelsClose').onclick=()=>p.classList.remove('open');p.addEventListener('click',e=>{if(e.target===p)p.classList.remove('open')});document.addEventListener('keydown',e=>{if(e.key==='Escape')p.classList.remove('open')})})();
 </script>
 </body>
 </html>
