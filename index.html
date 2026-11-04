@@ -1594,11 +1594,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .nova-page-view:not([hidden]){height:calc(100dvh - 60px)!important}
 .nova-command-row{padding:8px 12px}
 @media(max-width:850px){.pharmacy-brand-banner{padding-inline:8px;gap:5px}.nova-sale-heading{font-size:15px}.pharmacy-brand-banner .nova-command-actions>.btn{padding-inline:7px}.pharmacy-brand-banner #novaMenuToggle span{display:none}}
+.nova-sale-heading{display:flex;align-items:center;gap:9px}.nova-sale-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px}
 </style>
 </head>
 <body>
   <div class="pharmacy-brand-banner" role="banner" dir="rtl">
-  <div class="nova-sale-heading">البيع</div>
+  <div class="nova-sale-heading"><span class="nova-sale-logo"><svg viewBox="0 0 48 48" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 14L24 6l16 8v13c0 9-7 14-16 17C15 41 8 36 8 27V14Z" stroke="#38BDF8" stroke-width="2.5"/><path d="M17 17h14M24 10v14M16 29h16M19 25c0 8 10 8 10 0" stroke="#F0F6FC" stroke-width="2.5" stroke-linecap="round"/><path d="M21 35h6" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/></svg></span><span>البيع</span></div>
   <button type="button" id="novaMenuToggle" class="nova-menu-toggle" aria-controls="novaMainNav" aria-expanded="false" aria-label="القائمة">☰ <span>القائمة</span></button>
         <div class="nova-command-actions">
           <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">＋ <span>Customer</span></button>
