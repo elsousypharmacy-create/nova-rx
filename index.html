@@ -1501,6 +1501,12 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .pharmacy-banner-right{gap:7px}
 .pharmacy-banner-right>.nova-refresh-icon{width:26px;height:26px;border:0;background:transparent;color:#9baeb9;margin:0}
 .pharmacy-banner-right>.nova-refresh-icon:hover{background:#1b252d;color:#fff}
+
+/* Customer sidebar heading: centered, compact and closer to the top */
+.customer-sidebar .sidebar-header{height:34px!important;min-height:34px!important;padding:0 8px!important;justify-content:center!important;position:relative}
+.customer-sidebar .sidebar-title{width:100%;justify-content:center;text-align:center;gap:7px;font-size:13px;line-height:1.2}
+.customer-sidebar #sidebarCustBadge{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%)}
+.customer-sidebar .sidebar-body{padding-top:6px}
 </style>
 </head>
 <body>
@@ -1658,7 +1664,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Customer Profile & Loyalty
+          Loyalty Number
         </div>
         <div id="sidebarCustBadge" class="task-badge" style="display:none;">ATTACHED</div>
       </div>
@@ -2904,7 +2910,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'Amount Due':'المبلغ المستحق','Cash Received':'المبلغ المستلم','Change Due':'الباقي',
  'Cancel':'إلغاء','Confirm Payment':'تأكيد الدفع','Print Receipt':'طباعة الإيصال',
  'New Sale / Reset':'فاتورة جديدة','No customer selected':'لم يتم اختيار عميل',
- 'Customer Profile':'ملف العميل','Purchase History':'سجل المشتريات',
+ 'Customer Profile':'ملف العميل','Loyalty Number':'ملف العميل','Purchase History':'سجل المشتريات',
  'No items found':'لا توجد أصناف','items':'أصناف'
  };
  const enToAr={};for(const [ar,en] of Object.entries(arToEn)){if(/[\u0600-\u06FF]/.test(ar)&&!/[\u0600-\u06FF]/.test(en))enToAr[en]=ar;else if(!/[\u0600-\u06FF]/.test(ar)&&/[\u0600-\u06FF]/.test(en))enToAr[ar]=en;}
