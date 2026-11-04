@@ -2000,11 +2000,6 @@ body *:not(svg):not(svg *){
 
         <!-- Checkout Action Box -->
         <div class="checkout-action-box">
-          <div id="quickCustomerPanel" dir="rtl" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
-            <input id="quickCustomerPhone" type="tel" inputmode="tel" autocomplete="off" dir="ltr" placeholder="رقم العميل (اختياري)" aria-label="رقم موبايل العميل" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid #424a55;border-radius:9px;background:#171c23;color:#fff;font:inherit"/>
-            <div id="quickCustomerStatus" aria-live="polite" style="font-size:12px;min-height:17px;color:#86d9b4"></div>
-            <input id="quickCustomerName" type="text" autocomplete="off" placeholder="اسم العميل الجديد (اختياري)" aria-label="اسم العميل الجديد" maxlength="100" hidden style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #424a55;border-radius:9px;background:#171c23;color:#fff;font:inherit"/>
-          </div>
           <button id="btnCheckout" class="btn-checkout" disabled>
             <span>CHECKOUT</span>
             <kbd>F9 / Pay</kbd>
@@ -2889,26 +2884,6 @@ body *:not(svg):not(svg *){
         }
 
         if (!state.attachedCustomer && !state.customerGateSkipped) {
-          const quickPhone = document.getElementById("quickCustomerPhone");
-          const phone = quickPhone.value.replace(/[^0-9]/g, "");
-          if (phone.length >= 9 && phone.length <= 15) {
-            let customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
-            if (!customer) {
-              const name = document.getElementById("quickCustomerName").value.trim() || "عميل " + phone;
-              customer = {id:"DEMO-"+Date.now()+"-"+Math.random().toString(36).slice(2,6),name,phone,tier:"جديد",points:0,visits:0,pastInvoices:[]};
-              DEMO_CUSTOMERS.push(customer);
-              if (!saveDemoCustomers()) { DEMO_CUSTOMERS.pop(); return; }
-            }
-            attachCustomer(customer);
-          } else if (phone.length > 0) {
-            showToast("راجع رقم العميل (من 9 إلى 15 رقم).","error");
-            quickPhone.focus();
-            return;
-          } else {
-            state.customerGateSkipped = true;
-          }
-        }
-        if (!state.attachedCustomer && !state.customerGateSkipped) {
           document.getElementById("customerCheckoutGate").hidden = false;
           document.getElementById("gatePhone").value = "";
           document.getElementById("gateNewCustomerFields").hidden = true;
@@ -3094,25 +3069,6 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
       // --- ATTACH EVENT LISTENERS ---
       function initEventListeners() {
-        const quickPhone = document.getElementById("quickCustomerPhone");
-        const quickName = document.getElementById("quickCustomerName");
-        const quickStatus = document.getElementById("quickCustomerStatus");
-        const quickDigits = () => quickPhone.value.replace(/[^0-9]/g, "");
-        const quickMatch = () => DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === quickDigits());
-        quickPhone.addEventListener("input", () => {
-          const digits = quickDigits();
-          const match = digits.length >= 9 ? quickMatch() : null;
-          quickName.hidden = !digits || digits.length < 9 || !!match;
-          if (match) quickStatus.textContent = "✓ " + match.name + " — عميل مسجل";
-          else if (digits.length >= 9) quickStatus.textContent = "عميل جديد — الاسم اختياري";
-          else quickStatus.textContent = "";
-          if (state.attachedCustomer && digits !== String(state.attachedCustomer.phone || "").replace(/[^0-9]/g, "")) detachCustomer();
-          state.customerGateSkipped = false;
-        });
-        quickPhone.addEventListener("keydown", e => {
-          if (e.key === "Enter") { e.preventDefault(); if (!quickName.hidden && !quickName.value.trim()) quickName.focus(); else openCheckout(); }
-        });
-        quickName.addEventListener("keydown", e => {if(e.key === "Enter"){e.preventDefault();openCheckout();}});
         // Search Input
         elements.mainSearchInput.addEventListener("input", handleSearchInput);
         elements.mainSearchInput.addEventListener("keydown", handleSearchKeyDown);
