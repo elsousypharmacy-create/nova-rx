@@ -1287,6 +1287,8 @@ button:focus-visible,input:focus-visible{outline:2px solid #79c9eb;outline-offse
 @media(max-height:650px) and (orientation:landscape){.top-header,.sidebar-header{height:44px;min-height:44px}.search-container{padding:7px 10px}.main-search-input{height:44px}.invoice-footer{min-height:94px;padding:6px 10px}}
 @media(orientation:portrait){body{overflow:auto;height:auto}.pos-root{height:auto;min-height:calc(100dvh - 52px);flex-direction:column;overflow:visible}.main-workspace,.customer-sidebar{width:100%;max-width:100%;min-width:0;flex:auto;height:auto}.main-workspace{min-height:70dvh}.customer-sidebar{min-height:260px}.table-container{min-height:320px;overflow-x:auto}.top-header{flex-wrap:wrap;height:auto;padding:10px}.header-actions{flex-wrap:wrap}.invoice-footer{flex-wrap:wrap}}
 
+
+#btnRefreshApp{border:1px solid #3c4b57;background:#19212a;color:#cce4f0;min-width:43px;gap:5px}#btnRefreshApp:hover{background:#263542;color:#fff}#btnRefreshApp.refreshing{opacity:.65;pointer-events:none}#btnRefreshApp.refreshing::first-letter{color:#79c9eb}@media(max-width:1050px){#btnRefreshApp .refresh-label{display:none}}
 </style>
 </head>
 <body>
@@ -1311,6 +1313,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #79c9eb;outline-offse
         </div>
 
         <div class="header-actions">
+          <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
           <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)">
             <kbd>F2</kbd> New Sale
           </button>
@@ -2574,5 +2577,23 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
     })();
   </script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=3', {updateViaCache:'none'}).catch(() => {})); }</script>
+<script>
+(function(){
+  const btn=document.getElementById('btnRefreshApp');
+  if(!btn)return;
+  btn.addEventListener('click',async()=>{
+    btn.classList.add('refreshing');
+    try{
+      if('serviceWorker' in navigator){
+        const reg=await navigator.serviceWorker.getRegistration();
+        if(reg) await reg.update();
+      }
+    }catch(e){console.warn('Update check failed',e)}
+    const url=new URL(location.href);
+    url.searchParams.set('refresh',String(Date.now()));
+    location.replace(url.href);
+  });
+})();
+</script>
 </body>
 </html>
