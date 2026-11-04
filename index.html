@@ -1859,6 +1859,7 @@ body *:not(svg):not(svg *){
 .nova-gate-secondary{background:#232b34;color:#e1e9f1;border:1px solid #465462}
 .nova-gate-cancel{background:transparent;color:#aeb9c5;border:0}
 .nova-sale-actions .nova-hold-action{background:#2a3541;border:1px solid #526476;color:#e8f2fb;font-weight:700;padding:0 10px;font-size:12px}.nova-sale-actions .nova-hold-action:hover{background:#364657}@media(max-width:420px){.nova-sale-actions .nova-hold-action{padding:0 8px}.nova-sale-actions .nova-hold-action span{font-size:11px}}
+.nova-customer-gate-card input{width:100%;box-sizing:border-box;background:#101820;border:1px solid #52687a;border-radius:9px;padding:13px;color:#fff;font-size:17px;outline:none}.nova-customer-gate-card input:focus{border-color:#6ec9f2;box-shadow:0 0 0 2px #6ec9f222}#gateCustomerResult{font-size:12px;color:#f5b7a5;min-height:0;margin-top:5px}.nova-customer-gate-card .nova-gate-primary{margin-top:10px}
 </style>
 </head>
 <body>
@@ -2072,7 +2073,11 @@ body *:not(svg):not(svg *){
     <div class="nova-customer-gate-card" dir="rtl">
       <h3 id="customerGateTitle">رقم العميل قبل الدفع</h3>
       <p>سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.</p>
-      <button type="button" id="gateFindCustomer" class="nova-gate-primary">بحث برقم العميل</button>
+      <form id="gateCustomerForm" autocomplete="off">
+        <input id="gatePhone" type="tel" inputmode="tel" dir="ltr" placeholder="رقم موبايل العميل" aria-label="رقم موبايل العميل" required />
+        <div id="gateCustomerResult" aria-live="polite"></div>
+        <button type="submit" id="gateFindCustomer" class="nova-gate-primary">متابعة بالرقم</button>
+      </form>
       <button type="button" id="gateSkipCustomer" class="nova-gate-secondary">تخطي · عميل نقدي</button>
       <button type="button" id="gateCancelCustomer" class="nova-gate-cancel">رجوع للفاتورة</button>
     </div>
@@ -2865,6 +2870,9 @@ body *:not(svg):not(svg *){
 
         if (!state.attachedCustomer && !state.customerGateSkipped) {
           document.getElementById("customerCheckoutGate").hidden = false;
+          document.getElementById("gatePhone").value = "";
+          document.getElementById("gateCustomerResult").textContent = "";
+          setTimeout(() => document.getElementById("gatePhone").focus(), 0);
           return;
         }
         document.getElementById("customerCheckoutGate").hidden = true;
@@ -3164,17 +3172,34 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           document.getElementById("customerCheckoutGate").hidden = true;
           openCheckout();
         });
-        document.getElementById("gateFindCustomer").addEventListener("click", () => {
-          state.customerGatePending = true;
+        document.getElementById("gateCustomerForm").addEventListener("submit", e => {
+          e.preventDefault();
+          const raw = document.getElementById("gatePhone").value;
+          const phone = raw.replace(/[^0-9]/g, "");
+          const result = document.getElementById("gateCustomerResult");
+          if (phone.length < 9 || phone.length > 15) {
+            result.textContent = "راجع رقم الموبايل (من 9 إلى 15 رقم).";
+            return;
+          }
+          let customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
+          if (!customer) {
+            customer = { id:"DEMO-" + Date.now(), name:phone, phone, tier:"جديد", points:0, visits:0, pastInvoices:[] };
+            DEMO_CUSTOMERS.push(customer);
+            showToast("تم إضافة عميل تجريبي جديد.");
+          }
+          attachCustomer(customer);
+          state.customerGatePending = false;
+          result.textContent = "";
           document.getElementById("customerCheckoutGate").hidden = true;
-          setSearchMode("CUSTOMER");
-          elements.mainSearchInput.focus();
+          setSearchMode("PRODUCT");
+          openCheckout();
         });
         document.getElementById("gateCancelCustomer").addEventListener("click", () => {
           state.customerGatePending = false;
           document.getElementById("customerCheckoutGate").hidden = true;
+          elements.mainSearchInput.focus();
         });
-        document.getElementById("checkoutAddCustomer").addEventListener("click", () => { closeCheckout(); setSearchMode("CUSTOMER"); elements.mainSearchInput.focus(); });
+        document.getElementById("checkoutAddCustomer").addEventListener("click", () => { closeCheckout(); state.customerGateSkipped = false; openCheckout(); });
         elements.btnCloseCheckout.addEventListener("click", closeCheckout);
         elements.btnCancelCheckout.addEventListener("click", closeCheckout);
         elements.btnConfirmPayment.addEventListener("click", confirmPayment);
