@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "NOVA Rx | صيدلية السوسي",
+  "short_name": "NOVA Rx",
+  "description": "Pharmacy point of sale preview",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#090a0d",
+  "theme_color": "#090a0d",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
