@@ -2971,6 +2971,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
    Please retain this slip for returns.
 ========================================`;
 
+        try{window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:String(invNumber),customer:state.attachedCustomer?.name||'عميل نقدي',items:state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}}))}catch(e){}
         elements.receiptSlipContent.textContent = slip;
         closeCheckout();
         elements.receiptModal.classList.add("active");
@@ -3657,6 +3658,20 @@ const page='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"
 const win=window.open('','_blank');if(!win){alert('اسمح بفتح نافذة الطباعة من المتصفح');return}win.document.open();win.document.write(page);win.document.close();win.focus();setTimeout(()=>win.print(),350);
 };
 update();
+
+const queueKey='nova.label.invoices.v1';let labelQueue=[];try{labelQueue=JSON.parse(localStorage.getItem(queueKey))||[]}catch(e){}
+const queueBox=document.createElement('div');queueBox.id='nlInvoiceQueue';queueBox.style.cssText='background:#1a2735;border:1px solid #43546a;border-radius:12px;padding:12px;margin-bottom:14px';document.querySelector('.nova-label-editor').prepend(queueBox);
+const chips=document.createElement('div');chips.innerHTML='<div style="font:700 12px Cairo;color:#c5d4e7;margin:7px 0">اختيارات سريعة للتعليمات (راجعها قبل الطباعة)</div>'+['بعد الأكل','قبل الأكل','عند اللزوم','حسب تعليمات الطبيب'].map(x=>'<button type="button" class="nlQuick" style="background:#293d55;color:white;border:1px solid #50637a;border-radius:8px;padding:7px;margin:3px;font:600 11px Cairo">'+x+'</button>').join('');get('nlNotes').parentNode.after(chips);
+chips.onclick=e=>{if(e.target.classList.contains('nlQuick')){get('nlNotes').value+=(get('nlNotes').value?' — ':'')+e.target.textContent;update()}};
+const extra=document.createElement('div');extra.className='nova-label-grid';extra.innerHTML='<label class="nova-label-field">العمر<input id="nlAge" placeholder="سنوات أو شهور"></label><label class="nova-label-field">الوزن (كجم)<input id="nlWeight" type="number" min="0"></label><label class="nova-label-field">الحالة<select id="nlSafety"><option value="none">غير محدد</option><option value="child">طفل</option><option value="pregnant">حامل</option><option value="breast">مرضعة</option></select></label><label class="nova-label-field">نوع الورق<select id="nlPaper"><option value="single">ملصق واحد</option><option value="duo">ورق نصين</option></select></label><label class="nova-label-field">التصميم<select id="nlStyle"><option value="full">كامل</option><option value="compact">مختصر</option></select></label>';get('nlPatient').closest('.nova-label-grid').after(extra);
+const warning=document.createElement('p');warning.style.cssText='color:#f4c883;font:600 12px Cairo';warning.textContent='تعليمات الاستعمال والجرعات لازم يراجعها الصيدلي، خصوصًا للأطفال والحمل والرضاعة.';extra.after(warning);
+const approval=document.createElement('label');approval.style.cssText='display:block;color:#c5d4e7;font:600 12px Cairo;margin:12px 0';approval.innerHTML='<input id="nlApproved" type="checkbox"> راجعت تعليمات الدواء وأوافق على الطباعة';get('nlPrint').parentNode.before(approval);
+const originalPrint=get('nlPrint').onclick;get('nlPrint').onclick=e=>{if(!get('nlApproved').checked){alert('راجع التعليمات وأكد الموافقة قبل الطباعة');return}originalPrint(e)};
+const settingsKey='nova.label.print.settings';try{const st=JSON.parse(localStorage.getItem(settingsKey))||{};['nlSize','nlCopies','nlPaper','nlStyle'].forEach(id=>{if(st[id]!=null)get(id).value=st[id]})}catch(e){}
+['nlSize','nlCopies','nlPaper','nlStyle'].forEach(id=>get(id).onchange=()=>{const o={};['nlSize','nlCopies','nlPaper','nlStyle'].forEach(k=>o[k]=get(k).value);localStorage.setItem(settingsKey,JSON.stringify(o))});
+const drawQueue=()=>{queueBox.innerHTML='<b style="color:#dce9f8;font:700 13px Cairo">فواتير NOVA Rx</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+(labelQueue.length?labelQueue.slice(0,15).map((q,i)=>'<button type="button" data-q="'+i+'" style="background:#263a52;color:#fff;border:1px solid #4c6380;border-radius:8px;padding:8px;font:600 11px Cairo">#'+String(q.id).replace(/[<>&"]/g,'')+' · '+q.items.length+' صنف</button>').join(''):'<small style="color:#9aadc2">هنا هتظهر الفواتير بعد إتمام البيع</small>')+'</div><small style="display:block;color:#93a9bd;margin-top:8px">اختار فاتورة، وبعدها راجع كل دواء قبل طباعة استيكره.</small>'};
+queueBox.onclick=e=>{const b=e.target.closest('[data-q]');if(!b)return;const q=labelQueue[Number(b.dataset.q)];if(!q)return;get('nlPatient').value=q.customer==='عميل نقدي'?'':q.customer;get('nlMedicine').value=q.items[0]?.name||'';get('nlNotes').value='';get('nlDose').value='';get('nlApproved').checked=false;update();if(q.items.length>1)alert('الفاتورة فيها '+q.items.length+' أصناف؛ النسخة دي بتفتح أول صنف فقط، والباقي يحتاج اختيار منفصل.')};
+window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;labelQueue.unshift(q);labelQueue=labelQueue.slice(0,40);try{localStorage.setItem(queueKey,JSON.stringify(labelQueue))}catch(e){}drawQueue();document.getElementById('novaLabelsPanel').classList.add('open')});drawQueue();
 })();
 </script>
 </body>
