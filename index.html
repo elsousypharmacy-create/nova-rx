@@ -1806,6 +1806,16 @@ body *:not(svg):not(svg *){
 .customer-sidebar .cust-actions-bar{justify-content:flex-end!important;margin-top:4px!important}
 .customer-sidebar .cust-remove-icon{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.35);border-radius:7px;color:#f87171;cursor:pointer}
 .customer-sidebar .cust-remove-icon:hover,.customer-sidebar .cust-remove-icon:focus-visible{background:rgba(239,68,68,.19);outline:1px solid #ef4444}
+
+/* NOVA Rx UX pass 06 — centered customer identity and compact tier/action row */
+.customer-sidebar .cust-card-compact .cust-card-top{display:flex!important;justify-content:center!important;text-align:center!important}
+.customer-sidebar .cust-card-compact .cust-identity{width:100%!important;min-width:0!important;text-align:center!important}
+.customer-sidebar .cust-card-compact .cust-name{width:100%!important;text-align:center!important;font-size:15px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.customer-sidebar .cust-card-compact .cust-phone{text-align:center!important;margin-top:3px!important}
+.customer-sidebar .cust-secondary-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.customer-sidebar .cust-secondary-actions{display:flex;align-items:center;gap:5px}
+.customer-sidebar .cust-secondary-row .cust-stat-pill{margin:0!important}
+.customer-sidebar .cust-secondary-actions .cust-history-search-icon,.customer-sidebar .cust-secondary-actions .cust-remove-icon{width:30px;height:30px;flex:0 0 30px}
 </style>
 </head>
 <body>
@@ -1986,16 +1996,18 @@ body *:not(svg):not(svg *){
           <div class="cust-card cust-card-compact">
             <div class="cust-card-top">
               <div class="cust-identity">
-                <div class="cust-name-actions"><div id="custCardName" class="cust-name" dir="auto"></div><button type="button" id="btnHistorySearch" class="cust-history-search-icon" aria-label="البحث في المنتجات السابقة" title="بحث" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button></div>
+                <div id="custCardName" class="cust-name" dir="auto"></div>
                 <div id="custCardPhone" class="cust-phone" dir="ltr"></div>
               </div>
+            </div>
+            <div class="cust-secondary-row">
               <span id="custCardTier" class="cust-stat-pill tier-gold"></span>
+              <div class="cust-secondary-actions"><button type="button" id="btnHistorySearch" class="cust-history-search-icon" aria-label="البحث في المنتجات السابقة" title="بحث" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button><button id="btnRemoveCust" class="cust-remove-icon" type="button" title="إزالة العميل" aria-label="إزالة العميل"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"></path></svg></button></div>
             </div>
             <div class="cust-stats-row cust-stats-compact">
               <div class="cust-stat-pill">الزيارات <strong id="custCardVisits">0</strong></div>
               <div class="cust-stat-pill">النقاط <strong id="custCardPoints">0</strong></div>
             </div>
-            <div class="cust-actions-bar"><button id="btnRemoveCust" class="cust-remove-icon" type="button" title="إزالة العميل" aria-label="إزالة العميل"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"></path></svg></button></div>
           </div>
           <details class="cust-extra-details" id="custExtraDetails">
             <summary>تفاصيل العميل <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
@@ -3026,6 +3038,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         historySearchButton.addEventListener("click", () => {
           const input = elements.historySearchInput;
           const opening = input.hidden;
+          if (opening) document.getElementById("custExtraDetails").open = true;
           input.hidden = !opening;
           historySearchButton.setAttribute("aria-expanded", String(opening));
           if (opening) input.focus();
