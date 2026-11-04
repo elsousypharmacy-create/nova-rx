@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA Rx | صيدلية السوسي</title>
-  
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#0A0B0E">
   <meta name="application-name" content="NOVA Rx">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NOVA Rx">
   <meta name="mobile-web-app-capable" content="yes">
-  
-  
-  
+  <link rel="manifest" href="/manifest.webmanifest?v=3">
+  <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.svg">
   <style>
     :root {
       --bg-base: #08090b;
@@ -1418,43 +1418,6 @@ html,body{min-width:0}
 @media(max-width:780px){.nova-nav{padding-inline:6px}.nova-tab{font-size:11px;padding:6px 8px}.nova-lang-switch{position:sticky;inset-inline-end:0;z-index:3;background:#1b2026}.nova-page-view{padding:12px}.nova-kpis{gap:8px}}
 
 
-/* v12 — unified tablet POS layout: one responsive grid, no overlapping widths */
-@media (orientation:landscape) and (min-width:781px){
- .pos-root{display:grid!important;grid-template-columns:minmax(0,1fr) clamp(230px,28%,330px);gap:10px;padding:10px;min-width:0;box-sizing:border-box;background:#0b1016}
- .main-workspace,.customer-sidebar{flex:none!important;width:auto!important;max-width:none!important;min-width:0!important;height:100%;min-height:0;border:1px solid #2c3a46;border-radius:12px;overflow:hidden;background:#111922}
- .main-workspace{grid-column:1;grid-row:1}
- .customer-sidebar{grid-column:2;grid-row:1}
- .top-header,.sidebar-header{background:#17232e;border-bottom:1px solid #30404e;padding-inline:12px}
- .search-container{background:#111922;padding:10px 12px;min-width:0}
- .main-search-input{border-radius:10px;background:#0b141d!important}
- .table-container{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;background:#111922}
- .invoice-footer{display:flex;flex:0 0 auto;flex-wrap:wrap;max-height:42%;overflow-y:auto;background:#17232e;border-top:1px solid #30404e;padding:10px 12px;gap:9px}
- .discount-controls,.totals-breakdown{min-width:0;flex:1 1 185px}
- .checkout-action-box{flex:0 0 125px;width:125px;min-width:125px;align-self:stretch}
- .btn-checkout{min-height:56px;border-radius:10px}
- .sidebar-body{min-height:0;overflow-y:auto;background:#111922;padding:12px}
- .cust-card,.past-inv-card{border-radius:10px}
-}
-@media (orientation:landscape) and (min-width:781px) and (max-width:1100px){
- .pos-root{grid-template-columns:minmax(0,1fr) clamp(215px,29%,285px);gap:8px;padding:8px}
- .top-header{padding-inline:8px}
- .invoice-footer{padding:8px;gap:7px}
- .checkout-action-box{flex-basis:100%;width:100%;min-width:0}
- .btn-checkout{min-height:48px}
-}
-html[dir="rtl"] .pos-root{direction:rtl}
-html[dir="ltr"] .pos-root{direction:ltr}
-
-/* v10 — keep tablet content within the visible viewport edges */
-html,body{max-width:100%;overflow-x:hidden}
-body{width:100%!important;min-width:0}
-.pos-root{box-sizing:border-box;min-width:0;max-width:100%;width:100%!important}
-.pharmacy-brand-banner,.nova-nav,.pos-root{padding-left:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}
-.pharmacy-brand-banner,.nova-nav{box-sizing:border-box}
-.modal-backdrop{width:100%!important;max-width:100%;box-sizing:border-box}
-.modal-card{min-width:0;max-width:min(100%,700px)}
-.nova-page-view,.table-container,.sidebar-body{min-width:0;box-sizing:border-box}
-
 /* v9 — tablet viewport and edge clipping repair */
 html{width:100%;height:100%;overflow:hidden}
 body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-direction:column}
@@ -1504,145 +1467,33 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 }
 
 
-/* Black Edition — foundation applied to existing NOVA Rx without replacing application logic */
-:root{--bg-base:#06080B;--bg-panel:#0D1117;--bg-surface:#161B22;--bg-surface-hover:#1F242C;--bg-surface-active:#282E38;--border-subtle:#21262D;--border-focus:#38BDF8;--text-main:#F0F6FC;--text-muted:#8B949E;--text-dim:#586069;--accent-cyan:#0284C7;--accent-cyan-light:#38BDF8;--accent-green:#10B981;--accent-red:#DA3633;--accent-amber:#D29922}
-html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#06080B;color:#F0F6FC}
-button,input,select,textarea{font-family:inherit}
-button{touch-action:manipulation}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #38BDF8;outline-offset:2px}
-.pharmacy-mark{display:flex;align-items:center;justify-content:center;background:#0D1117;border:1px solid #30363D;border-radius:12px}
-.pharmacy-mark svg{width:32px;height:32px;flex:none}
-@media (orientation:landscape) and (min-width:781px){
- .pos-root{grid-template-columns:minmax(0,72fr) minmax(0,28fr)!important;gap:0!important;padding:0!important}
- .main-workspace,.customer-sidebar{width:auto!important;min-width:0!important;max-width:none!important;border-radius:0!important}
- .customer-sidebar{border-inline-start:1px solid #30363D}
- .invoice-footer{max-height:42%;overflow-y:auto}
+/* NOVA Rx classic layout refinement: retain original components and behavior */
+@media (min-width: 850px) and (orientation: landscape) {
+ .pos-root{display:flex;flex-direction:row-reverse;min-height:0}
+ .main-workspace{flex:1 1 72%;width:72%;min-width:0}
+ .customer-sidebar{flex:0 0 28%;width:28%;min-width:0;max-width:28%}
 }
-@media (pointer:coarse){.nova-tab,.nova-lang-btn,.pay-method-btn,.quick-cash-btn{min-height:44px}.btn-checkout{min-height:48px}}
-
-/* Touch-safe settings and controls */
-.nova-settings-grid input:not([type="checkbox"]),.nova-settings-grid select{width:100%;min-height:44px;padding:9px;border:1px solid #30363D;border-radius:8px;background:#161B22;color:#F0F6FC}
-.nova-settings-grid label{display:flex;flex-direction:column;gap:8px;margin:12px 0;font-size:13px}
-.nova-settings-grid label:has(input[type="checkbox"]){flex-direction:row;align-items:center}
-.nova-settings-grid input[type="checkbox"]{width:22px;height:22px;accent-color:#0284C7}
-@media(pointer:coarse){.nova-data-table button,.nova-page-header button{min-width:44px;min-height:44px}}
-
-/* Focus Mode: keep only search, invoice, customer and checkout visible */
-.pharmacy-brand-banner{position:relative;z-index:25;min-height:52px;height:52px;background:#0D1117;border-bottom:1px solid #21262D}
-.pharmacy-banner-live,.pharmacy-banner-phone{display:none!important}
-.nova-menu-toggle{margin-inline-start:auto;min-width:44px;min-height:44px;padding:0 12px;border:1px solid #30363D;border-radius:9px;background:#161B22;color:#F0F6FC;font-size:13px;cursor:pointer}
-.nova-nav{display:none!important;position:absolute;z-index:30;top:52px;inset-inline:8px;width:auto!important;height:auto!important;max-height:calc(100dvh - 65px);overflow:auto;background:#161B22;border:1px solid #30363D;border-radius:12px;padding:10px;box-shadow:0 18px 35px #0009;flex-wrap:wrap;gap:8px}
-.nova-nav.nova-nav-open{display:flex!important}
-.nova-nav .nova-tab{min-height:44px;flex:1 1 120px}
-.nova-nav .nova-lang-switch{margin-inline-start:auto}
-.pos-root{height:calc(100dvh - 52px)!important}
-.nova-page-view:not([hidden]){height:calc(100dvh - 52px)!important;overflow:auto}
-.nova-discount-toggle{min-height:44px;min-width:90px;padding:8px 12px;border:1px solid #30363D;border-radius:8px;background:#161B22;color:#10B981;cursor:pointer}
-.invoice-footer .discount-controls{display:none!important}
-.invoice-footer.nova-discount-open .discount-controls{display:block!important;flex:1 1 180px}
-.invoice-footer .totals-breakdown .tot-row:not(.grand-total){display:none}
-.invoice-footer .totals-breakdown{flex:1 1 auto;min-width:130px}
-.invoice-footer .checkout-action-box{flex:0 0 150px;width:150px;min-width:0}
-.invoice-footer{align-items:center;gap:10px;max-height:46%;overflow:auto}
-.customer-empty-sub{display:none!important}
-.customer-empty-box{gap:12px}
-@media(orientation:landscape) and (min-width:781px){.pos-root{grid-template-columns:minmax(0,72fr) minmax(0,28fr)!important}.main-workspace,.customer-sidebar{height:100%!important}}
-@media(orientation:landscape) and (max-width:1100px){.invoice-footer .checkout-action-box{flex-basis:120px;width:120px}}
-
-/* Single-row POS command bar: no redundant second/third header rows */
-.nova-command-row{display:flex;align-items:stretch;gap:10px;padding:10px 12px;background:#0D1117;border-bottom:1px solid #21262D;position:relative;z-index:8;min-width:0}
-.nova-command-row .search-container{flex:1 1 auto;min-width:0;padding:0;background:transparent}
-.nova-command-row .search-box-wrapper{min-width:0;height:100%}
-.nova-command-row .main-search-input{min-height:48px;height:100%}
-.nova-command-actions{display:flex;align-items:center;gap:8px;position:relative;flex:0 0 auto}
-.nova-command-actions>.btn{min-height:48px;min-width:48px;white-space:nowrap;border-radius:9px}
-.nova-command-actions #novaMoreActions{font-size:23px;line-height:1}
-.nova-more-panel{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:205px;max-width:min(280px,80vw);padding:8px;border:1px solid #30363D;border-radius:12px;background:#161B22;box-shadow:0 14px 30px #0009;z-index:20;flex-direction:column;gap:6px}
-.nova-more-panel:not([hidden]){display:flex}
-.nova-more-panel .btn{min-height:44px;width:100%;justify-content:flex-start}
-.nova-mode-compat{display:none!important}
-@media(max-width:1000px){.nova-command-row{gap:6px;padding:8px}.nova-command-actions{gap:5px}.nova-command-actions #btnNewSale{padding-inline:8px}.nova-command-row .search-hints{display:none}}
-
-/* Tablet POS usability: customer is a primary action, clear visual hierarchy */
-.nova-command-row{padding:9px 12px;gap:8px;align-items:center}
-.nova-command-row .search-container{margin:0;min-width:0}
-.nova-command-row .search-box-wrapper{border-radius:10px;min-height:50px}
-.nova-command-row .main-search-input{font-size:15px;min-height:50px}
-.nova-command-actions{gap:7px}
-.nova-command-actions #btnAddLoyalty{background:#173449;color:#7DD3FC;border:1px solid #285572}
-.nova-command-actions #btnNewSale,.nova-command-actions #novaMoreActions{background:#161B22;color:#F0F6FC;border:1px solid #30363D}
-.nova-command-actions>.btn{font-size:13px;font-weight:600;padding:0 12px}
-.nova-command-actions>.btn:focus-visible,.nova-menu-toggle:focus-visible{outline:2px solid #38BDF8;outline-offset:2px}
-.invoice-table th{font-size:11px;color:#8B949E;font-weight:600}
-.invoice-table td{font-size:13px}
-.customer-sidebar .sidebar-header{min-height:46px}
-.customer-sidebar .sidebar-title{font-size:13px;font-weight:600}
-.customer-empty-box{padding:18px 10px}
-.customer-empty-box #btnAttachLoyalty{min-height:44px}
-@media(min-width:781px) and (max-width:1100px){.nova-command-actions>.btn{padding:0 9px}.invoice-table th,.invoice-table td{padding-inline:6px}.customer-sidebar{min-width:0}}
-@media(max-width:850px){.nova-command-actions #btnNewSale span:last-child{display:none}.nova-command-actions #btnNewSale{font-size:20px}.nova-command-actions #btnAddLoyalty span{display:none}}
-
-/* Primary actions live in top bar, opposite Sale heading; no duplicated branding */
-.pharmacy-brand-banner{display:flex!important;align-items:center!important;gap:10px;padding-inline:14px;height:60px!important;min-height:60px!important}
-.nova-sale-heading{font-size:17px;font-weight:700;color:#F0F6FC;white-space:nowrap;margin-inline-end:auto}
-.pharmacy-brand-banner .nova-command-actions{display:flex;align-items:center;position:relative;gap:7px;margin-inline-start:0}
-.pharmacy-brand-banner .nova-command-actions>.btn{min-height:44px;min-width:44px}
-.pharmacy-brand-banner #novaMenuToggle{margin-inline-start:0;order:5}
-.pharmacy-brand-banner .pharmacy-banner-right{display:none!important}
-.nova-nav{top:60px!important}
-.pos-root{height:calc(100dvh - 60px)!important}
-.nova-page-view:not([hidden]){height:calc(100dvh - 60px)!important}
-.nova-command-row{padding:8px 12px}
-@media(max-width:850px){.pharmacy-brand-banner{padding-inline:8px;gap:5px}.nova-sale-heading{font-size:15px}.pharmacy-brand-banner .nova-command-actions>.btn{padding-inline:7px}.pharmacy-brand-banner #novaMenuToggle span{display:none}}
-.nova-sale-heading{display:flex;align-items:center;gap:9px}.nova-sale-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px}
-
-/* Customer profile physically on the left; invoice workspace on the right */
-@media (orientation:landscape) and (min-width:781px){
- .pos-root{direction:ltr!important;grid-template-columns:minmax(230px,28fr) minmax(0,72fr)!important}
- .pos-root>.customer-sidebar{grid-column:1!important;grid-row:1!important;direction:rtl!important}
- .pos-root>.main-workspace{grid-column:2!important;grid-row:1!important;direction:rtl!important}
-}
-@media (orientation:portrait), (max-width:780px){.pos-root>.customer-sidebar{order:1}.pos-root>.main-workspace{order:0}}
-
-/* Screenshot-driven compact checkout layout, 1280x800 landscape */
-.pharmacy-brand-banner{height:54px!important;min-height:54px!important}
-.nova-nav{top:54px!important}
-.pos-root{height:calc(100dvh - 54px)!important}
-.nova-page-view:not([hidden]){height:calc(100dvh - 54px)!important}
-.nova-command-row{padding:7px 10px!important}
-.nova-command-row .main-search-input{min-height:46px!important;font-size:15px!important}
-.nova-command-row .search-box-wrapper{min-height:46px!important}
-.invoice-footer{padding:8px 10px!important;gap:8px!important}
-.invoice-footer .totals-breakdown .tot-row:not(.grand-total){display:none!important}
-.invoice-footer .discount-controls{display:none!important}
-.invoice-footer.nova-discount-open .discount-controls{display:block!important}
-.customer-empty-box .customer-empty-sub{display:none!important}
-.customer-empty-box{border:none!important;background:transparent!important;min-height:0!important;padding:20px 10px!important}
-.customer-empty-box svg{width:26px!important;height:26px!important}
-.customer-empty-box .customer-empty-text{font-size:14px!important}
-.customer-sidebar .sidebar-header{padding-block:9px!important}
-@media (orientation:landscape) and (min-width:781px){.pos-root{grid-template-columns:minmax(230px,28fr) minmax(0,72fr)!important;direction:ltr!important}.pos-root>.customer-sidebar{grid-column:1!important;grid-row:1!important}.pos-root>.main-workspace{grid-column:2!important;grid-row:1!important}}
-.nova-settings-grid .nova-lang-switch{display:flex;justify-content:flex-start;margin:10px 0 0;width:max-content}.nova-settings-grid .nova-lang-btn{min-height:44px;min-width:76px;font-size:13px}
+.top-header{height:44px;min-height:44px;padding:0 10px;gap:8px}
+.task-badge{display:none!important}
+.header-actions{gap:5px;flex-wrap:nowrap}
+.header-actions .btn{padding:6px 9px;min-height:34px;font-size:11px;white-space:nowrap}
+.header-actions kbd{display:none}
+.search-container{padding-top:7px;padding-bottom:7px}
+.invoice-footer{padding-top:7px;padding-bottom:7px}
+.discount-title span:last-child{display:none}
+.nova-nav{gap:4px;padding:3px 10px;min-height:39px;height:39px}
+.nova-tab{padding:6px 10px}
+.nova-settings-grid .nova-lang-switch{display:flex;margin:12px 0 0;width:max-content}
+.nova-settings-grid .nova-lang-btn{min-width:75px;min-height:40px;font-size:13px}
+@media(max-width:1100px) and (orientation:landscape){.header-actions .btn{padding:6px 7px;font-size:10px}.top-header{padding:0 8px}.nova-nav{height:38px;min-height:38px}}
 </style>
 </head>
 <body>
   <div class="pharmacy-brand-banner" role="banner" dir="rtl">
-  <div class="nova-sale-heading"><span class="nova-sale-logo"><svg viewBox="0 0 48 48" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 14L24 6l16 8v13c0 9-7 14-16 17C15 41 8 36 8 27V14Z" stroke="#38BDF8" stroke-width="2.5"/><path d="M17 17h14M24 10v14M16 29h16M19 25c0 8 10 8 10 0" stroke="#F0F6FC" stroke-width="2.5" stroke-linecap="round"/><path d="M21 35h6" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/></svg></span><span>البيع</span></div>
-  <button type="button" id="novaMenuToggle" class="nova-menu-toggle" aria-controls="novaMainNav" aria-expanded="false" aria-label="القائمة">☰ <span>القائمة</span></button>
-        <div class="nova-command-actions">
-          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">＋ <span>Customer</span></button>
-          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)"><span>＋</span> <span>New Sale</span></button>
-          <button type="button" id="novaMoreActions" class="btn btn-secondary" aria-expanded="false" aria-controls="novaMorePanel" aria-label="More actions">⋯</button>
-          <div id="novaMorePanel" class="nova-more-panel" hidden>
-            
-            <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">Clear</button>
-            <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">Help</button>
-            <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
-          </div>
-        </div>
+  <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true">س</div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
   <div class="pharmacy-banner-right"><span class="pharmacy-banner-live"><b></b> NOVA Rx POS</span><span class="pharmacy-banner-phone" dir="ltr">01143404023</span></div>
 </div>
-  <nav id="novaMainNav" class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
+  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
   </nav>
@@ -1651,17 +1502,58 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
     <!-- LEFT WORKSPACE (~72%) -->
     <main class="main-workspace">
       <!-- Top App Bar -->
-      <!-- One compact command row: search + primary action + overflow menu -->
-      <div class="nova-command-row">
-        <div class="search-container">
-          <div class="search-box-wrapper">
-            <div id="searchModeTag" class="search-mode-tag customer">Customer</div>
-            <input type="text" id="mainSearchInput" class="main-search-input" placeholder="Search customer by name or phone... (Press Enter to skip)" autocomplete="off" spellcheck="false" autofocus>
-            <div class="search-hints"><span id="searchHintText">Enter: Select / Skip</span><kbd>Esc</kbd></div>
+      <header class="top-header">
+        <div class="brand-section">
+          <div class="brand-logo">
+            NOVA <span class="rx">Rx</span>
           </div>
-          <div id="suggestionsBox" class="suggestions-dropdown"></div>
+          <span class="task-badge">TASK-001</span>
+          <div id="modePill" class="status-pill customer-mode">
+            <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
+            <span id="modePillText">Customer Search Mode</span>
+          </div>
         </div>
-        <div class="nova-mode-compat" hidden><div id="modePill" class="status-pill customer-mode"><span id="modePillText">Customer Search Mode</span></div></div>
+
+        <div class="header-actions">
+          <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
+          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)">
+            <kbd>F2</kbd> New Sale
+          </button>
+          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">
+            <kbd>F3</kbd> Add Loyalty
+          </button>
+          <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">
+            <kbd>F4</kbd> Clear
+          </button>
+          <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">
+            <kbd>?</kbd> Help
+          </button>
+        </div>
+      </header>
+
+      <!-- Unified Main Search Bar -->
+      <div class="search-container">
+        <div class="search-box-wrapper">
+          <div id="searchModeTag" class="search-mode-tag customer">
+            Customer
+          </div>
+          <input 
+            type="text" 
+            id="mainSearchInput" 
+            class="main-search-input" 
+            placeholder="Search customer by name or phone... (Press Enter to skip)"
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+          >
+          <div class="search-hints">
+            <span id="searchHintText">Enter: Select / Skip</span>
+            <kbd>Esc</kbd>
+          </div>
+        </div>
+
+        <!-- Autocomplete Suggestions List -->
+        <div id="suggestionsBox" class="suggestions-dropdown"></div>
       </div>
 
       <!-- Line Items Table (Dense View) -->
@@ -1696,9 +1588,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
       </div>
 
       <!-- Invoice Footer & Totals Section -->
-      <footer class="invoice-footer"><button type="button" id="novaDiscountToggle" class="nova-discount-toggle" aria-controls="novaDiscountControls" aria-expanded="false">٪ الخصم</button>
+      <footer class="invoice-footer">
         <!-- Overall Discounts -->
-        <div class="discount-controls" id="novaDiscountControls">
+        <div class="discount-controls">
           <div class="discount-title">
             <span>Overall Invoice Discount</span>
             <span style="font-size:10px; color:var(--text-dim);">No negative total floor</span>
@@ -2891,7 +2783,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
     })();
   </script>
-
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=3', {updateViaCache:'none'}).catch(() => {})); }</script>
 <script>
 (function(){
   const btn=document.getElementById('btnRefreshApp');
@@ -2917,7 +2809,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tabs=[...document.querySelectorAll('.nova-tab')];
  const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const money=n=>(Number(n)||0).toFixed(2)+(localStorage.getItem('nova-rx-language')==='en'?' SAR':' ر.س');
+ const money=n=>(Number(n)||0).toFixed(2)+' ر.س';
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div></div>';
@@ -2941,7 +2833,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  }else if(page==='invoices'){
  const list=filtered(inv,['id','customer','date','branch']);
  content=head(title,'فواتير سابقة من بيانات العرض — ليست سجل مبيعات محفوظًا',true)
- 
+ +'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
  +table(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+money(i.total)+'</td><td>'+esc((i.items||[]).length)+'</td></tr>'));
  }else if(page==='reports'){
  const sum=inv.reduce((s,i)=>s+i.total,0);
@@ -2950,19 +2842,13 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div>';
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>إعدادات الإيصال</h3><label>عرض الورق <select id="novaPaper"><option value="80">80mm</option><option value="58">58mm</option></select></label><label>عنوان الصيدلية <input id="novaAddress" autocomplete="off" placeholder="العنوان"></label><label>الرقم الضريبي <input id="novaTaxId" autocomplete="off" placeholder="الرقم الضريبي"></label></div><div class="nova-setting-card"><h3>الضريبة والصوت</h3><label><input id="novaVat" type="checkbox"> ضريبة 15% (إعداد عرض فقط)</label><label><input id="novaAudio" type="checkbox"> صوت التنبيه عند الضغط</label><p>لا يغير هذا الإعداد محرك حسابات البيع الحالي.</p></div><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة عرض النظام</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>بيانات تجريبية محلية — لا يوجد اتصال بقاعدة بيانات الصيدلية.</p></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div></div>';
  }
  view.innerHTML=content;
- if(page==='settings'){
-  const defaults={paper:'80',address:'',taxId:'',vat:true,audio:false};let settings;try{settings={...defaults,...JSON.parse(localStorage.getItem('nova-rx-settings')||'{}')}}catch{settings=defaults}
-  const ids={novaPaper:'paper',novaAddress:'address',novaTaxId:'taxId',novaVat:'vat',novaAudio:'audio'};
-  Object.entries(ids).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='checkbox')el.checked=!!settings[key];else el.value=settings[key];el.addEventListener('change',()=>{settings[key]=el.type==='checkbox'?el.checked:el.value;try{localStorage.setItem('nova-rx-settings',JSON.stringify(settings))}catch(e){console.warn('Settings storage unavailable',e)}})})
- }
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
  function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
- document.addEventListener('nova-language-changed',()=>{const page=location.hash.slice(1);if(page&&page!=='sale')render(page)});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
  switchPage(location.hash.slice(1)||'sale');
@@ -3008,15 +2894,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'Customer Profile':'ملف العميل','Purchase History':'سجل المشتريات',
  'No items found':'لا توجد أصناف','items':'أصناف'
  };
- // Normalize the legacy mixed-direction dictionary once: English UI strings
- // must never be translated into Arabic while English mode is active.
- const enToAr={};
- for(const [source,target] of Object.entries(arToEn)){
-  const sourceAr=/[\u0600-\u06FF]/.test(source);
-  const targetAr=/[\u0600-\u06FF]/.test(target);
-  if(sourceAr&&!targetAr)enToAr[target]=source;
-  else if(!sourceAr&&targetAr){enToAr[source]=target;arToEn[target]??=source;delete arToEn[source]}
- }
+ const enToAr={};for(const [ar,en] of Object.entries(arToEn)){if(/[\u0600-\u06FF]/.test(ar)&&!/[\u0600-\u06FF]/.test(en))enToAr[en]=ar;else if(!/[\u0600-\u06FF]/.test(ar)&&/[\u0600-\u06FF]/.test(en))enToAr[ar]=en;}
  const arOverrides={'Sales':'البيع','Invoices':'الفواتير','Products':'المنتجات','Customers':'العملاء','Reports':'التقارير','Settings':'الإعدادات','Demo':'نسخة تجريبية','Point of Sale':'نظام نقاط البيع','Elsousy Pharmacy':'صيدلية السوسي','Dr. Ahmed Elsousy':'د. أحمد السوسي','Name':'الاسم','Phone':'الهاتف','Visits':'الزيارات','Points':'النقاط','Amount':'القيمة','Date':'التاريخ','Stock':'الرصيد','Category':'التصنيف'};
  Object.assign(enToAr,arOverrides);
  const arabicSource=new Set(Object.keys(arToEn).filter(x=>/[\u0600-\u06FF]/.test(x)));
@@ -3026,9 +2904,13 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   const trimmed=text.trim();if(!trimmed)return text;
   const dict=lang==='en'?arToEn:enToAr;
   if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
-  // Only translate exact, registered UI labels. Never rewrite fragments of
-  // product names, customer data, amounts, or other dynamically rendered text.
-  return text;
+  let next=text;
+  // Longer UI phrases first, but do not translate user/product data
+  for(const [a,b] of Object.entries(dict).sort((a,b)=>b[0].length-a[0].length)){
+   if(a.length<7)continue;
+   if(next.includes(a))next=next.split(a).join(b);
+  }
+  return next;
  }
  function uiText(node){
   const parent=node.parentElement;
@@ -3073,27 +2955,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  let scheduled=false;
  const observer=new MutationObserver(()=>{if(busy||scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;apply()})});
  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
- document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);document.dispatchEvent(new Event('nova-language-changed'));apply()}));
+ document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);apply()}));
  apply();
-})();
-</script>
-<script>
-/* Focus Mode: menu and optional invoice discount, without replacing sale logic */
-(function(){
- const menu=document.getElementById('novaMenuToggle'),nav=document.getElementById('novaMainNav');
- if(menu&&nav){const close=()=>{nav.classList.remove('nova-nav-open');menu.setAttribute('aria-expanded','false')};menu.addEventListener('click',()=>{const open=nav.classList.toggle('nova-nav-open');menu.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('[data-page]'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.addEventListener('click',e=>{if(!nav.contains(e.target)&&!menu.contains(e.target))close()})}
- const discount=document.getElementById('novaDiscountToggle'),footer=document.querySelector('.invoice-footer');
- if(discount&&footer)discount.addEventListener('click',()=>{const open=footer.classList.toggle('nova-discount-open');discount.setAttribute('aria-expanded',String(open))});
-})();
-</script>
-<script>
-(function(){
- const toggle=document.getElementById('novaMoreActions'),panel=document.getElementById('novaMorePanel');if(!toggle||!panel)return;
- const close=()=>{panel.hidden=true;toggle.setAttribute('aria-expanded','false')};
- toggle.addEventListener('click',()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden))});
- panel.addEventListener('click',e=>{if(e.target.closest('button'))close()});
- document.addEventListener('click',e=>{if(!toggle.contains(e.target)&&!panel.contains(e.target))close()});
- document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 })();
 </script>
 </body>
