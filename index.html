@@ -1843,6 +1843,10 @@ body *:not(svg):not(svg *){
 .customer-sidebar .cust-purchase-meta{font-size:10px!important;gap:7px!important}
 .customer-sidebar .cust-purchase-side{flex-direction:row!important;align-items:center!important;gap:7px!important}
 .customer-sidebar .cust-purchase-name{font-size:12px!important;line-height:1.5!important}
+
+.nova-sale-number{font:600 11px var(--font-mono);color:#a9c8d8;border:1px solid #34424e;border-radius:7px;padding:7px 8px;white-space:nowrap}
+.nova-checkout-customer{margin-top:7px;background:transparent;border:1px solid #3b5665;color:#9bd6f2;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer}
+.nova-checkout-customer[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -1867,7 +1871,7 @@ body *:not(svg):not(svg *){
           </div>
         </div>
 
-        <div class="header-actions nova-sale-actions">
+        <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" aria-label="رقم عملية البيع"></span>
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="New Sale (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
           <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="Held Invoices" aria-label="Held Invoices"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
           <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="Add / Switch Customer (F3)" aria-label="Add / Switch Customer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
@@ -2062,7 +2066,7 @@ body *:not(svg):not(svg *){
         <div class="checkout-amount-display">
           <div class="label">Total Amount Payable</div>
           <div id="modalAmountDue" class="val">0.00 SAR</div>
-          <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div>
+          <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div><button type="button" id="checkoutAddCustomer" class="nova-checkout-customer">إضافة رقم العميل (اختياري)</button>
         </div>
 
         <div>
@@ -2833,6 +2837,7 @@ body *:not(svg):not(svg *){
         }
 
         elements.modalAmountDue.textContent = formatSAR(grandTotal);
+        document.getElementById("checkoutAddCustomer").hidden = !!state.attachedCustomer;
         elements.modalCustomerInfo.textContent = state.attachedCustomer 
           ? `Customer: ${state.attachedCustomer.name} (${state.attachedCustomer.phone})`
           : "Walk-in Customer (No loyalty attached)";
@@ -2868,7 +2873,7 @@ body *:not(svg):not(svg *){
         }
         const cashRec = Number.isFinite(parsedCash) && parsedCash >= 0 ? parsedCash : grandTotal;
 
-        const invNumber = "INV-" + Math.floor(100000 + Math.random() * 900000);
+        const invNumber = activeSaleNumber;
         const now = new Date();
         const dateStr = now.toLocaleDateString("en-GB") + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -2917,12 +2922,17 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         state.fixedDiscount = 0;
         elements.inputPercentDiscount.value = "";
         elements.inputFixedDiscount.value = "";
+        activeSaleNumber = nextSaleNumber();
+        renderSaleNumber();
+        detachCustomer();
         renderInvoice();
         showToast("Payment confirmed & Invoice completed!");
       }
 
       function startNewSale() {
         clearInvoice();
+        activeSaleNumber = nextSaleNumber();
+        renderSaleNumber();
         detachCustomer();
         setSearchMode("PRODUCT");
         showToast("New sale ready. Scan barcode or search medicine.");
@@ -2930,6 +2940,19 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
       // Local-only held invoices; not synchronized across devices.
       const HELD_KEY = 'nova-rx-held-invoices-v1';
+      const SALE_SEQ_KEY = 'nova-rx-sale-sequence-v1';
+      let saleSequence = Number(localStorage.getItem(SALE_SEQ_KEY)) || 0;
+      function nextSaleNumber() {
+        saleSequence += 1;
+        try { localStorage.setItem(SALE_SEQ_KEY, String(saleSequence)); } catch (_) {}
+        return 'S-' + String(saleSequence).padStart(6, '0');
+      }
+      let activeSaleNumber = nextSaleNumber();
+      function renderSaleNumber() {
+        const el = document.getElementById('activeSaleNumber');
+        if (el) el.textContent = activeSaleNumber;
+      }
+      renderSaleNumber();
       let heldInvoices = [];
       try { const saved = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(saved)) heldInvoices = saved.filter(x => x && Array.isArray(x.lines)).slice(0, 50); } catch (_) {}
       const heldPanel = document.getElementById('heldInvoicePanel');
@@ -2942,12 +2965,12 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
       }
       function renderHeldInvoices() {
         heldCount.textContent = heldInvoices.length;
-        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.customerName || 'Walk-in')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">No held invoices</div>';
+        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">No held invoices</div>';
       }
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
         if (heldInvoices.length >= 50) { showToast('Held invoice limit reached (50).', 'error'); return; }
-        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount};
+        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), saleNumber:activeSaleNumber, created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount};
         if (!saveHeldInvoices([record, ...heldInvoices])) return;
         startNewSale(); heldPanel.hidden = true; showToast('Invoice held on this device.');
       }
@@ -2962,6 +2985,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         if (del) { if (confirm('Delete this held invoice?')) saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); return; }
         if (state.invoiceLines.length && !confirm('Replace the current invoice? Unsaved items will be lost.')) return;
         // Keep held record until the active invoice is restored successfully.
+        activeSaleNumber = record.saleNumber || record.id;
+        renderSaleNumber();
         state.invoiceLines = JSON.parse(JSON.stringify(record.lines));
         state.percentDiscount = Number(record.percentDiscount) || 0;
         state.fixedDiscount = Number(record.fixedDiscount) || 0;
@@ -3053,7 +3078,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
         // Customer Sidebar Actions
         elements.btnRemoveCust.addEventListener("click", detachCustomer);
-        elements.btnChangeCust.addEventListener("click", () => {
+        elements.btnChangeCust?.addEventListener("click", () => {
           setSearchMode("CUSTOMER");
           showToast("Search to select a replacement customer.");
         });
@@ -3094,6 +3119,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
         // Checkout & Modal Events
         elements.btnCheckout.addEventListener("click", openCheckout);
+        document.getElementById("checkoutAddCustomer").addEventListener("click", () => { closeCheckout(); setSearchMode("CUSTOMER"); elements.mainSearchInput.focus(); });
         elements.btnCloseCheckout.addEventListener("click", closeCheckout);
         elements.btnCancelCheckout.addEventListener("click", closeCheckout);
         elements.btnConfirmPayment.addEventListener("click", confirmPayment);
