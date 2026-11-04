@@ -1771,6 +1771,25 @@ body *:not(svg):not(svg *){
  .main-search-input{font-size:16px!important}
  .invoice-footer{position:relative;z-index:2}
 }
+
+/* NOVA Rx UX pass 03 — quiet customer card */
+.customer-sidebar .sidebar-header{min-height:42px!important;height:42px!important;padding:8px 14px!important}
+.customer-sidebar .sidebar-title{font-size:12px!important}
+.customer-sidebar .sidebar-body{padding:12px!important}
+.customer-sidebar .customer-empty-box{padding:18px 12px!important;gap:9px!important}
+.customer-sidebar .customer-empty-box>svg{width:26px!important;height:26px!important;opacity:.55}
+.customer-sidebar .customer-empty-sub{font-size:11px!important;line-height:1.65!important;max-width:240px;margin:auto}
+.customer-sidebar .customer-compact-layout{gap:7px!important}
+.customer-sidebar .cust-card-compact{padding:12px!important}
+.customer-sidebar .cust-card-top{gap:8px!important}
+.customer-sidebar .cust-name{font-size:14px!important;font-weight:700!important}
+.customer-sidebar .cust-phone{font-size:11px!important}
+.customer-sidebar .cust-stats-compact{gap:6px!important;margin-top:9px!important}
+.customer-sidebar .cust-stats-compact .cust-stat-pill{padding:4px 8px!important;font-size:11px!important}
+.customer-sidebar .cust-actions-bar{gap:6px!important;margin-top:10px!important}
+.customer-sidebar .cust-actions-bar .btn{font-size:11px!important;padding:7px 9px!important;min-height:34px}
+.customer-sidebar .cust-extra-details{margin-top:0!important}
+.customer-sidebar .cust-extra-details>summary{padding:10px 12px!important;font-size:12px!important}
 </style>
 </head>
 <body>
@@ -1925,7 +1944,7 @@ body *:not(svg):not(svg *){
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Loyalty Number
+          العميل
         </div>
         <div id="sidebarCustBadge" class="task-badge" style="display:none;">ATTACHED</div>
       </div>
@@ -1937,13 +1956,12 @@ body *:not(svg):not(svg *){
             <circle cx="12" cy="12" r="10"></circle>
             <path d="M12 8v4m0 4h.01"></path>
           </svg>
-          <div class="customer-empty-text">No Customer Attached</div>
+          <div class="customer-empty-text">عميل عابر</div>
           <div class="customer-empty-sub">
-            This sale will be checked out as a Walk-in Customer.<br>
-            Press <strong>F3</strong> or click below to link customer points and past history.
+            فاتورة عميل عابر. تقدر تربط عميل في أي وقت.
           </div>
           <button id="btnAttachLoyalty" class="btn btn-loyalty" style="margin-top:6px;">
-            Link Customer (F3)
+            ربط عميل (F3)
           </button>
         </div>
 
