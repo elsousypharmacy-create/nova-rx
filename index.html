@@ -1603,6 +1603,25 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
  .pos-root>.main-workspace{grid-column:2!important;grid-row:1!important;direction:rtl!important}
 }
 @media (orientation:portrait), (max-width:780px){.pos-root>.customer-sidebar{order:1}.pos-root>.main-workspace{order:0}}
+
+/* Screenshot-driven compact checkout layout, 1280x800 landscape */
+.pharmacy-brand-banner{height:54px!important;min-height:54px!important}
+.nova-nav{top:54px!important}
+.pos-root{height:calc(100dvh - 54px)!important}
+.nova-page-view:not([hidden]){height:calc(100dvh - 54px)!important}
+.nova-command-row{padding:7px 10px!important}
+.nova-command-row .main-search-input{min-height:46px!important;font-size:15px!important}
+.nova-command-row .search-box-wrapper{min-height:46px!important}
+.invoice-footer{padding:8px 10px!important;gap:8px!important}
+.invoice-footer .totals-breakdown .tot-row:not(.grand-total){display:none!important}
+.invoice-footer .discount-controls{display:none!important}
+.invoice-footer.nova-discount-open .discount-controls{display:block!important}
+.customer-empty-box .customer-empty-sub{display:none!important}
+.customer-empty-box{border:none!important;background:transparent!important;min-height:0!important;padding:20px 10px!important}
+.customer-empty-box svg{width:26px!important;height:26px!important}
+.customer-empty-box .customer-empty-text{font-size:14px!important}
+.customer-sidebar .sidebar-header{padding-block:9px!important}
+@media (orientation:landscape) and (min-width:781px){.pos-root{grid-template-columns:minmax(230px,28fr) minmax(0,72fr)!important;direction:ltr!important}.pos-root>.customer-sidebar{grid-column:1!important;grid-row:1!important}.pos-root>.main-workspace{grid-column:2!important;grid-row:1!important}}
 </style>
 </head>
 <body>
