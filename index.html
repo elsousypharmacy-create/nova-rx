@@ -1526,14 +1526,37 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .nova-settings-grid label:has(input[type="checkbox"]){flex-direction:row;align-items:center}
 .nova-settings-grid input[type="checkbox"]{width:22px;height:22px;accent-color:#0284C7}
 @media(pointer:coarse){.nova-data-table button,.nova-page-header button{min-width:44px;min-height:44px}}
+
+/* Focus Mode: keep only search, invoice, customer and checkout visible */
+.pharmacy-brand-banner{position:relative;z-index:25;min-height:52px;height:52px;background:#0D1117;border-bottom:1px solid #21262D}
+.pharmacy-banner-live,.pharmacy-banner-phone{display:none!important}
+.nova-menu-toggle{margin-inline-start:auto;min-width:44px;min-height:44px;padding:0 12px;border:1px solid #30363D;border-radius:9px;background:#161B22;color:#F0F6FC;font-size:13px;cursor:pointer}
+.nova-nav{display:none!important;position:absolute;z-index:30;top:52px;inset-inline:8px;width:auto!important;height:auto!important;max-height:calc(100dvh - 65px);overflow:auto;background:#161B22;border:1px solid #30363D;border-radius:12px;padding:10px;box-shadow:0 18px 35px #0009;flex-wrap:wrap;gap:8px}
+.nova-nav.nova-nav-open{display:flex!important}
+.nova-nav .nova-tab{min-height:44px;flex:1 1 120px}
+.nova-nav .nova-lang-switch{margin-inline-start:auto}
+.pos-root{height:calc(100dvh - 52px)!important}
+.nova-page-view:not([hidden]){height:calc(100dvh - 52px)!important;overflow:auto}
+.nova-discount-toggle{min-height:44px;min-width:90px;padding:8px 12px;border:1px solid #30363D;border-radius:8px;background:#161B22;color:#10B981;cursor:pointer}
+.invoice-footer .discount-controls{display:none!important}
+.invoice-footer.nova-discount-open .discount-controls{display:block!important;flex:1 1 180px}
+.invoice-footer .totals-breakdown .tot-row:not(.grand-total){display:none}
+.invoice-footer .totals-breakdown{flex:1 1 auto;min-width:130px}
+.invoice-footer .checkout-action-box{flex:0 0 150px;width:150px;min-width:0}
+.invoice-footer{align-items:center;gap:10px;max-height:46%;overflow:auto}
+.customer-empty-sub{display:none!important}
+.customer-empty-box{gap:12px}
+@media(orientation:landscape) and (min-width:781px){.pos-root{grid-template-columns:minmax(0,72fr) minmax(0,28fr)!important}.main-workspace,.customer-sidebar{height:100%!important}}
+@media(orientation:landscape) and (max-width:1100px){.invoice-footer .checkout-action-box{flex-basis:120px;width:120px}}
 </style>
 </head>
 <body>
   <div class="pharmacy-brand-banner" role="banner" dir="rtl">
   <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 14L24 6l16 8v13c0 9-7 14-16 17C15 41 8 36 8 27V14Z" stroke="#38BDF8" stroke-width="2.5"/><path d="M17 17h14M24 10v14M16 29h16M19 25c0 8 10 8 10 0" stroke="#F0F6FC" stroke-width="2.5" stroke-linecap="round"/><path d="M21 35h6" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
+  <button type="button" id="novaMenuToggle" class="nova-menu-toggle" aria-controls="novaMainNav" aria-expanded="false" aria-label="القائمة">☰ <span>القائمة</span></button>
   <div class="pharmacy-banner-right"><span class="pharmacy-banner-live"><b></b> NOVA Rx POS</span><span class="pharmacy-banner-phone" dir="ltr">01143404023</span></div>
 </div>
-  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
+  <nav id="novaMainNav" class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div><span class="nova-demo-label">نسخة تجريبية</span>
   </nav>
@@ -1628,9 +1651,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
       </div>
 
       <!-- Invoice Footer & Totals Section -->
-      <footer class="invoice-footer">
+      <footer class="invoice-footer"><button type="button" id="novaDiscountToggle" class="nova-discount-toggle" aria-controls="novaDiscountControls" aria-expanded="false">٪ الخصم</button>
         <!-- Overall Discounts -->
-        <div class="discount-controls">
+        <div class="discount-controls" id="novaDiscountControls">
           <div class="discount-title">
             <span>Overall Invoice Discount</span>
             <span style="font-size:10px; color:var(--text-dim);">No negative total floor</span>
@@ -3007,6 +3030,15 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
  document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);document.dispatchEvent(new Event('nova-language-changed'));apply()}));
  apply();
+})();
+</script>
+<script>
+/* Focus Mode: menu and optional invoice discount, without replacing sale logic */
+(function(){
+ const menu=document.getElementById('novaMenuToggle'),nav=document.getElementById('novaMainNav');
+ if(menu&&nav){const close=()=>{nav.classList.remove('nova-nav-open');menu.setAttribute('aria-expanded','false')};menu.addEventListener('click',()=>{const open=nav.classList.toggle('nova-nav-open');menu.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('[data-page]'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.addEventListener('click',e=>{if(!nav.contains(e.target)&&!menu.contains(e.target))close()})}
+ const discount=document.getElementById('novaDiscountToggle'),footer=document.querySelector('.invoice-footer');
+ if(discount&&footer)discount.addEventListener('click',()=>{const open=footer.classList.toggle('nova-discount-open');discount.setAttribute('aria-expanded',String(open))});
 })();
 </script>
 </body>
