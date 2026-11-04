@@ -1581,12 +1581,36 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .customer-empty-box #btnAttachLoyalty{min-height:44px}
 @media(min-width:781px) and (max-width:1100px){.nova-command-actions>.btn{padding:0 9px}.invoice-table th,.invoice-table td{padding-inline:6px}.customer-sidebar{min-width:0}}
 @media(max-width:850px){.nova-command-actions #btnNewSale span:last-child{display:none}.nova-command-actions #btnNewSale{font-size:20px}.nova-command-actions #btnAddLoyalty span{display:none}}
+
+/* Primary actions live in top bar, opposite Sale heading; no duplicated branding */
+.pharmacy-brand-banner{display:flex!important;align-items:center!important;gap:10px;padding-inline:14px;height:60px!important;min-height:60px!important}
+.nova-sale-heading{font-size:17px;font-weight:700;color:#F0F6FC;white-space:nowrap;margin-inline-end:auto}
+.pharmacy-brand-banner .nova-command-actions{display:flex;align-items:center;position:relative;gap:7px;margin-inline-start:0}
+.pharmacy-brand-banner .nova-command-actions>.btn{min-height:44px;min-width:44px}
+.pharmacy-brand-banner #novaMenuToggle{margin-inline-start:0;order:5}
+.pharmacy-brand-banner .pharmacy-banner-right{display:none!important}
+.nova-nav{top:60px!important}
+.pos-root{height:calc(100dvh - 60px)!important}
+.nova-page-view:not([hidden]){height:calc(100dvh - 60px)!important}
+.nova-command-row{padding:8px 12px}
+@media(max-width:850px){.pharmacy-brand-banner{padding-inline:8px;gap:5px}.nova-sale-heading{font-size:15px}.pharmacy-brand-banner .nova-command-actions>.btn{padding-inline:7px}.pharmacy-brand-banner #novaMenuToggle span{display:none}}
 </style>
 </head>
 <body>
   <div class="pharmacy-brand-banner" role="banner" dir="rtl">
-  <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 14L24 6l16 8v13c0 9-7 14-16 17C15 41 8 36 8 27V14Z" stroke="#38BDF8" stroke-width="2.5"/><path d="M17 17h14M24 10v14M16 29h16M19 25c0 8 10 8 10 0" stroke="#F0F6FC" stroke-width="2.5" stroke-linecap="round"/><path d="M21 35h6" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
+  <div class="nova-sale-heading">البيع</div>
   <button type="button" id="novaMenuToggle" class="nova-menu-toggle" aria-controls="novaMainNav" aria-expanded="false" aria-label="القائمة">☰ <span>القائمة</span></button>
+        <div class="nova-command-actions">
+          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">＋ <span>Customer</span></button>
+          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)"><span>＋</span> <span>New Sale</span></button>
+          <button type="button" id="novaMoreActions" class="btn btn-secondary" aria-expanded="false" aria-controls="novaMorePanel" aria-label="More actions">⋯</button>
+          <div id="novaMorePanel" class="nova-more-panel" hidden>
+            
+            <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">Clear</button>
+            <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">Help</button>
+            <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
+          </div>
+        </div>
   <div class="pharmacy-banner-right"><span class="pharmacy-banner-live"><b></b> NOVA Rx POS</span><span class="pharmacy-banner-phone" dir="ltr">01143404023</span></div>
 </div>
   <nav id="novaMainNav" class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
@@ -1607,17 +1631,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
             <div class="search-hints"><span id="searchHintText">Enter: Select / Skip</span><kbd>Esc</kbd></div>
           </div>
           <div id="suggestionsBox" class="suggestions-dropdown"></div>
-        </div>
-        <div class="nova-command-actions">
-          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">＋ <span>Customer</span></button>
-          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)"><span>＋</span> <span>New Sale</span></button>
-          <button type="button" id="novaMoreActions" class="btn btn-secondary" aria-expanded="false" aria-controls="novaMorePanel" aria-label="More actions">⋯</button>
-          <div id="novaMorePanel" class="nova-more-panel" hidden>
-            
-            <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">Clear</button>
-            <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">Help</button>
-            <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
-          </div>
         </div>
         <div class="nova-mode-compat" hidden><div id="modePill" class="status-pill customer-mode"><span id="modePillText">Customer Search Mode</span></div></div>
       </div>
