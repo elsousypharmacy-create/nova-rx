@@ -2879,8 +2879,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  // must never be translated into Arabic while English mode is active.
  const enToAr={};
  for(const [source,target] of Object.entries(arToEn)){
-  const sourceAr=/[\\u0600-\\u06FF]/.test(source);
-  const targetAr=/[\\u0600-\\u06FF]/.test(target);
+  const sourceAr=/[\u0600-\u06FF]/.test(source);
+  const targetAr=/[\u0600-\u06FF]/.test(target);
   if(sourceAr&&!targetAr)enToAr[target]=source;
   else if(!sourceAr&&targetAr){enToAr[source]=target;arToEn[target]??=source;delete arToEn[source]}
  }
