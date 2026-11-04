@@ -1748,6 +1748,26 @@ body *:not(svg):not(svg *){
 .customer-compact-layout .offers-header,.customer-compact-layout .history-header{margin-bottom:7px!important;font-size:11px!important}
 .customer-compact-layout .cust-history-hint{font-size:10px;color:#8793a0}
 .customer-compact-layout .invoices-scroll{max-height:240px!important;overflow-y:auto!important}
+
+/* NOVA Rx prototype UX pass 01 — visual-only, 2026-11-04 */
+@media (min-width:1101px) and (orientation:landscape){
+ .main-workspace{flex-basis:75%!important;width:75%!important;max-width:75%!important}
+ .customer-sidebar{flex-basis:25%!important;width:25%!important;max-width:25%!important}
+}
+@media (min-width:781px) and (max-width:1100px) and (orientation:landscape){
+ .main-workspace{flex-basis:72%!important;width:72%!important;max-width:72%!important}
+ .customer-sidebar{flex-basis:28%!important;width:28%!important;max-width:28%!important}
+}
+.search-container{padding-block:10px!important}
+.main-search-input{min-height:52px!important;font-size:16px!important}
+.main-search-input:focus-visible{outline:2px solid #79c9eb!important;outline-offset:1px}
+.table-container{min-height:0!important}
+.btn-checkout{min-height:48px!important;font-weight:800!important}
+@media (max-width:780px) and (orientation:portrait){
+ .main-workspace,.customer-sidebar{width:100%!important;max-width:100%!important;flex-basis:auto!important}
+ .main-search-input{font-size:16px!important}
+ .invoice-footer{position:relative;z-index:2}
+}
 </style>
 </head>
 <body>
