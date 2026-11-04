@@ -1622,6 +1622,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .customer-empty-box .customer-empty-text{font-size:14px!important}
 .customer-sidebar .sidebar-header{padding-block:9px!important}
 @media (orientation:landscape) and (min-width:781px){.pos-root{grid-template-columns:minmax(230px,28fr) minmax(0,72fr)!important;direction:ltr!important}.pos-root>.customer-sidebar{grid-column:1!important;grid-row:1!important}.pos-root>.main-workspace{grid-column:2!important;grid-row:1!important}}
+.nova-settings-grid .nova-lang-switch{display:flex;justify-content:flex-start;margin:10px 0 0;width:max-content}.nova-settings-grid .nova-lang-btn{min-height:44px;min-width:76px;font-size:13px}
 </style>
 </head>
 <body>
@@ -1643,7 +1644,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 </div>
   <nav id="novaMainNav" class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
-  <div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div><span class="nova-demo-label">نسخة تجريبية</span>
+  <span class="nova-demo-label">نسخة تجريبية</span>
   </nav>
   <div id="novaPageView" class="nova-page-view" dir="rtl" hidden></div>
   <div class="pos-root">
@@ -2949,7 +2950,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div>';
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>إعدادات الإيصال</h3><label>عرض الورق <select id="novaPaper"><option value="80">80mm</option><option value="58">58mm</option></select></label><label>عنوان الصيدلية <input id="novaAddress" autocomplete="off" placeholder="العنوان"></label><label>الرقم الضريبي <input id="novaTaxId" autocomplete="off" placeholder="الرقم الضريبي"></label></div><div class="nova-setting-card"><h3>الضريبة والصوت</h3><label><input id="novaVat" type="checkbox"> ضريبة 15% (إعداد عرض فقط)</label><label><input id="novaAudio" type="checkbox"> صوت التنبيه عند الضغط</label><p>لا يغير هذا الإعداد محرك حسابات البيع الحالي.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>بيانات تجريبية محلية — لا يوجد اتصال بقاعدة بيانات الصيدلية.</p></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>إعدادات الإيصال</h3><label>عرض الورق <select id="novaPaper"><option value="80">80mm</option><option value="58">58mm</option></select></label><label>عنوان الصيدلية <input id="novaAddress" autocomplete="off" placeholder="العنوان"></label><label>الرقم الضريبي <input id="novaTaxId" autocomplete="off" placeholder="الرقم الضريبي"></label></div><div class="nova-setting-card"><h3>الضريبة والصوت</h3><label><input id="novaVat" type="checkbox"> ضريبة 15% (إعداد عرض فقط)</label><label><input id="novaAudio" type="checkbox"> صوت التنبيه عند الضغط</label><p>لا يغير هذا الإعداد محرك حسابات البيع الحالي.</p></div><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة عرض النظام</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>بيانات تجريبية محلية — لا يوجد اتصال بقاعدة بيانات الصيدلية.</p></div></div>';
  }
  view.innerHTML=content;
  if(page==='settings'){
