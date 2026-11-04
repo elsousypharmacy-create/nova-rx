@@ -2789,7 +2789,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tabs=[...document.querySelectorAll('.nova-tab')];
  const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const money=n=>(Number(n)||0).toFixed(2)+' ر.س';
+ const money=n=>(Number(n)||0).toFixed(2)+(localStorage.getItem('nova-rx-language')==='en'?' SAR':' ر.س');
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div></div>';
@@ -2829,6 +2829,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
  function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ document.addEventListener('nova-language-changed',()=>{const page=location.hash.slice(1);if(page&&page!=='sale')render(page)});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
  switchPage(location.hash.slice(1)||'sale');
@@ -2931,7 +2932,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  let scheduled=false;
  const observer=new MutationObserver(()=>{if(busy||scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;apply()})});
  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
- document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);apply()}));
+ document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);document.dispatchEvent(new Event('nova-language-changed'));apply()}));
  apply();
 })();
 </script>
