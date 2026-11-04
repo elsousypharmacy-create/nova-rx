@@ -2497,12 +2497,16 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 
       function confirmPayment() {
         const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
-        const cashRec = parseFloat(elements.inputCashReceived.value) || grandTotal;
-        
-        if (state.checkoutPaymentMethod === "cash" && cashRec < grandTotal) {
-          showToast("Cash received is less than amount due!", "error");
+        const cashInput = elements.inputCashReceived.value.trim();
+        const parsedCash = cashInput === "" ? NaN : Number(cashInput);
+        // Never treat zero, an invalid amount, or a negative amount as full payment.
+        if (state.checkoutPaymentMethod === "cash" &&
+            (!Number.isFinite(parsedCash) || parsedCash < 0 || parsedCash < grandTotal)) {
+          showToast("Enter a valid cash amount covering the total due.", "error");
+          elements.inputCashReceived.focus();
           return;
         }
+        const cashRec = Number.isFinite(parsedCash) && parsedCash >= 0 ? parsedCash : grandTotal;
 
         const invNumber = "INV-" + Math.floor(100000 + Math.random() * 900000);
         const now = new Date();
