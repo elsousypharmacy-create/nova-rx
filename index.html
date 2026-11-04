@@ -1847,6 +1847,17 @@ body *:not(svg):not(svg *){
 .nova-sale-number{font:600 11px var(--font-mono);color:#a9c8d8;border:1px solid #34424e;border-radius:7px;padding:7px 8px;white-space:nowrap}
 .nova-checkout-customer{margin-top:7px;background:transparent;border:1px solid #3b5665;color:#9bd6f2;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer}
 .nova-checkout-customer[hidden]{display:none}
+
+/* Required customer decision before checkout; skip is explicitly allowed */
+.nova-customer-gate[hidden]{display:none!important}
+.nova-customer-gate{position:fixed;inset:0;background:#000b;z-index:110;display:flex;align-items:center;justify-content:center;padding:16px}
+.nova-customer-gate-card{background:#181d24;border:1px solid #3c4a57;border-radius:13px;width:min(100%,370px);padding:22px;box-shadow:0 18px 60px #0008;text-align:right}
+.nova-customer-gate-card h3{font-size:18px;color:#f2f5f8;margin:0 0 9px}
+.nova-customer-gate-card p{font-size:13px;line-height:1.8;color:#aeb9c5;margin:0 0 17px}
+.nova-customer-gate-card button{width:100%;border-radius:8px;padding:11px;font-size:13px;font-weight:650;cursor:pointer;margin-top:8px}
+.nova-gate-primary{background:#247ca9;color:white;border:1px solid #3e9cc6}
+.nova-gate-secondary{background:#232b34;color:#e1e9f1;border:1px solid #465462}
+.nova-gate-cancel{background:transparent;color:#aeb9c5;border:0}
 </style>
 </head>
 <body>
@@ -2055,6 +2066,15 @@ body *:not(svg):not(svg *){
     </aside>
   </div>
 
+  <div id="customerCheckoutGate" class="nova-customer-gate" hidden role="dialog" aria-modal="true" aria-labelledby="customerGateTitle">
+    <div class="nova-customer-gate-card" dir="rtl">
+      <h3 id="customerGateTitle">رقم العميل قبل الدفع</h3>
+      <p>سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.</p>
+      <button type="button" id="gateFindCustomer" class="nova-gate-primary">بحث برقم العميل</button>
+      <button type="button" id="gateSkipCustomer" class="nova-gate-secondary">تخطي · عميل نقدي</button>
+      <button type="button" id="gateCancelCustomer" class="nova-gate-cancel">رجوع للفاتورة</button>
+    </div>
+  </div>
   <!-- CHECKOUT MODAL -->
   <div id="checkoutModal" class="modal-backdrop">
     <div class="modal-card">
@@ -2302,6 +2322,8 @@ body *:not(svg):not(svg *){
       const state = {
         mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
         attachedCustomer: null,
+        customerGateSkipped: false,
+        customerGatePending: false,
         invoiceLines: [],
         percentDiscount: 0,
         fixedDiscount: 0,
@@ -2605,6 +2627,7 @@ body *:not(svg):not(svg *){
       // --- CUSTOMER PROFILE ACTIONS ---
       function attachCustomer(customer) {
         state.attachedCustomer = customer;
+        state.customerGateSkipped = false;
         elements.customerEmptyBox.style.display = "none";
         elements.customerSelectedBox.style.display = "flex";
         elements.sidebarCustBadge.style.display = "block";
@@ -2636,10 +2659,12 @@ body *:not(svg):not(svg *){
         renderPastInvoices(customer.pastInvoices);
         closeSuggestions();
         showToast(`Customer attached: ${customer.name}`);
+        if (state.customerGatePending) { state.customerGatePending = false; openCheckout(); }
       }
 
       function detachCustomer() {
         state.attachedCustomer = null;
+        state.customerGateSkipped = false;
         elements.customerEmptyBox.style.display = "flex";
         elements.customerSelectedBox.style.display = "none";
         elements.sidebarCustBadge.style.display = "none";
@@ -2836,6 +2861,11 @@ body *:not(svg):not(svg *){
           return;
         }
 
+        if (!state.attachedCustomer && !state.customerGateSkipped) {
+          document.getElementById("customerCheckoutGate").hidden = false;
+          return;
+        }
+        document.getElementById("customerCheckoutGate").hidden = true;
         elements.modalAmountDue.textContent = formatSAR(grandTotal);
         document.getElementById("checkoutAddCustomer").hidden = !!state.attachedCustomer;
         elements.modalCustomerInfo.textContent = state.attachedCustomer 
@@ -2861,6 +2891,7 @@ body *:not(svg):not(svg *){
       }
 
       function confirmPayment() {
+        if (!state.attachedCustomer && !state.customerGateSkipped) { closeCheckout(); openCheckout(); return; }
         const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
         const cashInput = elements.inputCashReceived.value.trim();
         const parsedCash = cashInput === "" ? NaN : Number(cashInput);
@@ -2925,6 +2956,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
+        state.customerGateSkipped = false;
+        state.customerGatePending = false;
         renderInvoice();
         showToast("Payment confirmed & Invoice completed!");
       }
@@ -2934,6 +2967,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
+        state.customerGateSkipped = false;
+        state.customerGatePending = false;
         setSearchMode("PRODUCT");
         showToast("New sale ready. Scan barcode or search medicine.");
       }
@@ -2970,7 +3005,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
         if (heldInvoices.length >= 50) { showToast('Held invoice limit reached (50).', 'error'); return; }
-        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), saleNumber:activeSaleNumber, created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount};
+        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), saleNumber:activeSaleNumber, created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount, customerGateSkipped:state.customerGateSkipped};
         if (!saveHeldInvoices([record, ...heldInvoices])) return;
         startNewSale(); heldPanel.hidden = true; showToast('Invoice held on this device.');
       }
@@ -2990,6 +3025,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         state.invoiceLines = JSON.parse(JSON.stringify(record.lines));
         state.percentDiscount = Number(record.percentDiscount) || 0;
         state.fixedDiscount = Number(record.fixedDiscount) || 0;
+        state.customerGateSkipped = !!record.customerGateSkipped;
+        state.customerGatePending = false;
         elements.inputPercentDiscount.value = state.percentDiscount || '';
         elements.inputFixedDiscount.value = state.fixedDiscount || '';
         const customer = record.customerId != null ? DEMO_CUSTOMERS.find(c => String(c.id) === String(record.customerId)) : null;
@@ -3119,6 +3156,22 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
         // Checkout & Modal Events
         elements.btnCheckout.addEventListener("click", openCheckout);
+        document.getElementById("gateSkipCustomer").addEventListener("click", () => {
+          state.customerGateSkipped = true;
+          state.customerGatePending = false;
+          document.getElementById("customerCheckoutGate").hidden = true;
+          openCheckout();
+        });
+        document.getElementById("gateFindCustomer").addEventListener("click", () => {
+          state.customerGatePending = true;
+          document.getElementById("customerCheckoutGate").hidden = true;
+          setSearchMode("CUSTOMER");
+          elements.mainSearchInput.focus();
+        });
+        document.getElementById("gateCancelCustomer").addEventListener("click", () => {
+          state.customerGatePending = false;
+          document.getElementById("customerCheckoutGate").hidden = true;
+        });
         document.getElementById("checkoutAddCustomer").addEventListener("click", () => { closeCheckout(); setSearchMode("CUSTOMER"); elements.mainSearchInput.focus(); });
         elements.btnCloseCheckout.addEventListener("click", closeCheckout);
         elements.btnCancelCheckout.addEventListener("click", closeCheckout);
