@@ -1562,6 +1562,25 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .nova-more-panel .btn{min-height:44px;width:100%;justify-content:flex-start}
 .nova-mode-compat{display:none!important}
 @media(max-width:1000px){.nova-command-row{gap:6px;padding:8px}.nova-command-actions{gap:5px}.nova-command-actions #btnNewSale{padding-inline:8px}.nova-command-row .search-hints{display:none}}
+
+/* Tablet POS usability: customer is a primary action, clear visual hierarchy */
+.nova-command-row{padding:9px 12px;gap:8px;align-items:center}
+.nova-command-row .search-container{margin:0;min-width:0}
+.nova-command-row .search-box-wrapper{border-radius:10px;min-height:50px}
+.nova-command-row .main-search-input{font-size:15px;min-height:50px}
+.nova-command-actions{gap:7px}
+.nova-command-actions #btnAddLoyalty{background:#173449;color:#7DD3FC;border:1px solid #285572}
+.nova-command-actions #btnNewSale,.nova-command-actions #novaMoreActions{background:#161B22;color:#F0F6FC;border:1px solid #30363D}
+.nova-command-actions>.btn{font-size:13px;font-weight:600;padding:0 12px}
+.nova-command-actions>.btn:focus-visible,.nova-menu-toggle:focus-visible{outline:2px solid #38BDF8;outline-offset:2px}
+.invoice-table th{font-size:11px;color:#8B949E;font-weight:600}
+.invoice-table td{font-size:13px}
+.customer-sidebar .sidebar-header{min-height:46px}
+.customer-sidebar .sidebar-title{font-size:13px;font-weight:600}
+.customer-empty-box{padding:18px 10px}
+.customer-empty-box #btnAttachLoyalty{min-height:44px}
+@media(min-width:781px) and (max-width:1100px){.nova-command-actions>.btn{padding:0 9px}.invoice-table th,.invoice-table td{padding-inline:6px}.customer-sidebar{min-width:0}}
+@media(max-width:850px){.nova-command-actions #btnNewSale span:last-child{display:none}.nova-command-actions #btnNewSale{font-size:20px}.nova-command-actions #btnAddLoyalty span{display:none}}
 </style>
 </head>
 <body>
@@ -1590,10 +1609,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
           <div id="suggestionsBox" class="suggestions-dropdown"></div>
         </div>
         <div class="nova-command-actions">
+          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">＋ <span>Customer</span></button>
           <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)"><span>＋</span> <span>New Sale</span></button>
           <button type="button" id="novaMoreActions" class="btn btn-secondary" aria-expanded="false" aria-controls="novaMorePanel" aria-label="More actions">⋯</button>
           <div id="novaMorePanel" class="nova-more-panel" hidden>
-            <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">Add Loyalty</button>
+            
             <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">Clear</button>
             <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">Help</button>
             <button id="btnRefreshApp" class="btn btn-secondary" type="button" title="تحديث التطبيق" aria-label="تحديث التطبيق">↻ <span class="refresh-label">Refresh</span></button>
