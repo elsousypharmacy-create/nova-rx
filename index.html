@@ -1790,6 +1790,14 @@ body *:not(svg):not(svg *){
 .customer-sidebar .cust-actions-bar .btn{font-size:11px!important;padding:7px 9px!important;min-height:34px}
 .customer-sidebar .cust-extra-details{margin-top:0!important}
 .customer-sidebar .cust-extra-details>summary{padding:10px 12px!important;font-size:12px!important}
+
+/* NOVA Rx UX pass 04 — purchases-first customer detail */
+.customer-sidebar #btnChangeCust{display:none!important}
+.customer-sidebar .history-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.customer-sidebar .cust-history-search-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 30px;background:transparent;border:1px solid transparent;border-radius:7px;color:var(--text-muted);cursor:pointer}
+.customer-sidebar .cust-history-search-icon:hover,.customer-sidebar .cust-history-search-icon:focus-visible{background:var(--bg-surface-hover);color:var(--text-main);border-color:var(--border-subtle)}
+.customer-sidebar #historySearchInput[hidden]{display:none!important}
+.customer-sidebar #historySearchInput:not([hidden]){display:block;margin:6px 0 8px}
 </style>
 </head>
 <body>
@@ -1992,8 +2000,8 @@ body *:not(svg):not(svg *){
                 <div id="custOffersList" style="display:flex;flex-direction:column;gap:5px;"></div>
               </div>
               <div class="history-section">
-                <div class="history-header"><span>المشتريات السابقة</span><span class="cust-history-hint">اضغط + للإضافة</span></div>
-                <input type="text" id="historySearchInput" class="history-search-input" placeholder="ابحث في المشتريات..." autocomplete="off">
+                <div class="history-header"><span>المنتجات اللي اشتراها</span><button type="button" id="btnHistorySearch" class="cust-history-search-icon" aria-label="البحث في المنتجات السابقة" title="بحث" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button></div>
+                <input type="text" id="historySearchInput" class="history-search-input" placeholder="ابحث في المنتجات السابقة..." autocomplete="off" hidden>
                 <div id="pastInvoicesContainer" class="invoices-scroll"></div>
               </div>
             </div>
@@ -3006,6 +3014,20 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         elements.btnChangeCust.addEventListener("click", () => {
           setSearchMode("CUSTOMER");
           showToast("Search to select a replacement customer.");
+        });
+
+        // Reveal the optional past-product search only when requested.
+        const historySearchButton = document.getElementById("btnHistorySearch");
+        historySearchButton.addEventListener("click", () => {
+          const input = elements.historySearchInput;
+          const opening = input.hidden;
+          input.hidden = !opening;
+          historySearchButton.setAttribute("aria-expanded", String(opening));
+          if (opening) input.focus();
+          else {
+            input.value = "";
+            if (state.attachedCustomer) renderPastInvoices(state.attachedCustomer.pastInvoices);
+          }
         });
 
         // Filter Customer Past History
