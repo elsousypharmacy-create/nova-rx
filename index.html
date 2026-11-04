@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NOVA Rx — Desktop POS (Task 001)</title>
+  <title>NOVA Rx | صيدلية السوسي</title>
+  <meta name="theme-color" content="#0A0B0E">
+  <meta name="application-name" content="NOVA Rx">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NOVA Rx">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.svg">
   <style>
     :root {
       --bg-base: #090d16;
@@ -1388,6 +1397,33 @@ table.invoice-table tbody tr:hover{background:#1b2733}
 @media(max-width:700px){.pharmacy-banner-live{display:none}.pharmacy-banner-copy strong{font-size:16px}.pharmacy-banner-copy span{font-size:10px}}
 @media(orientation:portrait){.pos-root{height:auto;min-height:calc(100dvh - 64px)}}
 
+
+/* NOVA Rx Signature UI — restrained luxury dark */
+:root{--bg-base:#090a0d;--bg-panel:#111318;--bg-surface:#1c2027;--bg-surface-hover:#252b33;--border-subtle:#2a3039;--text-main:#f5f6f7;--text-muted:#aab2be;--accent-cyan:#198ec7;--accent-cyan-light:#65c7f1}
+body,.pos-root{background:#090a0d}
+.pharmacy-brand-banner{height:64px;min-height:64px;background:#0d1015;border-bottom:1px solid #282f38;padding:8px 22px}
+.pharmacy-brand-banner:after{display:none}
+.pharmacy-mark{width:42px;height:42px;flex-basis:42px;font-size:26px;border-radius:11px;background:#122c41;box-shadow:none;color:#65c7f1}
+.pharmacy-banner-copy strong{font-size:19px;letter-spacing:-.2px}
+.pharmacy-banner-copy span{color:#a4b3c2}
+.pharmacy-banner-phone{color:#b6a37e;font-size:12px}
+.pharmacy-banner-live{background:#14202b;border-color:#273b4d}
+.pos-root{height:calc(100dvh - 64px)}
+.top-header,.sidebar-header{background:#141820}
+.search-container{background:#11161e}
+.main-workspace,.table-container{background:#111318}
+.customer-sidebar,.sidebar-body{background:#0d1015}
+.invoice-footer{background:#151a21}
+.btn,.btn-checkout,.cust-card,.past-inv-card,.modal-card{border-radius:10px}
+.btn-checkout{background:#168bc3;border-color:#2d9bd0;box-shadow:none}
+.btn-checkout:hover{background:#0879b2;box-shadow:none}
+.main-search-input{background:#0b1016;border-color:#36424f}
+.cust-card,.past-inv-card{background:#171c23;border-color:#303a45;box-shadow:none}
+table.invoice-table th{background:#1b2129}
+table.invoice-table tbody tr:hover{background:#202832}
+@media(max-width:1050px){.pharmacy-brand-banner{height:58px;min-height:58px}.pos-root{height:calc(100dvh - 58px)}}
+@media(orientation:portrait){.pos-root{height:auto}}
+
 </style>
 </head>
 <body>
@@ -2674,5 +2710,6 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
     })();
   </script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {})); }</script>
 </body>
 </html>
