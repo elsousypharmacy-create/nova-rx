@@ -2875,7 +2875,15 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'Customer Profile':'ملف العميل','Purchase History':'سجل المشتريات',
  'No items found':'لا توجد أصناف','items':'أصناف'
  };
- const enToAr={};for(const [ar,en] of Object.entries(arToEn)){if(/[\u0600-\u06FF]/.test(ar)&&!/[\u0600-\u06FF]/.test(en))enToAr[en]=ar;else if(!/[\u0600-\u06FF]/.test(ar)&&/[\u0600-\u06FF]/.test(en))enToAr[ar]=en;}
+ // Normalize the legacy mixed-direction dictionary once: English UI strings
+ // must never be translated into Arabic while English mode is active.
+ const enToAr={};
+ for(const [source,target] of Object.entries(arToEn)){
+  const sourceAr=/[\\u0600-\\u06FF]/.test(source);
+  const targetAr=/[\\u0600-\\u06FF]/.test(target);
+  if(sourceAr&&!targetAr)enToAr[target]=source;
+  else if(!sourceAr&&targetAr){enToAr[source]=target;arToEn[target]??=source;delete arToEn[source]}
+ }
  const arOverrides={'Sales':'البيع','Invoices':'الفواتير','Products':'المنتجات','Customers':'العملاء','Reports':'التقارير','Settings':'الإعدادات','Demo':'نسخة تجريبية','Point of Sale':'نظام نقاط البيع','Elsousy Pharmacy':'صيدلية السوسي','Dr. Ahmed Elsousy':'د. أحمد السوسي','Name':'الاسم','Phone':'الهاتف','Visits':'الزيارات','Points':'النقاط','Amount':'القيمة','Date':'التاريخ','Stock':'الرصيد','Category':'التصنيف'};
  Object.assign(enToAr,arOverrides);
  const arabicSource=new Set(Object.keys(arToEn).filter(x=>/[\u0600-\u06FF]/.test(x)));
