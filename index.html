@@ -1667,6 +1667,18 @@ html,body{background:#090a0d!important;color:#f2f3f5!important}
  .nova-sale-actions>.btn,.nova-sale-actions .nova-more-wrap>.btn{height:32px!important;min-height:32px!important}
  .nova-kpi{padding:11px!important}
 }
+
+/* NOVA Rx permanent typography standard: Cairo across the entire interface. */
+:root{--font-ui:"Cairo",Tahoma,Arial,sans-serif;--font-mono:"Cairo",Tahoma,Arial,sans-serif}
+html,body,button,input,select,textarea,option,table,th,td,label,kbd,
+.btn,.nova-tab,.nova-page-view,.nova-nav-row,.nova-panel,.nova-kpi,
+.modal-card,.toast,.status-pill,.task-badge,.nova-data-table,
+[contenteditable="true"]{
+ font-family:var(--font-ui)!important;
+}
+body *:not(svg):not(svg *){
+ font-family:var(--font-ui)!important;
+}
 </style>
 </head>
 <body>
