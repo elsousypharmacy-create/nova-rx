@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA Rx | صيدلية السوسي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#0A0B0E">
   <meta name="application-name" content="NOVA Rx">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1328,6 +1329,40 @@ table.invoice-table tbody tr:hover{background:#1d242b}
 .modal-header,.modal-footer,.checkout-amount-display{background:#14181d;border-color:#303841}
 .pay-method-btn,.quick-cash-btn{background:#252b32;border-color:#414b55;color:#e2e8ec}
 .pay-method-btn.active{background:#203847;border-color:#76b8d5}
+
+/* Navigation + purpose-built secondary pages */
+body{font-family:"Cairo",Tahoma,Arial,sans-serif}
+.nova-nav{height:48px;display:flex;align-items:center;gap:5px;padding:5px 16px;background:#111418;border-bottom:1px solid #2a3037;overflow-x:auto;scrollbar-width:none}
+.nova-nav::-webkit-scrollbar{display:none}
+.nova-tab{border:0;background:transparent;color:#a7b0ba;font-family:inherit;font-size:12px;font-weight:700;padding:8px 15px;white-space:nowrap;border-radius:7px;cursor:pointer;min-height:37px}
+.nova-tab:hover{background:#222930;color:#fff}
+.nova-tab.active{background:#263d4b;color:#a9d9ec}
+.nova-demo-label{margin-inline-start:auto;color:#8c98a3;font-size:10px;white-space:nowrap;border:1px solid #35404a;padding:4px 9px;border-radius:6px}
+.pos-root{height:calc(100dvh - 104px)}
+.nova-page-view{height:calc(100dvh - 104px);overflow:auto;background:#0c0e11;padding:24px 30px}
+.nova-page-view[hidden]{display:none}
+.nova-page-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+.nova-page-header h1{font-size:23px;font-weight:800;color:#f1f3f5;margin:0}
+.nova-page-header p{font-size:12px;color:#a4adb7;margin-top:5px}
+.nova-page-search{min-height:44px;max-width:380px;width:100%;border:1px solid #38424b;border-radius:9px;background:#15191e;color:#f1f3f5;padding:8px 13px;font:inherit;font-size:13px}
+.nova-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.nova-kpi,.nova-panel{background:#171b20;border:1px solid #2d343c;border-radius:12px;padding:17px}
+.nova-kpi small{display:block;color:#9da9b4;font-size:11px}.nova-kpi strong{display:block;color:#f0f3f5;font-size:23px;margin-top:7px;font-weight:800}
+.nova-panel{padding:0;overflow:hidden}.nova-panel-title{padding:16px 18px;color:#e9eef2;font-size:14px;font-weight:700;border-bottom:1px solid #2d343c}
+.nova-data-table{border-collapse:collapse;width:100%;text-align:right}
+.nova-data-table th{background:#1c2229;color:#a7b3bd;font-size:11px;padding:13px 16px;white-space:nowrap}
+.nova-data-table td{padding:13px 16px;border-top:1px solid #292f36;color:#dce3e9;font-size:12px}
+.nova-data-table tr:hover td{background:#20262d}
+.nova-muted{color:#9aa7b3;font-size:11px}.nova-empty{padding:35px;text-align:center;color:#a4adb7}
+.nova-tag{border:1px solid #385260;background:#1b2e38;color:#a6d5e9;padding:3px 8px;border-radius:6px;font-size:10px}
+.nova-page-btn{background:#263d4b;border:1px solid #4b7185;color:#d7eaf2;border-radius:7px;padding:8px 12px;font:inherit;cursor:pointer}
+.nova-page-btn:hover{background:#335365}
+.nova-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.nova-setting-card{background:#171b20;border:1px solid #303841;border-radius:12px;padding:20px}
+.nova-setting-card h3{font-size:14px;color:#f1f3f5;margin:0 0 8px}.nova-setting-card p{font-size:12px;color:#a4adb7;line-height:1.8}
+@media(max-width:1050px){.nova-nav{height:44px;padding:4px 8px}.nova-tab{padding:7px 10px}.pos-root,.nova-page-view{height:calc(100dvh - 96px)}.nova-page-view{padding:15px}.nova-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(orientation:portrait){.pos-root,.nova-page-view{height:auto;min-height:calc(100dvh - 96px)}.nova-settings-grid{grid-template-columns:1fr}.nova-page-header{flex-wrap:wrap}.nova-page-view{overflow-x:auto}}
+
 </style>
 </head>
 <body>
@@ -1335,6 +1370,11 @@ table.invoice-table tbody tr:hover{background:#1d242b}
   <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true">س</div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
   <div class="pharmacy-banner-right"><span class="pharmacy-banner-live"><b></b> NOVA Rx POS</span><span class="pharmacy-banner-phone" dir="ltr">01143404023</span></div>
 </div>
+  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
+  <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
+  <span class="nova-demo-label">نسخة تجريبية</span>
+  </nav>
+  <div id="novaPageView" class="nova-page-view" dir="rtl" hidden></div>
   <div class="pos-root">
     <!-- LEFT WORKSPACE (~72%) -->
     <main class="main-workspace">
@@ -1815,6 +1855,7 @@ table.invoice-table tbody tr:hover{background:#1d242b}
       ];
 
       // --- APPLICATION STATE ---
+      window.NOVA_DEMO = { products: DEMO_PRODUCTS, customers: DEMO_CUSTOMERS };
       const state = {
         mode: "CUSTOMER", // "CUSTOMER" or "PRODUCT"
         attachedCustomer: null,
@@ -2632,6 +2673,58 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
     url.searchParams.set('refresh',String(Date.now()));
     location.replace(url.href);
   });
+})();
+</script>
+
+<script>
+(function(){
+ const nav=document.querySelector('.nova-nav'),view=document.getElementById('novaPageView'),pos=document.querySelector('.pos-root');
+ const tabs=[...document.querySelectorAll('.nova-tab')];
+ const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const money=n=>(Number(n)||0).toFixed(2)+' ر.س';
+ const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
+ const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
+ const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div></div>';
+ const rows=(items,fn)=>items.map(fn).join('');
+ function render(page,filter=''){
+ const {products,customers}=data();const q=filter.toLowerCase().trim();
+ const inv=customers.flatMap(c=>(c.pastInvoices||[]).map(i=>({...i,customer:c.name}))).sort((a,b)=>b.date.localeCompare(a.date));
+ const filtered=(arr,keys)=>arr.filter(x=>keys.some(k=>String(x[k]??'').toLowerCase().includes(q)));
+ const title={invoices:'الفواتير',products:'المنتجات والمخزون',customers:'العملاء',reports:'التقارير',settings:'الإعدادات'}[page];
+ let content='';
+ if(page==='products'){
+ const list=filtered(products,['name','barcode','generic','category']);
+ content=head(title,'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true)
+ +'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>'
+ +table(['الصنف','الباركود','السعر','الرصيد','التصنيف'],rows(list,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td>'+esc(p.stock)+'</td><td>'+esc(p.category)+'</td></tr>'));
+ }else if(page==='customers'){
+ const list=filtered(customers,['name','phone','tier']);
+ content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
+ +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
+ +table(['الاسم','الهاتف','المستوى','الزيارات','النقاط'],rows(list,c=>'<tr><td>'+esc(c.name)+'</td><td dir="ltr">'+esc(c.phone)+'</td><td>'+esc(c.tier)+'</td><td>'+esc(c.visits)+'</td><td>'+esc(c.points)+'</td></tr>'));
+ }else if(page==='invoices'){
+ const list=filtered(inv,['id','customer','date','branch']);
+ content=head(title,'فواتير سابقة من بيانات العرض — ليست سجل مبيعات محفوظًا',true)
+ +'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
+ +table(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+money(i.total)+'</td><td>'+esc((i.items||[]).length)+'</td></tr>'));
+ }else if(page==='reports'){
+ const sum=inv.reduce((s,i)=>s+i.total,0);
+ content=head(title,'مؤشرات توضيحية محسوبة من فواتير العملاء التجريبية فقط')
+ +'<div class="nova-kpis">'+kpi('مبيعات تجريبية',money(sum))+kpi('فواتير تجريبية',inv.length)+kpi('متوسط الفاتورة',money(inv.length?sum/inv.length:0))+kpi('العملاء',customers.length)+'</div>'
+ +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div>';
+ }else if(page==='settings'){
+ content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div></div>';
+ }
+ view.innerHTML=content;
+ const input=document.getElementById('novaFilter');
+ if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
+ }
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
+ window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
+ switchPage(location.hash.slice(1)||'sale');
 })();
 </script>
 </body>
