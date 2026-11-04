@@ -1858,6 +1858,7 @@ body *:not(svg):not(svg *){
 .nova-gate-primary{background:#247ca9;color:white;border:1px solid #3e9cc6}
 .nova-gate-secondary{background:#232b34;color:#e1e9f1;border:1px solid #465462}
 .nova-gate-cancel{background:transparent;color:#aeb9c5;border:0}
+.nova-sale-actions .nova-hold-action{background:#2a3541;border:1px solid #526476;color:#e8f2fb;font-weight:700;padding:0 10px;font-size:12px}.nova-sale-actions .nova-hold-action:hover{background:#364657}@media(max-width:420px){.nova-sale-actions .nova-hold-action{padding:0 8px}.nova-sale-actions .nova-hold-action span{font-size:11px}}
 </style>
 </head>
 <body>
@@ -1884,6 +1885,7 @@ body *:not(svg):not(svg *){
 
         <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" aria-label="رقم عملية البيع"></span>
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="New Sale (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
+          <button id="holdCurrentInvoice" class="btn nova-hold-action" type="button" title="تعليق الفاتورة الحالية" aria-label="تعليق الفاتورة الحالية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M10 9v6m4-6v6"/></svg><span>تعليق</span></button>
           <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="Held Invoices" aria-label="Held Invoices"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
           <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="Add / Switch Customer (F3)" aria-label="Add / Switch Customer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
           <div class="nova-more-wrap">
@@ -1896,7 +1898,7 @@ body *:not(svg):not(svg *){
         </div>
       </header>
 
-      <div id="heldInvoicePanel" class="nova-held-panel" hidden role="dialog" aria-label="Held Invoices"><div class="nova-held-heading"><strong>Held Invoices</strong><button id="closeHeldInvoices" type="button" aria-label="Close">×</button></div><div id="heldInvoiceList" class="nova-held-list"></div><button id="holdCurrentInvoice" class="nova-hold-current" type="button">Hold Current Invoice</button></div>
+      <div id="heldInvoicePanel" class="nova-held-panel" hidden role="dialog" aria-label="Held Invoices"><div class="nova-held-heading"><strong>Held Invoices</strong><button id="closeHeldInvoices" type="button" aria-label="Close">×</button></div><div id="heldInvoiceList" class="nova-held-list"></div></div>
 
       <!-- Unified Main Search Bar -->
       <div class="search-container">
