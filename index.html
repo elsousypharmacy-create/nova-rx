@@ -3527,5 +3527,52 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 })();
 </script>
+
+<style>
+#novaAiLaunch{position:fixed;bottom:18px;left:18px;z-index:8000;background:#2563eb;color:#fff;border:0;border-radius:14px;padding:11px 16px;font:700 13px Cairo;box-shadow:0 6px 22px #0008;cursor:pointer}
+#novaAiPanel{display:none;position:fixed;inset:0;z-index:9000;background:#000b;align-items:center;justify-content:center;padding:12px;font-family:Cairo}
+#novaAiPanel.open{display:flex}
+#novaAiPanel .ai-sheet{background:#171b20;color:#f6f7f8;border:1px solid #39424e;border-radius:18px;padding:18px;max-width:920px;width:100%;max-height:92dvh;overflow:auto;direction:rtl}
+#novaAiPanel button{font-family:Cairo;cursor:pointer;border:0;border-radius:9px;padding:9px 14px}
+#novaAiPanel input{font-family:Cairo;max-width:100%}
+#novaAiPanel table{width:100%;border-collapse:collapse;font-size:12px;min-width:660px}
+#novaAiPanel td,#novaAiPanel th{padding:7px;border-bottom:1px solid #38404b;text-align:right}
+#novaAiPanel td input{width:100%;min-width:65px;background:#101318;color:#fff;border:1px solid #48505a;border-radius:5px;padding:5px}
+#novaAiPanel .ai-note{color:#aab6c7;font-size:12px;line-height:1.8}
+</style>
+<button id="novaAiLaunch" type="button">✦ AI المشتريات</button>
+<section id="novaAiPanel" role="dialog" aria-modal="true" aria-label="مراجعة فاتورة مشتريات بالذكاء الاصطناعي">
+<div class="ai-sheet">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 style="margin:0">✦ قراءة فواتير المشتريات</h3><button type="button" id="novaAiClose">إغلاق ✕</button></div>
+<p class="ai-note">ارفع صور فاتورة أو أكثر (حد أقصى 4 صور، 4 ميجابايت للصورة). النتائج مسودة قابلة للتعديل فقط؛ لا يوجد ترحيل للمخزون أو اعتماد تلقائي.</p>
+<input id="novaAiFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+<button id="novaAiRun" type="button" style="background:#2563eb;color:#fff;margin:10px 0">تحليل الفاتورة</button>
+<p id="novaAiStatus" role="status" class="ai-note"></p>
+<div style="overflow-x:auto"><table id="novaAiTable" hidden><thead><tr><th>الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الخصم</th><th>التشغيلة</th><th>الصلاحية</th><th>ملاحظات</th></tr></thead><tbody></tbody></table></div>
+<p id="novaAiSupplier" class="ai-note"></p>
+<button id="novaAiExport" type="button" hidden>تنزيل CSV للمراجعة</button>
+<p class="ai-note">راجع كل خانة مقابل الفاتورة الأصلية. الخانات غير المقروءة تُترك فارغة. لا تربط أصنافًا أو تنشئ QR تلقائيًا قبل تأكيدها.</p>
+</div></section>
+<script>
+(()=>{const $=id=>document.getElementById(id),panel=$('novaAiPanel'),status=$('novaAiStatus'),table=$('novaAiTable'),tbody=table.querySelector('tbody');
+$('novaAiLaunch').onclick=()=>panel.classList.add('open');$('novaAiClose').onclick=()=>panel.classList.remove('open');
+function field(v){const input=document.createElement('input');input.value=v==null?'':String(v);return input}
+$('novaAiRun').onclick=async()=>{
+const files=Array.from($('novaAiFiles').files||[]);
+if(!files.length||files.length>4){status.textContent='اختار من 1 إلى 4 صور';return}
+if(files.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>4*1024*1024)){status.textContent='الملفات لازم تكون صور JPG/PNG/WebP وأقل من 4MB لكل صورة';return}
+status.textContent='جاري التحليل...';$('novaAiRun').disabled=true;table.hidden=true;$('novaAiExport').hidden=true;
+try{
+const images=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({mimeType:f.type,data:String(reader.result).split(',')[1]});reader.onerror=reject;reader.readAsDataURL(f)})));
+const response=await fetch('/api/ai/purchase',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({images})});
+const result=await response.json();if(!response.ok)throw Error(result.error||'فشل الاتصال');
+tbody.replaceChildren();for(const item of result.items||[]){const tr=document.createElement('tr');for(const key of ['name','quantity','unit_price','discount','batch','expiry','notes']){const td=document.createElement('td');td.append(field(item[key]));tr.append(td)}tbody.append(tr)}
+table.hidden=false;$('novaAiExport').hidden=false;$('novaAiSupplier').textContent='المورد: '+(result.supplier||'غير واضح');
+status.textContent='تم استخراج '+(result.items||[]).length+' صنف. راجع كل البيانات قبل أي اعتماد.';
+}catch(e){status.textContent='تعذر التحليل: '+e.message}finally{$('novaAiRun').disabled=false}
+};
+$('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر الوحدة','الخصم','التشغيلة','الصلاحية','ملاحظات'],...Array.from(tbody.rows,r=>Array.from(r.querySelectorAll('input'),i=>i.value))];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='nova-purchase-review.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+})();
+</script>
 </body>
 </html>
