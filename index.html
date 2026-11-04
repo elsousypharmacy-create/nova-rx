@@ -1553,12 +1553,18 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 /* Keep NOVA Rx opposite the RTL navigation tabs, on the physical left. */
 .nova-nav-brand{left:13px!important;right:auto!important;inset-inline-end:auto!important;inset-inline-start:auto!important}
 @media(max-width:780px){.nova-nav-brand{left:7px!important}}
+
+/* Actual opposite-side alignment: NOVA is last flex child, pushed to the far left. */
+.nova-nav{display:flex!important;direction:rtl!important;position:relative;min-width:0}
+.nova-nav .nova-nav-brand{position:static!important;transform:none!important;left:auto!important;right:auto!important;top:auto!important;inset:auto!important;margin-inline-start:auto!important;margin-inline-end:0!important;padding-inline-start:14px;flex:0 0 auto;order:99;align-self:center}
+.nova-nav .nova-tab{flex-shrink:0}
 </style>
 </head>
 <body>
-  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl"><div class="nova-nav-brand" dir="ltr">NOVA <span>Rx</span></div>
+  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
+  <div class="nova-nav-brand" dir="ltr">NOVA <span>Rx</span></div>
   </nav>
 <div class="pharmacy-brand-banner" role="banner" dir="rtl">
   <div class="nova-top-label">نظام نقاط البيع</div>
