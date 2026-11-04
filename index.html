@@ -1260,6 +1260,63 @@ button:focus-visible,input:focus-visible{outline:2px solid #38bdf8;outline-offse
  .invoice-footer{flex-wrap:wrap}
 }
 
+
+/* NOVA Rx v3 — refined clinical light palette */
+:root{
+ --bg-base:#edf3f8;--bg-panel:#ffffff;--bg-surface:#f0f5f9;--bg-surface-hover:#e4eef6;
+ --bg-surface-active:#dbeaf4;--border-subtle:#d9e4ee;--border-focus:#1677b9;
+ --text-main:#172c40;--text-muted:#5c7083;--text-dim:#74869a;
+ --accent-cyan:#0877b9;--accent-cyan-light:#0877b9;
+ --accent-green:#07836a;--accent-green-bg:#e7f6f0;--accent-green-border:#a9dfcc;
+ --accent-red:#bc4050;--accent-red-bg:#fff0f1;--accent-amber:#b77c15;
+ --badge-customer:#7255a9;--badge-customer-bg:#f0ebfa;--badge-product:#0877b9;--badge-product-bg:#eaf5fc;
+ --shadow-sm:0 1px 3px rgba(24,49,75,.06);--shadow-md:0 5px 18px rgba(24,49,75,.09);--shadow-lg:0 15px 35px rgba(24,49,75,.14)
+}
+body,.pos-root{background:#edf3f8;color:#172c40}
+.main-workspace{background:#fff;border-right:1px solid #dbe5ee}
+.customer-sidebar{background:#f5f8fc}
+.top-header,.sidebar-header{background:#fff;border-bottom:1px solid #dce6ef}
+.brand-logo,.sidebar-title{color:#18354d}
+.brand-logo span.rx{background:#e6f3fc;color:#0877b9}
+.status-pill.customer-mode{background:#f0ebfa;color:#6244a2;border-color:#ddd0f5}
+.status-pill.product-mode{background:#eaf5fc;color:#076eab;border-color:#c6e3f6}
+.btn-secondary{background:#fff;color:#28455e;border-color:#cfdeea}
+.btn-secondary:hover{background:#eaf3fa;border-color:#abc8db}
+.btn-loyalty{background:#f2edfc;color:#6644a5;border-color:#ded2f5}
+.btn-loyalty:hover{background:#e9e0fb}
+.btn-danger{background:#fff2f2;color:#b63f50;border-color:#f4cdd3}
+.search-container{background:#f7fafc;border-bottom:1px solid #e1eaf1}
+.main-search-input{background:#fff;color:#16334b;border:1px solid #c9d9e7;box-shadow:0 2px 8px rgba(18,55,85,.04)}
+.main-search-input::placeholder{color:#8799a8}
+.main-search-input:focus{border-color:#0877b9;box-shadow:0 0 0 3px rgba(8,119,185,.11)}
+.search-mode-tag.customer{background:#f0ebfa;color:#6445a0;border-color:#ddd1f4}
+.search-mode-tag.product{background:#e7f4fc;color:#086ea9;border-color:#c7e5f7}
+.suggestions-dropdown{background:#fff;border-color:#b6d8eb;box-shadow:var(--shadow-lg)}
+.suggestion-item{border-bottom:1px solid #edf2f6}
+.suggestion-item.selected,.suggestion-item:hover{background:#edf6fc;border-left-color:#0877b9}
+.sugg-primary{color:#17354d}.sugg-sub{color:#60788d}.sugg-price{color:#0877b9}
+.sugg-tag{background:#eef3f7;color:#63778b}
+.table-container{background:#fff}
+table.invoice-table th{background:#f2f6fa;color:#526a7e;border-bottom:1px solid #dce6ee}
+table.invoice-table td{color:#233c50;border-bottom:1px solid #edf1f5}
+table.invoice-table tbody tr:hover{background:#f5fafe}
+.invoice-footer{background:#fff;border-top:1px solid #dce6ef;box-shadow:0 -5px 18px rgba(22,56,85,.04)}
+.discount-controls{background:#f7fafc;border-color:#dce7f0}
+.discount-title{color:#5b7285}
+.input-grp,.qty-control{background:#fff;border-color:#d1dfeb}
+.input-grp input,.qty-input{background:#fff;color:#18354d}
+.qty-btn{color:#16628f}
+.qty-btn:hover{background:#e9f4fb;color:#0877b9}
+.totals-breakdown,.tot-row{color:#61788c}
+.tot-row span:last-child{color:#26465d}
+.tot-row.grand-total{border-color:#cbdde9;color:#123e5a}
+.tot-row.grand-total span:last-child{color:#086ba6}
+.btn-checkout{background:#0877b9;border:1px solid #0877b9;box-shadow:0 5px 13px rgba(8,119,185,.18);color:#fff}
+.btn-checkout:hover{background:#06689f;box-shadow:0 6px 14px rgba(8,119,185,.22)}
+.sidebar-body{background:#f5f8fc}
+.customer-empty-box{color:#62798b}
+@media (prefers-color-scheme:dark){body{color-scheme:light}}
+
 </style>
 </head>
 <body>
