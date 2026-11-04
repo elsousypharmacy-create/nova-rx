@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NOVA Rx">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest?v=3">
+  <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.svg">
   <style>
     :root {
@@ -1191,238 +1191,101 @@
       overflow-y: auto;
     }
   
-/* NOVA Rx Tablet UX v2 — 16:10 landscape, touch-first without changing POS logic */
-:root{--bg-base:#0b1220;--bg-panel:#111c2d;--bg-surface:#203149;--border-subtle:#304158;--text-muted:#a8b8cc}
-body{font-size:15px;line-height:1.45}
-.pos-root{height:100dvh}
-.main-workspace{flex:1 1 73%;width:73%;max-width:73%;min-width:0}
-.customer-sidebar{flex:0 0 27%;width:27%;max-width:27%;min-width:0}
-.top-header{height:62px;min-height:62px;padding:0 18px;gap:10px}
-.brand-logo{font-size:20px}.brand-logo span.rx{font-size:14px}
-.task-badge{display:none}
-.status-pill{font-size:12px;padding:6px 10px}
-.header-actions{gap:8px}
-.btn{min-height:44px;font-size:13px;padding:9px 12px;border-radius:10px}
-.search-container{padding:14px 18px}
-.main-search-input{height:58px;font-size:17px;border-radius:12px;padding-left:138px;padding-right:18px}
-.search-mode-tag{font-size:12px;padding:7px 9px}
-.search-hints{display:none}
-.suggestions-dropdown{left:18px;right:18px;max-height:50dvh;border-radius:12px}
-.suggestion-item{min-height:58px;padding:12px 14px}
-.sugg-primary{font-size:15px}.sugg-sub{font-size:12px}
-.table-container{min-height:0;overscroll-behavior:contain}
-table.invoice-table{table-layout:auto}
-table.invoice-table th{font-size:12px;padding:13px 9px}
-table.invoice-table td{font-size:14px;padding:12px 9px}
-.col-item{min-width:160px}.col-barcode{width:100px}.col-qty{width:112px}
-.qty-btn{width:38px;height:40px;font-size:19px}.qty-input{height:40px;width:38px;font-size:15px}
-.invoice-footer{height:auto;min-height:134px;padding:12px 16px;gap:12px}
-.discount-controls{flex:0.95;min-width:0;padding:10px;border-radius:10px}
-.discount-title{font-size:12px}.discount-title span:last-child{display:none}
-.totals-breakdown{flex:1.1;font-size:13px;min-width:0;gap:4px}
-.checkout-action-box{width:150px;min-width:150px;align-self:stretch}
-.btn-checkout{min-height:80px;border-radius:12px;font-size:16px}
-.sidebar-header{height:62px;min-height:62px;padding:0 16px}
-.sidebar-title{font-size:16px}
-.sidebar-body{padding:14px;gap:14px}
-.customer-sidebar button,.customer-sidebar input{min-height:40px}
-button,input{touch-action:manipulation}
-button:focus-visible,input:focus-visible{outline:2px solid #38bdf8;outline-offset:2px}
-@media(max-width:1300px){
- .top-header{padding:0 12px}.header-actions{gap:5px}
- .btn{padding:8px 9px;font-size:12px}
- .status-pill{max-width:150px;overflow:hidden;white-space:nowrap}
- .main-workspace{flex-basis:74%;width:74%;max-width:74%}
- .customer-sidebar{flex-basis:26%;width:26%;max-width:26%}
- .col-barcode{display:none}
- table.invoice-table th,table.invoice-table td{padding-left:7px;padding-right:7px}
- .invoice-footer{gap:8px;padding:10px}
- .checkout-action-box{width:125px;min-width:125px}
-}
-@media(max-width:1050px){
- .header-actions #btnHelpShortcuts{display:none}
- .header-actions kbd{display:none}
- .brand-logo{font-size:18px}
- .col-disc{display:none}
- .invoice-footer{flex-wrap:wrap}
- .discount-controls{flex:1 1 42%}
- .totals-breakdown{flex:1 1 48%}
- .checkout-action-box{width:100%;flex:1 1 100%}
- .btn-checkout{min-height:48px}
-}
-@media(max-height:650px) and (orientation:landscape){
- .top-header,.sidebar-header{height:48px;min-height:48px}
- .search-container{padding:8px 12px}
- .main-search-input{height:46px}
- .invoice-footer{min-height:100px;padding:7px 10px}
- .btn-checkout{min-height:58px}
-}
-@media(orientation:portrait){
- body{overflow:auto;height:auto}
- .pos-root{min-height:100dvh;height:auto;flex-direction:column;overflow:visible}
- .main-workspace,.customer-sidebar{width:100%;max-width:100%;min-width:0;flex:auto;height:auto}
- .main-workspace{min-height:75dvh}
- .customer-sidebar{min-height:250px}
- .top-header{flex-wrap:wrap;height:auto;min-height:60px;padding:10px}
- .header-actions{flex-wrap:wrap}
- .table-container{min-height:300px;overflow-x:auto}
- .invoice-footer{flex-wrap:wrap}
-}
 
-
-
-/* Elsousy Pharmacy — coherent premium dark theme */
-:root{
- --bg-base:#091423;--bg-panel:#0d1b2e;--bg-surface:#172b42;
- --bg-surface-hover:#203a56;--bg-surface-active:#27445e;
- --border-subtle:#29415a;--border-focus:#299bd4;
- --text-main:#edf5fc;--text-muted:#a8bfd1;--text-dim:#8099ae;
- --accent-cyan:#168ec9;--accent-cyan-light:#45b8ed;
- --accent-green:#35c69b;--accent-green-bg:#102f2b;--accent-green-border:#246557;
- --accent-red:#f07c87;--accent-red-bg:#38212f;--accent-amber:#f1bb5d;
- --badge-customer:#baa4ed;--badge-customer-bg:#302747;
- --badge-product:#61c4f2;--badge-product-bg:#12374d;
- --shadow-sm:0 2px 6px rgba(0,0,0,.15);--shadow-md:0 6px 18px rgba(0,0,0,.24);--shadow-lg:0 16px 36px rgba(0,0,0,.35)
-}
-body,.pos-root{background:#091423;color:#edf5fc;color-scheme:dark}
-.main-workspace{background:#0d1b2e;border-right:1px solid #29415a}
-.customer-sidebar,.sidebar-body{background:#0a1728}
-.top-header,.sidebar-header{background:#10243a;border-bottom:1px solid #29415a}
-.brand-logo,.sidebar-title{color:#f1f7fc}
-.brand-logo span.rx{background:#153c5b;color:#5dc7f6}
-.status-pill.customer-mode,.search-mode-tag.customer{background:#322748;color:#d4c4fa;border-color:#66518e}
-.status-pill.product-mode,.search-mode-tag.product{background:#123b56;color:#8ad8fa;border-color:#276c93}
-.btn-secondary{background:#193049;color:#e1edf7;border-color:#33516c}
-.btn-secondary:hover{background:#25425e;border-color:#47728f}
-.btn-loyalty{background:#302747;color:#d7c5fa;border-color:#63518b}
-.btn-loyalty:hover{background:#40335c}
-.btn-danger{background:#3a2431;color:#ffb2bb;border-color:#704251}
-.search-container{background:#0d2035;border-bottom:1px solid #29415a}
-.main-search-input{background:#091827;color:#f0f7fd;border:1px solid #35536e;box-shadow:none}
-.main-search-input::placeholder{color:#829db2}
-.main-search-input:focus{border-color:#45b8ed;box-shadow:0 0 0 3px rgba(69,184,237,.14)}
-.suggestions-dropdown{background:#13283e;border-color:#39739a;box-shadow:var(--shadow-lg)}
-.suggestion-item{border-bottom:1px solid #29415a}
-.suggestion-item.selected,.suggestion-item:hover{background:#1d3a55;border-left-color:#45b8ed}
-.sugg-primary{color:#f0f7fc}.sugg-sub{color:#a6bed1}.sugg-price{color:#6bcbf5}
-.sugg-tag{background:#203a52;color:#b3cadb}
-.table-container{background:#0d1b2e}
-table.invoice-table th{background:#13283e;color:#b4c8d8;border-bottom:1px solid #29415a}
-table.invoice-table td{color:#e4eef7;border-bottom:1px solid #21364d}
-table.invoice-table tbody tr:hover{background:#172d44}
-.invoice-footer{background:#10243a;border-top:1px solid #29415a;box-shadow:0 -5px 18px rgba(0,0,0,.12)}
-.discount-controls{background:#0b1c2e;border-color:#29415a}
-.discount-title{color:#b5c9d9}
-.input-grp,.qty-control{background:#0d2034;border-color:#36536e}
-.input-grp input,.qty-input{background:#0d2034;color:#edf6fd}
-.qty-btn{color:#9edaf7}.qty-btn:hover{background:#1b3e58;color:#fff}
-.totals-breakdown,.tot-row{color:#b1c5d6}
-.tot-row span:last-child{color:#e4f0f9}
-.tot-row.grand-total{border-color:#3b5871;color:#f0f8fd}
-.tot-row.grand-total span:last-child{color:#66c9f7}
-.btn-checkout{background:#168ec9;border:1px solid #36b0e7;box-shadow:0 5px 14px rgba(0,0,0,.2);color:#fff}
-.btn-checkout:hover{background:#087cb6;box-shadow:0 6px 16px rgba(0,0,0,.25)}
-.customer-empty-box{background:#10263c;border:1px dashed #38546c;color:#a9bfd1;border-radius:14px;padding:26px 14px}
-.customer-empty-text{color:#c2d4e3;font-size:14px}.customer-empty-sub{color:#92aabe;font-size:12px}
-.cust-card{background:#12283e;border:1px solid #2c4862;border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
-.cust-name{color:#f3f8fd;font-size:17px}.cust-phone{color:#aac0d1;font-size:13px}
-.cust-stat-pill{background:#203950;color:#b8cede;border-radius:8px;padding:7px 9px;font-size:12px}
-.cust-stat-pill strong{color:#fff}
-.cust-stat-pill.tier-gold{background:#3c321e;color:#f5cf81;border:1px solid #7c6537}
-.cust-actions-bar{gap:8px;flex-wrap:wrap}
-.offers-section{background:#12332e;border:1px solid #276c5b;border-radius:12px;padding:12px}
-.offers-header{color:#78e4bd;font-size:12px}.offer-item{color:#b5f1d9;font-size:13px}
-.history-header{color:#d9e8f3;font-size:14px}
-.history-search-input{height:44px;background:#0b2034;border:1px solid #36536e;color:#edf6fd;font-size:14px;padding:0 12px;border-radius:9px}
-.history-search-input::placeholder{color:#88a2b7}
-.invoices-scroll{max-height:none;min-height:0}
-.past-inv-card{background:#132b42;border:1px solid #2d4a65;border-radius:11px;padding:12px}
-.past-inv-meta{color:#9cb5c8;font-size:12px;border-bottom:1px solid #29415a}
-.past-inv-meta strong{color:#d4e7f5}
-.past-item-row{color:#d9e9f5;font-size:13px}.past-item-price{color:#6dcdf6;font-size:13px}
-.btn-add-history{width:36px;height:36px;background:#173d58;border:1px solid #346b8d;color:#81d5fb;border-radius:8px}
-.btn-add-history:hover{background:#168ec9;color:#fff}
-.modal-backdrop{background:rgba(2,9,17,.75)}
-.modal-card{background:#10243a;border:1px solid #35516b;border-radius:16px;color:#e5f0f9}
-.modal-header,.modal-footer{background:#0b1c2e;border-color:#2b4660}
-.modal-header h3{color:#f0f7fd;font-size:17px}.modal-body{color:#e1edf7}
-.checkout-amount-display{background:#0b1c2e;border:1px solid #31516c;border-radius:12px}
-.checkout-amount-display .label{color:#a7c0d2}.checkout-amount-display .val{color:#67cbf8}
-.pay-method-btn{background:#1a344c;color:#d7e8f4;border:1px solid #36546d;border-radius:10px;min-height:64px}
-.pay-method-btn.active{background:#154263;color:#fff;border-color:#4bb8ed}
-.quick-cash-btn{background:#19334b;border:1px solid #36546d;color:#d6e8f5;border-radius:9px;min-height:42px}
-.quick-cash-btn:hover{background:#234c6a;color:#fff}
-.change-due-box{background:#12332e;border-color:#276c5b;border-radius:10px}
-.change-due-box span.title,.change-due-box span.amount{color:#77e1b9}
-.toast{background:#173149;border:1px solid #3a8cb5;color:#f0f7fd;border-radius:10px}
-
-
-/* v5 — charcoal black + pharmacy identity and premium accent palette */
-:root{--bg-base:#090b10;--bg-panel:#10141b;--bg-surface:#1c242e;--bg-surface-hover:#263342;--bg-surface-active:#304052;--border-subtle:#303944;--text-main:#f3f5f8;--text-muted:#b1becb;--text-dim:#8293a5;--accent-cyan:#239cd4;--accent-cyan-light:#5cc9f6;--accent-green:#34c7a0;--accent-green-bg:#102d27;--accent-green-border:#245a4b}
-body,.pos-root{background:#090b10;color:#f3f5f8}
-.pharmacy-brand-banner{height:76px;min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:9px 24px;background:linear-gradient(105deg,#080b11 0%,#101823 65%,#11151d 100%);border-bottom:1px solid #304151;position:relative;overflow:hidden}
-.pharmacy-brand-banner:after{content:"";position:absolute;right:-65px;top:-95px;width:300px;height:170px;border:1px solid rgba(62,168,217,.14);border-radius:50%;pointer-events:none}
-.pharmacy-banner-identity{display:flex;align-items:center;gap:14px;min-width:0}
-.pharmacy-mark{height:52px;width:52px;flex:0 0 52px;display:grid;place-items:center;background:linear-gradient(145deg,#189cd9,#063c74);border-radius:14px;color:#fff;font-size:34px;font-weight:900;box-shadow:0 0 0 1px #4d9fc8 inset}
-.pharmacy-banner-copy{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
-.pharmacy-banner-copy strong{color:#f7fbff;font-size:22px;font-weight:800;line-height:1.3}
-.pharmacy-banner-copy span{color:#8bb9d4;font-size:12px;font-weight:500}
-.pharmacy-banner-copy i{display:inline-block;width:4px;height:4px;border-radius:50%;background:#d6ad68;margin:0 7px;vertical-align:middle}
-.pharmacy-banner-right{display:flex;align-items:center;gap:18px;white-space:nowrap}
-.pharmacy-banner-live{display:inline-flex;align-items:center;gap:7px;color:#a4c8df;background:#182b3b;border:1px solid #2d4a60;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;direction:ltr}
-.pharmacy-banner-live b{width:7px;height:7px;background:#35c9a0;border-radius:50%}
-.pharmacy-banner-phone{color:#e7c58b;font-size:14px;letter-spacing:.5px;font-weight:700}
-.pos-root{height:calc(100dvh - 76px)}
-.main-workspace{background:#10141b;border-right-color:#303944}
-.customer-sidebar,.sidebar-body{background:#0c1118}
-.top-header,.sidebar-header{background:#151d26;border-bottom-color:#303944}
-.search-container{background:#141b24;border-bottom-color:#303944}
-.main-search-input{background:#0b1119;border-color:#3b4c5c}
-.table-container{background:#10141b}
-table.invoice-table th{background:#1b2631;border-bottom-color:#303944}
-table.invoice-table td{border-bottom-color:#26313d}
-table.invoice-table tbody tr:hover{background:#1b2733}
-.invoice-footer{background:#151d26;border-top-color:#303944}
-.discount-controls,.input-grp,.qty-control,.input-grp input,.qty-input{background:#0d151e}
-.cust-card,.past-inv-card{background:#171f29;border-color:#354451}
-.customer-empty-box{background:#151e28;border-color:#3a4b5b}
-.cust-stat-pill{background:#263441}
-.offers-section{background:#142d29}
-.history-search-input{background:#101a24}
-.modal-card{background:#171f29}
-.modal-header,.modal-footer{background:#101720}
-.checkout-amount-display{background:#0e1821}
-.pay-method-btn,.quick-cash-btn{background:#22303d}
-@media(max-width:1050px){.pharmacy-brand-banner{height:64px;min-height:64px;padding:7px 14px}.pos-root{height:calc(100dvh - 64px)}.pharmacy-mark{width:44px;height:44px;flex-basis:44px;font-size:29px}.pharmacy-banner-copy strong{font-size:18px}.pharmacy-banner-phone{display:none}}
-@media(max-width:700px){.pharmacy-banner-live{display:none}.pharmacy-banner-copy strong{font-size:16px}.pharmacy-banner-copy span{font-size:10px}}
-@media(orientation:portrait){.pos-root{height:auto;min-height:calc(100dvh - 64px)}}
-
-
-/* NOVA Rx Signature UI — restrained luxury dark */
-:root{--bg-base:#090a0d;--bg-panel:#111318;--bg-surface:#1c2027;--bg-surface-hover:#252b33;--border-subtle:#2a3039;--text-main:#f5f6f7;--text-muted:#aab2be;--accent-cyan:#198ec7;--accent-cyan-light:#65c7f1}
-body,.pos-root{background:#090a0d}
-.pharmacy-brand-banner{height:64px;min-height:64px;background:#0d1015;border-bottom:1px solid #282f38;padding:8px 22px}
+/* NOVA Rx / BLACK EDITION — unified design system */
+:root{color-scheme:dark;--bg-base:#050607;--bg-panel:#0b0d10;--bg-surface:#171b20;--bg-surface-hover:#21272e;--bg-surface-active:#29313a;--border-subtle:#272c33;--border-focus:#5badd6;--text-main:#f4f5f6;--text-muted:#a7afb9;--text-dim:#77828f;--accent-cyan:#2b90bd;--accent-cyan-light:#79c9eb;--accent-green:#69c6a8;--accent-green-bg:#10231e;--accent-green-border:#254c40;--accent-red:#e88e96;--accent-red-bg:#29181c;--accent-amber:#c5aa79;--badge-customer:#b8a6d7;--badge-customer-bg:#221d2a;--badge-product:#79c9eb;--badge-product-bg:#142530;--shadow-sm:0 2px 8px #0005;--shadow-md:0 8px 24px #0007;--shadow-lg:0 18px 48px #0009}
+html,body{background:#050607!important;color:#f4f5f6!important;color-scheme:dark}
+body{font-size:14px;line-height:1.45}
+.pharmacy-brand-banner{height:56px;min-height:56px;padding:6px 20px;background:#080a0d;border-bottom:1px solid #242b33;display:flex;align-items:center;justify-content:space-between;gap:14px}
 .pharmacy-brand-banner:after{display:none}
-.pharmacy-mark{width:42px;height:42px;flex-basis:42px;font-size:26px;border-radius:11px;background:#122c41;box-shadow:none;color:#65c7f1}
-.pharmacy-banner-copy strong{font-size:19px;letter-spacing:-.2px}
-.pharmacy-banner-copy span{color:#a4b3c2}
-.pharmacy-banner-phone{color:#b6a37e;font-size:12px}
-.pharmacy-banner-live{background:#14202b;border-color:#273b4d}
-.pos-root{height:calc(100dvh - 64px)}
-.top-header,.sidebar-header{background:#141820}
-.search-container{background:#11161e}
-.main-workspace,.table-container{background:#111318}
-.customer-sidebar,.sidebar-body{background:#0d1015}
-.invoice-footer{background:#151a21}
-.btn,.btn-checkout,.cust-card,.past-inv-card,.modal-card{border-radius:10px}
-.btn-checkout{background:#168bc3;border-color:#2d9bd0;box-shadow:none}
-.btn-checkout:hover{background:#0879b2;box-shadow:none}
-.main-search-input{background:#0b1016;border-color:#36424f}
-.cust-card,.past-inv-card{background:#171c23;border-color:#303a45;box-shadow:none}
-table.invoice-table th{background:#1b2129}
-table.invoice-table tbody tr:hover{background:#202832}
-@media(max-width:1050px){.pharmacy-brand-banner{height:58px;min-height:58px}.pos-root{height:calc(100dvh - 58px)}}
-@media(orientation:portrait){.pos-root{height:auto}}
+.pharmacy-banner-identity,.pharmacy-banner-right{display:flex;align-items:center;gap:12px}
+.pharmacy-mark{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;background:#14232d;border:1px solid #2d4e61;border-radius:9px;color:#80c9e9;font-size:24px;font-weight:800;box-shadow:none}
+.pharmacy-banner-copy{display:flex;flex-direction:column;gap:1px}
+.pharmacy-banner-copy strong{color:#f1f4f7;font-size:17px;line-height:1.25}
+.pharmacy-banner-copy span{color:#929da8;font-size:11px}
+.pharmacy-banner-copy i{display:inline-block;width:3px;height:3px;border-radius:50%;background:#bca77e;margin:0 6px;vertical-align:middle}
+.pharmacy-banner-live{display:inline-flex;align-items:center;gap:7px;background:#121b22;border:1px solid #293c49;color:#a9bdcb;padding:6px 11px;border-radius:7px;font-size:11px;direction:ltr}
+.pharmacy-banner-live b{height:6px;width:6px;border-radius:50%;background:#69c6a8}
+.pharmacy-banner-phone{color:#b6a37e;font-size:12px;direction:ltr}
+.pos-root{height:calc(100dvh - 56px);background:#050607;display:flex;overflow:hidden}
+.main-workspace{flex:0 0 73%;width:73%;min-width:0;max-width:73%;background:#0b0d10;border-right:1px solid #272c33}
+.customer-sidebar{flex:0 0 27%;width:27%;min-width:0;max-width:27%;background:#090b0e}
+.top-header,.sidebar-header{height:52px;min-height:52px;background:#101318;border-bottom:1px solid #272c33;padding:0 14px}
+.brand-logo{color:#f4f5f6;font-size:17px}.brand-logo span.rx{color:#79c9eb;background:#172631;font-size:12px}
+.task-badge{display:none}
+.status-pill{font-size:11px;padding:5px 8px}
+.status-pill.customer-mode,.search-mode-tag.customer{background:#241e2c;color:#c7b6e3;border:1px solid #514460}
+.status-pill.product-mode,.search-mode-tag.product{background:#132530;color:#90d5f0;border:1px solid #315568}
+.header-actions{gap:6px}
+.btn{font-size:12px;min-height:40px;padding:8px 11px;border-radius:8px;box-shadow:none}
+.btn-secondary{background:#1b2027;color:#dce3ea;border-color:#343c46}
+.btn-secondary:hover{background:#262d36;border-color:#4b5967}
+.btn-loyalty{background:#231f2b;color:#c8b7df;border-color:#50455c}
+.btn-danger{background:#29191e;color:#efa2a8;border-color:#56323a}
+.search-container{padding:12px 14px;background:#0e1115;border-bottom:1px solid #272c33}
+.main-search-input{height:52px;background:#080a0d!important;color:#f4f5f6!important;border:1px solid #3b444e;border-radius:9px;font-size:16px;padding-left:138px;padding-right:15px;box-shadow:none}
+.main-search-input::placeholder{color:#7d8996}
+.main-search-input:focus{border-color:#79c9eb;box-shadow:0 0 0 2px #79c9eb22}
+.search-mode-tag{font-size:11px;padding:6px 8px}.search-hints{display:none}
+.suggestions-dropdown{left:14px;right:14px;background:#15191f;border:1px solid #3b5565;border-radius:9px;max-height:50dvh;box-shadow:var(--shadow-lg)}
+.suggestion-item{padding:12px;min-height:50px;border-bottom:1px solid #292f37}
+.suggestion-item.selected,.suggestion-item:hover{background:#212b34;border-left:2px solid #79c9eb}
+.sugg-primary{color:#f0f3f6;font-size:14px}.sugg-sub{color:#9da8b4}.sugg-price{color:#8bcce9}.sugg-tag{background:#252b32;color:#a6b2bd}
+.table-container{background:#0b0d10;min-height:0;overscroll-behavior:contain}
+table.invoice-table th{background:#15191f;color:#aeb8c2;font-size:11px;padding:12px 8px;border-bottom:1px solid #2b3037}
+table.invoice-table td{color:#e6ebef;font-size:13px;padding:11px 8px;border-bottom:1px solid #22272d}
+table.invoice-table tbody tr:hover{background:#171d23}
+.col-item{min-width:160px}.col-qty{width:110px}
+.qty-control,.input-grp{background:#10151a;border:1px solid #343e49;border-radius:7px}
+.qty-btn{width:36px;height:38px;color:#d5e5ee;font-size:18px}.qty-btn:hover{background:#28343e;color:#fff}
+.qty-input,.input-grp input{background:#10151a!important;color:#f3f5f6!important;height:38px}
+.invoice-footer{height:auto;min-height:118px;background:#101318;border-top:1px solid #2b3138;padding:10px 14px;gap:12px;box-shadow:none}
+.discount-controls{background:#14191f;border:1px solid #2c343d;border-radius:9px;padding:9px}
+.discount-title{color:#aab6c1;font-size:11px}.discount-title span:last-child{display:none}
+.totals-breakdown,.tot-row{color:#aab4bf;font-size:12px}
+.tot-row span:last-child{color:#e8edf1}
+.tot-row.grand-total{border-color:#35404a;color:#f4f6f8}
+.tot-row.grand-total span:last-child{color:#91d7f3}
+.checkout-action-box{width:145px;min-width:145px;align-self:stretch}
+.btn-checkout{background:#257fa9;border:1px solid #3b94be;color:#fff;border-radius:9px;box-shadow:none;font-size:14px;min-height:72px}
+.btn-checkout:hover{background:#328db5;box-shadow:none}
+.sidebar-title{color:#eef1f4;font-size:14px}
+.sidebar-body{background:#090b0e;padding:12px;gap:12px}
+.customer-empty-box{background:#12161b;border:1px dashed #39414a;border-radius:10px;color:#aab6c1;padding:25px 12px}
+.customer-empty-text{color:#bec7d0;font-size:13px}.customer-empty-sub{color:#8795a3;font-size:12px}
+.cust-card,.past-inv-card{background:#15191e;border:1px solid #2c333b;border-radius:10px;padding:12px;box-shadow:none}
+.cust-name{color:#f1f3f5;font-size:16px}.cust-phone{color:#a7b3be;font-size:12px}
+.cust-stat-pill{background:#222830;color:#abb8c4;border-radius:6px;padding:6px 8px;font-size:11px}
+.cust-stat-pill strong{color:#f1f3f5}
+.cust-stat-pill.tier-gold{background:#2c271d;color:#d7bd85;border:1px solid #544831}
+.cust-actions-bar{gap:7px;flex-wrap:wrap}
+.offers-section{background:#10221e;border:1px solid #285145;border-radius:9px;padding:10px}
+.offers-header{color:#83d8b9;font-size:11px}.offer-item{color:#b8e7d6;font-size:12px}
+.history-header{color:#dce4eb;font-size:13px}
+.history-search-input{height:40px;background:#0d1217;color:#eef2f5;border:1px solid #343e48;border-radius:7px;font-size:13px;padding:0 10px}
+.invoices-scroll{max-height:none;min-height:0}
+.past-inv-meta{color:#98a7b5;border-bottom:1px solid #2a3138;font-size:11px}
+.past-inv-meta strong{color:#d2dde5}
+.past-item-row{color:#dbe3e9;font-size:12px}.past-item-price{color:#8dcde9;font-size:12px}
+.btn-add-history{width:34px;height:34px;background:#1c2b36;border:1px solid #345063;color:#95d5f1;border-radius:7px}
+.btn-add-history:hover{background:#257fa9;color:#fff}
+.modal-backdrop{background:#000b}
+.modal-card{background:#171b21;border:1px solid #343c45;border-radius:12px;color:#eaf0f4}
+.modal-header,.modal-footer{background:#11151a;border-color:#2c333b}
+.modal-header h3{color:#f2f4f6}.modal-body{color:#e3eaf0}
+.checkout-amount-display{background:#0e1419;border:1px solid #303d47;border-radius:9px}
+.checkout-amount-display .label{color:#9eacb9}.checkout-amount-display .val{color:#90d7f3}
+.pay-method-btn,.quick-cash-btn{background:#222a33;border:1px solid #3a4652;color:#d9e2e9;border-radius:8px}
+.pay-method-btn.active{background:#1a3444;color:#fff;border-color:#6dbde0}
+.change-due-box{background:#11251e;border-color:#2d5947;border-radius:8px}
+.change-due-box span.title,.change-due-box span.amount{color:#82d7b8}
+.toast{background:#1a232c;border:1px solid #46728b;color:#edf3f7;border-radius:8px}
+button,input{touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
+@media(max-width:1300px){.col-barcode{display:none}.top-header{padding:0 9px}.header-actions{gap:4px}.btn{padding:7px 8px}.invoice-footer{gap:8px}.checkout-action-box{width:125px;min-width:125px}}
+@media(max-width:1050px){.pharmacy-brand-banner{height:52px;min-height:52px;padding:6px 12px}.pos-root{height:calc(100dvh - 52px)}.pharmacy-banner-phone{display:none}.pharmacy-mark{width:34px;height:34px;flex-basis:34px}.pharmacy-banner-copy strong{font-size:15px}.header-actions #btnHelpShortcuts{display:none}.header-actions kbd{display:none}.col-disc{display:none}.invoice-footer{flex-wrap:wrap}.discount-controls{flex:1 1 42%}.totals-breakdown{flex:1 1 48%}.checkout-action-box{width:100%;flex:1 1 100%}.btn-checkout{min-height:46px}}
+@media(max-height:650px) and (orientation:landscape){.top-header,.sidebar-header{height:44px;min-height:44px}.search-container{padding:7px 10px}.main-search-input{height:44px}.invoice-footer{min-height:94px;padding:6px 10px}}
+@media(orientation:portrait){body{overflow:auto;height:auto}.pos-root{height:auto;min-height:calc(100dvh - 52px);flex-direction:column;overflow:visible}.main-workspace,.customer-sidebar{width:100%;max-width:100%;min-width:0;flex:auto;height:auto}.main-workspace{min-height:70dvh}.customer-sidebar{min-height:260px}.table-container{min-height:320px;overflow-x:auto}.top-header{flex-wrap:wrap;height:auto;padding:10px}.header-actions{flex-wrap:wrap}.invoice-footer{flex-wrap:wrap}}
 
 </style>
 </head>
@@ -2710,6 +2573,6 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
     })();
   </script>
-<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {})); }</script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=3', {updateViaCache:'none'}).catch(() => {})); }</script>
 </body>
 </html>
