@@ -3588,12 +3588,75 @@ $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر 
 #novaLabelsPanel iframe{width:100%;flex:1;border:0;background:white}
 @media(max-width:600px){#novaLabelsPanel{padding:3px}#novaLabelsPanel .labels-sheet{height:98dvh;border-radius:9px}}
 </style>
-<section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="طباعة استيكرات الأدوية"><div class="labels-sheet">
-<div class="labels-toolbar"><span>✦ طباعة استيكرات الأدوية</span><div style="display:flex;gap:7px"><a href="https://elsousypharmacy-create.github.io/pharmacy/labels.html" target="_blank" rel="noopener noreferrer">فتح في صفحة مستقلة</a><button id="novaLabelsClose" type="button">إغلاق ✕</button></div></div>
-<iframe title="أداة طباعة استيكرات الأدوية" loading="lazy" src="https://elsousypharmacy-create.github.io/pharmacy/labels.html"></iframe>
-</div></section>
+<style>
+#novaLabelsPanel .labels-sheet{width:min(1120px,100%);height:min(94dvh,900px);background:#10151d;color:#eaf0f7}
+#novaLabelsPanel .labels-toolbar{border-bottom:1px solid #303c4b;padding:14px 18px}
+#novaLabelsPanel .labels-toolbar button{background:#273242}
+.nova-label-workspace{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0;flex:1;direction:rtl}
+.nova-label-editor{overflow:auto;padding:18px}
+.nova-label-preview-area{overflow:auto;background:#18212c;padding:18px;border-right:1px solid #354050}
+.nova-label-editor h3,.nova-label-preview-area h3{font:700 15px Cairo;margin:0 0 12px}
+.nova-label-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.nova-label-field{display:flex;flex-direction:column;gap:5px;font:600 12px Cairo;color:#b9c8da;margin-bottom:12px}
+.nova-label-field input,.nova-label-field textarea,.nova-label-field select{background:#1c2531;border:1px solid #405066;color:#fff;padding:11px;border-radius:10px;font:500 14px Cairo;min-width:0;width:100%;box-sizing:border-box}
+.nova-label-field textarea{resize:vertical;min-height:75px}
+.nova-label-divider{border-top:1px solid #354050;margin:15px 0}
+#novaLabelPreview{background:white;color:#111;direction:rtl;padding:13px;border-radius:3px;width:100%;min-height:105px;box-sizing:border-box;font:12px Cairo;overflow-wrap:anywhere}
+#novaLabelPreview .brand{font-size:13px;font-weight:800;color:#14365f;border-bottom:1px solid #bbb;padding-bottom:5px;margin-bottom:6px}
+#novaLabelPreview .med{font-weight:800;font-size:15px;margin:6px 0}
+#novaLabelPreview .instructions{white-space:pre-wrap;line-height:1.8}
+#novaLabelPreview .foot{font-size:9px;color:#555;border-top:1px dashed #bbb;margin-top:7px;padding-top:5px}
+.nova-label-help{font:500 11px/1.9 Cairo;color:#a4b5c8;margin-top:10px}
+.nova-label-action{border:0;border-radius:10px;padding:11px 16px;background:#2563eb;color:white;font:700 13px Cairo;cursor:pointer}
+.nova-label-action.alt{background:#293647;border:1px solid #4b5a6d}
+.nova-label-buttons{display:flex;flex-wrap:wrap;gap:9px}
+@media(max-width:740px){.nova-label-workspace{grid-template-columns:1fr}.nova-label-preview-area{border-right:0;border-top:1px solid #354050}.nova-label-grid{grid-template-columns:1fr 1fr}.nova-label-editor{overflow:visible}.nova-label-workspace{overflow:auto}}
+</style>
+<section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="استيكرات الأدوية"><div class="labels-sheet">
+<div class="labels-toolbar"><span>✦ استيكرات الأدوية <small style="display:block;color:#91a4bb;font-weight:400">تصميم وطباعة داخل NOVA Rx</small></span><button id="novaLabelsClose" type="button">إغلاق ✕</button></div>
+<div class="nova-label-workspace">
+<div class="nova-label-editor">
+<h3>بيانات الاستيكر</h3>
+<div class="nova-label-grid">
+<label class="nova-label-field">اسم المريض<input id="nlPatient" placeholder="اختياري" autocomplete="off"></label>
+<label class="nova-label-field">اسم الدواء<input id="nlMedicine" placeholder="اسم الدواء والتركيز" autocomplete="off"></label>
+<label class="nova-label-field">الكمية / الجرعة الموصوفة<input id="nlDose" placeholder="مثال: قرص واحد" autocomplete="off"></label>
+<label class="nova-label-field">التكرار<input id="nlFrequency" placeholder="مثال: مرتين يوميًا" autocomplete="off"></label>
+<label class="nova-label-field">المدة<input id="nlDuration" placeholder="مثال: 5 أيام" autocomplete="off"></label>
+<label class="nova-label-field">توقيت الاستعمال<select id="nlTiming"><option value="">غير محدد</option><option>قبل الأكل</option><option>بعد الأكل</option><option>مع الأكل</option><option>قبل النوم</option><option>حسب تعليمات الطبيب</option></select></label>
+</div>
+<label class="nova-label-field">تعليمات إضافية<textarea id="nlNotes" placeholder="اكتب التعليمات المؤكدة من الوصفة أو الصيدلي"></textarea></label>
+<div class="nova-label-divider"></div>
+<h3>إعدادات الطباعة</h3>
+<div class="nova-label-grid">
+<label class="nova-label-field">مقاس الاستيكر<select id="nlSize"><option value="60x40">60 × 40 مم</option><option value="50x30">50 × 30 مم</option><option value="70x50">70 × 50 مم</option><option value="80x50">80 × 50 مم</option></select></label>
+<label class="nova-label-field">عدد النسخ<input id="nlCopies" type="number" min="1" max="50" value="1"></label>
+</div>
+<div class="nova-label-buttons"><button class="nova-label-action" id="nlPrint" type="button">طباعة الاستيكر</button><button class="nova-label-action alt" id="nlReset" type="button">استيكر جديد</button></div>
+<div class="nova-label-help">البيانات لا تُحفظ في المخزون أو ملف المريض. راجع الجرعة والتعليمات قبل الطباعة؛ الأداة لا تقترح جرعات علاجية تلقائيًا.</div>
+</div>
+<div class="nova-label-preview-area"><h3>معاينة مباشرة</h3><div id="novaLabelPreview"></div><p class="nova-label-help">المعاينة بتتحدث مع كل تعديل. اختار مقاس الورق المطابق لطابعتك من إعدادات الطباعة.</p></div>
+</div></div></section>
 <script>
-(()=>{const p=document.getElementById('novaLabelsPanel');document.getElementById('novaLabelsClose').onclick=()=>p.classList.remove('open');p.addEventListener('click',e=>{if(e.target===p)p.classList.remove('open')});document.addEventListener('keydown',e=>{if(e.key==='Escape')p.classList.remove('open')})})();
+(()=>{
+const p=document.getElementById('novaLabelsPanel'),ids=['nlPatient','nlMedicine','nlDose','nlFrequency','nlDuration','nlTiming','nlNotes','nlSize','nlCopies'],get=id=>document.getElementById(id),esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lines=()=>[get('nlDose').value,get('nlFrequency').value,get('nlDuration').value,get('nlTiming').value].filter(Boolean).join(' — ');
+const markup=()=>'<div class="brand">صيدلية السوسي · د. أحمد السوسي</div>'+(get('nlPatient').value?'<div>المريض: '+esc(get('nlPatient').value)+'</div>':'')+'<div class="med">'+esc(get('nlMedicine').value||'اسم الدواء')+'</div><div class="instructions">'+esc(lines()||'تعليمات الاستعمال تظهر هنا')+(get('nlNotes').value?'<div>'+esc(get('nlNotes').value)+'</div>':'')+'</div><div class="foot">يرجى الالتزام بتعليمات الطبيب أو الصيدلي</div>';
+const update=()=>get('novaLabelPreview').innerHTML=markup();
+ids.forEach(id=>{get(id).addEventListener('input',update);get(id).addEventListener('change',update)});
+get('novaLabelsClose').onclick=()=>p.classList.remove('open');
+p.addEventListener('click',e=>{if(e.target===p)p.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')p.classList.remove('open')});
+get('nlReset').onclick=()=>{ids.filter(id=>id!=='nlSize'&&id!=='nlCopies').forEach(id=>get(id).value='');get('nlCopies').value='1';update();get('nlMedicine').focus()};
+get('nlPrint').onclick=()=>{
+if(!get('nlMedicine').value.trim()){alert('اكتب اسم الدواء الأول');get('nlMedicine').focus();return}
+if(!get('nlDose').value.trim()&&!get('nlNotes').value.trim()){alert('اكتب تعليمات الاستعمال المؤكدة قبل الطباعة');return}
+const [w,h]=get('nlSize').value.split('x').map(Number),count=Math.max(1,Math.min(50,Number(get('nlCopies').value)||1)),content=markup();
+const page='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>استيكرات الأدوية</title><style>@page{size:'+w+'mm '+h+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;color:#111}.label{width:'+w+'mm;height:'+h+'mm;padding:3mm;overflow:hidden;break-after:page;font-size:10pt}.brand{font-weight:bold;color:#14365f;border-bottom:1px solid #bbb;padding-bottom:2mm;font-size:10pt}.med{font-size:12pt;font-weight:bold;margin:2mm 0}.instructions{white-space:pre-wrap;line-height:1.55}.foot{font-size:7pt;color:#555;border-top:1px dashed #aaa;margin-top:2mm;padding-top:1mm}@media screen{body{background:#ddd}.label{background:white;margin:12px auto;box-shadow:0 2px 10px #aaa}}</style></head><body>'+Array.from({length:count},()=>'<div class="label">'+content+'</div>').join('')+'</body></html>';
+const win=window.open('','_blank');if(!win){alert('اسمح بفتح نافذة الطباعة من المتصفح');return}win.document.open();win.document.write(page);win.document.close();win.focus();setTimeout(()=>win.print(),350);
+};
+update();
+})();
 </script>
 </body>
 </html>
