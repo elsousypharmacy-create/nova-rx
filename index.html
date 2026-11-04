@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NOVA Rx — Desktop POS (Task 001)</title>
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-panel: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-surface-hover: #273549;
+      --bg-surface-active: #334155;
+      --border-subtle: #243248;
+      --border-focus: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-cyan: #0284c7;
+      --accent-cyan-light: #38bdf8;
+      --accent-green: #10b981;
+      --accent-green-bg: rgba(16, 185, 129, 0.12);
+      --accent-green-border: rgba(16, 185, 129, 0.35);
+      --accent-red: #ef4444;
+      --accent-red-bg: rgba(239, 68, 68, 0.12);
+      --accent-amber: #f59e0b;
+      --accent-amber-bg: rgba(245, 158, 11, 0.12);
+      --badge-customer: #8b5cf6;
+      --badge-customer-bg: rgba(139, 92, 246, 0.16);
+      --badge-product: #0284c7;
+      --badge-product-bg: rgba(2, 132, 199, 0.16);
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.6);
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Segoe UI Arabic", "Noto Sans Arabic", Tahoma, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      font-size: 13px;
+      line-height: 1.4;
+      user-select: none;
+    }
+
+    /* Fixed Layout: 72% Left, 28% Right */
+    .pos-root {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .main-workspace {
+      flex: 0 0 72%;
+      width: 72%;
+      max-width: 72%;
+      min-width: 72%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid var(--border-subtle);
+      background-color: var(--bg-panel);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .customer-sidebar {
+      flex: 0 0 28%;
+      width: 28%;
+      max-width: 28%;
+      min-width: 28%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: var(--bg-base);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header Bar */
+    .top-header {
+      height: 48px;
+      min-height: 48px;
+      background-color: #0b1120;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand-logo span.rx {
+      color: var(--accent-cyan-light);
+      font-weight: 800;
+      background: rgba(56, 189, 248, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .task-badge {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid var(--border-subtle);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
+    }
+
+    .status-pill.customer-mode {
+      background: var(--badge-customer-bg);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .status-pill.product-mode {
+      background: var(--badge-product-bg);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn kbd {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-surface-hover);
+      border-color: var(--text-dim);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: #0369a1;
+    }
+
+    .btn-loyalty {
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #ddd6fe;
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-loyalty:hover {
+      background-color: rgba(139, 92, 246, 0.3);
+      border-color: #a78bfa;
+    }
+
+    .btn-danger {
+      background-color: var(--accent-red-bg);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background-color: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Single Unified Search Area */
+    .search-container {
+      padding: 10px 16px;
+      background-color: #0b1120;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+      z-index: 15;
+    }
+
+    .search-box-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .search-mode-tag {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .search-mode-tag.customer {
+      background: #4c1d95;
+      color: #e9d5ff;
+      border: 1px solid #7c3aed;
+    }
+
+    .search-mode-tag.product {
+      background: #0369a1;
+      color: #e0f2fe;
+      border: 1px solid #0284c7;
+    }
+
+    .main-search-input {
+      width: 100%;
+      height: 42px;
+      background-color: #020617;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      padding-left: 150px;
+      padding-right: 140px;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .main-search-input:focus {
+      border-color: var(--accent-cyan-light);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+
+    .search-hints {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .search-hints kbd {
+      background: #1e293b;
+      padding: 1px 5px;
+      border-radius: 3px;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 10px;
+      font-family: var(--font-mono);
+    }
+
+    /* Autocomplete Suggestions Dropdown */
+    .suggestions-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 16px;
+      right: 16px;
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      border-radius: 6px;
+      margin-top: 4px;
+      box-shadow: var(--shadow-lg);
+      max-height: 380px;
+      overflow-y: auto;
+      z-index: 50;
+      display: none;
+    }
+
+    .suggestions-dropdown.open {
+      display: block;
+    }
+
+    .suggestion-item {
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item.selected, .suggestion-item:hover {
+      background: #1e293b;
+      border-left: 3px solid var(--accent-cyan-light);
+    }
+
+    .sugg-primary {
+      font-weight: 600;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .sugg-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sugg-meta {
+      text-align: right;
+    }
+
+    .sugg-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-cyan-light);
+      font-family: var(--font-mono);
+    }
+
+    .sugg-tag {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: #1e293b;
+      color: #94a3b8;
+      margin-top: 2px;
+      display: inline-block;
+      font-family: var(--font-mono);
+    }
+
+    /* Invoice Workspace: High Density Table */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    table.invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    table.invoice-table th {
+      position: sticky;
+      top: 0;
+      background: #0b1120;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 10;
+    }
+
+    table.invoice-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      font-size: 12px;
+    }
+
+    table.invoice-table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .col-idx { width: 36px; text-align: center; color: var(--text-dim); }
+    .col-item { min-width: 220px; }
+    .col-barcode { width: 120px; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+    .col-price { width: 85px; text-align: right; font-family: var(--font-mono); }
+    .col-qty { width: 120px; text-align: center; }
+    .col-disc { width: 90px; text-align: right; }
+    .col-total { width: 100px; text-align: right; font-weight: 700; color: #fff; font-family: var(--font-mono); }
+    .col-act { width: 44px; text-align: center; }
+
+    .item-title {
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .item-generic {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .qty-control {
+      display: inline-flex;
+      align-items: center;
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      width: 26px;
+      height: 26px;
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s;
+    }
+
+    .qty-btn:hover {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .qty-input {
+      width: 36px;
+      height: 26px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      text-align: center;
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      outline: none;
+      font-family: var(--font-mono);
+    }
+
+    .btn-icon-del {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-icon-del:hover {
+      color: var(--accent-red);
+      background: var(--accent-red-bg);
+    }
+
+    .empty-invoice-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 280px;
+      color: var(--text-dim);
+      gap: 8px;
+    }
+
+    .empty-invoice-state svg {
+      opacity: 0.35;
+    }
+
+    /* Bottom Totals & Action Section */
+    .invoice-footer {
+      height: 115px;
+      min-height: 115px;
+      background: #0b1120;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      padding: 10px 16px;
+      gap: 20px;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .discount-controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #020617;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .discount-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .discount-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-grp {
+      display: flex;
+      align-items: center;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 2px 6px;
+      flex: 1;
+    }
+
+    .input-grp span {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .input-grp input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      width: 100%;
+      padding: 2px 4px;
+      font-family: var(--font-mono);
+      text-align: right;
+    }
+
+    .totals-breakdown {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .tot-row {
+      display: flex;
+      justify-content: space-between;
+      color: #94a3b8;
+    }
+
+    .tot-row span:last-child {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .tot-row.discount-applied {
+      color: var(--accent-green);
+    }
+    .tot-row.discount-applied span:last-child {
+      color: var(--accent-green);
+    }
+
+    .tot-row.grand-total {
+      border-top: 1px solid #334155;
+      padding-top: 4px;
+      margin-top: 2px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .tot-row.grand-total span:last-child {
+      color: #38bdf8;
+      font-size: 18px;
+    }
+
+    .checkout-action-box {
+      width: 170px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .btn-checkout {
+      height: 100%;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+      border: 1px solid #38bdf8;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      padding: 8px;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+
+    .btn-checkout:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
+    }
+
+    .btn-checkout:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-checkout kbd {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #e0f2fe;
+    }
+
+    /* Customer Sidebar (Fixed 28% Right) */
+    .sidebar-header {
+      height: 48px;
+      min-height: 48px;
+      background: #0b1120;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Empty Customer State */
+    .customer-empty-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 16px;
+      border: 1px dashed var(--border-subtle);
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.5);
+      text-align: center;
+      gap: 10px;
+      color: var(--text-dim);
+    }
+
+    .customer-empty-box svg {
+      opacity: 0.4;
+    }
+
+    .customer-empty-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .customer-empty-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* Active Customer Card */
+    .cust-card {
+      background: #0f172a;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cust-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cust-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .cust-phone {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    .cust-stats-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .cust-stat-pill {
+      background: #1e293b;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cust-stat-pill strong {
+      color: #f8fafc;
+    }
+
+    .cust-stat-pill.tier-gold {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .cust-actions-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    /* Subtle Green Accent for Offers */
+    .offers-section {
+      background: var(--accent-green-bg);
+      border: 1px solid var(--accent-green-border);
+      border-radius: 6px;
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .offers-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .offer-item {
+      font-size: 11.5px;
+      color: #d1fae5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.3;
+    }
+
+    .offer-bullet {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #10b981;
+      flex-shrink: 0;
+    }
+
+    /* Purchase History Area */
+    .history-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .history-search-input {
+      width: 100%;
+      height: 32px;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 11.5px;
+      padding: 0 8px;
+      outline: none;
+    }
+
+    .history-search-input:focus {
+      border-color: var(--accent-cyan-light);
+    }
+
+    .invoices-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 290px;
+      overflow-y: auto;
+    }
+
+    .past-inv-card {
+      background: #0f172a;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .past-inv-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
+    }
+
+    .past-inv-meta strong {
+      color: #94a3b8;
+    }
+
+    .past-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 3px 0;
+      font-size: 11.5px;
+    }
+
+    .past-item-info {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .past-item-price {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-cyan-light);
+      font-weight: 600;
+    }
+
+    .btn-add-history {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s;
+    }
+
+    .btn-add-history:hover {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+
+    /* Modals & Dialogs */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalSlide 0.2s ease;
+    }
+
+    @keyframes modalSlide {
+      from { transform: scale(0.96) translateY(10px); }
+      to { transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 12px 16px;
+      background: #0b1120;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      background: #0b1120;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Checkout specific modal styles */
+    .checkout-amount-display {
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .checkout-amount-display .label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .checkout-amount-display .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .pay-methods-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .pay-method-btn {
+      padding: 10px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #cbd5e1;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .pay-method-btn.active {
+      border-color: #38bdf8;
+      background: rgba(2, 132, 199, 0.2);
+      color: #fff;
+    }
+
+    .quick-cash-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .quick-cash-btn {
+      flex: 1;
+      padding: 6px 0;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      text-align: center;
+    }
+
+    .quick-cash-btn:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .change-due-box {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 10px 14px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .change-due-box span.title {
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .change-due-box span.amount {
+      font-size: 18px;
+      font-weight: 800;
+      color: #10b981;
+      font-family: var(--font-mono);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      box-shadow: var(--shadow-lg);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: toastIn 0.25s ease;
+      pointer-events: auto;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Print Receipt View */
+    .receipt-slip {
+      background: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.5;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-root">
+    <!-- LEFT WORKSPACE (~72%) -->
+    <main class="main-workspace">
+      <!-- Top App Bar -->
+      <header class="top-header">
+        <div class="brand-section">
+          <div class="brand-logo">
+            NOVA <span class="rx">Rx</span>
+          </div>
+          <span class="task-badge">TASK-001</span>
+          <div id="modePill" class="status-pill customer-mode">
+            <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
+            <span id="modePillText">Customer Search Mode</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btnNewSale" class="btn btn-secondary" title="New Sale (F2)">
+            <kbd>F2</kbd> New Sale
+          </button>
+          <button id="btnAddLoyalty" class="btn btn-loyalty" title="Add / Switch Customer (F3)">
+            <kbd>F3</kbd> Add Loyalty
+          </button>
+          <button id="btnClearInvoice" class="btn btn-danger" title="Clear Line Items (F4)">
+            <kbd>F4</kbd> Clear
+          </button>
+          <button id="btnHelpShortcuts" class="btn btn-secondary" title="View Keyboard Shortcuts">
+            <kbd>?</kbd> Help
+          </button>
+        </div>
+      </header>
+
+      <!-- Unified Main Search Bar -->
+      <div class="search-container">
+        <div class="search-box-wrapper">
+          <div id="searchModeTag" class="search-mode-tag customer">
+            Customer
+          </div>
+          <input 
+            type="text" 
+            id="mainSearchInput" 
+            class="main-search-input" 
+            placeholder="Search customer by name or phone... (Press Enter to skip)"
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+          >
+          <div class="search-hints">
+            <span id="searchHintText">Enter: Select / Skip</span>
+            <kbd>Esc</kbd>
+          </div>
+        </div>
+
+        <!-- Autocomplete Suggestions List -->
+        <div id="suggestionsBox" class="suggestions-dropdown"></div>
+      </div>
+
+      <!-- Line Items Table (Dense View) -->
+      <div class="table-container">
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th class="col-item">Product & Description</th>
+              <th class="col-barcode">Barcode</th>
+              <th class="col-price">Price</th>
+              <th class="col-qty">Quantity</th>
+              <th class="col-disc">Discount</th>
+              <th class="col-total">Total</th>
+              <th class="col-act"></th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody">
+            <!-- Rendered Rows -->
+          </tbody>
+        </table>
+        
+        <div id="emptyInvoiceState" class="empty-invoice-state">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <div style="font-weight: 600; font-size: 14px;">Invoice is Empty</div>
+          <div style="font-size: 12px;">Scan product barcode or type medicine name in the search bar above.</div>
+        </div>
+      </div>
+
+      <!-- Invoice Footer & Totals Section -->
+      <footer class="invoice-footer">
+        <!-- Overall Discounts -->
+        <div class="discount-controls">
+          <div class="discount-title">
+            <span>Overall Invoice Discount</span>
+            <span style="font-size:10px; color:var(--text-dim);">No negative total floor</span>
+          </div>
+          <div class="discount-inputs">
+            <div class="input-grp">
+              <span>%</span>
+              <input type="number" id="inputPercentDiscount" min="0" max="100" step="1" placeholder="0">
+            </div>
+            <div class="input-grp">
+              <span>SAR</span>
+              <input type="number" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Totals -->
+        <div class="totals-breakdown">
+          <div class="tot-row">
+            <span>Subtotal (<span id="totalItemsCount">0</span> items)</span>
+            <span id="displaySubtotal">0.00 SAR</span>
+          </div>
+          <div id="discountRow" class="tot-row discount-applied" style="display:none;">
+            <span>Discount Applied</span>
+            <span id="displayDiscount">-0.00 SAR</span>
+          </div>
+          <div class="tot-row">
+            <span>VAT (15% Included)</span>
+            <span id="displayVat">0.00 SAR</span>
+          </div>
+          <div class="tot-row grand-total">
+            <span>NET TOTAL</span>
+            <span id="displayGrandTotal">0.00 SAR</span>
+          </div>
+        </div>
+
+        <!-- Checkout Action Box -->
+        <div class="checkout-action-box">
+          <button id="btnCheckout" class="btn-checkout" disabled>
+            <span>CHECKOUT</span>
+            <kbd>F9 / Pay</kbd>
+          </button>
+        </div>
+      </footer>
+    </main>
+
+    <!-- RIGHT CUSTOMER SIDEBAR (~28%) -->
+    <aside class="customer-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Customer Profile & Loyalty
+        </div>
+        <div id="sidebarCustBadge" class="task-badge" style="display:none;">ATTACHED</div>
+      </div>
+
+      <div class="sidebar-body">
+        <!-- State 1: Minimal Empty State -->
+        <div id="customerEmptyBox" class="customer-empty-box">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 8v4m0 4h.01"></path>
+          </svg>
+          <div class="customer-empty-text">No Customer Attached</div>
+          <div class="customer-empty-sub">
+            This sale will be checked out as a Walk-in Customer.<br>
+            Press <strong>F3</strong> or click below to link customer points and past history.
+          </div>
+          <button id="btnAttachLoyalty" class="btn btn-loyalty" style="margin-top:6px;">
+            Link Customer (F3)
+          </button>
+        </div>
+
+        <!-- State 2: Selected Customer Card -->
+        <div id="customerSelectedBox" style="display:none; flex-direction:column; gap:12px;">
+          <!-- Customer Identity Card -->
+          <div class="cust-card">
+            <div class="cust-card-top">
+              <div>
+                <div id="custCardName" class="cust-name" dir="auto">Dr. Tariq Al-Mansoor</div>
+                <div id="custCardPhone" class="cust-phone">0501234567</div>
+              </div>
+              <span id="custCardTier" class="cust-stat-pill tier-gold">VIP Gold</span>
+            </div>
+
+            <div class="cust-stats-row">
+              <div class="cust-stat-pill">
+                Visits: <strong id="custCardVisits">24</strong>
+              </div>
+              <div class="cust-stat-pill">
+                Points: <strong id="custCardPoints">480</strong>
+              </div>
+            </div>
+
+            <div class="cust-actions-bar">
+              <button id="btnChangeCust" class="btn btn-secondary" style="font-size:11px; padding:3px 8px; flex:1;">
+                Change (F3)
+              </button>
+              <button id="btnRemoveCust" class="btn btn-danger" style="font-size:11px; padding:3px 8px; flex:1;">
+                Detach
+              </button>
+            </div>
+          </div>
+
+          <!-- Offers Section (Subtle Green Accent) -->
+          <div class="offers-section">
+            <div class="offers-header">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              Active Loyalty Offers
+            </div>
+            <div id="custOffersList" style="display:flex; flex-direction:column; gap:5px;">
+              <!-- Dynamic Offers -->
+            </div>
+          </div>
+
+          <!-- Purchase History & Invoices -->
+          <div class="history-section">
+            <div class="history-header">
+              <span>Past Purchases History</span>
+              <span style="font-size:10px; color:var(--text-dim);">Click + to re-add</span>
+            </div>
+
+            <input 
+              type="text" 
+              id="historySearchInput" 
+              class="history-search-input" 
+              placeholder="Filter past items by name..."
+              autocomplete="off"
+            >
+
+            <div id="pastInvoicesContainer" class="invoices-scroll">
+              <!-- Dynamic Past Invoices -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- CHECKOUT MODAL -->
+  <div id="checkoutModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Complete Sale & Payment / إنهاء الفاتورة</h3>
+        <button id="btnCloseCheckout" class="btn-icon-del" style="color:#cbd5e1;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="checkout-amount-display">
+          <div class="label">Total Amount Payable</div>
+          <div id="modalAmountDue" class="val">0.00 SAR</div>
+          <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div>
+        </div>
+
+        <div>
+          <label style="font-size:11px; font-weight:600; color:#94a3b8; display:block; margin-bottom:6px;">Payment Method</label>
+          <div class="pay-methods-grid">
+            <button class="pay-method-btn active" data-method="cash">
+              <span>Cash / نقدي</span>
+            </button>
+            <button class="pay-method-btn" data-method="card">
+              <span>Mada / بطاقة</span>
+            </button>
+            <button class="pay-method-btn" data-method="split">
+              <span>Split / مشترك</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="cashDetailsBox">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label style="font-size:11px; font-weight:600; color:#94a3b8;">Cash Received</label>
+            <span style="font-size:11px; color:var(--text-dim);">SAR</span>
+          </div>
+          <input 
+            type="number" 
+            id="inputCashReceived" 
+            class="history-search-input" 
+            style="height:38px; font-size:16px; font-weight:700; font-family:var(--font-mono); text-align:right;"
+            placeholder="0.00"
+          >
+          <div class="quick-cash-row">
+            <button class="quick-cash-btn" data-val="exact">Exact</button>
+            <button class="quick-cash-btn" data-val="50">50</button>
+            <button class="quick-cash-btn" data-val="100">100</button>
+            <button class="quick-cash-btn" data-val="200">200</button>
+            <button class="quick-cash-btn" data-val="500">500</button>
+          </div>
+
+          <div class="change-due-box" style="margin-top:10px;">
+            <span class="title">Change Due:</span>
+            <span id="displayChangeDue" class="amount">0.00 SAR</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelCheckout" class="btn btn-secondary">Cancel (Esc)</button>
+        <button id="btnConfirmPayment" class="btn btn-primary" style="padding:8px 18px; font-size:13px;">
+          Confirm & Print Receipt (Enter)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIPT SLIP MODAL -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>Transaction Receipt / إيصال الدفع</h3>
+        <button id="btnCloseReceipt" class="btn-icon-del" style="color:#cbd5e1;">✕</button>
+      </div>
+      <div class="modal-body" style="padding:12px;">
+        <div id="receiptSlipContent" class="receipt-slip">
+          <!-- Dynamically generated receipt text -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnPrintReceiptBtn" class="btn btn-secondary">Print</button>
+        <button id="btnReceiptNewSale" class="btn btn-primary">Start New Sale (F2)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP & SHORTCUTS MODAL -->
+  <div id="helpModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Keyboard Shortcuts & POS Manual</h3>
+        <button id="btnCloseHelp" class="btn-icon-del">✕</button>
+      </div>
+      <div class="modal-body" style="font-size:12px; line-height:1.6;">
+        <table style="width:100%; border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (on blank customer search)</td><td style="color:#38bdf8;">Skips customer and switches to Product Scan mode</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Barcode Scan</strong> (anytime)</td><td style="color:#38bdf8;">Directly adds product & switches to Product mode</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Arrow Up / Down</strong></td><td style="color:#38bdf8;">Navigate autocomplete suggestion dropdown</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (on selected item)</td><td style="color:#38bdf8;">Adds product or attaches customer</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F2</strong></td><td style="color:#38bdf8;">Start New Sale (resets invoice & focuses search)</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F3</strong></td><td style="color:#38bdf8;">Add Loyalty / Switch customer search without resetting items</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F4</strong></td><td style="color:#38bdf8;">Clear current invoice line items</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F9</strong></td><td style="color:#38bdf8;">Open Checkout / Payment dialog</td></tr>
+          <tr><td style="padding:6px 0;"><strong>Esc</strong></td><td style="color:#38bdf8;">Dismiss dropdowns and close open modals</td></tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button id="btnDismissHelp" class="btn btn-primary">Got it (Esc)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    (function () {
+      "use strict";
+
+      // --- DEMO DATA REPOSITORY ---
+      const DEMO_PRODUCTS = [
+        { id: "PRD001", barcode: "6281001234567", name: "كونكور 5 مجم (Concor 5mg)", generic: "Bisoprolol Fumarate", form: "30 Tabs", price: 38.50, stock: 45, category: "Chronic" },
+        { id: "PRD002", barcode: "6281001234568", name: "بانادول إكسترا (Panadol Extra)", generic: "Paracetamol 500mg + Caffeine 65mg", form: "24 Caplets", price: 12.00, stock: 120, category: "Analgesic" },
+        { id: "PRD003", barcode: "6281001234569", name: "أوجمنتين 1 جم (Augmentin 1g)", generic: "Amoxicillin / Clavulanic Acid", form: "14 Tabs", price: 64.50, stock: 28, category: "Antibiotic" },
+        { id: "PRD004", barcode: "6281001234570", name: "جلوكوفاج 500 مجم (Glucophage 500mg)", generic: "Metformin HCl", form: "50 Tabs", price: 18.25, stock: 80, category: "Chronic" },
+        { id: "PRD005", barcode: "6281001234571", name: "ليبيتور 20 مجم (Lipitor 20mg)", generic: "Atorvastatin Calcium", form: "30 Tabs", price: 92.00, stock: 35, category: "Lipid" },
+        { id: "PRD006", barcode: "6281001234572", name: "نيكسيوم 40 مجم (Nexium 40mg)", generic: "Esomeprazole Magnesium", form: "28 Tabs", price: 85.50, stock: 40, category: "GI Care" },
+        { id: "PRD007", barcode: "6281001234573", name: "أوميبرازول 20 مجم (Omeprazole 20mg)", generic: "Omeprazole", form: "14 Caps", price: 22.00, stock: 60, category: "GI Care" },
+        { id: "PRD008", barcode: "6281001234574", name: "سولبادين فوار (Solpadeine Soluble)", generic: "Paracetamol + Codeine + Caffeine", form: "24 Tabs", price: 16.50, stock: 55, category: "Analgesic" },
+        { id: "PRD009", barcode: "6281001234575", name: "فيتامين د3 50,000 وحدة (Vitamin D3)", generic: "Cholecalciferol", form: "12 Caps", price: 45.00, stock: 90, category: "Vitamins" },
+        { id: "PRD010", barcode: "6281001234576", name: "سيتريزين 10 مجم (Cetirizine 10mg)", generic: "Cetirizine Dihydrochloride", form: "20 Tabs", price: 14.75, stock: 70, category: "Antihistamine" },
+        { id: "PRD011", barcode: "6281001234577", name: "فولتارين جل 50 جم (Voltaren Emulgel)", generic: "Diclofenac Diethylamine", form: "50g Tube", price: 26.00, stock: 32, category: "Topical" },
+        { id: "PRD012", barcode: "6281001234578", name: "بخاخ أوتريفين 0.1% (Otrivin Nasal)", generic: "Xylometazoline HCl", form: "10ml Spray", price: 11.50, stock: 50, category: "ENT" }
+      ];
+
+      const DEMO_CUSTOMERS = [
+        {
+          id: "CUST001",
+          name: "د. طارق المنصور (Dr. Tariq Al-Mansoor)",
+          phone: "0501234567",
+          tier: "VIP Gold",
+          points: 480,
+          visits: 24,
+          offers: [
+            "خصم 10% على أدوية القلب والضغط (Chronic Care)",
+            "فحص سكر وضغط مجاني عند كل زيارة",
+            "قسيمة مشتريات متاحة بقيمة 30 ر.س"
+          ],
+          pastInvoices: [
+            {
+              id: "INV-2026-0891",
+              date: "2026-10-28 18:45",
+              branch: "فرع السليمانية (#01)",
+              total: 130.50,
+              items: [
+                { productId: "PRD001", name: "كونكور 5 مجم (Concor 5mg)", pastPrice: 36.00, qty: 1 },
+                { productId: "PRD005", name: "ليبيتور 20 مجم (Lipitor 20mg)", pastPrice: 90.00, qty: 1 }
+              ]
+            },
+            {
+              id: "INV-2026-0742",
+              date: "2026-09-15 14:10",
+              branch: "فرع العليا (#03)",
+              total: 97.50,
+              items: [
+                { productId: "PRD002", name: "بانادول إكسترا (Panadol Extra)", pastPrice: 12.00, qty: 1 },
+                { productId: "PRD006", name: "نيكسيوم 40 مجم (Nexium 40mg)", pastPrice: 85.50, qty: 1 }
+              ]
+            }
+          ]
+        },
+        {
+          id: "CUST002",
+          name: "سارة عبد الله العتيبي (Sara Al-Otaibi)",
+          phone: "0559876543",
+          tier: "Silver Member",
+          points: 210,
+          visits: 11,
+          offers: [
+            "توصيل مجاني للطلبات أكثر من 100 ر.س",
+            "خصم 5% على منتجات العناية بالفيتامينات"
+          ],
+          pastInvoices: [
+            {
+              id: "INV-2026-0810",
+              date: "2026-10-20 20:15",
+              branch: "فرع الروضة (#05)",
+              total: 109.50,
+              items: [
+                { productId: "PRD003", name: "أوجمنتين 1 جم (Augmentin 1g)", pastPrice: 64.50, qty: 1 },
+                { productId: "PRD009", name: "فيتامين د3 50,000 وحدة", pastPrice: 45.00, qty: 1 }
+              ]
+            }
+          ]
+        },
+        {
+          id: "CUST003",
+          name: "فهد محمد الشهري (Fahad Al-Shehri)",
+          phone: "0543219876",
+          tier: "Bronze Member",
+          points: 85,
+          visits: 5,
+          offers: [
+            "نقاط ولاء مضاعفة على المسكنات"
+          ],
+          pastInvoices: [
+            {
+              id: "INV-2026-0934",
+              date: "2026-11-01 11:30",
+              branch: "فرع السليمانية (#01)",
+              total: 42.50,
+              items: [
+                { productId: "PRD011", name: "فولتارين جل 50 جم (Voltaren)", pastPrice: 26.00, qty: 1 },
+                { productId: "PRD008", name: "سولبادين فوار (Solpadeine)", pastPrice: 16.50, qty: 1 }
+              ]
+            }
+          ]
+        },
+        {
+          id: "CUST004",
+          name: "نورة إبراهيم الدوسري (Noura Al-Dossari)",
+          phone: "0561122334",
+          tier: "VIP Gold",
+          points: 520,
+          visits: 19,
+          offers: [
+            "خصم 15% على رعاية مرضى السكر",
+            "استشارة دوائية مجانية دورية"
+          ],
+          pastInvoices: [
+            {
+              id: "INV-2026-0688",
+              date: "2026-10-12 17:05",
+              branch: "فرع الشاطئ (#07)",
+              total: 81.50,
+              items: [
+                { productId: "PRD004", name: "جلوكوفاج 500 مجم (Glucophage)", pastPrice: 17.50, qty: 2 },
+                { productId: "PRD009", name: "فيتامين د3 50,000 وحدة", pastPrice: 45.00, qty: 1 }
+              ]
+            }
+          ]
+        }
+      ];
+
+      // --- APPLICATION STATE ---
+      const state = {
+        mode: "CUSTOMER", // "CUSTOMER" or "PRODUCT"
+        attachedCustomer: null,
+        invoiceLines: [],
+        percentDiscount: 0,
+        fixedDiscount: 0,
+        searchQuery: "",
+        selectedIndex: -1,
+        suggestions: [],
+        checkoutPaymentMethod: "cash",
+        cashReceived: 0
+      };
+
+      // --- DOM ELEMENT REFERENCES ---
+      const elements = {
+        modePill: document.getElementById("modePill"),
+        modePillText: document.getElementById("modePillText"),
+        searchModeTag: document.getElementById("searchModeTag"),
+        mainSearchInput: document.getElementById("mainSearchInput"),
+        searchHintText: document.getElementById("searchHintText"),
+        suggestionsBox: document.getElementById("suggestionsBox"),
+        invoiceTableBody: document.getElementById("invoiceTableBody"),
+        emptyInvoiceState: document.getElementById("emptyInvoiceState"),
+        totalItemsCount: document.getElementById("totalItemsCount"),
+        displaySubtotal: document.getElementById("displaySubtotal"),
+        discountRow: document.getElementById("discountRow"),
+        displayDiscount: document.getElementById("displayDiscount"),
+        displayVat: document.getElementById("displayVat"),
+        displayGrandTotal: document.getElementById("displayGrandTotal"),
+        inputPercentDiscount: document.getElementById("inputPercentDiscount"),
+        inputFixedDiscount: document.getElementById("inputFixedDiscount"),
+        btnCheckout: document.getElementById("btnCheckout"),
+        btnNewSale: document.getElementById("btnNewSale"),
+        btnAddLoyalty: document.getElementById("btnAddLoyalty"),
+        btnClearInvoice: document.getElementById("btnClearInvoice"),
+        btnHelpShortcuts: document.getElementById("btnHelpShortcuts"),
+        customerEmptyBox: document.getElementById("customerEmptyBox"),
+        customerSelectedBox: document.getElementById("customerSelectedBox"),
+        sidebarCustBadge: document.getElementById("sidebarCustBadge"),
+        btnAttachLoyalty: document.getElementById("btnAttachLoyalty"),
+        custCardName: document.getElementById("custCardName"),
+        custCardPhone: document.getElementById("custCardPhone"),
+        custCardTier: document.getElementById("custCardTier"),
+        custCardVisits: document.getElementById("custCardVisits"),
+        custCardPoints: document.getElementById("custCardPoints"),
+        custOffersList: document.getElementById("custOffersList"),
+        btnChangeCust: document.getElementById("btnChangeCust"),
+        btnRemoveCust: document.getElementById("btnRemoveCust"),
+        historySearchInput: document.getElementById("historySearchInput"),
+        pastInvoicesContainer: document.getElementById("pastInvoicesContainer"),
+        checkoutModal: document.getElementById("checkoutModal"),
+        modalAmountDue: document.getElementById("modalAmountDue"),
+        modalCustomerInfo: document.getElementById("modalCustomerInfo"),
+        inputCashReceived: document.getElementById("inputCashReceived"),
+        displayChangeDue: document.getElementById("displayChangeDue"),
+        btnCloseCheckout: document.getElementById("btnCloseCheckout"),
+        btnCancelCheckout: document.getElementById("btnCancelCheckout"),
+        btnConfirmPayment: document.getElementById("btnConfirmPayment"),
+        receiptModal: document.getElementById("receiptModal"),
+        receiptSlipContent: document.getElementById("receiptSlipContent"),
+        btnCloseReceipt: document.getElementById("btnCloseReceipt"),
+        btnPrintReceiptBtn: document.getElementById("btnPrintReceiptBtn"),
+        btnReceiptNewSale: document.getElementById("btnReceiptNewSale"),
+        helpModal: document.getElementById("helpModal"),
+        btnCloseHelp: document.getElementById("btnCloseHelp"),
+        btnDismissHelp: document.getElementById("btnDismissHelp"),
+        toastContainer: document.getElementById("toastContainer")
+      };
+
+      // --- HELPER / UTILITY FUNCTIONS ---
+      function showToast(msg, type = "info") {
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.innerHTML = `
+          <span style="color:${type === 'error' ? 'var(--accent-red)' : 'var(--accent-cyan-light)'}">●</span>
+          <span>${msg}</span>
+        `;
+        elements.toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(10px)";
+          setTimeout(() => toast.remove(), 300);
+        }, 2600);
+      }
+
+      function formatSAR(val) {
+        return (Math.max(0, val) || 0).toFixed(2) + " SAR";
+      }
+
+      // --- SWITCH SEARCH MODE ---
+      function setSearchMode(newMode) {
+        state.mode = newMode;
+        if (newMode === "CUSTOMER") {
+          elements.modePill.className = "status-pill customer-mode";
+          elements.modePillText.textContent = "Customer Search Mode";
+          elements.searchModeTag.className = "search-mode-tag customer";
+          elements.searchModeTag.textContent = "Customer";
+          elements.mainSearchInput.placeholder = "Search customer by name or phone... (Press Enter to skip)";
+          elements.searchHintText.textContent = "Enter: Select / Skip";
+        } else {
+          elements.modePill.className = "status-pill product-mode";
+          elements.modePillText.textContent = "Product / Barcode Scan Mode";
+          elements.searchModeTag.className = "search-mode-tag product";
+          elements.searchModeTag.textContent = "Product";
+          elements.mainSearchInput.placeholder = "Scan barcode or type medicine name...";
+          elements.searchHintText.textContent = "Enter: Add Item";
+        }
+        closeSuggestions();
+        elements.mainSearchInput.value = "";
+        elements.mainSearchInput.focus();
+      }
+
+      // --- SEARCH & AUTOCOMPLETE ENGINE ---
+      function handleSearchInput(e) {
+        const query = e.target.value.trim();
+        state.searchQuery = query;
+
+        // Check if user is typing or scanning a product barcode directly in Customer Mode
+        if (state.mode === "CUSTOMER" && query.length >= 6) {
+          const matchedByBarcode = DEMO_PRODUCTS.find(p => p.barcode === query);
+          if (matchedByBarcode) {
+            // Immediate match on valid product barcode! Add and switch mode.
+            addProductToInvoice(matchedByBarcode);
+            setSearchMode("PRODUCT");
+            showToast(`Scanned product added: ${matchedByBarcode.name}`);
+            return;
+          }
+        }
+
+        if (query.length === 0) {
+          closeSuggestions();
+          return;
+        }
+
+        if (state.mode === "CUSTOMER") {
+          const qLower = query.toLowerCase();
+          const matches = DEMO_CUSTOMERS.filter(c => 
+            c.name.toLowerCase().includes(qLower) || c.phone.includes(query)
+          );
+          renderCustomerSuggestions(matches);
+        } else {
+          const qLower = query.toLowerCase();
+          const matches = DEMO_PRODUCTS.filter(p => 
+            p.name.toLowerCase().includes(qLower) || 
+            p.generic.toLowerCase().includes(qLower) || 
+            p.barcode.includes(query)
+          );
+          renderProductSuggestions(matches);
+        }
+      }
+
+      function renderCustomerSuggestions(matches) {
+        state.suggestions = matches;
+        state.selectedIndex = matches.length > 0 ? 0 : -1;
+        if (matches.length === 0) {
+          elements.suggestionsBox.innerHTML = `
+            <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
+              No customers found. Press <strong>Enter</strong> to skip and switch to Product Scan.
+            </div>
+          `;
+          elements.suggestionsBox.classList.add("open");
+          return;
+        }
+
+        elements.suggestionsBox.innerHTML = matches.map((cust, idx) => `
+          <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
+            <div>
+              <div class="sugg-primary" dir="auto">${cust.name}</div>
+              <div class="sugg-sub">Phone: ${cust.phone} • Visits: ${cust.visits}</div>
+            </div>
+            <div class="sugg-meta">
+              <span class="sugg-tag" style="background:#4c1d95; color:#ddd6fe;">${cust.tier}</span>
+              <div style="font-size:11px; color:#a78bfa; margin-top:2px;">${cust.points} Pts</div>
+            </div>
+          </div>
+        `).join("");
+        elements.suggestionsBox.classList.add("open");
+      }
+
+      function renderProductSuggestions(matches) {
+        state.suggestions = matches;
+        state.selectedIndex = matches.length > 0 ? 0 : -1;
+        if (matches.length === 0) {
+          elements.suggestionsBox.innerHTML = `
+            <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
+              No products found matching "${state.searchQuery}".
+            </div>
+          `;
+          elements.suggestionsBox.classList.add("open");
+          return;
+        }
+
+        elements.suggestionsBox.innerHTML = matches.map((prod, idx) => `
+          <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
+            <div>
+              <div class="sugg-primary" dir="auto">${prod.name}</div>
+              <div class="sugg-sub">${prod.generic} • ${prod.form}</div>
+            </div>
+            <div class="sugg-meta">
+              <div class="sugg-price">${prod.price.toFixed(2)} SAR</div>
+              <span class="sugg-tag">${prod.barcode}</span>
+            </div>
+          </div>
+        `).join("");
+        elements.suggestionsBox.classList.add("open");
+      }
+
+      function closeSuggestions() {
+        elements.suggestionsBox.classList.remove("open");
+        elements.suggestionsBox.innerHTML = "";
+        state.suggestions = [];
+        state.selectedIndex = -1;
+      }
+
+      // --- KEYBOARD NAVIGATION FOR SEARCH INPUT ---
+      function handleSearchKeyDown(e) {
+        const query = elements.mainSearchInput.value.trim();
+
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          if (state.suggestions.length > 0) {
+            state.selectedIndex = (state.selectedIndex + 1) % state.suggestions.length;
+            updateSelectedSuggestionDOM();
+          }
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (state.suggestions.length > 0) {
+            state.selectedIndex = (state.selectedIndex - 1 + state.suggestions.length) % state.suggestions.length;
+            updateSelectedSuggestionDOM();
+          }
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          
+          // Workflow A: Enter on blank customer search skips customer and switches to Product Mode!
+          if (state.mode === "CUSTOMER" && query === "") {
+            setSearchMode("PRODUCT");
+            showToast("Customer skipped (Walk-in). Switched to Product Scan mode.");
+            return;
+          }
+
+          // In Customer Mode with query: check exact barcode first (Requirement D)
+          if (state.mode === "CUSTOMER") {
+            const barcodeMatch = DEMO_PRODUCTS.find(p => p.barcode === query);
+            if (barcodeMatch) {
+              addProductToInvoice(barcodeMatch);
+              setSearchMode("PRODUCT");
+              showToast(`Barcode match added: ${barcodeMatch.name}`);
+              return;
+            }
+          }
+
+          // In Product Mode with query: check exact barcode match first
+          if (state.mode === "PRODUCT") {
+            const exactBarcode = DEMO_PRODUCTS.find(p => p.barcode === query);
+            if (exactBarcode) {
+              addProductToInvoice(exactBarcode);
+              elements.mainSearchInput.value = "";
+              closeSuggestions();
+              showToast(`Product added: ${exactBarcode.name}`);
+              return;
+            }
+          }
+
+          // Otherwise select from active dropdown if present
+          if (state.suggestions.length > 0 && state.selectedIndex >= 0) {
+            const selected = state.suggestions[state.selectedIndex];
+            if (state.mode === "CUSTOMER") {
+              attachCustomer(selected);
+              setSearchMode("PRODUCT");
+            } else {
+              addProductToInvoice(selected);
+              elements.mainSearchInput.value = "";
+              closeSuggestions();
+            }
+          }
+        } else if (e.key === "Escape") {
+          closeSuggestions();
+        }
+      }
+
+      function updateSelectedSuggestionDOM() {
+        const items = elements.suggestionsBox.querySelectorAll(".suggestion-item");
+        items.forEach((item, idx) => {
+          if (idx === state.selectedIndex) {
+            item.classList.add("selected");
+            item.scrollIntoView({ block: "nearest" });
+          } else {
+            item.classList.remove("selected");
+          }
+        });
+      }
+
+      // --- CUSTOMER PROFILE ACTIONS ---
+      function attachCustomer(customer) {
+        state.attachedCustomer = customer;
+        elements.customerEmptyBox.style.display = "none";
+        elements.customerSelectedBox.style.display = "flex";
+        elements.sidebarCustBadge.style.display = "block";
+
+        elements.custCardName.textContent = customer.name;
+        elements.custCardPhone.textContent = customer.phone;
+        elements.custCardTier.textContent = customer.tier;
+        elements.custCardVisits.textContent = customer.visits;
+        elements.custCardPoints.textContent = customer.points;
+
+        // Render Offers (subtle green accents)
+        elements.custOffersList.innerHTML = customer.offers.map(offer => `
+          <div class="offer-item">
+            <span class="offer-bullet"></span>
+            <span dir="auto">${offer}</span>
+          </div>
+        `).join("");
+
+        // Render Past Invoices
+        renderPastInvoices(customer.pastInvoices);
+        closeSuggestions();
+        showToast(`Customer attached: ${customer.name}`);
+      }
+
+      function detachCustomer() {
+        state.attachedCustomer = null;
+        elements.customerEmptyBox.style.display = "flex";
+        elements.customerSelectedBox.style.display = "none";
+        elements.sidebarCustBadge.style.display = "none";
+        elements.historySearchInput.value = "";
+        showToast("Customer detached. Operating in Walk-in mode.");
+      }
+
+      function renderPastInvoices(invoices, filterText = "") {
+        const f = filterText.toLowerCase();
+        let html = "";
+        invoices.forEach(inv => {
+          const matchingItems = inv.items.filter(item => 
+            !f || item.name.toLowerCase().includes(f)
+          );
+          if (matchingItems.length === 0 && f) return;
+
+          html += `
+            <div class="past-inv-card">
+              <div class="past-inv-meta">
+                <span><strong>${inv.id}</strong> • ${inv.date}</span>
+                <span>${inv.branch}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px; margin-top:2px;">
+                ${matchingItems.map(item => {
+                  const currProd = DEMO_PRODUCTS.find(p => p.id === item.productId);
+                  const currentPrice = currProd ? currProd.price : item.pastPrice;
+                  return `
+                    <div class="past-item-row">
+                      <div class="past-item-info" dir="auto" title="${item.name}">
+                        ${item.name} <span style="color:var(--text-dim); font-size:10px;">(Qty: ${item.qty})</span>
+                      </div>
+                      <div class="past-item-price">${currentPrice.toFixed(2)} SAR</div>
+                      <button class="btn-add-history" data-prod-id="${item.productId}" title="Add to invoice at current price (${currentPrice.toFixed(2)} SAR)">
+                        +
+                      </button>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+          `;
+        });
+
+        if (!html) {
+          html = `<div style="padding:14px; color:var(--text-dim); text-align:center; font-size:11.5px;">No historical items match "${filterText}"</div>`;
+        }
+        elements.pastInvoicesContainer.innerHTML = html;
+      }
+
+      // --- INVOICE LINE ITEMS & RECALCULATION ---
+      function addProductToInvoice(product) {
+        const existingLine = state.invoiceLines.find(line => line.productId === product.id);
+        if (existingLine) {
+          existingLine.qty += 1;
+        } else {
+          state.invoiceLines.push({
+            productId: product.id,
+            name: product.name,
+            generic: product.generic,
+            barcode: product.barcode,
+            form: product.form,
+            price: product.price, // Always current demo price
+            qty: 1,
+            discount: 0
+          });
+        }
+        renderInvoice();
+        showToast(`Added: ${product.name}`);
+      }
+
+      function updateLineQty(productId, newQty) {
+        const line = state.invoiceLines.find(l => l.productId === productId);
+        if (!line) return;
+        const q = parseInt(newQty, 10);
+        if (isNaN(q) || q <= 0) {
+          removeLine(productId);
+        } else {
+          line.qty = q;
+          renderInvoice();
+        }
+      }
+
+      function removeLine(productId) {
+        state.invoiceLines = state.invoiceLines.filter(l => l.productId !== productId);
+        renderInvoice();
+        showToast("Item removed from invoice.");
+      }
+
+      function clearInvoice() {
+        if (state.invoiceLines.length === 0) return;
+        state.invoiceLines = [];
+        state.percentDiscount = 0;
+        state.fixedDiscount = 0;
+        elements.inputPercentDiscount.value = "";
+        elements.inputFixedDiscount.value = "";
+        renderInvoice();
+        showToast("Invoice cleared.");
+      }
+
+      function renderInvoice() {
+        if (state.invoiceLines.length === 0) {
+          elements.invoiceTableBody.innerHTML = "";
+          elements.emptyInvoiceState.style.display = "flex";
+          elements.btnCheckout.disabled = true;
+        } else {
+          elements.emptyInvoiceState.style.display = "none";
+          elements.btnCheckout.disabled = false;
+
+          elements.invoiceTableBody.innerHTML = state.invoiceLines.map((line, idx) => {
+            const lineTotal = Math.max(0, (line.price * line.qty) - line.discount);
+            return `
+              <tr data-id="${line.productId}">
+                <td class="col-idx">${idx + 1}</td>
+                <td class="col-item">
+                  <div class="item-title" dir="auto">${line.name}</div>
+                  <div class="item-generic">${line.generic} • ${line.form}</div>
+                </td>
+                <td class="col-barcode">${line.barcode}</td>
+                <td class="col-price">${line.price.toFixed(2)}</td>
+                <td class="col-qty">
+                  <div class="qty-control">
+                    <button class="qty-btn" data-act="dec" data-id="${line.productId}">−</button>
+                    <input type="text" class="qty-input" data-id="${line.productId}" value="${line.qty}">
+                    <button class="qty-btn" data-act="inc" data-id="${line.productId}">+</button>
+                  </div>
+                </td>
+                <td class="col-disc" style="color:var(--text-dim);">${line.discount.toFixed(2)}</td>
+                <td class="col-total">${lineTotal.toFixed(2)}</td>
+                <td class="col-act">
+                  <button class="btn-icon-del" data-act="del" data-id="${line.productId}" title="Remove item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join("");
+        }
+
+        recalculateFinancials();
+      }
+
+      function recalculateFinancials() {
+        let subtotal = 0;
+        let totalQty = 0;
+
+        state.invoiceLines.forEach(line => {
+          subtotal += (line.price * line.qty) - line.discount;
+          totalQty += line.qty;
+        });
+
+        subtotal = Math.max(0, subtotal);
+
+        // Overall discounts calculation (Requirement F: strictly no negative total)
+        const percentVal = parseFloat(elements.inputPercentDiscount.value) || 0;
+        const fixedVal = parseFloat(elements.inputFixedDiscount.value) || 0;
+
+        const percentDiscAmount = (subtotal * Math.min(100, Math.max(0, percentVal))) / 100;
+        const totalDiscountPotential = percentDiscAmount + Math.max(0, fixedVal);
+
+        // Cap discount so total NEVER drops below 0.00
+        const actualDiscount = Math.min(subtotal, totalDiscountPotential);
+        const grandTotal = Math.max(0, subtotal - actualDiscount);
+        const vatIncluded = grandTotal * (15 / 115); // Standard KSA 15% VAT component
+
+        elements.totalItemsCount.textContent = totalQty;
+        elements.displaySubtotal.textContent = formatSAR(subtotal);
+
+        if (actualDiscount > 0) {
+          elements.discountRow.style.display = "flex";
+          elements.displayDiscount.textContent = "-" + formatSAR(actualDiscount);
+        } else {
+          elements.discountRow.style.display = "none";
+        }
+
+        elements.displayVat.textContent = formatSAR(vatIncluded);
+        elements.displayGrandTotal.textContent = formatSAR(grandTotal);
+
+        return { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty };
+      }
+
+      // --- CHECKOUT & MODAL WORKFLOW ---
+      function openCheckout() {
+        const { grandTotal, totalQty } = recalculateFinancials();
+        if (totalQty === 0) {
+          showToast("Cannot checkout an empty invoice.", "error");
+          return;
+        }
+
+        elements.modalAmountDue.textContent = formatSAR(grandTotal);
+        elements.modalCustomerInfo.textContent = state.attachedCustomer 
+          ? `Customer: ${state.attachedCustomer.name} (${state.attachedCustomer.phone})`
+          : "Walk-in Customer (No loyalty attached)";
+
+        elements.inputCashReceived.value = grandTotal.toFixed(2);
+        state.cashReceived = grandTotal;
+        updateChangeDue(grandTotal, grandTotal);
+
+        elements.checkoutModal.classList.add("active");
+        setTimeout(() => elements.inputCashReceived.focus(), 100);
+      }
+
+      function closeCheckout() {
+        elements.checkoutModal.classList.remove("active");
+        elements.mainSearchInput.focus();
+      }
+
+      function updateChangeDue(received, total) {
+        const change = Math.max(0, received - total);
+        elements.displayChangeDue.textContent = formatSAR(change);
+      }
+
+      function confirmPayment() {
+        const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
+        const cashRec = parseFloat(elements.inputCashReceived.value) || grandTotal;
+        
+        if (state.checkoutPaymentMethod === "cash" && cashRec < grandTotal) {
+          showToast("Cash received is less than amount due!", "error");
+          return;
+        }
+
+        const invNumber = "INV-" + Math.floor(100000 + Math.random() * 900000);
+        const now = new Date();
+        const dateStr = now.toLocaleDateString("en-GB") + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Generate Printable Receipt Content
+        let slip = `========================================
+            NOVA Rx PHARMACY POS
+           Branch #01 - Sulaimaniyah
+========================================
+Invoice: ${invNumber}
+Date:    ${dateStr}
+Cashier: Station 01 (Gemini Flash)
+Customer: ${state.attachedCustomer ? state.attachedCustomer.name : 'Walk-in Customer'}
+Phone:    ${state.attachedCustomer ? state.attachedCustomer.phone : 'N/A'}
+----------------------------------------
+ITEM                QTY   PRICE    TOTAL
+----------------------------------------
+`;
+
+        state.invoiceLines.forEach(l => {
+          const tot = (l.price * l.qty) - l.discount;
+          const shortName = l.name.substring(0, 18).padEnd(18, " ");
+          slip += `${shortName}  ${String(l.qty).padStart(2, " ")}  ${l.price.toFixed(2).padStart(6, " ")}  ${tot.toFixed(2).padStart(7, " ")}
+`;
+        });
+
+        slip += `----------------------------------------
+Subtotal:                    ${subtotal.toFixed(2).padStart(8, " ")} SAR
+Discount:                   -${actualDiscount.toFixed(2).padStart(8, " ")} SAR
+VAT (15% Included):          ${vatIncluded.toFixed(2).padStart(8, " ")} SAR
+----------------------------------------
+NET TOTAL PAYABLE:           ${grandTotal.toFixed(2).padStart(8, " ")} SAR
+Payment: ${state.checkoutPaymentMethod.toUpperCase()} (Received: ${cashRec.toFixed(2)} SAR)
+Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padStart(8, " ")} SAR
+========================================
+    Thank you for choosing NOVA Rx!
+   Please retain this slip for returns.
+========================================`;
+
+        elements.receiptSlipContent.textContent = slip;
+        closeCheckout();
+        elements.receiptModal.classList.add("active");
+
+        // Clear invoice and reset for next transaction
+        state.invoiceLines = [];
+        state.percentDiscount = 0;
+        state.fixedDiscount = 0;
+        elements.inputPercentDiscount.value = "";
+        elements.inputFixedDiscount.value = "";
+        renderInvoice();
+        showToast("Payment confirmed & Invoice completed!");
+      }
+
+      function startNewSale() {
+        clearInvoice();
+        detachCustomer();
+        setSearchMode("CUSTOMER");
+        showToast("New Sale initiated. Search customer or press Enter to skip.");
+      }
+
+      // --- ATTACH EVENT LISTENERS ---
+      function initEventListeners() {
+        // Search Input
+        elements.mainSearchInput.addEventListener("input", handleSearchInput);
+        elements.mainSearchInput.addEventListener("keydown", handleSearchKeyDown);
+
+        // Click on Autocomplete Suggestion
+        elements.suggestionsBox.addEventListener("click", e => {
+          const item = e.target.closest(".suggestion-item");
+          if (!item) return;
+          const idx = parseInt(item.getAttribute("data-idx"), 10);
+          const selected = state.suggestions[idx];
+          if (!selected) return;
+
+          if (state.mode === "CUSTOMER") {
+            attachCustomer(selected);
+            setSearchMode("PRODUCT");
+          } else {
+            addProductToInvoice(selected);
+            elements.mainSearchInput.value = "";
+            closeSuggestions();
+          }
+        });
+
+        // Top Actions
+        elements.btnNewSale.addEventListener("click", startNewSale);
+        
+        elements.btnAddLoyalty.addEventListener("click", () => {
+          setSearchMode("CUSTOMER");
+          showToast("Customer search active. Existing line items remain intact.");
+        });
+
+        elements.btnAttachLoyalty.addEventListener("click", () => {
+          setSearchMode("CUSTOMER");
+        });
+
+        elements.btnClearInvoice.addEventListener("click", clearInvoice);
+
+        elements.btnHelpShortcuts.addEventListener("click", () => {
+          elements.helpModal.classList.add("active");
+        });
+
+        elements.btnCloseHelp.addEventListener("click", () => elements.helpModal.classList.remove("active"));
+        elements.btnDismissHelp.addEventListener("click", () => elements.helpModal.classList.remove("active"));
+
+        // Table Delegations (Qty and Delete)
+        elements.invoiceTableBody.addEventListener("click", e => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          const act = btn.getAttribute("data-act");
+          const prodId = btn.getAttribute("data-id");
+          const line = state.invoiceLines.find(l => l.productId === prodId);
+          if (!line) return;
+
+          if (act === "inc") {
+            updateLineQty(prodId, line.qty + 1);
+          } else if (act === "dec") {
+            updateLineQty(prodId, line.qty - 1);
+          } else if (act === "del") {
+            removeLine(prodId);
+          }
+        });
+
+        elements.invoiceTableBody.addEventListener("change", e => {
+          if (e.target.classList.contains("qty-input")) {
+            const prodId = e.target.getAttribute("data-id");
+            updateLineQty(prodId, e.target.value);
+          }
+        });
+
+        // Overall Discounts Inputs
+        elements.inputPercentDiscount.addEventListener("input", recalculateFinancials);
+        elements.inputFixedDiscount.addEventListener("input", recalculateFinancials);
+
+        // Customer Sidebar Actions
+        elements.btnRemoveCust.addEventListener("click", detachCustomer);
+        elements.btnChangeCust.addEventListener("click", () => {
+          setSearchMode("CUSTOMER");
+          showToast("Search to select a replacement customer.");
+        });
+
+        // Filter Customer Past History
+        elements.historySearchInput.addEventListener("input", e => {
+          if (state.attachedCustomer) {
+            renderPastInvoices(state.attachedCustomer.pastInvoices, e.target.value.trim());
+          }
+        });
+
+        // Add Product from Customer Past Invoices (Requirement E: adds at CURRENT demo price)
+        elements.pastInvoicesContainer.addEventListener("click", e => {
+          const btn = e.target.closest(".btn-add-history");
+          if (!btn) return;
+          const prodId = btn.getAttribute("data-prod-id");
+          const product = DEMO_PRODUCTS.find(p => p.id === prodId);
+          if (product) {
+            addProductToInvoice(product);
+            showToast(`Re-added from history at current price: ${product.price.toFixed(2)} SAR`);
+          }
+        });
+
+        // Checkout & Modal Events
+        elements.btnCheckout.addEventListener("click", openCheckout);
+        elements.btnCloseCheckout.addEventListener("click", closeCheckout);
+        elements.btnCancelCheckout.addEventListener("click", closeCheckout);
+        elements.btnConfirmPayment.addEventListener("click", confirmPayment);
+
+        // Cash Input Events
+        elements.inputCashReceived.addEventListener("input", e => {
+          const { grandTotal } = recalculateFinancials();
+          const received = parseFloat(e.target.value) || 0;
+          updateChangeDue(received, grandTotal);
+        });
+
+        document.querySelectorAll(".pay-method-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".pay-method-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            state.checkoutPaymentMethod = btn.getAttribute("data-method");
+            document.getElementById("cashDetailsBox").style.display = state.checkoutPaymentMethod === "cash" ? "block" : "none";
+          });
+        });
+
+        document.querySelectorAll(".quick-cash-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const val = btn.getAttribute("data-val");
+            const { grandTotal } = recalculateFinancials();
+            let amount = grandTotal;
+            if (val !== "exact") {
+              amount = parseFloat(val);
+            }
+            elements.inputCashReceived.value = amount.toFixed(2);
+            updateChangeDue(amount, grandTotal);
+          });
+        });
+
+        // Receipt Modal Events
+        elements.btnCloseReceipt.addEventListener("click", () => {
+          elements.receiptModal.classList.remove("active");
+          startNewSale();
+        });
+        elements.btnReceiptNewSale.addEventListener("click", () => {
+          elements.receiptModal.classList.remove("active");
+          startNewSale();
+        });
+        elements.btnPrintReceiptBtn.addEventListener("click", () => {
+          window.print();
+        });
+
+        // Global Keyboard Shortcuts
+        window.addEventListener("keydown", e => {
+          if (e.key === "F2") {
+            e.preventDefault();
+            startNewSale();
+          } else if (e.key === "F3") {
+            e.preventDefault();
+            setSearchMode("CUSTOMER");
+          } else if (e.key === "F4") {
+            e.preventDefault();
+            clearInvoice();
+          } else if (e.key === "F9") {
+            e.preventDefault();
+            if (elements.checkoutModal.classList.contains("active")) {
+              confirmPayment();
+            } else {
+              openCheckout();
+            }
+          } else if (e.key === "Escape") {
+            if (elements.checkoutModal.classList.contains("active")) {
+              closeCheckout();
+            } else if (elements.receiptModal.classList.contains("active")) {
+              elements.receiptModal.classList.remove("active");
+              startNewSale();
+            } else if (elements.helpModal.classList.contains("active")) {
+              elements.helpModal.classList.remove("active");
+            } else {
+              closeSuggestions();
+            }
+          }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", e => {
+          if (!elements.suggestionsBox.contains(e.target) && e.target !== elements.mainSearchInput) {
+            closeSuggestions();
+          }
+        });
+      }
+
+      // --- INITIALIZATION ---
+      initEventListeners();
+      renderInvoice();
+      setSearchMode("CUSTOMER");
+
+    })();
+  </script>
+</body>
+</html>
