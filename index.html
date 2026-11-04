@@ -1347,9 +1347,54 @@ table.invoice-table tbody tr:hover{background:#172d44}
 .change-due-box span.title,.change-due-box span.amount{color:#77e1b9}
 .toast{background:#173149;border:1px solid #3a8cb5;color:#f0f7fd;border-radius:10px}
 
+
+/* v5 — charcoal black + pharmacy identity and premium accent palette */
+:root{--bg-base:#090b10;--bg-panel:#10141b;--bg-surface:#1c242e;--bg-surface-hover:#263342;--bg-surface-active:#304052;--border-subtle:#303944;--text-main:#f3f5f8;--text-muted:#b1becb;--text-dim:#8293a5;--accent-cyan:#239cd4;--accent-cyan-light:#5cc9f6;--accent-green:#34c7a0;--accent-green-bg:#102d27;--accent-green-border:#245a4b}
+body,.pos-root{background:#090b10;color:#f3f5f8}
+.pharmacy-brand-banner{height:76px;min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:9px 24px;background:linear-gradient(105deg,#080b11 0%,#101823 65%,#11151d 100%);border-bottom:1px solid #304151;position:relative;overflow:hidden}
+.pharmacy-brand-banner:after{content:"";position:absolute;right:-65px;top:-95px;width:300px;height:170px;border:1px solid rgba(62,168,217,.14);border-radius:50%;pointer-events:none}
+.pharmacy-banner-identity{display:flex;align-items:center;gap:14px;min-width:0}
+.pharmacy-mark{height:52px;width:52px;flex:0 0 52px;display:grid;place-items:center;background:linear-gradient(145deg,#189cd9,#063c74);border-radius:14px;color:#fff;font-size:34px;font-weight:900;box-shadow:0 0 0 1px #4d9fc8 inset}
+.pharmacy-banner-copy{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
+.pharmacy-banner-copy strong{color:#f7fbff;font-size:22px;font-weight:800;line-height:1.3}
+.pharmacy-banner-copy span{color:#8bb9d4;font-size:12px;font-weight:500}
+.pharmacy-banner-copy i{display:inline-block;width:4px;height:4px;border-radius:50%;background:#d6ad68;margin:0 7px;vertical-align:middle}
+.pharmacy-banner-right{display:flex;align-items:center;gap:18px;white-space:nowrap}
+.pharmacy-banner-live{display:inline-flex;align-items:center;gap:7px;color:#a4c8df;background:#182b3b;border:1px solid #2d4a60;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;direction:ltr}
+.pharmacy-banner-live b{width:7px;height:7px;background:#35c9a0;border-radius:50%}
+.pharmacy-banner-phone{color:#e7c58b;font-size:14px;letter-spacing:.5px;font-weight:700}
+.pos-root{height:calc(100dvh - 76px)}
+.main-workspace{background:#10141b;border-right-color:#303944}
+.customer-sidebar,.sidebar-body{background:#0c1118}
+.top-header,.sidebar-header{background:#151d26;border-bottom-color:#303944}
+.search-container{background:#141b24;border-bottom-color:#303944}
+.main-search-input{background:#0b1119;border-color:#3b4c5c}
+.table-container{background:#10141b}
+table.invoice-table th{background:#1b2631;border-bottom-color:#303944}
+table.invoice-table td{border-bottom-color:#26313d}
+table.invoice-table tbody tr:hover{background:#1b2733}
+.invoice-footer{background:#151d26;border-top-color:#303944}
+.discount-controls,.input-grp,.qty-control,.input-grp input,.qty-input{background:#0d151e}
+.cust-card,.past-inv-card{background:#171f29;border-color:#354451}
+.customer-empty-box{background:#151e28;border-color:#3a4b5b}
+.cust-stat-pill{background:#263441}
+.offers-section{background:#142d29}
+.history-search-input{background:#101a24}
+.modal-card{background:#171f29}
+.modal-header,.modal-footer{background:#101720}
+.checkout-amount-display{background:#0e1821}
+.pay-method-btn,.quick-cash-btn{background:#22303d}
+@media(max-width:1050px){.pharmacy-brand-banner{height:64px;min-height:64px;padding:7px 14px}.pos-root{height:calc(100dvh - 64px)}.pharmacy-mark{width:44px;height:44px;flex-basis:44px;font-size:29px}.pharmacy-banner-copy strong{font-size:18px}.pharmacy-banner-phone{display:none}}
+@media(max-width:700px){.pharmacy-banner-live{display:none}.pharmacy-banner-copy strong{font-size:16px}.pharmacy-banner-copy span{font-size:10px}}
+@media(orientation:portrait){.pos-root{height:auto;min-height:calc(100dvh - 64px)}}
+
 </style>
 </head>
 <body>
+  <div class="pharmacy-brand-banner" role="banner" dir="rtl">
+  <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true">س</div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
+  <div class="pharmacy-banner-right"><span class="pharmacy-banner-live"><b></b> NOVA Rx POS</span><span class="pharmacy-banner-phone" dir="ltr">01143404023</span></div>
+</div>
   <div class="pos-root">
     <!-- LEFT WORKSPACE (~72%) -->
     <main class="main-workspace">
