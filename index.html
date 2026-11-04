@@ -1749,6 +1749,9 @@ body *:not(svg):not(svg *){
 .customer-compact-layout .cust-history-hint{font-size:10px;color:#8793a0}
 .customer-compact-layout .invoices-scroll{max-height:240px!important;overflow-y:auto!important}
 
+/* UX pass 02: visible search mode switch for keyboard and touch */
+#searchModeTag{cursor:pointer;font:inherit}
+#searchModeTag:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
 /* NOVA Rx prototype UX pass 01 — visual-only, 2026-11-04 */
 @media (min-width:1101px) and (orientation:landscape){
  .main-workspace{flex-basis:75%!important;width:75%!important;max-width:75%!important}
@@ -1811,9 +1814,9 @@ body *:not(svg):not(svg *){
       <!-- Unified Main Search Bar -->
       <div class="search-container">
         <div class="search-box-wrapper">
-          <div id="searchModeTag" class="search-mode-tag customer">
-            Customer
-          </div>
+          <button type="button" id="searchModeTag" class="search-mode-tag product" title="Switch between medicine and customer search" aria-label="Switch search mode">
+            Product
+          </button>
           <input 
             type="text" 
             id="mainSearchInput" 
@@ -2227,7 +2230,7 @@ body *:not(svg):not(svg *){
       // --- APPLICATION STATE ---
       window.NOVA_DEMO = { products: DEMO_PRODUCTS, customers: DEMO_CUSTOMERS };
       const state = {
-        mode: "CUSTOMER", // "CUSTOMER" or "PRODUCT"
+        mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
         attachedCustomer: null,
         invoiceLines: [],
         percentDiscount: 0,
@@ -2853,8 +2856,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
       function startNewSale() {
         clearInvoice();
         detachCustomer();
-        setSearchMode("CUSTOMER");
-        showToast("New Sale initiated. Search customer or press Enter to skip.");
+        setSearchMode("PRODUCT");
+        showToast("New sale ready. Scan barcode or search medicine.");
       }
 
       // Local-only held invoices; not synchronized across devices.
@@ -3096,8 +3099,9 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
       // --- INITIALIZATION ---
       initEventListeners();
+      elements.searchModeTag.addEventListener("click", () => setSearchMode(state.mode === "PRODUCT" ? "CUSTOMER" : "PRODUCT"));
       renderInvoice();
-      setSearchMode("CUSTOMER");
+      setSearchMode("PRODUCT");
 
     })();
   </script>
