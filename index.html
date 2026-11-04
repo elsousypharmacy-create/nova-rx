@@ -1503,11 +1503,27 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
  .totals-breakdown{flex:1 1 48%}
 }
 
+
+/* Black Edition — foundation applied to existing NOVA Rx without replacing application logic */
+:root{--bg-base:#06080B;--bg-panel:#0D1117;--bg-surface:#161B22;--bg-surface-hover:#1F242C;--bg-surface-active:#282E38;--border-subtle:#21262D;--border-focus:#38BDF8;--text-main:#F0F6FC;--text-muted:#8B949E;--text-dim:#586069;--accent-cyan:#0284C7;--accent-cyan-light:#38BDF8;--accent-green:#10B981;--accent-red:#DA3633;--accent-amber:#D29922}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#06080B;color:#F0F6FC}
+button,input,select,textarea{font-family:inherit}
+button{touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #38BDF8;outline-offset:2px}
+.pharmacy-mark{display:flex;align-items:center;justify-content:center;background:#0D1117;border:1px solid #30363D;border-radius:12px}
+.pharmacy-mark svg{width:32px;height:32px;flex:none}
+@media (orientation:landscape) and (min-width:781px){
+ .pos-root{grid-template-columns:minmax(0,72fr) minmax(0,28fr)!important;gap:0!important;padding:0!important}
+ .main-workspace,.customer-sidebar{width:auto!important;min-width:0!important;max-width:none!important;border-radius:0!important}
+ .customer-sidebar{border-inline-start:1px solid #30363D}
+ .invoice-footer{max-height:42%;overflow-y:auto}
+}
+@media (pointer:coarse){.nova-tab,.nova-lang-btn,.pay-method-btn,.quick-cash-btn{min-height:44px}.btn-checkout{min-height:48px}}
 </style>
 </head>
 <body>
   <div class="pharmacy-brand-banner" role="banner" dir="rtl">
-  <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true">س</div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
+  <div class="pharmacy-banner-identity"><div class="pharmacy-mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 14L24 6l16 8v13c0 9-7 14-16 17C15 41 8 36 8 27V14Z" stroke="#38BDF8" stroke-width="2.5"/><path d="M17 17h14M24 10v14M16 29h16M19 25c0 8 10 8 10 0" stroke="#F0F6FC" stroke-width="2.5" stroke-linecap="round"/><path d="M21 35h6" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
   <div class="pharmacy-banner-right"><span class="pharmacy-banner-live"><b></b> NOVA Rx POS</span><span class="pharmacy-banner-phone" dir="ltr">01143404023</span></div>
 </div>
   <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
