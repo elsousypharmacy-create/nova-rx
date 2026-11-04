@@ -1418,27 +1418,32 @@ html,body{min-width:0}
 @media(max-width:780px){.nova-nav{padding-inline:6px}.nova-tab{font-size:11px;padding:6px 8px}.nova-lang-switch{position:sticky;inset-inline-end:0;z-index:3;background:#1b2026}.nova-page-view{padding:12px}.nova-kpis{gap:8px}}
 
 
-/* v11 — streamlined landscape POS layout */
+/* v12 — unified tablet POS layout: one responsive grid, no overlapping widths */
 @media (orientation:landscape) and (min-width:781px){
- .pos-root{gap:10px!important;padding:10px max(10px,env(safe-area-inset-right)) 10px max(10px,env(safe-area-inset-left))!important;background:#0b1016}
- .main-workspace{flex:1 1 0!important;width:auto!important;max-width:none!important;min-width:0!important;border:1px solid #2c3a46;border-radius:12px;background:#111922}
- .customer-sidebar{flex:0 0 clamp(245px,28%,330px)!important;width:clamp(245px,28%,330px)!important;max-width:330px!important;min-width:0!important;border:1px solid #2c3a46;border-radius:12px;background:#111922}
- .top-header,.sidebar-header{background:#17232e;border-bottom:1px solid #30404e;padding-inline:14px}
- .search-container{background:#111922;padding:12px 14px}
+ .pos-root{display:grid!important;grid-template-columns:minmax(0,1fr) clamp(230px,28%,330px);gap:10px;padding:10px;min-width:0;box-sizing:border-box;background:#0b1016}
+ .main-workspace,.customer-sidebar{flex:none!important;width:auto!important;max-width:none!important;min-width:0!important;height:100%;min-height:0;border:1px solid #2c3a46;border-radius:12px;overflow:hidden;background:#111922}
+ .main-workspace{grid-column:1;grid-row:1}
+ .customer-sidebar{grid-column:2;grid-row:1}
+ .top-header,.sidebar-header{background:#17232e;border-bottom:1px solid #30404e;padding-inline:12px}
+ .search-container{background:#111922;padding:10px 12px;min-width:0}
  .main-search-input{border-radius:10px;background:#0b141d!important}
- .table-container{background:#111922;flex:1 1 auto;min-height:0}
- .invoice-footer{background:#17232e;border-top:1px solid #30404e;padding:12px 14px;gap:12px}
- .checkout-action-box{min-width:135px;width:135px}
- .btn-checkout{border-radius:10px;min-height:64px}
- .sidebar-body{background:#111922;padding:14px}
+ .table-container{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;background:#111922}
+ .invoice-footer{display:flex;flex:0 0 auto;flex-wrap:wrap;max-height:42%;overflow-y:auto;background:#17232e;border-top:1px solid #30404e;padding:10px 12px;gap:9px}
+ .discount-controls,.totals-breakdown{min-width:0;flex:1 1 185px}
+ .checkout-action-box{flex:0 0 125px;width:125px;min-width:125px;align-self:stretch}
+ .btn-checkout{min-height:56px;border-radius:10px}
+ .sidebar-body{min-height:0;overflow-y:auto;background:#111922;padding:12px}
  .cust-card,.past-inv-card{border-radius:10px}
 }
 @media (orientation:landscape) and (min-width:781px) and (max-width:1100px){
- .pos-root{gap:8px!important;padding:8px!important}
- .customer-sidebar{flex-basis:clamp(220px,29%,290px)!important;width:clamp(220px,29%,290px)!important}
+ .pos-root{grid-template-columns:minmax(0,1fr) clamp(215px,29%,285px);gap:8px;padding:8px}
+ .top-header{padding-inline:8px}
  .invoice-footer{padding:8px;gap:7px}
- .checkout-action-box{min-width:110px;width:110px}
+ .checkout-action-box{flex-basis:100%;width:100%;min-width:0}
+ .btn-checkout{min-height:48px}
 }
+html[dir="rtl"] .pos-root{direction:rtl}
+html[dir="ltr"] .pos-root{direction:ltr}
 
 /* v10 — keep tablet content within the visible viewport edges */
 html,body{max-width:100%;overflow-x:hidden}
