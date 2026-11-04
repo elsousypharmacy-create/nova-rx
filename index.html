@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA Rx | صيدلية السوسي</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <meta name="theme-color" content="#0A0B0E">
   <meta name="application-name" content="NOVA Rx">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NOVA Rx">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="/manifest.webmanifest?v=3">
-  <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/icon.svg">
+  
+  
+  
   <style>
     :root {
       --bg-base: #08090b;
@@ -1519,6 +1519,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
  .invoice-footer{max-height:42%;overflow-y:auto}
 }
 @media (pointer:coarse){.nova-tab,.nova-lang-btn,.pay-method-btn,.quick-cash-btn{min-height:44px}.btn-checkout{min-height:48px}}
+
+/* Touch-safe settings and controls */
+.nova-settings-grid input:not([type="checkbox"]),.nova-settings-grid select{width:100%;min-height:44px;padding:9px;border:1px solid #30363D;border-radius:8px;background:#161B22;color:#F0F6FC}
+.nova-settings-grid label{display:flex;flex-direction:column;gap:8px;margin:12px 0;font-size:13px}
+.nova-settings-grid label:has(input[type="checkbox"]){flex-direction:row;align-items:center}
+.nova-settings-grid input[type="checkbox"]{width:22px;height:22px;accent-color:#0284C7}
+@media(pointer:coarse){.nova-data-table button,.nova-page-header button{min-width:44px;min-height:44px}}
 </style>
 </head>
 <body>
@@ -2816,7 +2823,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
     })();
   </script>
-<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=3', {updateViaCache:'none'}).catch(() => {})); }</script>
+
 <script>
 (function(){
   const btn=document.getElementById('btnRefreshApp');
@@ -2866,7 +2873,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  }else if(page==='invoices'){
  const list=filtered(inv,['id','customer','date','branch']);
  content=head(title,'فواتير سابقة من بيانات العرض — ليست سجل مبيعات محفوظًا',true)
- +'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
+ 
  +table(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+money(i.total)+'</td><td>'+esc((i.items||[]).length)+'</td></tr>'));
  }else if(page==='reports'){
  const sum=inv.reduce((s,i)=>s+i.total,0);
@@ -2875,9 +2882,14 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div>';
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>إعدادات الإيصال</h3><label>عرض الورق <select id="novaPaper"><option value="80">80mm</option><option value="58">58mm</option></select></label><label>عنوان الصيدلية <input id="novaAddress" autocomplete="off" placeholder="العنوان"></label><label>الرقم الضريبي <input id="novaTaxId" autocomplete="off" placeholder="الرقم الضريبي"></label></div><div class="nova-setting-card"><h3>الضريبة والصوت</h3><label><input id="novaVat" type="checkbox"> ضريبة 15% (إعداد عرض فقط)</label><label><input id="novaAudio" type="checkbox"> صوت التنبيه عند الضغط</label><p>لا يغير هذا الإعداد محرك حسابات البيع الحالي.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>بيانات تجريبية محلية — لا يوجد اتصال بقاعدة بيانات الصيدلية.</p></div></div>';
  }
  view.innerHTML=content;
+ if(page==='settings'){
+  const defaults={paper:'80',address:'',taxId:'',vat:true,audio:false};let settings;try{settings={...defaults,...JSON.parse(localStorage.getItem('nova-rx-settings')||'{}')}}catch{settings=defaults}
+  const ids={novaPaper:'paper',novaAddress:'address',novaTaxId:'taxId',novaVat:'vat',novaAudio:'audio'};
+  Object.entries(ids).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;if(el.type==='checkbox')el.checked=!!settings[key];else el.value=settings[key];el.addEventListener('change',()=>{settings[key]=el.type==='checkbox'?el.checked:el.value;try{localStorage.setItem('nova-rx-settings',JSON.stringify(settings))}catch(e){console.warn('Settings storage unavailable',e)}})})
+ }
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
