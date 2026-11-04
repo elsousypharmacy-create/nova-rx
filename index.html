@@ -1798,6 +1798,14 @@ body *:not(svg):not(svg *){
 .customer-sidebar .cust-history-search-icon:hover,.customer-sidebar .cust-history-search-icon:focus-visible{background:var(--bg-surface-hover);color:var(--text-main);border-color:var(--border-subtle)}
 .customer-sidebar #historySearchInput[hidden]{display:none!important}
 .customer-sidebar #historySearchInput:not([hidden]){display:block;margin:6px 0 8px}
+
+/* NOVA Rx UX pass 05 — compact customer controls */
+.customer-sidebar .cust-name-actions{display:flex;align-items:center;gap:5px;min-width:0}
+.customer-sidebar .cust-name-actions .cust-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.customer-sidebar .cust-name-actions .cust-history-search-icon{width:27px;height:27px;flex-basis:27px}
+.customer-sidebar .cust-actions-bar{justify-content:flex-end!important;margin-top:4px!important}
+.customer-sidebar .cust-remove-icon{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.35);border-radius:7px;color:#f87171;cursor:pointer}
+.customer-sidebar .cust-remove-icon:hover,.customer-sidebar .cust-remove-icon:focus-visible{background:rgba(239,68,68,.19);outline:1px solid #ef4444}
 </style>
 </head>
 <body>
@@ -1978,7 +1986,7 @@ body *:not(svg):not(svg *){
           <div class="cust-card cust-card-compact">
             <div class="cust-card-top">
               <div class="cust-identity">
-                <div id="custCardName" class="cust-name" dir="auto"></div>
+                <div class="cust-name-actions"><div id="custCardName" class="cust-name" dir="auto"></div><button type="button" id="btnHistorySearch" class="cust-history-search-icon" aria-label="البحث في المنتجات السابقة" title="بحث" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button></div>
                 <div id="custCardPhone" class="cust-phone" dir="ltr"></div>
               </div>
               <span id="custCardTier" class="cust-stat-pill tier-gold"></span>
@@ -1987,10 +1995,7 @@ body *:not(svg):not(svg *){
               <div class="cust-stat-pill">الزيارات <strong id="custCardVisits">0</strong></div>
               <div class="cust-stat-pill">النقاط <strong id="custCardPoints">0</strong></div>
             </div>
-            <div class="cust-actions-bar">
-              <button id="btnChangeCust" class="btn btn-secondary" type="button">تغيير العميل (F3)</button>
-              <button id="btnRemoveCust" class="btn btn-danger" type="button">إزالة</button>
-            </div>
+            <div class="cust-actions-bar"><button id="btnRemoveCust" class="cust-remove-icon" type="button" title="إزالة العميل" aria-label="إزالة العميل"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"></path></svg></button></div>
           </div>
           <details class="cust-extra-details" id="custExtraDetails">
             <summary>تفاصيل العميل <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
@@ -2000,7 +2005,7 @@ body *:not(svg):not(svg *){
                 <div id="custOffersList" style="display:flex;flex-direction:column;gap:5px;"></div>
               </div>
               <div class="history-section">
-                <div class="history-header"><span>المنتجات اللي اشتراها</span><button type="button" id="btnHistorySearch" class="cust-history-search-icon" aria-label="البحث في المنتجات السابقة" title="بحث" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></button></div>
+                <div class="history-header"><span>المنتجات اللي اشتراها</span></div>
                 <input type="text" id="historySearchInput" class="history-search-input" placeholder="ابحث في المنتجات السابقة..." autocomplete="off" hidden>
                 <div id="pastInvoicesContainer" class="invoices-scroll"></div>
               </div>
