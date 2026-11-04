@@ -1860,6 +1860,7 @@ body *:not(svg):not(svg *){
 .nova-gate-cancel{background:transparent;color:#aeb9c5;border:0}
 .nova-sale-actions .nova-hold-action{background:#2a3541;border:1px solid #526476;color:#e8f2fb;font-weight:700;padding:0 10px;font-size:12px}.nova-sale-actions .nova-hold-action:hover{background:#364657}@media(max-width:420px){.nova-sale-actions .nova-hold-action{padding:0 8px}.nova-sale-actions .nova-hold-action span{font-size:11px}}
 .nova-customer-gate-card input{width:100%;box-sizing:border-box;background:#101820;border:1px solid #52687a;border-radius:9px;padding:13px;color:#fff;font-size:17px;outline:none}.nova-customer-gate-card input:focus{border-color:#6ec9f2;box-shadow:0 0 0 2px #6ec9f222}#gateCustomerResult{font-size:12px;color:#f5b7a5;min-height:0;margin-top:5px}.nova-customer-gate-card .nova-gate-primary{margin-top:10px}
+#gateCustomerResult.nova-customer-found{color:#86d9b4;font-weight:700;background:#183328;border:1px solid #35664e;border-radius:7px;padding:9px;margin-top:9px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -3190,10 +3191,20 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           openCheckout();
         });
         document.getElementById("gatePhone").addEventListener("input", () => {
+          const phone = document.getElementById("gatePhone").value.replace(/[^0-9]/g, "");
+          const customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
+          const result = document.getElementById("gateCustomerResult");
           document.getElementById("gateNewCustomerFields").hidden = true;
           document.getElementById("gateCustomerName").value = "";
-          document.getElementById("gateFindCustomer").textContent = "متابعة بالرقم";
-          document.getElementById("gateCustomerResult").textContent = "";
+          if (customer && phone.length >= 9) {
+            result.textContent = "✓ عميل مسجل: " + customer.name;
+            result.classList.add("nova-customer-found");
+            document.getElementById("gateFindCustomer").textContent = "تأكيد العميل ومتابعة الدفع";
+          } else {
+            result.textContent = "";
+            result.classList.remove("nova-customer-found");
+            document.getElementById("gateFindCustomer").textContent = "متابعة بالرقم";
+          }
         });
         document.getElementById("gateCustomerForm").addEventListener("submit", e => {
           e.preventDefault();
@@ -3210,7 +3221,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
             const fields = document.getElementById("gateNewCustomerFields");
             if (fields.hidden) {
               fields.hidden = false;
-              result.textContent = "عميل جديد — ممكن تضيف اسمه أو تكمل بالرقم فقط.";
+              result.classList.remove("nova-customer-found");
+            result.textContent = "عميل جديد — ممكن تضيف اسمه أو تكمل بالرقم فقط.";
               document.getElementById("gateFindCustomer").textContent = "تسجيل ومتابعة الدفع";
               nameField.focus();
               return;
