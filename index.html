@@ -3355,6 +3355,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
     }catch(e){console.warn('Update check failed',e)}
     const url=new URL(location.href);
     url.searchParams.set('refresh',String(Date.now()));
+    if(!url.hash){try{const page=localStorage.getItem('nova.activePage');if(page)url.hash=page}catch(e){}}
     location.replace(url.href);
   });
 })();
@@ -3407,10 +3408,10 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
- switchPage(location.hash.slice(1)||'sale');
+ switchPage(location.hash.slice(1)||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
 })();
 </script>
 
