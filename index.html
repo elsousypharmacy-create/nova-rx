@@ -2611,8 +2611,20 @@ body *:not(svg):not(svg *){
       function updateLineQty(productId, newQty) {
         const line = state.invoiceLines.find(l => l.productId === productId);
         if (!line) return;
-        const q = parseInt(newQty, 10);
-        if (isNaN(q) || q <= 0) {
+        const rawQty = String(newQty).trim();
+        // Never interpret a scanned barcode or malformed input as a sale quantity.
+        if (!/^\d+$/.test(rawQty)) {
+          renderInvoice();
+          showToast("Invalid quantity. Enter a number from 1 to 999.");
+          return;
+        }
+        const q = Number(rawQty);
+        if (!Number.isSafeInteger(q) || q > 999) {
+          renderInvoice();
+          showToast("Quantity cannot exceed 999.");
+          return;
+        }
+        if (q === 0) {
           removeLine(productId);
         } else {
           line.qty = q;
