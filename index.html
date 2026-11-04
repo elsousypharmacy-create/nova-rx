@@ -1537,14 +1537,26 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .nova-held-row-actions .nova-held-delete{background:#38272c;border-color:#63434b;color:#ffc5ca}
 .nova-hold-current{width:100%;margin-top:10px;background:#244354}
 @media(max-width:780px){.nova-sale-actions .nova-held-action{padding:0 6px;gap:3px}.nova-sale-actions .nova-held-action svg{display:none}}
+
+/* Brand placement: pharmacy in sales toolbar, NOVA on navigation row left */
+.pharmacy-brand-banner .nova-top-label{font-size:11px;font-weight:600;color:#8da0ad}
+.top-header .pharmacy-banner-identity{display:flex;align-items:center;gap:8px;min-width:0}
+.top-header .pharmacy-banner-copy{display:flex;flex-direction:column;min-width:0}
+.top-header .pharmacy-banner-copy strong{font-size:13px;white-space:nowrap;line-height:1.3}
+.top-header .pharmacy-banner-copy span{font-size:10px;color:#9aadb9;white-space:nowrap}
+.top-header .elsousy-brand-mark{width:30px;height:30px}
+.nova-nav{position:relative;padding-inline-end:100px!important}
+.nova-nav-brand{position:absolute;inset-inline-end:13px;top:50%;transform:translateY(-50%);font-weight:800;font-size:13px;letter-spacing:.4px;color:#e9f2f8;white-space:nowrap}
+.nova-nav-brand span{font-size:10px;color:#86c9e9}
+@media(max-width:780px){.nova-nav{padding-inline-end:75px!important}.nova-nav-brand{inset-inline-end:7px;font-size:11px}.top-header .pharmacy-banner-copy span{font-size:9px}}
 </style>
 </head>
 <body>
   <div class="pharmacy-brand-banner" role="banner" dir="rtl">
-  <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" width="30" height="30" loading="eager" decoding="async"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
+  <div class="nova-top-label">نظام نقاط البيع</div>
   <div class="pharmacy-banner-right"><span class="pharmacy-banner-live" title="متصل" aria-label="حالة الاتصال"><b></b></span><button id="btnRefreshApp" class="nova-refresh-icon" type="button" title="إعادة تحميل الصفحة" aria-label="إعادة تحميل الصفحة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button></div>
 </div>
-  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
+  <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl"><div class="nova-nav-brand" dir="ltr">NOVA <span>Rx</span></div>
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
   </nav>
@@ -1555,7 +1567,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
       <!-- Top App Bar -->
       <header class="top-header">
         <div class="brand-section">
-          <div class="brand-logo">NOVA <span class="rx">Rx</span></div>
+          <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" width="30" height="30" loading="eager" decoding="async"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي <i></i> نظام نقاط البيع</span></div></div>
           <span class="task-badge">TASK-001</span>
           <div id="modePill" class="status-pill customer-mode">
             <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
