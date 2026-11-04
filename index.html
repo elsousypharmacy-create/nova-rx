@@ -2458,6 +2458,16 @@ body *:not(svg):not(svg *){
             }
           }
 
+          // When a medicine name is typed in customer mode with no matching customer,
+          // preserve the query and continue the search as a product instead of trapping the cashier.
+          if (state.mode === "CUSTOMER" && query && state.suggestions.length === 0) {
+            setSearchMode("PRODUCT");
+            elements.mainSearchInput.value = query;
+            handleSearchInput({ target: elements.mainSearchInput });
+            showToast("No customer found. Searching medicines instead.");
+            return;
+          }
+
           // In Product Mode with query: check exact barcode match first
           if (state.mode === "PRODUCT") {
             const exactBarcode = DEMO_PRODUCTS.find(p => p.barcode === query);
