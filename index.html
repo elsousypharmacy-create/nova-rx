@@ -1522,6 +1522,21 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .nova-more-item:hover{background:#2a3944}
 .nova-more-danger{color:#f2b4b7}
 @media(max-width:900px){.nova-sale-actions{gap:4px}.nova-sale-actions .nova-new-sale{padding:0 8px;font-size:11px}}
+
+.nova-sale-actions .nova-held-action{height:34px;padding:0 9px;background:#222b33;border:1px solid #3c4c56;color:#d8e4eb;font-size:11px}
+.nova-held-count{background:#394b56;color:#e7f3fa;border-radius:10px;min-width:18px;padding:1px 4px;font-size:10px}
+.nova-held-panel{position:absolute;z-index:110;top:calc(100% + 4px);inset-inline-end:12px;width:min(360px,calc(100vw - 24px));max-height:min(440px,75dvh);overflow:auto;background:#19222b;color:#eaf0f4;border:1px solid #40515c;border-radius:12px;padding:12px;box-shadow:0 16px 40px #0008}
+.nova-held-panel[hidden]{display:none!important}
+.nova-held-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;font-size:13px}
+.nova-held-heading button{border:0;background:transparent;color:#dce8ef;font-size:23px;cursor:pointer}
+.nova-held-list{display:flex;flex-direction:column;gap:7px}
+.nova-held-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid #334550;border-radius:8px;background:#202c36}
+.nova-held-meta{min-width:0;font-size:12px}.nova-held-meta small{display:block;color:#a8bac7;margin-top:3px;font-size:10px}
+.nova-held-row-actions{display:flex;gap:5px;flex-shrink:0}
+.nova-held-row-actions button,.nova-hold-current{border:1px solid #4d6574;background:#304554;color:#eaf5fa;border-radius:7px;padding:7px 9px;font-size:11px;cursor:pointer}
+.nova-held-row-actions .nova-held-delete{background:#38272c;border-color:#63434b;color:#ffc5ca}
+.nova-hold-current{width:100%;margin-top:10px;background:#244354}
+@media(max-width:780px){.nova-sale-actions .nova-held-action{padding:0 6px;gap:3px}.nova-sale-actions .nova-held-action svg{display:none}}
 </style>
 </head>
 <body>
@@ -1550,6 +1565,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 
         <div class="header-actions nova-sale-actions">
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="New Sale (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
+          <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="Held Invoices" aria-label="Held Invoices"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
           <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="Add / Switch Customer (F3)" aria-label="Add / Switch Customer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
           <div class="nova-more-wrap">
             <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="More actions" title="More actions" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
@@ -1560,6 +1576,8 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
           </div>
         </div>
       </header>
+
+      <div id="heldInvoicePanel" class="nova-held-panel" hidden role="dialog" aria-label="Held Invoices"><div class="nova-held-heading"><strong>Held Invoices</strong><button id="closeHeldInvoices" type="button" aria-label="Close">×</button></div><div id="heldInvoiceList" class="nova-held-list"></div><button id="holdCurrentInvoice" class="nova-hold-current" type="button">Hold Current Invoice</button></div>
 
       <!-- Unified Main Search Bar -->
       <div class="search-container">
@@ -2618,6 +2636,55 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         showToast("New Sale initiated. Search customer or press Enter to skip.");
       }
 
+      // Local-only held invoices; not synchronized across devices.
+      const HELD_KEY = 'nova-rx-held-invoices-v1';
+      let heldInvoices = [];
+      try { const saved = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(saved)) heldInvoices = saved.filter(x => x && Array.isArray(x.lines)).slice(0, 50); } catch (_) {}
+      const heldPanel = document.getElementById('heldInvoicePanel');
+      const heldList = document.getElementById('heldInvoiceList');
+      const heldCount = document.getElementById('heldInvoiceCount');
+      const heldEscape = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      function saveHeldInvoices(next) {
+        try { localStorage.setItem(HELD_KEY, JSON.stringify(next)); heldInvoices = next; renderHeldInvoices(); return true; }
+        catch (_) { showToast('Unable to save held invoices on this device.', 'error'); return false; }
+      }
+      function renderHeldInvoices() {
+        heldCount.textContent = heldInvoices.length;
+        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.customerName || 'Walk-in')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">No held invoices</div>';
+      }
+      function holdCurrentInvoice() {
+        if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
+        if (heldInvoices.length >= 50) { showToast('Held invoice limit reached (50).', 'error'); return; }
+        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount};
+        if (!saveHeldInvoices([record, ...heldInvoices])) return;
+        startNewSale(); heldPanel.hidden = true; showToast('Invoice held on this device.');
+      }
+      document.getElementById('btnHeldInvoices').addEventListener('click', () => { heldPanel.hidden = !heldPanel.hidden; renderHeldInvoices(); });
+      document.getElementById('closeHeldInvoices').addEventListener('click', () => {heldPanel.hidden = true});
+      document.getElementById('holdCurrentInvoice').addEventListener('click', holdCurrentInvoice);
+      heldList.addEventListener('click', e => {
+        const resume = e.target.closest('[data-held-resume]'); const del = e.target.closest('[data-held-delete]');
+        if (!resume && !del) return;
+        const id = (resume || del).getAttribute(resume ? 'data-held-resume' : 'data-held-delete');
+        const record = heldInvoices.find(x => x.id === id); if (!record) return;
+        if (del) { if (confirm('Delete this held invoice?')) saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); return; }
+        if (state.invoiceLines.length && !confirm('Replace the current invoice? Unsaved items will be lost.')) return;
+        // Keep held record until the active invoice is restored successfully.
+        state.invoiceLines = JSON.parse(JSON.stringify(record.lines));
+        state.percentDiscount = Number(record.percentDiscount) || 0;
+        state.fixedDiscount = Number(record.fixedDiscount) || 0;
+        elements.inputPercentDiscount.value = state.percentDiscount || '';
+        elements.inputFixedDiscount.value = state.fixedDiscount || '';
+        const customer = record.customerId != null ? DEMO_CUSTOMERS.find(c => String(c.id) === String(record.customerId)) : null;
+        if (customer) attachCustomer(customer); else detachCustomer();
+        setSearchMode('PRODUCT'); renderInvoice();
+        saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); heldPanel.hidden = true;
+        showToast('Held invoice restored.');
+      });
+      document.addEventListener('click', e => { if (!heldPanel.hidden && !e.target.closest('#heldInvoicePanel,#btnHeldInvoices')) heldPanel.hidden = true; });
+      document.addEventListener('keydown', e => {if(e.key === 'Escape') heldPanel.hidden = true});
+      renderHeldInvoices();
+
       // --- ATTACH EVENT LISTENERS ---
       function initEventListeners() {
         // Search Input
@@ -2911,7 +2978,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'مؤشرات توضيحية محسوبة من فواتير العملاء التجريبية فقط':'Illustrative metrics from demo customer invoices only',
  'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن':'Preview settings — no production permissions or sync',
  'Customer Search Mode':'وضع البحث عن عميل','Product / Barcode Scan Mode':'وضع البحث عن منتج أو باركود',
- 'New Sale':'فاتورة جديدة','Clear Invoice':'مسح الفاتورة','Keyboard Shortcuts':'اختصارات الكيبورد','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
+ 'New Sale':'فاتورة جديدة','Clear Invoice':'مسح الفاتورة','Keyboard Shortcuts':'اختصارات الكيبورد','Held Invoices':'الفواتير المعلقة','Held':'معلقة','Hold Current Invoice':'تعليق الفاتورة الحالية','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
  'Customer':'عميل','Product':'منتج','Product & Description':'المنتج والوصف','Barcode':'الباركود','Price':'السعر','Quantity':'الكمية','Discount':'الخصم','Total':'الإجمالي',
  'Invoice is Empty':'الفاتورة فارغة','Scan product barcode or type medicine name in the search bar above.':'امسح الباركود أو ابحث باسم الدواء في الأعلى.',
  'Overall Invoice Discount':'خصم الفاتورة','Subtotal':'المجموع الفرعي','Discount Applied':'الخصم المطبق',
