@@ -1363,6 +1363,22 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 @media(max-width:1050px){.nova-nav{height:44px;padding:4px 8px}.nova-tab{padding:7px 10px}.pos-root,.nova-page-view{height:calc(100dvh - 96px)}.nova-page-view{padding:15px}.nova-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(orientation:portrait){.pos-root,.nova-page-view{height:auto;min-height:calc(100dvh - 96px)}.nova-settings-grid{grid-template-columns:1fr}.nova-page-header{flex-wrap:wrap}.nova-page-view{overflow-x:auto}}
 
+
+.nova-lang-switch{display:flex;gap:2px;padding:3px;background:#1b2026;border:1px solid #303841;border-radius:8px;margin-inline-start:auto}
+.nova-lang-btn{border:0;background:transparent;color:#aab6c0;font-family:inherit;font-size:11px;font-weight:700;border-radius:5px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.nova-lang-btn.active{background:#344b59;color:#e2f4fc}
+.lang-ar .pos-root{direction:ltr}
+.lang-ar .main-workspace,.lang-ar .customer-sidebar{direction:rtl}
+.lang-ar .invoice-table{text-align:right}
+.lang-ar .search-box-wrapper{direction:ltr}
+.lang-ar .search-box-wrapper input{text-align:right;padding-right:110px;padding-left:15px}
+.lang-ar .search-mode-tag{left:10px;right:auto}
+.lang-ar .nova-page-view{direction:rtl}
+.lang-en .nova-page-view,.lang-en .nova-nav{direction:ltr}
+.lang-en .nova-data-table{text-align:left}
+.lang-en .pharmacy-brand-banner{direction:ltr}
+.lang-en .pharmacy-banner-copy{text-align:left}
+@media(max-width:700px){.nova-demo-label{display:none}.nova-lang-btn{padding:5px 7px}}
 </style>
 </head>
 <body>
@@ -1372,7 +1388,7 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 </div>
   <nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
-  <span class="nova-demo-label">نسخة تجريبية</span>
+  <div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div><span class="nova-demo-label">نسخة تجريبية</span>
   </nav>
   <div id="novaPageView" class="nova-page-view" dir="rtl" hidden></div>
   <div class="pos-root">
@@ -2725,6 +2741,111 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
  switchPage(location.hash.slice(1)||'sale');
+})();
+</script>
+
+<script>
+/* UI language controller: text labels only; medicine/customer records are never translated */
+(function(){
+ const langKey='nova-rx-language';
+ const arToEn={
+ 'صيدلية السوسي':'Elsousy Pharmacy','د. أحمد السوسي':'Dr. Ahmed Elsousy','نظام نقاط البيع':'Point of Sale',
+ 'البيع':'Sales','الفواتير':'Invoices','المنتجات':'Products','العملاء':'Customers','التقارير':'Reports','الإعدادات':'Settings','نسخة تجريبية':'Demo',
+ 'المنتجات والمخزون':'Products & Inventory','الاسم':'Name','الهاتف':'Phone','المستوى':'Tier','الزيارات':'Visits','النقاط':'Points',
+ 'الصنف':'Product','الباركود':'Barcode','السعر':'Price','الرصيد':'Stock','التصنيف':'Category',
+ 'رقم الفاتورة':'Invoice No.','التاريخ':'Date','العميل':'Customer','القيمة':'Amount','الأصناف':'Items',
+ 'عدد الأصناف':'Products','إجمالي الوحدات':'Total Units','مخزون منخفض (أقل من 30)':'Low Stock (under 30)',
+ 'قيمة المخزون بسعر البيع':'Retail Stock Value','إجمالي الزيارات':'Total Visits','نقاط الولاء':'Loyalty Points','العملاء النشطون':'Active Customers',
+ 'عدد الفواتير':'Invoice Count','إجمالي القيمة':'Total Value','متوسط الفاتورة':'Average Invoice','الأصناف المباعة':'Units Sold',
+ 'مبيعات تجريبية':'Demo Sales','فواتير تجريبية':'Demo Invoices',
+ 'توزيع قيمة الفواتير التجريبية حسب العميل':'Demo Invoice Value by Customer',
+ 'البيانات التجريبية':'Demo Records','المظهر':'Appearance','بيانات النظام':'System Data','النسخة':'Version','المزامنة والصلاحيات':'Sync & Permissions',
+ 'Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.':'Black Edition · Cairo font · Landscape tablet layout.',
+ 'المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.':'Current products, customers, and invoices are local demo data.',
+ 'NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.':'NOVA Rx PWA · Prototype only. Do not use for real customer transactions.',
+ 'لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.':'No database, user accounts, or staff permissions are connected yet.',
+ 'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي':'Demo product catalog — does not change actual inventory',
+ 'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات':'Demo customer directory — real records require a database',
+ 'فواتير سابقة من بيانات العرض — ليست سجل مبيعات محفوظًا':'Sample invoices — not a persisted sales ledger',
+ 'مؤشرات توضيحية محسوبة من فواتير العملاء التجريبية فقط':'Illustrative metrics from demo customer invoices only',
+ 'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن':'Preview settings — no production permissions or sync',
+ 'Customer Search Mode':'وضع البحث عن عميل','Product / Barcode Scan Mode':'وضع البحث عن منتج أو باركود',
+ 'New Sale':'فاتورة جديدة','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
+ 'Customer':'عميل','Product':'منتج','Product & Description':'المنتج والوصف','Barcode':'الباركود','Price':'السعر','Quantity':'الكمية','Discount':'الخصم','Total':'الإجمالي',
+ 'Invoice is Empty':'الفاتورة فارغة','Scan product barcode or type medicine name in the search bar above.':'امسح الباركود أو ابحث باسم الدواء في الأعلى.',
+ 'Overall Invoice Discount':'خصم الفاتورة','Subtotal':'المجموع الفرعي','Discount Applied':'الخصم المطبق',
+ 'VAT (15% Included)':'ضريبة القيمة المضافة (15% متضمنة)','Complete Sale':'إتمام البيع',
+ 'Add / Switch Customer':'إضافة أو تغيير العميل','Search History':'بحث في السجل',
+ 'Payment Method':'طريقة الدفع','Cash':'نقدي','Card':'بطاقة','Split':'مختلط',
+ 'Amount Due':'المبلغ المستحق','Cash Received':'المبلغ المستلم','Change Due':'الباقي',
+ 'Cancel':'إلغاء','Confirm Payment':'تأكيد الدفع','Print Receipt':'طباعة الإيصال',
+ 'New Sale / Reset':'فاتورة جديدة','No customer selected':'لم يتم اختيار عميل',
+ 'Customer Profile':'ملف العميل','Purchase History':'سجل المشتريات',
+ 'No items found':'لا توجد أصناف','SAR':'ر.س','items':'أصناف'
+ };
+ const enToAr={};for(const [ar,en] of Object.entries(arToEn)){if(/[\u0600-\u06FF]/.test(ar)&&!/[\u0600-\u06FF]/.test(en))enToAr[en]=ar;else if(!/[\u0600-\u06FF]/.test(ar)&&/[\u0600-\u06FF]/.test(en))enToAr[ar]=en;}
+ const arOverrides={'Sales':'البيع','Invoices':'الفواتير','Products':'المنتجات','Customers':'العملاء','Reports':'التقارير','Settings':'الإعدادات','Demo':'نسخة تجريبية','Point of Sale':'نظام نقاط البيع','Elsousy Pharmacy':'صيدلية السوسي','Dr. Ahmed Elsousy':'د. أحمد السوسي','Name':'الاسم','Phone':'الهاتف','Visits':'الزيارات','Points':'النقاط','Amount':'القيمة','Date':'التاريخ','Stock':'الرصيد','Category':'التصنيف'};
+ Object.assign(enToAr,arOverrides);
+ const arabicSource=new Set(Object.keys(arToEn).filter(x=>/[\u0600-\u06FF]/.test(x)));
+ const englishSource=new Set(Object.keys(enToAr));
+ const preserved=new WeakMap();
+ function translateText(text,lang){
+  const trimmed=text.trim();if(!trimmed)return text;
+  const dict=lang==='en'?arToEn:enToAr;
+  if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
+  let next=text;
+  // Longer UI phrases first, but do not translate user/product data
+  for(const [a,b] of Object.entries(dict).sort((a,b)=>b[0].length-a[0].length)){
+   if(a.length<7)continue;
+   if(next.includes(a))next=next.split(a).join(b);
+  }
+  return next;
+ }
+ function uiText(node){
+  const parent=node.parentElement;
+  if(!parent)return false;
+  if(parent.closest('script,style,option,.nova-data-table tbody,.cust-name,.cust-phone,.sugg-primary,.sugg-sub,.past-item-row,.past-inv-card,.offer-item,.invoice-table tbody'))return false;
+  return true;
+ }
+ let busy=false;
+ function apply(){
+  if(busy)return;busy=true;
+  const lang=localStorage.getItem(langKey)==='en'?'en':'ar';
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  document.body.classList.toggle('lang-ar',lang==='ar');
+  document.body.classList.toggle('lang-en',lang==='en');
+  document.querySelectorAll('.nova-lang-btn').forEach(b=>{b.classList.toggle('active',b.dataset.lang===lang);b.setAttribute('aria-pressed',String(b.dataset.lang===lang))});
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+  for(const node of nodes){
+   if(!uiText(node))continue;
+   let source=preserved.get(node);
+   if(source===undefined){source=node.nodeValue;preserved.set(node,source)}
+   const val=translateText(source,lang);
+   if(node.nodeValue!==val)node.nodeValue=val;
+  }
+  document.querySelectorAll('input[placeholder],button[title],input[aria-label],button[aria-label]').forEach(el=>{
+   for(const attr of ['placeholder','title','aria-label']){
+    if(!el.hasAttribute(attr))continue;
+    const key='novaOriginal'+attr;let original=el.dataset[key];
+    if(original===undefined){original=el.getAttribute(attr);el.dataset[key]=original}
+    const extra={
+      'Search customer by name or phone... (Press Enter to skip)':lang==='ar'?'ابحث باسم العميل أو رقمه... (Enter للتخطي)':'Search customer by name or phone... (Enter to skip)',
+      'Search product name or scan barcode...':lang==='ar'?'ابحث عن دواء أو امسح الباركود...':'Search product name or scan barcode...',
+      'بحث بالاسم أو الرقم أو الباركود':lang==='en'?'Search by name, number, or barcode':'بحث بالاسم أو الرقم أو الباركود',
+      'تحديث التطبيق':lang==='en'?'Refresh app':'تحديث التطبيق',
+      'التنقل الرئيسي':lang==='en'?'Main navigation':'التنقل الرئيسي'
+    };
+    el.setAttribute(attr,extra[original]||translateText(original,lang));
+   }
+  });
+  busy=false;
+ }
+ let scheduled=false;
+ const observer=new MutationObserver(()=>{if(busy||scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;apply()})});
+ observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+ document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);apply()}));
+ apply();
 })();
 </script>
 </body>
