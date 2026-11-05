@@ -61,3 +61,9 @@
 |---|---|---|---|---|---|
 | [42073141915](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42073141915) | `4c0aa71` | main | failure | Install Chromium | not ready: Playwright failure, run 42073141915 |
 | [42073357913](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42073357913) | `61c0928` | main | failure | Install Chromium | not ready: Playwright failure, run 42073357913 |
+| [42101365952](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42101365952) | `04ce8b4` | kimi/issue-4-42100548728-clean | failure | Install Chromium | n/a (no review_ready) |
+| [42101553795](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42101553795) | `4720ed8` | main | failure | Install Chromium | n/a (no review_ready) |
+| [42118437660](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42118437660) | `3e0e1e3` | fix/gemini-sticker-reliability | failure | Install Chromium | not ready: Playwright failure, run 42118437660 |
+| [42118944756](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42118944756) | `e7ffd52` | main | failure | Install Chromium | n/a (no review_ready) |
+| [42121545477](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42121545477) | `3843ddc` | feature/sticker-studio-redesign | failure | Install Chromium | not ready: Playwright failure, run 42121545477 |
+| [42122059687](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42122059687) | `efe4fad` | main | failure | Install Chromium | n/a (no review_ready) |
