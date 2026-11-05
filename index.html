@@ -3030,6 +3030,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
       function startNewSale() {
         clearInvoice();
+        document.getElementById("novaLabelsPanel")?.classList.remove("open");
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
