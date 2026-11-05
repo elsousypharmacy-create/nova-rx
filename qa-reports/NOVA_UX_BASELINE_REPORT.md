@@ -87,7 +87,7 @@
 - **الشاشة:** الإيصال
 - **الوصف:** elementFromPoint على مركز #btnCloseReceipt يعيد #emptyInvoiceState. قياسات: {'btnVisible': True, 'topId': 'emptyInvoiceState', 'topCls': 'empty-invoice-state', 'receiptHidden': False}
 - **خطوات إعادة الإنتاج:** أتمم بيعًا حتى يظهر الإيصال ثم حاول إغلاقه بالزر ✕.
-- **لقطة:** [`shots/24-receipt-preview.png`](shots/24-receipt-preview.png)
+- **لقطة:** [`shots/24b-receipt-close-blocked.png`](shots/24b-receipt-close-blocked.png)
 - **أثر UX:** الصيدلي لا يستطيع إغلاق الإيصال بالزر الظاهر؛ يبدو أنه يعمل لكنه لا يستجيب.
 - **إصلاح محدد:** ارفع z-index لمودال الإيصال فوق empty state، أو أخفِ emptyInvoiceState طوال فتح الإيصال، وفعّل pointer-events بشكل صحيح.
 - **معيار قبول Kimi:** النقر على ✕ يغلق الإيصال فورًا دون اعتراض طبقات أخرى.
