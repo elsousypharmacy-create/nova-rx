@@ -277,7 +277,8 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
       z-index: 2;
     }
 
@@ -996,6 +997,11 @@
     .modal-backdrop.active {
       opacity: 1;
       pointer-events: auto;
+    }
+
+    /* Keep the receipt above the labels/AI overlays (z-index 9000+) so its close button stays clickable. */
+    #receiptModal.modal-backdrop {
+      z-index: 9200;
     }
 
     .modal-card {
@@ -2345,6 +2351,7 @@ body *:not(svg):not(svg *){
 
       // Recover an unfinished invoice after an accidental reload (browser-local only).
       const ACTIVE_INVOICE_KEY = 'nova-rx-active-invoice-v1';
+      let restoredCustomerId = null;
       try {
         const draft = JSON.parse(localStorage.getItem(ACTIVE_INVOICE_KEY) || 'null');
         if (draft && Array.isArray(draft.lines)) {
@@ -2354,16 +2361,18 @@ body *:not(svg):not(svg *){
             Number.isSafeInteger(l.qty) && l.qty >= 1 && l.qty <= 999 &&
             Number.isFinite(l.discount) && l.discount >= 0
           ).slice(0, 500);
-          state.percentDiscount = Number.isFinite(draft.percentDiscount) ? Math.max(0, draft.percentDiscount) : 0;
-          state.fixedDiscount = Number.isFinite(draft.fixedDiscount) ? Math.max(0, draft.fixedDiscount) : 0;
+          state.percentDiscount = Number.isFinite(draft.percentDiscount) ? draft.percentDiscount : 0;
+          state.fixedDiscount = Number.isFinite(draft.fixedDiscount) ? draft.fixedDiscount : 0;
+          restoredCustomerId = draft.customerId != null ? String(draft.customerId) : null;
         }
       } catch (_) {}
       function persistActiveInvoice() {
         try {
-          if (!state.invoiceLines.length) localStorage.removeItem(ACTIVE_INVOICE_KEY);
+          if (!state.invoiceLines.length && !state.attachedCustomer) localStorage.removeItem(ACTIVE_INVOICE_KEY);
           else localStorage.setItem(ACTIVE_INVOICE_KEY, JSON.stringify({
             lines: state.invoiceLines, percentDiscount: state.percentDiscount,
-            fixedDiscount: state.fixedDiscount
+            fixedDiscount: state.fixedDiscount,
+            customerId: state.attachedCustomer ? state.attachedCustomer.id : null
           }));
         } catch (_) { /* Browser storage may be unavailable; keep checkout usable. */ }
       }
@@ -2705,6 +2714,7 @@ body *:not(svg):not(svg *){
         // Render Past Invoices
         renderPastInvoices(customer.pastInvoices);
         closeSuggestions();
+        persistActiveInvoice();
         showToast(`Customer attached: ${customer.name}`);
         if (state.customerGatePending) { state.customerGatePending = false; openCheckout(); }
       }
@@ -2716,6 +2726,7 @@ body *:not(svg):not(svg *){
         elements.customerSelectedBox.style.display = "none";
         elements.sidebarCustBadge.style.display = "none";
         elements.historySearchInput.value = "";
+        persistActiveInvoice();
         showToast("Customer detached. Operating in Walk-in mode.");
       }
 
@@ -3164,9 +3175,17 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           }
         });
 
-        // Overall Discounts Inputs
-        elements.inputPercentDiscount.addEventListener("input", recalculateFinancials);
-        elements.inputFixedDiscount.addEventListener("input", recalculateFinancials);
+        // Overall Discounts Inputs — keep state and the saved draft in sync with the exact inputs.
+        elements.inputPercentDiscount.addEventListener("input", () => {
+          state.percentDiscount = parseFloat(elements.inputPercentDiscount.value) || 0;
+          persistActiveInvoice();
+          recalculateFinancials();
+        });
+        elements.inputFixedDiscount.addEventListener("input", () => {
+          state.fixedDiscount = parseFloat(elements.inputFixedDiscount.value) || 0;
+          persistActiveInvoice();
+          recalculateFinancials();
+        });
 
         // Customer Sidebar Actions
         elements.btnRemoveCust.addEventListener("click", detachCustomer);
@@ -3362,6 +3381,14 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
       // --- INITIALIZATION ---
       initEventListeners();
       elements.searchModeTag.addEventListener("click", () => setSearchMode(state.mode === "PRODUCT" ? "CUSTOMER" : "PRODUCT"));
+      // Restore the saved draft exactly: discount inputs first (totals are derived
+      // from them), then the attached customer, all before the first render.
+      elements.inputPercentDiscount.value = state.percentDiscount ? String(state.percentDiscount) : "";
+      elements.inputFixedDiscount.value = state.fixedDiscount ? String(state.fixedDiscount) : "";
+      if (restoredCustomerId) {
+        const restoredCustomer = DEMO_CUSTOMERS.find(c => String(c.id) === restoredCustomerId);
+        if (restoredCustomer) attachCustomer(restoredCustomer);
+      }
       renderInvoice();
       setSearchMode("PRODUCT");
 
@@ -3525,7 +3552,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   document.querySelectorAll('input[placeholder],button[title],input[aria-label],button[aria-label]').forEach(el=>{
    for(const attr of ['placeholder','title','aria-label']){
     if(!el.hasAttribute(attr))continue;
-    const key='novaOriginal'+attr;let original=el.dataset[key];
+    const key='novaOriginal'+attr.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());let original=el.dataset[key];
     if(original===undefined){original=el.getAttribute(attr);el.dataset[key]=original}
     const extra={
       'Search customer by name or phone... (Press Enter to skip)':lang==='ar'?'ابحث باسم العميل أو رقمه... (Enter للتخطي)':'Search customer by name or phone... (Enter to skip)',
