@@ -20,7 +20,7 @@ Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof
 ## Required agent protocol — ALL AI agents (ChatGPT, Kimi, Grok, others)
 1. At start, read this HANDOFF.md and check current issue, branch, PR, commits, and CI status. Do not duplicate completed work.
 2. Before work, state exact narrow scope, files to touch, expected result and token-conscious plan. Avoid broad exploratory reads.
-3. **Every meaningful progress checkpoint must be written to HANDOFF.md and committed/pushed to GitHub**, including: completed work, changed files, commit/branch/PR links, tests and results, remaining work, blockers, next exact action. Update before handing off, stopping, or hitting limits whenever possible.
+3. **Every meaningful progress checkpoint must be written to HANDOFF.md and committed/pushed to GitHub**, including: completed work, changed files, commit/branch/PR links, tests and results, remaining work, blockers, and next exact action. Update before handing off, stopping, or hitting limits whenever possible.
 4. If a task fails, times out, or hits quota, inspect commits/PR/checkpoints FIRST. Never rerun failed workflow jobs automatically. Ask owner before any potentially expensive restart.
 5. Keep handoff updates factual and concise; distinguish verified facts from plans. Do not claim a commit or test passed unless confirmed.
 6. Coordinate handoff edits carefully: fetch latest before writing, avoid overwriting another agent's updates; use separate branch/PR if concurrent edits conflict.
@@ -61,3 +61,27 @@ Source: owner-provided detailed 2026-11-05 chat handoff, cross-checked with GitH
 
 ### Documentation discrepancy
 The earlier 'Next action' above refers to issue #4 run 42033433619 and predates merged PR #6 and the Cloudflare deployments. This checkpoint supersedes that historical next action; preserve it only for audit history.
+
+## Kimi checkpoint — 2026-11-06
+
+### Scope completed in this session
+- Read `HANDOFF.md`, `AGENTS.md`, open issues #4, #7, #8 and #9, open PR status (none), latest commits, and the owner-provided full technical handoff.
+- Compared GitHub `main` with the live preview as far as available access allowed. GitHub `index.html` is older than the deployed Worker: the live rendered page contains the newer NOVA Labels flow, while GitHub does not contain `novaStickerApprovedLayoutV2` or Gemini Worker code.
+- Added a safe Worker integration patch instead of overwriting the older GitHub HTML:
+  - `worker/gemini-label-service.js` — dynamic Gemini model discovery with 10-minute cache, text-model filtering, strict JSON with compatibility fallback, bounded model retries, finish-reason/truncation rejection, robust JSON parsing, and medication-instruction completeness validation.
+  - `worker/sticker-print-settings.js` — approved label presets, custom dimensions, paper layout, style, margins, orientation, copies, local-only persistence, preview geometry, and `@page` CSS generation.
+  - `worker/README.md` — safe live-Worker merge instructions and deployment warning.
+  - `docs/WORKER_SYNC_STATUS.md` — verified sync findings, access limitations, blockers, and rollback path.
+  - `tests/unit/gemini-label-service.check.mjs` — deterministic mocked regression checks.
+
+### Tests run locally
+- `node tests/unit/gemini-label-service.check.mjs` — passed.
+
+### Blockers and non-claims
+- No Cloudflare token/Wrangler session is available here, so the live Worker was not modified and nothing was deployed.
+- Direct live-site access timed out from this sandbox; live content was checked through an external reader only. Full browser QA remains required.
+- The owner-supplied official logo source image is not available here; no substitute logo was created.
+- These changes are GitHub-side integration code only until ChatGPT merges them into the current live Worker source and deploys a reviewed preview.
+
+### Next exact action
+Create a dedicated branch and PR for this patch. ChatGPT should review, merge only after confirming the branch does not overwrite live Worker UI, then merge the Worker service into the current Cloudflare source and run live browser QA.
