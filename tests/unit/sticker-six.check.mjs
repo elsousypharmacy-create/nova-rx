@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync('sticker-studio.html','utf8');
+const css=fs.readFileSync('sticker-six-layout.css','utf8');
+for(const token of ['id="ageUnit"','name="pregnancy"','name="breastfeeding"','id="stickerPrev"','id="stickerNext"','id="stickerPageCount"','stickerPage*6+6','data-med-id','function validateBeforePrint','pharmacistApproval']) assert.ok(html.includes(token),token);
+assert.ok(html.includes("!['yes','no'].includes(state.patient.pregnancy)"),'pregnancy print gate');
+assert.ok(html.includes("!['yes','no'].includes(state.patient.breastfeeding)"),'breastfeeding print gate');
+assert.ok(css.includes('grid-template-columns:repeat(3'),'three columns');
+assert.ok(css.includes('grid-template-rows:repeat(2'),'two rows');
+const js=html.match(/<script>([\s\S]*?)<\/script>/g)?.at(-1)?.replace(/^<script>|<\/script>$/g,'');
+assert.ok(js,'inline script');
+fs.writeFileSync('/tmp/nova-sticker-six.js',js);
+console.log('Sticker six static checks PASS; run node --check /tmp/nova-sticker-six.js separately');
