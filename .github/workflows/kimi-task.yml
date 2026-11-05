@@ -56,7 +56,7 @@ jobs:
           BRANCH="kimi/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
           git switch -c "$BRANCH"
           gh issue view "$ISSUE_NUMBER" --json title,body --jq '.title + "\n" + .body' > /tmp/kimi-task.txt
-          kimi -p "Implement the requirements in GitHub issue #${ISSUE_NUMBER}, available at /tmp/kimi-task.txt. Read only necessary repository files. Make narrowly scoped changes, add tests where feasible, preserve Black Edition RTL UX. Do not access secrets or modify workflow files. Do not commit, push, deploy, or merge yourself. Finish with a concise BUILD_REPORT.md in repository root explaining changes, tests, limitations."
+          kimi -p "Implement the requirements in GitHub issue #${ISSUE_NUMBER}, available at /tmp/kimi-task.txt. Read only necessary repository files. IMPORTANT: if Read tool fails to paginate or ignores line_offset, immediately use shell commands such as sed, tail, or rg with context to inspect bounded sections; do not repeat the failing Read call, stop, or ask for user decisions. Continue autonomously through edits, tests and BUILD_REPORT.md within the time budget. Make narrowly scoped changes, add tests where feasible, preserve Black Edition RTL UX. Do not access secrets or modify workflow files. Do not commit, push, deploy, or merge yourself. Finish with a concise BUILD_REPORT.md in repository root explaining changes, tests, limitations."
           git add -A -- ':!.github/workflows' ':!*.env' ':!*.env.*'
           if git diff --cached --quiet; then
             echo "::error::Kimi produced no changes"
