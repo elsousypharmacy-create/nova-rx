@@ -6,11 +6,13 @@ on:
     paths:
       - 'index.html'
       - 'tests/**'
+      - 'playwright.config.cjs'
       - '.github/workflows/playwright-smoke.yml'
   pull_request:
     paths:
       - 'index.html'
       - 'tests/**'
+      - 'playwright.config.cjs'
       - '.github/workflows/playwright-smoke.yml'
   workflow_dispatch:
 
@@ -37,6 +39,11 @@ jobs:
           exit 1
       - name: Run isolated demo smoke test
         run: npx playwright test tests/nova-pos-smoke.spec.cjs --browser=chromium --reporter=line,html
+      - name: Write machine-readable result
+        if: always()
+        run: |
+          mkdir -p qa/reports
+          echo '{"task":"NOVA-PLAYWRIGHT-SMOKE","commit":"${{ github.sha }}","run_id":"${{ github.run_id }}","conclusion":"${{ job.status }}"}' > qa/reports/playwright-result.json
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,5 +52,6 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            qa/reports/playwright-result.json
           if-no-files-found: ignore
           retention-days: 14
