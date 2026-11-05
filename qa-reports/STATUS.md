@@ -54,3 +54,10 @@
 | `GAP-CUSTOMER-CRUD` | إدارة عملاء كاملة (إضافة/تعديل مستمرة) غير متاحة — دليل تجريبي | `85b8209` |
 | `GAP-RBAC` | لا نظام مستخدمين/صلاحيات بعد — مصرّح في الإعدادات | `85b8209` |
 | `GAP-PURCHASES-PAGE` | لا تبويب مشتريات مستقل — الدخول عبر زر AI في المنتجات | `85b8209` |
+
+## Playwright smoke runs (readiness only — technical failures handled by ChatGPT/Kimi)
+
+| Run | SHA | Branch | Conclusion | Failed step | UX review |
+|---|---|---|---|---|---|
+| [42073141915](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42073141915) | `4c0aa71` | main | failure | Install Chromium | not ready: Playwright failure, run 42073141915 |
+| [42073357913](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42073357913) | `61c0928` | main | failure | Install Chromium | not ready: Playwright failure, run 42073357913 |
