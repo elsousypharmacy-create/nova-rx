@@ -85,3 +85,37 @@ The earlier 'Next action' above refers to issue #4 run 42033433619 and predates 
 
 ### Next exact action
 Create a dedicated branch and PR for this patch. ChatGPT should review, merge only after confirming the branch does not overwrite live Worker UI, then merge the Worker service into the current Cloudflare source and run live browser QA.
+
+## Kimi checkpoint — 2026-11-06 sticker studio redesign
+
+### Scope completed in this session
+- Read the owner-provided sticker UX/UI redesign handoff.
+- Verified current GitHub `main` after PR #10 merge at `e7ffd528aafd49dbd390d8227ce0c0b575c92aac`.
+- Confirmed no open PRs before starting the redesign branch.
+- Confirmed the uploaded material did not include the official logo image file; the redesign keeps the existing owner-controlled logo URL and does not invent a substitute.
+- Added `sticker-studio.html` as a safe standalone premium sticker workflow instead of overwriting the stale GitHub `index.html` or the newer live Worker UI.
+- Added `docs/STICKER_STUDIO_INTEGRATION.md` with integration and logo notes.
+- Added `tests/unit/sticker-studio.check.mjs` for static regression coverage.
+
+### Implemented in `sticker-studio.html`
+- RTL Arabic premium sticker workflow using Cairo.
+- Patient fields, invoice queue, manual medication entry and editable medication cards.
+- Per-medication AI regeneration through `/api/ai/medication-label`.
+- AI loading/error states that preserve drafts.
+- Incomplete medication drafts remain review-required and cannot print.
+- Pharmacist approval gate.
+- Required print presets, custom dimensions, paper layout, full/compact styles, margins, orientation, copies, test print, local persistence and physical-size preview.
+- Print window generates clean labels with `@page` dimensions.
+
+### Tests run locally
+- `node tests/unit/sticker-studio.check.mjs` — passed.
+- Inline JavaScript extracted from `sticker-studio.html` and checked with `node --check` — passed.
+
+### Blockers and non-claims
+- GitHub `index.html` was not replaced because the live Cloudflare Worker is newer and its source is unavailable here.
+- No Cloudflare deployment was performed.
+- Full tablet/mobile/browser QA remains required after integration into the current live Worker source.
+- Official logo source image remains unavailable in this environment.
+
+### Next exact action
+Create a dedicated branch and PR containing the standalone sticker studio, tests and integration notes. ChatGPT should review and integrate it into the reconciled live Worker source, then deploy a preview for Grok UX QA.
