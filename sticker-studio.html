@@ -31,11 +31,27 @@ main{width:min(1540px,100%);margin:0 auto;padding:22px;flex:1;display:flex;flex-
 @media(max-width:720px){main{padding:12px}.panel-body{padding:13px}.grid2,.grid3{grid-template-columns:1fr}.hero h1{font-size:24px}.top-actions .pill{display:none}.brand-copy strong{font-size:15px}.brand img{width:38px;height:38px}.btn{padding:9px 11px}.preview-grid{gap:12px}}
 @media print{body{background:#fff}.app,.toast{display:none!important}}
 </style>
-</head>
+<style id="novaStickerPremiumV2">
+:root{--bg:#090d14;--panel:#111923;--card:#172330;--card2:#1b2a39;--line:#304256;--line2:#425c77;--blue:#2298e7;--text:#f4f8ff;--muted:#b2c5d8}
+body{background:radial-gradient(ellipse at 90% -20%,#173452 0,transparent 44%),#090d14!important}
+.brand img{object-fit:contain;background:#fff;border-radius:14px;padding:5px;box-shadow:0 0 0 1px #d7e6f3}
+.med-card{border:1px solid #3b526a!important;border-radius:18px!important;box-shadow:0 8px 24px #0002;transition:border-color .15s}
+.med-card:focus-within{border-color:#389ce2!important}
+.preview-shell{background:linear-gradient(145deg,#152538,#101820);border:1px solid #30465d;border-radius:20px;padding:16px}
+.sticker-preview{box-shadow:0 12px 35px #0009,0 0 0 1px #aab8c6!important}
+.sticker-preview .label-brand img{background:#fff;border-radius:2mm;width:9mm;height:9mm}
+.sticker-preview .label-brand strong{font-weight:900}
+.settings details{border-radius:15px!important}
+input:focus,textarea:focus,select:focus{outline:2px solid #278fe0!important;outline-offset:1px}
+button{transition:filter .15s,transform .15s}button:hover{filter:brightness(1.13)}button:active{transform:scale(.99)}
+@media(min-width:1181px){.preview-shell{top:82px}.med-list{gap:14px}}
+@media(max-width:650px){.preview-shell{padding:10px}.med-card{padding:12px!important}}
+@media print{.brand img{box-shadow:none}.sticker-preview{box-shadow:none!important}}
+</style></head>
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><img src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" onerror="this.style.display='none'"><div class="brand-copy"><strong>صيدلية السوسي</strong><span>لصاحبها ومديرها د. أحمد السوسي · 01143404023</span></div></div>
+  <div class="brand"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA4KCw0LCQ4NDA0QDw4RFiQXFhQUFiwgIRokNC43NjMuMjI6QVNGOj1OPjIySGJJTlZYXV5dOEVmbWVabFNbXVn/2wBDAQ8QEBYTFioXFypZOzI7WVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVn/wAARCABOAFADASIAAhEBAxEB/8QAGwAAAgIDAQAAAAAAAAAAAAAAAAYEBQECBwP/xAA0EAABAwIEAwQKAQUAAAAAAAABAAIDBAUGESExEkFRE2GBkRQiMkJSYnGx0eEjFRZDocH/xAAZAQADAQEBAAAAAAAAAAAAAAADBAUCAAH/xAAiEQACAgEEAgMBAAAAAAAAAAABAgADEQQSITETIkFRYTL/2gAMAwEAAhEDEQA/AOkIWFldOghCpL7exQDsKfJ1SRqTqGftbRC5wJiyxa13NLOqrKejZxVEzYwdgTqfoFTT4rpmOIhgkk73ENCVJppJ5TJM8ved3OOqGQyyDNkUjh3NJT66VAPbmTH1rsfTiMjcW6+tR6d0n6VjR4hoapwYXGGQ7CTQHxSQWlpIIII5FYWm0tZ64mF1loPPM6ehK2GLpIZRRTuLmkfxuPLuTSp9lZrbBlSq0WLuEEIQhwsiXOsbQ0Mk51cBk0dXHZLNBh+qrnmorXuia88Rz9t34VliS5MpTFDG0OqB67SRmGcs8uu6kYaqDUWscby+Rr3B5cczvn/1NLurq3L8xJ9lt2xviSaS00NIB2UDS743jiP+1O2GQQqvEV3ZZbVLUuyMp9WJp95x2/PglySx5jYVVHAxNrzbI6+kfk0CdozY4b59EhKBasU3O2zl3bGeJ7i58UpzBJ3yPJMTLzhm5ZzVJmoZzq9gByJ7sgR9k7U5qGG5ER1FPlO5e55WWOSW7Uwj3a8OPcBuugrmlbiyGjY6CwU/ZB2jqmUZvP0B28fJSMD4hlNxkoq6d8npJ4o3yOzIf08R9kO/Nnt9QumTxDaezOhoQhKRuJuKoHsuYmIzZIwZHvG4VZQV89vn7SBwyOjmnZwT5XUUNfTGGcaHUEbtPUJNuNjq6ElwYZoeT2DPzHJUaLVZdjSVqKXR/IsYaPElFM0CYmnf82o81YTwUd0pTHMyKphdyOTh+lzpbxyyRO4onuY7q05Lm0i9qcTk1rDhhmS73gN7eKW0ScY37CQ6+Dvz5pMqaaaklMVTE+GQbteMin2kxHXU+Qkc2dvR418wva41EuIpKNlDWNoZon8T2SD29tjzy1071grYn9ciMLdXZ1wYnWfDVyu7g6GExwHeaTRvh18F0Ox4Ut9o4ZeH0iqH+WQbH5Ry+6vgMgAspVrC0aVAIIWDtpuqmsbe3kmmfSsbyAzJ8yFlV3HvE522jOMy3QlcXi6W6UNuUHFGeeWR8CNFf0ddT10Ikp3hw5jm36haepkGfiYruVzgd/U86u10dZmZoGlx94aHzCoqzCrm5uo5uL5JND5pqQvUudOjOeit+xOaVEEtNKYp43MeNwVoDkQRoRseicMWU7H24TkDtI3gA88jyScqdVnkXMkX1eJ9sesP3B1fQfynOaI8Lj16FWqVMHl3b1Q93hb55lNam3qFsIEraZy9YJghCEGHmksTJ43RysD2O0LXDMFK1xtU1ok9Nt8jxGPaAOrPr1CbFggOBaQCDoQUSuwofyBtpFg/fuLNLivIBtXASfjj/BU/+5LdwcXHJn04DmotwwxFI50lHIISdeB2rfDolmppX0shZIWkj4SnFqpt5WIvdfTw0sb3e/6kGxRsMcLTnru4qnyUqhoJa6URxOY0nm4lNlrw/BQuEszu3mGxI9Vv0CKzpSuIFa7NQ24zbDtA6ioOKVvDLKeJw6DkFboQpjsWYsZXRAihRP/Z" alt="شعار صيدلية السوسي" onerror="this.style.display='none'"><div class="brand-copy"><strong>صيدلية السوسي</strong><span>لصاحبها ومديرها د. أحمد السوسي · 01143404023</span></div></div>
   <div class="top-actions"><span class="pill"><b></b> NOVA Labels Premium</span><button class="btn ghost" id="backToPos" type="button">العودة لنقطة البيع</button></div>
 </header>
 <main>
@@ -83,7 +99,7 @@ const PRESETS=[['50x30',50,30],['40x30',40,30],['40x25',40,25],['50x25',50,25],[
 const DRAFT_KEY='nova.stickerStudio.draft.v1';
 const SETTINGS_KEY='nova.stickerStudio.settings.v1';
 const QUEUE_KEY='nova.label.invoices.v1';
-const LOGO='https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png';
+const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA4KCw0LCQ4NDA0QDw4RFiQXFhQUFiwgIRokNC43NjMuMjI6QVNGOj1OPjIySGJJTlZYXV5dOEVmbWVabFNbXVn/2wBDAQ8QEBYTFioXFypZOzI7WVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVn/wAARCABOAFADASIAAhEBAxEB/8QAGwAAAgIDAQAAAAAAAAAAAAAAAAYEBQECBwP/xAA0EAABAwIEAwQKAQUAAAAAAAABAAIDBAUGESExEkFRE2GBkRQiMkJSYnGx0eEjFRZDocH/xAAZAQADAQEBAAAAAAAAAAAAAAADBAUCAAH/xAAiEQACAgEEAgMBAAAAAAAAAAABAgADEQQSITETIkFRYTL/2gAMAwEAAhEDEQA/AOkIWFldOghCpL7exQDsKfJ1SRqTqGftbRC5wJiyxa13NLOqrKejZxVEzYwdgTqfoFTT4rpmOIhgkk73ENCVJppJ5TJM8ved3OOqGQyyDNkUjh3NJT66VAPbmTH1rsfTiMjcW6+tR6d0n6VjR4hoapwYXGGQ7CTQHxSQWlpIIII5FYWm0tZ64mF1loPPM6ehK2GLpIZRRTuLmkfxuPLuTSp9lZrbBlSq0WLuEEIQhwsiXOsbQ0Mk51cBk0dXHZLNBh+qrnmorXuia88Rz9t34VliS5MpTFDG0OqB67SRmGcs8uu6kYaqDUWscby+Rr3B5cczvn/1NLurq3L8xJ9lt2xviSaS00NIB2UDS743jiP+1O2GQQqvEV3ZZbVLUuyMp9WJp95x2/PglySx5jYVVHAxNrzbI6+kfk0CdozY4b59EhKBasU3O2zl3bGeJ7i58UpzBJ3yPJMTLzhm5ZzVJmoZzq9gByJ7sgR9k7U5qGG5ER1FPlO5e55WWOSW7Uwj3a8OPcBuugrmlbiyGjY6CwU/ZB2jqmUZvP0B28fJSMD4hlNxkoq6d8npJ4o3yOzIf08R9kO/Nnt9QumTxDaezOhoQhKRuJuKoHsuYmIzZIwZHvG4VZQV89vn7SBwyOjmnZwT5XUUNfTGGcaHUEbtPUJNuNjq6ElwYZoeT2DPzHJUaLVZdjSVqKXR/IsYaPElFM0CYmnf82o81YTwUd0pTHMyKphdyOTh+lzpbxyyRO4onuY7q05Lm0i9qcTk1rDhhmS73gN7eKW0ScY37CQ6+Dvz5pMqaaaklMVTE+GQbteMin2kxHXU+Qkc2dvR418wva41EuIpKNlDWNoZon8T2SD29tjzy1071grYn9ciMLdXZ1wYnWfDVyu7g6GExwHeaTRvh18F0Ox4Ut9o4ZeH0iqH+WQbH5Ry+6vgMgAspVrC0aVAIIWDtpuqmsbe3kmmfSsbyAzJ8yFlV3HvE522jOMy3QlcXi6W6UNuUHFGeeWR8CNFf0ddT10Ikp3hw5jm36haepkGfiYruVzgd/U86u10dZmZoGlx94aHzCoqzCrm5uo5uL5JND5pqQvUudOjOeit+xOaVEEtNKYp43MeNwVoDkQRoRseicMWU7H24TkDtI3gA88jyScqdVnkXMkX1eJ9sesP3B1fQfynOaI8Lj16FWqVMHl3b1Q93hb55lNam3qFsIEraZy9YJghCEGHmksTJ43RysD2O0LXDMFK1xtU1ok9Nt8jxGPaAOrPr1CbFggOBaQCDoQUSuwofyBtpFg/fuLNLivIBtXASfjj/BU/+5LdwcXHJn04DmotwwxFI50lHIISdeB2rfDolmppX0shZIWkj4SnFqpt5WIvdfTw0sb3e/6kGxRsMcLTnru4qnyUqhoJa6URxOY0nm4lNlrw/BQuEszu3mGxI9Vv0CKzpSuIFa7NQ24zbDtA6ioOKVvDLKeJw6DkFboQpjsWYsZXRAihRP/Z';
 const state={patient:{name:'',phone:'',age:'',weight:'',safety:''},medications:[],approved:false,selectedInvoice:null};
 const settings={preset:'50x30',customWidth:50,customHeight:30,paperLayout:'single',styleMode:'full',copies:1,marginMm:2,orientation:'auto',showReviewBadge:true,includePhone:true};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
