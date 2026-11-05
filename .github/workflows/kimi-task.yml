@@ -1,5 +1,7 @@
 name: Kimi NOVA Rx task
 on:
+  issues:
+    types: [labeled]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -15,6 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   implement:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'kimi-run-now'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
