@@ -37,7 +37,7 @@ jobs:
       - name: Implement issue on isolated branch
         env:
           GH_TOKEN: ${{ github.token }}
-          KIMI_MODEL_NAME: k3-256k
+          KIMI_MODEL_NAME: kimi-for-coding
           KIMI_MODEL_API_KEY: ${{ secrets.KIMI_MODEL_API_KEY }}
           KIMI_MODEL_BASE_URL: https://api.kimi.ai/coding/v1
           KIMI_MODEL_PROVIDER_TYPE: kimi
