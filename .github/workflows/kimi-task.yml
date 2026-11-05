@@ -64,4 +64,7 @@ jobs:
           fi
           git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi"
           git push origin "$BRANCH"
-          gh pr create --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent Grok browser QA and ChatGPT approval before merge."
+          if ! gh pr create --draft --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent Grok browser QA and ChatGPT approval before merge."; then
+            echo "::warning::Changes pushed to $BRANCH, but GitHub Actions cannot create PR. Open draft PR manually or via connected GitHub app."
+            echo "PR_CREATE_BLOCKED: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
+          fi
