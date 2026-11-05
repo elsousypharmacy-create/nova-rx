@@ -5,8 +5,7 @@ test('blank customer search switches to product search', async ({ page }) => {
   await expect(page).toHaveTitle(/NOVA Rx/);
   const search = page.locator('#mainSearchInput');
   await expect(search).toBeVisible();
-  // Current UI starts in PRODUCT mode; F3 explicitly opens customer lookup.
-  await page.keyboard.press('F3');
+  await page.locator('#btnAddLoyalty').click();
   await expect(search).toHaveAttribute('placeholder', /Search customer/);
   await search.fill('');
   await search.press('Enter');
