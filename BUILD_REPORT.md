@@ -1,4 +1,34 @@
-# BUILD_REPORT — Issue #2: Invoice persistence & blocking POS UX defects
+# BUILD_REPORT — NOVA Rx
+
+## Issue #4 (batch 1, 2026-11-05): UX-LABELS-PANEL-BLOCKS-NEXT-SALE — fixed
+
+- Cause: every completed payment dispatches `nova:invoice-completed`, which
+  auto-opens `#novaLabelsPanel` (full-viewport overlay, z-index 9100). Receipt
+  close / receipt "New Sale" / F2 all call `startNewSale()`, which never closed
+  the panel — so after checkout the labels overlay stayed on top of the POS and
+  blocked the next sale.
+- Fix (`index.html`, `startNewSale()`): remove the `open` class from
+  `#novaLabelsPanel` when a new sale starts. The panel still auto-opens behind
+  the receipt after payment (feature preserved), and the invoice queue inside it
+  is untouched; it can be reopened via the labels buttons.
+- Changed files: `index.html`, new `tests/issue-4-labels-panel.mjs`.
+- Tests actually run:
+  - `node tests/issue-4-labels-panel.mjs` — **10/10 PASS** (L1–L10: add product,
+    gate skip, checkout, receipt opens, panel auto-opens behind receipt, receipt
+    × closes, panel closed on new sale, search input visible + topmost via
+    `elementFromPoint`, next-sale product add succeeds, zero pageerrors).
+  - `node tests/issue-2-acceptance.mjs` — **21/21 PASS** (no regression to the
+    five accepted issue #2 fixes).
+- Remaining issue #4 IDs: UX-MIXED-LANG, UX-LANG-SWITCH-WEAK,
+  UX-FAB-OVERLAP-mobile, UX-CHECKOUT-OVERLAY-LEAK (unverified), UX-SEARCH-EMPTY,
+  UX-DISCOUNT-NO-FEEDBACK, UX-AI-NO-RETRY, UX-FAB-MISLABEL,
+  UX-PRODUCTS-FILTER-EMPTY, UX-NEW-SALE-MODE, UX-EMPTY-CHECKOUT-NO-HINT,
+  UX-TOAST-EN, UX-TOAST-COVERS-CHECKOUT, UX-DISCOUNT-ZERO-FIELD-CLEARED.
+- Changes uncommitted; per instructions, no self-commit.
+
+---
+
+## Issue #2: Invoice persistence & blocking POS UX defects (completed earlier)
 
 All changes are confined to `index.html` plus one new test file. No workflow
 files touched, no dependencies added, Black Edition styling and Arabic RTL UX
