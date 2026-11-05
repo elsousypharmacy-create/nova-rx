@@ -1,0 +1,11 @@
+const { test, expect } = require('@playwright/test');
+
+test('blank customer search switches to product search', async ({ page }) => {
+  await page.goto('http://127.0.0.1:8765/');
+  await expect(page).toHaveTitle(/NOVA Rx/);
+  const search = page.locator('#mainSearchInput');
+  await expect(search).toBeVisible();
+  await expect(search).toHaveAttribute('placeholder', /Search customer/);
+  await search.press('Enter');
+  await expect(search).toHaveAttribute('placeholder', /Scan barcode or type medicine/);
+});
