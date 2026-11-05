@@ -60,8 +60,26 @@ jobs:
             exit 1
           fi
           git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi"
+          mkdir -p /tmp/kimi-recovery
+          git diff --binary origin/main HEAD -- . ':(exclude).github/workflows/**' > /tmp/kimi-recovery/changes.patch
+          cp /tmp/kimi-recovery/changes.patch kimi-recovery.patch
           git push origin "$BRANCH"
           if ! gh pr create --draft --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent Grok browser QA and ChatGPT approval before merge."; then
             echo "::warning::Changes pushed to $BRANCH, but GitHub Actions cannot create PR. Open draft PR manually or via connected GitHub app."
             echo "PR_CREATE_BLOCKED: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Preserve Kimi work even when push fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimi-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            kimi-recovery.patch
+            BUILD_REPORT.md
+            HANDOFF.md
+            index.html
+            README.md
+            tests/
+          if-no-files-found: warn
+          retention-days: 14
