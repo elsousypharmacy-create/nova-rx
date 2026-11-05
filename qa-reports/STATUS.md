@@ -3,7 +3,7 @@
 - Last tested SHA: `9410b646ae4e1fd74de18e162cd4041929616fd3`
 - Date: 2026-11-05 (Asia/Riyadh)
 - Score: **55/100** — Blocked for daily use
-- Issues in latest report: 17 (NEW=5, STILL PRESENT=12, FIXED=0)
+- Issues in latest report: 18 (NEW=5, STILL PRESENT=13, FIXED=0)
 - Product-scope gaps: 7
 
 | ID | Priority | Status | Last tested SHA | Notes |
