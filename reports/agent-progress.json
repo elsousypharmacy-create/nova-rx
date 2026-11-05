@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "project": "NOVA Rx",
+  "task_id": 4,
+  "task_title": "Remaining Grok-confirmed POS UX fixes",
+  "status": "in_progress",
+  "percent_complete": null,
+  "percent_basis": "unknown until weighted checklist and verification evidence are committed",
+  "items": [],
+  "verified_items": 0,
+  "total_items": null,
+  "run_id": 42033433619,
+  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42033433619",
+  "checkpoint_at": null,
+  "updated_at": "2026-11-05",
+  "note": "Initial placeholder, not a measured completion percentage. CI status must be queried separately; run may change."
+}
