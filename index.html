@@ -2343,6 +2343,31 @@ body *:not(svg):not(svg *){
         cashReceived: 0
       };
 
+      // Recover an unfinished invoice after an accidental reload (browser-local only).
+      const ACTIVE_INVOICE_KEY = 'nova-rx-active-invoice-v1';
+      try {
+        const draft = JSON.parse(localStorage.getItem(ACTIVE_INVOICE_KEY) || 'null');
+        if (draft && Array.isArray(draft.lines)) {
+          state.invoiceLines = draft.lines.filter(l =>
+            l && typeof l.productId === 'string' && typeof l.name === 'string' &&
+            Number.isFinite(l.price) && l.price >= 0 &&
+            Number.isSafeInteger(l.qty) && l.qty >= 1 && l.qty <= 999 &&
+            Number.isFinite(l.discount) && l.discount >= 0
+          ).slice(0, 500);
+          state.percentDiscount = Number.isFinite(draft.percentDiscount) ? Math.max(0, draft.percentDiscount) : 0;
+          state.fixedDiscount = Number.isFinite(draft.fixedDiscount) ? Math.max(0, draft.fixedDiscount) : 0;
+        }
+      } catch (_) {}
+      function persistActiveInvoice() {
+        try {
+          if (!state.invoiceLines.length) localStorage.removeItem(ACTIVE_INVOICE_KEY);
+          else localStorage.setItem(ACTIVE_INVOICE_KEY, JSON.stringify({
+            lines: state.invoiceLines, percentDiscount: state.percentDiscount,
+            fixedDiscount: state.fixedDiscount
+          }));
+        } catch (_) { /* Browser storage may be unavailable; keep checkout usable. */ }
+      }
+
       // Demo-only customer registry, persisted in this browser (no server sync).
       const DEMO_CUSTOMERS_KEY = 'nova-rx-demo-customers-v1';
       try {
@@ -2792,6 +2817,7 @@ body *:not(svg):not(svg *){
       }
 
       function renderInvoice() {
+        persistActiveInvoice();
         if (state.invoiceLines.length === 0) {
           elements.invoiceTableBody.innerHTML = "";
           elements.emptyInvoiceState.style.display = "flex";
