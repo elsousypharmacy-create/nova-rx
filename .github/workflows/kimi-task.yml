@@ -1,5 +1,7 @@
 name: Kimi NOVA Rx task
 on:
+  issues:
+    types: [labeled]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -10,8 +12,12 @@ permissions:
   contents: write
   issues: read
   pull-requests: write
+concurrency:
+  group: kimi-issue-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
 jobs:
   implement:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'kimi-ready'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -38,21 +44,24 @@ jobs:
           KIMI_MODEL_API_KEY: ${{ secrets.KIMI_MODEL_API_KEY }}
           KIMI_MODEL_BASE_URL: https://api.kimi.ai/coding/v1
           KIMI_MODEL_PROVIDER_TYPE: kimi
-          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         run: |
           set -euo pipefail
-          test "$ISSUE_NUMBER" = "2" || { echo "Only approved issue #2 is enabled"; exit 1; }
+          test "$ISSUE_NUMBER" -ge 1 || exit 1
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          BRANCH="kimi/issue-2-${GITHUB_RUN_ID}"
+          BRANCH="kimi/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
           git switch -c "$BRANCH"
           gh issue view "$ISSUE_NUMBER" --json title,body --jq '.title + "\n" + .body' > /tmp/kimi-task.txt
-          kimi -p "Implement the requirements in GitHub issue #2, available at /tmp/kimi-task.txt. Read only necessary repository files. Make narrowly scoped changes, add tests where feasible, preserve Black Edition RTL UX. Do not access secrets or modify workflow files. Do not commit, push, deploy, or merge yourself. Finish with a concise BUILD_REPORT.md in repository root explaining changes, tests, limitations."
+          kimi -p "Implement the requirements in GitHub issue #${ISSUE_NUMBER}, available at /tmp/kimi-task.txt. Read only necessary repository files. Make narrowly scoped changes, add tests where feasible, preserve Black Edition RTL UX. Do not access secrets or modify workflow files. Do not commit, push, deploy, or merge yourself. Finish with a concise BUILD_REPORT.md in repository root explaining changes, tests, limitations."
           git add -A -- ':!.github/workflows' ':!*.env' ':!*.env.*'
           if git diff --cached --quiet; then
             echo "::error::Kimi produced no changes"
             exit 1
           fi
-          git commit -m "fix: address NOVA Rx issue #2 via Kimi"
+          git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi"
           git push origin "$BRANCH"
-          gh pr create --base main --head "$BRANCH" --title "Kimi: fix POS persistence and blocking UX issues (#2)" --body "Implements #2. Requires independent Grok browser QA and ChatGPT approval before merge."
+          gh pr create --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent Grok browser QA and ChatGPT approval before merge."
