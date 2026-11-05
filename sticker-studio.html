@@ -47,6 +47,47 @@ button{transition:filter .15s,transform .15s}button:hover{filter:brightness(1.13
 @media(min-width:1181px){.preview-shell{top:82px}.med-list{gap:14px}}
 @media(max-width:650px){.preview-shell{padding:10px}.med-card{padding:12px!important}}
 @media print{.brand img{box-shadow:none}.sticker-preview{box-shadow:none!important}}
+</style><style id="novaStickerCompactV3">
+/* Tablet-first: fixed panels, horizontally browsable medicine cards, no nested vertical scrolling */
+html,body{height:100%;overflow:hidden}
+.app{height:100dvh;min-height:0;overflow:hidden}
+.topbar{height:54px;min-height:54px;padding:5px 16px;position:relative}
+.brand img{height:36px;width:36px}.brand-copy strong{font-size:14px}.brand-copy span{display:none}
+.top-actions .pill{display:none}
+main{min-height:0;height:calc(100dvh - 54px);overflow:hidden;padding:10px 14px;gap:9px}
+.hero{align-items:center;min-height:30px;gap:8px}.hero h1{font-size:18px}.stepper{gap:5px}.step{padding:4px 8px;font-size:10px}.step i{display:none}
+.layout{min-height:0;flex:1;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:10px;align-items:stretch}
+.layout>section{min-height:0;max-height:100%;overflow:hidden}
+.panel{border-radius:14px;box-shadow:none}
+.layout>.panel{display:flex;flex-direction:column}
+.panel-head{padding:8px 12px;min-height:43px}.panel-head h2{font-size:13px}.panel-head p{display:none}
+.panel-body{padding:10px;min-height:0}
+.layout>.panel>.panel-body{display:flex;flex-direction:column;gap:7px;overflow:hidden;flex:1}
+.grid2,.grid3{gap:6px}.field{gap:3px}.field span{font-size:10px}
+.field input,.field select,.field textarea{padding:6px 8px;border-radius:8px;min-height:33px}
+.compact-patient{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.compact-patient .optional-field{display:none}
+.extras{flex:none;font-size:10px;color:var(--muted)}.extras summary{cursor:pointer;display:inline-block}.extras:not([open]) .queue{display:none}
+.extras[open] .queue{max-width:100%;padding-top:5px}
+.med-list{display:flex;flex-direction:row;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;flex:1;min-height:0;gap:9px;align-items:stretch;padding:2px 2px 6px}
+.med-card{flex:0 0 min(100%,440px);width:min(100%,440px);max-height:100%;overflow:hidden;scroll-snap-align:start;padding:10px!important;gap:7px!important}
+.med-card .field textarea{min-height:45px;max-height:65px;resize:none}
+.med-card .field input{min-height:30px}
+.med-card .med-top{gap:5px}.med-title strong{font-size:13px}
+.med-card .med-actions{gap:5px}
+.med-card .btn.small{padding:4px 7px}
+.approval{padding:7px!important;margin-top:0!important;font-size:11px;flex:none}
+.preview-shell{position:relative;top:auto!important;display:flex;flex-direction:column;padding:9px!important;border-radius:14px;min-height:0;overflow:hidden}
+.preview-shell>.settings{flex:none}.preview-shell .settings .panel-body{padding:8px}
+.print-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+.print-controls .advanced-print{display:none}
+.preview-toolbar{margin:8px 0 5px;flex:none}.preview-toolbar .split-note{font-size:9px}
+.preview-grid{flex:1;min-height:0;overflow:hidden;align-content:start;gap:7px}
+.preview-grid .sticker-preview{flex-shrink:0}
+.btn{padding:7px 10px;font-size:11px}.btn.small{padding:5px 8px}
+@media(max-width:850px){.stepper{display:none}.layout{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)}.preview-toolbar{flex-wrap:wrap}}
+@media(max-width:650px){html,body,.app{height:auto;min-height:100dvh;overflow:auto}main{height:auto;overflow:visible}.layout{display:flex;flex-direction:column}.layout>section{max-height:none;overflow:visible}.layout>.panel>.panel-body{overflow:visible}.med-list{min-height:260px;max-height:390px}.preview-shell{min-height:300px}.preview-grid{min-height:180px;overflow:auto}.stepper{display:none}}
+@media print{html,body,.app,main{height:auto;overflow:visible}}
 </style></head>
 <body>
 <div class="app">
@@ -55,37 +96,36 @@ button{transition:filter .15s,transform .15s}button:hover{filter:brightness(1.13
   <div class="top-actions"><span class="pill"><b></b> NOVA Labels Premium</span><button class="btn ghost" id="backToPos" type="button">العودة لنقطة البيع</button></div>
 </header>
 <main>
-<section class="hero"><div><h1>استوديو استيكرات الأدوية</h1><p>راجع الأدوية، عدّل التعليمات مباشرة، ثم اطبع بمقاسات حقيقية ومعاينة واضحة — بدون اختراع جرعات وبدون فقدان البيانات عند فشل الذكاء الاصطناعي.</p></div><nav class="stepper" aria-label="خطوات العمل"><span class="step active" data-step="patient"><i>1</i> المريض</span><span class="step active" data-step="meds"><i>2</i> الأدوية</span><span class="step" data-step="ai"><i>3</i> AI</span><span class="step" data-step="review"><i>4</i> المراجعة</span><span class="step" data-step="print"><i>5</i> الطباعة</span></nav></section>
-<div class="layout">
-  <section class="panel"><div class="panel-head"><div><h2>بيانات المريض والأدوية</h2><p>البيانات تُحفظ محليًا كمسودة أثناء العمل فقط.</p></div><button class="btn small danger" id="clearDraft" type="button">مسح المسودة</button></div><div class="panel-body">
-    <div class="field" style="margin-bottom:12px"><span>فواتير NOVA Rx الأخيرة</span><div class="queue" id="invoiceQueue"></div></div>
-    <div class="grid2">
+<section class="hero"><div><h1>استيكرات الأدوية</h1></div><nav class="stepper" aria-label="مراحل العمل"><span class="step active">١ المريض</span><span class="step active">٢ الأدوية</span><span class="step">٣ مراجعة</span><span class="step">٤ طباعة</span></nav></section><div class="layout">
+  <section class="panel"><div class="panel-head"><div><h2>المريض والأدوية</h2></div><button class="btn small danger" id="clearDraft" type="button">مسح المسودة</button></div><div class="panel-body">
+    <details class="extras"><summary>فواتير سابقة</summary><div class="queue" id="invoiceQueue"></div></details>
+    <div class="grid2 compact-patient">
       <label class="field"><span>اسم المريض</span><input id="patientName" autocomplete="off" placeholder="اختياري"></label>
-      <label class="field"><span>رقم الهاتف</span><input id="patientPhone" inputmode="tel" dir="ltr" autocomplete="off" placeholder="اختياري"></label>
-      <label class="field"><span>العمر</span><input id="patientAge" autocomplete="off" placeholder="مثال: 8 سنوات"></label>
-      <label class="field"><span>الوزن</span><input id="patientWeight" inputmode="decimal" dir="ltr" placeholder="كجم"></label>
-      <label class="field"><span>حساسية / حالة خاصة</span><select id="patientSafety"><option value="">غير محدد</option><option value="child">طفل</option><option value="pregnant">حامل</option><option value="breastfeeding">مرضعة</option><option value="chronic">مرض مزمن يحتاج مراجعة</option></select></label>
+      <label class="field optional-field"><span>رقم الهاتف</span><input id="patientPhone" inputmode="tel" dir="ltr" autocomplete="off" placeholder="اختياري"></label>
+      <label class="field optional-field"><span>العمر</span><input id="patientAge" autocomplete="off" placeholder="مثال: 8 سنوات"></label>
+      <label class="field optional-field"><span>الوزن</span><input id="patientWeight" inputmode="decimal" dir="ltr" placeholder="كجم"></label>
+      <label class="field optional-field"><span>حساسية / حالة خاصة</span><select id="patientSafety"><option value="">غير محدد</option><option value="child">طفل</option><option value="pregnant">حامل</option><option value="breastfeeding">مرضعة</option><option value="chronic">مرض مزمن يحتاج مراجعة</option></select></label>
       <label class="field"><span>اسم الدواء اليدوي</span><input id="manualMedicine" autocomplete="off" placeholder="اكتب الدواء ثم أضفه"></label>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:15px 0 10px"><strong>أدوية الاستيكرات</strong><button class="btn small" id="addMedicine" type="button">إضافة دواء</button></div>
     <div class="med-list" id="medicineList"></div>
     <div class="approval" style="margin-top:14px"><input id="pharmacistApproval" type="checkbox"><label for="pharmacistApproval">أنا الصيدلي راجعت كل دواء والجرعات والتعليمات وأوافق على الطباعة.</label></div>
   </div></section>
-  <section class="preview-shell"><div class="panel settings"><div class="panel-head"><div><h2>إعدادات الطباعة والمعاينة</h2><p>المعاينة تستخدم أبعاد الملصق الفعلية بالمليمتر.</p></div><button class="btn small" id="resetSettings" type="button">استعادة الافتراضي</button></div><div class="panel-body">
-    <div class="grid3">
+  <section class="preview-shell"><div class="panel settings"><div class="panel-head"><div><h2>الطباعة</h2></div><button class="btn small" id="resetSettings" type="button">استعادة الافتراضي</button></div><div class="panel-body">
+    <div class="grid3 print-controls">
       <label class="field"><span>مقاس الاستيكر</span><select id="preset"></select></label>
-      <label class="field"><span>عرض مخصص mm</span><input id="customWidth" type="number" min="20" max="120" step="0.5" disabled></label>
-      <label class="field"><span>ارتفاع مخصص mm</span><input id="customHeight" type="number" min="15" max="80" step="0.5" disabled></label>
-      <label class="field"><span>الورق</span><select id="paperLayout"><option value="single">ملصق فردي</option><option value="split">ورق مقسوم</option></select></label>
-      <label class="field"><span>التصميم</span><select id="styleMode"><option value="full">كامل</option><option value="compact">مختصر</option></select></label>
+      <label class="field advanced-print custom-dimension"><span>عرض مخصص mm</span><input id="customWidth" type="number" min="20" max="120" step="0.5" disabled></label>
+      <label class="field advanced-print custom-dimension"><span>ارتفاع مخصص mm</span><input id="customHeight" type="number" min="15" max="80" step="0.5" disabled></label>
+      <label class="field advanced-print"><span>الورق</span><select id="paperLayout"><option value="single">ملصق فردي</option><option value="split">ورق مقسوم</option></select></label>
+      <label class="field advanced-print"><span>التصميم</span><select id="styleMode"><option value="full">كامل</option><option value="compact">مختصر</option></select></label>
       <label class="field"><span>عدد النسخ</span><input id="copies" type="number" min="1" max="50" value="1"></label>
-      <label class="field"><span>الهامش mm</span><input id="marginMm" type="number" min="0" max="10" step="0.5" value="2"></label>
-      <label class="field"><span>اتجاه الورق</span><select id="orientation"><option value="auto">تلقائي</option><option value="portrait">طولي</option><option value="landscape">عرضي</option></select></label>
-      <label class="field"><span>اختبار الطابعة</span><button class="btn" id="testPrint" type="button">طباعة اختبار</button></label>
+      <label class="field advanced-print"><span>الهامش mm</span><input id="marginMm" type="number" min="0" max="10" step="0.5" value="2"></label>
+      <label class="field advanced-print"><span>اتجاه الورق</span><select id="orientation"><option value="auto">تلقائي</option><option value="portrait">طولي</option><option value="landscape">عرضي</option></select></label>
+      <label class="field advanced-print"><span>اختبار الطابعة</span><button class="btn" id="testPrint" type="button">طباعة اختبار</button></label>
     </div>
-    <details open style="margin-top:13px"><summary>خيارات الأمان والطباعة</summary><div class="details-body"><label class="check"><input id="showReviewBadge" type="checkbox" checked> إظهار علامة “يتطلب مراجعة” على المسودات الناقصة</label><label class="check" style="margin-top:8px"><input id="includePhone" type="checkbox" checked> إظهار رقم الصيدلية أسفل الاستيكر</label></div></details>
+    <details style="margin-top:8px"><summary>خيارات الأمان والطباعة</summary><div class="details-body"><label class="check"><input id="showReviewBadge" type="checkbox" checked> إظهار علامة “يتطلب مراجعة” على المسودات الناقصة</label><label class="check" style="margin-top:8px"><input id="includePhone" type="checkbox" checked> إظهار رقم الصيدلية أسفل الاستيكر</label></div></details>
   </div></div>
-  <div class="preview-toolbar"><div><strong>معاينة حقيقية</strong><div class="split-note" id="sizeNote"></div></div><div style="display:flex;gap:8px"><button class="btn" id="printSelected" type="button">طباعة المحدد</button><button class="btn primary" id="printAll" type="button">طباعة الكل</button></div></div>
+  <div class="preview-toolbar"><div><strong>معاينة الاستيكر</strong><div class="split-note" id="sizeNote"></div></div><div style="display:flex;gap:8px"><button class="btn" id="printSelected" type="button">طباعة المحدد</button><button class="btn primary" id="printAll" type="button">طباعة الكل</button></div></div>
   <div class="preview-grid" id="previewGrid"></div>
   </section>
 </div>
