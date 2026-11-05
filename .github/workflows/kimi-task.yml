@@ -63,7 +63,17 @@ jobs:
           mkdir -p /tmp/kimi-recovery
           git diff --binary origin/main HEAD -- . ':(exclude).github/workflows/**' > /tmp/kimi-recovery/changes.patch
           cp /tmp/kimi-recovery/changes.patch kimi-recovery.patch
-          git push origin "$BRANCH"
+          # Rebuild a clean branch from the latest remote main; do not carry workflow history.
+          git fetch origin main
+          git switch -c "${BRANCH}-clean" origin/main
+          if [ -s /tmp/kimi-recovery/changes.patch ]; then
+            git apply --index /tmp/kimi-recovery/changes.patch
+          else
+            echo "::error::No recoverable non-workflow changes"; exit 1
+          fi
+          git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi (clean)"
+          git push origin "${BRANCH}-clean"
+          BRANCH="${BRANCH}-clean"
           if ! gh pr create --draft --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent Grok browser QA and ChatGPT approval before merge."; then
             echo "::warning::Changes pushed to $BRANCH, but GitHub Actions cannot create PR. Open draft PR manually or via connected GitHub app."
             echo "PR_CREATE_BLOCKED: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
