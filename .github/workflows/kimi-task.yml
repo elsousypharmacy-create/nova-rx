@@ -1,13 +1,11 @@
 name: Kimi NOVA Rx task
 on:
-  issues:
-    types: [labeled]
   workflow_dispatch:
     inputs:
       issue_number:
         description: "Approved GitHub issue number"
         required: true
-        default: "2"
+        default: "4"
 permissions:
   contents: write
   issues: read
@@ -17,9 +15,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   implement:
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'kimi-ready'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,15 +45,15 @@ jobs:
         run: |
           set -euo pipefail
           test "$ISSUE_NUMBER" -ge 1 || exit 1
-          if [ "${{ github.event_name }}" = "issues" ]; then
-            gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
-          fi
+          gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
+          test -f KIMI_CONTEXT.md || { echo '::error::Missing KIMI_CONTEXT.md'; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH="kimi/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
           git switch -c "$BRANCH"
           gh issue view "$ISSUE_NUMBER" --json title,body --jq '.title + "\n" + .body' > /tmp/kimi-task.txt
-          kimi -p "Implement the requirements in GitHub issue #${ISSUE_NUMBER}, available at /tmp/kimi-task.txt. Read only necessary repository files. IMPORTANT: if Read tool fails to paginate or ignores line_offset, immediately use shell commands such as sed, tail, or rg with context to inspect bounded sections; do not repeat the failing Read call, stop, or ask for user decisions. Continue autonomously through edits, tests and BUILD_REPORT.md within the time budget. Make narrowly scoped changes, add tests where feasible, preserve Black Edition RTL UX. Do not access secrets or modify workflow files. Do not commit, push, deploy, or merge yourself. Finish with a concise BUILD_REPORT.md in repository root explaining changes, tests, limitations."
+          kimi -p "Read KIMI_CONTEXT.md FIRST (maximum 120 lines), then /tmp/kimi-task.txt. Use existing BUILD_REPORT.md only if directly relevant. Work on ONE highest-priority unresolved UX defect or one tightly related pair per run, not the entire issue. Read only bounded sections of necessary files using rg/sed; do not dump full index.html or redo repository-wide analysis. Do not repeat failed tool calls. Make a minimal fix, run targeted tests, and update BUILD_REPORT.md with completed defect IDs, exact test results and remaining IDs. Never claim untested success. Keep total work within 10 minutes; stop promptly and leave a useful report. Preserve Black Edition RTL UX. No secrets, workflow edits, deployment, merge, or self-commit. Do not overwrite prior report history without retaining completed findings. If no work remains, report that and make no changes."
+
           git add -A -- ':!.github/workflows' ':!*.env' ':!*.env.*'
           if git diff --cached --quiet; then
             echo "::error::Kimi produced no changes"
