@@ -1,0 +1,14 @@
+{
+  "name": "nova-rx-sticker-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "NOVA Rx static POS and Sticker Studio development checks",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "check": "node tests/unit/sticker-studio.check.mjs && node tests/unit/sticker-six.check.mjs && node --check tests/.sticker-studio-inline.js",
+    "test:browser": "node tests/sticker-studio-browser.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0"
+  }
+}
