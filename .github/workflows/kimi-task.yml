@@ -13,7 +13,7 @@ permissions:
   issues: read
   pull-requests: write
 concurrency:
-  group: kimi-issue-${{ github.event.issue.number || inputs.issue_number }}
+  group: kimi-nova-rx
   cancel-in-progress: false
 jobs:
   implement:
@@ -77,9 +77,10 @@ jobs:
           git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi (clean)"
           git push origin "${BRANCH}-clean"
           BRANCH="${BRANCH}-clean"
-          if ! gh pr create --draft --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent Grok browser QA and ChatGPT approval before merge."; then
-            echo "::warning::Changes pushed to $BRANCH, but GitHub Actions cannot create PR. Open draft PR manually or via connected GitHub app."
+          if ! gh pr create --draft --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent browser QA and owner approval before merge."; then
+            echo "::error::Changes pushed to $BRANCH, but GitHub Actions cannot create PR. Open draft PR manually, then re-run only after PR exists."
             echo "PR_CREATE_BLOCKED: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
 
       - name: Preserve Kimi work even when push fails
