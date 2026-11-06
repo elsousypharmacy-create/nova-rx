@@ -78,6 +78,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-16 | IN_PROGRESS | kimi_run_started [42254828034](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42254828034) — Supplier price comparison prototype using mock data (issue #16); no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (Redesign Sticker Studio: compact patient card, medication tabs, large hero preview, fixed review/print bar, settings drawer; ignore generated tests/.sticker-studio-inline.js) — no UX review |
 | `5128b402f73328003bb26312fe02328bd62b222c` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (Redesign Sticker Studio premium single-medication focus layout) — no UX review |
 | `8c77ede985ba7168f80b3750af01850ce37df265` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (style: compact unified patient-first workspace) — no UX review |
