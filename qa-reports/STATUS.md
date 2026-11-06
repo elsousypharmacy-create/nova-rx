@@ -75,6 +75,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `b43fff866f0a494979256af78f831475460f9458` | `fix/sticker-six-pager-20261106` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (docs-only: ERP architecture / sticker QA docs) — no UX review |
 | `3ac281ef565a40d522fad38c7222a7f4d1070898` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; pw=None) — no UX review; technical side left to ChatGPT/Kimi |
 | `701d87bbf6188dc3c6ec306621db0ec8af0c20e1` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; workflow paths did not trigger smoke) — no UX review; technical side left to ChatGPT/Kimi |
 | `0d2c11b7a537c23cad73e1eb8a7b19f7839025c6` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (sticker controls / print overflow) — no UX review |
