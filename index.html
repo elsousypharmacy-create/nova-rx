@@ -2475,14 +2475,19 @@ body *:not(svg):not(svg *){
           elements.modePillText.textContent = "Customer Search Mode";
           elements.searchModeTag.className = "search-mode-tag customer";
           elements.searchModeTag.textContent = "Customer";
-          elements.mainSearchInput.placeholder = "Search customer by name or phone... (Press Enter to skip)";
+          const customerPh = "Search customer by name or phone... (Press Enter to skip)";
+          elements.mainSearchInput.placeholder = customerPh;
+          // Keep i18n cache in sync so MutationObserver apply() does not restore the previous mode's placeholder.
+          elements.mainSearchInput.dataset.novaOriginalplaceholder = customerPh;
           elements.searchHintText.textContent = "Enter: Select / Skip";
         } else {
           elements.modePill.className = "status-pill product-mode";
           elements.modePillText.textContent = "Product / Barcode Scan Mode";
           elements.searchModeTag.className = "search-mode-tag product";
           elements.searchModeTag.textContent = "Product";
-          elements.mainSearchInput.placeholder = "Scan barcode or type medicine name...";
+          const productPh = "Scan barcode or type medicine name...";
+          elements.mainSearchInput.placeholder = productPh;
+          elements.mainSearchInput.dataset.novaOriginalplaceholder = productPh;
           elements.searchHintText.textContent = "Enter: Add Item";
         }
         closeSuggestions();
@@ -3557,6 +3562,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
     if(original===undefined){original=el.getAttribute(attr);el.dataset[key]=original}
     const extra={
       'Search customer by name or phone... (Press Enter to skip)':lang==='ar'?'ابحث باسم العميل أو رقمه... (Enter للتخطي)':'Search customer by name or phone... (Enter to skip)',
+      'Scan barcode or type medicine name...':lang==='ar'?'امسح الباركود أو اكتب اسم الدواء...':'Scan barcode or type medicine name...',
       'Search product name or scan barcode...':lang==='ar'?'ابحث عن دواء أو امسح الباركود...':'Search product name or scan barcode...',
       'بحث بالاسم أو الرقم أو الباركود':lang==='en'?'Search by name, number, or barcode':'بحث بالاسم أو الرقم أو الباركود',
       'تحديث التطبيق':lang==='en'?'Refresh app':'تحديث التطبيق',
@@ -3645,115 +3651,285 @@ $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر 
 @media(max-width:600px){#novaLabelsPanel{padding:3px}#novaLabelsPanel .labels-sheet{height:98dvh;border-radius:9px}}
 </style>
 <style>
-#novaLabelsPanel .labels-sheet{width:min(1120px,100%);height:min(94dvh,900px);background:#10151d;color:#eaf0f7}
-#novaLabelsPanel .labels-toolbar{border-bottom:1px solid #303c4b;padding:14px 18px}
-#novaLabelsPanel .labels-toolbar button{background:#273242}
-.nova-label-workspace{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0;flex:1;direction:rtl}
-.nova-label-editor{overflow:auto;padding:18px}
-.nova-label-preview-area{overflow:auto;background:#18212c;padding:18px;border-right:1px solid #354050}
-.nova-label-editor h3,.nova-label-preview-area h3{font:700 15px Cairo;margin:0 0 12px}
-.nova-label-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.nova-label-field{display:flex;flex-direction:column;gap:5px;font:600 12px Cairo;color:#b9c8da;margin-bottom:12px}
-.nova-label-field input,.nova-label-field textarea,.nova-label-field select{background:#1c2531;border:1px solid #405066;color:#fff;padding:11px;border-radius:10px;font:500 14px Cairo;min-width:0;width:100%;box-sizing:border-box}
-.nova-label-field textarea{resize:vertical;min-height:75px}
-.nova-label-divider{border-top:1px solid #354050;margin:15px 0}
-#novaLabelPreview{background:white;color:#111;direction:rtl;padding:13px;border-radius:3px;width:100%;min-height:105px;box-sizing:border-box;font:12px Cairo;overflow-wrap:anywhere}
-#novaLabelPreview .brand{font-size:13px;font-weight:800;color:#14365f;border-bottom:1px solid #bbb;padding-bottom:5px;margin-bottom:6px}
-#novaLabelPreview .med{font-weight:800;font-size:15px;margin:6px 0}
-#novaLabelPreview .instructions{white-space:pre-wrap;line-height:1.8}
-#novaLabelPreview .foot{font-size:9px;color:#555;border-top:1px dashed #bbb;margin-top:7px;padding-top:5px}
-.nova-label-help{font:500 11px/1.9 Cairo;color:#a4b5c8;margin-top:10px}
-.nova-label-action{border:0;border-radius:10px;padding:11px 16px;background:#2563eb;color:white;font:700 13px Cairo;cursor:pointer}
-.nova-label-action.alt{background:#293647;border:1px solid #4b5a6d}
-.nova-label-buttons{display:flex;flex-wrap:wrap;gap:9px}
-@media(max-width:740px){.nova-label-workspace{grid-template-columns:1fr}.nova-label-preview-area{border-right:0;border-top:1px solid #354050}.nova-label-grid{grid-template-columns:1fr 1fr}.nova-label-editor{overflow:visible}.nova-label-workspace{overflow:auto}}
+/* ---- sale-screen sticker studio: premium modal mirroring sticker-studio.html (scoped to #novaLabelsPanel) ---- */
+#novaLabelsPanel{--bg:#0b0d11;--panel:#141a21;--panel2:#181f27;--field:#0f141a;--line:#29323d;--line2:#3a4857;--text:#f4f6f8;--muted:#b0bbc7;--dim:#93a0ad;--blue:#79b9df;--blue-strong:#2c6589;--green:#69c6a8;--amber:#e3c27a;--radius:16px;--font:"Cairo",Tahoma,Arial,sans-serif}
+#novaLabelsPanel [hidden]{display:none!important}
+#novaLabelsPanel .labels-sheet{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55;width:min(1480px,100%);height:min(96dvh,980px)}
+#novaLabelsPanel .labels-toolbar{flex:none;gap:14px;border-bottom:1px solid var(--line);background:#0f1319;color:var(--text);padding:10px 18px}
+#novaLabelsPanel .labels-toolbar small{display:block;color:var(--dim);font-weight:400}
+#novaLabelsPanel .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border:1px solid var(--line2);border-radius:12px;background:#1d242d;color:var(--text);font-weight:800;font-size:14px;font-family:var(--font);cursor:pointer}
+#novaLabelsPanel .btn:hover{background:#252d37}
+#novaLabelsPanel .btn.primary{background:var(--blue-strong);border-color:#5c91ad}#novaLabelsPanel .btn.primary:hover{background:#357aa3}
+#novaLabelsPanel .btn.danger{background:#2c1c21;border-color:#69414a;color:#ffc4ca}
+#novaLabelsPanel .btn.ghost{background:transparent}
+#novaLabelsPanel .btn.small{min-height:36px;padding:0 12px;font-size:12px;border-radius:10px}
+#novaLabelsPanel .btn:disabled{opacity:.45;cursor:not-allowed}
+#novaLabelsPanel .btn.is-blocked{opacity:.6}
+#novaLabelsPanel .btn b{font-weight:800;opacity:.85}
+#novaLabelsPanel .stepper{display:flex;gap:6px;margin-inline:auto}
+#novaLabelsPanel .step{display:flex;align-items:center;gap:7px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;color:var(--dim);font-size:12px;font-weight:700;white-space:nowrap}
+#novaLabelsPanel .step i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#222b35;color:var(--muted);font-style:normal;font-size:11px}
+#novaLabelsPanel .step.active{border-color:#4d7188;background:#172534;color:#eaf5fc}#novaLabelsPanel .step.active i{background:var(--blue-strong);color:#fff}
+#novaLabelsPanel .step.done{border-color:#2b5546;color:var(--green)}#novaLabelsPanel .step.done i{background:#173326;color:var(--green);font-size:0}#novaLabelsPanel .step.done i::before{content:"✓";font-size:12px}
+#novaLabelsPanel .layout{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(400px,.92fr);gap:16px;padding:14px 18px;direction:rtl}
+#novaLabelsPanel .editor-col,#novaLabelsPanel .preview-col{min-height:0;display:flex;flex-direction:column;gap:12px}
+#novaLabelsPanel .editor-col{overflow-y:auto;scrollbar-width:thin;padding-inline-end:2px}
+#novaLabelsPanel .preview-col{overflow:hidden}
+#novaLabelsPanel .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+#novaLabelsPanel .editor-col>.panel{flex:none}
+#novaLabelsPanel .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel2);border-radius:var(--radius) var(--radius) 0 0}
+#novaLabelsPanel .card-head h2{margin:0;font-size:16px;font-weight:900}
+#novaLabelsPanel .card-body{padding:14px 16px 16px}
+#novaLabelsPanel .split-note{color:var(--dim);font-size:12px;margin-top:1px}
+#novaLabelsPanel .field{display:flex;flex-direction:column;gap:5px;min-width:0}
+#novaLabelsPanel .field>span,#novaLabelsPanel .lbl{font-size:12px;font-weight:700;color:var(--muted)}
+#novaLabelsPanel .field input,#novaLabelsPanel .field select,#novaLabelsPanel .field textarea{width:100%;min-width:0;min-height:44px;padding:9px 12px;background:var(--field);border:1px solid #36414d;border-radius:11px;color:var(--text);outline:none;font-family:var(--font)}
+#novaLabelsPanel .field textarea{min-height:80px;resize:vertical}
+#novaLabelsPanel .field input:focus,#novaLabelsPanel .field select:focus,#novaLabelsPanel .field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #79b9df26}
+#novaLabelsPanel .field.full{grid-column:1/-1}
+#novaLabelsPanel .hint{color:var(--dim);font-size:11px}#novaLabelsPanel .hint:empty{display:none}
+#novaLabelsPanel .patient-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#novaLabelsPanel .age-control{display:flex;align-items:center;gap:6px}
+#novaLabelsPanel .field .age-control input{width:54px;flex:none;padding:9px 6px;text-align:center}
+#novaLabelsPanel .seg{display:inline-flex;flex:none;border:1px solid #36414d;border-radius:11px;overflow:hidden;background:var(--field)}
+#novaLabelsPanel .seg button{min-height:42px;padding:0 8px;border:0;background:transparent;color:var(--muted);font-weight:800;font-family:var(--font);cursor:pointer}
+#novaLabelsPanel .seg button[aria-pressed="true"]{background:var(--blue-strong);color:#fff}
+#novaLabelsPanel .extras{font-size:12px;color:var(--muted)}
+#novaLabelsPanel .card-body .extras{margin-bottom:12px}
+#novaLabelsPanel .extras summary{display:inline-block;cursor:pointer;font-weight:700;padding:2px 0}#novaLabelsPanel .extras summary::after{content:" ▾";color:var(--dim)}#novaLabelsPanel .extras[open] summary::after{content:" ▴"}
+#novaLabelsPanel .extras:not([open]) .queue{display:none}
+#novaLabelsPanel .queue{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:thin}
+#novaLabelsPanel .queue-card{min-width:150px;padding:10px;border:1px solid var(--line2);border-radius:12px;background:#10161d;text-align:right;color:var(--text);font-family:var(--font);cursor:pointer}
+#novaLabelsPanel .queue-card.active{border-color:var(--blue);background:#172938}
+#novaLabelsPanel .queue-card strong{display:block;font-size:12px}#novaLabelsPanel .queue-card small{display:block;margin-top:2px;color:var(--muted)}
+#novaLabelsPanel .empty{width:100%;padding:16px;border:1px dashed #44505d;border-radius:12px;background:#10151b;color:var(--dim);text-align:center}
+#novaLabelsPanel .safety-choices{display:contents}
+#novaLabelsPanel .safety-choices fieldset{display:flex;align-items:center;gap:6px;min-width:0;margin:0;padding:4px 8px 8px;border:1px solid var(--line2);border-radius:12px}
+#novaLabelsPanel .safety-choices fieldset.needs{border-color:#6a5636}
+#novaLabelsPanel .safety-choices legend{padding:0 6px;font-size:12px;font-weight:800;color:var(--muted)}#novaLabelsPanel .safety-choices legend em{color:var(--amber);font-style:normal}
+#novaLabelsPanel .safety-choices label{position:relative;flex:1}
+#novaLabelsPanel .safety-choices input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+#novaLabelsPanel .safety-choices label span{display:block;padding:8px 0;border:1px solid #36414d;border-radius:10px;background:var(--field);color:var(--muted);text-align:center;font-weight:800}
+#novaLabelsPanel .safety-choices input:checked+span{background:var(--blue-strong);border-color:#5c91ad;color:#fff}
+#novaLabelsPanel .med-panel{display:flex;flex-direction:column}
+#novaLabelsPanel .med-tabbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel2);border-radius:var(--radius) var(--radius) 0 0}
+#novaLabelsPanel .med-count{flex:none;min-width:40px;color:var(--dim);font-size:12px;font-weight:800;text-align:center}
+#novaLabelsPanel .med-tabs{display:flex;flex:1;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;padding:2px}
+#novaLabelsPanel .med-tabs::-webkit-scrollbar{display:none}
+#novaLabelsPanel .med-tab{flex:none;display:inline-flex;align-items:center;gap:8px;max-width:190px;min-height:42px;padding:4px 12px;border:1px solid var(--line2);border-radius:12px;background:#10161d;color:var(--muted);font-weight:700;font-family:var(--font);cursor:pointer}
+#novaLabelsPanel .med-tab .n{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#222b35;font-size:12px}
+#novaLabelsPanel .med-tab .t{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#novaLabelsPanel .med-tab .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);flex:none}#novaLabelsPanel .med-tab .dot.ok{background:var(--green)}
+#novaLabelsPanel .med-tab.active{border-color:var(--blue);background:#172938;color:#fff}#novaLabelsPanel .med-tab.active .n{background:var(--blue-strong)}
+#novaLabelsPanel .med-list{padding:14px 16px 16px}
+#novaLabelsPanel .med-card{display:flex;flex-direction:column;gap:10px}
+#novaLabelsPanel .med-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#novaLabelsPanel .med-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#novaLabelsPanel .f-medname{grid-column:1/-1}
+#novaLabelsPanel .status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line2);border-radius:999px;color:var(--muted);font-size:12px;font-weight:800;white-space:nowrap}
+#novaLabelsPanel .status.ok{background:#13251f;border-color:#315c4b;color:#9fe3ca}
+#novaLabelsPanel .status.warn{background:#2b2418;border-color:#685638;color:#eed29a}
+#novaLabelsPanel .status.err{background:#2e1d21;border-color:#684049;color:#ffb9c0;white-space:normal;border-radius:12px}
+#novaLabelsPanel .missing{display:flex;flex-wrap:wrap;gap:6px}
+#novaLabelsPanel .missing span{padding:3px 9px;border:1px solid #5a4b2f;border-radius:999px;background:#2a2118;color:#e6c47e;font-size:11px;font-weight:800}
+#novaLabelsPanel .med-actions{display:flex;flex-wrap:wrap;gap:8px}
+#novaLabelsPanel .chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;border:1px solid var(--line2);font-size:11px;font-weight:800}
+#novaLabelsPanel .chip.warn{background:#2b2418;border-color:#685638;color:#eed29a}
+#novaLabelsPanel .preview-panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;overflow-y:auto}
+#novaLabelsPanel .stage{position:relative;flex:1;min-height:200px;margin:14px 16px 10px;display:grid;place-items:center;overflow:hidden;background:#0f151c;border:1px solid #283747;border-radius:14px}
+#novaLabelsPanel .hero-wrap{display:grid;place-items:center;width:100%;height:100%;padding:40px 0 12px}
+#novaLabelsPanel .stage-caption{position:absolute;top:10px;right:14px;max-width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;font-weight:700}
+#novaLabelsPanel .stage-warn{position:absolute;top:8px;left:12px;max-width:58%;white-space:normal;line-height:1.35}
+#novaLabelsPanel .strip-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:2px 16px 8px;font-size:12px;color:var(--dim)}#novaLabelsPanel .strip-head strong{color:var(--muted);font-size:13px}
+#novaLabelsPanel .preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,auto);gap:8px;padding:0 16px 12px;align-items:start;justify-items:center}
+#novaLabelsPanel .sticker-pager{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px 12px;font-size:12px;color:var(--muted)}
+#novaLabelsPanel .sticker-face{position:relative;overflow:hidden;background:#fff;color:#111;direction:rtl;line-height:normal;font-family:var(--font)}
+#novaLabelsPanel .sticker-face .label-inner{height:100%;display:flex;flex-direction:column;padding:var(--pad,3mm)}
+#novaLabelsPanel .sticker-face .label-brand{display:flex;align-items:center;gap:2mm;margin-bottom:1.5mm;padding-bottom:1.2mm;border-bottom:.35mm solid #a9b4bd}
+#novaLabelsPanel .sticker-face .label-brand img{width:8mm;height:8mm;object-fit:contain}
+#novaLabelsPanel .sticker-face .label-brand strong{display:block;font-size:7pt;color:#14365f}
+#novaLabelsPanel .sticker-face .label-brand small{display:none}
+#novaLabelsPanel .sticker-face .patient{font-size:7.5pt;color:#333}
+#novaLabelsPanel .sticker-face .med{margin:.5mm 0;font-size:9pt;font-weight:900;color:#050505}
+#novaLabelsPanel .sticker-face .instruction{font-size:7pt;line-height:1.25;overflow-wrap:anywhere;white-space:pre-wrap}
+#novaLabelsPanel .sticker-face .warning{margin-top:auto;padding-top:1mm;border-top:.25mm dashed #9aa4ad;font-size:6.2pt;color:#444}
+#novaLabelsPanel .sticker-face .review{position:absolute;inset:auto 1.2mm 1.2mm auto;padding:.4mm 1mm;border:.25mm solid #d3aa43;border-radius:1mm;background:#fff4d6;color:#6b4b00;font-size:5.8pt}
+#novaLabelsPanel .sticker-hero{flex:none;border-radius:3px;box-shadow:0 14px 40px #000a}
+#novaLabelsPanel .preview-grid .sticker-preview{border-radius:3px;box-shadow:0 3px 10px #0006;cursor:pointer;transition:opacity .15s,box-shadow .15s}
+#novaLabelsPanel .preview-grid .sticker-preview .label-brand img{width:5mm;height:5mm}
+#novaLabelsPanel .preview-grid .sticker-preview .patient,#novaLabelsPanel .preview-grid .sticker-preview .warning{display:none}
+#novaLabelsPanel .preview-grid .sticker-preview.is-active{box-shadow:0 0 0 calc(3px/var(--z,1)) var(--blue),0 3px 10px #0006}
+#novaLabelsPanel .sticker-unselected{opacity:.4}
+#novaLabelsPanel .sticker-preview .pick{position:absolute;z-index:2;top:calc(4px/var(--z,1));left:calc(4px/var(--z,1));display:grid;place-items:center;width:calc(22px/var(--z,1));height:calc(22px/var(--z,1));border-radius:50%;background:var(--green);color:#06281d;font-size:calc(14px/var(--z,1));font-weight:900;line-height:1}
+#novaLabelsPanel .sticker-preview .pick::before{content:"✓"}
+#novaLabelsPanel .sticker-unselected .pick{background:transparent;border:calc(2px/var(--z,1)) solid #8a96a3}#novaLabelsPanel .sticker-unselected .pick::before{content:""}
+#novaLabelsPanel .action-bar{flex:none;display:flex;align-items:center;gap:16px;padding:10px 18px;background:#0f1319;border-top:1px solid var(--line)}
+#novaLabelsPanel .approval{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid #315642;border-radius:12px;background:#142019;color:#d8f3e8;font-size:13px;font-weight:700;cursor:pointer}
+#novaLabelsPanel .approval.pending{border-color:#6a5636;background:#241f15;color:#f0dcaa}
+#novaLabelsPanel .approval input{flex:none;width:22px;height:22px;accent-color:var(--green)}
+#novaLabelsPanel .print-actions{display:flex;flex:none;align-items:center;gap:10px}
+#novaLabelsPanel .copies{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;font-weight:700}
+#novaLabelsPanel .copies input{width:64px;min-height:44px;padding:0 6px;border:1px solid #36414d;border-radius:11px;background:var(--field);color:var(--text);text-align:center;font-family:var(--font)}
+#novaLabelsPanel .nl-print-settings{flex:none;margin:0;padding:10px 16px}
+#novaLabelsPanel .nl-print-settings[open]{padding-bottom:14px}
+#novaLabelsPanel .nl-print-settings summary{font-size:13px;font-weight:800;color:var(--muted)}
+#novaLabelsPanel .nl-print-settings .drawer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}
+#novaLabelsPanel .check-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+#novaLabelsPanel .check{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}#novaLabelsPanel .check input{width:20px;height:20px;accent-color:var(--blue)}
+#novaLabelsPanel .test-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#10161d}
+#novaLabelsPanel .test-row small{display:block;color:var(--dim);font-size:11px}
+#novaLabelsPanel .nlx-toast{position:fixed;left:16px;bottom:96px;z-index:9300;max-width:min(420px,calc(100vw - 32px));max-height:30vh;overflow:auto;padding:11px 14px;border:1px solid #44586b;border-radius:13px;background:#17212b;color:var(--text);box-shadow:0 18px 55px #0009;font-size:13px}
+#novaLabelsPanel .nlx-toast.err{border-color:#80505a;color:#ffd5da}
+@media(max-width:900px){
+  #novaLabelsPanel .labels-sheet{height:98dvh}
+  #novaLabelsPanel .layout{display:flex;flex-direction:column;padding:12px;gap:12px;overflow-y:auto}
+  /* Content-size stacked columns so editor med-tabbar does not spill over preview and steal clicks */
+  #novaLabelsPanel .editor-col,#novaLabelsPanel .preview-col{flex:none;min-height:auto;overflow:visible}
+  #novaLabelsPanel .preview-panel{flex:none;overflow:visible;min-height:0}
+  #novaLabelsPanel .stage{flex:none;height:clamp(200px,46vw,340px)}
+  #novaLabelsPanel .stepper{display:none}
+  #novaLabelsPanel .action-bar{flex-wrap:wrap;gap:8px;padding:8px 12px;min-width:0}
+  #novaLabelsPanel .approval{flex:1 1 100%;font-size:12px;min-width:0}
+  #novaLabelsPanel .print-actions{flex:1 1 100%;flex-wrap:wrap;max-width:100%;min-width:0;width:100%;box-sizing:border-box}
+  #novaLabelsPanel .print-actions .btn{flex:1 1 calc(50% - 5px);min-width:0}
+  #novaLabelsPanel .copies{flex:1 1 100%}
+  #novaLabelsPanel .patient-grid,#novaLabelsPanel .med-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #novaLabelsPanel .nl-print-settings .drawer-grid{grid-template-columns:1fr}
+}
 </style>
-<section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="استيكرات الأدوية"><div class="labels-sheet">
-<div class="labels-toolbar"><span>✦ استيكرات الأدوية <small style="display:block;color:#91a4bb;font-weight:400">تصميم وطباعة داخل NOVA Rx</small></span><button id="novaLabelsClose" type="button">إغلاق ✕</button></div>
-<div class="nova-label-workspace">
-<div class="nova-label-editor">
-<h3>بيانات الاستيكر</h3>
-<div class="nova-label-grid">
-<label class="nova-label-field">اسم المريض<input id="nlPatient" placeholder="اختياري" autocomplete="off"></label>
-<label class="nova-label-field">اسم الدواء<input id="nlMedicine" placeholder="اسم الدواء والتركيز" autocomplete="off"></label>
-<label class="nova-label-field">الكمية / الجرعة الموصوفة<input id="nlDose" placeholder="مثال: قرص واحد" autocomplete="off"></label>
-<label class="nova-label-field">التكرار<input id="nlFrequency" placeholder="مثال: مرتين يوميًا" autocomplete="off"></label>
-<label class="nova-label-field">المدة<input id="nlDuration" placeholder="مثال: 5 أيام" autocomplete="off"></label>
-<label class="nova-label-field">توقيت الاستعمال<select id="nlTiming"><option value="">غير محدد</option><option>قبل الأكل</option><option>بعد الأكل</option><option>مع الأكل</option><option>قبل النوم</option><option>حسب تعليمات الطبيب</option></select></label>
+<section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="استيكرات الأدوية">
+<div class="labels-sheet">
+<header class="labels-toolbar">
+  <span>✦ استيكرات الأدوية <small>تصميم وطباعة من فاتورة البيع — داخل NOVA Rx</small></span>
+  <nav class="stepper" aria-label="مراحل العمل"><span class="step active" data-step="patient"><i>١</i>المريض</span><span class="step" data-step="meds"><i>٢</i>الأدوية</span><span class="step" data-step="review"><i>٣</i>مراجعة</span><span class="step" data-step="print"><i>٤</i>طباعة</span></nav>
+  <button id="novaLabelsClose" class="btn small ghost" type="button">إغلاق ✕</button>
+</header>
+<main class="layout">
+  <section class="editor-col" aria-label="المريض والأدوية">
+    <div class="panel patient-card">
+      <div class="card-head"><h2>المريض</h2><button class="btn small danger" id="nlClearDraft" type="button">مسح المسودة</button></div>
+      <div class="card-body">
+        <details class="extras"><summary>فواتير سابقة</summary><div class="queue" id="nlInvoiceQueue"></div></details>
+        <div class="patient-grid">
+          <label class="field f-name"><span>اسم المريض</span><input id="nlPatientName" autocomplete="off" placeholder="اختياري"></label>
+          <label class="field f-phone"><span>رقم الهاتف</span><input id="nlPatientPhone" inputmode="tel" dir="ltr" autocomplete="off" placeholder="اختياري"></label>
+          <div class="field f-age"><label class="lbl" for="nlPatientAge">العمر</label><div class="age-control"><input id="nlPatientAge" type="number" min="0" inputmode="decimal" value="6"><div class="seg" role="group" aria-label="وحدة العمر"><button type="button" data-age-unit="years" aria-pressed="true">سنة</button><button type="button" data-age-unit="months" aria-pressed="false">شهر</button></div><input type="hidden" id="nlAgeUnit" value="years"></div><small class="hint" id="nlAgeHint" aria-live="polite"></small></div>
+          <label class="field f-weight"><span>الوزن (كجم)</span><input id="nlPatientWeight" inputmode="decimal" dir="ltr" placeholder="كجم"></label>
+          <div class="safety-choices" id="nlSafety"><fieldset><legend>حامل؟ <em aria-hidden="true">*</em></legend><label><input type="radio" name="nlPregnancy" value="yes"><span>نعم</span></label><label><input type="radio" name="nlPregnancy" value="no"><span>لا</span></label></fieldset><fieldset><legend>رضاعة؟ <em aria-hidden="true">*</em></legend><label><input type="radio" name="nlBreastfeeding" value="yes"><span>نعم</span></label><label><input type="radio" name="nlBreastfeeding" value="no"><span>لا</span></label></fieldset></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel med-panel">
+      <div class="med-tabbar"><span class="med-count" id="nlMedCount"></span><nav class="med-tabs" id="nlMedTabs" aria-label="أدوية الاستيكرات"></nav><button class="btn small add-med" id="nlAddMedicine" type="button">+ دواء</button></div>
+      <div class="med-list" id="nlMedicineList"></div>
+    </div>
+  </section>
+  <section class="preview-col" aria-label="معاينة الاستيكر">
+    <div class="panel preview-panel">
+      <div class="card-head"><div><h2>معاينة الاستيكر</h2><div class="split-note" id="nlSizeNote"></div></div></div>
+      <div class="stage" id="nlHeroStage"><span class="stage-caption" id="nlHeroCaption"></span><div class="hero-wrap" id="nlHeroPreview"></div><span class="chip warn stage-warn" id="nlFitWarn" hidden>النص قد يكون أطول من الاستيكر — جرّب مقاسًا أكبر</span></div>
+      <div class="strip-head"><strong>الاستيكرات</strong><span>اضغط للتحديد أو الإلغاء قبل الطباعة</span></div>
+      <div class="preview-grid" id="nlPreviewGrid"></div>
+      <div class="sticker-pager"><button class="btn small" id="nlStickerPrev" type="button">السابق</button><span id="nlStickerPageCount">1 / 1</span><button class="btn small" id="nlStickerNext" type="button">التالي</button></div>
+    </div>
+    <details class="panel extras nl-print-settings"><summary>⚙ إعدادات الطباعة</summary>
+      <div class="drawer-grid print-controls">
+        <label class="field full"><span>مقاس الاستيكر</span><select id="nlPreset"></select></label>
+        <label class="field custom-dimension" hidden><span>عرض مخصص mm</span><input id="nlCustomWidth" type="number" min="20" max="120" step="0.5" disabled></label>
+        <label class="field custom-dimension" hidden><span>ارتفاع مخصص mm</span><input id="nlCustomHeight" type="number" min="15" max="80" step="0.5" disabled></label>
+        <label class="field"><span>الورق</span><select id="nlPaperLayout"><option value="single">ملصق فردي</option><option value="split">ورق مقسوم</option></select></label>
+        <label class="field"><span>التصميم</span><select id="nlStyleMode"><option value="full">كامل</option><option value="compact">مختصر</option></select></label>
+        <label class="field"><span>الهامش mm</span><input id="nlMarginMm" type="number" min="0" max="10" step="0.5" value="2"></label>
+        <label class="field"><span>اتجاه الورق</span><select id="nlOrientation"><option value="auto">تلقائي</option><option value="portrait">طولي</option><option value="landscape">عرضي</option></select></label>
+      </div>
+      <div class="check-list"><label class="check"><input id="nlShowReviewBadge" type="checkbox" checked> إظهار علامة “يتطلب مراجعة” على المسودات الناقصة</label><label class="check"><input id="nlIncludePhone" type="checkbox" checked> إظهار رقم الصيدلية أسفل الاستيكر</label></div>
+      <div class="test-row"><div><strong>اختبار الطابعة</strong><small>اطبع استيكر تجريبي للتأكد من المقاس والهامش.</small></div><div style="display:flex;gap:8px"><button class="btn small" id="nlTestPrint" type="button">طباعة اختبار</button><button class="btn small ghost" id="nlResetSettings" type="button">استعادة الافتراضي</button></div></div>
+    </details>
+  </section>
+</main>
+<footer class="action-bar" aria-label="مراجعة وطباعة">
+  <label class="approval pending"><input id="nlPharmacistApproval" type="checkbox"><span>أنا الصيدلي راجعت كل دواء والجرعات والتعليمات وأوافق على الطباعة.</span></label>
+  <div class="print-actions">
+    <label class="copies"><span>النسخ</span><input id="nlCopies" aria-label="عدد النسخ" type="number" min="1" max="50" value="1" inputmode="numeric"></label>
+    <button class="btn" id="nlPrintSelected" type="button">طباعة المحدد <b id="nlSelCount"></b></button>
+    <button class="btn primary" id="nlPrintAll" type="button">طباعة الكل <b id="nlAllCount"></b></button>
+  </div>
+</footer>
 </div>
-<label class="nova-label-field">تعليمات إضافية<textarea id="nlNotes" placeholder="اكتب التعليمات المؤكدة من الوصفة أو الصيدلي"></textarea></label>
-<div class="nova-label-divider"></div>
-<h3>إعدادات الطباعة</h3>
-<div class="nova-label-grid">
-<label class="nova-label-field">مقاس الاستيكر<select id="nlSize"><option value="60x40">60 × 40 مم</option><option value="50x30">50 × 30 مم</option><option value="70x50">70 × 50 مم</option><option value="80x50">80 × 50 مم</option></select></label>
-<label class="nova-label-field">عدد النسخ<input id="nlCopies" type="number" min="1" max="50" value="1"></label>
-</div>
-<div class="nova-label-buttons"><button class="nova-label-action" id="nlPrint" type="button">طباعة الاستيكر</button><button class="nova-label-action alt" id="nlReset" type="button">استيكر جديد</button></div>
-<div class="nova-label-help">البيانات لا تُحفظ في المخزون أو ملف المريض. راجع الجرعة والتعليمات قبل الطباعة؛ الأداة لا تقترح جرعات علاجية تلقائيًا.</div>
-</div>
-<div class="nova-label-preview-area"><h3>معاينة مباشرة</h3><div id="novaLabelPreview"></div><p class="nova-label-help">المعاينة بتتحدث مع كل تعديل. اختار مقاس الورق المطابق لطابعتك من إعدادات الطباعة.</p></div>
-</div></div></section>
+</section>
 <script>
 (()=>{
-const p=document.getElementById('novaLabelsPanel'),ids=['nlPatient','nlMedicine','nlDose','nlFrequency','nlDuration','nlTiming','nlNotes','nlSize','nlCopies'],get=id=>document.getElementById(id),esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const lines=()=>[get('nlDose').value,get('nlFrequency').value,get('nlDuration').value,get('nlTiming').value].filter(Boolean).join(' — ');
-const markup=()=>'<div class="brand">صيدلية السوسي · د. أحمد السوسي</div>'+(get('nlPatient').value?'<div>المريض: '+esc(get('nlPatient').value)+'</div>':'')+'<div class="med">'+esc(get('nlMedicine').value||'اسم الدواء')+'</div><div class="instructions">'+esc(lines()||'تعليمات الاستعمال تظهر هنا')+(get('nlNotes').value?'<div>'+esc(get('nlNotes').value)+'</div>':'')+'</div><div class="foot">يرجى الالتزام بتعليمات الطبيب أو الصيدلي</div>';
-const update=()=>get('novaLabelPreview').innerHTML=markup();
-ids.forEach(id=>{get(id).addEventListener('input',update);get(id).addEventListener('change',update)});
-get('novaLabelsClose').onclick=()=>p.classList.remove('open');
-p.addEventListener('click',e=>{if(e.target===p)p.classList.remove('open')});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')p.classList.remove('open')});
-get('nlReset').onclick=()=>{ids.filter(id=>id!=='nlSize'&&id!=='nlCopies').forEach(id=>get(id).value='');get('nlCopies').value='1';update();get('nlMedicine').focus()};
-get('nlPrint').onclick=()=>{
-if(!get('nlMedicine').value.trim()){alert('اكتب اسم الدواء الأول');get('nlMedicine').focus();return}
-if(!get('nlDose').value.trim()&&!get('nlNotes').value.trim()){alert('اكتب تعليمات الاستعمال المؤكدة قبل الطباعة');return}
-const [w,h]=get('nlSize').value.split('x').map(Number),count=Math.max(1,Math.min(50,Number(get('nlCopies').value)||1)),content=markup();
-const page='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>استيكرات الأدوية</title><style>@page{size:'+w+'mm '+h+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;color:#111}.label{width:'+w+'mm;height:'+h+'mm;padding:3mm;overflow:hidden;break-after:page;font-size:10pt}.brand{font-weight:bold;color:#14365f;border-bottom:1px solid #bbb;padding-bottom:2mm;font-size:10pt}.med{font-size:12pt;font-weight:bold;margin:2mm 0}.instructions{white-space:pre-wrap;line-height:1.55}.foot{font-size:7pt;color:#555;border-top:1px dashed #aaa;margin-top:2mm;padding-top:1mm}@media screen{body{background:#ddd}.label{background:white;margin:12px auto;box-shadow:0 2px 10px #aaa}}</style></head><body>'+Array.from({length:count},()=>'<div class="label">'+content+'</div>').join('')+'<style>
-#novaSecretsOverlay{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:18px;font-family:Cairo,sans-serif}
-#novaSecretsOverlay.open{display:flex}#novaSecretsDialog{width:min(660px,96vw);max-height:90dvh;overflow:auto;background:#15191e;color:#eef4f8;border:1px solid #35424d;border-radius:18px;padding:24px;box-shadow:0 30px 100px #0009;direction:rtl}
-.nova-secret-row{display:grid;gap:8px;margin:15px 0}.nova-secret-row label{font-size:14px;font-weight:700}.nova-secret-row input{width:100%;box-sizing:border-box;background:#0a0e12;color:white;border:1px solid #46525e;border-radius:9px;padding:12px;font:inherit;direction:ltr}.nova-secret-actions{display:flex;gap:8px;flex-wrap:wrap}.nova-secret-actions button{background:#263946;color:white;border:1px solid #526675;border-radius:9px;padding:9px 14px;cursor:pointer;font:inherit}#novaSecretsStatus{min-height:24px;font-size:13px;color:#f4c87a}
-</style>
-<div id="novaSecretsOverlay" aria-hidden="true"><section id="novaSecretsDialog" role="dialog" aria-modal="true" aria-labelledby="novaSecretsTitle"><div style="display:flex;align-items:center;justify-content:space-between;gap:16px"><h2 id="novaSecretsTitle" style="margin:0">🔐 مفاتيح API</h2><button type="button" id="novaSecretsClose" style="background:none;border:0;color:white;font-size:25px;cursor:pointer" aria-label="إغلاق">×</button></div><p style="color:#b4c3ce;font-size:13px">الصق المفتاح واحفظه على السيرفر فقط. لن يظهر المفتاح بعد الحفظ، ولن يُخزّن محليًا.</p><div id="novaSecretsFields"></div><p id="novaSecretsStatus" role="status"></p></section></div>
-<script>
-(function(){
-const names=[['GEMINI_API_KEY','Gemini AI'],['WA_TOKEN','Meta WhatsApp Token'],['WA_PHONE_ID','WhatsApp Phone ID'],['NOVA_WA_BRIDGE_TOKEN','مفتاح ربط NOVA بالصيدلية'],['WA_BACKEND_URL','رابط سيرفر الصيدلية']];
-const overlay=document.getElementById('novaSecretsOverlay'),fields=document.getElementById('novaSecretsFields'),status=document.getElementById('novaSecretsStatus');
-const safeText=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-fields.innerHTML=names.map(([id,label])=>'<div class="nova-secret-row"><label for="novaSecret_'+id+'">'+safeText(label)+'</label><input id="novaSecret_'+id+'" type="password" autocomplete="off" spellcheck="false" placeholder="الصق المفتاح هنا"><div class="nova-secret-actions"><button type="button" data-paste="'+id+'">لصق</button><button type="button" data-save="'+id+'">حفظ آمن</button><button type="button" data-toggle="'+id+'">إظهار / إخفاء</button></div></div>').join('');
-window.novaOpenSecrets=function(){overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');status.textContent='';};
-function close(){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');fields.querySelectorAll('input').forEach(i=>{i.value='';i.type='password'});}
-document.getElementById('novaSecretsClose').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
-fields.addEventListener('click',async e=>{
-const b=e.target.closest('button');if(!b)return;
-const id=b.dataset.paste||b.dataset.save||b.dataset.toggle;const input=document.getElementById('novaSecret_'+id);
-if(b.dataset.toggle){input.type=input.type==='password'?'text':'password';return}
-if(b.dataset.paste){try{input.value=await navigator.clipboard.readText();status.textContent='تم اللصق. اضغط حفظ آمن.'}catch(_){input.focus();status.textContent='استخدم لصق من لوحة المفاتيح.'}return}
-if(b.dataset.save){const value=input.value.trim();if(!value){status.textContent='الصق القيمة أولًا.';return}b.disabled=true;status.textContent='جارٍ محاولة الحفظ على السيرفر…';try{
-const res=await fetch('/api/settings/secrets',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:id,value}),cache:'no-store'});
-const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw Error('لم يتم تفعيل خدمة الحفظ الآمن على السيرفر بعد');
-input.value='';status.textContent='تم الحفظ على السيرفر بنجاح.';
-}catch(err){status.textContent=err.message+' — المفتاح لم يُحفظ.'}finally{b.disabled=false}}
-});
-})();
-</script>
-</body></html>';
-const win=window.open('','_blank');if(!win){alert('اسمح بفتح نافذة الطباعة من المتصفح');return}win.document.open();win.document.write(page);win.document.close();win.focus();setTimeout(()=>win.print(),350);
-};
-update();
-
-const queueKey='nova.label.invoices.v1';let labelQueue=[];try{labelQueue=JSON.parse(localStorage.getItem(queueKey))||[]}catch(e){}
-const queueBox=document.createElement('div');queueBox.id='nlInvoiceQueue';queueBox.style.cssText='background:#1a2735;border:1px solid #43546a;border-radius:12px;padding:12px;margin-bottom:14px';document.querySelector('.nova-label-editor').prepend(queueBox);
-const chips=document.createElement('div');chips.innerHTML='<div style="font:700 12px Cairo;color:#c5d4e7;margin:7px 0">اختيارات سريعة للتعليمات (راجعها قبل الطباعة)</div>'+['بعد الأكل','قبل الأكل','عند اللزوم','حسب تعليمات الطبيب'].map(x=>'<button type="button" class="nlQuick" style="background:#293d55;color:white;border:1px solid #50637a;border-radius:8px;padding:7px;margin:3px;font:600 11px Cairo">'+x+'</button>').join('');get('nlNotes').parentNode.after(chips);
-chips.onclick=e=>{if(e.target.classList.contains('nlQuick')){get('nlNotes').value+=(get('nlNotes').value?' — ':'')+e.target.textContent;update()}};
-const extra=document.createElement('div');extra.className='nova-label-grid';extra.innerHTML='<label class="nova-label-field">العمر<input id="nlAge" placeholder="سنوات أو شهور"></label><label class="nova-label-field">الوزن (كجم)<input id="nlWeight" type="number" min="0"></label><label class="nova-label-field">الحالة<select id="nlSafety"><option value="none">غير محدد</option><option value="child">طفل</option><option value="pregnant">حامل</option><option value="breast">مرضعة</option></select></label><label class="nova-label-field">نوع الورق<select id="nlPaper"><option value="single">ملصق واحد</option><option value="duo">ورق نصين</option></select></label><label class="nova-label-field">التصميم<select id="nlStyle"><option value="full">كامل</option><option value="compact">مختصر</option></select></label>';get('nlPatient').closest('.nova-label-grid').after(extra);
-const warning=document.createElement('p');warning.style.cssText='color:#f4c883;font:600 12px Cairo';warning.textContent='تعليمات الاستعمال والجرعات لازم يراجعها الصيدلي، خصوصًا للأطفال والحمل والرضاعة.';extra.after(warning);
-const approval=document.createElement('label');approval.style.cssText='display:block;color:#c5d4e7;font:600 12px Cairo;margin:12px 0';approval.innerHTML='<input id="nlApproved" type="checkbox"> راجعت تعليمات الدواء وأوافق على الطباعة';get('nlPrint').parentNode.before(approval);
-const originalPrint=get('nlPrint').onclick;get('nlPrint').onclick=e=>{if(!get('nlApproved').checked){alert('راجع التعليمات وأكد الموافقة قبل الطباعة');return}originalPrint(e)};
-const settingsKey='nova.label.print.settings';try{const st=JSON.parse(localStorage.getItem(settingsKey))||{};['nlSize','nlCopies','nlPaper','nlStyle'].forEach(id=>{if(st[id]!=null)get(id).value=st[id]})}catch(e){}
-['nlSize','nlCopies','nlPaper','nlStyle'].forEach(id=>get(id).onchange=()=>{const o={};['nlSize','nlCopies','nlPaper','nlStyle'].forEach(k=>o[k]=get(k).value);localStorage.setItem(settingsKey,JSON.stringify(o))});
-const drawQueue=()=>{queueBox.innerHTML='<b style="color:#dce9f8;font:700 13px Cairo">فواتير NOVA Rx</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+(labelQueue.length?labelQueue.slice(0,15).map((q,i)=>'<button type="button" data-q="'+i+'" style="background:#263a52;color:#fff;border:1px solid #4c6380;border-radius:8px;padding:8px;font:600 11px Cairo">#'+String(q.id).replace(/[<>&"]/g,'')+' · '+q.items.length+' صنف</button>').join(''):'<small style="color:#9aadc2">هنا هتظهر الفواتير بعد إتمام البيع</small>')+'</div><small style="display:block;color:#93a9bd;margin-top:8px">اختار فاتورة، وبعدها راجع كل دواء قبل طباعة استيكره.</small>'};
-queueBox.onclick=e=>{const b=e.target.closest('[data-q]');if(!b)return;const q=labelQueue[Number(b.dataset.q)];if(!q)return;get('nlPatient').value=q.customer==='عميل نقدي'?'':q.customer;get('nlMedicine').value=q.items[0]?.name||'';get('nlNotes').value='';get('nlDose').value='';get('nlApproved').checked=false;update();if(q.items.length>1)alert('الفاتورة فيها '+q.items.length+' أصناف؛ النسخة دي بتفتح أول صنف فقط، والباقي يحتاج اختيار منفصل.')};
-window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;labelQueue.unshift(q);labelQueue=labelQueue.slice(0,40);try{localStorage.setItem(queueKey,JSON.stringify(labelQueue))}catch(e){}drawQueue();document.getElementById('novaLabelsPanel').classList.add('open')});drawQueue();
+'use strict';
+const panel=document.getElementById('novaLabelsPanel');
+const $=id=>document.getElementById(id);
+const PRESETS=[['50x30',50,30],['40x30',40,30],['40x25',40,25],['50x25',50,25],['58x40',58,40],['60x40',60,40],['70x50',70,50],['100x50',100,50],['custom',null,null]];
+const DRAFT_KEY='nova.stickerStudio.draft.v1';
+const SETTINGS_KEY='nova.stickerStudio.settings.v1';
+const QUEUE_KEY='nova.label.invoices.v1';
+const LOGO='https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png';
+let stickerPage=0,activeMed=0;
+const state={patient:{name:'',phone:'',age:'6',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:''},medications:[],approved:false,selectedInvoice:null};
+const settings={preset:'50x30',customWidth:50,customHeight:30,paperLayout:'single',styleMode:'full',copies:1,marginMm:2,orientation:'auto',showReviewBadge:true,includePhone:true};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
+function toast(msg,type='info'){panel.querySelector('.nlx-toast')?.remove();const el=document.createElement('div');el.className='nlx-toast'+(type==='err'?' err':'');el.textContent=msg;panel.append(el);setTimeout(()=>el.remove(),3400)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function blankMedication(name=''){return{id:uid(),name,dose:'',frequency:'',duration:'',instructions:'',warnings:[],missing:['dose','frequency','duration','instructions'],complete:false,reviewRequired:true,aiStatus:'idle',aiError:'',selected:true,editRevision:0}}
+function normalizeMedication(med){const required=['dose','frequency','duration','instructions'];med.name=clean(med.name);for(const k of required)med[k]=clean(med[k]);med.warnings=Array.isArray(med.warnings)?med.warnings.map(clean).filter(Boolean).slice(0,8):[];med.missing=required.filter(k=>!med[k]);med.complete=med.missing.length===0;med.reviewRequired=true;return med}
+function invalidateApproval(){state.approved=false;$('nlPharmacistApproval').checked=false;updateSteps()}
+function persist(){try{localStorage.setItem(DRAFT_KEY,JSON.stringify({patient:state.patient,medications:state.medications,approved:false,selectedInvoice:state.selectedInvoice}))}catch(e){}}
+function persistSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');if(d){Object.assign(state.patient,d.patient||{});state.medications=Array.isArray(d.medications)?d.medications.map(m=>normalizeMedication({...blankMedication(),...m,id:m.id||uid(),aiStatus:'idle',aiError:'',reviewRequired:true})):[];state.selectedInvoice=d.selectedInvoice??null}}catch(e){}try{Object.assign(settings,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'))}catch(e){}if(!state.medications.length)state.medications.push(blankMedication());if(!state.patient.age)state.patient.age='6';if(!state.patient.ageUnit)state.patient.ageUnit='years';}
+function getQueue(){try{const q=JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');return Array.isArray(q)?q.slice(0,20):[]}catch(e){return[]}}
+function renderQueue(){$('nlInvoiceQueue').innerHTML=getQueue().map((inv,i)=>`<button type="button" class="queue-card ${state.selectedInvoice===i?'active':''}" data-invoice="${i}"><strong>${esc(inv.id||('فاتورة '+(i+1)))}</strong><small>${esc(inv.customer||'عميل نقدي')} · ${Array.isArray(inv.items)?inv.items.length:0} صنف</small></button>`).join('')||'<div class="empty" style="width:100%">لا توجد فواتير محفوظة. أتمم بيعًا أو أضف دواء يدويًا.</div>'}
+function patientPayload(){return{age:state.patient.age,weightKg:state.patient.weight,pregnancy:state.patient.pregnancy?state.patient.pregnancy==='yes':null,breastfeeding:state.patient.breastfeeding?state.patient.breastfeeding==='yes':null,ageUnit:state.patient.ageUnit}}
+function medicationPayload(med){return{name:med.name,prescribedDose:med.dose,prescribedFrequency:med.frequency,prescribedDuration:med.duration}}
+function medStatus(med){if(med.aiStatus==='loading')return['warn','جاري التوليد'];if(med.aiStatus==='error')return['err','فشل AI'];if(med.complete)return['ok','مكتمل'];return['warn','يحتاج مراجعة']}
+function renderTabs(){const n=state.medications.length;$('nlMedCount').textContent=n>6?String(n):n+' / 6';$('nlMedTabs').innerHTML=state.medications.map((m,i)=>`<button type="button" class="med-tab ${i===activeMed?'active':''}" data-tab="${i}" aria-current="${i===activeMed?'true':'false'}"><span class="n">${i+1}</span><span class="t">${esc(m.name||'دواء بدون اسم')}</span><i class="dot ${m.complete?'ok':'warn'}" title="${m.complete?'مكتمل':'يحتاج مراجعة'}"></i></button>`).join('')}
+function renderMeds(){activeMed=Math.max(0,Math.min(activeMed,state.medications.length-1));renderTabs();const box=$('nlMedicineList');box.innerHTML=state.medications.map((m,i)=>{const[cls,label]=medStatus(m);return`<article class="med-card" data-id="${m.id}" ${i===activeMed?'':'hidden'}><div class="med-top"><span class="status ${cls}">${label}</span><div class="med-actions"><button class="btn small" data-action="ai" ${m.aiStatus==='loading'?'disabled':''}>${m.aiStatus==='loading'?'جاري التوليد…':'إعادة توليد AI'}</button><button class="btn small" data-action="duplicate">تكرار</button><button class="btn small danger" data-action="delete">حذف</button></div></div><div class="med-fields"><label class="field f-medname"><span>اسم الدواء</span><input data-field="name" value="${esc(m.name)}" autocomplete="off"></label><label class="field"><span>الجرعة</span><input data-field="dose" value="${esc(m.dose)}" placeholder="لا تخمن الجرعة"></label><label class="field"><span>التكرار</span><input data-field="frequency" value="${esc(m.frequency)}"></label><label class="field"><span>المدة</span><input data-field="duration" value="${esc(m.duration)}"></label></div><label class="field"><span>تعليمات الاستعمال</span><textarea data-field="instructions" placeholder="اكتب فقط التعليمات المؤكدة">${esc(m.instructions)}</textarea></label>${m.missing.length?`<div class="missing">${m.missing.map(x=>`<span>ناقص: ${({dose:'الجرعة',frequency:'التكرار',duration:'المدة',instructions:'التعليمات'})[x]}</span>`).join('')}</div>`:''}${m.warnings.length?`<div class="missing">${m.warnings.slice(0,3).map(w=>`<span>⚠ ${esc(w)}</span>`).join('')}</div>`:''}${m.aiError?`<div class="status err">${esc(m.aiError)}</div>`:''}</article>`}).join('');persist();renderPreview();updateSteps()}
+function syncBar(){const ap=$('nlPharmacistApproval').closest('.approval');ap.classList.toggle('pending',!state.approved);const sel=state.medications.filter(m=>m.selected!==false).length;$('nlSelCount').textContent='('+sel+')';$('nlAllCount').textContent='('+state.medications.length+')';for(const id of['nlPrintSelected','nlPrintAll'])$(id).classList.toggle('is-blocked',!state.approved)}
+function updateSteps(){const ok=v=>['yes','no'].includes(v);const patientOk=ok(state.patient.pregnancy)&&ok(state.patient.breastfeeding);const medsOk=state.medications.length>0&&state.medications.every(m=>m.complete);const flags=[patientOk,medsOk,patientOk&&medsOk&&state.approved,false];let cur=flags.findIndex(f=>!f);if(cur<0)cur=3;panel.querySelectorAll('.step').forEach((s,i)=>{s.classList.toggle('done',i<cur);s.classList.toggle('active',i===cur)});panel.querySelectorAll('.safety-choices fieldset').forEach((f,i)=>f.classList.toggle('needs',!ok(state.patient[i?'breastfeeding':'pregnancy'])));syncBar()}
+function ageUI(){const u=$('nlAgeUnit').value||'years';panel.querySelectorAll('[data-age-unit]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ageUnit===u)));const n=Number($('nlPatientAge').value);let hint='';if(u==='months'&&Number.isFinite(n)&&n>=12){const y=Math.floor(n/12),r=Math.round(n%12);hint='= '+y+' سنة'+(r?' و '+r+' شهر':'')}$('nlAgeHint').textContent=hint}
+function customFields(){const c=settings.preset==='custom';panel.querySelectorAll('.custom-dimension').forEach(e=>{e.hidden=!c})}
+let fitRaf=0;function schedFit(){cancelAnimationFrame(fitRaf);fitRaf=requestAnimationFrame(fit)}
+function fit(){const[w,h]=dimensions();const pw=w*3.7795,ph=h*3.7795;const stage=$('nlHeroStage');const hero=panel.querySelector('.sticker-hero');if(hero&&stage&&stage.clientWidth){const z=Math.max(.5,Math.min(3.6,(stage.clientWidth-40)/pw,(stage.clientHeight-76)/ph));hero.style.zoom=z.toFixed(3);const li=hero.querySelector('.label-inner');$('nlFitWarn').hidden=!(li&&(li.scrollHeight>li.clientHeight+1||li.scrollWidth>li.clientWidth+1))}const grid=$('nlPreviewGrid');if(grid.clientWidth){const gap=parseFloat(getComputedStyle(grid).columnGap)||8;const cols=getComputedStyle(grid).gridTemplateColumns.split(' ').length||3;const cell=(grid.clientWidth-gap*(cols-1))/cols;const z=Math.max(.2,Math.min(.9,cell/pw));grid.querySelectorAll('.sticker-preview').forEach(el=>{el.style.zoom=z.toFixed(3);el.style.setProperty('--z',z.toFixed(3))})}}
+function dimensions(){if(settings.preset==='custom')return[Number(settings.customWidth)||50,Number(settings.customHeight)||30];const p=PRESETS.find(x=>x[0]===settings.preset)||PRESETS[0];return[p[1],p[2]]}
+function labelHtml(med){const lines=[med.dose,med.frequency,med.duration,med.instructions].filter(Boolean).join(' — ');return`<div class="label-inner"><div class="label-brand"><img src="${LOGO}" alt="" onerror="this.remove()"><div><strong>صيدلية السوسي</strong><small>د. أحمد السوسي</small></div></div>${state.patient.name?`<div class="patient">المريض: ${esc(state.patient.name)}</div>`:''}<div class="med">${esc(med.name||'اسم الدواء')}</div><div class="instruction">${esc(lines||'تعليمات الاستعمال تُراجع هنا')}</div><div class="warning">${med.complete?'راجع الصيدلي قبل الاستعمال':'مسودة غير مكتملة — مراجعة الصيدلي إلزامية'}${settings.includePhone?' · 01143404023':''}</div>${settings.showReviewBadge&&!med.complete?'<div class="review">يتطلب مراجعة</div>':''}</div>`}
+function renderPreview(){const pages=Math.max(1,Math.ceil(state.medications.length/6));stickerPage=Math.min(stickerPage,pages-1);$('nlStickerPageCount').textContent=(stickerPage+1)+' / '+pages;$('nlStickerPrev').disabled=stickerPage===0;$('nlStickerPrev').parentElement.hidden=pages===1;$('nlStickerNext').disabled=stickerPage===pages-1;const[w,h]=dimensions();$('nlSizeNote').textContent=`${w} × ${h} مم · ${settings.paperLayout==='split'?'ورق مقسوم':'ملصق فردي'} · ${settings.styleMode==='compact'?'مختصر':'كامل'}`;const pad=`--pad:${Math.min(settings.marginMm+1,4)}mm`;$('nlPreviewGrid').innerHTML=state.medications.slice(stickerPage*6,stickerPage*6+6).map(m=>`<div data-med-id="${esc(m.id)}" role="button" tabindex="0" aria-pressed="${m.selected!==false}" aria-label="${esc(m.name||'دواء بدون اسم')}" class="sticker-preview sticker-face ${m.selected===false?'sticker-unselected':''} ${state.medications[activeMed]===m?'is-active':''} ${settings.styleMode==='compact'?'compact':''}" style="width:${w}mm;height:${h}mm;${pad}"><span class="pick" aria-hidden="true"></span>${labelHtml(m)}</div>`).join('');const am=state.medications[activeMed];$('nlHeroPreview').innerHTML=am?`<div class="sticker-face sticker-hero ${settings.styleMode==='compact'?'compact':''}" style="width:${w}mm;height:${h}mm;${pad}">${labelHtml(am)}</div>`:'';$('nlHeroCaption').textContent=am?`الاستيكر ${activeMed+1} من ${state.medications.length}${am.name?' · '+am.name:''}`:'';fit();syncBar()}
+function validateBeforePrint(selectedOnly){const meds=selectedOnly?state.medications.filter(m=>m.selected!==false):state.medications;if(!meds.length){toast(selectedOnly?'لا توجد أدوية محددة للطباعة':'لا توجد أدوية للطباعة','err');return null}if(!['yes','no'].includes(state.patient.pregnancy)||!['yes','no'].includes(state.patient.breastfeeding)){toast('حدد الحمل والرضاعة قبل الطباعة','err');(panel.querySelector('.safety-choices fieldset.needs')||$('nlSafety')).scrollIntoView({block:'center',behavior:'smooth'});return null}if(!state.approved){toast('موافقة الصيدلي إلزامية قبل الطباعة','err');$('nlPharmacistApproval').focus();return null}const incomplete=meds.filter(m=>!m.complete);if(incomplete.length){activeMed=Math.max(0,state.medications.indexOf(incomplete[0]));stickerPage=Math.floor(activeMed/6);renderMeds();toast('أكمل الجرعة والتكرار والمدة والتعليمات قبل الطباعة','err');return null}return meds}
+function printPage(meds,test=false){const[w0,h0]=dimensions();const landscape=settings.orientation==='landscape'||(settings.orientation==='auto'&&w0>h0);const w=landscape?Math.max(w0,h0):Math.min(w0,h0);const h=landscape?Math.min(w0,h0):Math.max(w0,h0);const repeated=[];for(let i=0;i<Math.max(1,Math.min(50,Number(settings.copies)||1));i++)repeated.push(...meds);const body=repeated.map(m=>`<div class="label ${settings.styleMode==='compact'?'compact':''} ${test?'test':''}">${test?'<div class="label-inner"><div class="label-brand"><strong>NOVA Rx Print Test</strong></div><div class="med">اختبار مقاس '+w+' × '+h+' mm</div><div class="instruction">إذا ظهر هذا الإطار داخل الملصق فالإعدادات صحيحة.</div><div class="warning">'+new Date().toLocaleString('ar-EG')+'</div></div>':labelHtml(m)}</div>`).join('');const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>طباعة استيكرات</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>@page{size:${w}mm ${h}mm;margin:${settings.marginMm}mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:Cairo,Tahoma}.label{width:${w-(settings.marginMm*2)}mm;height:${h-(settings.marginMm*2)}mm;overflow:hidden;break-after:page;direction:rtl}.label.compact{font-size:8.5pt}.label-inner{height:100%;display:flex;flex-direction:column;padding:1mm}.label-brand{display:flex;align-items:center;gap:2mm;border-bottom:.35mm solid #a9b4bd;padding-bottom:1.2mm;margin-bottom:1.5mm}.label-brand img{width:8mm;height:8mm;object-fit:contain}.label-brand strong{font-size:7pt;color:#14365f}.label-brand small{display:none}.patient{font-size:7.5pt}.med{font-size:9pt;font-weight:900;margin:.5mm 0}.instruction{font-size:7pt;line-height:1.25;overflow-wrap:anywhere;white-space:pre-wrap}.warning{margin-top:auto;border-top:.25mm dashed #9aa4ad;padding-top:1mm;font-size:6.2pt}.review{display:none}@media screen{body{background:#ddd}.label{background:#fff;margin:10px auto;box-shadow:0 2px 10px #999}}</style></head><body>${body}<script>setTimeout(()=>{const clipped=[...document.querySelectorAll('.label')].some(el=>el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1);if(clipped){alert('تعليمات الدواء أطول من مساحة الاستيكر. اختر مقاسًا أكبر.');return}print()},700)<\/script></body></html>`;const win=window.open('','_blank');if(!win){toast('اسمح بفتح نافذة الطباعة من المتصفح','err');return}win.document.open();win.document.write(html);win.document.close();win.focus()}
+async function generateForMedication(med){if(!clean(med.name)){med.aiStatus='error';med.aiError='اكتب اسم الدواء قبل التوليد';renderMeds();return}const requestRevision=med.editRevision||0;invalidateApproval();med.aiStatus='loading';med.aiError='';renderMeds();try{const res=await fetch('/api/ai/medication-label',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({medication:medicationPayload(med),patient:patientPayload(),locale:'ar-EG'})});const data=await res.json().catch(()=>({}));if(!res.ok||(data.ok===false&&!data.instruction&&!data.draft))throw new Error(data.error||'تعذر توليد التعليمات');if((med.editRevision||0)!==requestRevision){med.aiStatus='idle';med.aiError='تغيرت المسودة أثناء التوليد؛ حُفظت تعديلاتك ولم تُستبدل. أعد المحاولة عند الحاجة.';renderMeds();return}const src=data.instruction||data.draft||data;med.dose=clean(src.dose)||med.dose;med.frequency=clean(src.frequency)||med.frequency;med.duration=clean(src.duration)||med.duration;med.instructions=clean(src.instructions)||med.instructions;med.warnings=Array.isArray(src.warnings)?src.warnings:med.warnings;normalizeMedication(med);med.aiStatus=med.complete?'done':'error';med.aiError=med.complete?'تم استلام التعليمات؛ راجعها واعتمدها قبل الطباعة':'الرد غير مكتمل؛ أكمل الحقول الناقصة يدويًا'}catch(e){med.aiStatus='error';med.aiError=e.message||'فشل الاتصال بخدمة AI'}renderMeds()}
+function bind(){
+$('nlMedTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;activeMed=Number(b.dataset.tab);stickerPage=Math.floor(activeMed/6);renderMeds()});
+panel.querySelectorAll('[data-age-unit]').forEach(b=>b.addEventListener('click',()=>{$('nlAgeUnit').value=b.dataset.ageUnit;$('nlAgeUnit').dispatchEvent(new Event('input',{bubbles:true}))}));
+if(window.ResizeObserver){const ro=new ResizeObserver(schedFit);ro.observe($('nlHeroStage'));ro.observe($('nlPreviewGrid'))}
+window.addEventListener('resize',schedFit);
+['nlPatientName','nlPatientPhone','nlPatientAge','nlPatientWeight','nlAgeUnit'].forEach(id=>$(id).addEventListener('input',()=>{state.patient.name=$('nlPatientName').value;state.patient.phone=$('nlPatientPhone').value;state.patient.age=$('nlPatientAge').value;state.patient.weight=$('nlPatientWeight').value;state.patient.ageUnit=$('nlAgeUnit').value;ageUI();invalidateApproval();persist();renderPreview()}));
+for(const[name,key]of[['nlPregnancy','pregnancy'],['nlBreastfeeding','breastfeeding']])panel.querySelectorAll('input[name="'+name+'"]').forEach(el=>el.addEventListener('change',()=>{state.patient[key]=el.value;invalidateApproval();persist();updateSteps()}));
+$('nlStickerPrev').onclick=()=>{stickerPage=Math.max(0,stickerPage-1);renderPreview()};$('nlStickerNext').onclick=()=>{stickerPage=Math.min(Math.max(0,Math.ceil(state.medications.length/6)-1),stickerPage+1);renderPreview()};
+const grid=$('nlPreviewGrid');grid.addEventListener('click',e=>{const card=e.target.closest('[data-med-id]');if(!card)return;const m=state.medications.find(m=>m.id===card.dataset.medId);if(m){m.selected=m.selected===false;persist();renderPreview()}});
+grid.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-med-id]')){e.preventDefault();e.target.click()}});
+$('nlPreset').innerHTML=PRESETS.map(([id,w,h])=>`<option value="${id}">${id==='custom'?'مقاس مخصص':`${w} × ${h} مم`}</option>`).join('');$('nlPreset').value=settings.preset;
+for(const[id,key,type]of[['nlPreset','preset','value'],['nlCustomWidth','customWidth','number'],['nlCustomHeight','customHeight','number'],['nlPaperLayout','paperLayout','value'],['nlStyleMode','styleMode','value'],['nlCopies','copies','number'],['nlMarginMm','marginMm','number'],['nlOrientation','orientation','value']]){$(id).addEventListener('change',()=>{settings[key]=type==='number'?Number($(id).value):$(id).value;if(key==='preset'){const custom=settings.preset==='custom';$('nlCustomWidth').disabled=$('nlCustomHeight').disabled=!custom;customFields()}persistSettings();renderPreview()})}
+$('nlShowReviewBadge').addEventListener('change',()=>{settings.showReviewBadge=$('nlShowReviewBadge').checked;persistSettings();renderPreview()});$('nlIncludePhone').addEventListener('change',()=>{settings.includePhone=$('nlIncludePhone').checked;persistSettings();renderPreview()});
+$('nlAddMedicine').onclick=()=>{state.medications.push(blankMedication());activeMed=state.medications.length-1;stickerPage=Math.floor(activeMed/6);invalidateApproval();renderMeds();const n=panel.querySelector('.med-card:not([hidden]) [data-field="name"]');if(n)n.focus()};
+$('nlMedicineList').addEventListener('input',e=>{const card=e.target.closest('.med-card');if(!card)return;const med=state.medications.find(m=>m.id===card.dataset.id);if(!med||!e.target.dataset.field)return;med[e.target.dataset.field]=e.target.value;med.editRevision=(med.editRevision||0)+1;normalizeMedication(med);med.aiStatus='idle';med.aiError='';invalidateApproval();persist();renderTabs();renderPreview()});
+$('nlMedicineList').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const card=e.target.closest('.med-card');const med=state.medications.find(m=>m.id===card.dataset.id);if(!med)return;invalidateApproval();if(btn.dataset.action==='delete'){state.medications=state.medications.filter(m=>m.id!==med.id);if(!state.medications.length)state.medications.push(blankMedication());renderMeds()}if(btn.dataset.action==='duplicate'){state.medications.push(normalizeMedication({...med,id:uid(),selected:true,editRevision:0}));activeMed=state.medications.length-1;stickerPage=Math.floor(activeMed/6);renderMeds()}if(btn.dataset.action==='ai')generateForMedication(med)});
+$('nlPharmacistApproval').addEventListener('change',()=>{state.approved=$('nlPharmacistApproval').checked;updateSteps()});
+$('nlInvoiceQueue').addEventListener('click',e=>{const btn=e.target.closest('[data-invoice]');if(!btn)return;const idx=Number(btn.dataset.invoice);const inv=getQueue()[idx];if(!inv)return;state.selectedInvoice=idx;activeMed=0;stickerPage=0;state.patient.name=inv.customer==='عميل نقدي'?'':(inv.customer||'');state.medications=(Array.isArray(inv.items)?inv.items:[]).map(item=>blankMedication(item.name||''));if(!state.medications.length)state.medications.push(blankMedication());invalidateApproval();syncPatientInputs();renderQueue();renderMeds();toast('تم تحميل الفاتورة كمسودة مراجعة')});
+$('nlClearDraft').onclick=()=>{if(!confirm('مسح مسودة الاستيكرات الحالية؟'))return;state.patient={name:'',phone:'',age:'6',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:''};state.medications=[blankMedication()];state.approved=false;state.selectedInvoice=null;$('nlPharmacistApproval').checked=false;syncPatientInputs();renderQueue();renderMeds()};
+$('nlResetSettings').onclick=()=>{Object.assign(settings,{preset:'50x30',customWidth:50,customHeight:30,paperLayout:'single',styleMode:'full',copies:1,marginMm:2,orientation:'auto',showReviewBadge:true,includePhone:true});syncSettingsInputs();persistSettings();renderPreview()};
+$('nlTestPrint').onclick=()=>printPage([blankMedication('Test')],true);
+$('nlPrintAll').onclick=()=>{const meds=validateBeforePrint(false);if(meds)printPage(meds)};$('nlPrintSelected').onclick=()=>{const meds=validateBeforePrint(true);if(meds)printPage(meds)};
+}
+function syncPatientInputs(){$('nlPatientName').value=state.patient.name;$('nlPatientPhone').value=state.patient.phone;$('nlPatientAge').value=state.patient.age;$('nlPatientWeight').value=state.patient.weight;$('nlAgeUnit').value=state.patient.ageUnit||'years';ageUI();for(const[name,key]of[['nlPregnancy','pregnancy'],['nlBreastfeeding','breastfeeding']])panel.querySelectorAll('input[name="'+name+'"]').forEach(el=>el.checked=el.value===state.patient[key])}
+function syncSettingsInputs(){$('nlPreset').value=settings.preset;$('nlCustomWidth').value=settings.customWidth;$('nlCustomHeight').value=settings.customHeight;$('nlPaperLayout').value=settings.paperLayout;$('nlStyleMode').value=settings.styleMode;$('nlCopies').value=settings.copies;$('nlMarginMm').value=settings.marginMm;$('nlOrientation').value=settings.orientation;$('nlShowReviewBadge').checked=settings.showReviewBadge;$('nlIncludePhone').checked=settings.includePhone;const custom=settings.preset==='custom';$('nlCustomWidth').disabled=$('nlCustomHeight').disabled=!custom;customFields()}
+const close=()=>panel.classList.remove('open');
+$('novaLabelsClose').onclick=close;
+panel.addEventListener('click',e=>{if(e.target===panel)close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))close()});
+window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;const queue=getQueue();queue.unshift(q);try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(0,40)))}catch(_){}renderQueue();panel.classList.add('open')});
+load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds();
 })();
 </script>
 </body>
