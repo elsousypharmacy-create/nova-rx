@@ -78,6 +78,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-16 | IN_PROGRESS | kimi_run_succeeded [42254828034](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42254828034) — Supplier price comparison prototype (issue #16); work on `kimi/issue-16-42254828034-clean` @ `f3e609bf`; no PR yet; no UX review |
 | `f3e609bfdf022a22e6047e25484f01a6694a7a2f` | `kimi/issue-16-42254828034-clean` | ISSUE-16 | IN_PROGRESS | new_branch (fix: address NOVA Rx issue #16 via Kimi (clean); supplier-compare.html + worker/unit) — no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-16 | IN_PROGRESS | kimi_run_started [42254828034](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42254828034) — Supplier price comparison prototype using mock data (issue #16); no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (Redesign Sticker Studio: compact patient card, medication tabs, large hero preview, fixed review/print bar, settings drawer; ignore generated tests/.sticker-studio-inline.js) — no UX review |
