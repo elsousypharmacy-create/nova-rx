@@ -140,3 +140,47 @@ Create a dedicated branch and PR containing the standalone sticker studio, tests
 - Verification: static checks pass (`node tests/unit/*.check.mjs`, syntax check). Ran a Python-Playwright port of the browser checks in headless Chrome (65 checks: pager, selection, approval revoke, print popups, AI mock/stale guard, tabs, age toggle, drawer, no horizontal overflow, bar visible at 1024x768, 1180x820, 1366x768, 1440x900, 834x1112, 390x844): 64 pass; the 1 "fail" is the console 500 from the test's own mocked AI error. The repo's Node `tests/sticker-studio-browser.mjs` was NOT run (no node_modules/network here). Cairo font and the logo URL were blocked in the sandbox, so real typography/logo not verified.
 - Known open item (needs owner decision, not changed): preview font metrics mirror the print window rules, but at small presets (e.g. 40x30/50x30) complete text may still be clipped by the print window's own clip check; verify on the real printer. Not deployed to Cloudflare; GitHub push does not imply deployment.
 - Next exact step: owner opens the Worker after deploy, sends phone/tablet screenshots; fix anything visual found there.
+
+## Cursor Technical Director — management takeover checkpoint
+Documented: 2026-11-06 ~20:30 Asia/Riyadh. Management only; no application-code changes; no deploy.
+
+### Verified facts
+- `main` at `e3d9a16` (Claude Sticker Studio redesign on standalone `sticker-studio.html`). Working tree clean at audit start.
+- Open PRs: only draft PR #18 (ChatGPT WhatsApp demo, 16-line `whatsapp-inbox.html`).
+- Open issues still include #4, #5, #7, #8, #9, #12, #13, #14, #16, #17 (and older #1/#2).
+- Kimi Actions: **no running jobs**. Latest completed successes: issue #17 run `42256861461`, issue #16 run `42254828034`. Both pushed clean branches; Actions could not create PRs.
+- Branches without PRs: `kimi/issue-17-42256861461-clean` (`2efda26`), `kimi/issue-16-42254828034-clean` (`f3e609b`).
+- Active Cursor cloud agents observed: this Technical Director run (RUNNING); Grok “Publish Sticker Studio visual QA evidence only” (IDLE). No other RUNNING coding agents.
+- Cloudflare MCP auth declined/errored by owner — Worker API/source export not available via MCP this session.
+- Live preview HTTP check (no MCP): `https://nova-rx-preview.elsousypharmacy.workers.dev/` → 200, header `x-nova-build: aac1c30f`. HTML markers found: `novaStickerApprovedLayoutV2`, `novaLabelsPanel`, `Gemini`, Arabic AI error string. `/sticker-studio.html` also returns 200.
+- GitHub `index.html` blob SHA `b2f7b263…` does **not** contain `novaStickerApprovedLayoutV2`. Sync gap remains release-blocking.
+- Playwright POS smoke on `main` last observed **failed** (run `42176392316`).
+
+### WhatsApp duplicate risk
+- Issue #17 IMPLEMENTED on Kimi branch (CSS/JS + index nav tab + tests 14/14 smoke claimed in run log); **not merged**, no PR yet.
+- Draft PR #18 is a separate thinner ChatGPT standalone demo. Do **not** start another Kimi run. Reconcile before merge.
+- Labels `kimi-run-now` remain on #4, #16, #17 — re-edit risk of duplicate Kimi spend. Remove after PRs opened (owner/tooling).
+
+### Critical blockers
+1. GitHub ↔ Cloudflare Worker source not reconciled; cannot safely deploy GitHub over live Worker.
+2. POS invoice sticker modal (`/#sale`) Claude design integration into live modal not independently browser-verified; GitHub POS modal ≠ live `novaStickerApprovedLayoutV2`.
+3. Cloudflare token/MCP unavailable this session → cannot export Worker source from here.
+4. Playwright smoke red on `main`.
+5. Orphan Kimi deliverables lack review PRs.
+
+### Top prioritized queue
+1. **P0** Export/reconcile live Worker source into GitHub (owner Cloudflare dashboard or working API token). Issue #13.
+2. **P0** Integrate approved Claude Sticker Studio into POS invoice sticker modal; preserve AI/approval/print. Depends on #1.
+3. **P1** Open review PRs for Kimi #17 and #16; freeze duplicate WhatsApp work; keep PR #18 draft until reconcile.
+4. **P1** Grok browser QA of live `/#sale` sticker modal + `/sticker-studio.html` (visual only).
+5. **P2** Remaining issue #4 POS UX defects only after live baseline QA; do not auto-rerun failed historical Kimi jobs.
+
+### Next safe action
+- Director opens draft PRs for orphan Kimi branches (coordination only).
+- Owner: export current `nova-rx-preview` Worker source (or fix Cloudflare auth) before any deploy/integration coding.
+- Do **not** assign new Kimi coding until Worker export path exists for sticker modal work; do not restart failed workflows.
+
+### Executed this takeover vs proposed
+- Executed: read HANDOFF/AGENTS; inspected commits/PRs/issues/Actions/agents; live HTTP marker check; confirmed no running Kimi; identified WhatsApp duplicate; Cloudflare MCP skipped after owner error.
+- Proposed/next: draft PRs for Kimi branches; owner Worker export; then Claude/Kimi sticker-modal integration under strict non-overwrite rules; Grok live QA.
+
