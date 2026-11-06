@@ -115,3 +115,31 @@ Results:
 - The receipt × still triggers `startNewSale()` (existing behavior); only its
   clickability/stacking was fixed.
 - Screenshots: not captured; the test provides reproducible evidence (run command above).
+
+---
+
+# 2026-11-06 — Task: WhatsApp inbox UI + safe adapter seam (branch kimi/issue-17-42256861461)
+
+## Defect/feature IDs addressed
+- WA-INBOX-UI (phase-1): navigable واتساب section with conversation list, search, unread/assigned/bot-hold badges, thread view, composer, attachment preview, takeover/resume, loading/empty/error states — mock data only, clearly labeled demo.
+- WA-ADAPTER-SEAM: isolated `MockWhatsAppAdapter` interface (listConversations/getThread/takeover/resume/sendMessage); `sendMessage` rejects with `LIVE_SEND_DISABLED`; documented auth/endpoint gaps (no public read API on the Apps Script bot; WA_TOKEN must stay server-side; no employee authz model).
+
+## Changed files
+- `index.html` — new `واتساب` nav tab, `whatsapp` route, stylesheet+module includes, DOMContentLoaded mount fallback.
+- `whatsapp-inbox.js` (new) — adapter seam, demo fixtures, RTL renderer.
+- `whatsapp-inbox.css` (new) — Black Edition RTL, landscape-first, mobile breakpoint 820px.
+- `tests/unit/whatsapp-inbox.check.mjs` (new) — 7 static check groups.
+- `tests/whatsapp-inbox-smoke.mjs` (new) — 14 browser checks (run via `node tests/whatsapp-inbox-smoke.mjs` with dev server on :7100).
+- `.gitignore` — added `node_modules/` (npm ci artifact for Playwright).
+
+## Tests actually run (this run, 2026-11-06)
+- `node --check whatsapp-inbox.js` — PASS.
+- `node tests/unit/whatsapp-inbox.check.mjs` — PASS (navigation wiring, RTL, Arabic labels, demo labeling, adapter seam, loading/empty/error states, takeover hold state, no-secret patterns, mobile breakpoint).
+- `node tests/whatsapp-inbox-smoke.mjs` (Playwright chromium vs dev-server :7100) — **14/14 PASS**: RTL root, demo banner, 3 demo conversations, search narrows, empty-search state, thread render, unread cleared on open, takeover→hold badge+resume button, demo send appends locally, resume restores bot state, mobile list/thread/back flow.
+- `npm run check` — PASS (sticker-studio + sticker-six static checks unaffected).
+
+## Remaining / limitations
+- No live connection: all data is mock; no outbound messages, no webhook/Meta changes, no secrets in client (verified by secret-pattern assertions).
+- Live integration blockers documented in `whatsapp-inbox.js` header: need read-only inbox endpoint + auth on the Apps Script side before any real bridge.
+- `node_modules/` installed locally to run the smoke test (gitignored, not committed).
+- No commit/push made by this run (per instructions); branch/PR creation left to the workflow.

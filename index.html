@@ -12,6 +12,8 @@
   <meta name="apple-mobile-web-app-title" content="NOVA Rx">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.webmanifest?v=3">
+  <link rel="stylesheet" href="whatsapp-inbox.css?v=1">
+  <script defer src="whatsapp-inbox.js?v=1"></script>
   <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.svg">
   <style>
@@ -1871,7 +1873,7 @@ body *:not(svg):not(svg *){
 </head>
 <body>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
-  <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
+  <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="whatsapp">واتساب</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
   
   </nav><div class="nova-nav-brand" dir="ltr"><span class="nova-brand-name">NOVA <span>Rx</span></span><div class="pharmacy-banner-right"><span class="pharmacy-banner-live" title="متصل" aria-label="حالة الاتصال"><b></b></span><button id="btnRefreshApp" class="nova-refresh-icon" type="button" title="إعادة تحميل الصفحة" aria-label="إعادة تحميل الصفحة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button></div></div></div>
@@ -3428,6 +3430,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div></div>';
  const rows=(items,fn)=>items.map(fn).join('');
  function render(page,filter=''){
+ if(page==='whatsapp'){view.innerHTML='';if(window.NOVA_WHATSAPP)NOVA_WHATSAPP.mount(view);else document.addEventListener('DOMContentLoaded',()=>window.NOVA_WHATSAPP&&NOVA_WHATSAPP.mount(view),{once:true});return}
  const {products,customers}=data();const q=filter.toLowerCase().trim();
  const inv=customers.flatMap(c=>(c.pastInvoices||[]).map(i=>({...i,customer:c.name}))).sort((a,b)=>b.date.localeCompare(a.date));
  const filtered=(arr,keys)=>arr.filter(x=>keys.some(k=>String(x[k]??'').toLowerCase().includes(q)));
@@ -3463,7 +3466,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','whatsapp','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
  switchPage(location.hash.slice(1)||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
