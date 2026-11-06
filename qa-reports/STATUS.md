@@ -78,6 +78,8 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-17 | IN_PROGRESS | kimi_run_started [42256861461](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42256861461) — Add WhatsApp inbox UI and safe existing-bot adapter (issue #17); no UX review |
+| `f3e609bfdf022a22e6047e25484f01a6694a7a2f` | `kimi/issue-16-42254828034-clean` | ISSUE-16 | IN_PROGRESS | pr_missing after ~678s — Kimi pushed branch but no PR; compare [main...kimi/issue-16-42254828034-clean](https://github.com/elsousypharmacy-create/nova-rx/compare/main...kimi/issue-16-42254828034-clean); no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | RUN-42255656392 | IN_PROGRESS | kimi_run_started [42255656392](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42255656392) — workflow_dispatch (issue number not in display title yet); no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-16 | IN_PROGRESS | kimi_run_succeeded [42254828034](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42254828034) — Supplier price comparison prototype (issue #16); work on `kimi/issue-16-42254828034-clean` @ `f3e609bf`; no PR yet; no UX review |
 | `f3e609bfdf022a22e6047e25484f01a6694a7a2f` | `kimi/issue-16-42254828034-clean` | ISSUE-16 | IN_PROGRESS | new_branch (fix: address NOVA Rx issue #16 via Kimi (clean); supplier-compare.html + worker/unit) — no UX review |
