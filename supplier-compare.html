@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مقارنة أسعار الموردين — نموذج تجريبي</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+body{font-family:Cairo,'Segoe UI',Tahoma,sans-serif;background:#0b0d12;color:#e8eaf0;min-height:100vh;padding:24px}
+.wrap{max-width:1100px;margin:auto}
+h1{font-size:1.4rem;font-weight:800}
+.badge{display:inline-block;background:#3a2f0b;color:#f5c542;border:1px solid #6b5714;border-radius:999px;padding:2px 12px;font-size:.75rem;margin:8px 0 20px}
+table{width:100%;border-collapse:collapse;background:#12151d;border-radius:14px;overflow:hidden;font-size:.9rem}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid #1f2430}
+th{background:#181c26;color:#9aa3b5;font-size:.78rem}
+tr.best td{background:#10231a}
+tr.best td:first-child{box-shadow:inset 3px 0 0 #2ecc71}
+.best-tag{color:#2ecc71;font-size:.72rem;font-weight:700}
+.miss{color:#e67e22;font-size:.72rem}
+.pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:18px}
+button{background:#1d2230;color:#e8eaf0;border:1px solid #2c3344;border-radius:10px;padding:8px 18px;font-family:inherit;cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+code{color:#8ab4ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>مقارنة أسعار الموردين</h1>
+  <span class="badge">نموذج تجريبي للقراءة فقط — بيانات تركيبية، بدون أي اتصال أو طلب شراء</span>
+  <table>
+    <thead><tr>
+      <th>المورد</th><th>كود الصنف</th><th>الصنف</th><th>السعر (ج.م)</th>
+      <th>الخصم</th><th>السعر بعد الخصم</th><th>المخزون</th><th>آخر تحديث</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="pager">
+    <button id="prev">السابق</button>
+    <span id="pageInfo"></span>
+    <button id="next">التالي</button>
+  </div>
+</div>
+<script type="module">
+import { SUPPLIER_OFFER_FIXTURES, compareOffers, paginate } from './worker/supplier-price-service.js';
+
+const ranked = compareOffers(SUPPLIER_OFFER_FIXTURES);
+const fmt = new Intl.NumberFormat('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dateFmt = new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium' });
+const rows = document.getElementById('rows');
+const pageInfo = document.getElementById('pageInfo');
+let page = 1;
+const PAGE_SIZE = 4;
+
+function render() {
+  const view = paginate(ranked, page, PAGE_SIZE);
+  page = view.page;
+  rows.innerHTML = view.items.map(o => `
+    <tr class="${o.best ? 'best' : ''}">
+      <td>${o.supplier} ${o.best ? '<span class="best-tag">الأفضل سعرًا</span>' : ''}</td>
+      <td><code>${o.productCode}</code></td>
+      <td>${o.productName}</td>
+      <td>${fmt.format(o.priceEgp)}</td>
+      <td>${o.discountPct}%</td>
+      <td><strong>${fmt.format(o.effectivePriceEgp)}</strong></td>
+      <td>${o.stock === null ? '<span class="miss">غير متوفر</span>' : o.stock === 0 ? '<span class="miss">نفد</span>' : o.stock}</td>
+      <td>${o.timestamp ? dateFmt.format(new Date(o.timestamp)) : '<span class="miss">غير معروف</span>'}</td>
+    </tr>`).join('');
+  pageInfo.textContent = `صفحة ${view.page} من ${view.pages} — ${view.total} عرضًا`;
+  document.getElementById('prev').disabled = view.page <= 1;
+  document.getElementById('next').disabled = view.page >= view.pages;
+}
+document.getElementById('prev').addEventListener('click', () => { page--; render(); });
+document.getElementById('next').addEventListener('click', () => { page++; render(); });
+render();
+</script>
+</body>
+</html>
