@@ -79,6 +79,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `2efda26a60a5279657cdfd89f2d6515f87ec6df2` | `kimi/issue-17-42256861461-clean` | ISSUE-17 | IN_PROGRESS | pr_missing after ~1460s — Kimi pushed branch but no PR; compare [main...kimi/issue-17-42256861461-clean](https://github.com/elsousypharmacy-create/nova-rx/compare/main...kimi/issue-17-42256861461-clean); run [42256861461](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42256861461); no UX review |
 | `2efda26a60a5279657cdfd89f2d6515f87ec6df2` | `kimi/issue-17-42256861461-clean` | ISSUE-17 | IN_PROGRESS | new_branch (fix: address NOVA Rx issue #17 via Kimi (clean); whatsapp-inbox css/js + smoke/unit) — no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-17 | IN_PROGRESS | kimi_run_succeeded [42256861461](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42256861461) — WhatsApp inbox UI (issue #17); work on `kimi/issue-17-42256861461-clean` @ `2efda26a`; no PR yet; no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | RUN-42255656392 | cancelled (transient) | kimi_run_failed [42255656392](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42255656392) — conclusion=cancelled; job exceeded 15m max execution time (Implement issue on isolated branch); infrastructure timeout only — not KIMI_BLOCKED; no UX review; no Ahmed/ChatGPT notify |
@@ -101,6 +102,3 @@
 | `24fd601b3c341b676570b945e26fe757c5e684c8` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (merge PR #15 six-label studio); Playwright failure run [42176392316](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42176392316) (Install Chromium) recorded — no UX review |
 | `7fd8b4df9366ddcbbf85a4dfab2a78b218cbd13b` | `ux/sticker-modal-85pct-20261106` | STICKER-MODAL-85 | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; pw=None) — no UX review; technical side left to ChatGPT/Kimi |
 | `04ce8b484d084834a4c96988867a02d923b05c33` | `kimi/issue-4-42100548728-clean` | ISSUE-4 | — | monitor `pr_missing` after ~5010s; PR [#6](https://github.com/elsousypharmacy-create/nova-rx/pull/6) already MERGED from this branch/SHA at 2026-11-05 23:14 Asia/Riyadh |
-
-
-
