@@ -205,3 +205,13 @@ Documented: 2026-11-06 ~20:30 Asia/Riyadh. Management only; no application-code 
 2. Prefer other Phase-1 work that does not overwrite live sticker UI (e.g. review draft PRs #20/#21, remaining POS UX from #4 only where it does not touch stickers, after confirming no Kimi re-run).
 3. Revisit sticker redesign only after explicit owner go-ahead.
 
+## Owner decision — 2026-11-06 ~20:43 Asia/Riyadh
+**Do not use Grok** (token savings for the Technical Director / Cursor orchestrator). Owner has **Gemini** available for visual/UX review when needed.
+
+### Agent policy update
+- Default coding: Kimi 2 (unchanged).
+- Complex engineering: Claude when justified.
+- Visual UX QA: **Gemini**, not Grok.
+- Do not launch or resume Grok agents for NOVA Rx unless the owner explicitly reverses this.
+- Orchestrator (Cursor Technical Director) remains management-only.
+
