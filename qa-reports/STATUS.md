@@ -69,13 +69,14 @@
 | [42122059687](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42122059687) | `efe4fad` | main | failure | Install Chromium | n/a (no review_ready) |
 | — | `701d87b` | fix/sticker-six-pager-20261106 | — | — | not ready: no Playwright run for this SHA |
 | — | `3ac281e` | fix/sticker-six-pager-20261106 | — | — | not ready: no Playwright run for this SHA |
+| [42167419279](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42167419279) | `b43fff8` | fix/sticker-six-pager-20261106 | failure | Install Chromium | not ready: Playwright failure, run 42167419279 |
 
 
 ## Readiness updates — 2026-11-06 (Asia/Riyadh)
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
-| `b43fff866f0a494979256af78f831475460f9458` | `fix/sticker-six-pager-20261106` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (docs-only: ERP architecture / sticker QA docs) — no UX review |
+| `b43fff866f0a494979256af78f831475460f9458` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: Playwright failure, run 42167419279 (Install Chromium); PR [#15](https://github.com/elsousypharmacy-create/nova-rx/pull/15) opened on this SHA — no UX review; technical side left to ChatGPT/Kimi |
 | `3ac281ef565a40d522fad38c7222a7f4d1070898` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; pw=None) — no UX review; technical side left to ChatGPT/Kimi |
 | `701d87bbf6188dc3c6ec306621db0ec8af0c20e1` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; workflow paths did not trigger smoke) — no UX review; technical side left to ChatGPT/Kimi |
 | `0d2c11b7a537c23cad73e1eb8a7b19f7839025c6` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (sticker controls / print overflow) — no UX review |
