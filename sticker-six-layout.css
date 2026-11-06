@@ -1,23 +1,60 @@
-/* Sticker Studio fixed-size workspace, six labels per view */
-html,body,.app{height:100dvh!important;min-height:0!important;overflow:hidden!important}
-main{height:calc(100dvh - 54px)!important;min-height:0!important;overflow:hidden!important}
-.layout{min-height:0;flex:1;display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:8px}
-.layout>section{min-height:0!important;max-height:100%!important;overflow:hidden!important}
-.layout>.panel>.panel-body{overflow:hidden!important}
-.compact-patient{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-.compact-patient .optional-field{display:flex!important}
+/* NOVA Rx Sticker Studio — consolidated fixed-screen workspace */
+:root{--bg:#090d14;--panel:#111923;--card:#172330;--line:#304256;--line2:#425c77;--blue:#55b6f2;--text:#f4f8ff;--muted:#b2c5d8}
+html,body,.app{height:100dvh;min-height:0;overflow:hidden}
+body{background:radial-gradient(ellipse at 90% -20%,#173452 0,transparent 44%),var(--bg)}
+.app{min-height:0}
+.topbar{height:52px;min-height:52px;padding:5px 14px;position:relative;flex-wrap:nowrap;background:#0d131dcc}
+.brand img{height:36px;width:36px;object-fit:contain;background:#fff;border-radius:10px;padding:4px;box-shadow:0 0 0 1px #d7e6f3}
+.brand-copy strong{font-size:14px}.brand-copy span,.top-actions .pill{display:none}.top-actions{width:auto;flex-wrap:nowrap}
+main{height:calc(100dvh - 52px);min-height:0;overflow:hidden;padding:8px 12px;gap:6px}
+.hero{min-height:28px;align-items:center;gap:8px}.hero h1{font-size:18px}.stepper{gap:5px;flex-wrap:nowrap}.step{padding:3px 8px;font-size:10px}
+.layout{min-height:0;flex:1;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(320px,.95fr) minmax(0,1.05fr);gap:8px;align-items:stretch}
+.layout>section{min-height:0;max-height:100%;overflow:hidden}
+.panel,.preview-shell{border-radius:14px;box-shadow:none}
+.workspace-panel{display:flex;flex-direction:column}
+.panel-head{padding:6px 10px;min-height:38px}.panel-head h2{font-size:13px}.panel-head p{display:none}
+.panel-body{padding:8px;min-height:0}
+.operations-grid{flex:1;display:grid;grid-template-columns:minmax(320px,.8fr) minmax(440px,1.2fr);gap:10px;overflow:hidden}
+.patient-pane,.medications-pane{min-width:0;min-height:0}
+.patient-pane{overflow:auto;scrollbar-width:thin}
+.medications-pane{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;gap:4px 8px}
+.compact-patient{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.field{gap:2px}.field span{font-size:10px}.field input,.field select,.field textarea{padding:5px 7px;border-radius:8px;min-height:31px}
 .age-control{display:flex;gap:4px}.age-control input{width:55%;min-width:0}.age-control select{width:45%;min-width:0}
 .safety-choices{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.safety-choices fieldset{border:1px solid var(--line2);border-radius:9px;padding:3px 7px;display:flex;gap:12px;align-items:center;min-width:0}
-.safety-choices legend{font-size:11px;font-weight:800}.safety-choices label{font-size:11px;white-space:nowrap}
-.med-list{min-height:0!important;flex:1;overflow-x:auto!important;overflow-y:hidden!important}
-.preview-shell{min-height:0!important;display:flex;flex-direction:column;overflow:hidden!important}
-.preview-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px!important;flex:1;min-height:0;overflow:hidden!important;touch-action:pan-y}
-.preview-grid .sticker-preview{width:100%!important;height:100%!important;min-width:0;min-height:0;overflow:hidden;cursor:pointer;box-shadow:none!important}
-.preview-grid .sticker-preview .label-inner{overflow:hidden;padding:5px!important}
-.preview-grid .sticker-preview .med{font-size:11px}.preview-grid .sticker-preview .instruction{font-size:9px}
-.sticker-unselected{opacity:.42;outline:2px dashed #e5a25d}
-.sticker-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:4px;flex:none;font-size:11px}
-.toast{position:fixed;max-height:52px;overflow:hidden}
-@media(max-width:650px){.topbar{height:54px!important}.layout{grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important}.compact-patient{grid-template-columns:repeat(2,minmax(0,1fr))!important}.safety-choices{grid-column:span 2}.hero{display:none}}
-@media print{html,body,.app,main{height:auto!important;overflow:visible!important}}
+.safety-choices fieldset{border:1px solid var(--line2);border-radius:8px;padding:2px 7px;display:flex;gap:12px;align-items:center;min-width:0;margin:0}
+.safety-choices legend{font-size:10px;font-weight:800;padding:0 3px}.safety-choices label{font-size:11px;white-space:nowrap}
+.extras{font-size:10px;color:var(--muted);margin-bottom:5px}.extras summary{cursor:pointer;display:inline-block}.extras:not([open]) .queue{display:none}.extras[open] .queue{max-width:100%;padding-top:5px}
+.med-section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:28px}.med-section-head strong{font-size:12px}
+.med-navigation{display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;min-height:25px}
+.med-list{grid-column:1/-1;display:flex;flex-direction:row;align-items:stretch;min-height:0;gap:8px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;padding:1px 1px 4px}
+.med-card{flex:0 0 100%;width:100%;height:100%;max-height:100%;overflow-y:auto;scrollbar-width:thin;scroll-snap-align:start;padding:6px;gap:3px;border-color:#3b526a;border-radius:12px;background:var(--card)}
+.med-card:focus-within{border-color:var(--blue)}
+.med-card .grid2{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.med-card .field textarea{min-height:36px;max-height:42px;resize:none}.med-card .field input{min-height:29px}
+.med-card .med-top{gap:5px}.med-title strong{font-size:12px}.med-title small{display:none}.med-card .status{font-size:9px;padding:3px 6px}
+.med-card .med-actions{gap:5px;flex-wrap:nowrap}.med-card .missing{gap:4px}.med-card .missing span{font-size:9px;padding:2px 5px}
+.approval{grid-column:1/-1;padding:6px 8px;margin:0;font-size:10px;flex:none;border-radius:9px}.approval input{flex:none}
+.preview-shell{position:relative;top:auto;display:flex;flex-direction:column;gap:5px;padding:8px;min-height:0;overflow:hidden;background:linear-gradient(145deg,#152538,#101820);border:1px solid #30465d}
+.preview-shell>.settings{flex:none;max-height:142px;overflow:auto;scrollbar-width:thin}.preview-shell .settings .panel-body{padding:6px}
+.print-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.print-controls .advanced-print{display:none}
+.preview-shell .settings:has(.advanced-settings[open]) .advanced-print{display:flex}.preview-shell .settings:has(.advanced-settings[open]) .print-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-shell .settings:has(.advanced-settings[open]) .custom-dimension:has(input:disabled){display:none}
+.settings details{border-radius:8px}.settings .advanced-settings{margin-top:5px!important}.settings summary{padding:5px 8px;font-size:11px}.settings .details-body{padding:3px 8px 7px}.check{font-size:10px}
+.preview-toolbar{margin:0;min-height:38px;flex:none}.preview-toolbar strong{font-size:12px}.preview-toolbar .split-note{font-size:9px;margin-top:1px}
+.preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;flex:1;min-height:0;overflow:hidden;touch-action:pan-y}
+.preview-grid .sticker-preview{width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;cursor:pointer;box-shadow:0 3px 12px #0005;transition:opacity .15s,transform .15s}
+.preview-grid .sticker-preview:hover{transform:translateY(-1px)}
+.preview-grid .sticker-preview .label-inner{overflow:hidden;padding:4px}.sticker-preview .label-brand{padding-bottom:1px;margin-bottom:1px;gap:4px;min-height:15px}.sticker-preview .label-brand img{width:14px;height:14px;background:#fff;border-radius:3px}.sticker-preview .label-brand strong{font-size:8px}.sticker-preview .label-brand small,.preview-grid .patient,.preview-grid .warning{display:none}
+.sticker-preview .patient{font-size:8px}.sticker-preview .med{font-size:10px;margin:1px 0}.sticker-preview .instruction{font-size:9px;line-height:1.25;overflow-wrap:anywhere}.sticker-preview .warning{font-size:7px;padding-top:2px}.sticker-preview .review{font-size:7px}
+.sticker-unselected{opacity:.42;outline:2px dashed #e5a25d;outline-offset:-2px}
+.sticker-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:0;min-height:26px;flex:none;font-size:10px}
+.btn{padding:6px 10px;font-size:11px;border-radius:9px}.btn.small{padding:4px 8px;font-size:10px}button{transition:filter .15s,transform .15s}button:hover{filter:brightness(1.13)}button:active{transform:scale(.99)}
+.toast{position:fixed;max-height:30vh;overflow:auto;bottom:12px;right:12px;font-size:12px}
+@media(max-width:900px){.operations-grid{grid-template-columns:minmax(280px,.8fr) minmax(380px,1.2fr)}.stepper{display:none}.med-title small{display:none}}
+@media(max-width:650px){
+  main{padding:6px}.hero{display:none}.layout{grid-template-rows:minmax(0,1fr) minmax(330px,.95fr);gap:6px}
+  .operations-grid{display:block;overflow-y:auto}.patient-pane{overflow:visible}.medications-pane{min-height:265px;margin-top:8px}.compact-patient{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .med-card .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.med-card{height:auto;min-height:220px}.med-list{overflow-y:hidden}.preview-toolbar{flex-wrap:nowrap}.preview-toolbar .split-note{display:none}
+  .btn,.btn.small{min-height:40px}.sticker-pager{min-height:40px}.med-navigation{min-height:40px}.med-section-head{min-height:40px}.preview-grid{gap:4px}.preview-shell{padding:6px}.preview-shell>.settings{max-height:132px}
+}
+@media(prefers-reduced-motion:reduce){button,.preview-grid .sticker-preview{transition:none}}
+@media print{html,body,.app,main{height:auto;overflow:visible}.brand img{box-shadow:none}.sticker-preview{box-shadow:none}}
