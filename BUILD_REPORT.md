@@ -1,5 +1,50 @@
 # BUILD_REPORT — NOVA Rx
 
+## Sale sticker modal premium upgrade (2026-11-06): STICKER-MODAL-PREMIUM — done
+
+- Task (`/tmp/kimi-task.txt`): make the sale-screen sticker modal «استيكرات
+  الأدوية» inside `/#sale` match the premium `sticker-studio.html` layout.
+  No third page; standalone studio untouched; `NOVA_STICKER_MODAL_PREMIUM_V95`
+  not revived.
+- Changed files:
+  - `index.html`: replaced the old `#novaLabelsPanel` markup/styles/script
+    (lines ~3647–EOF) with the studio layout scoped to the modal — stepper,
+    compact patient card (age سنة/شهر segment with month→year hint, weight,
+    explicit حامل؟/رضاعة؟ radios), med tabs with ONE visible medicine editor,
+    large hero preview + selectable thumbnail grid + pager, print settings in a
+    collapsed `<details>`, fixed action bar with pharmacist-approval gate and
+    طباعة المحدد/الكل. Invoice queue (`nova.label.invoices.v1`) and the
+    `nova:invoice-completed` auto-open flow preserved; panel still closes on
+    `startNewSale()` (Issue #4 batch-1 fix kept). AI regenerate still calls
+    `/api/ai/medication-label`; AI errors/warnings shown as compact chips.
+  - `tests/sale-sticker-modal.mjs` (new): Playwright/Chromium desktop run.
+  - `reports/sale-sticker-modal.png`: desktop screenshot evidence.
+- Acceptance criteria: 1 opens from sale invoice flow (dispatched
+  `nova:invoice-completed` opens modal + queues invoice) PASS; 2 compact
+  patient block with years/months + pregnancy/breastfeeding PASS; 3 tabs with
+  exactly one visible editor, large preview, click-to-select prints PASS;
+  4 compact AI status/warning chips, settings collapsed by default PASS;
+  5 geometry asserts: sheet fits 1280×860, stage inside sheet above action
+  bar, no horizontal clipping PASS; 6 browser verification below.
+- Tests actually run:
+  - `node tests/sale-sticker-modal.mjs` — **21/21 PASS** (modal opens from
+    invoice flow, queue, age-months hint, safety gate, approval gate, single
+    active editor + tab switch, hero preview, selection toggle, settings
+    collapsed/expand, incomplete-med print block, approved print passes to
+    popup, viewport/RTL/Escape/zero-pageerror checks).
+  - `npm run check` — PASS (sticker-studio + sticker-six static checks, no
+    regression; standalone studio untouched).
+  - Print-then-pay and pharmacist approval preserved: print is blocked until
+    safety answers + approval + complete meds (verified in test).
+- Not tested: tablet, mobile hand-held, real printer hardware, live AI Worker
+  responses (fetch path exercised only against the dev server, where the
+  endpoint is absent — error chip path), live Worker deploy.
+- Note: `npm install` was run to get `@playwright/test`; `node_modules/` is a
+  local side effect, not part of the change.
+- Remaining IDs: none from this task. Issue #4 queue unchanged (P1:
+  UX-MIXED-LANG, UX-LANG-SWITCH-WEAK, UX-FAB-OVERLAP-mobile; P2/P3 as listed
+  in KIMI_CONTEXT.md).
+
 ## Issue #4 (batch 1, 2026-11-05): UX-LABELS-PANEL-BLOCKS-NEXT-SALE — fixed
 
 - Cause: every completed payment dispatches `nova:invoice-completed`, which
