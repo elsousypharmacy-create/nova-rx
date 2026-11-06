@@ -78,6 +78,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `693cb97dab1f998b2e7482eed11965ad87f3b336` | `main` | STICKER-MODAL-85 | IN_PROGRESS | new_commit without review_ready (style: studio workspace 85% width on large screens) — no UX review |
 | `5a46020260b3c1007e5594c1658a8bfdc98c862e` | `ux/sticker-modal-85pct-20261106` | STICKER-MODAL-85 | IN_PROGRESS | new_commit without review_ready (docs: HANDOFF.md checkpoint sticker dialog 85% viewport) — no UX review |
 | `b43fff866f0a494979256af78f831475460f9458` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: Playwright failure, run 42167419279 (Install Chromium); PR [#15](https://github.com/elsousypharmacy-create/nova-rx/pull/15) opened on this SHA — no UX review; technical side left to ChatGPT/Kimi |
 | `3ac281ef565a40d522fad38c7222a7f4d1070898` | `fix/sticker-six-pager-20261106` | STICKER-SIX | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; pw=None) — no UX review; technical side left to ChatGPT/Kimi |
@@ -86,4 +87,5 @@
 | `24fd601b3c341b676570b945e26fe757c5e684c8` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (merge PR #15 six-label studio); Playwright failure run [42176392316](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42176392316) (Install Chromium) recorded — no UX review |
 | `7fd8b4df9366ddcbbf85a4dfab2a78b218cbd13b` | `ux/sticker-modal-85pct-20261106` | STICKER-MODAL-85 | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; pw=None) — no UX review; technical side left to ChatGPT/Kimi |
 | `04ce8b484d084834a4c96988867a02d923b05c33` | `kimi/issue-4-42100548728-clean` | ISSUE-4 | — | monitor `pr_missing` after ~5010s; PR [#6](https://github.com/elsousypharmacy-create/nova-rx/pull/6) already MERGED from this branch/SHA at 2026-11-05 23:14 Asia/Riyadh |
+
 
