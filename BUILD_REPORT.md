@@ -115,3 +115,25 @@ Results:
 - The receipt × still triggers `startNewSale()` (existing behavior); only its
   clickability/stacking was fixed.
 - Screenshots: not captured; the test provides reproducible evidence (run command above).
+
+---
+
+## 2026-11-06 — Supplier price comparison prototype (synthetic, read-only)
+
+**Task:** Isolated supplier price comparison prototype with mock data only (task file `/tmp/kimi-task.txt`). No live APIs, auth, cart, DB, POS UI changes, or deployment.
+
+**Changed files:**
+- `worker/supplier-price-service.js` — 10 frozen synthetic fixtures; `normalizeOffer` (coerces string prices, clamps discount 0–100%, flags missing fields instead of guessing); `compareOffers` (deterministic: effective-price asc, supplier asc, product-code asc, index tie-break; per-product `best` flag); `paginate` (1-based, clamped, no phantom pages).
+- `supplier-compare.html` — standalone read-only RTL Arabic page rendering the ranked comparison with pagination; imports the shared module; no fetch, no storage writes, no cart actions.
+- `tests/unit/supplier-price.check.mjs` — deterministic checks.
+
+**Tests actually run (this environment):**
+- `node tests/unit/supplier-price.check.mjs` — PASS. Covers: exactly 10 fixtures; normalization of all fields incl. string-price coercion; missing price/stock/timestamp flagged in `missing`; discount clamping and effective-price math (17.48 / 29.61 / 21.83 winners verified); determinism under reversed input order; one `best` per product code; pagination 10 items @3 → 4 pages, remainder page, clamping of page 0/99/non-numeric, empty list, pageSize floor.
+- `node --check worker/supplier-price-service.js` — PASS.
+- Inline module script of `supplier-compare.html` extracted and `node --check` — PASS.
+- Regression: `node tests/unit/gemini-label-service.check.mjs`, `sticker-studio.check.mjs`, `sticker-six.check.mjs` — all PASS.
+
+**Remaining / limitations:**
+- Prototype only; live supplier integrations require separate permission and secure access review per task instructions.
+- Browser rendering of `supplier-compare.html` not exercised (no browser run in this session); logic is fully covered by Node checks.
+- Not committed/pushed and no PR created from this environment per run constraints; dedicated PR to be opened by the orchestrating workflow.
