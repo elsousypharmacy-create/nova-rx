@@ -67,12 +67,12 @@ export async function handleWhatsAppApi(request, env) {
   } catch (_) { return json({ok:false,error:"unauthorized"},401); }
   if (!["GET","POST"].includes(request.method)) return json({ok:false,error:"method not allowed"},405);
   const tail = url.pathname.slice("/api/whatsapp/".length);
-  if (!/^chats(?:\/[A-Za-z0-9_-]{1,100}(?:\/(?:reply|hold))?)?$/.test(tail))
+  if (!/^chats(?:\/[A-Za-z0-9_.-]{1,100}(?:\/(?:reply|hold))?)?$/.test(tail))
     return json({ok:false,error:"invalid path"},400);
   const isWrite = request.method === "POST";
-  if (isWrite && !/^chats\/[A-Za-z0-9_-]{1,100}\/(?:reply|hold)$/.test(tail))
+  if (isWrite && !/^chats\/[A-Za-z0-9_.-]{1,100}\/(?:reply|hold)$/.test(tail))
     return json({ok:false,error:"invalid action"},405);
-  if (!isWrite && !/^chats(?:\/[A-Za-z0-9_-]{1,100})?$/.test(tail))
+  if (!isWrite && !/^chats(?:\/[A-Za-z0-9_.-]{1,100})?$/.test(tail))
     return json({ok:false,error:"invalid action"},405);
   let body;
   if (isWrite) {
@@ -86,7 +86,7 @@ export async function handleWhatsAppApi(request, env) {
   }
   // Apps Script Web App endpoint. Its ContentService responds with a Google redirect.
   const backend = new URL(env.WA_BACKEND_URL);
-  if (backend.hostname !== "script.google.com" || !/^\\/macros\\/s\\/[A-Za-z0-9_-]+\\/exec$/.test(backend.pathname))
+  if (backend.hostname !== "script.google.com" || !/^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(backend.pathname))
     return json({ok:false,error:"backend misconfigured"},503);
   const segments = tail.split("/");
   const operation = segments.length === 1 ? "list" : segments.length === 2 ? "get" : segments[2];
