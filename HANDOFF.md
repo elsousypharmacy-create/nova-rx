@@ -191,3 +191,17 @@ Documented: 2026-11-06 ~20:30 Asia/Riyadh. Management only; no application-code 
 - Cloudflare MCP skipped after owner reported Cloudflare auth error; live markers still verified via HTTP.
 - Owner action still required: export `nova-rx-preview` Worker source (dashboard download) before sticker-modal integration coding; remove `kimi-run-now` from #16/#17/#4 to prevent accidental re-spend.
 
+## Owner decision — 2026-11-06 ~20:38 Asia/Riyadh (Cursor Technical Director)
+**Stick with the current/live sticker design. Defer sticker redesign/Claude Sticker Studio POS-modal integration.**
+
+### Meaning
+- Do **not** assign agents to replace or redesign the live POS invoice sticker modal (`/#sale`) with the Claude `sticker-studio.html` layout for now.
+- Preserve the existing live sticker/labels behavior (`novaStickerApprovedLayoutV2` on Worker). Treat `sticker-studio.html` / Claude redesign as **later Phase-1 polish**, not current P0.
+- Related open issues (#8, #9, #12, #13, #14) stay open but are **deprioritized** until the owner reopens sticker UX work.
+- Cloudflare↔GitHub sync remains a release safety concern, but sticker UI replacement is no longer the immediate coding target.
+
+### Updated next safe action
+1. Keep stickers as-is on live preview.
+2. Prefer other Phase-1 work that does not overwrite live sticker UI (e.g. review draft PRs #20/#21, remaining POS UX from #4 only where it does not touch stickers, after confirming no Kimi re-run).
+3. Revisit sticker redesign only after explicit owner go-ahead.
+
