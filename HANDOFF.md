@@ -176,3 +176,8 @@ Branch: `chore/sale-sticker-modal-clean` (draft PR #29). No merge. No deploy. Sc
 
 ### Next exact step
 Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed review; no merge/deploy.
+
+### CI confirmation — 2026-11-06
+- Commit `6f28bdd` on `chore/sale-sticker-modal-clean`: Playwright POS smoke **SUCCESS** on ubuntu-24.04.
+- Run: https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42312203852
+- PR #29 remains **draft**. Not merged. Not deployed. Not marked ready-to-merge.
