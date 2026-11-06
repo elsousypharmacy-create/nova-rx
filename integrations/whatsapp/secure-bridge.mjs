@@ -55,7 +55,6 @@ async function verifyAccess(jwt, domain, audience) {
  * verify chat ownership and WhatsApp 24-hour messaging rules, and audit writes.
  */
 export async function handleWhatsAppApi(request, env) {
-  const origin = new URL(request.url).origin;
   const url = new URL(request.url);
   if (!url.pathname.startsWith("/api/whatsapp/")) return json({ok:false,error:"not found"},404);
   if (!env.WA_ACCESS_TEAM_DOMAIN || !env.WA_ACCESS_AUD || !env.WA_BACKEND_URL || !env.WA_BACKEND_TOKEN)
@@ -85,25 +84,25 @@ export async function handleWhatsAppApi(request, env) {
     if (tail.endsWith("/hold") && typeof body.hold !== "boolean")
       return json({ok:false,error:"invalid hold value"},400);
   }
+  // Apps Script Web App endpoint. Its ContentService responds with a Google redirect.
   const backend = new URL(env.WA_BACKEND_URL);
-  if (backend.protocol !== "https:") return json({ok:false,error:"backend misconfigured"},503);
-  backend.pathname = backend.pathname.replace(/\/$/,"") + "/" + tail;
-  if (!isWrite) backend.searchParams.set("channel","whatsapp");
+  if (backend.hostname !== "script.google.com" || !/^\\/macros\\/s\\/[A-Za-z0-9_-]+\\/exec$/.test(backend.pathname))
+    return json({ok:false,error:"backend misconfigured"},503);
+  const segments = tail.split("/");
+  const operation = segments.length === 1 ? "list" : segments.length === 2 ? "get" : segments[2];
+  const chatId = segments[1] || "";
+  const payload = { action:"novaWhatsAppBridge", bridgeToken:env.WA_BACKEND_TOKEN, operation, chatId };
+  if (isWrite) Object.assign(payload, body);
   try {
     const upstream = await fetch(backend.toString(), {
-      method: request.method,
-      headers: {
-        "Authorization": "Bearer " + env.WA_BACKEND_TOKEN,
-        "Content-Type": "application/json",
-        "X-Nova-User": user.email,
-        "X-Nova-Subject": user.sub
-      },
-      body: isWrite ? JSON.stringify(body) : undefined,
-      redirect: "error",
-      signal: AbortSignal.timeout(12000)
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+      redirect:"follow",
+      signal:AbortSignal.timeout(12000)
     });
-    if (!upstream.ok) return json({ok:false,error:"backend unavailable"},upstream.status === 401 || upstream.status === 403 ? 403 : 502);
-    const payload = await upstream.json();
-    return json(payload);
+    if (!upstream.ok) return json({ok:false,error:"backend unavailable"},502);
+    const result = await upstream.json();
+    return json(result);
   } catch (_) { return json({ok:false,error:"connection failed"},502); }
 }
