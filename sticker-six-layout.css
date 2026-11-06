@@ -65,3 +65,26 @@ main{height:calc(100dvh - 52px);min-height:0;overflow:hidden;padding:8px 12px;ga
   .operations-grid{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
 }
 @media screen and (max-width:900px){main{width:100%;max-width:none}}
+
+/* Compact unified sticker workspace: patient information above six previews. */
+@media screen and (min-width:901px){
+  .layout{grid-template-rows:minmax(0,.85fr) minmax(0,1.15fr);gap:7px}
+  .operations-grid{display:flex;flex-direction:column;gap:5px;overflow:hidden}
+  .patient-pane{flex:none;overflow:visible}
+  .compact-patient{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .safety-choices{grid-column:span 2}
+  .medications-pane{flex:1;min-height:0}
+  .med-card{overflow-y:hidden}
+  .med-card .field textarea{min-height:32px;max-height:36px}
+  .panel-head{padding:5px 9px}
+  .preview-shell>.settings{max-height:104px}
+  .preview-grid{gap:5px}
+}
+@media screen and (max-width:900px) and (min-width:651px){
+  .operations-grid{display:flex;flex-direction:column;gap:6px}
+  .patient-pane{flex:none;overflow:visible}
+  .compact-patient{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .safety-choices{grid-column:span 2}
+  .medications-pane{flex:1;min-height:0}
+  .med-card{overflow-y:hidden}
+}
