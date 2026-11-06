@@ -79,6 +79,8 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `2efda26a60a5279657cdfd89f2d6515f87ec6df2` | `kimi/issue-17-42256861461-clean` | ISSUE-17 | IN_PROGRESS | new_branch (fix: address NOVA Rx issue #17 via Kimi (clean); whatsapp-inbox css/js + smoke/unit) — no UX review |
+| `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-17 | IN_PROGRESS | kimi_run_succeeded [42256861461](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42256861461) — WhatsApp inbox UI (issue #17); work on `kimi/issue-17-42256861461-clean` @ `2efda26a`; no PR yet; no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | RUN-42255656392 | cancelled (transient) | kimi_run_failed [42255656392](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42255656392) — conclusion=cancelled; job exceeded 15m max execution time (Implement issue on isolated branch); infrastructure timeout only — not KIMI_BLOCKED; no UX review; no Ahmed/ChatGPT notify |
 | `f743a0d5bccc47008ab877beac0d4fb930e204dd` | `feat/whatsapp-inbox-chatgpt-20261106` | ISSUE-17 | not ready | review_ready + [PR #18](https://github.com/elsousypharmacy-create/nova-rx/pull/18) @ `f743a0d5`; not ready: no Playwright run/success (pw=None); ChatGPT WhatsApp RTL inbox demo (`whatsapp-inbox.html`) related #17 — no UX review; technical side left to ChatGPT/Kimi |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-17 | IN_PROGRESS | kimi_run_started [42256861461](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42256861461) — Add WhatsApp inbox UI and safe existing-bot adapter (issue #17); no UX review |
