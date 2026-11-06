@@ -2475,14 +2475,19 @@ body *:not(svg):not(svg *){
           elements.modePillText.textContent = "Customer Search Mode";
           elements.searchModeTag.className = "search-mode-tag customer";
           elements.searchModeTag.textContent = "Customer";
-          elements.mainSearchInput.placeholder = "Search customer by name or phone... (Press Enter to skip)";
+          const customerPh = "Search customer by name or phone... (Press Enter to skip)";
+          elements.mainSearchInput.placeholder = customerPh;
+          // Keep i18n cache in sync so MutationObserver apply() does not restore the previous mode's placeholder.
+          elements.mainSearchInput.dataset.novaOriginalplaceholder = customerPh;
           elements.searchHintText.textContent = "Enter: Select / Skip";
         } else {
           elements.modePill.className = "status-pill product-mode";
           elements.modePillText.textContent = "Product / Barcode Scan Mode";
           elements.searchModeTag.className = "search-mode-tag product";
           elements.searchModeTag.textContent = "Product";
-          elements.mainSearchInput.placeholder = "Scan barcode or type medicine name...";
+          const productPh = "Scan barcode or type medicine name...";
+          elements.mainSearchInput.placeholder = productPh;
+          elements.mainSearchInput.dataset.novaOriginalplaceholder = productPh;
           elements.searchHintText.textContent = "Enter: Add Item";
         }
         closeSuggestions();
@@ -3557,6 +3562,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
     if(original===undefined){original=el.getAttribute(attr);el.dataset[key]=original}
     const extra={
       'Search customer by name or phone... (Press Enter to skip)':lang==='ar'?'ابحث باسم العميل أو رقمه... (Enter للتخطي)':'Search customer by name or phone... (Enter to skip)',
+      'Scan barcode or type medicine name...':lang==='ar'?'امسح الباركود أو اكتب اسم الدواء...':'Scan barcode or type medicine name...',
       'Search product name or scan barcode...':lang==='ar'?'ابحث عن دواء أو امسح الباركود...':'Search product name or scan barcode...',
       'بحث بالاسم أو الرقم أو الباركود':lang==='en'?'Search by name, number, or barcode':'بحث بالاسم أو الرقم أو الباركود',
       'تحديث التطبيق':lang==='en'?'Refresh app':'تحديث التطبيق',
@@ -3777,14 +3783,16 @@ $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر 
 @media(max-width:900px){
   #novaLabelsPanel .labels-sheet{height:98dvh}
   #novaLabelsPanel .layout{display:flex;flex-direction:column;padding:12px;gap:12px;overflow-y:auto}
-  #novaLabelsPanel .editor-col,#novaLabelsPanel .preview-col,#novaLabelsPanel .preview-panel{overflow:visible}
-  #novaLabelsPanel .preview-panel{flex:none}
+  /* Content-size stacked columns so editor med-tabbar does not spill over preview and steal clicks */
+  #novaLabelsPanel .editor-col,#novaLabelsPanel .preview-col{flex:none;min-height:auto;overflow:visible}
+  #novaLabelsPanel .preview-panel{flex:none;overflow:visible;min-height:0}
   #novaLabelsPanel .stage{flex:none;height:clamp(200px,46vw,340px)}
   #novaLabelsPanel .stepper{display:none}
-  #novaLabelsPanel .action-bar{flex-wrap:wrap;gap:8px;padding:8px 12px}
-  #novaLabelsPanel .approval{flex:1 1 100%;font-size:12px}
-  #novaLabelsPanel .print-actions{flex:1 1 100%}
-  #novaLabelsPanel .print-actions .btn{flex:1}
+  #novaLabelsPanel .action-bar{flex-wrap:wrap;gap:8px;padding:8px 12px;min-width:0}
+  #novaLabelsPanel .approval{flex:1 1 100%;font-size:12px;min-width:0}
+  #novaLabelsPanel .print-actions{flex:1 1 100%;flex-wrap:wrap;max-width:100%;min-width:0;width:100%;box-sizing:border-box}
+  #novaLabelsPanel .print-actions .btn{flex:1 1 calc(50% - 5px);min-width:0}
+  #novaLabelsPanel .copies{flex:1 1 100%}
   #novaLabelsPanel .patient-grid,#novaLabelsPanel .med-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
   #novaLabelsPanel .nl-print-settings .drawer-grid{grid-template-columns:1fr}
 }

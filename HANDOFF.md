@@ -146,3 +146,33 @@ Create a dedicated branch and PR containing the standalone sticker studio, tests
 - Verification: static checks pass (`node tests/unit/*.check.mjs`, syntax check). Ran a Python-Playwright port of the browser checks in headless Chrome (65 checks: pager, selection, approval revoke, print popups, AI mock/stale guard, tabs, age toggle, drawer, no horizontal overflow, bar visible at 1024x768, 1180x820, 1366x768, 1440x900, 834x1112, 390x844): 64 pass; the 1 "fail" is the console 500 from the test's own mocked AI error. The repo's Node `tests/sticker-studio-browser.mjs` was NOT run (no node_modules/network here). Cairo font and the logo URL were blocked in the sandbox, so real typography/logo not verified.
 - Known open item (needs owner decision, not changed): preview font metrics mirror the print window rules, but at small presets (e.g. 40x30/50x30) complete text may still be clipped by the print window's own clip check; verify on the real printer. Not deployed to Cloudflare; GitHub push does not imply deployment.
 - Next exact step: owner opens the Worker after deploy, sends phone/tablet screenshots; fix anything visual found there.
+
+## Cursor worker checkpoint — 2026-11-06 PR #29 sale sticker follow-through
+
+Branch: `chore/sale-sticker-modal-clean` (draft PR #29). No merge. No deploy. Screenshots skipped per Ahmed.
+
+### Fixes pushed on this checkpoint
+- `.github/workflows/playwright-smoke.yml`: pin `runs-on: ubuntu-24.04` (Playwright 1.58.2 cannot install Chromium deps on ubuntu26.04-x64 from `ubuntu-latest`).
+- `tests/nova-pos-smoke.spec.cjs`: force `nova-rx-language=en` so English placeholder assertions do not flake under Arabic default.
+- `index.html`: sync `dataset.novaOriginalplaceholder` in `setSearchMode`; Arabic map for product placeholder; mobile ≤900px stacked columns content-sized (stop editor spill overlapping preview clicks); wrap/clamp action-bar print actions to stop horizontal overflow.
+- `tests/sale-sticker-modal.mjs`: extended desktop + tablet-landscape (1180×820) + mobile (390×844) checks and print-gate path (`window.open` → popup toast).
+
+### Verification (local, this session)
+- `CHROME_PATH=/usr/bin/google-chrome node tests/sale-sticker-modal.mjs` — PASS (desktop / tablet-landscape / mobile).
+- `npx playwright test tests/nova-pos-smoke.spec.cjs` — PASS locally after fixes.
+- CI status after push must be re-checked on GitHub Actions; do not claim green until the new run completes.
+
+### Viewport / print honesty
+- Desktop: PASS
+- Tablet landscape: PASS
+- Mobile: PASS (after mobile CSS fixes)
+- Print path: PASS through validation + popup-blocked toast only. Real `window.print` / OS print preview / physical printer: NOT TESTED.
+- Live Gemini AI warnings content: NOT TESTED (no API exercise here).
+
+### Remaining UX notes
+- Small sticker presets can still clip long instruction text in the print window (pre-existing).
+- Cairo/logo fidelity and real-device touch QA still need owner/device confirmation after any future deploy.
+- Do not mark PR ready until CI smoke is green on the latest push.
+
+### Next exact step
+Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed review; no merge/deploy.

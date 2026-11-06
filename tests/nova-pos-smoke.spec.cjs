@@ -1,6 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
 test('blank customer search switches to product search', async ({ page }) => {
+  // Smoke assertions are English; force EN so Arabic default UI does not flake CI.
+  await page.addInitScript(() => localStorage.setItem('nova-rx-language', 'en'));
   await page.goto('http://127.0.0.1:8765/');
   await expect(page).toHaveTitle(/NOVA Rx/);
   const search = page.locator('#mainSearchInput');
