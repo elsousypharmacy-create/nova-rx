@@ -131,3 +131,10 @@ Create a dedicated branch and PR containing the standalone sticker studio, tests
 - Integrated `sticker-studio.html` directly on feature branch at commit `6098f85`: age unit, mandatory pregnancy/breastfeeding yes/no, 6-per-page preview, pager/swipe, label selection and print gate. CSS lives in `sticker-six-layout.css`.
 - Disabled automatic patch reapplication in workflow at `bc491b0` to avoid overwriting integrated HTML.
 - Pull request creation failed internally. No independent browser/print tests confirmed, no merge and NO Cloudflare deployment. Next: run browser tests and reconcile with live Worker source, then open PR/merge/deploy.
+
+## 2026-11-06 — Sticker modal viewport sizing (scoped UX patch)
+- Owner asked to enlarge the existing POS sticker modal to approximately 80–85% of the screen, retaining the old POS/sticker workflow.
+- Branch: `ux/sticker-modal-85pct-20261106`; changed `index.html` CSS for `#novaLabelsPanel .labels-sheet`: width 85vw, height/max-height 85dvh, removed desktop max-width. No JS, POS flow, AI or print logic changed.
+- Commit: `7fd8b4df9366ddcbbf85a4dfab2a78b218cbd13b`.
+- Evidence: source-level CSS verification only; real-browser responsive and Cloudflare deployed checks not yet completed. Not merged or deployed; do not claim user-facing release.
+- Next: PR review, browser sizing QA on desktop/mobile, then merge/deploy through approved workflow.
