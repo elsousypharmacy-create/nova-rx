@@ -58,3 +58,10 @@ main{height:calc(100dvh - 52px);min-height:0;overflow:hidden;padding:8px 12px;ga
 }
 @media(prefers-reduced-motion:reduce){button,.preview-grid .sticker-preview{transition:none}}
 @media print{html,body,.app,main{height:auto;overflow:visible}.brand img{box-shadow:none}.sticker-preview{box-shadow:none}}
+
+/* Sticker Studio workspace: 85% viewport width on tablet/desktop; full width on phones. */
+@media screen and (min-width: 901px){
+  main{width:85%;max-width:none;margin-inline:auto;min-width:0}
+  .operations-grid{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
+}
+@media screen and (max-width:900px){main{width:100%;max-width:none}}
