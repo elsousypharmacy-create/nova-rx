@@ -72,12 +72,14 @@
 | [42167419279](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42167419279) | `b43fff8` | fix/sticker-six-pager-20261106 | failure | Install Chromium | not ready: Playwright failure, run 42167419279 |
 | [42176392316](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42176392316) | `24fd601` | main | failure | Install Chromium | n/a (no review_ready) |
 | — | `7fd8b4d` | ux/sticker-modal-85pct-20261106 | — | — | not ready: no Playwright run for this SHA |
+| — | `f743a0d` | feat/whatsapp-inbox-chatgpt-20261106 | — | — | not ready: no Playwright run for this SHA |
 
 
 ## Readiness updates — 2026-11-06 (Asia/Riyadh)
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `f743a0d5bccc47008ab877beac0d4fb930e204dd` | `feat/whatsapp-inbox-chatgpt-20261106` | ISSUE-17 | not ready | review_ready + [PR #18](https://github.com/elsousypharmacy-create/nova-rx/pull/18) @ `f743a0d5`; not ready: no Playwright run/success (pw=None); ChatGPT WhatsApp RTL inbox demo (`whatsapp-inbox.html`) related #17 — no UX review; technical side left to ChatGPT/Kimi |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-17 | IN_PROGRESS | kimi_run_started [42256861461](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42256861461) — Add WhatsApp inbox UI and safe existing-bot adapter (issue #17); no UX review |
 | `f3e609bfdf022a22e6047e25484f01a6694a7a2f` | `kimi/issue-16-42254828034-clean` | ISSUE-16 | IN_PROGRESS | pr_missing after ~678s — Kimi pushed branch but no PR; compare [main...kimi/issue-16-42254828034-clean](https://github.com/elsousypharmacy-create/nova-rx/compare/main...kimi/issue-16-42254828034-clean); no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | RUN-42255656392 | IN_PROGRESS | kimi_run_started [42255656392](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42255656392) — workflow_dispatch (issue number not in display title yet); no UX review |
