@@ -78,6 +78,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | RUN-42255656392 | IN_PROGRESS | kimi_run_started [42255656392](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42255656392) — workflow_dispatch (issue number not in display title yet); no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-16 | IN_PROGRESS | kimi_run_succeeded [42254828034](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42254828034) — Supplier price comparison prototype (issue #16); work on `kimi/issue-16-42254828034-clean` @ `f3e609bf`; no PR yet; no UX review |
 | `f3e609bfdf022a22e6047e25484f01a6694a7a2f` | `kimi/issue-16-42254828034-clean` | ISSUE-16 | IN_PROGRESS | new_branch (fix: address NOVA Rx issue #16 via Kimi (clean); supplier-compare.html + worker/unit) — no UX review |
 | `e3d9a169a196fe3a3a210e479fd4e9089346cf27` | `main` | ISSUE-16 | IN_PROGRESS | kimi_run_started [42254828034](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42254828034) — Supplier price comparison prototype using mock data (issue #16); no UX review |
@@ -93,5 +94,6 @@
 | `24fd601b3c341b676570b945e26fe757c5e684c8` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (merge PR #15 six-label studio); Playwright failure run [42176392316](https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42176392316) (Install Chromium) recorded — no UX review |
 | `7fd8b4df9366ddcbbf85a4dfab2a78b218cbd13b` | `ux/sticker-modal-85pct-20261106` | STICKER-MODAL-85 | not ready | not ready: no successful Playwright run for this SHA (review_ready emitted without playwright_conclusion; pw=None) — no UX review; technical side left to ChatGPT/Kimi |
 | `04ce8b484d084834a4c96988867a02d923b05c33` | `kimi/issue-4-42100548728-clean` | ISSUE-4 | — | monitor `pr_missing` after ~5010s; PR [#6](https://github.com/elsousypharmacy-create/nova-rx/pull/6) already MERGED from this branch/SHA at 2026-11-05 23:14 Asia/Riyadh |
+
 
 
