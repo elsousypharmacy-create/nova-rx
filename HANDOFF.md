@@ -185,7 +185,9 @@ Documented: 2026-11-06 ~20:30 Asia/Riyadh. Management only; no application-code 
 - Proposed/next: draft PRs for Kimi branches; owner Worker export; then Claude/Kimi sticker-modal integration under strict non-overwrite rules; Grok live QA.
 
 ### Coordination follow-ups executed
-- Management PR opened: #19 (`cursor/mgmt-takeover-checkpoint-4a02`, commit `aa4f423`).
-- Mirror review branches pushed for orphan Kimi work: `cursor/kimi-issue-17-whatsapp-4a02` ← `kimi/issue-17-42256861461-clean`; `cursor/kimi-issue-16-supplier-4a02` ← `kimi/issue-16-42254828034-clean` (draft PRs pending).
-- Cloudflare MCP not used after owner reported Cloudflare auth error.
+- Management PR: #19 (`cursor/mgmt-takeover-checkpoint-4a02`, latest commit `2b706d6`).
+- Draft review PR #20: WhatsApp Kimi #17 mirror `cursor/kimi-issue-17-whatsapp-4a02`.
+- Draft review PR #21: Supplier Kimi #16 mirror `cursor/kimi-issue-16-supplier-4a02`.
+- Cloudflare MCP skipped after owner reported Cloudflare auth error; live markers still verified via HTTP.
+- Owner action still required: export `nova-rx-preview` Worker source (dashboard download) before sticker-modal integration coding; remove `kimi-run-now` from #16/#17/#4 to prevent accidental re-spend.
 
