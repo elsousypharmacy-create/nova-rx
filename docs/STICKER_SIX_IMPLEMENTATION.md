@@ -1,14 +1,22 @@
-# Sticker Studio — approved six-sticker single-screen update
+# Sticker Studio — six-sticker single-screen update
 
-Status: CSS implementation committed on this branch, integration into the standalone HTML and live Worker pending. Do not describe as deployed.
+Status: implemented and locally verified on `fix/sticker-six-pager-20261106`; not merged or deployed.
 
-Integrate `sticker-six-layout.css` after the existing styles in `sticker-studio.html`, without replacing the newer Cloudflare Worker.
+## Implemented
 
-Required JS/HTML changes:
-- Age defaults to 6 years, editable units years/months; weight remains optional.
-- Two required radio groups pregnancy YES/NO and breastfeeding YES/NO, neither preselected; persist both with the draft and clear both on reset. Explicitly gate print on both answers and pharmacist approval.
-- AI patient payload must use explicit pregnancy/breastfeeding values; do not infer from old patientSafety dropdown. Do not treat unanswered as NO.
-- Render only `medications.slice(page*6,page*6+6)` in preview; use 3x2 CSS grid, pager controls and touch swipe RTL, clamp page after deletion. Sticker click toggles selected state, with keyboard access; selected-only print respects selected flags.
-- Keep draft medication edits, per-drug retry and print dimensions intact. Messages must not resize viewport.
-- Test 1/6/7/12 drugs, mobile/tablet landscape, refresh persistence, print safety gates, failed AI, selecting labels and pagination.
-- Read HANDOFF.md and record tests, commit and deployment evidence before closing issue #14.
+- Fixed viewport workspace with patient and medication tools above a six-label preview.
+- Age defaults to six years with years/months units; weight remains optional.
+- Pregnancy and breastfeeding require explicit yes/no answers for final printing and remain `null` in AI payloads while unanswered.
+- Six selectable/editable labels per 3×2 page, RTL pager and touch navigation for larger prescriptions.
+- Local draft persistence with renewed pharmacist approval required after reload or clinical edits.
+- Per-medication AI retry, contained errors and stale-response protection for manual edits.
+- Selected-only and print-all behavior, physical print dimensions and incomplete-draft blocking.
+- Consolidated stylesheet without the former stacked override blocks; validated owner-controlled logo.
+
+## Verification
+
+`npm run check` passed. `npm run test:browser` passed 41/41 Chromium checks and captured 1024×768, 1180×820, 1366×768, 1440×900 and 390×844 screenshots. Physical printers, the live Worker and the real AI provider remain unverified.
+
+## Release boundary
+
+Do not replace the live Worker with stale GitHub HTML. Reconcile this standalone module with the current Worker source, open an isolated preview and repeat browser, AI and physical print QA before release.
