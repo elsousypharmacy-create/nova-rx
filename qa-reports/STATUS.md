@@ -78,6 +78,7 @@
 
 | SHA | Branch | Task | State | Notes |
 |---|---|---|---|---|
+| `5128b402f73328003bb26312fe02328bd62b222c` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (Redesign Sticker Studio premium single-medication focus layout) — no UX review |
 | `8c77ede985ba7168f80b3750af01850ce37df265` | `main` | STICKER-SIX | IN_PROGRESS | new_commit without review_ready (style: compact unified patient-first workspace) — no UX review |
 | `693cb97dab1f998b2e7482eed11965ad87f3b336` | `main` | STICKER-MODAL-85 | IN_PROGRESS | new_commit without review_ready (style: studio workspace 85% width on large screens) — no UX review |
 | `5a46020260b3c1007e5594c1658a8bfdc98c862e` | `ux/sticker-modal-85pct-20261106` | STICKER-MODAL-85 | IN_PROGRESS | new_commit without review_ready (docs: HANDOFF.md checkpoint sticker dialog 85% viewport) — no UX review |
