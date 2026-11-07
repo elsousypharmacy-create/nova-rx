@@ -1,0 +1,71 @@
+# Manual, guarded deploy of the NOVA Rx Cloudflare Worker (nova-rx-preview only).
+# Start it from Actions > "Deploy NOVA Worker" > Run workflow. The first run should be a dry run (default).
+# It never runs AI code, uses one secret (CLOUDFLARE_API_TOKEN) and keeps the Worker's existing bindings.
+name: Deploy NOVA Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_ref:
+        description: "Branch or commit that holds the build file"
+        required: true
+        default: "claude/nifty-albattani-ka1ifs-ux2"
+      artifact_path:
+        description: "Build file inside worker/live/"
+        required: true
+        default: "worker/live/nova-rx-preview.with-ux-batch1-2.js"
+      sha256:
+        description: "sha256 of the build file (from issue #36)"
+        required: true
+        default: "1123d40c6fcb0c01cf4089db73f8f0a034e1eb1d6bdf72024308c04dbb046c3a"
+      expected_modified_on:
+        description: "The live Worker must NOT have been modified after this time (prefix match)"
+        required: true
+        default: "2026-11-07T01:57:40"
+      dry_run:
+        description: "true = check everything, upload nothing"
+        required: true
+        type: boolean
+        default: true
+      confirm:
+        description: "For a real deploy type exactly: DEPLOY nova-rx-preview"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-nova-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Single attempt only
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: '[ "$RUN_ATTEMPT" = "1" ] || { echo "Re-runs are blocked. Start a new run."; exit 1; }'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check the token secret exists
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: '[ -n "$CF_API_TOKEN" ] || { echo "::error::Add the CLOUDFLARE_API_TOKEN secret (Settings > Secrets and variables > Actions)."; exit 1; }'
+      - name: Deploy (or dry run)
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SCRIPT_NAME: nova-rx-preview
+          ARTIFACT_REF: ${{ inputs.artifact_ref }}
+          ARTIFACT_PATH: ${{ inputs.artifact_path }}
+          WANT_SHA256: ${{ inputs.sha256 }}
+          EXPECTED_MODIFIED_ON: ${{ inputs.expected_modified_on }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CONFIRM: ${{ inputs.confirm }}
+          LIVE_URL: https://nova-rx-preview.elsousypharmacy.workers.dev
+        run: bash .github/scripts/deploy_worker.sh

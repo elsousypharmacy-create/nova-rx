@@ -221,6 +221,9 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Agent view: this `HANDOFF.md` (facts, commit/PR, test evidence, next exact step) and `reports/agent-progress.json`.
 - Hand-offs: Claude Code writes code and tests, then comments on the PR for Cursor with the file, checksum, rollback and checks. Cursor deploys (Claude Code has no Cloudflare write tool) and writes the new version id back here.
 - Current step: Cursor to deploy the UX batch 1 Worker build from PR #34 (comment with sha256 `20d2c892…39fa`), then the owner tries the live link on a phone.
+### Guarded deploy workflow — 2026-11-07 (Claude Code)
+- Because ChatGPT, Cursor and Claude Code could each not deploy (no Cloudflare write tool / no proof of binding-keeping / API token not savable from the phone app), added a one-button deploy: `.github/workflows/deploy-worker.yml` + `.github/scripts/deploy_worker.sh` + `docs/DEPLOY_WORKER.md` (draft PR). Needs: merge to `main`, GitHub secret `CLOUDFLARE_API_TOKEN` (template «Edit Cloudflare Workers»), then dry run, then real run.
+- Tested only against a fake Cloudflare API (`tests/deploy-worker/run.sh`, 17 checks). NOT run against the real Cloudflare API. Nothing deployed.
 
 ### UX batch 2 — 2026-11-07 (Claude Code)
 - Branch `claude/nifty-albattani-ka1ifs-ux2` (stacked on `…-ux`, PR base = the batch 1 branch): discount warnings, empty states, AI retry, translated search empties. Details in `BUILD_REPORT.md`.
