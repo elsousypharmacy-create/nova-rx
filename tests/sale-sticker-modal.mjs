@@ -28,13 +28,24 @@ async function openModal(page){
   await page.evaluate(()=>{window.__ai=0});
 }
 
+// Wide screens show medicines as a list; tapping a row opens its edit window.
+async function closeEditing(page){const d=await page.$('#nlMedicineList .med-card.editing .med-done');if(d)await d.click()}
+async function ensureEditing(page,card){
+  if(await page.isVisible(`${card} [data-field="name"]`))return;
+  const open=await page.$('#nlMedicineList .med-card.editing .med-done');
+  if(open)await open.click();
+  await page.click(`${card} .med-sum`);
+}
+
 async function fillCard(page,index,name,over={}){
   const card=`#nlMedicineList .med-card:nth-child(${index})`;
   const vals={name,...FIELDS,...over};
+  await ensureEditing(page,card);
   for(const [field,value] of Object.entries(vals)){
     await page.fill(`${card} [data-field="${field}"]`,value);
     await page.dispatchEvent(`${card} [data-field="${field}"]`,'input');
   }
+  await closeEditing(page);
 }
 
 async function answerSafety(page){
@@ -84,8 +95,10 @@ async function runFlow(page,vp,errors){
   check(`${L}: AI filled both medicines automatically`,(await page.evaluate(()=>window.__ai))===2);
   check(`${L}: button label counts the medicines`,(await page.$eval('#nlPrintLabel',e=>e.textContent)).includes('دوائين'));
 
+  await ensureEditing(page,'#nlMedicineList .med-card:nth-child(2)');
   await page.fill('#nlMedicineList .med-card:nth-child(2) [data-field="dose"]','');
   await page.dispatchEvent('#nlMedicineList .med-card:nth-child(2) [data-field="dose"]','input');
+  await closeEditing(page);
   check(`${L}: one incomplete medicine blocks, reason updates`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('دواء واحد'));
   await page.$eval('#nlPrintAll',e=>e.click());
   { const t=await toastText(page); if(!t.includes('أكمل')) console.log('DBG',L,JSON.stringify(t),await page.$eval('#nlBarWhy',e=>e.textContent)); check(`${L}: incomplete medicine blocks printing`,t.includes('أكمل')); }
@@ -101,7 +114,7 @@ async function runFlow(page,vp,errors){
   check(`${L}: no popup window used`,(await page.evaluate(()=>window.__opens))===0);
   check(`${L}: the print tap approved the review`,await page.$eval('#nlPharmacistApproval',e=>e.checked));
   check(`${L}: print frame holds one label per medicine`,await page.evaluate(()=>document.getElementById('nlPrintFrame').contentDocument.querySelectorAll('.label').length===2));
-  check(`${L}: editing a medicine revokes the approval`,await (async()=>{await page.fill('#nlMedicineList .med-card:nth-child(1) [data-field="dose"]','نصف قرص');await page.dispatchEvent('#nlMedicineList .med-card:nth-child(1) [data-field="dose"]','input');return page.$eval('#nlPharmacistApproval',e=>!e.checked)})());
+  check(`${L}: editing a medicine revokes the approval`,await (async()=>{await ensureEditing(page,'#nlMedicineList .med-card:nth-child(1)');await page.fill('#nlMedicineList .med-card:nth-child(1) [data-field="dose"]','نصف قرص');await page.dispatchEvent('#nlMedicineList .med-card:nth-child(1) [data-field="dose"]','input');await closeEditing(page);return page.$eval('#nlPharmacistApproval',e=>!e.checked)})());
 
   // Long text: shrinks when it can, refuses when it cannot (never prints clipped text)
   const long=n=>'يؤخذ بعد الأكل مع كوب ماء '.repeat(n).trim();
