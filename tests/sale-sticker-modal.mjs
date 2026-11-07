@@ -152,7 +152,9 @@ try{
     await page.route('**/api/ai/medication-label',async r=>{await page.evaluate(()=>{window.__ai=(window.__ai||0)+1}).catch(()=>{});await r.fulfill({json:{ok:true,instruction:{dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل',warnings:[]}}})});
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
+    await context.addInitScript(()=>{try{localStorage.setItem('nova.stickerStudio.draft.v1',JSON.stringify({patient:{age:'6',pregnancy:'no',breastfeeding:'no'},medications:[{name:'Old'}]}))}catch(e){}});
     await openModal(page);
+    check(`${vp.name}: an old saved draft never pre-fills age or safety answers`,await page.evaluate(()=>document.getElementById('nlPatientAge').value===''&&!document.querySelector('input[name="nlPregnancy"]:checked')));
     await runFlow(page,vp,errors);
     await context.close();
   }

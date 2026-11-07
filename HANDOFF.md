@@ -302,3 +302,6 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 
 ## DEPLOYED — sticker flow v2 (2026-11-07, run 42375318941, dry run 42375252302 passed)
 sha256 7b85c9ef…e368. Rollback: previous artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers.js.
+
+## Checkpoint — v3 (not deployed): fixed-height modal + no stale draft restore
+Tablet photo showed age 6 + old safety answers + blank medicines = old saved draft restored from localStorage. load() no longer restores the draft (settings still restored). Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers4.js sha256 42dc13d3c58cbc5617b61d13dde8c551b5279b8d2a958f540bf58882502270ec. Base = live code from v2 deploy (read expected_modified_on from Cloudflare/last deploy log). Needs owner approval.
