@@ -305,3 +305,5 @@ sha256 7b85c9ef…e368. Rollback: previous artifact worker/live/nova-rx-preview.
 
 ## Checkpoint — v3 (not deployed): fixed-height modal + no stale draft restore
 Tablet photo showed age 6 + old safety answers + blank medicines = old saved draft restored from localStorage. load() no longer restores the draft (settings still restored). Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers4.js sha256 c75a89208d985ec5e1465595c3361a397cf53ba1aa440098e2777908dca54fb5 (window 880px wide x ~720px high). Base = live code from v2 deploy (read expected_modified_on from Cloudflare/last deploy log). Needs owner approval.
+
+## DEPLOYED v3 (window 880x720, no stale draft) 2026-11-07, sha256 c75a8920…4fb5. Rollback: ...stickers2.js
