@@ -307,3 +307,6 @@ sha256 7b85c9ef…e368. Rollback: previous artifact worker/live/nova-rx-preview.
 Tablet photo showed age 6 + old safety answers + blank medicines = old saved draft restored from localStorage. load() no longer restores the draft (settings still restored). Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers4.js sha256 c75a89208d985ec5e1465595c3361a397cf53ba1aa440098e2777908dca54fb5 (window 880px wide x ~720px high). Base = live code from v2 deploy (read expected_modified_on from Cloudflare/last deploy log). Needs owner approval.
 
 ## DEPLOYED v3 (window 880x720, no stale draft) 2026-11-07, sha256 c75a8920…4fb5. Rollback: ...stickers2.js
+
+## Checkpoint v4 (not deployed): browser form-restore fix
+Tablet showed age 6 after reload = Chrome restoring old form values. Added autocomplete=off on patient inputs + pregnancy/breastfeeding radios and a pageshow resync. Artifact ...stickers5.js sha256 3305b1dd93202256f120384fa0cae9b33f7a82ad42382e1856e9872ae5a23f3e; base for expected_modified_on = 2026-11-07T13:44:23 (v3 deploy). v3 artifact (stickers4) was removed from repo; rollback = ...stickers2.js.

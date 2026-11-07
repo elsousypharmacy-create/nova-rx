@@ -3910,11 +3910,11 @@ $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر 
       <div class="card-body">
         <details class="extras"><summary>فواتير سابقة</summary><div class="queue" id="nlInvoiceQueue"></div></details>
         <div class="patient-grid">
-          <div class="field f-age"><label class="lbl" for="nlPatientAge">العمر</label><div class="age-control"><input id="nlPatientAge" type="number" min="0" inputmode="decimal" value="" placeholder="30"><div class="seg" role="group" aria-label="وحدة العمر"><button type="button" data-age-unit="years" aria-pressed="true">سنة</button><button type="button" data-age-unit="months" aria-pressed="false">شهر</button></div><input type="hidden" id="nlAgeUnit" value="years"></div><small class="hint" id="nlAgeHint" aria-live="polite"></small></div>
-          <label class="field f-weight"><span>الوزن (كجم)</span><input id="nlPatientWeight" inputmode="decimal" dir="ltr" placeholder="كجم"></label>
-          <div class="safety-choices" id="nlSafety"><fieldset><legend>حامل؟ <em aria-hidden="true">*</em></legend><label><input type="radio" name="nlPregnancy" value="yes"><span>نعم</span></label><label><input type="radio" name="nlPregnancy" value="no"><span>لا</span></label></fieldset><fieldset><legend>رضاعة؟ <em aria-hidden="true">*</em></legend><label><input type="radio" name="nlBreastfeeding" value="yes"><span>نعم</span></label><label><input type="radio" name="nlBreastfeeding" value="no"><span>لا</span></label></fieldset></div>
+          <div class="field f-age"><label class="lbl" for="nlPatientAge">العمر</label><div class="age-control"><input id="nlPatientAge" autocomplete="off" type="number" min="0" inputmode="decimal" value="" placeholder="30"><div class="seg" role="group" aria-label="وحدة العمر"><button type="button" data-age-unit="years" aria-pressed="true">سنة</button><button type="button" data-age-unit="months" aria-pressed="false">شهر</button></div><input type="hidden" id="nlAgeUnit" value="years"></div><small class="hint" id="nlAgeHint" aria-live="polite"></small></div>
+          <label class="field f-weight"><span>الوزن (كجم)</span><input id="nlPatientWeight" autocomplete="off" inputmode="decimal" dir="ltr" placeholder="كجم"></label>
+          <div class="safety-choices" id="nlSafety"><fieldset><legend>حامل؟ <em aria-hidden="true">*</em></legend><label><input type="radio" autocomplete="off" name="nlPregnancy" value="yes"><span>نعم</span></label><label><input type="radio" autocomplete="off" name="nlPregnancy" value="no"><span>لا</span></label></fieldset><fieldset><legend>رضاعة؟ <em aria-hidden="true">*</em></legend><label><input type="radio" autocomplete="off" name="nlBreastfeeding" value="yes"><span>نعم</span></label><label><input type="radio" autocomplete="off" name="nlBreastfeeding" value="no"><span>لا</span></label></fieldset></div>
         </div>
-        <details class="extras nl-contact"><summary>اسم وهاتف المريض (اختياري)</summary><div class="contact-grid"><label class="field f-name"><span>اسم المريض</span><input id="nlPatientName" autocomplete="off" placeholder="اختياري"></label><label class="field f-phone"><span>رقم الهاتف</span><input id="nlPatientPhone" inputmode="tel" dir="ltr" autocomplete="off" placeholder="اختياري"></label></div></details>
+        <details class="extras nl-contact"><summary>اسم وهاتف المريض (اختياري)</summary><div class="contact-grid"><label class="field f-name"><span>اسم المريض</span><input id="nlPatientName" autocomplete="off" autocomplete="off" placeholder="اختياري"></label><label class="field f-phone"><span>رقم الهاتف</span><input id="nlPatientPhone" autocomplete="off" inputmode="tel" dir="ltr" autocomplete="off" placeholder="اختياري"></label></div></details>
       </div>
     </div>
     <div class="panel med-panel">
@@ -4039,6 +4039,7 @@ $('novaLabelsClose').onclick=close;
 panel.addEventListener('click',e=>{if(e.target===panel)close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))close()});
 window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;const queue=getQueue();queue.unshift(q);try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(0,40)))}catch(_){}loadInvoice(q,0);panel.classList.add('open')});
+window.addEventListener('pageshow',()=>setTimeout(()=>{if(!panel.classList.contains('open'))syncPatientInputs()},0));
 load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds();
 })();
 </script>
