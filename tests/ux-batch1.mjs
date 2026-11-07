@@ -89,6 +89,22 @@ try {
     check(`${vp[0]}x${vp[1]}: visible label is part of accessible name`, r.aria.includes(r.label.replace('✦', '').trim()), `${r.label} / ${r.aria}`);
     await ctx.close();
   }
+
+  // UX-HELD-PANEL-OFFSCREEN: «الفواتير المعلقة» opened below the screen (anchored to the whole workspace) and was never visible.
+  for (const vp of [[390, 844], [360, 640], [834, 1112], [1194, 834], [1440, 900]]) {
+    const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] } }); const page = await ctx.newPage();
+    await page.goto(URL_, { waitUntil: 'domcontentloaded' }); await sleep(900);
+    await page.click('#btnHeldInvoices'); await sleep(300);
+    const r = await page.evaluate(() => {
+      const el = document.getElementById('heldInvoicePanel'), pr = el.getBoundingClientRect();
+      const x = pr.left + pr.width / 2, y = Math.min(pr.top + 24, innerHeight - 2);
+      const top = document.elementFromPoint(x, y);
+      return { hidden: el.hidden, inView: pr.top >= 0 && pr.left >= 0 && pr.right <= innerWidth && pr.top < innerHeight - 40, top: Math.round(pr.top), vh: innerHeight, reachable: !!top && (el === top || el.contains(top)) };
+    });
+    check(`${vp[0]}x${vp[1]}: held invoices panel opens inside the screen`, !r.hidden && r.inView, `top=${r.top} vh=${r.vh}`);
+    check(`${vp[0]}x${vp[1]}: held invoices panel is not covered`, r.reachable);
+    await ctx.close();
+  }
 } finally { await browser.close(); server.kill(); }
 console.log(failures ? `FAILED: ${failures}` : 'ALL UX-BATCH1 CHECKS PASSED');
 process.exit(failures ? 1 : 0);

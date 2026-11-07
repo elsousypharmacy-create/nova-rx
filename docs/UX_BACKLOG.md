@@ -32,6 +32,7 @@ Discount/customer draft persistence, search-mode badge, receipt close, i18n page
 | 3 | UX-TOAST-EN | P3 | toast text in English |
 | 3 | UX-TOAST-COVERS-CHECKOUT | P3 | at 1194×834 and 1366×768 |
 | 3 | UX-DISCOUNT-ZERO-FIELD-CLEARED | P3 | cosmetic |
+| 1 | UX-HELD-PANEL-OFFSCREEN | P1 | NEW, found while verifying; FIXED on branch — «الفواتير المعلقة» opened below the screen on every viewport (anchored to the whole workspace), so held invoices were never visible |
 | — | UX-CHECKOUT-OVERLAY-LEAK | P3/close | technical only, no visible effect |
 Out of scope (product gaps, not UX): stock ledger, RBAC, returns, purchasing, backend persistence.
 
@@ -47,3 +48,12 @@ The live Worker `nova-rx-preview` embeds its own HTML (version `33fe0516…`, 20
 ## Local test commands
 `python3 -m http.server 8766` then `node tests/sale-sticker-modal.mjs`; `node tests/issue-2-acceptance.mjs`; `node tests/issue-4-labels-panel.mjs`; smoke: serve on 8765 and `npx playwright test tests/nova-pos-smoke.spec.cjs`.
 In a sandbox set `CHROME_BIN` to the installed Chromium and `npm install --no-save @playwright/test` for the `.mjs` browser tests.
+
+## Impeccable scan (2026-11-07, static, `npx impeccable detect` on `index.html`; 9 findings, nothing fixed yet)
+Candidates for batch 3 (verify each before changing code):
+- `undersized-ui-text`: 9px «د. أحمد السوسي» and 10px «Rx» in the brand block (floor is 11px).
+- `tiny-text`: 11px body text somewhere; check on a phone.
+- `low-contrast`: hover state text #f4f6f8 on #357aa3 = 4.3:1 (needs 4.5:1).
+- `cramped-padding`: `.nova-nav-row`, `.pos-root`, `.table-container` have children flush against the edge.
+- `dark-glow`: coloured box-shadow glow (#0284c7) on the dark page (style choice).
+- `clipped-overflow-container`: `main.main-workspace` clips `.nova-held-panel` — this one was real, see UX-HELD-PANEL-OFFSCREEN.

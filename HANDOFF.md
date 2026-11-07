@@ -208,3 +208,10 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Evidence: `node --check` OK; vm run: `/` 200 with the new HTML, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200; `tests/ux-batch1.mjs` on the embedded HTML with `UX_SKIP_EXTRA='#nlSimple'`: ALL PASS; FAB click opens the live sticker panel, 0 page errors.
 - NOT deployed (no Cloudflare write tool in this session). Owner asked for deploy; deployer: Cursor (same method as the 2026-11-07 deploy, `keep_bindings` secret_text + kv_namespace, checksum-guarded).
 - Known/accepted: the live sticker panel (`#nlSimple`) and purchase panel stay Arabic-only in English mode (clinical Arabic labels).
+
+### UX batch 1 — update — 2026-11-07 (Claude Code)
+- New fix: UX-HELD-PANEL-OFFSCREEN (held invoices panel opened below the screen; `top:auto` now). Included in `index.html` and in the Worker file.
+- SUPERSEDES the earlier Worker checksum: `worker/live/nova-rx-preview.with-ux-batch1.js` sha256 `20d2c89294069845d624f3688283e072506e8d5b58ae0b78813a37ee6ae239fa` (rollback export unchanged: `8f12b9f0…526673`).
+- Tests: `tests/ux-batch1.mjs` 39 checks PASS on repo `index.html` and on the HTML embedded in the Worker (`UX_SKIP_EXTRA='#nlSimple'`); earlier browser tests and CI smoke still PASS.
+- Impeccable (`npx impeccable detect`, static, run in an isolated copy): 9 findings recorded in `docs/UX_BACKLOG.md`. Other third-party skills from social media were NOT installed.
+- Still NOT deployed.

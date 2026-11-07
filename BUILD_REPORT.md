@@ -7,7 +7,8 @@
   - `arToEn` mixes both directions, so English mode translated English words into Arabic («Start فاتورة جديدة»). Added directional `toEn`, extra EN/AR strings, and an exact-match table `mixedText` for bilingual labels («Cash / نقدي» → `Cash` / `نقدي`). `ر.س` → `SAR` in English. Attributes (`title`, `aria-label`, `placeholder`) are now translated on every element.
   - The settings page renders `.nova-lang-btn` after load, so the per-button listeners never bound. Replaced with one delegated click listener.
   - Sticker button: on ≤780px it sits above the checkout bar and is smaller; visible text is now «✦ استيكرات الأدوية» (EN «✦ Medicine labels»), contained in its aria-label.
-- Tests: new `tests/ux-batch1.mjs` — 29 checks, PASS; it FAILS 15 checks on the previous `index.html`. Regression: `npm run check`, `issue-2-acceptance` 21/21, `issue-4-labels-panel`, `sale-sticker-modal` (desktop/tablet/mobile), Playwright smoke — all PASS.
+- Added during verification: UX-HELD-PANEL-OFFSCREEN. The held-invoices panel was `top:calc(100% + 4px)` of the whole workspace, so it opened below the screen on every viewport (e.g. top=848 on 844px). Now `top:auto` (right under the header). 10 more checks in `tests/ux-batch1.mjs`; they fail on the old CSS (9 fails).
+- Tests: new `tests/ux-batch1.mjs` — 39 checks, PASS; it FAILS 24 checks on the previous `index.html`. Regression: `npm run check`, `issue-2-acceptance` 21/21, `issue-4-labels-panel`, `sale-sticker-modal` (desktop/tablet/mobile), Playwright smoke — all PASS.
 - Not tested: real phones, tablet hardware, the live Worker (not deployed). Demo customer names keep their bilingual form on purpose (data).
 - Remaining: batch 2 (P2) and batch 3 (P3) in `docs/UX_BACKLOG.md`.
 
