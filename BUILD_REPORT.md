@@ -1,5 +1,16 @@
 # BUILD_REPORT — NOVA Rx
 
+## UX batch 1 (2026-11-07): UX-MIXED-LANG, UX-LANG-SWITCH-WEAK, UX-FAB-OVERLAP-mobile, UX-FAB-MISLABEL — fixed on branch
+
+- Verified on `main` @ `4e50e19` before changing code (Playwright audit): English mode left ~107 Arabic/mixed UI strings; the settings language buttons did nothing; on 390×844 and 360×640 the sticker button covered `#btnCheckout`; the button text «✦ AI الاستيكرات» did not match its aria-label.
+- Causes and fixes (`index.html` only):
+  - `arToEn` mixes both directions, so English mode translated English words into Arabic («Start فاتورة جديدة»). Added directional `toEn`, extra EN/AR strings, and an exact-match table `mixedText` for bilingual labels («Cash / نقدي» → `Cash` / `نقدي`). `ر.س` → `SAR` in English. Attributes (`title`, `aria-label`, `placeholder`) are now translated on every element.
+  - The settings page renders `.nova-lang-btn` after load, so the per-button listeners never bound. Replaced with one delegated click listener.
+  - Sticker button: on ≤780px it sits above the checkout bar and is smaller; visible text is now «✦ استيكرات الأدوية» (EN «✦ Medicine labels»), contained in its aria-label.
+- Tests: new `tests/ux-batch1.mjs` — 29 checks, PASS; it FAILS 15 checks on the previous `index.html`. Regression: `npm run check`, `issue-2-acceptance` 21/21, `issue-4-labels-panel`, `sale-sticker-modal` (desktop/tablet/mobile), Playwright smoke — all PASS.
+- Not tested: real phones, tablet hardware, the live Worker (not deployed). Demo customer names keep their bilingual form on purpose (data).
+- Remaining: batch 2 (P2) and batch 3 (P3) in `docs/UX_BACKLOG.md`.
+
 ## Sale sticker modal premium upgrade (2026-11-06): STICKER-MODAL-PREMIUM — done
 
 - Task (`/tmp/kimi-task.txt`): make the sale-screen sticker modal «استيكرات

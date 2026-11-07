@@ -16,16 +16,16 @@ Not tested: real printer, live AI Worker, real devices, the live Worker.
 ## Already fixed (do not redo)
 Discount/customer draft persistence, search-mode badge, receipt close, i18n pageerror (issue #2); labels panel blocking the next sale (issue #4 batch 1); premium sale sticker modal (#29, live since 2026-11-07).
 
-## Open defects (status = last QA at `85b8209`; re-verify on current `main` before fixing)
+## Open defects (batch 1 + UX-FAB-MISLABEL are fixed on branch `claude/nifty-albattani-ka1ifs-ux`; others: status = last QA at `85b8209`; re-verify on current `main` before fixing)
 | Batch | ID | Pri | Note |
 |---|---|---|---|
-| 1 | UX-MIXED-LANG | P1 | mixed Arabic/English UI text |
-| 1 | UX-LANG-SWITCH-WEAK | P1 | English does not change lang/dir/UI |
-| 1 | UX-FAB-OVERLAP-mobile | P1 | floating button overlaps content on mobile |
+| 1 | UX-MIXED-LANG | P1 | FIXED on branch (draft PR) — directional dictionary + mixed-label table |
+| 1 | UX-LANG-SWITCH-WEAK | P1 | FIXED on branch — settings buttons had no listener (delegated click) |
+| 1 | UX-FAB-OVERLAP-mobile | P1 | FIXED on branch — confirmed it covered `#btnCheckout` |
 | 2 | UX-SEARCH-EMPTY | P2 | no empty-result state |
 | 2 | UX-DISCOUNT-NO-FEEDBACK | P2 | negative / out-of-range accepted silently |
 | 2 | UX-AI-NO-RETRY | P2 | no retry on AI failure (sticker modal has retry; check the rest) |
-| 2 | UX-FAB-MISLABEL | P2 | wrong label on floating button |
+| 2 | UX-FAB-MISLABEL | P2 | FIXED on branch — label now matches aria-label |
 | 2 | UX-PRODUCTS-FILTER-EMPTY | P2 | no empty state in products filter |
 | 3 | UX-NEW-SALE-MODE | P3 | |
 | 3 | UX-EMPTY-CHECKOUT-NO-HINT | P3 | |

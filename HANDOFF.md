@@ -189,3 +189,9 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Commit `6f28bdd` on `chore/sale-sticker-modal-clean`: Playwright POS smoke **SUCCESS** on ubuntu-24.04.
 - Run: https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42312203852
 - PR #29 remains **draft**. Not merged. Not deployed. Not marked ready-to-merge.
+
+### UX batch 1 — 2026-11-07 (Claude Code)
+- Branch `claude/nifty-albattani-ka1ifs-ux` (draft PR): `index.html` i18n direction fix + delegated language buttons + sticker button off the checkout bar on phones; `tests/ux-batch1.mjs` (29 checks). Details in `BUILD_REPORT.md`.
+- Evidence: new test fails 15 checks on old `index.html`, passes on the fix; all earlier browser tests and the CI smoke test pass locally.
+- NOT merged, NOT deployed. The live Worker embeds its own HTML: carry this change into a patched export (see `docs/UX_BACKLOG.md` deployment warning), do not overwrite it with GitHub's `index.html`.
+- Next exact step: owner review; then batch 2 (search/discount/AI-retry/products-filter empty states).
