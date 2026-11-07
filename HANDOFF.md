@@ -279,3 +279,40 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 - Deploy-ready Worker build: `worker/live/nova-rx-preview.with-ux-batch1-3.js` sha256 `6d2d4575e67c1686950f5337b89158d1e9ec22a4269d5dfc5d7e0bf517399b0b`, 649,196 bytes, git blob `cdb07f1b77cf3c71f0fa291ac49bca5a18d788ad`. Built on top of the code deployed live at 2026-11-07T08:55:46Z (`…with-ux-batch1-2.js`, sha256 `1123d40c…`); only the app HTML literal differs.
 - To deploy: new Cloudflare token + repo secret `CLOUDFLARE_API_TOKEN` (the first one should have been deleted), then Actions > Deploy NOVA Worker with `artifact_ref` = the merged commit or branch, `artifact_path` = the file above, `sha256` = the value above, `expected_modified_on` = `2026-11-07T08:55:46`, dry run first. Rollback = the previous live code (the workflow backs it up); version history in Cloudflare.
 - Evidence: `ux-batch1/2/3` all pass on repo `index.html` and on the HTML embedded in the Worker; vm run `/` 200, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200. NOT deployed.
+
+### Sticker one-screen flow — 2026-11-07 (Claude Code, owner-approved design)
+- Branch `claude/sticker-oneclick` (stacked on batch 3, draft PR). Owner feedback: the sale-screen sticker flow had too many steps. New flow: all medicines as cards on ONE screen, one button «راجعت N أدوية وطباعة» (the tap is the pharmacist approval; pregnancy/breastfeeding answers and complete medicines are still required, the bar says why it is blocked). Stepper, medicine tabs, separate approval box, thumbnail grid and settings drawer are gone from the main view (preview and settings are collapsed under «معاينة…», size link «50×30 مم · تغيير» opens the settings).
+- Printing: hidden iframe instead of a popup window, waits for the font, shrinks text down to 5.5pt, and REFUSES (clear message) when the text still does not fit: clipped text is never printed. Focus returns to the page after printing.
+- Files: `index.html`, `tests/sale-sticker-modal.mjs` (rewritten for the new flow, 3 viewports), `tools/build-worker-artifact.mjs` (replaces ONLY the app HTML literal of a Worker export), `worker/live/nova-rx-preview.with-ux-batch1-3-stickers.js` sha256 `ba06d59b0bd9bc3fec65b49445f1f6a611a9ba9af303b764303b66d6153ded89` (base = the deployed batch 3 file `6d2d4575…`; everything outside the HTML line is byte-identical).
+- Tests (headless Chromium, this session): `sale-sticker-modal`, `ux-batch1/2/3`, `issue-2-acceptance`, `issue-4-labels-panel`, `npm run check` pass on repo `index.html`; `sale-sticker-modal` and `ux-batch1/2/3` also pass on the HTML embedded in the Worker file (`UX_SKIP_EXTRA='#nlSimple'`); vm run: `/` 200, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200.
+- NOT tested: real printer and paper, Cairo font on the print frame (offline here), iOS/Android print dialogs from an iframe, live AI, the CI smoke test (`nova-pos-smoke.spec.cjs`, not run locally). Text-length thresholds are approximate; the print-time fit check with the real font is the real guard.
+- NOT merged, NOT deployed. Next exact step: owner tries the new screen and prints one real sticker; then merge and the guarded deploy (new token needed).
+
+### DEPLOYED — one-screen sticker flow live — 2026-11-07 (Claude Code, owner-approved)
+- Guarded workflow run https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42372912050 (dry run 42372880589 first). `nova-rx-preview` modified_on `2026-11-07T12:32:14.721816Z`; live script sha256 re-read = `ba06d59b0bd9bc3fec65b49445f1f6a611a9ba9af303b764303b66d6153ded89` (= `worker/live/nova-rx-preview.with-ux-batch1-3-stickers.js` @ `claude/sticker-oneclick`). Bindings unchanged. No rollback needed.
+- Rollback: batch 3 build `worker/live/nova-rx-preview.with-ux-batch1-3.js` (sha256 `6d2d4575…399b0b`), or Cloudflare version history.
+- PR #39 and #40 NOT merged. Live and `main` differ on purpose.
+- Next exact step: owner prints a real sticker with a long dose (printer, paper, Cairo font, tablet print dialog are untested); then merge #39/#40 and delete the Cloudflare token and `CLOUDFLARE_API_TOKEN` secret.
+
+## Checkpoint — sticker flow v2 (faster, tablet-sized) — NOT DEPLOYED
+- Invoice medicines load automatically; age has no silent default; AI runs by itself once age + pregnancy + breastfeeding are answered; compact cards so 2-3 medicines fit on a 1194x834 tablet without scrolling.
+- Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers2.js sha256 7b85c9ef17e38849bdcb325ff3179bcc950235625d0166f8147da7d2fbe3e368 (base = deployed ...stickers.js; expected_modified_on 2026-11-07T12:32:14).
+- Tests pass on repo HTML and HTML extracted from the new artifact. Route check OK (/ 200, secrets 403, whatsapp 200).
+- Needs owner approval before deploy (dry run first).
+
+## DEPLOYED — sticker flow v2 (2026-11-07, run 42375318941, dry run 42375252302 passed)
+sha256 7b85c9ef…e368. Rollback: previous artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers.js.
+
+## Checkpoint — v3 (not deployed): fixed-height modal + no stale draft restore
+Tablet photo showed age 6 + old safety answers + blank medicines = old saved draft restored from localStorage. load() no longer restores the draft (settings still restored). Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers4.js sha256 c75a89208d985ec5e1465595c3361a397cf53ba1aa440098e2777908dca54fb5 (window 880px wide x ~720px high). Base = live code from v2 deploy (read expected_modified_on from Cloudflare/last deploy log). Needs owner approval.
+
+## DEPLOYED v3 (window 880x720, no stale draft) 2026-11-07, sha256 c75a8920…4fb5. Rollback: ...stickers2.js
+
+## Checkpoint v4 (not deployed): browser form-restore fix
+Tablet showed age 6 after reload = Chrome restoring old form values. Added autocomplete=off on patient inputs + pregnancy/breastfeeding radios and a pageshow resync. Artifact ...stickers5.js sha256 3305b1dd93202256f120384fa0cae9b33f7a82ad42382e1856e9872ae5a23f3e; base for expected_modified_on = 2026-11-07T13:44:23 (v3 deploy). v3 artifact (stickers4) was removed from repo; rollback = ...stickers2.js.
+
+## DEPLOYED v4 2026-11-07 (run 42401462000): form-restore fix. modified_on 2026-11-07T18:28:38. sha256 3305b1dd…3f3e. Rollback: ...stickers2.js
+
+## Checkpoint v5 (not deployed): real cause of age 6 = load() default age=6 (removed). Manual open (✦ استيكرات الأدوية button) now loads the open cart via window.novaCartItems. Artifact ...stickers6.js sha256 2bdf364406693f0deb611927bc62a1062da68d9bc93c8e15e3b55fd58bfcb443; expected_modified_on 2026-11-07T18:28:38. Rollback = ...stickers2.js
+
+## DEPLOYED v5 2026-11-07 (run 42402291931), modified_on 2026-11-07T18:38:40. Owner standing instruction: deploy NOVA updates on my own after tests pass (dry run first), then report.
