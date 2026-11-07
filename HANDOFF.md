@@ -287,3 +287,9 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 - Tests (headless Chromium, this session): `sale-sticker-modal`, `ux-batch1/2/3`, `issue-2-acceptance`, `issue-4-labels-panel`, `npm run check` pass on repo `index.html`; `sale-sticker-modal` and `ux-batch1/2/3` also pass on the HTML embedded in the Worker file (`UX_SKIP_EXTRA='#nlSimple'`); vm run: `/` 200, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200.
 - NOT tested: real printer and paper, Cairo font on the print frame (offline here), iOS/Android print dialogs from an iframe, live AI, the CI smoke test (`nova-pos-smoke.spec.cjs`, not run locally). Text-length thresholds are approximate; the print-time fit check with the real font is the real guard.
 - NOT merged, NOT deployed. Next exact step: owner tries the new screen and prints one real sticker; then merge and the guarded deploy (new token needed).
+
+### DEPLOYED — one-screen sticker flow live — 2026-11-07 (Claude Code, owner-approved)
+- Guarded workflow run https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42372912050 (dry run 42372880589 first). `nova-rx-preview` modified_on `2026-11-07T12:32:14.721816Z`; live script sha256 re-read = `ba06d59b0bd9bc3fec65b49445f1f6a611a9ba9af303b764303b66d6153ded89` (= `worker/live/nova-rx-preview.with-ux-batch1-3-stickers.js` @ `claude/sticker-oneclick`). Bindings unchanged. No rollback needed.
+- Rollback: batch 3 build `worker/live/nova-rx-preview.with-ux-batch1-3.js` (sha256 `6d2d4575…399b0b`), or Cloudflare version history.
+- PR #39 and #40 NOT merged. Live and `main` differ on purpose.
+- Next exact step: owner prints a real sticker with a long dose (printer, paper, Cairo font, tablet print dialog are untested); then merge #39/#40 and delete the Cloudflare token and `CLOUDFLARE_API_TOKEN` secret.
