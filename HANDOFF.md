@@ -232,3 +232,11 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - All agents read and update GitHub issue #36 «[Coordination] NOVA Rx: current state and who does what» (state table, roles, rules, and a ready prompt each for ChatGPT and Cursor). Comment there after every step.
 - CHANGE of roles for the UX deploy: ChatGPT deploys the batch 1+2 artifact (deploy only, no edits); Cursor does NOT deploy, it runs QA on the live link and keeps `nova-status.json` (pharmacy repo) honest; Claude Code writes code/tests. Supersedes the earlier "Cursor deploys" comments on PR #34.
 - Still paused: WhatsApp (number on the sunset On-Premises API), Kimi (never run). Nothing merged or closed without the owner.
+
+### DEPLOYED — UX batches 1+2 live — 2026-11-07 (Claude Code, owner-approved)
+- Deployed with the guarded workflow `deploy-worker.yml` (PR #37, merged), run https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42357521827. `nova-rx-preview` modified_on `2026-11-07T08:55:46.92003Z`.
+- Proof: live script sha256 re-read from Cloudflare = `1123d40c6fcb0c01cf4089db73f8f0a034e1eb1d6bdf72024308c04dbb046c3a` (= `worker/live/nova-rx-preview.with-ux-batch1-2.js` @ `116a4a6`). Bindings and compatibility settings unchanged. The dry run before it showed the pre-deploy live code was byte-identical to `worker/live/nova-rx-preview.export-20261107.js` (`8f12b9f0…526673`).
+- Rollback: Cloudflare version `33fe0516-2931-40cb-93a4-808e3c4f7724` (or that export file).
+- NOT merged: PRs #34 and #35 (owner decision). Live and `main` differ on purpose (live HTML is a different lineage).
+- Next exact step: Cursor QA on the live link (issue #36), owner tries it on a phone, then UX batch 3. Owner to delete the Cloudflare API token and the GitHub secret `CLOUDFLARE_API_TOKEN`.
+- To continue in a fresh session: read issue #36, this file, `docs/UX_BACKLOG.md`, `docs/DEPLOY_WORKER.md`.
