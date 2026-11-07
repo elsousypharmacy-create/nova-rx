@@ -314,3 +314,5 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## DEPLOYED v4 2026-11-07 (run 42401462000): form-restore fix. modified_on 2026-11-07T18:28:38. sha256 3305b1dd…3f3e. Rollback: ...stickers2.js
 
 ## Checkpoint v5 (not deployed): real cause of age 6 = load() default age=6 (removed). Manual open (✦ استيكرات الأدوية button) now loads the open cart via window.novaCartItems. Artifact ...stickers6.js sha256 2bdf364406693f0deb611927bc62a1062da68d9bc93c8e15e3b55fd58bfcb443; expected_modified_on 2026-11-07T18:28:38. Rollback = ...stickers2.js
+
+## DEPLOYED v5 2026-11-07 (run 42402291931), modified_on 2026-11-07T18:38:40. Owner standing instruction: deploy NOVA updates on my own after tests pass (dry run first), then report.
