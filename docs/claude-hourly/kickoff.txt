@@ -1,0 +1,6 @@
+Read docs/claude-hourly/LINE.md (short rules). Open docs/claude-hourly/current.md and the linked brief only.
+If Status is IDLE or DONE with no PENDING in queue.md, write docs/claude-hourly/results/latest.md saying nothing to do, then exit.
+Do ONLY the active brief. Do not enqueue or invent a second copy of the same brief text.
+Never deploy Workers, never touch secret values, never commit to main, never edit .github/workflows unless the brief says so.
+Branch + draft PR only when the brief asks. Prefer the Model named in the brief / current.md.
+When finished, update queue.md + current.md status, and write docs/claude-hourly/results/latest.md with status, branch/PR URL, tests pass/fail/not-tested, blockers.
