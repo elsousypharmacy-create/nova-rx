@@ -72,7 +72,8 @@ try {
     // quick customer type
     check(`${L}: four customer types and no old safety questions`, (await page.$$eval('.nl-quick button', a => a.length)) === 4 && !(await page.isVisible('.safety-choices')));
     check(`${L}: nothing is chosen at first and the bar asks for it`, (await page.$eval('.nl-quick', e => !e.dataset.q)) && (await page.$eval('#nlBarWhy', e => e.textContent)).includes('نوع العميل'));
-    check(`${L}: the instruction is editable right on the row`, await page.isVisible('#nlMedicineList .med-card:nth-child(1) textarea[data-field="instructions"]'));
+    check(`${L}: rows are full width and show the full medicine name`, await page.$$eval('#nlMedicineList .med-sum', a => a.every(e => e.getBoundingClientRect().width > 600 && e.querySelector('.nm').scrollWidth <= e.querySelector('.nm').clientWidth + 1)));
+    check(`${L}: no text boxes inside the list`, !(await page.isVisible('#nlMedicineList .med-card:nth-child(1) textarea[data-field="instructions"]')));
     await page.click('.nl-quick button[data-q="adult"]');
     await sleep(300);
     check(`${L}: adult = not pregnant, not breastfeeding, adult age`, await page.evaluate(() => document.querySelector('input[name="nlPregnancy"][value="no"]').checked && document.querySelector('input[name="nlBreastfeeding"][value="no"]').checked && Number(document.getElementById('nlPatientAge').value) >= 18));
