@@ -243,3 +243,18 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - NOT merged: PRs #34 and #35 (owner decision). Live and `main` differ on purpose (live HTML is a different lineage).
 - Next exact step: Cursor QA on the live link (issue #36), owner tries it on a phone, then UX batch 3. Owner to delete the Cloudflare API token and the GitHub secret `CLOUDFLARE_API_TOKEN`.
 - To continue in a fresh session: read issue #36, this file, `docs/UX_BACKLOG.md`, `docs/DEPLOY_WORKER.md`.
+### WhatsApp bridge → encrypted secrets + header auth — 2026-11-07 (Claude Code)
+- `integrations/whatsapp/secure-bridge.mjs` now reads `WA_BACKEND_URL` / `NOVA_WA_BRIDGE_TOKEN` from the same encrypted KV store as `/api/settings/secrets`, and accepts Cloudflare Access JWT or (opt-in) the Access email header. Fails closed. Speaks the existing Apps Script `novaWhatsAppBridge` protocol.
+- Test: `tests/unit/whatsapp-bridge.check.mjs` PASS (fake KV with real AES-GCM format, fake Apps Script). Not run against the live Worker or real Apps Script.
+- NOT done: Worker not changed or deployed; inbox page not restyled to Black Edition. Wiring guide: `integrations/whatsapp/README.md`.
+
+### Live Worker export + patched copy — 2026-11-07 (Claude Code)
+- `worker/live/nova-rx-preview.export-20261107.js`: unmodified export of Worker `nova-rx-preview` (read via Cloudflare MCP; scanned, no secret values). Use as rollback.
+- `worker/live/nova-rx-preview.with-whatsapp.js`: same code + `/api/whatsapp/*` route (bridge, namespaced in `NOVA_WA_BRIDGE`) + real inbox page replacing the placeholder. `node --check` OK; `tests/unit/worker-live-patch.check.mjs` PASS in a vm with fake bindings.
+- NOT deployed. Deploy by owner via Cloudflare dashboard (Edit code keeps bindings) after the bridge token and WABA steps.
+
+### WhatsApp — PAUSED by owner — 2026-11-07 (Claude Code)
+Root cause (verified via Graph API Explorer): pharmacy number +20 11 43404023 (phone id 515646411625617, WABA 505759262610446) is `platform_type=ON_PREMISE`, `status=DISCONNECTED`. On-Premises API was sunset; `POST /{phone}/register` returns code 100 "Register endpoint is not available". Tokens/IDs in NOVA and bot were not the cause. The bot's defaults (phone 1321594684378624, WABA 1121417500291242) belong to Meta's TEST number (+1 555 673 1935). `2072879990013917` is NOT a WABA (Business Suite presence page id).
+State: bot dashboard has WABA ID field (pharmacy PR #38, merged) and WABA 505759262610446 saved; webhook link for the real WABA returned OK. NOVA bridge + patched Worker ready but NOT deployed (PR #33 draft, `worker/live/`). Support ticket via Meta Direct Support NOT confirmed opened.
+Resume only when: Meta migrates the number to Cloud API (platform_type CLOUD_API, CONNECTED) or a new Cloud API number exists. Then: set WA_PHONE_ID + permanent token in bot dashboard, set NOVA_WA_BRIDGE_TOKEN (>=32 chars) in Apps Script and NOVA secrets, deploy `with-whatsapp.js`.
+Do not: deregister the number, change its PIN, or pick the test account in support forms.
