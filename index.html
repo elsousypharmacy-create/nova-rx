@@ -4052,7 +4052,7 @@ tog.addEventListener('click',()=>setMore(!panel.classList.contains('nl-showmore'
 const os=$('nlOpenSettings');if(os)os.addEventListener('click',()=>setMore(true));
 let editingId=null;
 const FIELDS=['name','dose','frequency','duration','instructions'];
-function sync(){const list=$('nlMedicineList');if(!list)return;list.querySelectorAll('.med-card').forEach((card,i)=>{const m=state.medications.find(x=>x.id===card.dataset.id);if(!m)return;let sum=card.querySelector(':scope>.med-sum');if(!sum){sum=document.createElement('button');sum.type='button';sum.className='med-sum';card.prepend(sum)}let done=card.querySelector(':scope>.med-done');if(!done){done=document.createElement('button');done.type='button';done.className='btn primary med-done';done.textContent='تم';card.append(done)}let pv=card.querySelector(':scope>.med-prev');if(!pv){pv=document.createElement('button');pv.type='button';pv.className='med-prev';pv.textContent='👁 معاينة الاستيكر';card.insertBefore(pv,done)}const[cls,label]=medStatus(m);const info=[m.dose,m.frequency,m.duration].filter(Boolean).join(' · ')||clean(m.instructions)||(m.missing&&m.missing.length?'ناقص: '+m.missing.map(x=>({dose:'الجرعة',frequency:'التكرار',duration:'المدة',instructions:'التعليمات'})[x]).join('، '):'اضغط للتعديل');const html='<span class="n">'+(i+1)+'</span><span class="nm">'+esc(m.name||'دواء بدون اسم')+'</span><span class="ds">'+esc(info)+'</span><span class="sumst '+cls+'">'+label+'</span><span class="eh">تفاصيل ‹</span>';if(sum.dataset.sig!==html){sum.dataset.sig=html;sum.innerHTML=html}card.classList.toggle('editing',mq.matches&&card.dataset.id===editingId)});if(editingId&&!list.querySelector('.med-card.editing'))editingId=null;panel.classList.toggle('nl-editing',!!editingId&&mq.matches)}
+function sync(){const list=$('nlMedicineList');if(!list)return;list.querySelectorAll('.med-card').forEach((card,i)=>{const m=state.medications.find(x=>x.id===card.dataset.id);if(!m)return;let sum=card.querySelector(':scope>.med-sum');if(!sum){sum=document.createElement('button');sum.type='button';sum.className='med-sum';card.prepend(sum)}let done=card.querySelector(':scope>.med-done');if(!done){done=document.createElement('button');done.type='button';done.className='btn primary med-done';done.textContent='تم';card.append(done)}let pv=card.querySelector(':scope>.med-prev');if(!pv){pv=document.createElement('button');pv.type='button';pv.className='med-prev';pv.textContent='👁 معاينة الاستيكر';card.insertBefore(pv,done)}const miss=(m.missing||[]).map(x=>({dose:'الجرعة',frequency:'التكرار',duration:'المدة',instructions:'التعليمات'})[x]).join('، ');const hasWarn=Array.isArray(m.warnings)&&m.warnings.length>0;const parts=[m.dose,m.frequency,m.duration].filter(Boolean).join(' · ');const ins=clean(m.instructions);const sentence=parts+(ins?(parts?' — ':'')+ins:'');let chip;if(m.aiStatus==='loading')chip='<span class="sumst busy"><i class="spin"></i>جاري التوليد</span>';else if(m.aiStatus==='error'&&!m.complete&&!sentence)chip='<span class="sumst err">فشل — المس للتعديل</span>';else if(!m.complete)chip='<span class="sumst warn">ناقص: '+esc(miss)+'</span>';else if(hasWarn)chip='<span class="sumst err">⚠ تحذير</span>';else chip='<span class="tick" aria-label="مكتمل">✓</span>';const ds=sentence||(m.aiStatus==='loading'?'بيكتب التعليمات…':'لا توجد تعليمات بعد');const html='<span class="n">'+(i+1)+'</span><span class="txt"><span class="nm">'+esc(m.name||'دواء بدون اسم')+'</span><span class="ds'+(sentence?'':' none')+'">'+esc(ds)+'</span>'+(hasWarn?'<span class="wn">⚠ '+esc(m.warnings[0])+'</span>':'')+'</span>'+chip+'<span class="chev">‹</span>';if(sum.dataset.sig!==html){sum.dataset.sig=html;sum.innerHTML=html}card.classList.toggle('has-warn',hasWarn&&m.complete);card.classList.toggle('editing',mq.matches&&card.dataset.id===editingId)});if(editingId&&!list.querySelector('.med-card.editing'))editingId=null;panel.classList.toggle('nl-editing',!!editingId&&mq.matches);const total=state.medications.length,busy=state.medications.filter(m=>m.aiStatus==='loading').length,pa=$('nlPrintAll'),pl=$('nlPrintLabel');if(pa&&pl&&mq.matches){if(busy>0){const t='بيجهز '+(total-busy)+' من '+total+'…';if(pl.textContent!==t)pl.textContent=t;pa.disabled=true}else if(pa.disabled){pa.disabled=false;syncBar()}}}
 function closeEdit(){editingId=null;panel.classList.remove('nl-showprev');sync()}
 $('nlMedicineList').addEventListener('click',e=>{const sum=e.target.closest('.med-sum');if(sum){const card=sum.closest('.med-card');editingId=card.dataset.id;const idx=state.medications.findIndex(m=>m.id===editingId);if(idx>=0){activeMed=idx;stickerPage=Math.floor(idx/6);renderPreview()}sync();const m=state.medications[idx];const f=FIELDS.find(k=>!clean(m&&m[k]))||'name';const el=card.querySelector('[data-field="'+f+'"]');if(el&&!mq.matches===false)setTimeout(()=>el.focus(),30);return}if(e.target.closest('.med-prev')){panel.classList.toggle('nl-showprev');return}if(e.target.closest('.med-done'))closeEdit()});
 back.addEventListener('click',closeEdit);
@@ -4151,69 +4151,87 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .nl-left{display:contents}
 #novaLabelsPanel .med-sum,#novaLabelsPanel .med-done,#novaLabelsPanel .nl-backdrop{display:none}
 #novaLabelsPanel .nl-quick{display:none}
-/* ===== tablets and computers (>=700px): one-tap customer type, medicine rows, edit window ===== */
+@keyframes nlspin{to{transform:rotate(360deg)}}
+/* ===== tablets and computers (>=700px) ===== */
 @media(min-width:700px){
+#novaLabelsPanel .btn,#novaLabelsPanel .linkbtn,#novaLabelsPanel summary,#novaLabelsPanel #novaLabelsClose{min-height:44px}
+#novaLabelsPanel .btn.small,#novaLabelsPanel #nlAddMedicine,#novaLabelsPanel #nlClearDraft,#novaLabelsPanel #nlPrintSelected,#novaLabelsPanel .patient-card details summary{min-height:44px}
+/* customer type: one slim bar */
+#novaLabelsPanel .patient-card .card-head{display:none}
+#novaLabelsPanel .patient-card .card-body{display:flex;flex-wrap:wrap;align-items:center;gap:0 22px;padding:10px 14px}
+#novaLabelsPanel .nl-quick{order:1}
+#novaLabelsPanel .patient-card .nl-quick~.patient-grid{order:2}
+#novaLabelsPanel .patient-card details{order:3}
+#novaLabelsPanel .nl-quick{display:flex;align-items:center;gap:16px;flex:1 1 100%;margin:0}
+#novaLabelsPanel .nl-quick .q-title{margin:0;white-space:nowrap;font-size:17px;font-weight:800;color:var(--text,#e8edf2)}
+#novaLabelsPanel .nl-quick .q-row{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#novaLabelsPanel .nl-quick button{min-height:60px;font:800 19px var(--font,inherit);border-radius:14px;border:2px solid var(--line2,#39424e);background:var(--panel2,#1b2027);color:inherit;cursor:pointer}
+#novaLabelsPanel .nl-quick button[aria-pressed="true"]{background:#1d4f7c;border-color:#5aa7e6;color:#fff}
+#novaLabelsPanel .nl-quick:not([data-q]) .q-row{outline:2px solid #8a6a1f;outline-offset:4px;border-radius:16px}
+#novaLabelsPanel .patient-card .safety-choices{display:none}
+#novaLabelsPanel .patient-card .patient-grid{display:none}
+#novaLabelsPanel .nl-quick[data-q="child"]~.patient-grid{display:grid;flex:1 1 100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:6px}
+#novaLabelsPanel .patient-card .patient-grid .f-age,#novaLabelsPanel .patient-card .patient-grid .f-weight{display:block}
+#novaLabelsPanel .patient-card input,#novaLabelsPanel .patient-card .seg button{min-height:52px;font-size:16px}
+#novaLabelsPanel .patient-card details{flex:none;margin:0}
+#novaLabelsPanel .patient-card details[open]{flex:1 1 100%}
+/* medicines: full-width rows that read like the sticker */
+#novaLabelsPanel .med-tabs{display:none}
+#novaLabelsPanel .med-card{display:block}
+#novaLabelsPanel .med-card:not(.editing){padding:0}
+#novaLabelsPanel .med-card:not(.editing)>*:not(.med-sum){display:none!important}
+#novaLabelsPanel .med-card:not(.editing) .med-sum{display:flex}
+#novaLabelsPanel .med-card.needs-review{border-color:#8a6a1f;background:#1a1710}
+#novaLabelsPanel .med-card.has-warn{border-color:#8a3a3a;background:#1c1214}
+#novaLabelsPanel .med-sum{align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 16px;text-align:right;background:transparent;border:0;color:inherit;font:inherit;cursor:pointer}
+#novaLabelsPanel .med-sum .n{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#27303a;font-weight:800;font-size:15px}
+#novaLabelsPanel .med-sum .txt{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px}
+#novaLabelsPanel .med-sum .nm{font-weight:800;font-size:19px;line-height:1.35;overflow-wrap:anywhere}
+#novaLabelsPanel .med-sum .ds{font-size:17px;line-height:1.5;color:var(--text,#e8edf2);overflow-wrap:anywhere}
+#novaLabelsPanel .med-sum .ds.none{color:var(--muted)}
+#novaLabelsPanel .med-sum .wn{font-size:15px;font-weight:700;color:#ff9a9a}
+#novaLabelsPanel .med-sum .tick{flex:none;color:#7ed6b0;font-size:24px;font-weight:800;width:44px;text-align:center}
+#novaLabelsPanel .med-sum .sumst{flex:none;display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--line2);border-radius:999px;font-size:15px;font-weight:800;max-width:42%;text-align:center}
+#novaLabelsPanel .med-sum .sumst.warn{background:#2a2412;border-color:#8a6a1f;color:#f1c36a}
+#novaLabelsPanel .med-sum .sumst.err{background:#2a1515;border-color:#8a3a3a;color:#ff9a9a}
+#novaLabelsPanel .med-sum .sumst.busy{background:#142230;border-color:#2f5d86;color:#9fcdf2}
+#novaLabelsPanel .med-sum .spin{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:nlspin .8s linear infinite}
+#novaLabelsPanel .med-sum .chev{flex:none;color:var(--muted);font-size:22px}
+/* sticker preview only on demand */
 #novaLabelsPanel .nl-more>summary{display:none}
 #novaLabelsPanel .nl-left .preview-col.nl-more{visibility:hidden;max-height:0;min-height:0;overflow:hidden;margin:0;padding:0;border:0}
 #novaLabelsPanel.nl-showmore .nl-left .preview-col.nl-more{visibility:visible;max-height:none;overflow:visible;padding:12px 14px;border:1px solid var(--line);margin-top:6px}
 #novaLabelsPanel .nl-prevtoggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-top:6px;border-radius:12px;border:1px dashed var(--line2,#39424e);background:transparent;color:var(--muted);font:700 15px var(--font,inherit);cursor:pointer}
 #novaLabelsPanel .med-card .med-prev{display:none}
-#novaLabelsPanel .btn,#novaLabelsPanel .linkbtn,#novaLabelsPanel summary,#novaLabelsPanel #novaLabelsClose{min-height:44px}
-#novaLabelsPanel .btn.small,#novaLabelsPanel #nlAddMedicine,#novaLabelsPanel #nlClearDraft,#novaLabelsPanel #nlPrintSelected,#novaLabelsPanel .patient-card details summary{min-height:44px}
-#novaLabelsPanel .patient-card .card-head{display:none}
-#novaLabelsPanel .nl-quick{display:block;margin:0 0 12px}
-#novaLabelsPanel .nl-quick .q-title{font-size:15px;font-weight:800;margin:0 0 8px;color:var(--muted)}
-#novaLabelsPanel .nl-quick .q-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#novaLabelsPanel .nl-quick button{min-height:68px;font:800 20px var(--font,inherit);border-radius:14px;border:2px solid var(--line2,#39424e);background:var(--panel2,#1b2027);color:inherit;cursor:pointer}
-#novaLabelsPanel .nl-quick button[aria-pressed="true"]{background:#1d4f7c;border-color:#5aa7e6;color:#fff}
-#novaLabelsPanel .nl-quick:not([data-q]) .q-row{outline:2px solid #6b5420;outline-offset:4px;border-radius:16px}
-#novaLabelsPanel .patient-card .safety-choices{display:none}
-#novaLabelsPanel .patient-card .patient-grid .f-age,#novaLabelsPanel .patient-card .patient-grid .f-weight{display:none}
-#novaLabelsPanel .nl-quick[data-q="child"]~.patient-grid .f-age,#novaLabelsPanel .nl-quick[data-q="child"]~.patient-grid .f-weight{display:block}
-#novaLabelsPanel .patient-card input,#novaLabelsPanel .patient-card .seg button{min-height:52px;font-size:16px}
-#novaLabelsPanel .patient-card .patient-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-#novaLabelsPanel .med-tabs{display:none}
-#novaLabelsPanel .med-card{grid-template-columns:repeat(2,minmax(0,1fr))}
-#novaLabelsPanel .med-card:not(.editing){padding:0;gap:0}
-#novaLabelsPanel .med-card:not(.editing)>*:not(.med-sum):not(label.field){display:none!important}
-#novaLabelsPanel .med-card:not(.editing) .med-sum{display:flex}
-#novaLabelsPanel .med-card:not(.editing)>label.field{display:grid!important;grid-column:1/-1;padding:0 14px 10px}
-#novaLabelsPanel .med-card:not(.editing)>label.field>span{display:none}
-#novaLabelsPanel .med-card:not(.editing)>label.field textarea{height:46px;font-size:16px;min-height:46px}
-#novaLabelsPanel .med-card:not(.needs-review){border-color:#315c4b}
-#novaLabelsPanel .med-sum{grid-column:1/-1;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 14px;text-align:right;background:transparent;border:0;color:inherit;font:inherit;cursor:pointer}
-#novaLabelsPanel .med-sum .n{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#27303a;font-weight:800;font-size:14px}
-#novaLabelsPanel .med-sum .nm{flex:2 1 0;min-width:0;font-weight:800;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#novaLabelsPanel .med-sum .ds{flex:1 1 0;min-width:0;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#novaLabelsPanel .med-sum .sumst{flex:none;padding:4px 12px;border:1px solid var(--line2);border-radius:999px;font-size:13px;font-weight:800}
-#novaLabelsPanel .med-sum .sumst.ok{background:#13251f;border-color:#315c4b;color:#9fe3ca}
-#novaLabelsPanel .med-sum .sumst.warn{background:#2a2412;border-color:#6b5420;color:#f1c36a}
-#novaLabelsPanel .med-sum .sumst.err{background:#2a1515;border-color:#7a2c2c;color:#ff9a9a}
-#novaLabelsPanel .med-sum .eh{flex:none;font-size:13px;font-weight:700;color:#8fc3f0}
+/* edit window */
 #novaLabelsPanel.nl-editing .nl-backdrop{display:block;position:fixed;inset:0;background:#000a;z-index:40}
-#novaLabelsPanel .med-card.editing{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:88vh;overflow-y:auto;z-index:50;padding:18px;box-shadow:0 20px 60px #000c;background:var(--panel2,#1b2027)}
+#novaLabelsPanel .med-card.editing{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:88vh;overflow-y:auto;z-index:50;padding:18px;box-shadow:0 20px 60px #000c;background:var(--panel2,#1b2027);display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#novaLabelsPanel .med-card.editing .med-top,#novaLabelsPanel .med-card.editing .nl-missing-box,#novaLabelsPanel .med-card.editing>.missing,#novaLabelsPanel .med-card.editing>.status{grid-column:1/-1}
+#novaLabelsPanel .med-card.editing .med-fields{display:contents}
 #novaLabelsPanel .med-card.editing .f-medname,#novaLabelsPanel .med-card.editing>label.field{grid-column:1/-1!important}
 #novaLabelsPanel .med-card.editing .med-fields .field:not(.f-medname){grid-column:span 1!important}
 #novaLabelsPanel .med-card.editing .field>span{position:static!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;font-size:13px}
 #novaLabelsPanel .med-card.editing textarea{height:72px}
 #novaLabelsPanel .med-card.editing .med-done{display:block;grid-column:1/-1;min-height:56px;font-size:18px}
 #novaLabelsPanel .med-card.editing input,#novaLabelsPanel .med-card.editing textarea,#novaLabelsPanel .med-card.editing .btn{min-height:52px;font-size:16px}
+#novaLabelsPanel.nl-editing .med-card.editing .med-prev{display:block;grid-column:1/-1;min-height:48px;border-radius:12px;border:1px dashed var(--line2,#39424e);background:transparent;color:#8fc3f0;font:700 15px var(--font,inherit);cursor:pointer}
+/* print bar */
 #novaLabelsPanel .print-actions{flex-direction:row-reverse}
-#novaLabelsPanel #nlPrintAll{min-height:56px;min-width:240px;font-size:17px}
+#novaLabelsPanel #nlPrintAll{min-height:60px;min-width:260px;font-size:18px}
+#novaLabelsPanel #nlPrintAll:disabled{opacity:.6;cursor:progress}
+#novaLabelsPanel .bar-why{font-size:16px;font-weight:700}
+#novaLabelsPanel .bar-why:empty::after{content:'✓ كله جاهز للطباعة';color:#7ed6b0}
 }
-/* ===== wide tablets and computers (>=1100px): list on the left, patient on the right ===== */
+/* ===== wide screens (>=1100px): one column, list scrolls ===== */
 @media(min-width:1100px){
-#novaLabelsPanel .labels-sheet{width:min(1180px,97vw)!important}
-#novaLabelsPanel .layout{grid-template-columns:minmax(410px,.78fr) minmax(0,1.22fr);grid-auto-rows:auto;align-content:stretch;overflow:hidden}
-#novaLabelsPanel .editor-col{overflow-y:auto;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-#novaLabelsPanel .preview-col.nl-more{overflow:visible;min-height:0;padding-top:0}
-#novaLabelsPanel .nl-more .preview-panel{min-height:0}
-#novaLabelsPanel .nl-left{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:scroll;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
-#novaLabelsPanel .nl-left>.panel,#novaLabelsPanel .nl-left>.nl-more{flex:none}
+#novaLabelsPanel .labels-sheet{width:min(1000px,97vw)!important}
+#novaLabelsPanel .layout{display:flex;flex-direction:column;gap:10px;overflow:hidden;padding:12px 18px}
+#novaLabelsPanel .editor-col{flex:none;overflow:visible;min-height:auto}
+#novaLabelsPanel .nl-left{display:flex;flex-direction:column;gap:10px;flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+#novaLabelsPanel .nl-left>.panel,#novaLabelsPanel .nl-left>.nl-more,#novaLabelsPanel .nl-left>.nl-prevtoggle{flex:none}
 #novaLabelsPanel.nl-editing{--sheetW:540px;--stageW:min(500px,calc(100vw - 644px));--gap:24px}
 #novaLabelsPanel.nl-editing.nl-showprev .med-card.editing{left:calc(50% - (var(--sheetW) + var(--stageW) + var(--gap))/2 + var(--stageW) + var(--gap));transform:translateY(-50%);width:var(--sheetW)}
 #novaLabelsPanel.nl-editing.nl-showprev #nlHeroStage{visibility:visible;position:fixed;left:calc(50% - (var(--sheetW) + var(--stageW) + var(--gap))/2);top:50%;transform:translateY(-50%);width:var(--stageW);z-index:50}
-#novaLabelsPanel.nl-editing .med-card.editing .med-prev{display:block;grid-column:1/-1;min-height:48px;border-radius:12px;border:1px dashed var(--line2,#39424e);background:transparent;color:#8fc3f0;font:700 15px var(--font,inherit);cursor:pointer}
 }
 </style>
 </body>
