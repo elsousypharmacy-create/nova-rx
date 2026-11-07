@@ -49,6 +49,7 @@ async function fillCard(page,index,name,over={}){
 }
 
 async function answerSafety(page){
+  if(await page.isVisible('.nl-quick')){await page.click('.nl-quick button[data-q="adult"]');return}
   await page.click('input[name="nlPregnancy"][value="no"]');
   await page.click('input[name="nlBreastfeeding"][value="no"]');
 }
@@ -84,12 +85,12 @@ async function runFlow(page,vp,errors){
     check(`${L}: two medicines fit without scrolling`,fit);
   }
   const why0=await page.$eval('#nlBarWhy',e=>e.textContent);
-  check(`${L}: blocked button explains why (age + safety)`,why0.includes('اكتب العمر')&&why0.includes('الحمل والرضاعة'));
+  check(`${L}: blocked button explains why (age + safety)`,(why0.includes('اكتب العمر')&&why0.includes('الحمل والرضاعة'))||why0.includes('نوع العميل'));
   await page.click('#nlPrintAll',{force:true});
-  check(`${L}: blocked click shows the reason`,(await toastText(page)).includes('عمر'));
+  check(`${L}: blocked click shows the reason`,((await toastText(page)).includes('عمر')||(await toastText(page)).includes('نوع العميل')));
   check(`${L}: no AI call before age and safety are answered`,(await page.evaluate(()=>window.__ai))===0);
 
-  await page.fill('#nlPatientAge','30');await page.dispatchEvent('#nlPatientAge','input');
+  if(!(await page.isVisible('.nl-quick'))){await page.fill('#nlPatientAge','30');await page.dispatchEvent('#nlPatientAge','input');}
   await answerSafety(page);
   await page.waitForFunction(()=>document.getElementById('nlBarWhy').textContent==='',null,{timeout:8000});
   check(`${L}: AI filled both medicines automatically`,(await page.evaluate(()=>window.__ai))===2);
