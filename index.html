@@ -1982,6 +1982,7 @@ body *:not(svg):not(svg *){
               <input type="number" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
             </div>
           </div>
+          <div id="discountHint" class="discount-hint" role="status" aria-live="polite" hidden></div>
         </div>
 
         <!-- Financial Totals -->
@@ -2898,6 +2899,19 @@ body *:not(svg):not(svg *){
 
         // Cap discount so total NEVER drops below 0.00
         const actualDiscount = Math.min(subtotal, totalDiscountPotential);
+
+        // Tell the cashier when a discount value was ignored or capped (it used to change silently).
+        {
+          let msg = '', badP = false, badF = false;
+          if (percentVal < 0) { msg = 'Discount cannot be negative. The value is ignored.'; badP = true; }
+          else if (fixedVal < 0) { msg = 'Discount cannot be negative. The value is ignored.'; badF = true; }
+          else if (percentVal > 100) { msg = 'Percent discount cannot exceed 100%. Using 100%.'; badP = true; }
+          else if (subtotal > 0 && totalDiscountPotential > subtotal) { msg = 'Discount is larger than the invoice total. The total is set to zero.'; badP = percentVal > 0; badF = fixedVal > 0; }
+          const hint = document.getElementById('discountHint');
+          if (hint) { if (hint.textContent !== msg) hint.textContent = msg; hint.hidden = !msg; }
+          elements.inputPercentDiscount.setAttribute('aria-invalid', String(badP));
+          elements.inputFixedDiscount.setAttribute('aria-invalid', String(badF));
+        }
         const grandTotal = Math.max(0, subtotal - actualDiscount);
         const vatIncluded = grandTotal * (15 / 115); // Standard KSA 15% VAT component
 
@@ -3430,7 +3444,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const money=n=>(Number(n)||0).toFixed(2)+' ر.س';
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
- const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div></div>';
+ const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
@@ -3525,6 +3539,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
  }
  const enExtra={
+  'لا توجد نتائج مطابقة':'No matching results',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
   'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','رقم العميل قبل الدفع':'Customer number before payment',
   'سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.':'Enter the customer number or press Skip to continue without one.',
@@ -3545,7 +3560,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.'
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
- const arExtra={'Walk-in Customer':'عميل عابر','Start New Sale (F2)':'فاتورة جديدة (F2)',
+ const arExtra={'Discount cannot be negative. The value is ignored.':'لا يمكن أن يكون الخصم بالسالب. تم تجاهل القيمة.','Percent discount cannot exceed 100%. Using 100%.':'نسبة الخصم لا تتجاوز 100%. تم استخدام 100%.','Discount is larger than the invoice total. The total is set to zero.':'الخصم أكبر من إجمالي الفاتورة. الإجمالي أصبح صفرًا.','No products found matching':'لا توجد منتجات مطابقة','No customers found. Press':'لا يوجد عميل بهذا البحث. اضغط','to skip and switch to Product Scan.':'للتخطي والانتقال لبحث المنتجات.','Walk-in Customer':'عميل عابر','Start New Sale (F2)':'فاتورة جديدة (F2)',
   'Skips customer and switches to Product Scan mode':'يتخطى العميل وينتقل لوضع مسح المنتج','Barcode Scan':'مسح الباركود',
   'Directly adds product & switches to Product mode':'يضيف المنتج مباشرة وينتقل لوضع المنتج',
   'Start New Sale (resets invoice & focuses search)':'فاتورة جديدة (تمسح الفاتورة وتركّز على البحث)',
@@ -3648,6 +3663,9 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 #novaAiLaunch{position:fixed;bottom:18px;left:18px;z-index:8000;background:#2563eb;color:#fff;border:0;border-radius:14px;padding:11px 16px;font:700 13px Cairo;box-shadow:0 6px 22px #0008;cursor:pointer}
 /* Keep the sticker button off the checkout bar on phones (it used to cover «CHECKOUT»). */
 @media(max-width:780px){#novaAiLaunch{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:10px;padding:8px 12px;font-size:12px}}
+.discount-hint{font-size:11px;line-height:1.5;color:var(--accent-amber,#bba477);margin-top:6px}
+.input-grp input[aria-invalid="true"]{outline:1px solid var(--accent-red,#ef4444);border-color:var(--accent-red,#ef4444)}
+.nova-empty{padding:18px 12px;text-align:center;color:#a4adb7;font-size:13px}
 #novaAiPanel{display:none;position:fixed;inset:0;z-index:9000;background:#000b;align-items:center;justify-content:center;padding:12px;font-family:Cairo}
 #novaAiPanel.open{display:flex}
 #novaAiPanel .ai-sheet{background:#171b20;color:#f6f7f8;border:1px solid #39424e;border-radius:18px;padding:18px;max-width:920px;width:100%;max-height:92dvh;overflow:auto;direction:rtl}
@@ -3679,7 +3697,7 @@ $('novaAiRun').onclick=async()=>{
 const files=Array.from($('novaAiFiles').files||[]);
 if(!files.length||files.length>4){status.textContent='اختار من 1 إلى 4 صور';return}
 if(files.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>4*1024*1024)){status.textContent='الملفات لازم تكون صور JPG/PNG/WebP وأقل من 4MB لكل صورة';return}
-status.textContent='جاري التحليل...';$('novaAiRun').disabled=true;table.hidden=true;$('novaAiExport').hidden=true;
+status.textContent='جاري التحليل...';$('novaAiRun').textContent='تحليل الفاتورة';$('novaAiRun').disabled=true;table.hidden=true;$('novaAiExport').hidden=true;
 try{
 const images=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({mimeType:f.type,data:String(reader.result).split(',')[1]});reader.onerror=reject;reader.readAsDataURL(f)})));
 const response=await fetch('/api/ai/purchase',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({images})});
@@ -3687,7 +3705,7 @@ const result=await response.json();if(!response.ok)throw Error(result.error||'ف
 tbody.replaceChildren();for(const item of result.items||[]){const tr=document.createElement('tr');for(const key of ['name','quantity','unit_price','discount','batch','expiry','notes']){const td=document.createElement('td');td.append(field(item[key]));tr.append(td)}tbody.append(tr)}
 table.hidden=false;$('novaAiExport').hidden=false;$('novaAiSupplier').textContent='المورد: '+(result.supplier||'غير واضح');
 status.textContent='تم استخراج '+(result.items||[]).length+' صنف. راجع كل البيانات قبل أي اعتماد.';
-}catch(e){status.textContent='تعذر التحليل: '+e.message}finally{$('novaAiRun').disabled=false}
+}catch(e){status.textContent='تعذر التحليل: '+e.message+' — اضغط «إعادة المحاولة».';$('novaAiRun').textContent='إعادة المحاولة'}finally{$('novaAiRun').disabled=false}
 };
 $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر الوحدة','الخصم','التشغيلة','الصلاحية','ملاحظات'],...Array.from(tbody.rows,r=>Array.from(r.querySelectorAll('input'),i=>i.value))];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='nova-purchase-review.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 })();

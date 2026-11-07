@@ -22,11 +22,11 @@ Discount/customer draft persistence, search-mode badge, receipt close, i18n page
 | 1 | UX-MIXED-LANG | P1 | FIXED on branch (draft PR) — directional dictionary + mixed-label table |
 | 1 | UX-LANG-SWITCH-WEAK | P1 | FIXED on branch — settings buttons had no listener (delegated click) |
 | 1 | UX-FAB-OVERLAP-mobile | P1 | FIXED on branch — confirmed it covered `#btnCheckout` |
-| 2 | UX-SEARCH-EMPTY | P2 | no empty-result state |
-| 2 | UX-DISCOUNT-NO-FEEDBACK | P2 | negative / out-of-range accepted silently |
-| 2 | UX-AI-NO-RETRY | P2 | no retry on AI failure (sticker modal has retry; check the rest) |
+| 2 | UX-SEARCH-EMPTY | P2 | FIXED on branch `…-ux2` — empty states existed but stayed English in Arabic mode; now translated |
+| 2 | UX-DISCOUNT-NO-FEEDBACK | P2 | FIXED on branch `…-ux2` — inline warning + red field for negative / over 100% / larger than the invoice |
+| 2 | UX-AI-NO-RETRY | P2 | FIXED on branch `…-ux2` — purchase-invoice reading: failure shows «إعادة المحاولة» that calls the server again |
 | 2 | UX-FAB-MISLABEL | P2 | FIXED on branch — label now matches aria-label |
-| 2 | UX-PRODUCTS-FILTER-EMPTY | P2 | no empty state in products filter |
+| 2 | UX-PRODUCTS-FILTER-EMPTY | P2 | FIXED on branch `…-ux2` — «لا توجد نتائج مطابقة» on products, customers and invoices |
 | 3 | UX-NEW-SALE-MODE | P3 | |
 | 3 | UX-EMPTY-CHECKOUT-NO-HINT | P3 | |
 | 3 | UX-TOAST-EN | P3 | toast text in English |
