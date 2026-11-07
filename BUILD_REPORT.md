@@ -1,5 +1,13 @@
 # BUILD_REPORT — NOVA Rx
 
+## UX batch 2 (2026-11-07): UX-SEARCH-EMPTY, UX-DISCOUNT-NO-FEEDBACK, UX-PRODUCTS-FILTER-EMPTY, UX-AI-NO-RETRY — fixed on branch
+
+- Verified on the batch-1 code before changing anything (Playwright, Arabic and English): the search empty states existed but stayed English in Arabic mode; discounts of 150%, -5 and a fixed discount larger than the invoice changed the total silently; a products filter with no match showed an empty table; a failed purchase-invoice reading had no retry.
+- `index.html` only: `#discountHint` (aria-live) + `aria-invalid` red field with three messages (AR/EN); `.nova-empty` «لا توجد نتائج مطابقة» under any empty table (products, customers, invoices); the purchase-invoice button becomes «إعادة المحاولة» after a failure and calls `/api/ai/purchase` again; AR translations for the search empty states.
+- Tests: new `tests/ux-batch2.mjs` — PASS; it FAILS 20 checks on the batch-1 code. Regression PASS: `ux-batch1`, `npm run check`, `issue-2-acceptance` 21/21, `issue-4-labels-panel`, `sale-sticker-modal`, Playwright smoke. Both new test files also PASS on the HTML embedded in the live Worker build (`UX_SKIP_EXTRA='#nlSimple'` for batch 1).
+- Not tested: real phones, live Worker (not deployed). The purchase retry was tested with a mocked 500, not the real AI.
+- Remaining: batch 3 (P3 + the Impeccable findings) in `docs/UX_BACKLOG.md`.
+
 ## UX batch 1 (2026-11-07): UX-MIXED-LANG, UX-LANG-SWITCH-WEAK, UX-FAB-OVERLAP-mobile, UX-FAB-MISLABEL — fixed on branch
 
 - Verified on `main` @ `4e50e19` before changing code (Playwright audit): English mode left ~107 Arabic/mixed UI strings; the settings language buttons did nothing; on 390×844 and 360×640 the sticker button covered `#btnCheckout`; the button text «✦ AI الاستيكرات» did not match its aria-label.
