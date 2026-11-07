@@ -299,3 +299,6 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 - Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers2.js sha256 7b85c9ef17e38849bdcb325ff3179bcc950235625d0166f8147da7d2fbe3e368 (base = deployed ...stickers.js; expected_modified_on 2026-11-07T12:32:14).
 - Tests pass on repo HTML and HTML extracted from the new artifact. Route check OK (/ 200, secrets 403, whatsapp 200).
 - Needs owner approval before deploy (dry run first).
+
+## DEPLOYED — sticker flow v2 (2026-11-07, run 42375318941, dry run 42375252302 passed)
+sha256 7b85c9ef…e368. Rollback: previous artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers.js.
