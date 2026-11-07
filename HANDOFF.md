@@ -181,3 +181,10 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Commit `6f28bdd` on `chore/sale-sticker-modal-clean`: Playwright POS smoke **SUCCESS** on ubuntu-24.04.
 - Run: https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42312203852
 - PR #29 remains **draft**. Not merged. Not deployed. Not marked ready-to-merge.
+
+### PoC-0 isolated Kimi workflow — 2026-11-07 (Claude Code)
+- Branch `claude/nifty-albattani-ka1ifs`: adds `.github/workflows/poc-kimi.yml` and `.github/scripts/poc_check_patch.py`. `kimi-task.yml` and other workflows unchanged.
+- Manual dispatch only, issue must be #31, jobs gate → execute (read-only, no saved git creds) → validate (no secrets) → publish (write, no Kimi key, runs no patch code). Allowlist fixed in the workflow.
+- Local evidence: gate accepted a good patch and rejected extra file, symlink, exec bit, removed report lines, binary, child_process import, credential string, rename; runtime step rejects a test that prints PASS on a broken manifest.
+- NOT run on GitHub. Kimi not started. No labels changed. Not merged. Not deployed.
+- Next exact step: owner reviews draft PR and Kimi cost; only then merge to main and dispatch with issue_number=31.

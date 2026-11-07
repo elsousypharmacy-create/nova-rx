@@ -1,0 +1,280 @@
+# PoC-0: run Kimi on Issue #31 only, behind a hard file gate.
+# Manual start only. Separate jobs: Kimi never holds a write token, the
+# validator holds no secrets, and the publisher never runs Kimi's code.
+# The existing kimi-task.yml is not touched by this file.
+name: PoC Kimi (Issue 31 only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Must be 31"
+        required: true
+        type: string
+
+# No token permissions unless a job asks for them.
+permissions: {}
+
+concurrency:
+  group: poc-kimi-nova-rx
+  cancel-in-progress: false
+
+env:
+  POC_ISSUE: "31"
+  POC_ALLOWLIST: "tests/unit/poc0-manifest.check.mjs BUILD_REPORT.md"
+  POC_TEST: "tests/unit/poc0-manifest.check.mjs"
+  POC_BRANCH_PREFIX: "poc/issue-31-"
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      issues: read
+      pull-requests: read
+      contents: read
+    outputs:
+      base_sha: ${{ steps.base.outputs.sha }}
+    steps:
+      - name: Check request
+        env:
+          INPUT_ISSUE: ${{ inputs.issue_number }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          [ "$RUN_ATTEMPT" = "1" ] || { echo "::error::Re-runs are not allowed. Start a new run only after owner approval."; exit 1; }
+          [ "$REF" = "refs/heads/main" ] || { echo "::error::Run this workflow from main only."; exit 1; }
+          [ "$INPUT_ISSUE" = "$POC_ISSUE" ] || { echo "::error::This PoC only accepts issue $POC_ISSUE."; exit 1; }
+          R="$GITHUB_REPOSITORY"
+          gh issue view "$POC_ISSUE" --repo "$R" --json state,title,body > issue.json
+          jq -e '.state == "OPEN"' issue.json >/dev/null || { echo "::error::Issue $POC_ISSUE is not open."; exit 1; }
+          jq -e '.title | startswith("[PoC-0]")' issue.json >/dev/null || { echo "::error::Issue title changed; refusing."; exit 1; }
+          # No duplicate work: no open PR and no branch from an earlier run.
+          OPEN=$(gh pr list --repo "$R" --state open --limit 100 --json headRefName \
+            --jq "[.[] | select(.headRefName | startswith(\"$POC_BRANCH_PREFIX\"))] | length")
+          [ "$OPEN" = "0" ] || { echo "::error::An open PoC PR already exists."; exit 1; }
+          REFS=$(gh api "repos/$R/git/matching-refs/heads/$POC_BRANCH_PREFIX" --jq 'length')
+          [ "$REFS" = "0" ] || { echo "::error::A $POC_BRANCH_PREFIX* branch already exists. Review or delete it first."; exit 1; }
+          mkdir -p task
+          jq -r '.title + "\n\n" + .body' issue.json > task/task.txt
+      - id: base
+        run: echo "sha=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: poc-task
+          path: task/task.txt
+          retention-days: 7
+
+  execute:
+    needs: gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # Read-only token, used by checkout only and not saved in git config.
+    permissions:
+      contents: read
+    outputs:
+      patch_sha256: ${{ steps.patch.outputs.sha256 }}
+    steps:
+      - name: Block re-runs
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: '[ "$RUN_ATTEMPT" = "1" ] || exit 1'
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.base_sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: poc-task
+          path: ${{ runner.temp }}/task
+      - name: Check secret is set
+        env:
+          KIMI_MODEL_API_KEY: ${{ secrets.KIMI_MODEL_API_KEY }}
+        run: '[ -n "$KIMI_MODEL_API_KEY" ] || { echo "::error::KIMI_MODEL_API_KEY missing"; exit 1; }'
+      - name: Install Kimi CLI
+        run: |
+          curl -fsSL https://code.kimi.com/kimi-code/install.sh -o "$RUNNER_TEMP/kimi-install.sh"
+          bash "$RUNNER_TEMP/kimi-install.sh"
+          echo "$HOME/.kimi-code/bin" >> "$GITHUB_PATH"
+      - name: Run Kimi (single attempt, no GitHub token)
+        env:
+          KIMI_MODEL_NAME: k3-256k
+          KIMI_MODEL_API_KEY: ${{ secrets.KIMI_MODEL_API_KEY }}
+          KIMI_MODEL_BASE_URL: https://api.kimi.ai/coding/v1
+          KIMI_MODEL_PROVIDER_TYPE: kimi
+        run: |
+          set -euo pipefail
+          TASK="$RUNNER_TEMP/task/task.txt"
+          timeout 480 kimi -p "This is a pipeline test. Your ONLY task is in $TASK. Read that file and nothing else for instructions. Do NOT read KIMI_CONTEXT.md, HANDOFF.md or BUILD_REPORT.md history and do NOT work on any other issue. You may change ONLY these paths: $POC_ALLOWLIST. Any other change makes the run fail automatically. Do not commit, push, or edit git config. Do not use the network. Run node $POC_TEST once and report its real output. Stop when done."
+      - name: Export patch
+        id: patch
+        run: |
+          set -euo pipefail
+          G="git -c core.hooksPath=/dev/null -c core.fileMode=true -c core.symlinks=true"
+          $G add -A
+          mkdir -p "$RUNNER_TEMP/out"
+          $G diff --cached --binary --no-renames --no-ext-diff --no-textconv --no-color \
+            "${{ needs.gate.outputs.base_sha }}" > "$RUNNER_TEMP/out/poc.patch"
+          [ -s "$RUNNER_TEMP/out/poc.patch" ] || { echo "::error::Kimi produced no changes"; exit 1; }
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/out/poc.patch" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          $G diff --cached --name-status --no-renames "${{ needs.gate.outputs.base_sha }}"
+      - name: Make sure the patch does not contain the Kimi key
+        env:
+          KIMI_MODEL_API_KEY: ${{ secrets.KIMI_MODEL_API_KEY }}
+        run: |
+          if grep -qF -- "$KIMI_MODEL_API_KEY" "$RUNNER_TEMP/out/poc.patch"; then
+            echo "::error::Patch contains the API key. Discarding."; exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: poc-patch
+          path: ${{ runner.temp }}/out/poc.patch
+          retention-days: 14
+
+  validate:
+    needs: [gate, execute]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # No secrets are referenced in this job.
+    permissions:
+      contents: read
+    outputs:
+      patch_sha256: ${{ steps.hash.outputs.sha256 }}
+    steps:
+      - name: Block re-runs
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: '[ "$RUN_ATTEMPT" = "1" ] || exit 1'
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.base_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: poc-patch
+          path: ${{ runner.temp }}/in
+      - name: Patch hash matches what execute produced
+        id: hash
+        env:
+          WANT: ${{ needs.execute.outputs.patch_sha256 }}
+        run: |
+          set -euo pipefail
+          GOT=$(sha256sum "$RUNNER_TEMP/in/poc.patch" | cut -d' ' -f1)
+          [ -n "$WANT" ] && [ "$GOT" = "$WANT" ] || { echo "::error::Patch hash mismatch"; exit 1; }
+          echo "sha256=$GOT" >> "$GITHUB_OUTPUT"
+      - name: Static gate (allowlist, modes, symlinks, binaries, content)
+        run: python3 .github/scripts/poc_check_patch.py "$RUNNER_TEMP/in/poc.patch"
+      - name: Apply on clean main and re-check the real tree
+        run: |
+          set -euo pipefail
+          G="git -c core.hooksPath=/dev/null -c core.fileMode=true -c core.symlinks=true"
+          $G apply --check "$RUNNER_TEMP/in/poc.patch"
+          $G apply --index "$RUNNER_TEMP/in/poc.patch"
+          CHANGED=$($G diff --cached --name-only --no-renames HEAD)
+          for f in $CHANGED; do
+            case " $POC_ALLOWLIST " in *" $f "*) ;; *) echo "::error::Not allowed: $f"; exit 1;; esac
+            [ ! -L "$f" ] || { echo "::error::Symlink: $f"; exit 1; }
+            [ -f "$f" ] || { echo "::error::Not a regular file: $f"; exit 1; }
+            [ ! -x "$f" ] || { echo "::error::Executable bit set: $f"; exit 1; }
+            MODE=$($G ls-files -s -- "$f" | cut -d' ' -f1)
+            [ "$MODE" = "100644" ] || { echo "::error::Bad mode $MODE: $f"; exit 1; }
+          done
+          # Nothing else in the working tree may differ (no untracked files).
+          EXTRA=$($G status --porcelain --untracked-files=all | grep -v '^A  \|^M  ' || true)
+          [ -z "$EXTRA" ] || { echo "::error::Unexpected tree changes:"; echo "$EXTRA"; exit 1; }
+          $G diff --cached --stat HEAD
+      - name: Run the new test (no child processes, no file writes)
+        run: |
+          set -euo pipefail
+          node --check "$POC_TEST"
+          set +e
+          OUT=$(timeout 30 node --permission --allow-fs-read="$PWD" "$POC_TEST" 2>&1); CODE=$?
+          set -e
+          echo "$OUT"
+          [ "$CODE" = "0" ] || { echo "::error::Test exited $CODE"; exit 1; }
+          [ "$(printf '%s\n' "$OUT" | tail -n1)" = "poc0-manifest.check: PASS" ] || { echo "::error::Missing PASS line"; exit 1; }
+      - name: The test must fail on a broken manifest
+        run: |
+          set -euo pipefail
+          T="$RUNNER_TEMP/broken"
+          mkdir -p "$T/tests/unit"
+          cp "$POC_TEST" "$T/tests/unit/"
+          jq '.icons = []' manifest.webmanifest > "$T/manifest.webmanifest"
+          cd "$T"
+          if timeout 30 node --permission --allow-fs-read="$T" "$POC_TEST" > out.txt 2>&1; then
+            cat out.txt; echo "::error::Test passed on a broken manifest; it does not check anything."; exit 1
+          fi
+          echo "OK: test fails on broken manifest"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: poc-validated
+          path: ${{ runner.temp }}/in/poc.patch
+          retention-days: 14
+
+  publish:
+    needs: [gate, validate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # No Kimi key here, and no code from the patch is executed.
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Block re-runs
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: '[ "$RUN_ATTEMPT" = "1" ] || exit 1'
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.base_sha }}
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: poc-validated
+          path: ${{ runner.temp }}/in
+      - name: Re-verify hash and static gate
+        env:
+          WANT: ${{ needs.validate.outputs.patch_sha256 }}
+        run: |
+          set -euo pipefail
+          GOT=$(sha256sum "$RUNNER_TEMP/in/poc.patch" | cut -d' ' -f1)
+          [ -n "$WANT" ] && [ "$GOT" = "$WANT" ] || { echo "::error::Patch hash mismatch"; exit 1; }
+          python3 .github/scripts/poc_check_patch.py "$RUNNER_TEMP/in/poc.patch"
+      - name: Commit, push branch, open draft PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ needs.gate.outputs.base_sha }}
+          PATCH_SHA: ${{ needs.validate.outputs.patch_sha256 }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          R="$GITHUB_REPOSITORY"
+          BRANCH="${POC_BRANCH_PREFIX}${GITHUB_RUN_ID}"
+          # Check again for duplicates right before writing.
+          OPEN=$(gh pr list --repo "$R" --state open --limit 100 --json headRefName \
+            --jq "[.[] | select(.headRefName | startswith(\"$POC_BRANCH_PREFIX\"))] | length")
+          [ "$OPEN" = "0" ] || { echo "::error::An open PoC PR already exists."; exit 1; }
+          G="git -c core.hooksPath=/dev/null"
+          $G apply --index "$RUNNER_TEMP/in/poc.patch"
+          $G -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "test: PoC-0 manifest sanity check (issue #${POC_ISSUE}, run ${GITHUB_RUN_ID})"
+          $G push origin "HEAD:refs/heads/$BRANCH"
+          BODY="PoC-0 pipeline result for #${POC_ISSUE}.
+
+          - Run: ${RUN_URL}
+          - Base: ${BASE_SHA}
+          - Patch sha256: ${PATCH_SHA}
+          - Gate: allowlist, modes, symlinks, binaries and content checks passed; test printed PASS on this exact tree and failed on a broken manifest.
+
+          Draft only. Owner review required. Do not merge or deploy without owner approval."
+          if ! gh pr create --repo "$R" --draft --base main --head "$BRANCH" \
+               --title "PoC-0: manifest sanity check (#${POC_ISSUE})" --body "$BODY"; then
+            echo "::error::Branch $BRANCH pushed, but the PR could not be created (Actions may not be allowed to create PRs)."
+            echo "PR_CREATE_BLOCKED: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
