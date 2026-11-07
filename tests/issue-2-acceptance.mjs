@@ -159,11 +159,11 @@ try {
     return true;
   })()`);
   await sleep(150);
-  const floored = await evalPage(`document.getElementById('displayGrandTotal').textContent`);
+  const floored = (await evalPage(`document.getElementById('displayGrandTotal').textContent`)).replace('ر.س', 'SAR');
   check('B1 excessive discount floors total at 0.00', floored === '0.00 SAR', floored);
   await navigateAndWait(appUrl);
   await sleep(300);
-  const flooredAfter = await evalPage(`({ fix: document.getElementById('inputFixedDiscount').value, grand: document.getElementById('displayGrandTotal').textContent })`);
+  const flooredAfter = await evalPage(`({ fix: document.getElementById('inputFixedDiscount').value, grand: document.getElementById('displayGrandTotal').textContent.replace('ر.س', 'SAR') })`);
   check('B2 excessive discount restored exactly, still 0.00', flooredAfter.fix === '500' && flooredAfter.grand === '0.00 SAR', JSON.stringify(flooredAfter));
 
   await evalPage(`(() => {

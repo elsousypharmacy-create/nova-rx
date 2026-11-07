@@ -1155,8 +1155,9 @@
     /* Toast Notification */
     .toast-container {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
+      top: 142px;
+      left: 16px;
+      max-width: min(380px, calc(100vw - 32px));
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -2080,7 +2081,7 @@ body *:not(svg):not(svg *){
   <div id="customerCheckoutGate" class="nova-customer-gate" hidden role="dialog" aria-modal="true" aria-labelledby="customerGateTitle">
     <div class="nova-customer-gate-card" dir="rtl">
       <h3 id="customerGateTitle">رقم العميل قبل الدفع</h3>
-      <p>سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.</p>
+      <p>سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.</p>
       <form id="gateCustomerForm" autocomplete="off">
         <input id="gatePhone" type="tel" inputmode="tel" dir="ltr" placeholder="رقم موبايل العميل" aria-label="رقم موبايل العميل" required />
         <div id="gateNewCustomerFields" hidden><input id="gateCustomerName" type="text" dir="auto" placeholder="اسم العميل (اختياري)" aria-label="اسم العميل الجديد" maxlength="100" /></div>
@@ -2449,19 +2450,22 @@ body *:not(svg):not(svg *){
 
       // --- HELPER / UTILITY FUNCTIONS ---
       function showToast(msg, type = "info") {
+        // One message at a time: a new toast replaces the old one (they used to pile up over the totals).
+        elements.toastContainer.replaceChildren();
         const toast = document.createElement("div");
         toast.className = "toast";
+        toast.setAttribute("role", type === 'error' ? "alert" : "status");
         toast.innerHTML = `
           <span style="color:${type === 'error' ? 'var(--accent-red)' : 'var(--accent-cyan-light)'}">●</span>
-          <span>${msg}</span>
+          <span dir="auto">${msg}</span>
         `;
         elements.toastContainer.appendChild(toast);
         setTimeout(() => {
           toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
           toast.style.opacity = "0";
-          toast.style.transform = "translateY(10px)";
+          toast.style.transform = "translateY(-10px)";
           setTimeout(() => toast.remove(), 300);
-        }, 2600);
+        }, type === 'error' ? 4500 : 2200);
       }
 
       function formatSAR(val) {
@@ -2789,7 +2793,7 @@ body *:not(svg):not(svg *){
           });
         }
         renderInvoice();
-        showToast(`Added: ${product.name}`);
+        showToast(`Added to invoice: ${product.name}`);
       }
 
       function updateLineQty(productId, newQty) {
@@ -3256,6 +3260,10 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           document.getElementById("customerCheckoutGate").hidden = true;
           openCheckout();
         });
+        document.getElementById("gatePhone").addEventListener("keydown", e => {
+          // Walk-in customer in one key: Enter on an empty number skips the customer step.
+          if (e.key === "Enter" && !e.target.value.trim()) { e.preventDefault(); document.getElementById("gateSkipCustomer").click(); }
+        });
         document.getElementById("gatePhone").addEventListener("input", () => {
           const phone = document.getElementById("gatePhone").value.replace(/[^0-9]/g, "");
           const customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
@@ -3542,7 +3550,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   'لا توجد نتائج مطابقة':'No matching results',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
   'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','رقم العميل قبل الدفع':'Customer number before payment',
-  'سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.':'Enter the customer number or press Skip to continue without one.',
+  'سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.':'Enter the customer number, or press Enter with no number to skip.',
   'متابعة بالرقم':'Continue with number','تخطي · عميل نقدي':'Skip · cash customer','رجوع للفاتورة':'Back to invoice',
   'إضافة رقم العميل (اختياري)':'Add customer number (optional)','تعليق':'Hold','المجموع الفرعي (':'Subtotal (',
   'استيكرات الأدوية':'Medicine labels','طباعة استيكرات الأدوية':'Print medicine labels','✦ استيكرات الأدوية':'✦ Medicine labels',
@@ -3560,7 +3568,15 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.'
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
- const arExtra={'Discount cannot be negative. The value is ignored.':'لا يمكن أن يكون الخصم بالسالب. تم تجاهل القيمة.','Percent discount cannot exceed 100%. Using 100%.':'نسبة الخصم لا تتجاوز 100%. تم استخدام 100%.','Discount is larger than the invoice total. The total is set to zero.':'الخصم أكبر من إجمالي الفاتورة. الإجمالي أصبح صفرًا.','No products found matching':'لا توجد منتجات مطابقة','No customers found. Press':'لا يوجد عميل بهذا البحث. اضغط','to skip and switch to Product Scan.':'للتخطي والانتقال لبحث المنتجات.','Walk-in Customer':'عميل عابر','Start New Sale (F2)':'فاتورة جديدة (F2)',
+ const arExtra={'CHECKOUT':'إتمام الدفع','NET TOTAL':'الإجمالي النهائي','F9 / Pay':'F9 / دفع','items)':'صنف)',
+  'Added to invoice:':'تمت الإضافة للفاتورة:','Scanned product added:':'تمت إضافة المنتج بالباركود:','Barcode match added:':'تمت الإضافة بالباركود:','Product added:':'تمت إضافة المنتج:',
+  'Customer skipped (Walk-in). Switched to Product Scan mode.':'تم تخطي العميل (عميل عابر). تم التحويل لبحث المنتجات.','No customer found. Searching medicines instead.':'لا يوجد عميل بهذا البحث. جارٍ البحث عن الأدوية.',
+  'Customer attached:':'تم ربط العميل:','Customer detached. Operating in Walk-in mode.':'تم فصل العميل. الفاتورة لعميل عابر.','Invalid quantity. Enter a number from 1 to 999.':'كمية غير صالحة. اكتب رقمًا من 1 إلى 999.',
+  'Quantity cannot exceed 999.':'الكمية لا تزيد عن 999.','Item removed from invoice.':'تم حذف الصنف من الفاتورة.','Invoice cleared.':'تم مسح الفاتورة.','Cannot checkout an empty invoice.':'لا يمكن الدفع لفاتورة فاضية.',
+  'Enter a valid cash amount covering the total due.':'اكتب مبلغًا نقديًا يغطي المطلوب.','Payment confirmed & Invoice completed!':'تم الدفع واكتملت الفاتورة!','New sale ready. Scan barcode or search medicine.':'فاتورة جديدة جاهزة. امسح الباركود أو ابحث عن دواء.',
+  'Unable to save held invoices on this device.':'تعذر حفظ الفواتير المعلقة على هذا الجهاز.','Add products before holding an invoice.':'أضف أصنافًا قبل تعليق الفاتورة.','Held invoice limit reached (50).':'وصلت لحد الفواتير المعلقة (50).',
+  'Invoice held on this device.':'تم تعليق الفاتورة على هذا الجهاز.','Held invoice restored.':'تمت استعادة الفاتورة المعلقة.','Customer search active. Existing line items remain intact.':'بحث العميل شغّال. الأصناف الحالية كما هي.',
+  'Search to select a replacement customer.':'ابحث لاختيار عميل بديل.','Re-added from history at current price:':'أُعيدت الإضافة من السجل بالسعر الحالي:','Discount cannot be negative. The value is ignored.':'لا يمكن أن يكون الخصم بالسالب. تم تجاهل القيمة.','Percent discount cannot exceed 100%. Using 100%.':'نسبة الخصم لا تتجاوز 100%. تم استخدام 100%.','Discount is larger than the invoice total. The total is set to zero.':'الخصم أكبر من إجمالي الفاتورة. الإجمالي أصبح صفرًا.','No products found matching':'لا توجد منتجات مطابقة','No customers found. Press':'لا يوجد عميل بهذا البحث. اضغط','to skip and switch to Product Scan.':'للتخطي والانتقال لبحث المنتجات.','Walk-in Customer':'عميل عابر','Start New Sale (F2)':'فاتورة جديدة (F2)',
   'Skips customer and switches to Product Scan mode':'يتخطى العميل وينتقل لوضع مسح المنتج','Barcode Scan':'مسح الباركود',
   'Directly adds product & switches to Product mode':'يضيف المنتج مباشرة وينتقل لوضع المنتج',
   'Start New Sale (resets invoice & focuses search)':'فاتورة جديدة (تمسح الفاتورة وتركّز على البحث)',
@@ -3587,6 +3603,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  function translateText(text,lang){
   const trimmed=text.trim();if(!trimmed)return text;
   if(lang==='en'&&text.includes('ر.س'))text=text.split('ر.س').join('SAR');
+  if(lang==='ar'&&text.includes('SAR'))text=text.replace(/\bSAR\b/g,'ر.س');
   const mixed=mixedText[trimmed];if(mixed)return text.replace(trimmed,mixed[lang==='en'?0:1]);
   const dict=lang==='en'?toEn:enToAr;
   if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
@@ -3666,6 +3683,16 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 .discount-hint{font-size:11px;line-height:1.5;color:var(--accent-amber,#bba477);margin-top:6px}
 .input-grp input[aria-invalid="true"]{outline:1px solid var(--accent-red,#ef4444);border-color:var(--accent-red,#ef4444)}
 .nova-empty{padding:18px 12px;text-align:center;color:#a4adb7;font-size:13px}
+/* UX batch 3: 12px text floor (functional text was 9-11px) */
+.customer-sidebar .customer-empty-sub,#cashDetailsBox span,.nova-demo-label,.pharmacy-banner-copy span,.nova-held-count,.btn-checkout kbd,.quick-cash-btn,.customer-empty-sub,.item-generic,#cashDetailsBox label,.modal-body label,.nova-kpi small,.nova-data-table th,.discount-title span,.input-grp span,.nova-sale-number,#btnHeldInvoices span,.col-idx,.col-item,.col-price,.col-qty,.col-disc,.col-total{font-size:12px!important}
+/* UX batch 3: 44px touch targets on touch screens (tablet); mouse layouts keep their density */
+@media (pointer:coarse){
+.nova-tab,.nova-new-sale,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.search-mode-tag,.nova-refresh-icon,.qty-btn,.qty-input,.quick-cash-btn,.nova-checkout-customer,.btn-loyalty,#btnCancelCheckout,#btnConfirmPayment,#btnPrintReceiptBtn,#btnReceiptNewSale,#btnDismissHelp,#inputPercentDiscount,#inputFixedDiscount,#inputCashReceived{min-height:44px!important}
+.nova-customer-action,.nova-more-action,.nova-refresh-icon,.qty-btn,.btn-icon-del{min-width:44px!important}
+.btn-icon-del{min-height:44px!important;display:inline-flex;align-items:center;justify-content:center}
+.nova-sale-actions>.btn,.nova-sale-actions .nova-more-wrap>.btn{height:44px!important;min-height:44px!important}
+.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action{width:44px!important;min-width:44px!important}
+}
 #novaAiPanel{display:none;position:fixed;inset:0;z-index:9000;background:#000b;align-items:center;justify-content:center;padding:12px;font-family:Cairo}
 #novaAiPanel.open{display:flex}
 #novaAiPanel .ai-sheet{background:#171b20;color:#f6f7f8;border:1px solid #39424e;border-radius:18px;padding:18px;max-width:920px;width:100%;max-height:92dvh;overflow:auto;direction:rtl}

@@ -1,5 +1,13 @@
 # BUILD_REPORT — NOVA Rx
 
+## UX batch 3 (2026-11-07): tablet/desktop polish — toasts, Arabic totals, touch targets, text floor, walk-in shortcut
+
+- Found by a UX evaluation of `main` (screenshots + measurements, emulator, demo data): three "Added: …" toasts piled up over the totals bar and CHECKOUT; the totals area stayed English in Arabic mode (CHECKOUT, NET TOTAL, SAR, items); 37 controls under 40px (tabs 37, invoice buttons 34, quantity 36); 27 texts at 10-11px; an extra customer step on every sale.
+- `index.html` only: one toast at a time (replaces the previous one), top-left under the search bar, 2.2s (errors 4.5s), `role=status/alert`, `dir=auto`; all toast messages translated; `CHECKOUT`/`NET TOTAL`/`F9 / Pay`/`items)` and `SAR` → `ر.س` in Arabic mode; `@media (pointer:coarse)`: 44px tabs, invoice buttons, quantity controls, quick-cash, payment buttons, discount and cash fields; 12px floor for functional text; Enter on an empty customer number skips the customer step (walk-in) with a hint.
+- Tests: new `tests/ux-batch3.mjs` passes and FAILS 10 checks on the previous code; `tests/issue-2-acceptance.mjs` now reads `ر.س` as `SAR` (Arabic mode shows ر.س). Regression PASS: `ux-batch1`, `ux-batch2`, `npm run check`, `issue-2-acceptance` 21/21, `issue-4-labels-panel`, `sale-sticker-modal`, Playwright smoke. All three UX test files also PASS on the HTML embedded in the live Worker build.
+- Not tested: real tablet/touch hardware, real users, the live Worker. Phone layout is NOT part of this batch (quantity/total columns are off-screen on phones; the owner said tablet/desktop is the main use).
+- Deploy build: `worker/live/nova-rx-preview.with-ux-batch1-3.js` (on top of the code deployed at 2026-11-07T08:55Z).
+
 ## UX batch 2 (2026-11-07): UX-SEARCH-EMPTY, UX-DISCOUNT-NO-FEEDBACK, UX-PRODUCTS-FILTER-EMPTY, UX-AI-NO-RETRY — fixed on branch
 
 - Verified on the batch-1 code before changing anything (Playwright, Arabic and English): the search empty states existed but stayed English in Arabic mode; discounts of 150%, -5 and a fixed discount larger than the invoice changed the total silently; a products filter with no match showed an empty table; a failed purchase-invoice reading had no retry.
