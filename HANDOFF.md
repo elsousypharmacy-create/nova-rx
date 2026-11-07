@@ -215,3 +215,9 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Tests: `tests/ux-batch1.mjs` 39 checks PASS on repo `index.html` and on the HTML embedded in the Worker (`UX_SKIP_EXTRA='#nlSimple'`); earlier browser tests and CI smoke still PASS.
 - Impeccable (`npx impeccable detect`, static, run in an isolated copy): 9 findings recorded in `docs/UX_BACKLOG.md`. Other third-party skills from social media were NOT installed.
 - Still NOT deployed.
+
+### Coordination protocol (Claude Code ↔ Cursor ↔ owner) — 2026-11-07
+- Owner view: pharmacy repo `nova-status.json`, shown by `nova-monitor.html` on the owner's dashboard (roadmap, current cycle, tasks, blockers). Merged in pharmacy PR #39; data-only edits show on GitHub Pages in ~2 minutes. Whoever finishes a step updates it (honest statuses: `queued`, `in_progress`, `for_review`, `blocked`, `done`; no invented percentages).
+- Agent view: this `HANDOFF.md` (facts, commit/PR, test evidence, next exact step) and `reports/agent-progress.json`.
+- Hand-offs: Claude Code writes code and tests, then comments on the PR for Cursor with the file, checksum, rollback and checks. Cursor deploys (Claude Code has no Cloudflare write tool) and writes the new version id back here.
+- Current step: Cursor to deploy the UX batch 1 Worker build from PR #34 (comment with sha256 `20d2c892…39fa`), then the owner tries the live link on a phone.
