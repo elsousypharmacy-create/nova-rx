@@ -1,17 +1,43 @@
 {
   "schema_version": 1,
   "project": "NOVA Rx",
-  "task_id": 4,
-  "task_title": "Remaining Grok-confirmed POS UX fixes",
-  "status": "in_progress",
+  "task_id": "UX-1",
+  "task_title": "UX batch 1: language, sticker button on phones, held invoices panel",
+  "status": "for_review",
   "percent_complete": null,
-  "percent_basis": "unknown until weighted checklist and verification evidence are committed",
-  "items": [],
-  "verified_items": 0,
-  "total_items": null,
-  "run_id": 42033433619,
-  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42033433619",
-  "checkpoint_at": null,
-  "updated_at": "2026-11-05",
-  "note": "Initial placeholder, not a measured completion percentage. CI status must be queried separately; run may change."
+  "percent_basis": "not computed: no weighted checklist; items below are verified locally only, none deployed",
+  "items": [
+    {
+      "id": "UX-MIXED-LANG",
+      "status": "fixed_on_branch",
+      "evidence": "tests/ux-batch1.mjs"
+    },
+    {
+      "id": "UX-LANG-SWITCH-WEAK",
+      "status": "fixed_on_branch",
+      "evidence": "tests/ux-batch1.mjs"
+    },
+    {
+      "id": "UX-FAB-OVERLAP-mobile",
+      "status": "fixed_on_branch",
+      "evidence": "tests/ux-batch1.mjs"
+    },
+    {
+      "id": "UX-FAB-MISLABEL",
+      "status": "fixed_on_branch",
+      "evidence": "tests/ux-batch1.mjs"
+    },
+    {
+      "id": "UX-HELD-PANEL-OFFSCREEN",
+      "status": "fixed_on_branch",
+      "evidence": "tests/ux-batch1.mjs"
+    }
+  ],
+  "verified_items": 5,
+  "total_items": 5,
+  "run_id": null,
+  "run_url": null,
+  "checkpoint_at": "2026-11-07T10:30:00+03:00",
+  "updated_at": "2026-11-07",
+  "note": "Branch claude/nifty-albattani-ka1ifs-ux (PR #34). Deploy-ready Worker build in worker/live/. Not deployed; deploy operator: Cursor. Owner-facing roadmap: pharmacy repo nova-status.json (dashboard nova-monitor.html)."
 }

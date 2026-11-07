@@ -2,6 +2,14 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-07 — Cloudflare deploy (nova-rx-preview)
+- Deploy operator only: checksum-guarded KV staging keys `__nova_deploy_b64_0`…`_20`, then `final.js` multipart PUT with `keep_bindings: [secret_text, kv_namespace]`.
+- Live: https://nova-rx-preview.elsousypharmacy.workers.dev/#sale — HTTP 200; markers present (`sale-screen sticker studio`, `nlMedTabs`, `#novaLabelsPanel`, `NOVA_STICKER_MODAL_PREMIUM_V95`).
+- Deployment `c2488159-0f76-4848-87b9-35da280664f6` / version `33fe0516-2931-40cb-93a4-808e3c4f7724` @ 2026-11-07T01:57:40Z (100%).
+- Bindings retained (names/types only): GEMINI_API_KEY (secret_text), NOVA_SECRET_ENCRYPTION_KEY (secret_text), NOVA_SECRETS_KV (kv_namespace).
+- Evidence: `/cursor/stores/bc-38d259f0-fb6a-53af-98a3-a07d13177439/internal/releases/sale-sticker-merge-2026-11-07/deploy-result.json`.
+- Next exact step: browser QA on live `#sale` sticker studio; no further Worker publish pending from this deploy batch.
+
 ## Checkpoint 2026-11-06 (uncommitted, per run instructions — no self-commit)
 - Sale-screen sticker modal upgraded to the premium sticker-studio layout: `index.html` `#novaLabelsPanel` replaced (stepper, compact patient block with سنة/شهر age + حامل/رضاعة radios, med tabs with one visible editor, hero preview + selectable grid, collapsed print settings, approval-gated print bar). Standalone `sticker-studio.html` untouched; invoice-flow auto-open and Issue #4 new-sale close preserved.
 - New `tests/sale-sticker-modal.mjs`: 21/21 PASS (desktop Chromium). `npm run check` PASS. Evidence: `reports/sale-sticker-modal.png`. Full details in `BUILD_REPORT.md` top entry.
@@ -182,9 +190,80 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Run: https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42312203852
 - PR #29 remains **draft**. Not merged. Not deployed. Not marked ready-to-merge.
 
+### UX batch 1 — 2026-11-07 (Claude Code)
+- Branch `claude/nifty-albattani-ka1ifs-ux` (draft PR): `index.html` i18n direction fix + delegated language buttons + sticker button off the checkout bar on phones; `tests/ux-batch1.mjs` (29 checks). Details in `BUILD_REPORT.md`.
+- Evidence: new test fails 15 checks on old `index.html`, passes on the fix; all earlier browser tests and the CI smoke test pass locally.
+- NOT merged, NOT deployed. The live Worker embeds its own HTML: carry this change into a patched export (see `docs/UX_BACKLOG.md` deployment warning), do not overwrite it with GitHub's `index.html`.
+- Next exact step: owner review; then batch 2 (search/discount/AI-retry/products-filter empty states).
+
+### Live Worker vs repo — finding while preparing UX batch 1 deploy — 2026-11-07 (Claude Code)
+- The live Worker `nova-rx-preview` (version 33fe0516…) embeds an OLDER lineage of `index.html` than `main`: ~430 lines differ. It lacks earlier fixes (issue #2 i18n: pageerror `novaOriginalaria-label` DOMStringMap; older draft persistence; search overlay) and has live-only parts not in the repo: Settings «API keys» card (`/api/settings/secrets`), `x-nova-ai-key` + `/api/ai/purchase` fetch, WhatsApp nav injection (`nova-wa-nav`, `/whatsapp-inbox.html`), hash routing tweak, a different sale sticker modal (`#nlSimple`, PR29 merge marker).
+- The UX batch 1 diff applies cleanly onto the live HTML, but `tests/ux-batch1.mjs` then fails 5 checks (the old i18n bug and extra Arabic strings in live-only UI). So patching the live HTML is not enough.
+- Needed before any UX deploy: one controlled sync: start from `main`+PR #34 `index.html`, re-apply the live-only parts above, replace only the app HTML literal in the Worker (routes/bindings untouched), run `tests/ux-batch1.mjs` on the final HTML, keep rollback = version 33fe0516-2931-40cb-93a4-808e3c4f7724.
+- NOT deployed. No tool in this session can publish to Cloudflare.
+
+### UX batch 1 — deploy-ready Worker built — 2026-11-07 (Claude Code)
+- `worker/live/nova-rx-preview.with-ux-batch1.js` = the live Worker export with ONLY the app HTML string literal changed: (1) fixed i18n script (directional dictionary, delegated language buttons, mixed-label table, extra EN strings for live-only Settings API-keys card and purchase button), (2) sticker button label + mobile position, (3) one live bug fixed: unquoted `aria-hidden="true"` inside the `nsGalleryNext` script string (SyntaxError, script never ran). All routes, bindings and live-only parts (API keys card, `/api/ai/purchase`, WhatsApp nav, `#nlSimple` sticker panel) are untouched.
+- `worker/live/nova-rx-preview.export-20261107.js` = unmodified export for rollback (live version `33fe0516-2931-40cb-93a4-808e3c4f7724`, modified 2026-11-07T01:57:40Z, re-checked unchanged).
+- Evidence: `node --check` OK; vm run: `/` 200 with the new HTML, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200; `tests/ux-batch1.mjs` on the embedded HTML with `UX_SKIP_EXTRA='#nlSimple'`: ALL PASS; FAB click opens the live sticker panel, 0 page errors.
+- NOT deployed (no Cloudflare write tool in this session). Owner asked for deploy; deployer: Cursor (same method as the 2026-11-07 deploy, `keep_bindings` secret_text + kv_namespace, checksum-guarded).
+- Known/accepted: the live sticker panel (`#nlSimple`) and purchase panel stay Arabic-only in English mode (clinical Arabic labels).
+
+### UX batch 1 — update — 2026-11-07 (Claude Code)
+- New fix: UX-HELD-PANEL-OFFSCREEN (held invoices panel opened below the screen; `top:auto` now). Included in `index.html` and in the Worker file.
+- SUPERSEDES the earlier Worker checksum: `worker/live/nova-rx-preview.with-ux-batch1.js` sha256 `20d2c89294069845d624f3688283e072506e8d5b58ae0b78813a37ee6ae239fa` (rollback export unchanged: `8f12b9f0…526673`).
+- Tests: `tests/ux-batch1.mjs` 39 checks PASS on repo `index.html` and on the HTML embedded in the Worker (`UX_SKIP_EXTRA='#nlSimple'`); earlier browser tests and CI smoke still PASS.
+- Impeccable (`npx impeccable detect`, static, run in an isolated copy): 9 findings recorded in `docs/UX_BACKLOG.md`. Other third-party skills from social media were NOT installed.
+- Still NOT deployed.
+
+### Coordination protocol (Claude Code ↔ Cursor ↔ owner) — 2026-11-07
+- Owner view: pharmacy repo `nova-status.json`, shown by `nova-monitor.html` on the owner's dashboard (roadmap, current cycle, tasks, blockers). Merged in pharmacy PR #39; data-only edits show on GitHub Pages in ~2 minutes. Whoever finishes a step updates it (honest statuses: `queued`, `in_progress`, `for_review`, `blocked`, `done`; no invented percentages).
+- Agent view: this `HANDOFF.md` (facts, commit/PR, test evidence, next exact step) and `reports/agent-progress.json`.
+- Hand-offs: Claude Code writes code and tests, then comments on the PR for Cursor with the file, checksum, rollback and checks. Cursor deploys (Claude Code has no Cloudflare write tool) and writes the new version id back here.
+- Current step: Cursor to deploy the UX batch 1 Worker build from PR #34 (comment with sha256 `20d2c892…39fa`), then the owner tries the live link on a phone.
+### Guarded deploy workflow — 2026-11-07 (Claude Code)
+- Because ChatGPT, Cursor and Claude Code could each not deploy (no Cloudflare write tool / no proof of binding-keeping / API token not savable from the phone app), added a one-button deploy: `.github/workflows/deploy-worker.yml` + `.github/scripts/deploy_worker.sh` + `docs/DEPLOY_WORKER.md` (draft PR). Needs: merge to `main`, GitHub secret `CLOUDFLARE_API_TOKEN` (template «Edit Cloudflare Workers»), then dry run, then real run.
+- Tested only against a fake Cloudflare API (`tests/deploy-worker/run.sh`, 17 checks). NOT run against the real Cloudflare API. Nothing deployed.
+
+### UX batch 2 — 2026-11-07 (Claude Code)
+- Branch `claude/nifty-albattani-ka1ifs-ux2` (stacked on `…-ux`, PR base = the batch 1 branch): discount warnings, empty states, AI retry, translated search empties. Details in `BUILD_REPORT.md`.
+- Deploy-ready Worker with batches 1+2: `worker/live/nova-rx-preview.with-ux-batch1-2.js`, sha256 `1123d40c6fcb0c01cf4089db73f8f0a034e1eb1d6bdf72024308c04dbb046c3a`. It supersedes `with-ux-batch1.js` (`20d2c892…`). Rollback export unchanged (`8f12b9f0…526673`, live version `33fe0516-…`; live Worker re-checked unchanged since 2026-11-07T01:57:40Z).
+- Evidence: `tests/ux-batch1.mjs` and `tests/ux-batch2.mjs` pass on repo `index.html` and on the HTML embedded in the Worker; vm run `/` 200, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200.
+- NOT deployed. Next exact step: Cursor deploys the batch 1+2 file; owner tries the live link; then batch 3.
+
+### Coordination board and roles — 2026-11-07 (Claude Code, owner request)
+- All agents read and update GitHub issue #36 «[Coordination] NOVA Rx: current state and who does what» (state table, roles, rules, and a ready prompt each for ChatGPT and Cursor). Comment there after every step.
+- CHANGE of roles for the UX deploy: ChatGPT deploys the batch 1+2 artifact (deploy only, no edits); Cursor does NOT deploy, it runs QA on the live link and keeps `nova-status.json` (pharmacy repo) honest; Claude Code writes code/tests. Supersedes the earlier "Cursor deploys" comments on PR #34.
+- Still paused: WhatsApp (number on the sunset On-Premises API), Kimi (never run). Nothing merged or closed without the owner.
+
+### DEPLOYED — UX batches 1+2 live — 2026-11-07 (Claude Code, owner-approved)
+- Deployed with the guarded workflow `deploy-worker.yml` (PR #37, merged), run https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42357521827. `nova-rx-preview` modified_on `2026-11-07T08:55:46.92003Z`.
+- Proof: live script sha256 re-read from Cloudflare = `1123d40c6fcb0c01cf4089db73f8f0a034e1eb1d6bdf72024308c04dbb046c3a` (= `worker/live/nova-rx-preview.with-ux-batch1-2.js` @ `116a4a6`). Bindings and compatibility settings unchanged. The dry run before it showed the pre-deploy live code was byte-identical to `worker/live/nova-rx-preview.export-20261107.js` (`8f12b9f0…526673`).
+- Rollback: Cloudflare version `33fe0516-2931-40cb-93a4-808e3c4f7724` (or that export file).
+- NOT merged: PRs #34 and #35 (owner decision). Live and `main` differ on purpose (live HTML is a different lineage).
+- Next exact step: Cursor QA on the live link (issue #36), owner tries it on a phone, then UX batch 3. Owner to delete the Cloudflare API token and the GitHub secret `CLOUDFLARE_API_TOKEN`.
+- To continue in a fresh session: read issue #36, this file, `docs/UX_BACKLOG.md`, `docs/DEPLOY_WORKER.md`.
+### WhatsApp bridge → encrypted secrets + header auth — 2026-11-07 (Claude Code)
+- `integrations/whatsapp/secure-bridge.mjs` now reads `WA_BACKEND_URL` / `NOVA_WA_BRIDGE_TOKEN` from the same encrypted KV store as `/api/settings/secrets`, and accepts Cloudflare Access JWT or (opt-in) the Access email header. Fails closed. Speaks the existing Apps Script `novaWhatsAppBridge` protocol.
+- Test: `tests/unit/whatsapp-bridge.check.mjs` PASS (fake KV with real AES-GCM format, fake Apps Script). Not run against the live Worker or real Apps Script.
+- NOT done: Worker not changed or deployed; inbox page not restyled to Black Edition. Wiring guide: `integrations/whatsapp/README.md`.
+
+### Live Worker export + patched copy — 2026-11-07 (Claude Code)
+- `worker/live/nova-rx-preview.export-20261107.js`: unmodified export of Worker `nova-rx-preview` (read via Cloudflare MCP; scanned, no secret values). Use as rollback.
+- `worker/live/nova-rx-preview.with-whatsapp.js`: same code + `/api/whatsapp/*` route (bridge, namespaced in `NOVA_WA_BRIDGE`) + real inbox page replacing the placeholder. `node --check` OK; `tests/unit/worker-live-patch.check.mjs` PASS in a vm with fake bindings.
+- NOT deployed. Deploy by owner via Cloudflare dashboard (Edit code keeps bindings) after the bridge token and WABA steps.
+
+### WhatsApp — PAUSED by owner — 2026-11-07 (Claude Code)
+Root cause (verified via Graph API Explorer): pharmacy number +20 11 43404023 (phone id 515646411625617, WABA 505759262610446) is `platform_type=ON_PREMISE`, `status=DISCONNECTED`. On-Premises API was sunset; `POST /{phone}/register` returns code 100 "Register endpoint is not available". Tokens/IDs in NOVA and bot were not the cause. The bot's defaults (phone 1321594684378624, WABA 1121417500291242) belong to Meta's TEST number (+1 555 673 1935). `2072879990013917` is NOT a WABA (Business Suite presence page id).
+State: bot dashboard has WABA ID field (pharmacy PR #38, merged) and WABA 505759262610446 saved; webhook link for the real WABA returned OK. NOVA bridge + patched Worker ready but NOT deployed (PR #33 draft, `worker/live/`). Support ticket via Meta Direct Support NOT confirmed opened.
+Resume only when: Meta migrates the number to Cloud API (platform_type CLOUD_API, CONNECTED) or a new Cloud API number exists. Then: set WA_PHONE_ID + permanent token in bot dashboard, set NOVA_WA_BRIDGE_TOKEN (>=32 chars) in Apps Script and NOVA secrets, deploy `with-whatsapp.js`.
+Do not: deregister the number, change its PIN, or pick the test account in support forms.
 ### PoC-0 isolated Kimi workflow — 2026-11-07 (Claude Code)
 - Branch `claude/nifty-albattani-ka1ifs`: adds `.github/workflows/poc-kimi.yml` and `.github/scripts/poc_check_patch.py`. `kimi-task.yml` and other workflows unchanged.
 - Manual dispatch only, issue must be #31, jobs gate → execute (read-only, no saved git creds) → validate (no secrets) → publish (write, no Kimi key, runs no patch code). Allowlist fixed in the workflow.
 - Local evidence: gate accepted a good patch and rejected extra file, symlink, exec bit, removed report lines, binary, child_process import, credential string, rename; runtime step rejects a test that prints PASS on a broken manifest.
 - NOT run on GitHub. Kimi not started. No labels changed. Not merged. Not deployed.
 - Next exact step: owner reviews draft PR and Kimi cost; only then merge to main and dispatch with issue_number=31.
+
+### Kimi PoC workflow merged (inert) — 2026-11-07 (Claude Code, owner asked for all merges)
+- `poc-kimi.yml` (+ `.github/scripts/poc_check_patch.py`) is now on `main`. It only runs by manual dispatch for Issue #31 and has NEVER been run. Do not dispatch it before the owner has confirmed the Kimi key type, Extra Usage and Actions minutes. Labels `kimi-run-now` on issues #4, #16, #17, #28 are untouched: do not re-trigger them.
