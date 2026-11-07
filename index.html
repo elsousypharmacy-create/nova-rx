@@ -2336,6 +2336,7 @@ body *:not(svg):not(svg *){
 
       // --- APPLICATION STATE ---
       window.NOVA_DEMO = { products: DEMO_PRODUCTS, customers: DEMO_CUSTOMERS };
+      window.novaCartItems=()=>{try{return state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}catch(e){return[]}};
       const state = {
         mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
         attachedCustomer: null,
@@ -3979,7 +3980,7 @@ function normalizeMedication(med){const required=['dose','frequency','duration',
 function invalidateApproval(){state.approved=false;$('nlPharmacistApproval').checked=false;updateSteps()}
 function persist(){try{localStorage.setItem(DRAFT_KEY,JSON.stringify({patient:state.patient,medications:state.medications,approved:false,selectedInvoice:state.selectedInvoice}))}catch(e){}}
 function persistSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}catch(e){}}
-function load(){try{const d=null;if(d){Object.assign(state.patient,d.patient||{});state.medications=Array.isArray(d.medications)?d.medications.map(m=>normalizeMedication({...blankMedication(),...m,id:m.id||uid(),aiStatus:'idle',aiError:'',reviewRequired:true})):[];state.selectedInvoice=d.selectedInvoice??null}}catch(e){}try{Object.assign(settings,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'))}catch(e){}if(!state.medications.length)state.medications.push(blankMedication());if(!state.patient.age)state.patient.age='6';if(!state.patient.ageUnit)state.patient.ageUnit='years';}
+function load(){try{const d=null;if(d){Object.assign(state.patient,d.patient||{});state.medications=Array.isArray(d.medications)?d.medications.map(m=>normalizeMedication({...blankMedication(),...m,id:m.id||uid(),aiStatus:'idle',aiError:'',reviewRequired:true})):[];state.selectedInvoice=d.selectedInvoice??null}}catch(e){}try{Object.assign(settings,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'))}catch(e){}if(!state.medications.length)state.medications.push(blankMedication());if(!state.patient.ageUnit)state.patient.ageUnit='years';}
 function getQueue(){try{const q=JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');return Array.isArray(q)?q.slice(0,20):[]}catch(e){return[]}}
 function renderQueue(){$('nlInvoiceQueue').innerHTML=getQueue().map((inv,i)=>`<button type="button" class="queue-card ${state.selectedInvoice===i?'active':''}" data-invoice="${i}"><strong>${esc(inv.id||('فاتورة '+(i+1)))}</strong><small>${esc(inv.customer||'عميل نقدي')} · ${Array.isArray(inv.items)?inv.items.length:0} صنف</small></button>`).join('')||'<div class="empty" style="width:100%">لا توجد فواتير محفوظة. أتمم بيعًا أو أضف دواء يدويًا.</div>'}
 function patientPayload(){return{age:state.patient.age,weightKg:state.patient.weight,pregnancy:state.patient.pregnancy?state.patient.pregnancy==='yes':null,breastfeeding:state.patient.breastfeeding?state.patient.breastfeeding==='yes':null,ageUnit:state.patient.ageUnit}}
@@ -4039,6 +4040,7 @@ $('novaLabelsClose').onclick=close;
 panel.addEventListener('click',e=>{if(e.target===panel)close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))close()});
 window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;const queue=getQueue();queue.unshift(q);try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(0,40)))}catch(_){}loadInvoice(q,0);panel.classList.add('open')});
+new MutationObserver(()=>{if(!panel.classList.contains('open'))return;if(state.medications.some(m=>clean(m.name)))return;const items=typeof window.novaCartItems==='function'?window.novaCartItems():[];if(items.length)loadInvoice({customer:'',items},null)}).observe(panel,{attributes:true,attributeFilter:['class']});
 window.addEventListener('pageshow',()=>setTimeout(()=>{if(!panel.classList.contains('open'))syncPatientInputs()},0));
 load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds();
 })();

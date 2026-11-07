@@ -312,3 +312,5 @@ Tablet photo showed age 6 + old safety answers + blank medicines = old saved dra
 Tablet showed age 6 after reload = Chrome restoring old form values. Added autocomplete=off on patient inputs + pregnancy/breastfeeding radios and a pageshow resync. Artifact ...stickers5.js sha256 3305b1dd93202256f120384fa0cae9b33f7a82ad42382e1856e9872ae5a23f3e; base for expected_modified_on = 2026-11-07T13:44:23 (v3 deploy). v3 artifact (stickers4) was removed from repo; rollback = ...stickers2.js.
 
 ## DEPLOYED v4 2026-11-07 (run 42401462000): form-restore fix. modified_on 2026-11-07T18:28:38. sha256 3305b1dd…3f3e. Rollback: ...stickers2.js
+
+## Checkpoint v5 (not deployed): real cause of age 6 = load() default age=6 (removed). Manual open (✦ استيكرات الأدوية button) now loads the open cart via window.novaCartItems. Artifact ...stickers6.js sha256 2bdf364406693f0deb611927bc62a1062da68d9bc93c8e15e3b55fd58bfcb443; expected_modified_on 2026-11-07T18:28:38. Rollback = ...stickers2.js

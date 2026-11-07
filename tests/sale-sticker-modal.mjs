@@ -153,6 +153,14 @@ try{
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     await context.addInitScript(()=>{try{localStorage.setItem('nova.stickerStudio.draft.v1',JSON.stringify({patient:{age:'6',pregnancy:'no',breastfeeding:'no'},medications:[{name:'Old'}]}))}catch(e){}});
+    await page.goto('http://127.0.0.1:8766/index.html#sale',{waitUntil:'domcontentloaded'});await sleep(900);
+    check(`${vp.name}: the app exposes the open cart to the sticker screen`,await page.evaluate(()=>Array.isArray(window.novaCartItems())));
+    await page.evaluate(()=>{window.__realCart=window.novaCartItems;window.novaCartItems=()=>[{name:'Cart Med A'},{name:'Cart Med B'}]});
+    await page.$eval('#novaAiLaunch',b=>b.click());await sleep(300);
+    check(`${vp.name}: opening by hand starts with an empty age`,await page.$eval('#nlPatientAge',e=>e.value===''));
+    check(`${vp.name}: opening by hand loads the medicines of the open cart`,(await page.$$eval('#nlMedicineList [data-field="name"]',a=>a.map(i=>i.value))).join()==='Cart Med A,Cart Med B');
+    await page.evaluate(()=>{window.novaCartItems=window.__realCart});
+    await page.keyboard.press('Escape');
     await openModal(page);
     check(`${vp.name}: an old saved draft never pre-fills age or safety answers`,await page.evaluate(()=>document.getElementById('nlPatientAge').value===''&&!document.querySelector('input[name="nlPregnancy"]:checked')));
     await runFlow(page,vp,errors);
