@@ -4119,11 +4119,22 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .med-card>label.field{grid-column:1/-1}}
 @media(min-width:1100px){
 #novaLabelsPanel .labels-sheet{width:min(1180px,97vw)!important}
-#novaLabelsPanel .layout{grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);grid-auto-rows:auto;align-content:stretch;overflow:hidden}
-#novaLabelsPanel .editor-col{overflow-y:auto;min-height:0}
-#novaLabelsPanel .preview-col.nl-more{overflow-y:auto;min-height:0;padding-top:12px}
+#novaLabelsPanel .layout{grid-template-columns:minmax(410px,.78fr) minmax(0,1.22fr);grid-auto-rows:auto;align-content:stretch;overflow:hidden}
+#novaLabelsPanel .editor-col{overflow-y:auto;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#novaLabelsPanel .preview-col.nl-more{overflow-y:scroll;min-height:0;padding-top:12px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
 #novaLabelsPanel .nl-more>summary{display:none}
 #novaLabelsPanel .nl-more .preview-panel{min-height:0}
+/* thumb zone: the right column is the one held with the thumb */
+#novaLabelsPanel .editor-col .btn,#novaLabelsPanel .editor-col input,#novaLabelsPanel .editor-col textarea,#novaLabelsPanel .editor-col .seg button{min-height:52px;font-size:16px}
+#novaLabelsPanel .editor-col .safety-choices label{min-height:52px}
+#novaLabelsPanel .patient-card .patient-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#novaLabelsPanel .med-card{grid-template-columns:repeat(2,minmax(0,1fr))}
+#novaLabelsPanel .med-card .f-medname,#novaLabelsPanel .med-card>label.field{grid-column:1/-1!important}
+#novaLabelsPanel .med-card .med-fields .field:not(.f-medname){grid-column:span 1!important}
+#novaLabelsPanel .med-card .field>span{position:static!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;font-size:13px}
+#novaLabelsPanel .med-card textarea{height:72px}
+#novaLabelsPanel .print-actions{flex-direction:row-reverse}
+#novaLabelsPanel #nlPrintAll{min-height:56px;min-width:240px;font-size:17px}
 }
 </style>
 </body>
