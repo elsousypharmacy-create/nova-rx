@@ -227,3 +227,8 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Deploy-ready Worker with batches 1+2: `worker/live/nova-rx-preview.with-ux-batch1-2.js`, sha256 `1123d40c6fcb0c01cf4089db73f8f0a034e1eb1d6bdf72024308c04dbb046c3a`. It supersedes `with-ux-batch1.js` (`20d2c892…`). Rollback export unchanged (`8f12b9f0…526673`, live version `33fe0516-…`; live Worker re-checked unchanged since 2026-11-07T01:57:40Z).
 - Evidence: `tests/ux-batch1.mjs` and `tests/ux-batch2.mjs` pass on repo `index.html` and on the HTML embedded in the Worker; vm run `/` 200, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200.
 - NOT deployed. Next exact step: Cursor deploys the batch 1+2 file; owner tries the live link; then batch 3.
+
+### Coordination board and roles — 2026-11-07 (Claude Code, owner request)
+- All agents read and update GitHub issue #36 «[Coordination] NOVA Rx: current state and who does what» (state table, roles, rules, and a ready prompt each for ChatGPT and Cursor). Comment there after every step.
+- CHANGE of roles for the UX deploy: ChatGPT deploys the batch 1+2 artifact (deploy only, no edits); Cursor does NOT deploy, it runs QA on the live link and keeps `nova-status.json` (pharmacy repo) honest; Claude Code writes code/tests. Supersedes the earlier "Cursor deploys" comments on PR #34.
+- Still paused: WhatsApp (number on the sunset On-Premises API), Kimi (never run). Nothing merged or closed without the owner.
