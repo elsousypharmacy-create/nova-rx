@@ -14,17 +14,32 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const check = (name, cond) => { assert(cond, name); console.log('PASS ' + name); };
 const CODES = ['6281001234567', '6281001234568', '6281001234569'];
 
-async function openPanel(browser, width, height) {
+async function openPanel(browser, width, height, mode = 'ok') {
   const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: true });
   const page = await ctx.newPage();
   const errors = [];
+  const calls = [];
   page.on('pageerror', e => errors.push(e.message));
+  await page.route('**/api/ai/medication-labels', async r => {
+    const body = JSON.parse(r.request().postData() || '{}');
+    calls.push(body);
+    await sleep(400);
+    if (mode === '403') return r.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'GEMINI_HTTP_ERROR', error: 'Gemini models/x returned HTTP 403.', details: { model: 'models/x', status: 403, geminiStatus: 'PERMISSION_DENIED', code: 403, message: 'API key not valid' } }) });
+    const cond = (body.patient && body.patient.condition) || '';
+    const items = body.medications.map((m, i) => {
+      const it = { index: i, dose: 'قرص', frequency: 'مرتين يوميًا', duration: '٥ أيام', instructions: 'بعد الأكل مع كوب ماء', warnings: [] };
+      if (i === 1) it.duration = null;
+      if (i === 0 && /بنسلين/.test(cond)) it.warnings = ['حساسية بنسلين: الدواء من فصيلة البنسلين'];
+      return it;
+    });
+    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, items, interactions: body.medications.length > 2 ? ['تداخل تجريبي بين الدواءين الأول والثاني'] : [] }) });
+  });
   await page.goto(`http://127.0.0.1:8773/${FILE}#sale`, { waitUntil: 'domcontentloaded' });
   await sleep(900);
   for (const bc of CODES) { await page.fill('#mainSearchInput', bc); await page.press('#mainSearchInput', 'Enter'); await sleep(150); }
   await page.click('#novaAiLaunch');
   await sleep(700);
-  return { page, errors };
+  return { page, errors, calls };
 }
 
 try {
@@ -55,7 +70,7 @@ try {
     check(`${L}: and hides again`, !(await page.isVisible('#nlHeroStage')));
     await page.fill('.med-card.editing [data-field="dose"]', 'قرص');
     await sleep(200);
-    check(`${L}: the row summary follows what is typed`, (await page.$eval('#nlMedicineList .med-card:nth-child(2) .med-sum .ds', e => e.textContent)).includes('قرص'));
+    check(`${L}: the row summary follows what is typed`, (await page.$eval('#nlMedicineList .med-card:nth-child(2) .med-sum .dose', e => e.textContent)).includes('قرص'));
     await page.keyboard.press('Escape');
     await sleep(200);
     check(`${L}: Esc closes only the edit window`, (await page.$$eval('.med-card.editing', a => a.length)) === 0 && await page.$eval('#novaLabelsPanel', e => e.classList.contains('open')));
@@ -87,6 +102,46 @@ try {
     await sleep(900);
     check(`${L}: after printing the window closes by itself`, !(await page.$eval('#novaLabelsPanel', e => e.classList.contains('open'))));
     check(`${L}: zero page errors (quick type)`, errors.length === 0);
+    await page.close();
+  }
+
+  // ---- AI: one request, condition box, readable errors
+  {
+    const { page, errors, calls } = await openPanel(browser, 1194, 834, 'ok');
+    const L = 'ai';
+    await page.click('.nl-quick button[data-q="adult"]');
+    for (let i = 0; i < 40 && calls.length < 1; i++) await sleep(150);
+    await page.waitForFunction(() => !document.getElementById('nlPrintAll').disabled, null, { timeout: 8000 });
+    await sleep(300);
+    check(`${L}: ONE request carries all the medicines`, calls.length === 1 && calls[0].medications.length === 3);
+    check(`${L}: adult data is sent (not pregnant, adult age)`, calls[0].patient.pregnancy === false && Number(calls[0].patient.age) >= 18);
+    check(`${L}: the dose cell is filled`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .med-sum .dose', e => e.textContent)).includes('قرص'));
+    check(`${L}: a missing field is marked in its own cell`, await page.$eval('#nlMedicineList .med-card:nth-child(2) .med-sum .dur', e => e.classList.contains('gap')));
+    check(`${L}: interactions between the invoice medicines are shown`, await page.isVisible('.nl-inter') && (await page.$eval('.nl-inter', e => e.textContent)).includes('تداخل'));
+    check(`${L}: the table has a header row and a note that doses are AI suggestions`, await page.isVisible('.nl-thead') && (await page.$eval('.nl-note', e => e.textContent)).includes('اقتراحات'));
+    await page.click('.nl-cond .chips button[data-p="حساسية بنسلين"]');
+    for (let i = 0; i < 30 && calls.length < 2; i++) await sleep(200);
+    await page.waitForFunction(() => !document.getElementById('nlPrintAll').disabled, null, { timeout: 8000 });
+    await sleep(300);
+    check(`${L}: the patient condition is sent with the next request`, calls.length === 2 && calls[1].patient.condition === 'حساسية بنسلين');
+    check(`${L}: the AI warning shows in the row`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .med-sum', e => e.textContent)).includes('بنسلين'));
+    check(`${L}: the chip is marked as chosen`, await page.$eval('.nl-cond .chips button[data-p="حساسية بنسلين"]', e => e.classList.contains('on')));
+    await page.fill('#nlCondition', 'ضغط مرتفع');
+    for (let i = 0; i < 30 && calls.length < 3; i++) await sleep(200);
+    check(`${L}: typing waits until you stop, then sends once`, calls.length === 3 && calls[2].patient.condition === 'ضغط مرتفع');
+    check(`${L}: zero page errors`, errors.length === 0);
+    await page.close();
+  }
+  {
+    const { page, errors } = await openPanel(browser, 1194, 834, '403');
+    const L = 'ai failure';
+    await page.click('.nl-quick button[data-q="adult"]');
+    await page.waitForFunction(() => document.querySelector('#nlMedicineList .med-card.ai-fail'), null, { timeout: 8000 });
+    const txt = await page.$eval('#nlMedicineList .med-card:nth-child(1) .med-sum', e => e.textContent);
+    check(`${L}: the reason is written in plain Arabic`, txt.includes('مفتاح Gemini مش مقبول') && txt.includes('GEMINI_HTTP_ERROR'));
+    check(`${L}: a retry button appears`, await page.isVisible('.nl-retry'));
+    check(`${L}: printing stays blocked`, await page.$eval('#nlPrintAll', e => e.classList.contains('is-blocked') || e.disabled));
+    check(`${L}: zero page errors`, errors.length === 0);
     await page.close();
   }
 

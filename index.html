@@ -3548,6 +3548,15 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
  }
  const enExtra={
+ 'مين العميل؟':'Who is the customer?','بالغ':'Adult','طفل':'Child','حامل':'Pregnant','مرضعة':'Breastfeeding',
+  'حالة المريض':'Patient condition','اختياري — للذكاء الاصطناعي':'Optional — for the AI',
+  'مثال: التهاب حلق، حساسية بنسلين، ضغط مرتفع…':'Example: sore throat, penicillin allergy, high blood pressure…',
+  'حساسية بنسلين':'Penicillin allergy','ضغط':'Blood pressure','سكر':'Diabetes','قلب':'Heart','كلى':'Kidney','كبد':'Liver','معدة':'Stomach',
+  'الجرعات اقتراحات من الذكاء الاصطناعي — راجعها قبل الطباعة':'Doses are AI suggestions — review them before printing',
+  'الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.':'The AI takes it into account for doses and warnings, and refreshes the instructions by itself when you stop typing.',
+  'الجرعة':'Dose','التكرار':'Frequency','المدة':'Duration','التعليمات':'Instructions','الحالة':'Status',
+  'جاهز':'Ready','ناقص':'Missing','ناقصة':'Missing','تحذير':'Warning','فشل':'Failed','جاري التوليد':'Generating',
+  '↻ توليد تاني':'↻ Generate again','👁 معاينة الاستيكرات':'👁 Preview stickers','إخفاء معاينة الاستيكرات':'Hide sticker preview','👁 معاينة الاستيكر':'👁 Preview sticker',
   'لا توجد نتائج مطابقة':'No matching results',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
   'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','رقم العميل قبل الدفع':'Customer number before payment',
@@ -3969,7 +3978,7 @@ const SETTINGS_KEY='nova.stickerStudio.settings.v1';
 const QUEUE_KEY='nova.label.invoices.v1';
 const LOGO='https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png';
 let stickerPage=0,activeMed=0;
-const state={patient:{name:'',phone:'',age:'',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:''},medications:[],approved:false,selectedInvoice:null};
+const state={patient:{name:'',phone:'',age:'',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:'',condition:''},medications:[],approved:false,selectedInvoice:null};
 const settings={preset:'50x30',customWidth:50,customHeight:30,paperLayout:'single',styleMode:'full',copies:1,marginMm:2,orientation:'auto',showReviewBadge:true,includePhone:true};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
@@ -3983,7 +3992,7 @@ function persistSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(
 function load(){try{const d=null;if(d){Object.assign(state.patient,d.patient||{});state.medications=Array.isArray(d.medications)?d.medications.map(m=>normalizeMedication({...blankMedication(),...m,id:m.id||uid(),aiStatus:'idle',aiError:'',reviewRequired:true})):[];state.selectedInvoice=d.selectedInvoice??null}}catch(e){}try{Object.assign(settings,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'))}catch(e){}if(!state.medications.length)state.medications.push(blankMedication());if(!state.patient.ageUnit)state.patient.ageUnit='years';}
 function getQueue(){try{const q=JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');return Array.isArray(q)?q.slice(0,20):[]}catch(e){return[]}}
 function renderQueue(){$('nlInvoiceQueue').innerHTML=getQueue().map((inv,i)=>`<button type="button" class="queue-card ${state.selectedInvoice===i?'active':''}" data-invoice="${i}"><strong>${esc(inv.id||('فاتورة '+(i+1)))}</strong><small>${esc(inv.customer||'عميل نقدي')} · ${Array.isArray(inv.items)?inv.items.length:0} صنف</small></button>`).join('')||'<div class="empty" style="width:100%">لا توجد فواتير محفوظة. أتمم بيعًا أو أضف دواء يدويًا.</div>'}
-function patientPayload(){return{age:state.patient.age,weightKg:state.patient.weight,pregnancy:state.patient.pregnancy?state.patient.pregnancy==='yes':null,breastfeeding:state.patient.breastfeeding?state.patient.breastfeeding==='yes':null,ageUnit:state.patient.ageUnit}}
+function patientPayload(){return{age:state.patient.age,weightKg:state.patient.weight,pregnancy:state.patient.pregnancy?state.patient.pregnancy==='yes':null,breastfeeding:state.patient.breastfeeding?state.patient.breastfeeding==='yes':null,ageUnit:state.patient.ageUnit,condition:state.patient.condition||''}}
 function medicationPayload(med){return{name:med.name,prescribedDose:med.dose,prescribedFrequency:med.frequency,prescribedDuration:med.duration}}
 function medStatus(med){if(med.aiStatus==='loading')return['warn','جاري التوليد'];if(med.aiStatus==='error')return['err','فشل AI'];if(med.complete)return['ok','مكتمل'];return['warn','يحتاج مراجعة']}
 function renderTabs(){const n=state.medications.length;$('nlMedCount').textContent=n>6?String(n):n+' / 6';$('nlMedTabs').innerHTML=state.medications.map((m,i)=>`<button type="button" class="med-tab ${i===activeMed?'active':''}" data-tab="${i}" aria-current="${i===activeMed?'true':'false'}"><span class="n">${i+1}</span><span class="t">${esc(m.name||'دواء بدون اسم')}</span><i class="dot ${m.complete?'ok':'warn'}" title="${m.complete?'مكتمل':'يحتاج مراجعة'}"></i></button>`).join('')}
@@ -4002,15 +4011,17 @@ const MISS={dose:'الجرعة',frequency:'التكرار',duration:'المدة'
 function cardNote(m){const[w0,h0]=dimensions();const n=cardLen(m);return n>w0*h0/12?'النص طويل جدًا — اختر مقاسًا أكبر':n>w0*h0/25?'النص طويل — هيصغر عند الطباعة':''}
 function cardLen(m){return[m.dose,m.frequency,m.duration,m.instructions].filter(Boolean).join(' — ').length}
 function refreshCard(card,m){const[cls,label]=medStatus(m);const top=card.querySelector('.med-top');const st=top.querySelector('.status');st.className='status '+cls;st.textContent=label;let ln=top.querySelector('.status.len');const note=cardNote(m);if(note&&!ln){ln=document.createElement('span');ln.className='status warn len';st.after(ln)}if(ln){if(note)ln.textContent=note;else ln.remove()}card.classList.toggle('needs-review',!m.complete);const box=card.querySelector('.nl-missing-box');if(box)box.innerHTML=m.missing.length?'<div class="missing">'+m.missing.map(x=>'<span>ناقص: '+MISS[x]+'</span>').join('')+'</div>':''}
-function loadInvoice(inv,idx){state.selectedInvoice=idx;activeMed=0;stickerPage=0;Object.assign(state.patient,{name:inv.customer==='عميل نقدي'?'':(inv.customer||''),phone:'',age:'',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:''});state.medications=(Array.isArray(inv.items)?inv.items:[]).map(item=>blankMedication(item.name||''));if(!state.medications.length)state.medications.push(blankMedication());invalidateApproval();syncPatientInputs();renderQueue();renderMeds()}
+function loadInvoice(inv,idx){state.selectedInvoice=idx;state.interactions=[];activeMed=0;stickerPage=0;Object.assign(state.patient,{name:inv.customer==='عميل نقدي'?'':(inv.customer||''),phone:'',age:'',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:'',condition:''});state.medications=(Array.isArray(inv.items)?inv.items:[]).map(item=>blankMedication(item.name||''));if(!state.medications.length)state.medications.push(blankMedication());invalidateApproval();syncPatientInputs();renderQueue();renderMeds()}
 let autoTimer=0;
 function autoReady(){const ok=v=>['yes','no'].includes(v);return Number(state.patient.age)>0&&ok(state.patient.pregnancy)&&ok(state.patient.breastfeeding)}
 function scheduleAuto(){clearTimeout(autoTimer);autoTimer=setTimeout(runAuto,700)}
-function runAuto(){if(!panel.classList.contains('open')||!autoReady())return;const key=JSON.stringify(patientPayload());state.medications.forEach(m=>{if(clean(m.name)&&!m.editRevision&&m.aiStatus!=='loading'&&m.autoKey!==key){m.autoKey=key;generateForMedication(m)}})}
+function runAuto(){if(!panel.classList.contains('open')||!autoReady())return;const key=JSON.stringify(patientPayload());const todo=state.medications.filter(m=>clean(m.name)&&!m.editRevision&&m.aiStatus!=='loading'&&m.autoKey!==key);if(todo.length)generateBatch(todo)}
 function fitPrintDoc(d){let bad=false;d.querySelectorAll('.label').forEach(el=>{const clipped=()=>el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1;const ins=el.querySelector('.instruction'),med=el.querySelector('.med');let s=7,m=9;while(clipped()&&s>5.5){s-=.25;m=Math.max(7,m-.25);if(ins)ins.style.fontSize=s+'pt';if(med)med.style.fontSize=m+'pt'}if(clipped())bad=true});return bad}
 function printPage(meds,test=false){const[w0,h0]=dimensions();const landscape=settings.orientation==='landscape'||(settings.orientation==='auto'&&w0>h0);const w=landscape?Math.max(w0,h0):Math.min(w0,h0);const h=landscape?Math.min(w0,h0):Math.max(w0,h0);const repeated=[];for(let i=0;i<Math.max(1,Math.min(50,Number(settings.copies)||1));i++)repeated.push(...meds);const body=repeated.map(m=>`<div class="label ${settings.styleMode==='compact'?'compact':''} ${test?'test':''}">${test?'<div class="label-inner"><div class="label-brand"><strong>NOVA Rx Print Test</strong></div><div class="med">اختبار مقاس '+w+' × '+h+' mm</div><div class="instruction">إذا ظهر هذا الإطار داخل الملصق فالإعدادات صحيحة.</div><div class="warning">'+new Date().toLocaleString('ar-EG')+'</div></div>':labelHtml(m)}</div>`).join('');const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>طباعة استيكرات</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>@page{size:${w}mm ${h}mm;margin:${settings.marginMm}mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:Cairo,Tahoma}.label{width:${w-(settings.marginMm*2)}mm;height:${h-(settings.marginMm*2)}mm;overflow:hidden;break-after:page;direction:rtl}.label.compact{font-size:8.5pt}.label-inner{height:100%;display:flex;flex-direction:column;padding:1mm}.label-brand{display:flex;align-items:center;gap:2mm;border-bottom:.35mm solid #a9b4bd;padding-bottom:1.2mm;margin-bottom:1.5mm}.label-brand img{width:8mm;height:8mm;object-fit:contain}.label-brand strong{font-size:7pt;color:#14365f}.label-brand small{display:none}.patient{font-size:7.5pt}.med{font-size:9pt;font-weight:900;margin:.5mm 0}.instruction{font-size:7pt;line-height:1.25;overflow-wrap:anywhere;white-space:pre-wrap}.warning{margin-top:auto;border-top:.25mm dashed #9aa4ad;padding-top:1mm;font-size:6.2pt}.review{display:none}@media screen{body{background:#ddd}.label{background:#fff;margin:10px auto;box-shadow:0 2px 10px #999}}</style></head><body>${body}</body></html>`;const old=document.getElementById('nlPrintFrame');if(old)old.remove();const fr=document.createElement('iframe');fr.id='nlPrintFrame';fr.setAttribute('aria-hidden','true');fr.tabIndex=-1;fr.style.cssText='position:fixed;right:0;bottom:0;width:'+w+'mm;height:'+h+'mm;border:0;opacity:0;pointer-events:none';document.body.appendChild(fr);const d=fr.contentDocument;d.open();d.write(html);d.close();const go=()=>{if(fitPrintDoc(d)){fr.remove();toast('النص طويل حتى بعد التصغير — اختر مقاسًا أكبر من إعدادات الطباعة','err');return}window.dispatchEvent(new CustomEvent('nova:sticker-print',{detail:{count:repeated.length,test:!!test}}));try{fr.contentWindow.focus();fr.contentWindow.print()}catch(e){toast('تعذر بدء الطباعة','err')}window.focus();const pb=$('nlPrintAll');if(pb)pb.focus();setTimeout(()=>fr.remove(),60000)};const ready=d.fonts&&d.fonts.ready?Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,2500))]):Promise.resolve();ready.then(()=>setTimeout(go,50))}
-function aiReason(data,httpStatus){const code=(data&&data.code)||'',d=(data&&data.details)||{},st=Number(d.status||httpStatus||0);let why;if(code==='GEMINI_KEY_MISSING'||httpStatus===503)why='مفتاح Gemini مش متسجل في النظام';else if(st===400||st===401||st===403)why='مفتاح Gemini مش مقبول (منتهي أو متوقف أو غلط)';else if(st===429)why='Gemini وصل لحد الاستخدام — جرّب بعد شوية';else if(st===404||code==='NO_TEXT_MODELS')why='مفيش نموذج Gemini متاح للمفتاح ده';else if(code==='GEMINI_TIMEOUT'||code==='MODEL_DISCOVERY_NETWORK'||st>=500)why='Gemini بطيء أو مش بيرد دلوقتي';else why=(data&&data.error)||'تعذر توليد التعليمات';return why+(code||st?' ['+(code||'')+(st?' '+st:'')+']':'')}
-async function generateForMedication(med){if(!clean(med.name)){med.aiStatus='error';med.aiError='اكتب اسم الدواء قبل التوليد';renderMeds();return}const requestRevision=med.editRevision||0;invalidateApproval();med.aiStatus='loading';med.aiError='';renderMeds();try{const res=await fetch('/api/ai/medication-label',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({medication:medicationPayload(med),patient:patientPayload(),locale:'ar-EG'})});const data=await res.json().catch(()=>({}));if(!res.ok||(data.ok===false&&!data.instruction&&!data.draft)){const er=new Error(aiReason(data,res.status));throw er}if((med.editRevision||0)!==requestRevision){med.aiStatus='idle';med.aiError='تغيرت المسودة أثناء التوليد؛ حُفظت تعديلاتك ولم تُستبدل. أعد المحاولة عند الحاجة.';renderMeds();return}const src=data.instruction||data.draft||data;med.dose=clean(src.dose)||med.dose;med.frequency=clean(src.frequency)||med.frequency;med.duration=clean(src.duration)||med.duration;med.instructions=clean(src.instructions)||med.instructions;med.warnings=Array.isArray(src.warnings)?src.warnings:med.warnings;normalizeMedication(med);med.aiStatus=med.complete?'done':'error';med.aiError=med.complete?'تم استلام التعليمات؛ راجعها واعتمدها قبل الطباعة':'الرد غير مكتمل؛ أكمل الحقول الناقصة يدويًا'}catch(e){med.aiStatus='error';med.aiError=(e&&e.name==='TypeError')?'مفيش اتصال بخدمة الذكاء الاصطناعي — تأكد من الإنترنت':(e.message||'فشل الاتصال بخدمة AI')}renderMeds()}
+function aiReason(data,httpStatus){const code=(data&&data.code)||'',d=(data&&data.details)||{},att=Array.isArray(d.attempts)&&d.attempts.length?d.attempts[d.attempts.length-1]:{},msg=String(d.message||(data&&data.error)||''),gs=String(d.geminiStatus||(typeof d.status==='string'?d.status:'')||'');const num=[d.status,d.code,att.status,httpStatus].map(Number).find(v=>Number.isFinite(v)&&v>0)||0;let why;if(code==='GEMINI_KEY_MISSING'||httpStatus===503&&!code)why='مفتاح Gemini مش متسجل في النظام';else if(num===401||num===403||/API key|PERMISSION_DENIED|UNAUTHENTICATED/i.test(msg+' '+gs))why='مفتاح Gemini مش مقبول (منتهي أو متوقف أو غلط)';else if(num===429||/RESOURCE_EXHAUSTED/i.test(gs))why='Gemini وصل لحد الاستخدام — جرّب بعد شوية';else if(num===404||code==='NO_TEXT_MODELS')why='مفيش نموذج Gemini متاح للمفتاح ده';else if(code==='GEMINI_TIMEOUT'||code==='MODEL_DISCOVERY_NETWORK'||num>=500)why='Gemini بطيء أو مش بيرد دلوقتي — جرّب «توليد تاني»';else why=(data&&data.error)||'تعذر توليد التعليمات';return why+(code||num?' ['+(code||'')+(num?' '+num:'')+']':'')}
+function aiCatch(e){return e&&e.name==='AbortError'?'Gemini بطيء — جرّب «توليد تاني» [TIMEOUT]':(e&&e.name==='TypeError')?'مفيش اتصال بخدمة الذكاء الاصطناعي — تأكد من الإنترنت':((e&&e.message)||'فشل الاتصال بخدمة AI')}
+async function generateBatch(meds){const list=meds.filter(m=>clean(m.name)&&!m.editRevision&&m.aiStatus!=='loading');if(!list.length)return;const key=JSON.stringify(patientPayload()),revs=new Map(list.map(m=>[m.id,m.editRevision||0]));list.forEach(m=>{m.autoKey=key;m.aiStatus='loading';m.aiError=''});invalidateApproval();renderMeds();const ctl=new AbortController(),tmr=setTimeout(()=>ctl.abort(),16000);try{const res=await fetch('/api/ai/medication-labels',{method:'POST',headers:{'content-type':'application/json'},signal:ctl.signal,body:JSON.stringify({medications:list.map(m=>({name:m.name})),patient:patientPayload(),locale:'ar-EG'})});const data=await res.json().catch(()=>({}));if(!res.ok||!Array.isArray(data.items))throw new Error(aiReason(data,res.status));list.forEach((m,i)=>{if((m.editRevision||0)!==revs.get(m.id)){m.aiStatus='idle';return}const src=data.items[i]||{};m.dose=clean(src.dose)||m.dose;m.frequency=clean(src.frequency)||m.frequency;m.duration=clean(src.duration)||m.duration;m.instructions=clean(src.instructions)||m.instructions;m.warnings=Array.isArray(src.warnings)?src.warnings:[];normalizeMedication(m);m.aiStatus=m.complete?'done':'error';m.aiError=m.complete?'':'الرد غير مكتمل؛ أكمل الحقول الناقصة يدويًا'});state.interactions=Array.isArray(data.interactions)?data.interactions:[]}catch(e){const msg=e&&e.name==='AbortError'?aiCatch(e):(e&&e.name==='TypeError'?aiCatch(e):(e.message||aiCatch(e)));list.forEach(m=>{m.aiStatus='error';m.aiError=msg})}finally{clearTimeout(tmr)}renderMeds()}
+async function generateForMedication(med){if(!clean(med.name)){med.aiStatus='error';med.aiError='اكتب اسم الدواء قبل التوليد';renderMeds();return}const requestRevision=med.editRevision||0;invalidateApproval();med.aiStatus='loading';med.aiError='';renderMeds();const ctl1=new AbortController(),tmr1=setTimeout(()=>ctl1.abort(),16000);try{const res=await fetch('/api/ai/medication-label',{method:'POST',headers:{'content-type':'application/json'},signal:ctl1.signal,body:JSON.stringify({medication:medicationPayload(med),patient:patientPayload(),locale:'ar-EG'})});const data=await res.json().catch(()=>({}));if(!res.ok||(data.ok===false&&!data.instruction&&!data.draft)){const er=new Error(aiReason(data,res.status));throw er}if((med.editRevision||0)!==requestRevision){med.aiStatus='idle';med.aiError='تغيرت المسودة أثناء التوليد؛ حُفظت تعديلاتك ولم تُستبدل. أعد المحاولة عند الحاجة.';renderMeds();return}const src=data.instruction||data.draft||data;med.dose=clean(src.dose)||med.dose;med.frequency=clean(src.frequency)||med.frequency;med.duration=clean(src.duration)||med.duration;med.instructions=clean(src.instructions)||med.instructions;med.warnings=Array.isArray(src.warnings)?src.warnings:med.warnings;normalizeMedication(med);med.aiStatus=med.complete?'done':'error';med.aiError=med.complete?'تم استلام التعليمات؛ راجعها واعتمدها قبل الطباعة':'الرد غير مكتمل؛ أكمل الحقول الناقصة يدويًا'}catch(e){med.aiStatus='error';med.aiError=(e&&(e.name==='AbortError'||e.name==='TypeError'))?aiCatch(e):(e.message||aiCatch(e))}finally{clearTimeout(tmr1)}renderMeds()}
 function bind(){
 $('nlMedTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;activeMed=Number(b.dataset.tab);stickerPage=Math.floor(activeMed/6);renderMeds()});
 panel.querySelectorAll('[data-age-unit]').forEach(b=>b.addEventListener('click',()=>{$('nlAgeUnit').value=b.dataset.ageUnit;$('nlAgeUnit').dispatchEvent(new Event('input',{bubbles:true}))}));
@@ -4029,12 +4040,12 @@ $('nlMedicineList').addEventListener('input',e=>{const card=e.target.closest('.m
 $('nlMedicineList').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const card=e.target.closest('.med-card');const med=state.medications.find(m=>m.id===card.dataset.id);if(!med)return;invalidateApproval();if(btn.dataset.action==='delete'){state.medications=state.medications.filter(m=>m.id!==med.id);if(!state.medications.length)state.medications.push(blankMedication());renderMeds()}if(btn.dataset.action==='duplicate'){state.medications.push(normalizeMedication({...med,id:uid(),selected:true,editRevision:0}));activeMed=state.medications.length-1;stickerPage=Math.floor(activeMed/6);renderMeds()}if(btn.dataset.action==='ai')generateForMedication(med)});
 $('nlPharmacistApproval').addEventListener('change',()=>{state.approved=$('nlPharmacistApproval').checked;updateSteps()});
 $('nlInvoiceQueue').addEventListener('click',e=>{const btn=e.target.closest('[data-invoice]');if(!btn)return;const idx=Number(btn.dataset.invoice);const inv=getQueue()[idx];if(!inv)return;loadInvoice(inv,idx);toast('تم تحميل الفاتورة كمسودة مراجعة')});
-$('nlClearDraft').onclick=()=>{if(!confirm('مسح مسودة الاستيكرات الحالية؟'))return;state.patient={name:'',phone:'',age:'',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:''};state.medications=[blankMedication()];state.approved=false;state.selectedInvoice=null;$('nlPharmacistApproval').checked=false;syncPatientInputs();renderQueue();renderMeds()};
+$('nlClearDraft').onclick=()=>{if(!confirm('مسح مسودة الاستيكرات الحالية؟'))return;state.patient={name:'',phone:'',age:'',ageUnit:'years',weight:'',pregnancy:'',breastfeeding:'',condition:''};state.medications=[blankMedication()];state.approved=false;state.selectedInvoice=null;$('nlPharmacistApproval').checked=false;syncPatientInputs();renderQueue();renderMeds()};
 $('nlResetSettings').onclick=()=>{Object.assign(settings,{preset:'50x30',customWidth:50,customHeight:30,paperLayout:'single',styleMode:'full',copies:1,marginMm:2,orientation:'auto',showReviewBadge:true,includePhone:true});syncSettingsInputs();persistSettings();renderPreview()};
 panel.addEventListener('input',e=>{if(e.target.closest('.patient-card'))scheduleAuto()});panel.addEventListener('change',e=>{if(e.target.closest('.patient-card'))scheduleAuto()});(()=>{const bar=$('nlAddMedicine').parentElement,cd=$('nlClearDraft');if(bar&&cd)bar.appendChild(cd)})();$('nlOpenSettings').onclick=()=>{const mo=panel.querySelector('.nl-more'),ps=panel.querySelector('.nl-print-settings');mo.open=true;ps.open=true;ps.scrollIntoView({block:'center',behavior:'smooth'})};$('nlTestPrint').onclick=()=>printPage([blankMedication('Test')],true);
 $('nlPrintAll').onclick=()=>{const meds=validateBeforePrint(false);if(meds)printPage(meds)};$('nlPrintSelected').onclick=()=>{const meds=validateBeforePrint(true);if(meds)printPage(meds)};
 }
-function syncPatientInputs(){$('nlPatientName').value=state.patient.name;$('nlPatientPhone').value=state.patient.phone;$('nlPatientAge').value=state.patient.age;$('nlPatientWeight').value=state.patient.weight;$('nlAgeUnit').value=state.patient.ageUnit||'years';ageUI();for(const[name,key]of[['nlPregnancy','pregnancy'],['nlBreastfeeding','breastfeeding']])panel.querySelectorAll('input[name="'+name+'"]').forEach(el=>el.checked=el.value===state.patient[key])}
+function syncPatientInputs(){$('nlPatientName').value=state.patient.name;$('nlPatientPhone').value=state.patient.phone;$('nlPatientAge').value=state.patient.age;$('nlPatientWeight').value=state.patient.weight;$('nlAgeUnit').value=state.patient.ageUnit||'years';ageUI();for(const[name,key]of[['nlPregnancy','pregnancy'],['nlBreastfeeding','breastfeeding']])panel.querySelectorAll('input[name="'+name+'"]').forEach(el=>el.checked=el.value===state.patient[key]);const cdx=$('nlCondition');if(cdx)cdx.value=state.patient.condition||''}
 function syncSettingsInputs(){$('nlPreset').value=settings.preset;$('nlCustomWidth').value=settings.customWidth;$('nlCustomHeight').value=settings.customHeight;$('nlPaperLayout').value=settings.paperLayout;$('nlStyleMode').value=settings.styleMode;$('nlCopies').value=settings.copies;$('nlMarginMm').value=settings.marginMm;$('nlOrientation').value=settings.orientation;$('nlShowReviewBadge').checked=settings.showReviewBadge;$('nlIncludePhone').checked=settings.includePhone;const custom=settings.preset==='custom';$('nlCustomWidth').disabled=$('nlCustomHeight').disabled=!custom;customFields()}
 const close=()=>panel.classList.remove('open');
 $('novaLabelsClose').onclick=close;
@@ -4047,17 +4058,22 @@ window.addEventListener('pageshow',()=>setTimeout(()=>{if(!panel.classList.conta
 (()=>{const mq=window.matchMedia('(min-width:700px)');const layout=panel.querySelector('.layout'),medPanel=panel.querySelector('.med-panel'),moreEl=panel.querySelector('.nl-more');if(!layout||!medPanel||!moreEl)return;
 const left=document.createElement('div');left.className='nl-left';left.append(medPanel,moreEl);layout.append(left);
 const back=document.createElement('div');back.className='nl-backdrop';panel.append(back);
+const CHECKSVG='<svg class="ico" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',WARNSVG='<svg class="ico" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></svg>';
+function splitName(n){const t=clean(n),m=t.match(/^(.*?)\s*\(([^)]*)\)\s*$/);return m&&m[1]?[m[1],m[2]]:[t,'']}
 const retry=document.createElement('button');retry.type='button';retry.className='btn small nl-retry';retry.textContent='↻ توليد تاني';retry.hidden=true;const bar=$('nlAddMedicine').parentElement;bar.insertBefore(retry,$('nlAddMedicine'));
-retry.addEventListener('click',()=>{state.medications.forEach(m=>{if(clean(m.name)&&m.aiStatus!=='loading'&&!m.complete){const c=panel.querySelector('.med-card[data-id="'+m.id+'"] [data-action="ai"]');if(c)c.click()}})});
+retry.addEventListener('click',()=>generateBatch(state.medications.filter(m=>clean(m.name)&&m.aiStatus!=='loading'&&!m.complete)));
+const note=document.createElement('span');note.className='nl-note';note.textContent='الجرعات اقتراحات من الذكاء الاصطناعي — راجعها قبل الطباعة';bar.insertBefore(note,bar.firstChild);
+const thead=document.createElement('div');thead.className='nl-thead';thead.innerHTML='<span></span><span>الدواء</span><span>الجرعة</span><span>التكرار</span><span>المدة</span><span>التعليمات</span><span>الحالة</span>';$('nlMedicineList').before(thead);
+const inter=document.createElement('div');inter.className='nl-inter';inter.hidden=true;$('nlMedicineList').after(inter);
 const tog=document.createElement('button');tog.type='button';tog.className='nl-prevtoggle';left.append(tog);
 const setMore=on=>{panel.classList.toggle('nl-showmore',on);tog.textContent=on?'إخفاء معاينة الاستيكرات':'👁 معاينة الاستيكرات'};setMore(false);
 tog.addEventListener('click',()=>setMore(!panel.classList.contains('nl-showmore')));
 const os=$('nlOpenSettings');if(os)os.addEventListener('click',()=>setMore(true));
 let editingId=null;
 const FIELDS=['name','dose','frequency','duration','instructions'];
-function sync(){const list=$('nlMedicineList');if(!list)return;list.querySelectorAll('.med-card').forEach((card,i)=>{const m=state.medications.find(x=>x.id===card.dataset.id);if(!m)return;let sum=card.querySelector(':scope>.med-sum');if(!sum){sum=document.createElement('button');sum.type='button';sum.className='med-sum';card.prepend(sum)}let done=card.querySelector(':scope>.med-done');if(!done){done=document.createElement('button');done.type='button';done.className='btn primary med-done';done.textContent='تم';card.append(done)}let pv=card.querySelector(':scope>.med-prev');if(!pv){pv=document.createElement('button');pv.type='button';pv.className='med-prev';pv.textContent='👁 معاينة الاستيكر';card.insertBefore(pv,done)}const miss=(m.missing||[]).map(x=>({dose:'الجرعة',frequency:'التكرار',duration:'المدة',instructions:'التعليمات'})[x]).join('، ');const hasWarn=Array.isArray(m.warnings)&&m.warnings.length>0;const aiErr=m.aiStatus==='error'&&!m.complete&&m.aiError?m.aiError:'';const parts=[m.dose,m.frequency,m.duration].filter(Boolean).join(' · ');const ins=clean(m.instructions);const sentence=parts+(ins?(parts?' — ':'')+ins:'');let chip;if(m.aiStatus==='loading')chip='<span class="sumst busy"><i class="spin"></i>جاري التوليد</span>';else if(m.aiStatus==='error'&&!m.complete&&!sentence)chip='<span class="sumst err">فشل — المس للتعديل</span>';else if(!m.complete)chip='<span class="sumst warn">ناقص: '+esc(miss)+'</span>';else if(hasWarn)chip='<span class="sumst err">⚠ تحذير</span>';else chip='<span class="tick" aria-label="مكتمل">✓</span>';const ds=sentence||(m.aiStatus==='loading'?'بيكتب التعليمات…':'لا توجد تعليمات بعد');const html='<span class="n">'+(i+1)+'</span><span class="txt"><span class="nm">'+esc(m.name||'دواء بدون اسم')+'</span><span class="ds'+(sentence?'':' none')+'">'+esc(ds)+'</span>'+(hasWarn?'<span class="wn">⚠ '+esc(m.warnings[0])+'</span>':'')+(aiErr&&!sentence?'<span class="wn">'+esc(aiErr)+'</span>':'')+'</span>'+chip+'<span class="chev">‹</span>';if(sum.dataset.sig!==html){sum.dataset.sig=html;sum.innerHTML=html}card.classList.toggle('has-warn',hasWarn&&m.complete);card.classList.toggle('editing',mq.matches&&card.dataset.id===editingId)});if(editingId&&!list.querySelector('.med-card.editing'))editingId=null;panel.classList.toggle('nl-editing',!!editingId&&mq.matches);retry.hidden=!state.medications.some(m=>m.aiStatus==='error'&&!m.complete);const total=state.medications.length,busy=state.medications.filter(m=>m.aiStatus==='loading').length,pa=$('nlPrintAll'),pl=$('nlPrintLabel');if(pa&&pl&&mq.matches){if(busy>0){const t='بيجهز '+(total-busy)+' من '+total+'…';if(pl.textContent!==t)pl.textContent=t;pa.disabled=true}else if(pa.disabled){pa.disabled=false;syncBar()}}}
+function sync(){const list=$('nlMedicineList');if(!list)return;list.querySelectorAll('.med-card').forEach((card,i)=>{const m=state.medications.find(x=>x.id===card.dataset.id);if(!m)return;let sum=card.querySelector(':scope>.med-sum');if(!sum){sum=document.createElement('button');sum.type='button';sum.className='med-sum';card.prepend(sum)}let done=card.querySelector(':scope>.med-done');if(!done){done=document.createElement('button');done.type='button';done.className='btn primary med-done';done.textContent='تم';card.append(done)}let pv=card.querySelector(':scope>.med-prev');if(!pv){pv=document.createElement('button');pv.type='button';pv.className='med-prev';pv.textContent='👁 معاينة الاستيكر';card.insertBefore(pv,done)}const hasWarn=Array.isArray(m.warnings)&&m.warnings.length>0,loading=m.aiStatus==='loading',ins=clean(m.instructions),filled=[m.dose,m.frequency,m.duration,ins].some(Boolean),failed=m.aiStatus==='error'&&!m.complete&&!filled;const cell=(v,cls)=>v?'<span class="c '+cls+'">'+esc(v)+'</span>':'<span class="c '+cls+(loading?' wait':failed?' dash':' gap')+'">'+(loading?'…':failed?'—':'ناقصة')+'</span>';const nm=splitName(m.name);let st;if(loading)st='<span class="c st busy"><i class="spin"></i>جاري التوليد</span>';else if(failed)st='<span class="c st err">فشل</span>';else if(!m.complete)st='<span class="c st warn">ناقص</span>';else if(hasWarn)st='<span class="c st err">'+WARNSVG+'تحذير</span>';else st='<span class="c st ok">'+CHECKSVG+'جاهز</span>';const notes=(hasWarn?m.warnings.slice(0,2).map(w=>'<span class="wn">⚠ '+esc(w)+'</span>').join(''):'')+(failed&&m.aiError?'<span class="wn">'+esc(m.aiError)+'</span>':'');const html='<span class="c n">'+(i+1)+'</span><span class="c nm">'+esc(nm[0]||'دواء بدون اسم')+(nm[1]?'<small>'+esc(nm[1])+'</small>':'')+'</span>'+cell(m.dose,'dose')+cell(m.frequency,'freq')+cell(m.duration,'dur')+'<span class="c ins">'+(ins?esc(ins):(loading?'…':failed?'':'<span class="gapt">ناقصة</span>'))+notes+'</span>'+st;if(sum.dataset.sig!==html){sum.dataset.sig=html;sum.innerHTML=html}card.classList.toggle('has-warn',hasWarn&&m.complete);card.classList.toggle('ai-fail',failed);card.classList.toggle('editing',mq.matches&&card.dataset.id===editingId)});if(editingId&&!list.querySelector('.med-card.editing'))editingId=null;panel.classList.toggle('nl-editing',!!editingId&&mq.matches);retry.hidden=!state.medications.some(m=>m.aiStatus==='error'&&!m.complete);{const it=Array.isArray(state.interactions)?state.interactions:[];inter.hidden=!it.length||!mq.matches;if(!inter.hidden){const t='تداخلات بين أدوية الفاتورة: '+it.join(' · ');if(inter.textContent!==t)inter.textContent=t}}const total=state.medications.length,busy=state.medications.filter(m=>m.aiStatus==='loading').length,pa=$('nlPrintAll'),pl=$('nlPrintLabel');if(pa&&pl&&mq.matches){if(busy>0){const t='بيجهز '+(total-busy)+' من '+total+'…';if(pl.textContent!==t)pl.textContent=t;pa.disabled=true}else if(pa.disabled){pa.disabled=false;syncBar()}}}
 function closeEdit(){editingId=null;panel.classList.remove('nl-showprev');sync()}
-$('nlMedicineList').addEventListener('click',e=>{const sum=e.target.closest('.med-sum');if(sum){const card=sum.closest('.med-card');editingId=card.dataset.id;const idx=state.medications.findIndex(m=>m.id===editingId);if(idx>=0){activeMed=idx;stickerPage=Math.floor(idx/6);renderPreview()}sync();const m=state.medications[idx];const f=FIELDS.find(k=>!clean(m&&m[k]))||'name';const el=card.querySelector('[data-field="'+f+'"]');if(el&&!mq.matches===false)setTimeout(()=>el.focus(),30);return}if(e.target.closest('.med-prev')){panel.classList.toggle('nl-showprev');return}if(e.target.closest('.med-done'))closeEdit()});
+$('nlMedicineList').addEventListener('click',e=>{const sum=e.target.closest('.med-sum');if(sum){const card=sum.closest('.med-card');editingId=card.dataset.id;const idx=state.medications.findIndex(m=>m.id===editingId);if(idx>=0){activeMed=idx;stickerPage=Math.floor(idx/6);renderPreview()}sync();const m=state.medications[idx];const f=FIELDS.find(k=>!clean(m&&m[k]))||'name';const el=card.querySelector('[data-field="'+f+'"]');if(el)setTimeout(()=>{const a=document.activeElement;if(!a||a===document.body||!card.contains(a))el.focus()},30);return}if(e.target.closest('.med-prev')){panel.classList.toggle('nl-showprev');return}if(e.target.closest('.med-done'))closeEdit()});
 back.addEventListener('click',closeEdit);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&editingId){e.stopImmediatePropagation();e.preventDefault();closeEdit()}},true);
 $('nlMedicineList').addEventListener('input',()=>requestAnimationFrame(sync));
@@ -4066,9 +4082,20 @@ new MutationObserver(()=>{if(!panel.classList.contains('open')&&editingId)closeE
 mq.addEventListener&&mq.addEventListener('change',sync);sync();
 })();
 (()=>{const wrap=panel.querySelector('.patient-card .card-body'),grid=panel.querySelector('.patient-card .patient-grid');if(!wrap||!grid)return;
-const box=document.createElement('div');box.className='nl-quick';box.innerHTML='<div class="q-title">مين العميل؟</div><div class="q-row"><button type="button" data-q="adult">بالغ</button><button type="button" data-q="child">طفل</button><button type="button" data-q="preg">حامل</button><button type="button" data-q="nurse">مرضعة</button></div>';wrap.insertBefore(box,grid);
+const box=document.createElement('div');box.className='nl-quick';box.innerHTML='<div class="q-title">مين العميل؟</div><div class="q-row"><button type="button" data-q="adult"><svg viewBox="0 0 24 24"><circle cx="12" cy="6.4" r="3.1" fill="rgba(118,184,213,.35)"/><path d="M5.8 21v-5c0-2.6 2.7-4 6.2-4s6.2 1.4 6.2 4v5"/></svg><span>بالغ</span></button><button type="button" data-q="child"><svg viewBox="0 0 24 24"><circle cx="12" cy="10.2" r="2.8" fill="rgba(118,184,213,.35)"/><path d="M8 21v-3c0-1.9 1.7-3 4-3s4 1.1 4 3v3"/></svg><span>طفل</span></button><button type="button" data-q="preg"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.4" r="2.7"/><path d="M7.4 12.6c.8-1.6 2.6-2.6 4.6-2.6s3.8 1 4.6 2.6"/><circle cx="12" cy="15.3" r="3.6" fill="rgba(118,184,213,.35)"/><path d="M10.6 18.8V21M13.4 18.8V21"/></svg><span>حامل</span></button><button type="button" data-q="nurse"><svg viewBox="0 0 24 24"><circle cx="9.4" cy="5.8" r="2.8"/><path d="M4.4 20.8c.3-3.8 2.5-6 5-6 1 0 1.9.3 2.7.9"/><circle cx="17" cy="13.4" r="2" fill="rgba(118,184,213,.35)"/><path d="M13.8 20.6c.2-2.4 1.3-3.7 3.2-3.7s3 1.3 3.2 3.7"/></svg><span>مرضعة</span></button></div>';wrap.insertBefore(box,grid);
+const cond=document.createElement('div');cond.className='nl-cond';
+const CHIPS=[['حساسية بنسلين','حساسية بنسلين'],['ضغط','ضغط مرتفع'],['سكر','سكر'],['قلب','مشاكل قلب'],['كلى','مشاكل كلى'],['كبد','مشاكل كبد'],['معدة','قرحة معدة']];
+cond.innerHTML='<div class="lbl"><span>حالة المريض</span><em>اختياري — للذكاء الاصطناعي</em></div><textarea id="nlCondition" rows="3" maxlength="400" autocomplete="off" placeholder="مثال: التهاب حلق، حساسية بنسلين، ضغط مرتفع…"></textarea><div class="chips">'+CHIPS.map(c=>'<button type="button" data-p="'+c[1]+'">'+c[0]+'</button>').join('')+'</div><div class="hint">الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.</div>';
+wrap.insertBefore(cond,grid);
+const ta=cond.querySelector('textarea');
+const condParts=()=>ta.value.split(/[،,]/).map(x=>x.trim()).filter(Boolean);
+const chipSync=()=>{const ps=condParts();cond.querySelectorAll('.chips button').forEach(b=>b.classList.toggle('on',ps.includes(b.dataset.p)))};
+const condChanged=delay=>{state.patient.condition=ta.value.trim();invalidateApproval();persist();chipSync();clearTimeout(autoTimer);autoTimer=setTimeout(runAuto,delay)};
+cond.addEventListener('input',e=>{e.stopPropagation();condChanged(1500)});
+cond.addEventListener('change',e=>e.stopPropagation());
+cond.querySelector('.chips').addEventListener('click',e=>{const b=e.target.closest('button[data-p]');if(!b)return;const ph=b.dataset.p,ps=condParts();ta.value=(ps.includes(ph)?ps.filter(x=>x!==ph):ps.concat(ph)).join('، ');condChanged(900)});
 let child=false;
-function refresh(){const P=state.patient;let q='';if(P.pregnancy==='yes')q='preg';else if(P.breastfeeding==='yes')q='nurse';else if(P.pregnancy==='no'&&P.breastfeeding==='no')q=child?'child':'adult';else child=false;if(q==='adult'||q==='preg'||q==='nurse')child=false;if(q)box.dataset.q=q;else delete box.dataset.q;box.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===q)))}
+function refresh(){chipSync();const P=state.patient;let q='';if(P.pregnancy==='yes')q='preg';else if(P.breastfeeding==='yes')q='nurse';else if(P.pregnancy==='no'&&P.breastfeeding==='no')q=child?'child':'adult';else child=false;if(q==='adult'||q==='preg'||q==='nurse')child=false;if(q)box.dataset.q=q;else delete box.dataset.q;box.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===q)))}
 function setRadio(name,val){const el=panel.querySelector('input[name="'+name+'"][value="'+val+'"]');if(el)el.click()}
 function setAge(v,unit){const a=$('nlPatientAge');a.value=v;a.dispatchEvent(new Event('input',{bubbles:true}));a.dispatchEvent(new Event('change',{bubbles:true}))}
 box.addEventListener('click',e=>{const b=e.target.closest('button[data-q]');if(!b)return;const q=b.dataset.q;child=q==='child';setRadio('nlPregnancy',q==='preg'?'yes':'no');setRadio('nlBreastfeeding',q==='nurse'?'yes':'no');if(q==='child'){const P=state.patient;if(P.ageUnit!=='years'||!(Number(P.age)>0)){}setTimeout(()=>{const a=$('nlPatientAge');if(!(Number(a.value)>0))a.focus()},50)}else setAge('30');refresh();if(q!=='child')scheduleAuto()});
@@ -4153,62 +4180,81 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .med-card>label.field{grid-column:1/-1}}
 #novaLabelsPanel .nl-left{display:contents}
 #novaLabelsPanel .med-sum,#novaLabelsPanel .med-done,#novaLabelsPanel .nl-backdrop{display:none}
-#novaLabelsPanel .nl-quick{display:none}
+#novaLabelsPanel .nl-quick,#novaLabelsPanel .nl-cond,#novaLabelsPanel .nl-thead,#novaLabelsPanel .nl-inter,#novaLabelsPanel .nl-note{display:none}
 @keyframes nlspin{to{transform:rotate(360deg)}}
-/* ===== tablets and computers (>=700px) ===== */
+/* ===== tablets and computers (>=700px): NOVA Black Edition look ===== */
 @media(min-width:700px){
+#novaLabelsPanel{--nl-cols:34px minmax(120px,1.45fr) 70px 108px 82px minmax(120px,1.7fr) 100px}
 #novaLabelsPanel .btn,#novaLabelsPanel .linkbtn,#novaLabelsPanel summary,#novaLabelsPanel #novaLabelsClose{min-height:44px}
 #novaLabelsPanel .btn.small,#novaLabelsPanel #nlAddMedicine,#novaLabelsPanel #nlClearDraft,#novaLabelsPanel #nlPrintSelected,#novaLabelsPanel .patient-card details summary{min-height:44px}
-/* customer type: one slim bar */
+/* customer card */
+#novaLabelsPanel .patient-card{background:#111418;border:1px solid #2a3037;border-radius:12px}
 #novaLabelsPanel .patient-card .card-head{display:none}
-#novaLabelsPanel .patient-card .card-body{display:flex;flex-wrap:wrap;align-items:center;gap:0 22px;padding:10px 14px}
-#novaLabelsPanel .nl-quick{order:1}
-#novaLabelsPanel .patient-card .nl-quick~.patient-grid{order:2}
-#novaLabelsPanel .patient-card details{order:3}
-#novaLabelsPanel .nl-quick{display:flex;align-items:center;gap:16px;flex:1 1 100%;margin:0}
-#novaLabelsPanel .nl-quick .q-title{margin:0;white-space:nowrap;font-size:17px;font-weight:800;color:var(--text,#e8edf2)}
-#novaLabelsPanel .nl-quick .q-row{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-#novaLabelsPanel .nl-quick button{min-height:60px;font:800 19px var(--font,inherit);border-radius:14px;border:2px solid var(--line2,#39424e);background:var(--panel2,#1b2027);color:inherit;cursor:pointer}
-#novaLabelsPanel .nl-quick button[aria-pressed="true"]{background:#1d4f7c;border-color:#5aa7e6;color:#fff}
-#novaLabelsPanel .nl-quick:not([data-q]) .q-row{outline:2px solid #8a6a1f;outline-offset:4px;border-radius:16px}
-#novaLabelsPanel .patient-card .safety-choices{display:none}
+#novaLabelsPanel .patient-card .card-body{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:14px}
 #novaLabelsPanel .patient-card .patient-grid{display:none}
-#novaLabelsPanel .nl-quick[data-q="child"]~.patient-grid{display:grid;flex:1 1 100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:6px}
+#novaLabelsPanel .patient-card .safety-choices{display:none}
+#novaLabelsPanel .nl-quick{display:block;order:1}
+#novaLabelsPanel .nl-cond{display:block;order:2}
+#novaLabelsPanel .patient-card .nl-quick[data-q="child"]~.patient-grid{display:grid;order:3;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 #novaLabelsPanel .patient-card .patient-grid .f-age,#novaLabelsPanel .patient-card .patient-grid .f-weight{display:block}
+#novaLabelsPanel .patient-card details{order:4;margin:0}
 #novaLabelsPanel .patient-card input,#novaLabelsPanel .patient-card .seg button{min-height:52px;font-size:16px}
-#novaLabelsPanel .patient-card details{flex:none;margin:0}
-#novaLabelsPanel .patient-card details[open]{flex:1 1 100%}
-/* medicines: full-width rows that read like the sticker */
-#novaLabelsPanel .med-tabs{display:none}
-#novaLabelsPanel .med-card{display:block}
-#novaLabelsPanel .med-card:not(.editing){padding:0}
+#novaLabelsPanel .nl-quick .q-title,#novaLabelsPanel .nl-cond .lbl{display:flex;justify-content:space-between;gap:8px;margin:0 0 8px;font-size:12px;font-weight:600;color:#a4adb7}
+#novaLabelsPanel .nl-cond .lbl em{font-style:normal;font-weight:400;color:#808b96}
+#novaLabelsPanel .nl-quick .q-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#novaLabelsPanel .nl-quick button{min-height:64px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:10px;border:1px solid #2a3037;background:#1b2026;color:#dfe4e8;font:700 17px var(--font,inherit);cursor:pointer}
+#novaLabelsPanel .nl-quick button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#novaLabelsPanel .nl-quick button[aria-pressed="true"]{background:rgba(118,184,213,.12);border-color:#76b8d5;color:#c9e8f5}
+#novaLabelsPanel .nl-quick:not([data-q]) .q-row{outline:1px solid #bba477;outline-offset:4px;border-radius:12px}
+#novaLabelsPanel .nl-cond textarea{display:block;width:100%;min-height:84px;resize:none;border-radius:10px;border:1px solid #2a3037;background:#1b2026;color:#f1f3f5;padding:10px 12px;font:400 15px/1.5 var(--font,inherit)}
+#novaLabelsPanel .nl-cond textarea:focus{outline:0;border-color:#76b8d5}
+#novaLabelsPanel .nl-cond .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#novaLabelsPanel .nl-cond .chips button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #2a3037;background:transparent;color:#a4adb7;font:500 13px var(--font,inherit);cursor:pointer}
+#novaLabelsPanel .nl-cond .chips button.on{border-color:#76b8d5;color:#c9e8f5;background:rgba(118,184,213,.1)}
+#novaLabelsPanel .nl-cond .hint{margin-top:8px;font-size:12px;line-height:1.5;color:#808b96}
+/* medicines: a table like the POS table */
+#novaLabelsPanel .med-panel{background:transparent;border:0;box-shadow:none}
+#novaLabelsPanel .med-tabs,#novaLabelsPanel .med-count{display:none}
+#novaLabelsPanel .med-panel .med-tabbar{display:flex;align-items:center;gap:8px;padding:0 0 8px}
+#novaLabelsPanel .nl-note{display:block;flex:1;font-size:12px;color:#808b96}
+#novaLabelsPanel .nl-thead{display:grid;grid-template-columns:var(--nl-cols);align-items:center;gap:10px;height:36px;padding:0 14px;background:#1b2026;color:#808b96;font-size:12px;font-weight:600;border:1px solid #2a3037;border-bottom:0;border-radius:10px 10px 0 0}
+#novaLabelsPanel .med-panel .med-list{padding:0;gap:0;border:1px solid #2a3037;border-radius:0 0 10px 10px;overflow:hidden;background:#111418}
+#novaLabelsPanel .med-card{display:block;position:relative;padding:0;border:0;border-bottom:1px solid #1f252b;border-radius:0;background:transparent}
+#novaLabelsPanel .med-card:last-child{border-bottom:0}
+#novaLabelsPanel .med-card.needs-review,#novaLabelsPanel .med-card.has-warn{background:transparent}
 #novaLabelsPanel .med-card:not(.editing)>*:not(.med-sum){display:none!important}
-#novaLabelsPanel .med-card:not(.editing) .med-sum{display:flex}
-#novaLabelsPanel .med-card.needs-review{border-color:#8a6a1f;background:#1a1710}
-#novaLabelsPanel .med-card.has-warn{border-color:#8a3a3a;background:#1c1214}
-#novaLabelsPanel .med-sum{align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 16px;text-align:right;background:transparent;border:0;color:inherit;font:inherit;cursor:pointer}
-#novaLabelsPanel .med-sum .n{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#27303a;font-weight:800;font-size:15px}
-#novaLabelsPanel .med-sum .txt{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px}
-#novaLabelsPanel .med-sum .nm{font-weight:800;font-size:19px;line-height:1.35;overflow-wrap:anywhere}
-#novaLabelsPanel .med-sum .ds{font-size:17px;line-height:1.5;color:var(--text,#e8edf2);overflow-wrap:anywhere}
-#novaLabelsPanel .med-sum .ds.none{color:var(--muted)}
-#novaLabelsPanel .med-sum .wn{font-size:15px;font-weight:700;color:#ff9a9a}
-#novaLabelsPanel .med-sum .tick{flex:none;color:#7ed6b0;font-size:24px;font-weight:800;width:44px;text-align:center}
-#novaLabelsPanel .med-sum .sumst{flex:none;display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--line2);border-radius:999px;font-size:15px;font-weight:800;max-width:42%;text-align:center}
-#novaLabelsPanel .med-sum .sumst.warn{background:#2a2412;border-color:#8a6a1f;color:#f1c36a}
-#novaLabelsPanel .med-sum .sumst.err{background:#2a1515;border-color:#8a3a3a;color:#ff9a9a}
-#novaLabelsPanel .med-sum .sumst.busy{background:#142230;border-color:#2f5d86;color:#9fcdf2}
+#novaLabelsPanel .med-card:not(.editing) .med-sum{display:grid}
+#novaLabelsPanel .med-card:not(.editing)::before{content:'';position:absolute;top:0;bottom:0;right:0;width:3px;background:transparent}
+#novaLabelsPanel .med-card.needs-review:not(.editing)::before{background:#bba477}
+#novaLabelsPanel .med-card.has-warn:not(.editing)::before,#novaLabelsPanel .med-card.ai-fail:not(.editing)::before{background:#ef4444}
+#novaLabelsPanel .med-sum{grid-template-columns:var(--nl-cols);align-items:center;gap:10px;width:100%;min-height:62px;padding:6px 14px;text-align:right;background:transparent;border:0;color:inherit;font:inherit;cursor:pointer}
+#novaLabelsPanel .med-sum .c{min-width:0;font-size:14.5px;color:#f1f3f5;overflow-wrap:anywhere}
+#novaLabelsPanel .med-sum .n{text-align:center;color:#808b96}
+#novaLabelsPanel .med-sum .nm{font-weight:700;font-size:15.5px;line-height:1.3}
+#novaLabelsPanel .med-sum .nm small{display:block;font-weight:400;font-size:12px;color:#808b96;direction:ltr;text-align:right}
+#novaLabelsPanel .med-sum .gap,#novaLabelsPanel .med-sum .gapt{color:#bba477;font-weight:600}
+#novaLabelsPanel .med-sum .gap{background:rgba(187,164,119,.12);border-radius:6px;padding:6px 8px;text-align:center}
+#novaLabelsPanel .med-sum .wait,#novaLabelsPanel .med-sum .dash{color:#808b96}
+#novaLabelsPanel .med-sum .ins{font-size:14px;line-height:1.4;color:#c9d0d6}
+#novaLabelsPanel .med-sum .wn{display:block;margin-top:2px;font-size:12.5px;color:#e08a8a}
+#novaLabelsPanel .med-sum .st{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+#novaLabelsPanel .med-sum .st.ok{color:#60b99b}
+#novaLabelsPanel .med-sum .st.warn{color:#bba477}
+#novaLabelsPanel .med-sum .st.err{color:#e08a8a}
+#novaLabelsPanel .med-sum .st.busy{color:#76b8d5}
+#novaLabelsPanel .med-sum .ico{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #novaLabelsPanel .med-sum .spin{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:nlspin .8s linear infinite}
-#novaLabelsPanel .med-sum .chev{flex:none;color:var(--muted);font-size:22px}
+#novaLabelsPanel .nl-inter:not([hidden]){display:block}
+#novaLabelsPanel .nl-inter{margin-top:8px;padding:10px 14px;border:1px solid #5d5238;border-radius:10px;background:rgba(187,164,119,.08);color:#d9c79b;font-size:13.5px;line-height:1.5}
 /* sticker preview only on demand */
 #novaLabelsPanel .nl-more>summary{display:none}
 #novaLabelsPanel .nl-left .preview-col.nl-more{visibility:hidden;max-height:0;min-height:0;overflow:hidden;margin:0;padding:0;border:0}
-#novaLabelsPanel.nl-showmore .nl-left .preview-col.nl-more{visibility:visible;max-height:none;overflow:visible;padding:12px 14px;border:1px solid var(--line);margin-top:6px}
-#novaLabelsPanel .nl-prevtoggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-top:6px;border-radius:12px;border:1px dashed var(--line2,#39424e);background:transparent;color:var(--muted);font:700 15px var(--font,inherit);cursor:pointer}
+#novaLabelsPanel.nl-showmore .nl-left .preview-col.nl-more{visibility:visible;max-height:none;overflow:visible;padding:12px 14px;border:1px solid #2a3037;margin-top:6px}
+#novaLabelsPanel .nl-prevtoggle{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;margin-top:6px;border-radius:10px;border:1px dashed #2a3037;background:transparent;color:#a4adb7;font:600 14px var(--font,inherit);cursor:pointer}
 #novaLabelsPanel .med-card .med-prev{display:none}
 /* edit window */
 #novaLabelsPanel.nl-editing .nl-backdrop{display:block;position:fixed;inset:0;background:#000a;z-index:40}
-#novaLabelsPanel .med-card.editing{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:88vh;overflow-y:auto;z-index:50;padding:18px;box-shadow:0 20px 60px #000c;background:var(--panel2,#1b2027);display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#novaLabelsPanel .med-card.editing{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:88vh;overflow-y:auto;z-index:50;padding:18px;border:1px solid #2a3037;border-radius:12px;box-shadow:0 20px 60px #000c;background:#1b2026;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 #novaLabelsPanel .med-card.editing .med-top,#novaLabelsPanel .med-card.editing .nl-missing-box,#novaLabelsPanel .med-card.editing>.missing,#novaLabelsPanel .med-card.editing>.status{grid-column:1/-1}
 #novaLabelsPanel .med-card.editing .med-fields{display:contents}
 #novaLabelsPanel .med-card.editing .f-medname,#novaLabelsPanel .med-card.editing>label.field{grid-column:1/-1!important}
@@ -4217,36 +4263,24 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .med-card.editing textarea{height:72px}
 #novaLabelsPanel .med-card.editing .med-done{display:block;grid-column:1/-1;min-height:56px;font-size:18px}
 #novaLabelsPanel .med-card.editing input,#novaLabelsPanel .med-card.editing textarea,#novaLabelsPanel .med-card.editing .btn{min-height:52px;font-size:16px}
-#novaLabelsPanel.nl-editing .med-card.editing .med-prev{display:block;grid-column:1/-1;min-height:48px;border-radius:12px;border:1px dashed var(--line2,#39424e);background:transparent;color:#8fc3f0;font:700 15px var(--font,inherit);cursor:pointer}
+#novaLabelsPanel.nl-editing .med-card.editing .med-prev{display:block;grid-column:1/-1;min-height:48px;border-radius:10px;border:1px dashed #2a3037;background:transparent;color:#8fc3f0;font:600 14px var(--font,inherit);cursor:pointer}
 /* print bar */
 #novaLabelsPanel .print-actions{flex-direction:row-reverse}
-#novaLabelsPanel #nlPrintAll{min-height:60px;min-width:260px;font-size:18px}
-#novaLabelsPanel #nlPrintAll:disabled{opacity:.6;cursor:progress}
-#novaLabelsPanel .bar-why{font-size:16px;font-weight:700}
-#novaLabelsPanel .bar-why:empty::after{content:'✓ كله جاهز للطباعة';color:#7ed6b0}
+#novaLabelsPanel #nlPrintAll{min-height:56px;min-width:250px;font-size:17px;background:#387e9e;border-color:#387e9e;color:#fff}
+#novaLabelsPanel #nlPrintAll:disabled,#novaLabelsPanel #nlPrintAll.is-blocked{background:#1b2026;border-color:#2a3037;color:#808b96}
+#novaLabelsPanel #nlPrintAll:disabled{cursor:progress}
+#novaLabelsPanel .bar-why{font-size:15px;font-weight:600}
+#novaLabelsPanel .bar-why:empty::after{content:'✓ كله جاهز للطباعة';color:#60b99b}
 }
-/* ===== wide screens (>=1100px): one column, list scrolls ===== */
+/* ===== wide screens (>=1100px): customer on the right, table on the left ===== */
 @media(min-width:1100px){
-#novaLabelsPanel .labels-sheet{width:min(1120px,97vw)!important}
-#novaLabelsPanel .layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:14px;overflow:hidden;padding:12px 18px;align-content:stretch}
+#novaLabelsPanel .labels-sheet{width:min(1160px,97vw)!important}
+#novaLabelsPanel .layout{display:grid;grid-template-columns:296px minmax(0,1fr);gap:16px;overflow:hidden;padding:14px 18px;align-content:stretch}
 #novaLabelsPanel .editor-col{overflow-y:auto;min-height:0}
-#novaLabelsPanel .patient-card .card-body{flex-direction:column;align-items:stretch;gap:6px;padding:14px}
-#novaLabelsPanel .nl-quick{display:block;flex:none}
-#novaLabelsPanel .nl-quick .q-title{margin:0 0 12px}
-#novaLabelsPanel .nl-quick .q-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-#novaLabelsPanel .nl-quick button{min-height:104px;font-size:22px;border-radius:22px;box-shadow:0 4px 0 #0008}
-#novaLabelsPanel .nl-quick button::before{display:block;font-size:34px;line-height:1.1;margin-bottom:4px}
-#novaLabelsPanel .nl-quick button[data-q="adult"]::before{content:'🧑'}
-#novaLabelsPanel .nl-quick button[data-q="child"]::before{content:'🧒'}
-#novaLabelsPanel .nl-quick button[data-q="preg"]::before{content:'🤰'}
-#novaLabelsPanel .nl-quick button[data-q="nurse"]::before{content:'🍼'}
-#novaLabelsPanel .nl-quick button[data-q="child"][aria-pressed="true"]{background:#1f5a3a;border-color:#4ade80}
-#novaLabelsPanel .nl-quick button[data-q="preg"][aria-pressed="true"]{background:#6b2350;border-color:#f472b6}
-#novaLabelsPanel .nl-quick button[data-q="nurse"][aria-pressed="true"]{background:#4a2a73;border-color:#c084fc}
-#novaLabelsPanel .nl-quick button:active{transform:translateY(3px);box-shadow:0 1px 0 #0008}
-#novaLabelsPanel .nl-quick[data-q="child"]~.patient-grid{grid-template-columns:1fr}
-#novaLabelsPanel .nl-left>.panel{flex:none}
-#novaLabelsPanel .nl-left{display:flex;flex-direction:column;gap:10px;flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+#novaLabelsPanel .nl-quick .q-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+#novaLabelsPanel .nl-quick button{min-height:80px;flex-direction:column;gap:3px;font-size:17px}
+#novaLabelsPanel .nl-quick button svg{width:28px;height:28px}
+#novaLabelsPanel .nl-left{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
 #novaLabelsPanel .nl-left>.panel,#novaLabelsPanel .nl-left>.nl-more,#novaLabelsPanel .nl-left>.nl-prevtoggle{flex:none}
 #novaLabelsPanel.nl-editing{--sheetW:540px;--stageW:min(500px,calc(100vw - 644px));--gap:24px}
 #novaLabelsPanel.nl-editing.nl-showprev .med-card.editing{left:calc(50% - (var(--sheetW) + var(--stageW) + var(--gap))/2 + var(--stageW) + var(--gap));transform:translateY(-50%);width:var(--sheetW)}
