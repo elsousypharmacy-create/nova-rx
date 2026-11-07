@@ -18,13 +18,14 @@ const VIEWPORTS=[
   {name:'mobile',width:390,height:844},
 ];
 const FIELDS={dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل'};
-const toastText=page=>page.$eval('#novaLabelsPanel',el=>el.querySelector('.nlx-toast')?.textContent||'');
+const toastText=async page=>{await sleep(250);return page.$eval('#novaLabelsPanel',el=>[...el.querySelectorAll('.nlx-toast')].map(t=>t.textContent).join(' | '))};
 
 async function openModal(page){
   await page.goto('http://127.0.0.1:8766/index.html#sale',{waitUntil:'domcontentloaded'});
   await sleep(900);
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:777,customer:'أحمد علي',items:[{name:'Panadol Extra'},{name:'Augmentin 1g'}]}})));
   await sleep(400);
+  await page.evaluate(()=>{window.__ai=0});
 }
 
 async function fillCard(page,index,name,over={}){
@@ -66,20 +67,29 @@ async function runFlow(page,vp,errors){
   check(`${L}: print button visible and at least 44px high`,g0.btnShown&&g0.btn.h>=44);
   check(`${L}: RTL`,g0.rtl);
 
-  await page.click('#nlAddMedicine');
-  check(`${L}: every medicine has its own visible card`,(await geometry(page)).cards===2);
-  check(`${L}: blocked button explains why (safety)`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('الحمل والرضاعة'));
+  check(`${L}: invoice medicines are loaded automatically (no add step)`,(await geometry(page)).cards===2);
+  if(L==='tablet-landscape'){
+    const fit=await page.evaluate(()=>{const l=document.querySelector('#novaLabelsPanel .layout');return l.scrollHeight<=l.clientHeight+2});
+    check(`${L}: two medicines fit without scrolling`,fit);
+  }
+  const why0=await page.$eval('#nlBarWhy',e=>e.textContent);
+  check(`${L}: blocked button explains why (age + safety)`,why0.includes('اكتب العمر')&&why0.includes('الحمل والرضاعة'));
   await page.click('#nlPrintAll',{force:true});
-  check(`${L}: blocked click shows the reason`,(await toastText(page)).includes('الحمل والرضاعة'));
+  check(`${L}: blocked click shows the reason`,(await toastText(page)).includes('عمر'));
+  check(`${L}: no AI call before age and safety are answered`,(await page.evaluate(()=>window.__ai))===0);
 
+  await page.fill('#nlPatientAge','30');await page.dispatchEvent('#nlPatientAge','input');
   await answerSafety(page);
-  check(`${L}: blocked button explains why (incomplete medicines)`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('تحتاج مراجعة'));
+  await page.waitForFunction(()=>document.getElementById('nlBarWhy').textContent==='',null,{timeout:8000});
+  check(`${L}: AI filled both medicines automatically`,(await page.evaluate(()=>window.__ai))===2);
   check(`${L}: button label counts the medicines`,(await page.$eval('#nlPrintLabel',e=>e.textContent)).includes('دوائين'));
-  await page.click('#nlPrintAll',{force:true});
-  check(`${L}: incomplete medicines block printing`,(await toastText(page)).includes('أكمل'));
 
+  await page.fill('#nlMedicineList .med-card:nth-child(2) [data-field="dose"]','');
+  await page.dispatchEvent('#nlMedicineList .med-card:nth-child(2) [data-field="dose"]','input');
+  check(`${L}: one incomplete medicine blocks, reason updates`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('دواء واحد'));
+  await page.$eval('#nlPrintAll',e=>e.click());
+  { const t=await toastText(page); if(!t.includes('أكمل')) console.log('DBG',L,JSON.stringify(t),await page.$eval('#nlBarWhy',e=>e.textContent)); check(`${L}: incomplete medicine blocks printing`,t.includes('أكمل')); }
   await fillCard(page,1,'Panadol Extra');
-  check(`${L}: one incomplete left, reason updates`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('دواء واحد'));
   await fillCard(page,2,'Augmentin 1g');
   check(`${L}: nothing blocks the button`,(await page.$eval('#nlBarWhy',e=>e.textContent))===''&&await page.$eval('#nlPrintAll',e=>!e.classList.contains('is-blocked')));
 
@@ -95,11 +105,12 @@ async function runFlow(page,vp,errors){
 
   // Long text: shrinks when it can, refuses when it cannot (never prints clipped text)
   const long=n=>'يؤخذ بعد الأكل مع كوب ماء '.repeat(n).trim();
+  await page.evaluate(()=>{const n=document.getElementById('nlPatientName');n.value='';n.dispatchEvent(new Event('input',{bubbles:true}))});
   await fillCard(page,1,'Panadol Extra',{instructions:long(2)});
   check(`${L}: long text shows a card hint`,await page.$eval('#nlMedicineList .med-card:nth-child(1)',c=>c.textContent.includes('النص طويل')));
   await page.evaluate(()=>{window.__printEvents=[]});
   await page.click('#nlPrintAll');
-  await page.waitForFunction(()=>window.__printEvents.length>0,null,{timeout:6000});
+  await page.waitForFunction(()=>window.__printEvents.length>0,null,{timeout:6000}).catch(async e=>{console.log('DEBUG ai',await page.evaluate(()=>window.__ai),await page.evaluate(()=>document.querySelector('#nlPrintAll').className+'|'+!!document.getElementById('nlPrintFrame')),'toast:',await toastText(page),'| why:',await page.$eval('#nlBarWhy',x=>x.textContent));throw e});
   const shrunk=await page.evaluate(()=>{const i=document.getElementById('nlPrintFrame').contentDocument.querySelector('.instruction');return parseFloat(i.style.fontSize||'7')});
   check(`${L}: long text is shrunk, not refused`,shrunk<7&&shrunk>=4.8);
 
@@ -138,6 +149,7 @@ try{
     const context=await browser.newContext({viewport:{width:vp.width,height:vp.height},locale:'ar-EG',hasTouch:vp.name!=='desktop'});
     await context.addInitScript(()=>{window.confirm=()=>true});
     const page=await context.newPage();
+    await page.route('**/api/ai/medication-label',async r=>{await page.evaluate(()=>{window.__ai=(window.__ai||0)+1}).catch(()=>{});await r.fulfill({json:{ok:true,instruction:{dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل',warnings:[]}}})});
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     await openModal(page);

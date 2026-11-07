@@ -293,3 +293,9 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 - Rollback: batch 3 build `worker/live/nova-rx-preview.with-ux-batch1-3.js` (sha256 `6d2d4575…399b0b`), or Cloudflare version history.
 - PR #39 and #40 NOT merged. Live and `main` differ on purpose.
 - Next exact step: owner prints a real sticker with a long dose (printer, paper, Cairo font, tablet print dialog are untested); then merge #39/#40 and delete the Cloudflare token and `CLOUDFLARE_API_TOKEN` secret.
+
+## Checkpoint — sticker flow v2 (faster, tablet-sized) — NOT DEPLOYED
+- Invoice medicines load automatically; age has no silent default; AI runs by itself once age + pregnancy + breastfeeding are answered; compact cards so 2-3 medicines fit on a 1194x834 tablet without scrolling.
+- Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers2.js sha256 7b85c9ef17e38849bdcb325ff3179bcc950235625d0166f8147da7d2fbe3e368 (base = deployed ...stickers.js; expected_modified_on 2026-11-07T12:32:14).
+- Tests pass on repo HTML and HTML extracted from the new artifact. Route check OK (/ 200, secrets 403, whatsapp 200).
+- Needs owner approval before deploy (dry run first).
