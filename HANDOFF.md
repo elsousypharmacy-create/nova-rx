@@ -189,3 +189,8 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Commit `6f28bdd` on `chore/sale-sticker-modal-clean`: Playwright POS smoke **SUCCESS** on ubuntu-24.04.
 - Run: https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42312203852
 - PR #29 remains **draft**. Not merged. Not deployed. Not marked ready-to-merge.
+
+### WhatsApp bridge → encrypted secrets + header auth — 2026-11-07 (Claude Code)
+- `integrations/whatsapp/secure-bridge.mjs` now reads `WA_BACKEND_URL` / `NOVA_WA_BRIDGE_TOKEN` from the same encrypted KV store as `/api/settings/secrets`, and accepts Cloudflare Access JWT or (opt-in) the Access email header. Fails closed. Speaks the existing Apps Script `novaWhatsAppBridge` protocol.
+- Test: `tests/unit/whatsapp-bridge.check.mjs` PASS (fake KV with real AES-GCM format, fake Apps Script). Not run against the live Worker or real Apps Script.
+- NOT done: Worker not changed or deployed; inbox page not restyled to Black Edition. Wiring guide: `integrations/whatsapp/README.md`.
