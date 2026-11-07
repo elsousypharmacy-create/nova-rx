@@ -3,7 +3,7 @@
   "project": "NOVA Rx",
   "task_id": "UX-1",
   "task_title": "UX batch 1: language, sticker button on phones, held invoices panel",
-  "status": "for_review",
+  "status": "merged_deployed_awaiting_qa",
   "percent_complete": null,
   "percent_basis": "not computed: no weighted checklist; items below are verified locally only, none deployed",
   "items": [
@@ -37,7 +37,7 @@
   "total_items": 5,
   "run_id": null,
   "run_url": null,
-  "checkpoint_at": "2026-11-07T10:30:00+03:00",
+  "checkpoint_at": "2026-11-07T12:20:00+03:00",
   "updated_at": "2026-11-07",
-  "note": "Branch claude/nifty-albattani-ka1ifs-ux (PR #34). Deploy-ready Worker build in worker/live/. Not deployed; deploy operator: Cursor. Owner-facing roadmap: pharmacy repo nova-status.json (dashboard nova-monitor.html)."
+  "note": "UX batches 1+2 merged into main (PR #34, #35) and deployed to the live Worker (modified_on 2026-11-07T08:55:46Z). Awaiting Cursor QA and the owner phone test (issue #36). Not computed: percent."
 }

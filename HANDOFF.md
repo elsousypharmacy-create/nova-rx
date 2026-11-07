@@ -267,3 +267,9 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 
 ### Kimi PoC workflow merged (inert) — 2026-11-07 (Claude Code, owner asked for all merges)
 - `poc-kimi.yml` (+ `.github/scripts/poc_check_patch.py`) is now on `main`. It only runs by manual dispatch for Issue #31 and has NEVER been run. Do not dispatch it before the owner has confirmed the Kimi key type, Extra Usage and Actions minutes. Labels `kimi-run-now` on issues #4, #16, #17, #28 are untouched: do not re-trigger them.
+
+### All of Claude Code's PRs merged — 2026-11-07 (owner request)
+- Merged into `main` with merge commits, in this order: #34 (UX batch 1), #35 (UX batch 2), #33 (WhatsApp bridge, not deployed), #32 (Kimi PoC workflow, never run). #37 (guarded deploy workflow) was merged earlier. Smoke CI on `main` passed after #34, #35 and #33.
+- `main` now has the UX fixes in `index.html`, but the LIVE Worker runs its own HTML lineage (deployed 2026-11-07T08:55Z from `worker/live/nova-rx-preview.with-ux-batch1-2.js`). They differ on purpose: never deploy `index.html` over the Worker.
+- NOT merged (not Claude Code's, owner did not ask): #18, #19, #20, #21, #23, #25. #21 and #23 duplicate #24 (already in main); #18 and #20 overlap and #20 edits `index.html` (would conflict); #19 and #25 are old docs. Owner decides which to close.
+- Stale warning: `worker/live/nova-rx-preview.with-whatsapp.js` is NOT a deploy candidate (see `integrations/whatsapp/README.md`).
