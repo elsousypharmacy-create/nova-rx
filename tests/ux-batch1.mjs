@@ -14,13 +14,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 let failures = 0;
 const check = (name, cond, detail = '') => { if (!cond) failures++; console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${cond ? '' : ' -> ' + detail}`); };
 
+// UX_SKIP_EXTRA: extra CSS selectors to ignore (e.g. '#nlSimple' for the Arabic-only sticker panel on the live Worker).
 // UI text outside data areas, as [text...] and attribute values.
-const collect = () => {
-  const skip = 'script,style,option,.nova-data-table tbody,.cust-name,.cust-phone,.sugg-primary,.sugg-sub,.past-item-row,.past-inv-card,.offer-item,.invoice-table tbody,#novaLabelsPanel,#novaAiPanel';
+const collect = (extra) => {
+  const skip = (extra ? extra + ',' : '') + 'script,style,option,.nova-data-table tbody,.cust-name,.cust-phone,.sugg-primary,.sugg-sub,.past-item-row,.past-inv-card,.offer-item,.invoice-table tbody,#novaLabelsPanel,#novaAiPanel';
   const texts = [], attrs = [];
   const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (w.nextNode()) { const n = w.currentNode; if (!n.parentElement || n.parentElement.closest(skip)) continue; const t = n.nodeValue.replace(/\s+/g, ' ').trim(); if (t) texts.push(t); }
-  document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(e => { for (const a of ['placeholder', 'title', 'aria-label']) { const v = e.getAttribute(a); if (v) attrs.push(v); } });
+  document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(e => { if (extra && e.closest(extra)) return; for (const a of ['placeholder', 'title', 'aria-label']) { const v = e.getAttribute(a); if (v) attrs.push(v); } });
   return { texts, attrs };
 };
 const AR = /[؀-ۿ]/, LAT = /[A-Za-z]{3,}/;
@@ -41,7 +42,7 @@ try {
     const bad = new Set();
     for (const pg of ['sale', 'invoices', 'products', 'customers', 'reports', 'settings']) {
       await page.click(`.nova-tab[data-page="${pg}"]`); await sleep(350);
-      const { texts, attrs } = await page.evaluate(collect);
+      const { texts, attrs } = await page.evaluate(collect, process.env.UX_SKIP_EXTRA || '');
       for (const t of [...texts, ...attrs]) {
         if (isData(t)) continue;
         if (lang === 'en' && AR.test(t)) bad.add(t);

@@ -201,3 +201,10 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - The UX batch 1 diff applies cleanly onto the live HTML, but `tests/ux-batch1.mjs` then fails 5 checks (the old i18n bug and extra Arabic strings in live-only UI). So patching the live HTML is not enough.
 - Needed before any UX deploy: one controlled sync: start from `main`+PR #34 `index.html`, re-apply the live-only parts above, replace only the app HTML literal in the Worker (routes/bindings untouched), run `tests/ux-batch1.mjs` on the final HTML, keep rollback = version 33fe0516-2931-40cb-93a4-808e3c4f7724.
 - NOT deployed. No tool in this session can publish to Cloudflare.
+
+### UX batch 1 — deploy-ready Worker built — 2026-11-07 (Claude Code)
+- `worker/live/nova-rx-preview.with-ux-batch1.js` = the live Worker export with ONLY the app HTML string literal changed: (1) fixed i18n script (directional dictionary, delegated language buttons, mixed-label table, extra EN strings for live-only Settings API-keys card and purchase button), (2) sticker button label + mobile position, (3) one live bug fixed: unquoted `aria-hidden="true"` inside the `nsGalleryNext` script string (SyntaxError, script never ran). All routes, bindings and live-only parts (API keys card, `/api/ai/purchase`, WhatsApp nav, `#nlSimple` sticker panel) are untouched.
+- `worker/live/nova-rx-preview.export-20261107.js` = unmodified export for rollback (live version `33fe0516-2931-40cb-93a4-808e3c4f7724`, modified 2026-11-07T01:57:40Z, re-checked unchanged).
+- Evidence: `node --check` OK; vm run: `/` 200 with the new HTML, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200; `tests/ux-batch1.mjs` on the embedded HTML with `UX_SKIP_EXTRA='#nlSimple'`: ALL PASS; FAB click opens the live sticker panel, 0 page errors.
+- NOT deployed (no Cloudflare write tool in this session). Owner asked for deploy; deployer: Cursor (same method as the 2026-11-07 deploy, `keep_bindings` secret_text + kv_namespace, checksum-guarded).
+- Known/accepted: the live sticker panel (`#nlSimple`) and purchase panel stay Arabic-only in English mode (clinical Arabic labels).
