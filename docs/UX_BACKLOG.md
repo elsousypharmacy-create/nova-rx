@@ -57,3 +57,8 @@ Candidates for batch 3 (verify each before changing code):
 - `cramped-padding`: `.nova-nav-row`, `.pos-root`, `.table-container` have children flush against the edge.
 - `dark-glow`: coloured box-shadow glow (#0284c7) on the dark page (style choice).
 - `clipped-overflow-container`: `main.main-workspace` clips `.nova-held-panel` — this one was real, see UX-HELD-PANEL-OFFSCREEN.
+
+## UX evaluation of `main` and batch 3 (2026-11-07)
+Overall about 6.5/10 (tablet 7.5, phone 4): fast keyboard-first sale and a strong dark design; weaknesses were toasts, mixed English in the Arabic totals, small touch targets and text, and the phone layout.
+Batch 3 (tablet/desktop) fixes: toasts (UX-TOAST-COVERS-CHECKOUT, UX-TOAST-EN), Arabic totals labels (UX-MIXED-LANG leftovers), 44px touch targets and the 12px text floor (Impeccable `undersized-ui-text`, `tiny-text`), Enter-to-skip customer.
+Still open: phone layout (quantity/total columns off-screen, action row over the search bar, clipped tabs, CHECKOUT covered), hover contrast 4.3:1, `cramped-padding`, `dark-glow`, UX-NEW-SALE-MODE, UX-EMPTY-CHECKOUT-NO-HINT, UX-DISCOUNT-ZERO-FIELD-CLEARED.

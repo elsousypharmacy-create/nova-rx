@@ -273,3 +273,9 @@ Do not: deregister the number, change its PIN, or pick the test account in suppo
 - `main` now has the UX fixes in `index.html`, but the LIVE Worker runs its own HTML lineage (deployed 2026-11-07T08:55Z from `worker/live/nova-rx-preview.with-ux-batch1-2.js`). They differ on purpose: never deploy `index.html` over the Worker.
 - NOT merged (not Claude Code's, owner did not ask): #18, #19, #20, #21, #23, #25. #21 and #23 duplicate #24 (already in main); #18 and #20 overlap and #20 edits `index.html` (would conflict); #19 and #25 are old docs. Owner decides which to close.
 - Stale warning: `worker/live/nova-rx-preview.with-whatsapp.js` is NOT a deploy candidate (see `integrations/whatsapp/README.md`).
+
+### UX batch 3 — 2026-11-07 (Claude Code)
+- Branch `claude/nifty-albattani-ka1ifs-ux3` (draft PR): tablet/desktop polish, see `BUILD_REPORT.md`. Owner: tablet or computer is the main device, so the phone layout is deferred.
+- Deploy-ready Worker build: `worker/live/nova-rx-preview.with-ux-batch1-3.js` sha256 `6d2d4575e67c1686950f5337b89158d1e9ec22a4269d5dfc5d7e0bf517399b0b`, 649,196 bytes, git blob `cdb07f1b77cf3c71f0fa291ac49bca5a18d788ad`. Built on top of the code deployed live at 2026-11-07T08:55:46Z (`…with-ux-batch1-2.js`, sha256 `1123d40c…`); only the app HTML literal differs.
+- To deploy: new Cloudflare token + repo secret `CLOUDFLARE_API_TOKEN` (the first one should have been deleted), then Actions > Deploy NOVA Worker with `artifact_ref` = the merged commit or branch, `artifact_path` = the file above, `sha256` = the value above, `expected_modified_on` = `2026-11-07T08:55:46`, dry run first. Rollback = the previous live code (the workflow backs it up); version history in Cloudflare.
+- Evidence: `ux-batch1/2/3` all pass on repo `index.html` and on the HTML embedded in the Worker; vm run `/` 200, `/api/settings/secrets` unauthenticated 403, `/whatsapp-inbox.html` 200. NOT deployed.
