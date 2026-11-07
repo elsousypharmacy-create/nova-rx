@@ -194,3 +194,8 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - `integrations/whatsapp/secure-bridge.mjs` now reads `WA_BACKEND_URL` / `NOVA_WA_BRIDGE_TOKEN` from the same encrypted KV store as `/api/settings/secrets`, and accepts Cloudflare Access JWT or (opt-in) the Access email header. Fails closed. Speaks the existing Apps Script `novaWhatsAppBridge` protocol.
 - Test: `tests/unit/whatsapp-bridge.check.mjs` PASS (fake KV with real AES-GCM format, fake Apps Script). Not run against the live Worker or real Apps Script.
 - NOT done: Worker not changed or deployed; inbox page not restyled to Black Edition. Wiring guide: `integrations/whatsapp/README.md`.
+
+### Live Worker export + patched copy — 2026-11-07 (Claude Code)
+- `worker/live/nova-rx-preview.export-20261107.js`: unmodified export of Worker `nova-rx-preview` (read via Cloudflare MCP; scanned, no secret values). Use as rollback.
+- `worker/live/nova-rx-preview.with-whatsapp.js`: same code + `/api/whatsapp/*` route (bridge, namespaced in `NOVA_WA_BRIDGE`) + real inbox page replacing the placeholder. `node --check` OK; `tests/unit/worker-live-patch.check.mjs` PASS in a vm with fake bindings.
+- NOT deployed. Deploy by owner via Cloudflare dashboard (Edit code keeps bindings) after the bridge token and WABA steps.
