@@ -4042,6 +4042,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.con
 window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;const queue=getQueue();queue.unshift(q);try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(0,40)))}catch(_){}loadInvoice(q,0);panel.classList.add('open')});
 new MutationObserver(()=>{if(!panel.classList.contains('open'))return;if(state.medications.some(m=>clean(m.name)))return;const items=typeof window.novaCartItems==='function'?window.novaCartItems():[];if(items.length)loadInvoice({customer:'',items},null)}).observe(panel,{attributes:true,attributeFilter:['class']});
 window.addEventListener('pageshow',()=>setTimeout(()=>{if(!panel.classList.contains('open'))syncPatientInputs()},0));
+(()=>{const more=panel.querySelector('.nl-more'),mq=window.matchMedia('(min-width:1100px)');if(!more)return;const sync=()=>{if(mq.matches)more.open=true};sync();mq.addEventListener&&mq.addEventListener('change',sync);new MutationObserver(()=>{if(panel.classList.contains('open'))sync()}).observe(panel,{attributes:true,attributeFilter:['class']});more.addEventListener('toggle',()=>{if(more.open&&!mq.matches)setTimeout(()=>more.scrollIntoView({block:'start',behavior:'smooth'}),30)})})();
 load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds();
 })();
 </script>
@@ -4116,6 +4117,14 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .med-card .f-medname{grid-column:1/-1!important}
 #novaLabelsPanel .med-card .med-fields .field:not(.f-medname){grid-column:span 2}
 #novaLabelsPanel .med-card>label.field{grid-column:1/-1}}
+@media(min-width:1100px){
+#novaLabelsPanel .labels-sheet{width:min(1180px,97vw)!important}
+#novaLabelsPanel .layout{grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);grid-auto-rows:auto;align-content:stretch;overflow:hidden}
+#novaLabelsPanel .editor-col{overflow-y:auto;min-height:0}
+#novaLabelsPanel .preview-col.nl-more{overflow-y:auto;min-height:0;padding-top:12px}
+#novaLabelsPanel .nl-more>summary{display:none}
+#novaLabelsPanel .nl-more .preview-panel{min-height:0}
+}
 </style>
 </body>
 </html>

@@ -62,7 +62,7 @@ async function runFlow(page,vp,errors){
   check(`${L}: modal opens from the sale flow`,await page.$eval('#novaLabelsPanel',el=>el.classList.contains('open')));
   const g0=await geometry(page);
   check(`${L}: no stepper, no tabs, no separate approval box`,!g0.stepper&&!g0.tabs&&!g0.approval);
-  check(`${L}: preview and advanced settings collapsed by default`,g0.moreOpen===false);
+  check(vp.width>=1100?`${L}: preview is a visible side column on wide screens`:`${L}: preview and advanced settings collapsed by default`,g0.moreOpen===(vp.width>=1100));
   check(`${L}: sheet fits viewport`,g0.sheet.w<=vp.width+2&&g0.sheet.h<=vp.height+2);
   check(`${L}: print button visible and at least 44px high`,g0.btnShown&&g0.btn.h>=44);
   check(`${L}: RTL`,g0.rtl);
