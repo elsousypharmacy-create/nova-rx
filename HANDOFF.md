@@ -189,3 +189,7 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Commit `6f28bdd` on `chore/sale-sticker-modal-clean`: Playwright POS smoke **SUCCESS** on ubuntu-24.04.
 - Run: https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42312203852
 - PR #29 remains **draft**. Not merged. Not deployed. Not marked ready-to-merge.
+
+### Guarded deploy workflow — 2026-11-07 (Claude Code)
+- Because ChatGPT, Cursor and Claude Code could each not deploy (no Cloudflare write tool / no proof of binding-keeping / API token not savable from the phone app), added a one-button deploy: `.github/workflows/deploy-worker.yml` + `.github/scripts/deploy_worker.sh` + `docs/DEPLOY_WORKER.md` (draft PR). Needs: merge to `main`, GitHub secret `CLOUDFLARE_API_TOKEN` (template «Edit Cloudflare Workers»), then dry run, then real run.
+- Tested only against a fake Cloudflare API (`tests/deploy-worker/run.sh`, 17 checks). NOT run against the real Cloudflare API. Nothing deployed.
