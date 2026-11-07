@@ -56,7 +56,23 @@ try {
     await page.mouse.click(600, 25);
     await sleep(200);
     check(`${L}: tapping outside closes the window`, (await page.$$eval('.med-card.editing', a => a.length)) === 0);
-    check(`${L}: zero page errors`, errors.length === 0);
+    // quick customer type
+    check(`${L}: four customer types and no old safety questions`, (await page.$$eval('.nl-quick button', a => a.length)) === 4 && !(await page.isVisible('.safety-choices')));
+    check(`${L}: nothing is chosen at first and the bar asks for it`, (await page.$eval('.nl-quick', e => !e.dataset.q)) && (await page.$eval('#nlBarWhy', e => e.textContent)).includes('نوع العميل'));
+    check(`${L}: the instruction is editable right on the row`, await page.isVisible('#nlMedicineList .med-card:nth-child(1) textarea[data-field="instructions"]'));
+    await page.click('.nl-quick button[data-q="adult"]');
+    await sleep(300);
+    check(`${L}: adult = not pregnant, not breastfeeding, adult age`, await page.evaluate(() => document.querySelector('input[name="nlPregnancy"][value="no"]').checked && document.querySelector('input[name="nlBreastfeeding"][value="no"]').checked && Number(document.getElementById('nlPatientAge').value) >= 18));
+    await page.click('.nl-quick button[data-q="preg"]');
+    await sleep(300);
+    check(`${L}: pregnant is recorded and only that button is pressed`, await page.evaluate(() => document.querySelector('input[name="nlPregnancy"][value="yes"]').checked && [...document.querySelectorAll('.nl-quick button')].filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.q).join() === 'preg'));
+    await page.click('.nl-quick button[data-q="child"]');
+    await sleep(300);
+    check(`${L}: child asks for the age and weight`, await page.isVisible('#nlPatientAge') && await page.isVisible('#nlPatientWeight'));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('nova:sticker-print', { detail: { count: 1, test: false } })));
+    await sleep(900);
+    check(`${L}: after printing the window closes by itself`, !(await page.$eval('#novaLabelsPanel', e => e.classList.contains('open'))));
+    check(`${L}: zero page errors (quick type)`, errors.length === 0);
     await page.close();
   }
 
@@ -64,6 +80,7 @@ try {
   {
     const { page, errors } = await openPanel(browser, 820, 1100);
     const L = 'narrow';
+    check(`${L}: no quick customer type buttons`, !(await page.isVisible('.nl-quick')));
     check(`${L}: inline fields are visible, no summary rows`, await page.isVisible('#nlMedicineList .med-card:nth-child(1) [data-field="name"]') && (await page.$$eval('#nlMedicineList .med-sum', a => a.filter(e => e.getBoundingClientRect().height > 0).length)) === 0);
     check(`${L}: zero page errors`, errors.length === 0);
     await page.close();
