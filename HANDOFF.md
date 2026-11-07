@@ -195,3 +195,9 @@ Wait for Actions on the pushed commit; if smoke is green keep draft for Ahmed re
 - Evidence: new test fails 15 checks on old `index.html`, passes on the fix; all earlier browser tests and the CI smoke test pass locally.
 - NOT merged, NOT deployed. The live Worker embeds its own HTML: carry this change into a patched export (see `docs/UX_BACKLOG.md` deployment warning), do not overwrite it with GitHub's `index.html`.
 - Next exact step: owner review; then batch 2 (search/discount/AI-retry/products-filter empty states).
+
+### Live Worker vs repo — finding while preparing UX batch 1 deploy — 2026-11-07 (Claude Code)
+- The live Worker `nova-rx-preview` (version 33fe0516…) embeds an OLDER lineage of `index.html` than `main`: ~430 lines differ. It lacks earlier fixes (issue #2 i18n: pageerror `novaOriginalaria-label` DOMStringMap; older draft persistence; search overlay) and has live-only parts not in the repo: Settings «API keys» card (`/api/settings/secrets`), `x-nova-ai-key` + `/api/ai/purchase` fetch, WhatsApp nav injection (`nova-wa-nav`, `/whatsapp-inbox.html`), hash routing tweak, a different sale sticker modal (`#nlSimple`, PR29 merge marker).
+- The UX batch 1 diff applies cleanly onto the live HTML, but `tests/ux-batch1.mjs` then fails 5 checks (the old i18n bug and extra Arabic strings in live-only UI). So patching the live HTML is not enough.
+- Needed before any UX deploy: one controlled sync: start from `main`+PR #34 `index.html`, re-apply the live-only parts above, replace only the app HTML literal in the Worker (routes/bindings untouched), run `tests/ux-batch1.mjs` on the final HTML, keep rollback = version 33fe0516-2931-40cb-93a4-808e3c4f7724.
+- NOT deployed. No tool in this session can publish to Cloudflare.
