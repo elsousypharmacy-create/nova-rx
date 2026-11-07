@@ -1,5 +1,13 @@
 # BUILD_REPORT — NOVA Rx
 
+## PoC-0 (2026-11-07): pipeline test — manifest sanity check
+
+- Issue: PoC-0 (automation pipeline test, not a UX defect).
+- New file: `tests/unit/poc0-manifest.check.mjs` — reads `manifest.webmanifest` and asserts `name`, `start_url`, `display`, non-empty `icons` with `src`.
+- Command run: `node tests/unit/poc0-manifest.check.mjs`
+- Output: `poc0-manifest.check: PASS` (exit 0)
+- No other files changed.
+
 ## UX batch 2 (2026-11-07): UX-SEARCH-EMPTY, UX-DISCOUNT-NO-FEEDBACK, UX-PRODUCTS-FILTER-EMPTY, UX-AI-NO-RETRY — fixed on branch
 
 - Verified on the batch-1 code before changing anything (Playwright, Arabic and English): the search empty states existed but stayed English in Arabic mode; discounts of 150%, -5 and a fixed discount larger than the invoice changed the total silently; a products filter with no match showed an empty table; a failed purchase-invoice reading had no retry.
