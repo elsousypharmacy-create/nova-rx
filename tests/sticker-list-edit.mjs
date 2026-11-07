@@ -15,7 +15,8 @@ const check = (name, cond) => { assert(cond, name); console.log('PASS ' + name);
 const CODES = ['6281001234567', '6281001234568', '6281001234569'];
 
 async function openPanel(browser, width, height) {
-  const page = await browser.newPage({ viewport: { width, height } });
+  const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: true });
+  const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(`http://127.0.0.1:8773/${FILE}#sale`, { waitUntil: 'domcontentloaded' });
@@ -78,7 +79,20 @@ try {
 
   // ---- narrow
   {
-    const { page, errors } = await openPanel(browser, 820, 1100);
+    {
+      const { page, errors } = await openPanel(browser, 834, 1194);
+      const L = 'tablet portrait';
+      check(`${L}: quick customer type and rows are used`, await page.isVisible('.nl-quick') && (await page.$$eval('#nlMedicineList .med-sum', a => a.filter(e => e.getBoundingClientRect().height > 40).length)) === 3);
+      await page.tap('.nl-quick button[data-q="adult"]');
+      await sleep(300);
+      check(`${L}: one tap answers the safety questions`, await page.evaluate(() => document.querySelector('input[name="nlPregnancy"][value="no"]').checked && document.querySelector('input[name="nlBreastfeeding"][value="no"]').checked));
+      await page.tap('#nlMedicineList .med-card:nth-child(1) .med-sum');
+      await sleep(300);
+      check(`${L}: the edit window fits the screen`, await page.$eval('.med-card.editing', e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; }));
+      check(`${L}: zero page errors`, errors.length === 0);
+      await page.close();
+    }
+    const { page, errors } = await openPanel(browser, 600, 1000);
     const L = 'narrow';
     check(`${L}: no quick customer type buttons`, !(await page.isVisible('.nl-quick')));
     check(`${L}: inline fields are visible, no summary rows`, await page.isVisible('#nlMedicineList .med-card:nth-child(1) [data-field="name"]') && (await page.$$eval('#nlMedicineList .med-sum', a => a.filter(e => e.getBoundingClientRect().height > 0).length)) === 0);
