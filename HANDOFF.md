@@ -258,3 +258,12 @@ Root cause (verified via Graph API Explorer): pharmacy number +20 11 43404023 (p
 State: bot dashboard has WABA ID field (pharmacy PR #38, merged) and WABA 505759262610446 saved; webhook link for the real WABA returned OK. NOVA bridge + patched Worker ready but NOT deployed (PR #33 draft, `worker/live/`). Support ticket via Meta Direct Support NOT confirmed opened.
 Resume only when: Meta migrates the number to Cloud API (platform_type CLOUD_API, CONNECTED) or a new Cloud API number exists. Then: set WA_PHONE_ID + permanent token in bot dashboard, set NOVA_WA_BRIDGE_TOKEN (>=32 chars) in Apps Script and NOVA secrets, deploy `with-whatsapp.js`.
 Do not: deregister the number, change its PIN, or pick the test account in support forms.
+### PoC-0 isolated Kimi workflow — 2026-11-07 (Claude Code)
+- Branch `claude/nifty-albattani-ka1ifs`: adds `.github/workflows/poc-kimi.yml` and `.github/scripts/poc_check_patch.py`. `kimi-task.yml` and other workflows unchanged.
+- Manual dispatch only, issue must be #31, jobs gate → execute (read-only, no saved git creds) → validate (no secrets) → publish (write, no Kimi key, runs no patch code). Allowlist fixed in the workflow.
+- Local evidence: gate accepted a good patch and rejected extra file, symlink, exec bit, removed report lines, binary, child_process import, credential string, rename; runtime step rejects a test that prints PASS on a broken manifest.
+- NOT run on GitHub. Kimi not started. No labels changed. Not merged. Not deployed.
+- Next exact step: owner reviews draft PR and Kimi cost; only then merge to main and dispatch with issue_number=31.
+
+### Kimi PoC workflow merged (inert) — 2026-11-07 (Claude Code, owner asked for all merges)
+- `poc-kimi.yml` (+ `.github/scripts/poc_check_patch.py`) is now on `main`. It only runs by manual dispatch for Issue #31 and has NEVER been run. Do not dispatch it before the owner has confirmed the Kimi key type, Extra Usage and Actions minutes. Labels `kimi-run-now` on issues #4, #16, #17, #28 are untouched: do not re-trigger them.
