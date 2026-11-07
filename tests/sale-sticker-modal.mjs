@@ -29,7 +29,7 @@ async function openModal(page){
 }
 
 // Wide screens show medicines as a list; tapping a row opens its edit window.
-async function closeEditing(page){const d=await page.$('#nlMedicineList .med-card.editing .med-done');if(d)await d.click()}
+async function closeEditing(page){const d=await page.$('#nlMedicineList .med-card.editing .med-done');if(d)await d.click();await page.waitForTimeout(200)}
 async function ensureEditing(page,card){
   if(await page.isVisible(`${card} [data-field="name"]`))return;
   const open=await page.$('#nlMedicineList .med-card.editing .med-done');
@@ -74,7 +74,7 @@ async function runFlow(page,vp,errors){
   check(`${L}: modal opens from the sale flow`,await page.$eval('#novaLabelsPanel',el=>el.classList.contains('open')));
   const g0=await geometry(page);
   check(`${L}: no stepper, no tabs, no separate approval box`,!g0.stepper&&!g0.tabs&&!g0.approval);
-  check(vp.width>=1100?`${L}: preview is a visible side column on wide screens`:`${L}: preview and advanced settings collapsed by default`,g0.moreOpen===(vp.width>=1100));
+  check(vp.width>=700?`${L}: stickers are hidden by default on tablets and computers`:`${L}: preview and advanced settings collapsed by default`,vp.width>=700?!(await page.isVisible('#nlPreviewGrid')):g0.moreOpen===false);
   check(`${L}: sheet fits viewport`,g0.sheet.w<=vp.width+2&&g0.sheet.h<=vp.height+2);
   check(`${L}: print button visible and at least 44px high`,g0.btnShown&&g0.btn.h>=44);
   check(`${L}: RTL`,g0.rtl);
