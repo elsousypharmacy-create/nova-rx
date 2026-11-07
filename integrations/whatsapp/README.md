@@ -31,3 +31,6 @@ Replace the placeholder `NOVA_WA_HTML` page with `inbox.html`. Export the live W
 - Phone and Meta tokens (`WA_TOKEN`, `WA_PHONE_ID`) are not used here; the bot sends replies itself.
 - Replies are blocked by WhatsApp's 24-hour rule when the customer has not written recently; the error text is shown in the page.
 - Test: `node tests/unit/whatsapp-bridge.check.mjs`.
+
+## WARNING: the patched Worker copy here is stale
+`worker/live/nova-rx-preview.with-whatsapp.js` was built from the live Worker as it was before 2026-11-07T08:55Z. The live Worker now runs the UX batch 1+2 build (`worker/live/nova-rx-preview.with-ux-batch1-2.js`). **Do not deploy `with-whatsapp.js`**: it would bring back the old HTML. Before WhatsApp goes live, re-apply the bridge route (`NOVA_WA_BRIDGE`) and the inbox page onto the CURRENT live Worker, test it, and deploy with `docs/DEPLOY_WORKER.md`. WhatsApp itself is paused: the pharmacy number is on the sunset On-Premises API and must be migrated by Meta first (see `HANDOFF.md`, issue #36).

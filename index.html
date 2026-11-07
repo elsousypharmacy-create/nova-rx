@@ -1531,7 +1531,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 
 .nova-sale-actions .nova-held-action{height:34px;padding:0 9px;background:#222b33;border:1px solid #3c4c56;color:#d8e4eb;font-size:11px}
 .nova-held-count{background:#394b56;color:#e7f3fa;border-radius:10px;min-width:18px;padding:1px 4px;font-size:10px}
-.nova-held-panel{position:absolute;z-index:110;top:calc(100% + 4px);inset-inline-end:12px;width:min(360px,calc(100vw - 24px));max-height:min(440px,75dvh);overflow:auto;background:#19222b;color:#eaf0f4;border:1px solid #40515c;border-radius:12px;padding:12px;box-shadow:0 16px 40px #0008}
+.nova-held-panel{position:absolute;z-index:110;top:auto;margin-top:4px;inset-inline-end:12px;width:min(360px,calc(100vw - 24px));max-height:min(440px,75dvh);overflow:auto;background:#19222b;color:#eaf0f4;border:1px solid #40515c;border-radius:12px;padding:12px;box-shadow:0 16px 40px #0008}
 .nova-held-panel[hidden]{display:none!important}
 .nova-held-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;font-size:13px}
 .nova-held-heading button{border:0;background:transparent;color:#dce8ef;font-size:23px;cursor:pointer}
@@ -1982,6 +1982,7 @@ body *:not(svg):not(svg *){
               <input type="number" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
             </div>
           </div>
+          <div id="discountHint" class="discount-hint" role="status" aria-live="polite" hidden></div>
         </div>
 
         <!-- Financial Totals -->
@@ -2898,6 +2899,19 @@ body *:not(svg):not(svg *){
 
         // Cap discount so total NEVER drops below 0.00
         const actualDiscount = Math.min(subtotal, totalDiscountPotential);
+
+        // Tell the cashier when a discount value was ignored or capped (it used to change silently).
+        {
+          let msg = '', badP = false, badF = false;
+          if (percentVal < 0) { msg = 'Discount cannot be negative. The value is ignored.'; badP = true; }
+          else if (fixedVal < 0) { msg = 'Discount cannot be negative. The value is ignored.'; badF = true; }
+          else if (percentVal > 100) { msg = 'Percent discount cannot exceed 100%. Using 100%.'; badP = true; }
+          else if (subtotal > 0 && totalDiscountPotential > subtotal) { msg = 'Discount is larger than the invoice total. The total is set to zero.'; badP = percentVal > 0; badF = fixedVal > 0; }
+          const hint = document.getElementById('discountHint');
+          if (hint) { if (hint.textContent !== msg) hint.textContent = msg; hint.hidden = !msg; }
+          elements.inputPercentDiscount.setAttribute('aria-invalid', String(badP));
+          elements.inputFixedDiscount.setAttribute('aria-invalid', String(badF));
+        }
         const grandTotal = Math.max(0, subtotal - actualDiscount);
         const vatIncluded = grandTotal * (15 / 115); // Standard KSA 15% VAT component
 
@@ -3430,7 +3444,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const money=n=>(Number(n)||0).toFixed(2)+' ر.س';
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
- const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div></div>';
+ const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
@@ -3517,12 +3531,64 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const enToAr={};for(const [ar,en] of Object.entries(arToEn)){if(/[\u0600-\u06FF]/.test(ar)&&!/[\u0600-\u06FF]/.test(en))enToAr[en]=ar;else if(!/[\u0600-\u06FF]/.test(ar)&&/[\u0600-\u06FF]/.test(en))enToAr[ar]=en;}
  const arOverrides={'Sales':'البيع','Invoices':'الفواتير','Products':'المنتجات','Customers':'العملاء','Reports':'التقارير','Settings':'الإعدادات','Demo':'نسخة تجريبية','Point of Sale':'نظام نقاط البيع','Elsousy Pharmacy':'صيدلية السوسي','Dr. Ahmed Elsousy':'د. أحمد السوسي','Name':'الاسم','Phone':'الهاتف','Visits':'الزيارات','Points':'النقاط','Amount':'القيمة','Date':'التاريخ','Stock':'الرصيد','Category':'التصنيف'};
  Object.assign(enToAr,arOverrides);
+ /* Directional dictionaries. arToEn mixes both directions, so English mode used to turn English words into Arabic (mixed text). */
+ const toEn={};
+ for(const [k,v] of Object.entries(arToEn)){
+  const kAr=/[\u0600-\u06FF]/.test(k),vAr=/[\u0600-\u06FF]/.test(v);
+  if(kAr&&!vAr){if(!(k in toEn))toEn[k]=v}
+  else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
+ }
+ const enExtra={
+  'لا توجد نتائج مطابقة':'No matching results',
+  'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
+  'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','رقم العميل قبل الدفع':'Customer number before payment',
+  'سجّل رقم العميل أو اضغط تخطي للمتابعة بدون تسجيل.':'Enter the customer number or press Skip to continue without one.',
+  'متابعة بالرقم':'Continue with number','تخطي · عميل نقدي':'Skip · cash customer','رجوع للفاتورة':'Back to invoice',
+  'إضافة رقم العميل (اختياري)':'Add customer number (optional)','تعليق':'Hold','المجموع الفرعي (':'Subtotal (',
+  'استيكرات الأدوية':'Medicine labels','طباعة استيكرات الأدوية':'Print medicine labels','✦ استيكرات الأدوية':'✦ Medicine labels',
+  '✦ قراءة فاتورة مشتريات':'✦ Read purchase invoice','لغة الواجهة':'Interface language','اختار لغة العرض':'Choose display language','عربي':'Arabic',
+  'التنقل الرئيسي':'Main navigation','متصل':'Online','حالة الاتصال':'Connection status','إعادة تحميل الصفحة':'Reload page',
+  'رقم عملية البيع':'Sale number','فاتورة جديدة (F2)':'New sale (F2)','إضافة أو تغيير العميل (F3)':'Add or change customer (F3)',
+  'إضافة أو تغيير العميل':'Add or change customer','إزالة العميل':'Remove customer','بحث':'Search','بحث في الصفحة':'Search this page',
+  'رقم موبايل العميل':'Customer mobile number','اسم العميل (اختياري)':'Customer name (optional)','اسم العميل الجديد':'New customer name',
+  'مراجعة فاتورة مشتريات بالذكاء الاصطناعي':'AI purchase invoice review','مراحل العمل':'Steps','المريض والأدوية':'Patient and medicines',
+  'اختياري':'Optional','وحدة العمر':'Age unit','كجم':'kg','أدوية الاستيكرات':'Label medicines','يحتاج مراجعة':'Needs review',
+  'لا تخمن الجرعة':'Do not guess the dose','اكتب فقط التعليمات المؤكدة':'Write confirmed instructions only','معاينة الاستيكر':'Label preview',
+  'دواء بدون اسم':'Unnamed medicine','مراجعة وطباعة':'Review and print','عدد النسخ':'Copies',
+  'ابحث في المنتجات السابقة...':'Search past purchases...','البحث في المنتجات السابقة':'Search past purchases',
+  '🔐 مفاتيح API والتكاملات':'🔐 API keys & integrations','⚙️ إدارة المفاتيح':'⚙️ Manage keys',
+  'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.'
+ };
+ for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
+ const arExtra={'Discount cannot be negative. The value is ignored.':'لا يمكن أن يكون الخصم بالسالب. تم تجاهل القيمة.','Percent discount cannot exceed 100%. Using 100%.':'نسبة الخصم لا تتجاوز 100%. تم استخدام 100%.','Discount is larger than the invoice total. The total is set to zero.':'الخصم أكبر من إجمالي الفاتورة. الإجمالي أصبح صفرًا.','No products found matching':'لا توجد منتجات مطابقة','No customers found. Press':'لا يوجد عميل بهذا البحث. اضغط','to skip and switch to Product Scan.':'للتخطي والانتقال لبحث المنتجات.','Walk-in Customer':'عميل عابر','Start New Sale (F2)':'فاتورة جديدة (F2)',
+  'Skips customer and switches to Product Scan mode':'يتخطى العميل وينتقل لوضع مسح المنتج','Barcode Scan':'مسح الباركود',
+  'Directly adds product & switches to Product mode':'يضيف المنتج مباشرة وينتقل لوضع المنتج',
+  'Start New Sale (resets invoice & focuses search)':'فاتورة جديدة (تمسح الفاتورة وتركّز على البحث)',
+  'Add Loyalty / Switch customer search without resetting items':'إضافة عميل / تبديل البحث عن عميل بدون مسح الأصناف',
+  '(on blank customer search)':'(في بحث العميل الفارغ)','(anytime)':'(في أي وقت)','Arrow Up / Down':'السهم لأعلى / لأسفل',
+  'Navigate autocomplete suggestion dropdown':'التنقل في قائمة الاقتراحات','(on selected item)':'(على الصنف المحدد)',
+  'Adds product or attaches customer':'يضيف المنتج أو يربط العميل','Clear current invoice line items':'مسح أصناف الفاتورة الحالية',
+  'Open Checkout / Payment dialog':'فتح نافذة الدفع','Dismiss dropdowns and close open modals':'إغلاق القوائم والنوافذ المفتوحة','Got it (Esc)':'تمام (Esc)',
+  'More actions':'المزيد من الإجراءات','Clear Line Items (F4)':'مسح الأصناف (F4)','Close':'إغلاق','Switch between medicine and customer search':'التبديل بين البحث عن دواء وعميل','Switch search mode':'تبديل وضع البحث','Language':'اللغة'};
+ for(const [k,v] of Object.entries(arExtra))if(!(k in enToAr))enToAr[k]=v;
+ /* Exact mixed-language markup strings: [English, Arabic] */
+ const mixedText={
+  'Complete Sale & Payment / إنهاء الفاتورة':['Complete Sale & Payment','إتمام البيع والدفع'],
+  'Cash / نقدي':['Cash','نقدي'],'Mada / بطاقة':['Mada / Card','مدى / بطاقة'],'Split / مشترك':['Split','مشترك'],
+  'Transaction Receipt / إيصال الدفع':['Transaction Receipt','إيصال الدفع'],
+  'Keyboard Shortcuts & POS Manual':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],
+  'View اختصارات الكيبورد':['View keyboard shortcuts','عرض اختصارات الكيبورد'],
+  'View Keyboard Shortcuts':['View keyboard shortcuts','عرض اختصارات الكيبورد'],
+  'Confirm & Print Receipt (Enter)':['Confirm & Print Receipt (Enter)','تأكيد وطباعة الإيصال (Enter)']
+ };
  const arabicSource=new Set(Object.keys(arToEn).filter(x=>/[\u0600-\u06FF]/.test(x)));
  const englishSource=new Set(Object.keys(enToAr));
  const preserved=new WeakMap();
  function translateText(text,lang){
   const trimmed=text.trim();if(!trimmed)return text;
-  const dict=lang==='en'?arToEn:enToAr;
+  if(lang==='en'&&text.includes('ر.س'))text=text.split('ر.س').join('SAR');
+  const mixed=mixedText[trimmed];if(mixed)return text.replace(trimmed,mixed[lang==='en'?0:1]);
+  const dict=lang==='en'?toEn:enToAr;
   if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
   let next=text;
   // Longer UI phrases first, but do not translate user/product data
@@ -3555,7 +3621,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
    const val=translateText(source,lang);
    if(node.nodeValue!==val)node.nodeValue=val;
   }
-  document.querySelectorAll('input[placeholder],button[title],input[aria-label],button[aria-label]').forEach(el=>{
+  document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el=>{
    for(const attr of ['placeholder','title','aria-label']){
     if(!el.hasAttribute(attr))continue;
     const key='novaOriginal'+attr.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());let original=el.dataset[key];
@@ -3576,7 +3642,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  let scheduled=false;
  const observer=new MutationObserver(()=>{if(busy||scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;apply()})});
  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
- document.querySelectorAll('.nova-lang-btn').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(langKey,b.dataset.lang);apply()}));
+ /* Delegated: the settings page renders these buttons after load, so per-button listeners never bound. */
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.nova-lang-btn');if(!b)return;try{localStorage.setItem(langKey,b.dataset.lang)}catch(_){}apply()});
  apply();
 })();
 </script>
@@ -3594,6 +3661,11 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
 <style>
 #novaAiLaunch{position:fixed;bottom:18px;left:18px;z-index:8000;background:#2563eb;color:#fff;border:0;border-radius:14px;padding:11px 16px;font:700 13px Cairo;box-shadow:0 6px 22px #0008;cursor:pointer}
+/* Keep the sticker button off the checkout bar on phones (it used to cover «CHECKOUT»). */
+@media(max-width:780px){#novaAiLaunch{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:10px;padding:8px 12px;font-size:12px}}
+.discount-hint{font-size:11px;line-height:1.5;color:var(--accent-amber,#bba477);margin-top:6px}
+.input-grp input[aria-invalid="true"]{outline:1px solid var(--accent-red,#ef4444);border-color:var(--accent-red,#ef4444)}
+.nova-empty{padding:18px 12px;text-align:center;color:#a4adb7;font-size:13px}
 #novaAiPanel{display:none;position:fixed;inset:0;z-index:9000;background:#000b;align-items:center;justify-content:center;padding:12px;font-family:Cairo}
 #novaAiPanel.open{display:flex}
 #novaAiPanel .ai-sheet{background:#171b20;color:#f6f7f8;border:1px solid #39424e;border-radius:18px;padding:18px;max-width:920px;width:100%;max-height:92dvh;overflow:auto;direction:rtl}
@@ -3604,7 +3676,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 #novaAiPanel td input{width:100%;min-width:65px;background:#101318;color:#fff;border:1px solid #48505a;border-radius:5px;padding:5px}
 #novaAiPanel .ai-note{color:#aab6c7;font-size:12px;line-height:1.8}
 </style>
-<button id="novaAiLaunch" type="button" aria-label="طباعة استيكرات الأدوية">✦ AI الاستيكرات</button>
+<button id="novaAiLaunch" type="button" aria-label="طباعة استيكرات الأدوية">✦ استيكرات الأدوية</button>
 <section id="novaAiPanel" role="dialog" aria-modal="true" aria-label="مراجعة فاتورة مشتريات بالذكاء الاصطناعي">
 <div class="ai-sheet">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 style="margin:0">✦ قراءة فواتير المشتريات</h3><button type="button" id="novaAiClose">إغلاق ✕</button></div>
@@ -3625,7 +3697,7 @@ $('novaAiRun').onclick=async()=>{
 const files=Array.from($('novaAiFiles').files||[]);
 if(!files.length||files.length>4){status.textContent='اختار من 1 إلى 4 صور';return}
 if(files.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>4*1024*1024)){status.textContent='الملفات لازم تكون صور JPG/PNG/WebP وأقل من 4MB لكل صورة';return}
-status.textContent='جاري التحليل...';$('novaAiRun').disabled=true;table.hidden=true;$('novaAiExport').hidden=true;
+status.textContent='جاري التحليل...';$('novaAiRun').textContent='تحليل الفاتورة';$('novaAiRun').disabled=true;table.hidden=true;$('novaAiExport').hidden=true;
 try{
 const images=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({mimeType:f.type,data:String(reader.result).split(',')[1]});reader.onerror=reject;reader.readAsDataURL(f)})));
 const response=await fetch('/api/ai/purchase',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({images})});
@@ -3633,7 +3705,7 @@ const result=await response.json();if(!response.ok)throw Error(result.error||'ف
 tbody.replaceChildren();for(const item of result.items||[]){const tr=document.createElement('tr');for(const key of ['name','quantity','unit_price','discount','batch','expiry','notes']){const td=document.createElement('td');td.append(field(item[key]));tr.append(td)}tbody.append(tr)}
 table.hidden=false;$('novaAiExport').hidden=false;$('novaAiSupplier').textContent='المورد: '+(result.supplier||'غير واضح');
 status.textContent='تم استخراج '+(result.items||[]).length+' صنف. راجع كل البيانات قبل أي اعتماد.';
-}catch(e){status.textContent='تعذر التحليل: '+e.message}finally{$('novaAiRun').disabled=false}
+}catch(e){status.textContent='تعذر التحليل: '+e.message+' — اضغط «إعادة المحاولة».';$('novaAiRun').textContent='إعادة المحاولة'}finally{$('novaAiRun').disabled=false}
 };
 $('novaAiExport').onclick=()=>{const rows=[['الصنف','الكمية','سعر الوحدة','الخصم','التشغيلة','الصلاحية','ملاحظات'],...Array.from(tbody.rows,r=>Array.from(r.querySelectorAll('input'),i=>i.value))];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='nova-purchase-review.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 })();
