@@ -19,7 +19,7 @@ const isUuid = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 // long digit runs (ids, phone numbers), hex/UUIDs, emails, encoded text, and
 // long or mixed letter+digit tokens. Plain words like "products" stay.
 const isIdSegment = (s) =>
-  /\d{6,}/.test(s) || /^[0-9a-f]{16,}$/i.test(s) || isUuid(s) ||
+  /\d{4,}/.test(s) || /^[0-9a-f]{16,}$/i.test(s) || isUuid(s) ||
   /[@%=:+~]/.test(s) || s.length >= 24 ||
   (s.length >= 10 && /[a-z]/i.test(s) && /\d/.test(s));
 

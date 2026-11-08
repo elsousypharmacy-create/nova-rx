@@ -38,6 +38,10 @@ assert.ok(out.includes('"expires_in":3600'), 'expires_in kept');
   assert.ok(!o2.includes('5551234') && !o2.includes('LEAKSELLER'), 'ids and names not kept');
 }
 
+// Short numeric ids (entity, cart) are account identifiers too.
+assert.equal(templatePath('/api/cart/23225/count'), '/api/cart/{id}/count');
+assert.equal(templatePath('/api/entity/51304/all-distributors'), '/api/entity/{id}/all-distributors');
+
 // Normal API paths must stay readable.
 assert.equal(templatePath('/occ/v2/pharma/products/search'), '/occ/v2/pharma/products/search');
 assert.equal(templatePath('/occ/v2/pharma/users/current/carts'), '/occ/v2/pharma/users/current/carts');
