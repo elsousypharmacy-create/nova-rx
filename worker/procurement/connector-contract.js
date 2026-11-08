@@ -44,6 +44,7 @@ export class NotAuthorizedError extends ConnectorError {
 }
 
 export const AUTHORIZATION_KINDS = Object.freeze([
+  'owner-account',
   'official-api',
   'written-permission',
   'export-file',

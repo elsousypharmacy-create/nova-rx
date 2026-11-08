@@ -56,6 +56,7 @@ assert.throws(() => registerConnector(badAuth), TypeError);
 assert.throws(() => registerConnector(badAuth), /authorization/);
 assert.equal(listConnectors().length, 1, 'failed registrations must not leak into the registry');
 assert.deepEqual(AUTHORIZATION_KINDS, [
+  'owner-account',
   'official-api',
   'written-permission',
   'export-file',
