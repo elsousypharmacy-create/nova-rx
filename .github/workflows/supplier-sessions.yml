@@ -1,0 +1,44 @@
+name: Supplier sessions
+
+# Every 10 hours (and on demand): log in to each supplier with a real browser using the
+# pharmacy's own account and send the fresh session to the NOVA Worker, which stores it
+# encrypted. Needs repo secrets NOVA_WORKER_URL, NOVA_INGEST_SECRET and the supplier logins.
+# Disable this workflow in Actions to stop it. No orders, no cart.
+on:
+  schedule:
+    - cron: '23 */10 * * *'
+  workflow_dispatch:
+    inputs:
+      supplier:
+        description: "pharmaoverseas, aumet or all"
+        default: "all"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supplier-sessions
+  cancel-in-progress: false
+
+jobs:
+  push:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Log in and send sessions
+        env:
+          NOVA_WORKER_URL: ${{ secrets.NOVA_WORKER_URL }}
+          NOVA_INGEST_SECRET: ${{ secrets.NOVA_INGEST_SECRET }}
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+          AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
+          AUMET_PASSWORD: ${{ secrets.AUMET_PASSWORD }}
+        run: node tools/sessions/push-sessions.cjs "${{ inputs.supplier || 'all' }}"
