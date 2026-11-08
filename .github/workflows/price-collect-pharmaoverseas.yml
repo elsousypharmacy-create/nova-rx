@@ -1,12 +1,10 @@
 name: Price collect (PharmaOverseas)
 
-# Every 2 hours (and on demand): logs in once with the pharmacy's own account
+# On demand only (owner chose on-demand search over a bulk pull): logs in once with the pharmacy's own account
 # (secrets), searches the drug list with plain HTTP, and saves the offers JSON
 # on the separate branch "supplier-prices" so main is not touched.
 # No AI, no cart, no orders. Disable this workflow in Actions to stop it.
 on:
-  schedule:
-    - cron: '17 */2 * * *'
   push:
     branches: ['collect/pharmaoverseas']
   workflow_dispatch:

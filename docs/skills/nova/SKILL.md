@@ -60,5 +60,19 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Not an ERP yet: no database, catalog is demo, no inventory/purchasing/accounting (roadmap phase 2 = database + real catalog + saved invoices).
 - Deferred: bilingual product names (data issue), per-line discount column, +/- order, phone layout, portrait polish.
 
+## Procurement (supplier prices) — updated 2026-11-08
+- Epic issue #53, PR #65 (waiting for the owner's explicit yes to merge into main). Kimi writes the code (one issue per run, dispatched from the epic branch), Claude reviews and tests, owner decides.
+- Done and tested: contract + schema (#54), HAR sanitizer (#55), PharmaOverseas connector (#56), name parsing (#57), comparison (#59), PO drafts (#60). 7 procurement checks pass.
+- PharmaOverseas has no official API. We use the pharmacy's own account (repo secrets `PO_USERNAME` / `PO_PASSWORD`, never in chat). Login = OAuth + PKCE, token 12 h. Search returns pharmacy price, public price, stock status only (no quantity).
+- Owner decision: NOT a 2-hour bulk pull of 20k items. Instead: on the sale screen, when an item is missing, a button searches suppliers on demand (about 2 s). Mockup screenshots were approved in principle; NOT built yet. Scheduled workflow `price-collect-pharmaoverseas.yml` exists on the epic branch, so do not merge it as is: switch it to manual only.
+- Aumet: discovery pending (#63). DrugEye is a drug index, not a supplier (possible reference for active ingredients).
+- Mockups must follow the app palette, no emoji, tablet landscape first. Say clearly what is real and what is a drawing.
+- Cart add/remove: not explored, only with the owner's approval. No order is ever sent automatically.
+
+## Reply rules (owner said replies felt not smooth)
+- Short, Egyptian Arabic, outcome first, ONE question at most, no jargon, no issue numbers unless asked.
+- Show screenshots of real results; say what was tested and what was not.
+- Update this skill after every meaningful step.
+
 ## On start of a new chat
 Read issue #36, HANDOFF.md (latest checkpoints at the bottom); then ask the owner the single next step.
