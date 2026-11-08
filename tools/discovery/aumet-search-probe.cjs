@@ -61,10 +61,16 @@ const HIDE = /id$|token|user|entity|pharmacy|customer|phone|email|address|covera
     });
     await page.fill('input[name="email"], input[type="email"], input[type="text"]:not([class*="cky"])', AUMET_USERNAME, { timeout: 20000 });
     await page.fill('input[type="password"]', AUMET_PASSWORD);
+    let loginStatus = null;
+    page.on('response', (r) => { if (/\/user\/spa-login/.test(r.url())) loginStatus = r.status(); });
     await page.press('input[type="password"]', 'Enter');
     await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {});
-    await page.waitForTimeout(3000);
-    if (/login/i.test(page.url())) throw new Error('login not confirmed');
+    await page.waitForTimeout(4000);
+    if (/login/i.test(page.url())) {
+      const messages = await page.$$eval('[role="alert"], .alert, .error, .invalid-feedback, .toast, [class*="error"], [class*="alert"], [class*="toast"]', (els) => els.map((e) => (e.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 140)).filter(Boolean).slice(0, 4));
+      note('login-refused', { loginStatus, messages });
+      throw new Error('login not confirmed');
+    }
     note('logged-in', { url: tpl(page.url()) });
 
     await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'networkidle', timeout: 60000 }).catch(() => {});
