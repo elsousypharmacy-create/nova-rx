@@ -45,9 +45,9 @@ function compareRows(a, b) {
 }
 
 export function compareForItem(item, offers, opts = {}) {
-  const { requestedQty = 1, staleAfterMs = 6 * 3600 * 1000, now = Date.now() } = opts;
+  const { requestedQty = 1, staleAfterMs = 6 * 3600 * 1000, now = Date.now(), minScore = MIN_SCORE } = opts;
 
-  const matches = matchOffersToItem(item, offers).filter((m) => m.score >= MIN_SCORE);
+  const matches = matchOffersToItem(item, offers).filter((m) => m.score >= minScore);
 
   const rows = matches.map((m) => {
     const parsed = parseCached(m.offer?.productName ?? '');
