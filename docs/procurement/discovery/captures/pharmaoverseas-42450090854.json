@@ -1,0 +1,1756 @@
+{
+  "format": "nova-rx-discovery/1",
+  "endpointCount": 21,
+  "endpoints": [
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/authorizationserver/csrf",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "headerName": "string",
+        "parameterName": "string",
+        "token": "string"
+      },
+      "sampleValues": {},
+      "count": 2
+    },
+    {
+      "method": "POST",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/authorizationserver/oauth/token",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Content-Length",
+        "Content-Type",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [
+        "client_id",
+        "code",
+        "code_verifier",
+        "grant_type",
+        "redirect_uri"
+      ],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "access_token": "string",
+        "refresh_token": "string",
+        "token_type": "string",
+        "expires_in": "number"
+      },
+      "sampleValues": {
+        "token_type": "Bearer",
+        "expires_in": 43199
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/categories/Featured_Offers/products",
+      "queryParamNames": [
+        "categoryId",
+        "curr",
+        "currentPage",
+        "fields",
+        "lang",
+        "pageSize"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "type": "string",
+        "breadcrumbs": "array",
+        "categoryCode": "string",
+        "currentQuery": {
+          "query": {
+            "value": "string"
+          },
+          "url": "string"
+        },
+        "facets": [
+          {
+            "category": "boolean",
+            "maxValue": "number",
+            "minValue": "number",
+            "multiSelect": "boolean",
+            "name": "string",
+            "priority": "number",
+            "selectorType": "string",
+            "visible": "boolean"
+          }
+        ],
+        "freeTextSearch": "string",
+        "pagination": {
+          "currentPage": "number",
+          "pageSize": "number",
+          "sort": "string",
+          "totalPages": "number",
+          "totalResults": "number"
+        },
+        "products": [
+          {
+            "code": "string",
+            "configurable": "boolean",
+            "configuratorType": "string",
+            "description": "string",
+            "firstVariantImage": "string",
+            "images": [
+              {
+                "format": "string",
+                "imageType": "string",
+                "url": "string"
+              }
+            ],
+            "manufacturer": "string",
+            "multidimensional": "boolean",
+            "name": "string",
+            "price": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "priceRange": {},
+            "publicPrice": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "stock": {
+              "isValueRounded": "boolean",
+              "stockLevelStatus": "string"
+            },
+            "url": "string",
+            "volumePricesFlag": "boolean"
+          }
+        ],
+        "sorts": [
+          {
+            "code": "string",
+            "name": "string",
+            "selected": "boolean"
+          }
+        ]
+      },
+      "sampleValues": {
+        "currentPage": 0,
+        "pageSize": 100,
+        "totalPages": 1,
+        "totalResults": 5,
+        "currencyIso": "EGP",
+        "formattedValue": "EGP84.210",
+        "value": 84.21,
+        "stockLevelStatus": "inStock"
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/categories/New_Arrivals/products",
+      "queryParamNames": [
+        "categoryId",
+        "curr",
+        "currentPage",
+        "fields",
+        "lang",
+        "pageSize"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "type": "string",
+        "breadcrumbs": "array",
+        "categoryCode": "string",
+        "currentQuery": {
+          "query": {
+            "value": "string"
+          },
+          "url": "string"
+        },
+        "facets": [
+          {
+            "category": "boolean",
+            "multiSelect": "boolean",
+            "name": "string",
+            "priority": "number",
+            "values": [
+              {
+                "count": "number",
+                "name": "string",
+                "query": {
+                  "query": {
+                    "value": "string"
+                  },
+                  "url": "string"
+                },
+                "selected": "boolean"
+              }
+            ],
+            "visible": "boolean"
+          }
+        ],
+        "freeTextSearch": "string",
+        "pagination": {
+          "currentPage": "number",
+          "pageSize": "number",
+          "sort": "string",
+          "totalPages": "number",
+          "totalResults": "number"
+        },
+        "products": [
+          {
+            "code": "string",
+            "configurable": "boolean",
+            "configuratorType": "string",
+            "description": "string",
+            "firstVariantImage": "string",
+            "images": [
+              {
+                "format": "string",
+                "imageType": "string",
+                "url": "string"
+              }
+            ],
+            "manufacturer": "string",
+            "multidimensional": "boolean",
+            "name": "string",
+            "price": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "priceRange": {},
+            "publicPrice": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "stock": {
+              "isValueRounded": "boolean",
+              "stockLevelStatus": "string"
+            },
+            "url": "string",
+            "volumePricesFlag": "boolean"
+          }
+        ],
+        "sorts": [
+          {
+            "code": "string",
+            "name": "string",
+            "selected": "boolean"
+          }
+        ]
+      },
+      "sampleValues": {
+        "currentPage": 0,
+        "pageSize": 100,
+        "totalPages": 1,
+        "totalResults": 14,
+        "currencyIso": "EGP",
+        "formattedValue": "EGP318.980",
+        "value": 318.98,
+        "stockLevelStatus": "inStock"
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/currencies",
+      "queryParamNames": [
+        "curr",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "currencies": [
+          {
+            "active": "boolean",
+            "isocode": "string",
+            "name": "string",
+            "symbol": "string"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/customer/current/addresses",
+      "queryParamNames": [
+        "curr",
+        "fields",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "0": {
+          "active": "boolean",
+          "uid": "string",
+          "name": "string",
+          "parentOrgUnit": "null",
+          "approvalProcess": "null",
+          "addresses": [
+            {
+              "id": "string",
+              "title": "null",
+              "titleCode": "null",
+              "firstName": "null",
+              "lastName": "null",
+              "companyName": "null",
+              "line1": "string",
+              "line2": "null",
+              "town": "string",
+              "region": {
+                "isocode": "string",
+                "isocodeShort": "null",
+                "countryIso": "null",
+                "name": "null"
+              },
+              "district": "null",
+              "postalCode": "string",
+              "phone": "string",
+              "cellphone": "string",
+              "email": "null",
+              "country": {
+                "isocode": "string",
+                "name": "null"
+              },
+              "shippingAddress": "null",
+              "defaultAddress": "boolean",
+              "visibleInAddressBook": "null",
+              "formattedAddress": "string"
+            }
+          ],
+          "approvers": "null",
+          "managers": "null",
+          "administrators": "null",
+          "customers": [
+            {
+              "uid": "string",
+              "name": "string",
+              "defaultAddress": {
+                "id": "string",
+                "title": "null",
+                "titleCode": "string",
+                "firstName": "string",
+                "lastName": "string",
+                "companyName": "null",
+                "line1": "string",
+                "line2": "null",
+                "town": "string",
+                "region": {
+                  "isocode": "string",
+                  "isocodeShort": "null",
+                  "countryIso": "null",
+                  "name": "null"
+                },
+                "district": "null",
+                "postalCode": "null",
+                "phone": "null",
+                "cellphone": "string",
+                "email": "null",
+                "country": {
+                  "isocode": "string",
+                  "name": "null"
+                },
+                "shippingAddress": "null",
+                "defaultAddress": "boolean",
+                "visibleInAddressBook": "null",
+                "formattedAddress": "string"
+              },
+              "titleCode": "string",
+              "title": "string",
+              "firstName": "string",
+              "lastName": "string",
+              "currency": {
+                "isocode": "string",
+                "name": "string",
+                "active": "boolean",
+                "symbol": "string"
+              },
+              "language": {
+                "isocode": "string",
+                "name": "string",
+                "nativeName": "string",
+                "active": "boolean"
+              },
+              "displayUid": "string",
+              "customerId": "string",
+              "deactivationDate": "null",
+              "defaultPointOfServiceName": "null",
+              "lastCartId": "null",
+              "hasOrder": "null",
+              "userAvatar": "null",
+              "orgUnit": {
+                "active": "boolean",
+                "uid": "string",
+                "name": "string",
+                "parentOrgUnit": "null",
+                "approvalProcess": "null",
+                "addresses": "null",
+                "approvers": "null",
+                "managers": "null",
+                "administrators": "null",
+                "customers": "null",
+                "costCenters": "null"
+              },
+              "roles": [
+                "string"
+              ],
+              "approvers": "array",
+              "selected": "boolean",
+              "active": "boolean",
+              "email": "string",
+              "mobileNumber": "string",
+              "mobileNumberVerified": "boolean",
+              "additionalPhoneNumber": "string",
+              "organizationName": "string",
+              "pharmacyCode": "string",
+              "roleCode": "string",
+              "role": "string",
+              "organizationTypeCode": "string",
+              "organizationType": "string",
+              "paymentResponsibilityCode": "string",
+              "paymentResponsibility": "string",
+              "defaultB2BUnit": {
+                "active": "boolean",
+                "uid": "string",
+                "name": "string",
+                "parentOrgUnit": "null",
+                "approvalProcess": "null",
+                "addresses": "null",
+                "approvers": "null",
+                "managers": "null",
+                "administrators": "null",
+                "customers": "null",
+                "costCenters": "null"
+              }
+            }
+          ],
+          "costCenters": [
+            {
+              "originalCode": "null",
+              "name": "null",
+              "active": "string",
+              "activeFlag": "null",
+              "code": "string",
+              "currency": {
+                "isocode": "string",
+                "name": "null",
+                "active": "null",
+                "symbol": "null"
+              }
+            }
+          ]
+        }
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/languages",
+      "queryParamNames": [
+        "curr",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "languages": [
+          {
+            "active": "boolean",
+            "isocode": "string",
+            "name": "string",
+            "nativeName": "string"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/orgUsers/current",
+      "queryParamNames": [
+        "curr",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "type": "string",
+        "name": "string",
+        "uid": "string",
+        "active": "boolean",
+        "additionalPhoneNumber": "string",
+        "approvers": "array",
+        "currency": {
+          "active": "boolean",
+          "isocode": "string",
+          "name": "string",
+          "symbol": "string"
+        },
+        "customerId": "string",
+        "defaultAddress": {
+          "cellphone": "string",
+          "country": {
+            "isocode": "string"
+          },
+          "defaultAddress": "boolean",
+          "firstName": "string",
+          "formattedAddress": "string",
+          "id": "string",
+          "lastName": "string",
+          "line1": "string",
+          "region": {
+            "isocode": "string"
+          },
+          "titleCode": "string",
+          "town": "string"
+        },
+        "defaultB2BUnit": {
+          "active": "boolean",
+          "name": "string",
+          "uid": "string"
+        },
+        "displayUid": "string",
+        "email": "string",
+        "firstName": "string",
+        "language": {
+          "active": "boolean",
+          "isocode": "string",
+          "name": "string",
+          "nativeName": "string"
+        },
+        "lastName": "string",
+        "mobileNumber": "string",
+        "mobileNumberVerified": "boolean",
+        "orgUnit": {
+          "active": "boolean",
+          "name": "string",
+          "uid": "string"
+        },
+        "organizationName": "string",
+        "organizationType": "string",
+        "organizationTypeCode": "string",
+        "paymentResponsibility": "string",
+        "paymentResponsibilityCode": "string",
+        "pharmacyCode": "string",
+        "role": "string",
+        "roleCode": "string",
+        "roles": [
+          "string"
+        ],
+        "selected": "boolean",
+        "title": "string",
+        "titleCode": "string"
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/products/{id}",
+      "queryParamNames": [
+        "curr",
+        "fields",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "baseOptions": "array",
+        "name": "string",
+        "purchasable": "boolean",
+        "availableForPickup": "boolean",
+        "categories": [
+          {
+            "code": "string",
+            "image": {
+              "url": "string"
+            },
+            "name": "string",
+            "url": "string"
+          }
+        ],
+        "code": "string",
+        "configurable": "boolean",
+        "description": "string",
+        "images": [
+          {
+            "altText": "string",
+            "format": "string",
+            "imageType": "string",
+            "url": "string"
+          }
+        ],
+        "manufacturer": "string",
+        "multidimensional": "boolean",
+        "numberOfReviews": "number",
+        "pharmacyDiscount": {
+          "absolute": "boolean",
+          "appliedValue": "number",
+          "code": "string",
+          "value": "number"
+        },
+        "price": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "priceRange": {},
+        "publicPrice": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "stock": {
+          "isValueRounded": "boolean",
+          "stockLevelStatus": "string"
+        },
+        "summary": "string",
+        "url": "string"
+      },
+      "sampleValues": {
+        "appliedValue": 12.75,
+        "value": 25,
+        "currencyIso": "EGP",
+        "formattedValue": "EGP33.750",
+        "stockLevelStatus": "inStock"
+      },
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/products/{id}/references",
+      "queryParamNames": [
+        "curr",
+        "fields",
+        "lang",
+        "referenceType"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "references": "array"
+      },
+      "sampleValues": {},
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/products/{id}/reviews",
+      "queryParamNames": [
+        "curr",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "reviews": "array"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/products/search",
+      "queryParamNames": [
+        "curr",
+        "currentPage",
+        "fields",
+        "lang",
+        "pageSize",
+        "query"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "type": "string",
+        "breadcrumbs": "array",
+        "currentQuery": {
+          "query": {
+            "value": "string"
+          },
+          "url": "string"
+        },
+        "facets": [
+          {
+            "category": "boolean",
+            "multiSelect": "boolean",
+            "name": "string",
+            "priority": "number",
+            "values": [
+              {
+                "count": "number",
+                "name": "string",
+                "query": {
+                  "query": {
+                    "value": "string"
+                  },
+                  "url": "string"
+                },
+                "selected": "boolean"
+              }
+            ],
+            "visible": "boolean"
+          }
+        ],
+        "freeTextSearch": "string",
+        "pagination": {
+          "currentPage": "number",
+          "pageSize": "number",
+          "sort": "string",
+          "totalPages": "number",
+          "totalResults": "number"
+        },
+        "products": [
+          {
+            "code": "string",
+            "configurable": "boolean",
+            "configuratorType": "string",
+            "images": [
+              {
+                "format": "string",
+                "imageType": "string",
+                "url": "string"
+              }
+            ],
+            "multidimensional": "boolean",
+            "name": "string",
+            "price": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "priceRange": {},
+            "stock": {
+              "isValueRounded": "boolean",
+              "stockLevelStatus": "string"
+            }
+          }
+        ],
+        "sorts": [
+          {
+            "code": "string",
+            "name": "string",
+            "selected": "boolean"
+          }
+        ]
+      },
+      "sampleValues": {
+        "currentPage": 0,
+        "pageSize": 12,
+        "totalPages": 1,
+        "totalResults": 12,
+        "currencyIso": "EGP",
+        "formattedValue": "EGP33.750",
+        "value": 33.75,
+        "stockLevelStatus": "inStock"
+      },
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/anonymous/cms/pages",
+      "queryParamNames": [
+        "curr",
+        "lang",
+        "pageLabelOrId",
+        "pageType"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Content-Type",
+        "Host",
+        "If-None-Match",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "uid": "string",
+        "uuid": "string",
+        "title": "string",
+        "template": "string",
+        "typeCode": "string",
+        "name": "string",
+        "robotTag": "string",
+        "contentSlots": {
+          "contentSlot": [
+            {
+              "slotId": "string",
+              "slotUuid": "string",
+              "position": "string",
+              "name": "string",
+              "slotShared": "boolean",
+              "components": {
+                "component": [
+                  {
+                    "uid": "string",
+                    "uuid": "string",
+                    "typeCode": "string",
+                    "modifiedtime": "string",
+                    "name": "string",
+                    "container": "string",
+                    "styleClasses": "string",
+                    "external": "string",
+                    "synchronizationBlocked": "string",
+                    "media": {
+                      "code": "string",
+                      "mime": "string",
+                      "url": "string"
+                    },
+                    "urlLink": "string"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "label": "string"
+      },
+      "sampleValues": {},
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/current/carts",
+      "queryParamNames": [
+        "curr",
+        "fields",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "If-None-Match",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "carts": [
+          {
+            "appliedOrderPromotions": "array",
+            "appliedProductPromotions": "array",
+            "appliedVouchers": "array",
+            "code": "string",
+            "deliveryItemsQuantity": "number",
+            "entries": "array",
+            "guid": "string",
+            "net": "boolean",
+            "paymentType": {
+              "code": "string"
+            },
+            "pickupItemsQuantity": "number",
+            "productDiscounts": {
+              "formattedValue": "string"
+            },
+            "subTotal": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "totalDiscounts": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "totalItems": "number",
+            "totalPrice": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "totalPriceWithTax": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "totalProfitMargin": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "totalTax": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "description": "string",
+            "name": "string",
+            "potentialOrderPromotions": "array",
+            "potentialProductPromotions": "array",
+            "saveTime": "string",
+            "totalUnitCount": "number"
+          }
+        ]
+      },
+      "sampleValues": {
+        "formattedValue": "EGP0.000",
+        "currencyIso": "EGP",
+        "value": 0,
+        "appliedValue": 39,
+        "stockLevelStatus": "inStock"
+      },
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/current/carts/{id}",
+      "queryParamNames": [
+        "curr",
+        "fields",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Host",
+        "If-None-Match",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "type": "string",
+        "appliedOrderPromotions": "array",
+        "appliedProductPromotions": "array",
+        "appliedVouchers": "array",
+        "code": "string",
+        "deliveryItemsQuantity": "number",
+        "entries": [
+          {
+            "basePrice": {
+              "formattedValue": "string",
+              "value": "number"
+            },
+            "cancellableQuantity": "number",
+            "comments": "array",
+            "configurationInfos": "array",
+            "entryNumber": "number",
+            "expiryDate": "string",
+            "isReturnable": "boolean",
+            "pharmacyDiscount": {
+              "absolute": "boolean",
+              "appliedValue": "number",
+              "code": "string",
+              "value": "number"
+            },
+            "product": {
+              "availableForPickup": "boolean",
+              "baseOptions": "array",
+              "categories": [
+                {
+                  "code": "string",
+                  "name": "string"
+                }
+              ],
+              "code": "string",
+              "configurable": "boolean",
+              "description": "string",
+              "images": [
+                {
+                  "altText": "string",
+                  "format": "string",
+                  "imageType": "string",
+                  "url": "string"
+                }
+              ],
+              "manufacturer": "string",
+              "name": "string",
+              "pharmacyDiscount": {
+                "absolute": "boolean",
+                "appliedValue": "number",
+                "code": "string",
+                "value": "number"
+              },
+              "publicPrice": {
+                "currencyIso": "string",
+                "formattedValue": "string",
+                "priceType": "string",
+                "value": "number"
+              },
+              "purchasable": "boolean",
+              "stock": {
+                "isValueRounded": "boolean",
+                "stockLevelStatus": "string"
+              },
+              "taxValue": {
+                "absolute": "boolean",
+                "appliedValue": "number",
+                "code": "string",
+                "value": "number"
+              },
+              "url": "string"
+            },
+            "profitMargin": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "publicPrice": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "quantity": "number",
+            "remainingDailyQuota": "number",
+            "remainingMonthlyQuota": "number",
+            "returnableQuantity": "number",
+            "statusSummaryList": "array",
+            "taxValue": {
+              "absolute": "boolean",
+              "appliedValue": "number",
+              "code": "string",
+              "value": "number"
+            },
+            "totalPrice": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "value": "number"
+            },
+            "totalProfitMargin": {
+              "currencyIso": "string",
+              "formattedValue": "string",
+              "priceType": "string",
+              "value": "number"
+            },
+            "updateable": "boolean"
+          }
+        ],
+        "guid": "string",
+        "net": "boolean",
+        "paymentType": {
+          "code": "string"
+        },
+        "pickupItemsQuantity": "number",
+        "productDiscounts": {
+          "formattedValue": "string"
+        },
+        "subTotal": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "totalDiscounts": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "totalItems": "number",
+        "totalPrice": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "totalPriceWithTax": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "totalProfitMargin": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "totalTax": {
+          "currencyIso": "string",
+          "formattedValue": "string",
+          "priceType": "string",
+          "value": "number"
+        },
+        "user": {
+          "name": "string",
+          "uid": "string"
+        },
+        "potentialOrderPromotions": "array",
+        "potentialProductPromotions": "array",
+        "totalUnitCount": "number"
+      },
+      "sampleValues": {
+        "formattedValue": "EGP136.840",
+        "value": 136.84,
+        "appliedValue": 39,
+        "currencyIso": "EGP",
+        "stockLevelStatus": "inStock"
+      },
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/current/cms/components",
+      "queryParamNames": [
+        "componentIds",
+        "curr",
+        "currentPage",
+        "fields",
+        "lang",
+        "pageSize",
+        "productCode"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Content-Type",
+        "Host",
+        "If-None-Match",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "component": [
+          {
+            "uid": "string",
+            "uuid": "string",
+            "typeCode": "string",
+            "modifiedtime": "string",
+            "name": "string",
+            "container": "string",
+            "styleClasses": "string",
+            "external": "string",
+            "synchronizationBlocked": "string",
+            "linkName": "string",
+            "url": "string",
+            "target": "string",
+            "contentPage": "string",
+            "contentPageLabelOrId": "string",
+            "product": "string",
+            "fullWidth": "string",
+            "mobileIndex": "string",
+            "media": {
+              "tablet": {
+                "code": "string",
+                "mime": "string",
+                "altText": "string",
+                "url": "string"
+              },
+              "desktop": {
+                "code": "string",
+                "mime": "string",
+                "altText": "string",
+                "url": "string"
+              },
+              "widescreen": {
+                "code": "string",
+                "mime": "string",
+                "altText": "string",
+                "url": "string"
+              }
+            },
+            "urlLink": "string",
+            "parents": "string",
+            "flexType": "string"
+          }
+        ],
+        "pagination": {
+          "count": "number",
+          "hasNext": "boolean",
+          "hasPrevious": "boolean",
+          "page": "number",
+          "totalCount": "number",
+          "totalPages": "number"
+        },
+        "sorts": "array"
+      },
+      "sampleValues": {
+        "totalPages": 1
+      },
+      "count": 16
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/current/cms/pages",
+      "queryParamNames": [
+        "code",
+        "curr",
+        "lang",
+        "pageLabelOrId",
+        "pageType"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Content-Type",
+        "Host",
+        "If-None-Match",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "uid": "string",
+        "uuid": "string",
+        "title": "string",
+        "template": "string",
+        "typeCode": "string",
+        "name": "string",
+        "robotTag": "string",
+        "contentSlots": {
+          "contentSlot": [
+            {
+              "slotId": "string",
+              "slotUuid": "string",
+              "position": "string",
+              "name": "string",
+              "slotShared": "boolean",
+              "components": {
+                "component": [
+                  {
+                    "uid": "string",
+                    "uuid": "string",
+                    "typeCode": "string",
+                    "modifiedtime": "string",
+                    "name": "string",
+                    "container": "string",
+                    "flexType": "string",
+                    "synchronizationBlocked": "string",
+                    "styleClasses": "string"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "label": "string"
+      },
+      "sampleValues": {},
+      "count": 5
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/current/consenttemplates",
+      "queryParamNames": [
+        "curr",
+        "lang"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Cache-Control",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "consentTemplates": [
+          {
+            "description": "string",
+            "id": "string",
+            "name": "string",
+            "version": "number"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "api.pharmaemarket.com",
+      "pathTemplate": "/occ/v2/pharma/users/current/productinterests",
+      "queryParamNames": [
+        "curr",
+        "fields",
+        "lang",
+        "pageSize",
+        "sort"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Content-Type",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Anonymous-Consents",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "pagination": {
+          "count": "number",
+          "page": "number",
+          "totalCount": "number",
+          "totalPages": "number"
+        },
+        "results": "array",
+        "sorts": [
+          {
+            "asc": "boolean",
+            "code": "string"
+          }
+        ]
+      },
+      "sampleValues": {
+        "totalPages": 0
+      },
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "firebase.googleapis.com",
+      "pathTemplate": "/v1alpha/projects/-/apps/{id}/webConfig",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-goog-api-key"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "projectId": "string",
+        "appId": "string",
+        "storageBucket": "string",
+        "authDomain": "string",
+        "messagingSenderId": "string",
+        "measurementId": "string"
+      },
+      "sampleValues": {},
+      "count": 6
+    },
+    {
+      "method": "POST",
+      "host": "firebaseinstallations.googleapis.com",
+      "pathTemplate": "/v1/projects/{id}/installations",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "content-length",
+        "content-type",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-firebase-client",
+        "x-goog-api-key"
+      ],
+      "requestBodyFieldNames": [
+        "appId",
+        "authVersion",
+        "fid",
+        "sdkVersion"
+      ],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "name": "string",
+        "fid": "string",
+        "refreshToken": "string",
+        "authToken": {
+          "token": "string",
+          "expiresIn": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 1
+    }
+  ]
+}

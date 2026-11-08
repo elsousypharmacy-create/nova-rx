@@ -48,27 +48,32 @@ jobs:
         run: |
           set -euo pipefail
           test "$ISSUE_NUMBER" -ge 1 || exit 1
-          gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
+          LABELS="$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name')"
+          printf '%s\n' "$LABELS" | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
           test -f KIMI_CONTEXT.md || { echo '::error::Missing KIMI_CONTEXT.md'; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH="kimi/issue-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
+          # PRs target the branch this run started from (main for label runs,
+          # the dispatch ref for workflow_dispatch), so Kimi work can stack on a feature branch.
+          BASE_REF="${GITHUB_REF_NAME}"
+          START_SHA="$(git rev-parse HEAD)"
           git switch -c "$BRANCH"
           gh issue view "$ISSUE_NUMBER" --json title,body --jq '.title + "\n" + .body' > /tmp/kimi-task.txt
-          kimi -p "Read KIMI_CONTEXT.md FIRST (maximum 120 lines), then /tmp/kimi-task.txt. Use existing BUILD_REPORT.md only if directly relevant. Work on ONE highest-priority unresolved UX defect or one tightly related pair per run, not the entire issue. Read only bounded sections of necessary files using rg/sed; do not dump full index.html or redo repository-wide analysis. Do not repeat failed tool calls. Make a minimal fix, run targeted tests, and update BUILD_REPORT.md with completed defect IDs, exact test results and remaining IDs. Never claim untested success. Keep total work within 10 minutes; stop promptly and leave a useful report. Preserve Black Edition RTL UX. No secrets, workflow edits, deployment, merge, or self-commit. Do not overwrite prior report history without retaining completed findings. If no work remains, report that and make no changes."
+          kimi -p "Read KIMI_CONTEXT.md FIRST (maximum 120 lines), then /tmp/kimi-task.txt, which is your ONLY task. Do exactly the scope and acceptance criteria in that task; nothing else. Read only the files the task names, in bounded ranges with rg/sed; do not dump index.html or redo repository-wide analysis. Do not repeat failed tool calls. Run the tests the task names and record exact results in BUILD_REPORT.md (new top entry: issue, changed files, tests run and results, remaining work, limitations). Never claim untested success. Keep total work within 12 minutes; stop promptly and leave a useful report. If the task is UI work, preserve Black Edition Arabic RTL UX. No secrets, no network calls to supplier sites, no workflow edits, no node_modules, no deployment, merge, or self-commit. If no work remains, report that and make no changes."
 
-          git add -A -- ':!.github/workflows' ':!*.env' ':!*.env.*'
+          git add -A -- ':!.github/workflows' ':!*.env' ':!*.env.*' ':!node_modules' ':!kimi-recovery.patch'
           if git diff --cached --quiet; then
             echo "::error::Kimi produced no changes"
             exit 1
           fi
           git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi"
           mkdir -p /tmp/kimi-recovery
-          git diff --binary origin/main HEAD -- . ':(exclude).github/workflows/**' > /tmp/kimi-recovery/changes.patch
+          git diff --binary "$START_SHA" HEAD -- . ':(exclude).github/workflows/**' ':(exclude)node_modules/**' > /tmp/kimi-recovery/changes.patch
           cp /tmp/kimi-recovery/changes.patch kimi-recovery.patch
-          # Rebuild a clean branch from the latest remote main; do not carry workflow history.
-          git fetch origin main
-          git switch -c "${BRANCH}-clean" origin/main
+          # Rebuild a clean branch from the latest base branch; do not carry workflow history.
+          git fetch origin "$BASE_REF"
+          git switch -c "${BRANCH}-clean" "origin/$BASE_REF"
           if [ -s /tmp/kimi-recovery/changes.patch ]; then
             git apply --index /tmp/kimi-recovery/changes.patch
           else
@@ -77,7 +82,7 @@ jobs:
           git commit -m "fix: address NOVA Rx issue #${ISSUE_NUMBER} via Kimi (clean)"
           git push origin "${BRANCH}-clean"
           BRANCH="${BRANCH}-clean"
-          if ! gh pr create --draft --base main --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent browser QA and owner approval before merge."; then
+          if ! gh pr create --draft --base "$BASE_REF" --head "$BRANCH" --title "Kimi: implement NOVA Rx issue #${ISSUE_NUMBER}" --body "Implements #${ISSUE_NUMBER}. Requires independent browser QA and owner approval before merge."; then
             echo "::error::Changes pushed to $BRANCH, but GitHub Actions cannot create PR. Open draft PR manually, then re-run only after PR exists."
             echo "PR_CREATE_BLOCKED: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
             exit 1

@@ -59,5 +59,23 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Not an ERP yet: no database, catalog is demo, no inventory/purchasing/accounting (roadmap phase 2 = database + real catalog + saved invoices).
 - Deferred: bilingual product names (data issue), per-line discount column, +/- order, phone layout, portrait polish.
 
+## Procurement (supplier prices) — updated 2026-11-08
+- Epic issue #53, PR #65 (waiting for the owner's explicit yes to merge into main). Kimi writes the code (one issue per run, dispatched from the epic branch), Claude reviews and tests, owner decides.
+- Done and tested: contract + schema (#54), HAR sanitizer (#55), PharmaOverseas connector (#56), name parsing (#57), comparison (#59), PO drafts (#60). 7 procurement checks pass.
+- PharmaOverseas has no official API. We use the pharmacy's own account (repo secrets `PO_USERNAME` / `PO_PASSWORD`, never in chat). Login = OAuth + PKCE, token 12 h. Search returns pharmacy price, public price, stock status only (no quantity).
+- Owner decision: NOT a 2-hour bulk pull of 20k items. Instead: on the sale screen, when an item is missing, a button searches suppliers on demand (about 2 s). Mockup screenshots were approved in principle; NOT built yet. Scheduled workflow `price-collect-pharmaoverseas.yml` exists on the epic branch, so do not merge it as is: switch it to manual only.
+- Aumet (marketplace with ~21 distributors, each with its own price): discovery DONE (docs/procurement/discovery/aumet.md). Login works with the pharmacy account (secrets `AUMET_USERNAME` / `AUMET_PASSWORD`), no CAPTCHA. API gives per-distributor `unit_price`, `best_price`, numeric `stock`, barcode, active ingredient. Open risk: login may log the pharmacy out of its other sessions. Connector is next (Kimi). DrugEye is a drug index, not a supplier.
+- Sanitizer lesson: short numeric ids (entity/cart) leaked once into paths; fixed (4+ digits become {id}).
+- Approved designs (screenshots): row unit = stock + suppliers in one box (44 px on tablet); centered popup with scroll and +/- per offer; Suppliers screen with add-supplier (email + password, encrypted). Aumet shows as a group of sellers.
+- Server side (encrypted sessions, search API) is BUILT and tested with fakes, not deployed. Login to suppliers is done by a real-browser job (`supplier-sessions.yml`), never by faking a browser over HTTP. Pack the UI for the Worker with `node tools/inject-supplier-ui.mjs`. Aumet text-search parameter still unknown.
+- Supplier lookup UI is BUILT in the repo (supplier-lookup.js/css, provider interface `window.NOVA_SUPPLIER_PROVIDER`) but has no real provider yet and is not deployed.
+- Mockups must follow the app palette, no emoji, tablet landscape first. Say clearly what is real and what is a drawing.
+- Cart add/remove: not explored, only with the owner's approval. No order is ever sent automatically.
+
+## Reply rules (owner said replies felt not smooth)
+- Short, Egyptian Arabic, outcome first, ONE question at most, no jargon, no issue numbers unless asked.
+- Show screenshots of real results; say what was tested and what was not.
+- Update this skill after every meaningful step.
+
 ## On start of a new chat
 Read issue #36, HANDOFF.md (latest checkpoints at the bottom); then ask the owner the single next step.

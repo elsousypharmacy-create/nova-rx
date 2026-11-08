@@ -1,0 +1,25 @@
+name: PO HTTP login test
+
+# Runs on a push to "run/po-http-test": logs in to PharmaOverseas over plain HTTP
+# with the pharmacy's own account (repo secrets) and runs two searches.
+on:
+  push:
+    branches: ['run/po-http-test']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Login and search
+        env:
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+        run: node tools/collectors/po-http-test.mjs

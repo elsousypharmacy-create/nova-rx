@@ -1,0 +1,97 @@
+name: Supplier discovery (PharmaOverseas, logged in)
+
+# Manual only. Logs in with the pharmacy's own account from repository
+# secrets, records the site's requests, sanitizes them on the runner, deletes
+# the raw capture, and uploads ONLY the sanitized JSON + report.
+# Also runs on a push to the branch "discovery/pharmaoverseas" (cart step off),
+# so it can be used before this file reaches main.
+on:
+  push:
+    branches: ['discovery/pharmaoverseas']
+  workflow_dispatch:
+    inputs:
+      with_cart:
+        description: "Also add one item to the cart and remove it (no checkout)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # only to commit the sanitized summary to discovery/pharmaoverseas
+
+concurrency:
+  group: supplier-discovery
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Get sanitizer
+        run: |
+          if [ ! -f tools/discovery/sanitize-har.mjs ]; then
+            git fetch origin kimi/issue-55-42447687991-clean
+            git show FETCH_HEAD:tools/discovery/sanitize-har.mjs > tools/discovery/sanitize-har.mjs
+            git show FETCH_HEAD:tools/discovery/report-skeleton.mjs > tools/discovery/report-skeleton.mjs
+          fi
+      - name: Capture (logged in)
+        env:
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+          WITH_CART: ${{ inputs.with_cart || 'false' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/cap" out
+          node tools/discovery/pharmaoverseas-capture.cjs "$RUNNER_TEMP/cap"
+      - name: Sanitize and delete raw capture
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ -f "$RUNNER_TEMP/cap/raw.har" ]; then
+            node tools/discovery/sanitize-har.mjs "$RUNNER_TEMP/cap/raw.har" > out/pharmaoverseas.json
+            node tools/discovery/report-skeleton.mjs out/pharmaoverseas.json "PharmaOverseas (logged in)" > out/pharmaoverseas.md
+          fi
+          rm -rf "$RUNNER_TEMP/cap"
+          # Refuse to upload if anything that looks like a token slipped through.
+          if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}|bearer [a-z0-9]' out/* 2>/dev/null; then
+            echo "::error::Possible token in sanitized output; not uploading"; rm -rf out; exit 1
+          fi
+          # Refuse if the login name or password appears anywhere in the output.
+          if [ -n "$PO_USERNAME" ] && grep -Fqi -- "$PO_USERNAME" out/* 2>/dev/null; then
+            echo "::error::Login name found in output; not uploading"; rm -rf out; exit 1
+          fi
+          if [ -n "$PO_PASSWORD" ] && grep -Fq -- "$PO_PASSWORD" out/* 2>/dev/null; then
+            echo "::error::Password found in output; not uploading"; rm -rf out; exit 1
+          fi
+        env:
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pharmaoverseas-discovery-${{ github.run_id }}
+          path: out/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Commit sanitized summary to the discovery branch
+        if: success() && github.ref == 'refs/heads/discovery/pharmaoverseas'
+        run: |
+          set -euo pipefail
+          [ -f out/pharmaoverseas.json ] || { echo "nothing to commit"; exit 0; }
+          mkdir -p docs/procurement/discovery/captures
+          cp out/pharmaoverseas.json "docs/procurement/discovery/captures/pharmaoverseas-${GITHUB_RUN_ID}.json"
+          cp out/pharmaoverseas.md "docs/procurement/discovery/captures/pharmaoverseas-${GITHUB_RUN_ID}.md"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/procurement/discovery/captures
+          git commit -m "discovery: sanitized PharmaOverseas capture (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:discovery/pharmaoverseas

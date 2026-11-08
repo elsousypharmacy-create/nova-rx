@@ -1,0 +1,38 @@
+name: Aumet public JS probe
+
+# Runs on a push to "run/aumet-js". No login and no secrets: reads the public
+# JavaScript of the marketplace site and commits short code snippets.
+on:
+  push:
+    branches: ['run/aumet-js']
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Probe
+        run: |
+          mkdir -p out
+          node tools/discovery/aumet-js-probe.cjs out
+      - name: Commit result
+        run: |
+          set -euo pipefail
+          mkdir -p docs/procurement/discovery/captures
+          cp out/aumet-js.json "docs/procurement/discovery/captures/${GITHUB_RUN_ID}-aumet-js.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/procurement/discovery/captures
+          git commit -m "discovery: Aumet public JS snippets (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:run/aumet-js

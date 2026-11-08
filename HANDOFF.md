@@ -2,6 +2,61 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-08 — Server side + packaging built, NOT deployed
+- Kimi #79 (run 42474421099): `worker/procurement/provider/{session-store,hub,http}.js` (AES-GCM encrypted sessions in KV, search + status API, rate limit). Claude review fixes: wrong-PIN lockout (8/min then 429), sessions job sends ISO `expiresAt`. 12 procurement checks pass.
+- Claude: `supplier-provider.js` (app -> `/api/suppliers/*`, PIN asked once, kept in the browser), `tools/inject-supplier-ui.mjs` (packs css+js+model into ONE html for the Worker; works on repo index.html and on HTML extracted from a live artifact), `tools/sessions/push-sessions.cjs` + `supplier-sessions.yml` (real-browser login every 10 h, posts sessions to the Worker; not run yet).
+- Aumet text search parameter is UNKNOWN (search box not found in 3 tries, public JS had no hint). Aumet live search will not work until that is found.
+- To go live (owner): merge PR #65 into main; create a new Cloudflare API token; add Worker secrets `NOVA_INGEST_SECRET`, `NOVA_API_PIN` (long PIN) and repo secrets `NOVA_WORKER_URL`, `NOVA_INGEST_SECRET`; then Claude: port the API route into the live Worker (diff onto the extracted live artifact), pack the UI with the inject tool, dry-run deploy, verify, run `supplier-sessions.yml`, try a real search.
+
+## Checkpoint 2026-11-08 — Worker login attempt STOPPED (do not spoof a browser)
+- Wrote `worker/procurement/auth/pharmaoverseas-login.js` (plain-HTTP OAuth code + PKCE, 5 steps, unit test passes with a fake server). On GitHub it fails at step 2 (`/authorizationserver/csrf` returns 400 without a browser).
+- The fix I was about to apply (fake browser User-Agent and headers) is bot-check circumvention. NOT applied. Do not add it. The module stays as is and is NOT used live.
+- What does work: a real browser login (Playwright on the GitHub runner) gives a 12 h token; searches with that token over plain HTTP work (134 offers, 27 s). Plan to propose to the owner: log in with a real browser on a schedule, store the token encrypted in the Worker (KV), let the Worker search with the token and refresh it with the standard refresh grant. Needs owner approval and the Worker deploy token.
+
+## Checkpoint 2026-11-08 — Supplier lookup UI built (Kimi #61), tried in a browser
+- `supplier-lookup.js/.css` + `worker/procurement/ui-model.js`; index.html only gets one link + one script tag. Data comes from `window.NOVA_SUPPLIER_PROVIDER` (undefined by default; tests inject a fake). Claude checked on tablet 1280x800 with real PharmaOverseas prices + fake Aumet sellers: row unit, empty-search button, popup, +/- , add to draft (localStorage `novaSupplierDraft`), suppliers screen, add-supplier form (password field autocomplete=off), phone has no horizontal overflow. 9 procurement checks pass.
+- NOT done: the real provider (Worker route that logs in to suppliers and returns compare results), encrypted credential storage, Worker artifact with the UI inlined, deploy. Prices in the app are still fake until the provider exists.
+- Next exact step: build the provider. Decide how the Worker logs in (plain HTTP vs a browser service).
+
+## Checkpoint 2026-11-08 — Aumet connector built (Kimi #78), NOT tested live
+- `connectors/aumet.js` + optional `sellerId`/`sellerName` in schema and compare tie-break (run 42463828819). 9 procurement checks pass on fixtures only.
+- Known limitation: `netEffectivePrice` is null for Aumet (best_price meaning unconfirmed), so compare ranks Aumet by `unit_price`, which can make Aumet look dearer than it is. Confirm best_price vs the screen on 3 products before showing "net".
+- Risk: Aumet login body has `confirm_logout_others`; discovery ran twice (the 2nd by mistake). Capture script now forces it to false. Waiting for the owner: other devices in use? Prefer a dedicated NOVA user on Aumet. No more Aumet logins until decided; `aumet-discovery.yml` now triggers only on branch `run/aumet-discovery`.
+
+## Checkpoint 2026-11-08 — Aumet discovery done
+- Run 42463602885 (workflow `aumet-discovery.yml`, branch discovery/aumet): login OK, no CAPTCHA. Findings in `docs/procurement/discovery/aumet.md`. Aumet = marketplace, one offer per distributor, numeric stock, barcode, active ingredient.
+- Leak found and fixed: entity/cart ids in paths; sanitizer now templates 4+ digit ids; discovery/aumet branch rewritten without the leaked files.
+- Next exact step: Kimi builds `connectors/aumet.js` (+ seller field in schema/compare); owner decides on the Suppliers screen and the supplier button.
+
+## Checkpoint 2026-11-08 — matching + comparison engine done (Kimi #57, #59)
+- #57 normalize.js (Kimi run 42454746907): 134/134 real names parse. Claude review fixes: products without stated strength get a key; parse cache; tablet vs vial (different form) is never 0.8, only 0.5 + needsReview (found on real data: Nexium tab vs I.V. vial).
+- #59 compare.js (Kimi run 42455536138): 200 items x 10,000 offers in ~0.5 s. Checked on real PharmaOverseas prices.
+- All 6 procurement checks pass on the epic branch.
+- #60 po-draft.js (Kimi run 42456014609): drafts per supplier, unmatched list, approval needs a name, Arabic WhatsApp text. Checked on real prices. 7/7 procurement checks pass.
+- Next exact step: owner decision on merging to main (needed for the 2-hour schedule, #58); then #61 UI; Aumet discovery (#63).
+
+## Checkpoint 2026-11-08 — PharmaOverseas live prices working
+- Owner added repo secrets `PO_USERNAME` / `PO_PASSWORD`. Logged-in discovery run 42450090854: login = OAuth code+PKCE, 12 h token, search returns pharmacy price per product, stock status only.
+- Kimi #56 (run 42450298609) built `worker/procurement/connectors/pharmaoverseas.js`; reviewed, merged into the epic branch with #54/#55 work. All 4 procurement checks pass.
+- First live collection (`collect/pharmaoverseas`, `tools/collectors/pharmaoverseas-prices.mjs`): 8 queries -> 134 valid offers in 27 s, 0 errors, no AI. Output: `data/supplier-prices/pharmaoverseas-latest.json` on that branch. Example: Panadol Megraine 33.75 vs public 51 (33.82 % off).
+- Search returns related products too (e.g. Augmentin -> Curam, Hibiotic): matching to NOVA items is Task 04 (#57).
+- Next exact step: Kimi #57 (pack parsing + product matching), then #59 comparison, then a scheduled collector (every 2 h) writing to Worker storage, then Aumet.
+
+## Checkpoint 2026-11-08 (later) — owner decision: build our own integration
+- Owner: suppliers have no official API; NOVA Rx builds its own connectors on top of their websites using the pharmacy's own accounts (`owner-account`). Docs updated in `docs/procurement/` (assessment decisions 1-6, architecture rules, discovery protocol now includes login + cart).
+- Limits kept: own account only, low rate, stop on CAPTCHA/block, credentials only in Worker secrets, supplier cart filled only after owner approves a draft, checkout stays human.
+- #55 done by Kimi (run 42447687991) → draft PR #69. Claude review found 3 leaks (email/token in URL path, free text in sample values); fixed in `0bc33bc` with a permanent leak test. PR #66 now includes the `owner-account` kind.
+- Next exact step: owner does the PharmaOverseas capture (#68) and sanitizes it with PR #69's tool; then Kimi builds `connectors/pharmaoverseas.js` (#56) from the sanitized output.
+
+## Checkpoint 2026-11-08 — Claude (Technical Director): Supplier Integration epic started
+- Branch `claude/nova-rx-supplier-integration-8pv5ix` (draft PR, base `main`). Docs only + workflow fixes; nothing deployed, nothing merged.
+- Added `docs/procurement/ARCHITECTURE.md` (pipeline, connector contract, unified offer schema), `SUPPLIER_ASSESSMENT.md` (PharmaOverseas blocked on permission per PR #25; Aumet needs discovery + partnership request; DrugEye reclassified as reference catalog, not a supplier), `DISCOVERY_PROTOCOL.md` (Grok rules + owner permission-request template).
+- Fixed `kimi-task.yml`: generic task prompt (was hard-coded to UX defects), excludes `node_modules` (run 42309042760 committed 71 node_modules files), PR base = dispatch ref so Kimi PRs stack on this branch. Added `.gitignore` node_modules and `procurement-unit.yml` CI.
+- Known: Actions cannot create PRs in this repo (run 42309042760 pushed `kimi/issue-28-…-clean` but PR creation failed). Claude opens the draft PR manually from the pushed branch.
+- Kimi run 42446526229 (dispatched from this branch, issue #54): about 5 minutes. It pushed `kimi/issue-54-42446526229-clean` (5 files, no node_modules) and failed only at PR creation, as expected. Claude re-ran the tests locally (both pass) and opened draft PR #66 with base = this branch.
+- Epic #53; tasks #54 (in review), #55 to #62 (not started); Grok discovery #63 (Aumet) and #64 (DrugEye) wait for Grok. Owner actions: supplier permission requests; optionally allow Actions to create PRs.
+- Next exact step: owner reviews #65/#66. Then label #55 (discovery sanitizer) `kimi-ready` and dispatch from this branch. Task 04 (normalization) follows.
+
 ## Checkpoint 2026-11-07 — Cloudflare deploy (nova-rx-preview)
 - Deploy operator only: checksum-guarded KV staging keys `__nova_deploy_b64_0`…`_20`, then `final.js` multipart PUT with `keep_bindings: [secret_text, kv_namespace]`.
 - Live: https://nova-rx-preview.elsousypharmacy.workers.dev/#sale — HTTP 200; markers present (`sale-screen sticker studio`, `nlMedTabs`, `#novaLabelsPanel`, `NOVA_STICKER_MODAL_PREMIUM_V95`).

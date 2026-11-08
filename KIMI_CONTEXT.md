@@ -22,3 +22,9 @@ P3: UX-NEW-SALE-MODE; UX-EMPTY-CHECKOUT-NO-HINT; UX-TOAST-EN; UX-TOAST-COVERS-CH
 
 ## Deliverable format
 Update BUILD_REPORT.md with: issue, defect ID(s) addressed, changed files, tests actually run/results, remaining IDs, limitations. Keep it short and precise. GitHub Actions creates an isolated branch and draft PR only on successful CLI exit; independent Grok QA must validate exact SHA before any merge.
+
+## Procurement track (epic: Supplier Integration & Procurement Intelligence)
+- Spec: `docs/procurement/ARCHITECTURE.md` (contract + offer schema = source of truth). Read only the section your issue names.
+- Code lives in `worker/procurement/` (ES modules, no dependencies, Workers + Node 22). Tests: `tests/unit/procurement-*.check.mjs`, plain `node:assert`, run by `procurement-unit.yml`.
+- Never call supplier websites or APIs, never add credentials, never automate orders. Fixtures are synthetic.
+- Do not modify `worker/supplier-price-service.js` or `supplier-compare.html` unless the issue says so.
