@@ -25,13 +25,23 @@ async function login() {
     if (await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"]')) throw new Error('CAPTCHA on login page');
     await page.fill('input[name="username"], input[type="email"]', PO_USERNAME);
     await page.fill('input[name="password"], input[type="password"]', PO_PASSWORD);
-    const [resp] = await Promise.all([
-      page.waitForResponse((r) => /oauth\/token/.test(r.url()) && r.request().method() === 'POST', { timeout: 30000 }),
-      page.press('input[type="password"]', 'Enter'),
-    ]);
-    if (resp.status() !== 200) throw new Error(`login failed (status ${resp.status()})`);
-    const body = await resp.json();
-    if (!body.access_token) throw new Error('login response had no access token');
+    // Catch the token reply as it passes through, so the page navigating
+    // away after login cannot discard it before it is read.
+    let body = null;
+    let status = null;
+    await page.route('**/authorizationserver/oauth/token', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue(); // CORS preflight
+      const resp = await route.fetch();
+      let parsed = null;
+      try { parsed = await resp.json(); } catch { parsed = null; }
+      body = parsed;
+      status = resp.status();
+      await route.fulfill({ response: resp });
+    });
+    await page.press('input[type="password"]', 'Enter');
+    for (let i = 0; i < 60 && body === null && status === null; i += 1) await page.waitForTimeout(500);
+    if (status !== 200) throw new Error(`login failed (status ${status ?? 'no response'})`);
+    if (!body?.access_token) throw new Error('login response had no access token');
     return { token: body.access_token, expiresIn: body.expires_in };
   } finally {
     await browser.close();
