@@ -1,0 +1,26 @@
+name: Supplier live check
+
+# Runs on a push to the branch "run/supplier-live-check" (or manually once on main).
+# Calls the live Worker's supplier API with the PIN secret and prints statuses and counts only.
+on:
+  push:
+    branches: ['run/supplier-live-check']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check the live supplier API
+        env:
+          NOVA_API_PIN: ${{ secrets.NOVA_API_PIN }}
+          NOVA_WORKER_URL: ${{ secrets.NOVA_WORKER_URL || 'https://nova-rx-preview.elsousypharmacy.workers.dev' }}
+        run: node tools/sessions/live-check.mjs
