@@ -39,7 +39,7 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 
 ## Live system and deploy
 - Worker `nova-rx-preview` embeds the app HTML as a JS string literal; live HTML is an older lineage than repo `index.html`. Apply the SAME small patch (python script with count asserts) to both `index.html` and the HTML extracted from the previous artifact: `tools/build-worker-artifact.mjs --extract ART OUT.html`, then `tools/build-worker-artifact.mjs BASE NEW_HTML OUT`. Check `--extract` of the new artifact equals NEW_HTML (`cmp`). Server block: `tools/patch-worker-gemini.mjs`.
-- Live now: `worker/live/nova-rx-preview.with-ux-batch1-3-stickers27.js` sha256 `1018c42a6723012216b197e81329fb4c6465a4cfe26485193ec335d26b8db8ad` (deployed 2026-11-08, see HANDOFF for the time). Rollback chain: 26 (`dba049d0…`, has the stale-medicines bug: do not roll back to it), 25 (`0bbf7b3b…`), 24 (`16a99d35…`), 23 (`75f6f76c…`), 22 (`dd6a4345…`), 21 (`1c2a77c7…`), 20 (`3ce1548c…`), 19 (`46551d2a…`), 18 (`9a24cd96…`).
+- Live now (after the supplier deploy of 2026-11-08): `worker/live/nova-rx-preview.with-suppliers1.js` sha256 `f208296786ac709e111d46bd4a0866c7c050b502d089156c451997c8e8ae2af9` = stickers27 + supplier lookup (UI packed into the page, `/api/suppliers/*` routes). Rollback: stickers27 `1018c42a6723012216b197e81329fb4c6465a4cfe26485193ec335d26b8db8ad` (live before). If the Worker secrets are not set, supplier routes answer 503 not-configured.
 - Guarded deploy: artifact on `main` (PR merged first) -> workflow `deploy-worker.yml` ref main, inputs artifact_ref, artifact_path, sha256, expected_modified_on (= previous live modified_on, seconds precision), dry_run, confirm `DEPLOY nova-rx-preview`. Always dry run first, then the real run.
 - Verify: Cloudflare `workers_list` modified_on changed; `workers_get_worker_code` output (saved to a tool-results file; read AFTER the deploy finishes) contains the artifact; `tests/unit/worker-gemini-route.check.mjs ART`; browser tests on the extracted HTML.
 
@@ -71,6 +71,11 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Supplier lookup UI is BUILT in the repo (supplier-lookup.js/css, provider interface `window.NOVA_SUPPLIER_PROVIDER`) but has no real provider yet and is not deployed.
 - Mockups must follow the app palette, no emoji, tablet landscape first. Say clearly what is real and what is a drawing.
 - Cart add/remove: not explored, only with the owner's approval. No order is ever sent automatically.
+
+## Supplier lookup go-live checklist (2026-11-08)
+- Build: `node tools/build-supplier-artifact.mjs <base artifact> <out artifact>` (extract HTML, pack UI, add routes). Test: `node tests/unit/procurement-worker-artifact.check.mjs`.
+- Worker secrets come from repo secrets `NOVA_API_PIN` (>= 12 chars) and `NOVA_INGEST_SECRET` (>= 16): run workflow "Set Worker supplier secrets" (confirm text `SET nova-rx-preview secrets`). Repo secret `NOVA_WORKER_URL` + the supplier logins feed "Supplier sessions" (real-browser login every 10 h).
+- First PIN use: the app asks once and keeps it in that browser (`novaApiPin`).
 
 ## Reply rules (owner said replies felt not smooth)
 - Short, Egyptian Arabic, outcome first, ONE question at most, no jargon, no issue numbers unless asked.
