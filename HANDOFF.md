@@ -367,3 +367,7 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint — loading splash (stickers23, NOT deployed yet)
 - Owner idea: show a logo + loading bar until the page is built, instead of letting the layout assemble on screen. Added `#novaSplash` (NOVA Rx wordmark, "جارٍ التحميل…", indeterminate bar in app palette) right after the charset meta + first element in `<body>`; removed after window `load` + fonts ready (capped at 1.5s) + 150ms, hard cap 4s, `pointer-events:none` so it can never block taps or tests.
 - Artifact stickers23 sha 75f6f76c…50ba (built, tested, awaiting owner OK to publish). Live is still stickers22 (dd6a4345…). Rollback = stickers22.
+
+## Checkpoint — small "i" instead of caption + hint (stickers24, NOT deployed yet)
+- Owner idea: replace «اختياري — للذكاء الاصطناعي» and the hint under the condition box with a small "i" next to «حالة المريض». Tap i = short tip («اختياري. الذكاء الاصطناعي هيراعيها…»); tap again or tap elsewhere = closes (works on touch, no hover needed). EN overlay entries added. Test updated + 4 new checks.
+- Artifact stickers24 (built, tested, awaiting owner OK). Live is still stickers23 (75f6f76c…). Rollback = stickers23.

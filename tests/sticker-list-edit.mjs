@@ -121,7 +121,20 @@ try {
     check(`${L}: a missing field is marked in its own cell`, await page.$eval('#nlMedicineList .med-card:nth-child(2) .med-sum .dur', e => e.classList.contains('gap')));
     check(`${L}: interactions between the invoice medicines are shown`, await page.isVisible('.nl-inter') && (await page.$eval('.nl-inter', e => e.textContent)).includes('تداخل'));
     check(`${L}: the table has a header row and a note that doses are AI suggestions`, await page.isVisible('.nl-thead') && (await page.$eval('.nl-note', e => e.textContent)).includes('اقتراحات'));
-    check(`${L}: no ready-made condition buttons under the box (the pharmacist just types)`, (await page.$$('.nl-cond button')).length === 0);
+    check(`${L}: no ready-made condition buttons under the box (the pharmacist just types)`, (await page.$$('.nl-cond button:not(.nl-info)')).length === 0);
+    // the small i next to the label replaces the long caption and hint
+    check(`${L}: one small i button next to the label, tip hidden at first, no long caption`, (await page.$$('.nl-cond .nl-info')).length === 1 && !(await page.isVisible('.nl-infotip')) && (await page.$$('.nl-cond .hint, .nl-cond .lbl em')).length === 0);
+    await page.click('.nl-info');
+    await sleep(150);
+    check(`${L}: tapping i shows the tip`, await page.isVisible('.nl-infotip') && (await page.$eval('.nl-infotip', e => e.textContent)).includes('اختياري') && (await page.$eval('.nl-info', e => e.getAttribute('aria-expanded'))) === 'true');
+    await page.click('.nl-info');
+    await sleep(150);
+    check(`${L}: tapping i again hides it`, !(await page.isVisible('.nl-infotip')));
+    await page.click('.nl-info');
+    await sleep(100);
+    await page.click('#nlCondition');
+    await sleep(100);
+    check(`${L}: tapping elsewhere closes the tip`, !(await page.isVisible('.nl-infotip')));
     await page.fill('#nlCondition', 'حساسية بنسلين');
     for (let i = 0; i < 40 && calls.length < 2; i++) await sleep(200);
     await page.waitForFunction(() => !document.getElementById('nlPrintAll').disabled, null, { timeout: 8000 });
