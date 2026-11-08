@@ -1,0 +1,37 @@
+name: Procurement unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'worker/procurement/**'
+      - 'tools/discovery/**'
+      - 'tests/unit/procurement-*.check.mjs'
+      - '.github/workflows/procurement-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'worker/procurement/**'
+      - 'tools/discovery/**'
+      - 'tests/unit/procurement-*.check.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run procurement checks (no dependencies, no network)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(tests/unit/procurement-*.check.mjs)
+          if [ ${#files[@]} -eq 0 ]; then echo "No procurement checks yet"; exit 0; fi
+          for f in "${files[@]}"; do echo "== $f"; node "$f"; done
+          node tests/unit/supplier-price.check.mjs

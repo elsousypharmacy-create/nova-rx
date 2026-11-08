@@ -2,6 +2,13 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-08 — Claude (Technical Director): Supplier Integration epic started
+- Branch `claude/nova-rx-supplier-integration-8pv5ix` (draft PR, base `main`). Docs only + workflow fixes; nothing deployed, nothing merged.
+- Added `docs/procurement/ARCHITECTURE.md` (pipeline, connector contract, unified offer schema), `SUPPLIER_ASSESSMENT.md` (PharmaOverseas blocked on permission per PR #25; Aumet needs discovery + partnership request; DrugEye reclassified as reference catalog, not a supplier), `DISCOVERY_PROTOCOL.md` (Grok rules + owner permission-request template).
+- Fixed `kimi-task.yml`: generic task prompt (was hard-coded to UX defects), excludes `node_modules` (run 42309042760 committed 71 node_modules files), PR base = dispatch ref so Kimi PRs stack on this branch. Added `.gitignore` node_modules and `procurement-unit.yml` CI.
+- Known: Actions cannot create PRs in this repo (run 42309042760 pushed `kimi/issue-28-…-clean` but PR creation failed). Claude opens the draft PR manually from the pushed branch.
+- Next exact step: review Kimi's Task 02 branch (connector contract), open its draft PR, check `procurement-unit` CI.
+
 ## Checkpoint 2026-11-07 — Cloudflare deploy (nova-rx-preview)
 - Deploy operator only: checksum-guarded KV staging keys `__nova_deploy_b64_0`…`_20`, then `final.js` multipart PUT with `keep_bindings: [secret_text, kv_namespace]`.
 - Live: https://nova-rx-preview.elsousypharmacy.workers.dev/#sale — HTTP 200; markers present (`sale-screen sticker studio`, `nlMedTabs`, `#novaLabelsPanel`, `NOVA_STICKER_MODAL_PREMIUM_V95`).
