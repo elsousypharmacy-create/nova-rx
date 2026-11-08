@@ -122,6 +122,14 @@ try {
   await evalPage(`document.getElementById('novaAiLaunch').click()`);
   await sleep(400);
   check('L5b the launcher opens it with the sold invoice medicines', await evalPage(`document.getElementById('novaLabelsPanel').classList.contains('open') && document.querySelectorAll('#nlMedicineList .med-card').length >= 1`));
+  // L5c: a NEW sale must never show the previous patient's medicines (safety)
+  await evalPage(`document.getElementById('novaLabelsPanel').classList.remove('open')`);
+  await evalPage(`document.getElementById('btnReceiptNewSale').click()`);
+  await sleep(300);
+  check('L5c new sale: a different medicine is added', await addProduct('Concor') === 1);
+  await evalPage(`document.getElementById('novaAiLaunch').click()`);
+  await sleep(600);
+  check('L5d opening by hand in the new sale shows ONLY the new cart (not the previous invoice)', await evalPage(`(() => { const c = [...document.querySelectorAll('#nlMedicineList .med-card .med-sum')].map(e => e.innerText); return c.length === 1 && /Concor|كونكور/.test(c[0]) && !/Augmentin|أوجمنتين/.test(c.join(' ')); })()`));
 
   // L6: close receipt (X) -> new sale -> labels panel must NOT stay open
   await evalPage(`document.getElementById('btnCloseReceipt').click()`);
