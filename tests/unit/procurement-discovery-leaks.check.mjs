@@ -30,6 +30,14 @@ assert.ok(out.includes('"value":33.75'), 'numeric price sample kept');
 assert.ok(out.includes('33.75 EGP'), 'money text sample kept');
 assert.ok(out.includes('"expires_in":3600'), 'expires_in kept');
 
+// Numbers under price/discount/quantity-like names are kept; ids are not.
+{
+  const har2 = { log: { entries: [entry('GET', 'https://m.example.com/api/offers', { offers: [{ seller_name: 'LEAKSELLER', unit_price: 41.5, discount_percentage: 12, available_quantity: 80, seller_id: 5551234 }] })] } };
+  const o2 = JSON.stringify(sanitizeHar(har2));
+  assert.ok(o2.includes('"unit_price":41.5') && o2.includes('"discount_percentage":12') && o2.includes('"available_quantity":80'), 'numeric price/discount/qty samples kept');
+  assert.ok(!o2.includes('5551234') && !o2.includes('LEAKSELLER'), 'ids and names not kept');
+}
+
 // Normal API paths must stay readable.
 assert.equal(templatePath('/occ/v2/pharma/products/search'), '/occ/v2/pharma/products/search');
 assert.equal(templatePath('/occ/v2/pharma/users/current/carts'), '/occ/v2/pharma/users/current/carts');

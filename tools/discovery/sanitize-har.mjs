@@ -11,6 +11,7 @@ export const SAMPLE_ALLOWLIST = new Set([
   'expires_in', 'token_type'
 ]);
 
+const NUMERIC_SAMPLE_KEY = /price|discount|bonus|qty|quantity|stock|moq|min_?order|tax|vat|total|rate|percent|pct/i;
 const SECRET_KEY = /auth|token|cookie|session|password|passwd|secret|phone|mobile|email|address|account|user|customer|uid|otp/i;
 
 const isUuid = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
@@ -89,6 +90,10 @@ function collectSamples(value, samples) {
   if (!isPlainObject(value)) return;
   for (const [k, v] of Object.entries(value)) {
     if (SAMPLE_ALLOWLIST.has(k) && isSafeSample(k, v)) {
+      if (!(k in samples)) samples[k] = v;
+    } else if (typeof v === 'number' && Number.isFinite(v) && NUMERIC_SAMPLE_KEY.test(k) && !SECRET_KEY.test(k)) {
+      // Marketplaces name price/discount/quantity fields in many ways; numbers
+      // under such names are safe to keep and show what each field means.
       if (!(k in samples)) samples[k] = v;
     }
     if (v !== null && typeof v === 'object') {

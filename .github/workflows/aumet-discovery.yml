@@ -1,0 +1,67 @@
+name: Aumet discovery (logged in)
+
+# Runs on a push to the branch "discovery/aumet". Logs in with the pharmacy's
+# own account from repository secrets, searches one drug and opens one product,
+# sanitizes the capture on the runner, deletes the raw file, and commits ONLY
+# the sanitized summary to the same branch. No cart, no orders.
+on:
+  push:
+    branches: ['discovery/aumet']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aumet-discovery
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Capture
+        env:
+          AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
+          AUMET_PASSWORD: ${{ secrets.AUMET_PASSWORD }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/cap" out
+          node tools/discovery/aumet-capture.cjs "$RUNNER_TEMP/cap"
+      - name: Sanitize, check, delete raw capture
+        if: always()
+        env:
+          AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
+          AUMET_PASSWORD: ${{ secrets.AUMET_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [ -f "$RUNNER_TEMP/cap/steps.json" ] && cp "$RUNNER_TEMP/cap/steps.json" out/aumet-steps.json
+          if [ -f "$RUNNER_TEMP/cap/raw.har" ]; then
+            node tools/discovery/sanitize-har.mjs "$RUNNER_TEMP/cap/raw.har" > out/aumet.json
+            node tools/discovery/report-skeleton.mjs out/aumet.json "Aumet (logged in)" > out/aumet.md
+          fi
+          rm -rf "$RUNNER_TEMP/cap"
+          if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}|bearer [a-z0-9]' out/* 2>/dev/null; then echo "::error::token-like text in output"; rm -rf out; exit 1; fi
+          if [ -n "$AUMET_USERNAME" ] && grep -Fqi -- "$AUMET_USERNAME" out/* 2>/dev/null; then echo "::error::login name in output"; rm -rf out; exit 1; fi
+          if [ -n "$AUMET_PASSWORD" ] && grep -Fq -- "$AUMET_PASSWORD" out/* 2>/dev/null; then echo "::error::password in output"; rm -rf out; exit 1; fi
+      - name: Commit sanitized summary
+        if: success()
+        run: |
+          set -euo pipefail
+          [ -d out ] && [ "$(ls -A out)" ] || { echo "nothing to commit"; exit 0; }
+          mkdir -p docs/procurement/discovery/captures
+          cp out/* docs/procurement/discovery/captures/ 
+          for f in out/*; do mv "docs/procurement/discovery/captures/$(basename "$f")" "docs/procurement/discovery/captures/${GITHUB_RUN_ID}-$(basename "$f")"; done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/procurement/discovery/captures
+          git commit -m "discovery: sanitized Aumet capture (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:discovery/aumet
