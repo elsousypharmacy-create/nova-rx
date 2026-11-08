@@ -1,5 +1,20 @@
 # BUILD_REPORT — NOVA Rx
 
+## Procurement 04 (2026-11-08): price normalization — pack size, comparable unit price, dedupe — done
+
+- Issue: "[Procurement 04] Price normalization: pack size, comparable unit price, discount, dedupe" (epic #53). Read only: the issue, `worker/procurement/offer-schema.js`, `tests/fixtures/pharmaoverseas/names-sample.txt`.
+- Changed files (all new):
+  - `worker/procurement/normalize.js`: dependency-free ES module exporting `parseProductName(name)` → `{ brand, strength, form, pack, raw }`, `comparableUnitPrice(offer, parsed)` (`netEffectivePrice ?? unitPrice` ÷ `pack.count`, null without pack/price), `productKey(parsed)` → `BRAND|strength|form|packcount` lowercase (null when brand or strength missing), `matchOffersToItem(item, offers)` (exact key = 1; same brand+strength different pack = 0.8 `pack-differs`; same brand only or different strength = 0.5 with `needsReview: true`; below 0.5 excluded; never ≥ 0.8 across different strengths). Handles combos (`1GM/125MG` → `1000/125 mg`, `457MG/5ML` → `457 mg/5ml`, `16 MG. /12.5 MG.`), dash combos (`50-1000 MG`), `%`, bare `VIAL`/`1VIAL`/typo `vail` → pack 1 vial, modifier words between count and unit (`EFF. GR. IN SACHETS`, `RECTAL SUPP.`, `EX. REL .F.C TAB`), Arabic-Indic digits and Arabic units (`مجم/جم/مل`, `قرص/كبسولة/شراب/أمبول`). Pack search masks the strength span so `457MG/5ML SUSP. 70 ML` yields pack 70 ml, not 5 ml.
+  - `tests/unit/procurement-normalize.check.mjs`: `node:assert/strict`; table-driven pass over all 134 fixture names (prints count + unparsed list), ~60 hand-written assertions, 5 Arabic cases. Prints `procurement-normalize checks passed`.
+- Tests actually run (exact results):
+  - `node tests/unit/procurement-normalize.check.mjs` → prints `parseProductName: strength-or-pack parsed for 134/134 names` and `procurement-normalize checks passed`, exit 0. Covers the issue's named cases (AUGMENTIN 625MG 10 F.C. TAB., AUGMENTIN 457MG/5ML SUSP. 70 ML, CONCOR 5MG 30 TABLETS, BRUFEN 600 MG 10 EFF. GR. IN SACHETS → pack 10 sachet, DECLOPHEN 25MG 5 INFANTILE SUPP. → pack 5 supp, MERAZODEL 40 MG VIAL. FOR I.V. INF. → pack 1 vial, PANADOL EXTRA 24 F.C. TAB. → strength null, pack 24 tab), Panadol per-tablet price equality (37.5/24 == 75/48), `netEffectivePrice` precedence, CONCOR 5MG vs 10MG never matched ≥ 0.8, unrelated brand excluded.
+  - `node tests/unit/procurement-contract.check.mjs` → `procurement-contract checks passed`, exit 0.
+  - `node tests/unit/procurement-discovery.check.mjs` → `procurement-discovery checks passed`, exit 0.
+  - `node tests/unit/procurement-discovery-leaks.check.mjs` → `procurement-discovery-leaks checks passed`, exit 0.
+  - `node tests/unit/procurement-pharmaoverseas.check.mjs` → `procurement-pharmaoverseas checks passed`, exit 0.
+- Remaining work: none within this task. Wiring normalization into a supplier-compare flow / dedupe persistence: later issues.
+- Limitations: acceptance criterion "`PANADOL EXTRA 24` vs `PANADOL EXTRA 48`: different keys" is unsatisfiable as written — those fixture lines have no strength, and the spec mandates `productKey = null` without strength; the test therefore asserts key difference + equal per-tablet price on the same-product pair `Panadol Extra 500mg Optizorb 24/48 tabs` and asserts the no-strength lines yield null keys per spec. Form enum for `EFF. GR. IN SACHETS` resolves to `sachet` (only pack is acceptance-checked). Pre-existing `MODULE_TYPELESS_PACKAGE_JSON` warning (package.json out of scope). Changes uncommitted per instructions.
+
 ## Procurement 03 (2026-11-08): PharmaOverseas connector (owner-account) — done
 
 - Issue: "[Procurement 03] PharmaOverseas connector: website requests with the pharmacy's own account" (epic #53). Read only: `docs/procurement/discovery/pharmaoverseas.md`, `worker/procurement/connector-contract.js`, `offer-schema.js`, `connectors/fixture.js`, and the `products/search` + `products/{id}` entries of capture `pharmaoverseas-42450090854.json`.
