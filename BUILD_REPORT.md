@@ -1,5 +1,21 @@
 # BUILD_REPORT — NOVA Rx
 
+## Procurement 06 (2026-11-08): price comparison engine on comparable units — done
+
+- Issue: "[Procurement 06] Price comparison engine on comparable units" (epic #53, depends on #57). Read only: the issue, `worker/procurement/normalize.js` exports, `worker/procurement/offer-schema.js` field names.
+- Changed files (all new):
+  - `worker/procurement/compare.js`: dependency-free, supplier-agnostic ES module (no supplier ids; static-checked). `compareForItem(item, offers, { requestedQty = 1, staleAfterMs = 6h, now = Date.now() })` keeps `matchOffersToItem` matches with score ≥ 0.8; per match computes `unitPriceComparable` (`comparableUnitPrice` = `netEffectivePrice ?? unitPrice` ÷ pack count) and `packPrice` (`netEffectivePrice ?? unitPrice`); flags `stale` (`now - Date.parse(lastUpdated) > staleAfterMs`; unparseable `lastUpdated` treated as not stale), `out_of_stock`, `MOQ` (`minimumOrderQuantity > requestedQty`); eligible = no reasons. Sort: eligible first, `unitPriceComparable` asc (null last), `discountPct` desc (null last), `supplierId` asc. Returns `{ item, best (offer or null), offers: [{ offer, score, unitPriceComparable, packPrice, eligible, reasons }], savingsVsNext, needsReview }`; `savingsVsNext` = (next − best comparable) × best pack count, rounded 2 dp, null when < 2 eligible or price/pack missing; `needsReview` when any kept match is flagged or best/next pack counts differ. `compareMany(items, offers, opts)` maps per item, same order. Adds a 50k-entry parse cache for matched offer names.
+  - `tests/unit/procurement-compare.check.mjs`: `node:assert/strict`, fixed `NOW`, synthetic `offer()` helper; prints `procurement-compare checks passed`.
+- Tests actually run (exact results):
+  - `node tests/unit/procurement-compare.check.mjs` → prints `compareMany: 200 items x 10,000 offers in 313.6 ms` and `procurement-compare checks passed`, exit 0. Covers all acceptance criteria: PANADOL EXTRA 24 (2.000/tab, pack 48) vs 48 (1.875/tab, pack 90) → best is supplier `b` (per-tablet wins over pack price), `savingsVsNext` = 6, `needsReview` true on pack-size difference; cheapest `out_of_stock` → ineligible with reason `out_of_stock`, next in-stock is best, `savingsVsNext` null; MOQ 10 with `requestedQty` 3 → reason `MOQ`; `lastUpdated` 7 h old → reason `stale`; adding supplier `c` changes `best` to `c` with no code edits and the static check asserts the source contains no `pharmaoverseas`; `netEffectivePrice` precedence, `discountPct` desc tie-break, `compareMany` order preserved + unmatched item → `best` null; 10,000 offers × 200 items in 313.6 ms < 1 s (measured in-test).
+  - `node tests/unit/procurement-contract.check.mjs` → `procurement-contract checks passed`, exit 0.
+  - `node tests/unit/procurement-discovery.check.mjs` → `procurement-discovery checks passed`, exit 0.
+  - `node tests/unit/procurement-discovery-leaks.check.mjs` → `procurement-discovery-leaks checks passed`, exit 0.
+  - `node tests/unit/procurement-normalize.check.mjs` → `134/134 names`, `procurement-normalize checks passed`, exit 0.
+  - `node tests/unit/procurement-pharmaoverseas.check.mjs` → `procurement-pharmaoverseas checks passed`, exit 0.
+- Remaining work: none within this task. Wiring the engine into a supplier-compare flow / UI is a later issue.
+- Limitations: `best` is the winning offer object (spec leaves its shape open). Unparseable `lastUpdated` is treated as not stale. `needsReview` pack-size check compares pack counts only (unit ignored). First perf attempt with digit-bearing fake brand names (`BRAND3`) collapsed all brands to `BRAND` (brand = text before first digit) and ran 5.3 s; test data now uses digit-free brand names (313.6 ms). Pre-existing `MODULE_TYPELESS_PACKAGE_JSON` warning (package.json out of scope). Changes uncommitted per instructions.
+
 ## Procurement 04 (2026-11-08): price normalization — pack size, comparable unit price, dedupe — done
 
 - Issue: "[Procurement 04] Price normalization: pack size, comparable unit price, discount, dedupe" (epic #53). Read only: the issue, `worker/procurement/offer-schema.js`, `tests/fixtures/pharmaoverseas/names-sample.txt`.
