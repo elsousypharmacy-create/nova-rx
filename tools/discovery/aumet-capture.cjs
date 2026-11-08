@@ -33,7 +33,7 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
       const u = new URL(r.url());
       if (u.pathname !== '/api/products') return;
       const o = {};
-      for (const [k, v] of u.searchParams.entries()) o[k] = /id$|token|user|entity|pharmacy|customer|phone|email|address/i.test(k) ? '[hidden]' : v.slice(0, 40);
+      for (const [k, v] of u.searchParams.entries()) o[k] = /id$|token|user|entity|pharmacy|customer|phone|email|address|coverage/i.test(k) ? '[hidden]' : v.slice(0, 40);
       productParams.push(o);
     } catch { /* ignore */ }
   });
@@ -90,9 +90,20 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
     if (stillLogin) throw new Error('login not confirmed');
 
     // search one drug
-    const searchSel = 'input[type="search"], input[placeholder*="earch" i], input[placeholder*="بحث"], input[name*="search" i], input[aria-label*="earch" i]';
-    const box = await page.$(searchSel);
-    note('search-box', { found: !!box });
+    // Product search box: visible, not inside the cookie banner, placeholder looks like a search.
+    let box = null;
+    const placeholders = [];
+    for (const el of await page.$$('input')) {
+      const info = await el.evaluate((e) => ({
+        vis: !!e.offsetParent,
+        cky: !!e.closest('[class*="cky"], [id*="cky"]'),
+        ph: (e.placeholder || e.getAttribute('aria-label') || '').slice(0, 40),
+        type: e.type,
+      }));
+      if (info.vis && !info.cky && info.type !== 'checkbox' && info.type !== 'hidden') placeholders.push(info.ph);
+      if (!box && info.vis && !info.cky && /search|بحث|ابحث|product|دواء|منتج/i.test(info.ph)) box = el;
+    }
+    note('search-box', { found: !!box, placeholders });
     if (box) {
       await box.fill('Panadol');
       await box.press('Enter');
@@ -110,7 +121,7 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
   } catch (e) {
     note('stopped', { reason: String(e.message).replace(new RegExp(AUMET_USERNAME || '$^', 'gi'), '[login]').slice(0, 160) });
   } finally {
-    steps.push({ step: 'products-requests', requests: productParams.slice(0, 6) });
+    steps.push({ step: 'products-requests', requests: productParams.slice(-8) });
     fs.writeFileSync(`${OUT}/steps.json`, JSON.stringify(steps, null, 2));
     await ctx.close();
     await browser.close();
