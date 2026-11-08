@@ -337,3 +337,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Smaller things: error code shown small/dim, retry button only for total failures, hint hidden after typing, preview toggle is a link, age field no spinner/example 30.
 - Tests: sticker-list-edit now 86 checks (child flow, warning gate, 7 viewports frame/table/print button), gemini-batch (+weightUnknown), worker-gemini-route on the artifact, ux-batch1/2/3, issue-4. Artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers16.js (base stickers15).
 - NOT tested: real Gemini, real tablet/printer, iOS safe-area behaviour on a real device (emulated paddings only).
+
+## Checkpoint — special-case chips + layout fix (stickers17)
+- «حالة المريض»: extra grouped chips behind "حالات تانية ▾" (allergy / chronic / special groups); choosing writes into the box and goes to the AI.
+- Fixed ≥900px `.layout` grid overflow (grid-template-rows:minmax(0,1fr) + overflow:clip) so tapping chips never scrolls the table away.
+- Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers17.js sha 4dfe1283…3348. Rollback: stickers16 (adaad6f9…).

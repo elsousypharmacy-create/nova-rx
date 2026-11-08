@@ -128,9 +128,26 @@ try {
     check(`${L}: the patient condition is sent with the next request`, calls.length === 2 && calls[1].patient.condition === 'حساسية بنسلين');
     check(`${L}: the AI warning shows in the row`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .med-sum', e => e.textContent)).includes('بنسلين'));
     check(`${L}: the chip is marked as chosen`, await page.$eval('.nl-cond .chips button[data-p="حساسية بنسلين"]', e => e.classList.contains('on')));
-    await page.fill('#nlCondition', 'ضغط مرتفع');
+    // more special cases, grouped, behind one button
+    check(`${L}: the extra special cases are hidden at first`, !(await page.isVisible('.chips-more')));
+    await page.click('.chip-more');
+    await sleep(200);
+    check(`${L}: "more conditions" opens three groups (allergies, chronic, special cases)`, await page.isVisible('.chips-more') && (await page.$$eval('.chips-more .cm-group', a => a.length)) === 3);
+    await page.click('.chips-more button[data-p="ربو"]');
+    await sleep(200);
+    check(`${L}: choosing one writes it in the condition box and marks it`, (await page.$eval('#nlCondition', e => e.value)).includes('ربو') && await page.$eval('.chips-more button[data-p="ربو"]', e => e.classList.contains('on')));
     for (let i = 0; i < 30 && calls.length < 3; i++) await sleep(200);
-    check(`${L}: typing waits until you stop, then sends once`, calls.length === 3 && calls[2].patient.condition === 'ضغط مرتفع');
+    check(`${L}: the table stays in place (the page does not scroll under the chips)`, await page.evaluate(() => document.querySelector('#novaLabelsPanel .layout').scrollTop === 0 && document.getElementById('nlMedicineList').getBoundingClientRect().top > 0 && document.querySelector('.nl-thead').getBoundingClientRect().top > 0));
+    check(`${L}: the extra case is sent to the AI`, calls.length === 3 && /ربو/.test(calls[2].patient.condition) && /بنسلين/.test(calls[2].patient.condition));
+    await page.click('.chips-more button[data-p="ربو"]');
+    await sleep(200);
+    check(`${L}: tapping it again removes it`, !(await page.$eval('#nlCondition', e => e.value)).includes('ربو'));
+    await page.click('.chip-more');
+    await sleep(100);
+    check(`${L}: the groups can be closed again`, !(await page.isVisible('.chips-more')));
+    await page.fill('#nlCondition', 'ضغط مرتفع');
+    for (let i = 0; i < 40 && !calls.some(c => c.patient.condition === 'ضغط مرتفع'); i++) await sleep(200);
+    check(`${L}: typing waits until you stop, then sends it`, calls.some(c => c.patient.condition === 'ضغط مرتفع'));
     check(`${L}: zero page errors`, errors.length === 0);
     await page.close();
   }
