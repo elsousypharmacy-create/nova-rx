@@ -17,10 +17,10 @@ Supplier website / authorized API / supplier export file
 
 Rules that every task must keep:
 - Runtime collection never calls an LLM. AI is used only for discovery, analysis and repair.
-- No connector ships without a recorded authorization decision in `docs/procurement/SUPPLIER_ASSESSMENT.md`.
+- Suppliers have no official APIs. Connectors reproduce the supplier website's own requests using the pharmacy's own account (`owner-account`, decided by the owner 2026-11-08). Every connector is listed in `SUPPLIER_ASSESSMENT.md` with a per-supplier kill switch.
 - No credentials, cookies, tokens or session values in code, fixtures, reports, logs or GitHub. Secrets live in Worker secrets only.
-- No CAPTCHA bypass, no access-control bypass, no session replay from a human browser.
-- No order is ever submitted automatically. Drafts only, owner approval required.
+- No CAPTCHA or block bypass: on CAPTCHA/403/unexpected login page the connector stops (`AuthRequiredError`/`NotAuthorizedError`) and alerts. Login uses the owner's credentials from Worker secrets, never a copied browser cookie.
+- Supplier cart is filled only after the owner approves a draft in NOVA Rx; final checkout stays a human action.
 - The existing prototype `worker/supplier-price-service.js` + `supplier-compare.html` keeps working until the new engine replaces it in a reviewed PR.
 
 ## 2. Module layout (target)
@@ -31,7 +31,7 @@ Rules that every task must keep:
 | `worker/procurement/connector-contract.js` | Connector interface, capability flags, error classes, registry | 02 |
 | `worker/procurement/offer-schema.js` | Unified offer record + validator | 02 |
 | `worker/procurement/connectors/fixture.js` | Reference connector on synthetic data (used by all tests) | 02 |
-| `worker/procurement/connectors/<supplier>.js` | Real supplier adapter | 03 |
+| `worker/procurement/connectors/pharmaoverseas.js` | First real supplier adapter (website requests, owner account) | 03 |
 | `worker/procurement/normalize.js` | Pack/unit parsing, comparable unit price, discount/net, dedupe | 04 |
 | `worker/procurement/collector.js` | Scheduler-agnostic collector: rate limit, retry+backoff, change detection, schema-drift, sync log | 05 |
 | `worker/procurement/compare.js` | Comparison engine | 06 |
@@ -48,11 +48,13 @@ All modules are ES modules, dependency-free, runnable in Cloudflare Workers and 
 {
   id: 'fixture',                 // stable supplier id, [a-z0-9-]
   displayName: 'Fixture Supplier',
-  authorization: 'official-api' | 'written-permission' | 'export-file' | 'fixture',
+  authorization: 'owner-account' | 'official-api' | 'written-permission' | 'export-file' | 'fixture',
   capabilities: { search: true, getProduct: true, listCatalog: false, stock: 'level' | 'quantity' | 'none' },
   rateLimit: { requestsPerMinute: 30 },
   async search(query, { page, pageSize, signal }) -> { offers: RawOffer[], page, pageSize, totalPages|null },
   async getProduct(supplierProductId, { signal }) -> RawOffer | null,
+  async login(credentials, { signal }) -> session   // owner-account only; session kept in memory/KV, never logged
+  async addToCart(lines, { session, approvedDraftId }) -> result   // optional; refuses without approvedDraftId
   toOffer(raw, { fetchedAt }) -> Offer   // pure mapping into the unified schema, no I/O
 }
 ```
@@ -87,6 +89,6 @@ Comparison is only allowed on a **comparable unit price** (price per tablet/ml/g
 
 ## 5. Delivery order
 
-Phase P1 (now): 01 discovery framework, 02 connector contract, discovery of Aumet + DrugEye (Grok), PharmaOverseas permission request (owner).
-Phase P2: 04 normalization, 06 comparison engine on fixture + export-file data, 08 UI on fixture data.
-Phase P3: 03 first live connector (only after authorization is recorded), 05 collector + schedule, 07 PO drafts, 09 QA.
+Phase P1 (now): 01 discovery framework, 02 connector contract, PharmaOverseas login + cart discovery (owner/Grok browser capture), Aumet discovery.
+Phase P2: 03 PharmaOverseas connector (read: search/product/price/stock), 04 normalization, 06 comparison.
+Phase P3: 05 collector + schedule, 07 PO drafts + approved add-to-cart, 08 UI, 09 QA. Then Aumet connector.
