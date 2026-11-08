@@ -63,13 +63,16 @@ function unitPriceLabelFor(row) {
   return word ? `سعر ${word} ${price} ج.م` : `سعر الوحدة ${price} ج.م`;
 }
 
+// Readable supplier names for ids that arrive without a display name.
+const SUPPLIER_DISPLAY = { pharmaoverseas: 'PharmaOverseas', aumet: 'Aumet' };
+
 function toRow(row) {
   const offer = row.offer ?? {};
   const supplierId = String(offer.supplierId ?? '');
   return {
     key: `${supplierId}::${offer.sellerId ?? ''}::${offer.productName ?? ''}`,
     supplierId,
-    supplierName: offer.supplierName ?? supplierId,
+    supplierName: offer.supplierName ?? SUPPLIER_DISPLAY[supplierId] ?? supplierId,
     sellerName: offer.sellerName ?? offer.sellerId ?? null,
     productName: offer.productName ?? '',
     packPrice: Number.isFinite(row.packPrice) ? round2(row.packPrice) : null,

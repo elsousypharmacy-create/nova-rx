@@ -111,7 +111,7 @@
     var title = esc(query || '');
     var head = '<div class="modal-header"><div><h3>' + title + ' ' + tr('عند الموردين') + '</h3>' +
       (Number.isFinite(stock) ? '<div style="font-size:11px;color:var(--text-muted);margin-top:3px">' + tr('رصيدك الحالي') + ' ' + stock + ' ' + tr('علبة') + '</div>' : '') +
-      '</div><button class="btn btn-secondary" data-close>' + tr('إغلاق') + '</button></div>';
+      '</div></div>';
     if (!provider()) {
       card.innerHTML = head + '<div class="sp-body"><div class="sp-state">' + tr('الموردين غير مربوطين بعد') + '</div></div>' +
         '<div class="modal-footer"><button class="btn btn-secondary" data-close>' + tr('إغلاق') + '</button></div>';
@@ -150,7 +150,7 @@
       ? '<span class="sp-disc">' + tr('خصم عن سعر الجمهور') + ' ' + row.discountPct + '%</span>' : '';
     var pub = Number.isFinite(row.publicPrice) ? '<span class="sp-pub">' + row.publicPrice + '</span>' : '';
     var price = Number.isFinite(row.packPrice)
-      ? '<div class="sp-p">' + row.packPrice + ' <span style="font:11px var(--font);color:var(--text-muted)">ج.م</span></div>' : '';
+      ? '<div class="sp-p">' + Number(row.packPrice).toFixed(2) + ' <span style="font:11px var(--font);color:var(--text-muted)">ج.م</span></div>' : '';
     return '<div class="sp-row' + (row.best ? ' best' : '') + (row.eligible ? '' : ' off') + '" data-key="' + esc(row.key) + '">' +
       '<div><div class="sp-name">' + esc(row.productName) + '</div><div class="sp-meta">' + meta.join('') + '</div></div>' +
       '<div class="sp-price"><div>' + pub + disc + '</div>' + price + '</div>' +
