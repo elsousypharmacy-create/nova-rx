@@ -1,0 +1,49 @@
+name: Aumet search probe
+
+# Runs on a push to "run/aumet-search". Logs in to Aumet with the pharmacy's own account (repo
+# secrets), types one drug name into the site's search and records which request the site sends.
+# Commits the small result (names and non-identifying values only) to the same branch.
+on:
+  push:
+    branches: ['run/aumet-search']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aumet-search-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Probe
+        env:
+          AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
+          AUMET_PASSWORD: ${{ secrets.AUMET_PASSWORD }}
+        run: |
+          mkdir -p out
+          node tools/discovery/aumet-search-probe.cjs out
+          if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}|bearer [a-z0-9]' out/*; then echo "::error::token-like text"; rm -rf out; exit 1; fi
+          if [ -n "$AUMET_USERNAME" ] && grep -Fqi -- "$AUMET_USERNAME" out/*; then echo "::error::login name in output"; rm -rf out; exit 1; fi
+          if [ -n "$AUMET_PASSWORD" ] && grep -Fq -- "$AUMET_PASSWORD" out/*; then echo "::error::password in output"; rm -rf out; exit 1; fi
+      - name: Commit result
+        run: |
+          set -euo pipefail
+          mkdir -p docs/procurement/discovery/captures
+          cp out/aumet-search-probe.json "docs/procurement/discovery/captures/${GITHUB_RUN_ID}-aumet-search-probe.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/procurement/discovery/captures
+          git commit -m "discovery: Aumet search probe (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:run/aumet-search
