@@ -77,6 +77,11 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Worker secrets come from repo secrets `NOVA_API_PIN` (>= 12 chars) and `NOVA_INGEST_SECRET` (>= 16): run workflow "Set Worker supplier secrets" (confirm text `SET nova-rx-preview secrets`). The supplier logins + `NOVA_INGEST_SECRET` feed (the Worker URL is built into the workflow, no secret needed) "Supplier sessions" (real-browser login every 10 h).
 - First PIN use: the app asks once and keeps it in that browser (`novaApiPin`).
 
+## Supplier lookup status (2026-11-08 evening)
+- WORKING live for PharmaOverseas (real prices in 1.5-2 s). Owner's repo secrets exist: NOVA_API_PIN, NOVA_INGEST_SECRET (plus supplier logins). Aumet: not working yet (no search parameter), and its 10-hourly login is the only risk to the pharmacy's other Aumet sessions (logout-others is forced false).
+- Never reuse supplier passwords as PIN/secrets. Owner types secrets in GitHub himself; Claude cannot read them (a run that sees them empty means they are missing or in the wrong place).
+- Check live: push to branch `run/supplier-live-check` (workflow prints counts only).
+
 ## Reply rules (owner said replies felt not smooth)
 - Short, Egyptian Arabic, outcome first, ONE question at most, no jargon, no issue numbers unless asked.
 - Show screenshots of real results; say what was tested and what was not.
