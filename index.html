@@ -4362,5 +4362,24 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .nl-cond .chips-more{max-height:180px;overflow-y:auto;overscroll-behavior:contain}
 }
 </style>
+<style id="NOVA_SALE_POLISH">
+/* sale screen polish: calmer palette, wider invoice, usable portrait, toast out of the way */
+#nova-wa-nav{display:none!important}
+#novaAiLaunch{background:#203d4c!important;border:1px solid #47758b!important;color:#e3f5ff!important;box-shadow:0 6px 22px #0006!important}
+#novaAiLaunch:hover{background:#2b5165!important}
+.toast-container{top:auto!important;bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center}
+@media(min-width:900px) and (orientation:landscape){
+html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width:none!important}
+html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}
+}
+@media(orientation:portrait) and (min-width:700px){
+html body .pos-root{flex-direction:column!important;height:auto!important;min-height:calc(100dvh - 104px)!important;overflow:visible!important}
+html body .main-workspace,html body .customer-sidebar{flex:0 0 auto!important;width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important}
+html body .main-workspace{border-right:0!important}
+html body .customer-sidebar{min-height:0!important}
+html body .table-container{min-height:46dvh!important;overflow-x:auto}
+html body .invoice-footer{position:sticky;bottom:0;z-index:20}
+}
+</style><script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script>
 </body>
 </html>

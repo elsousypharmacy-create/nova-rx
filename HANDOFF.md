@@ -353,3 +353,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint — no condition chips (stickers20)
 - Owner: the pharmacist types faster than tapping, so the ready-made chips under «حالة المريض» were removed; only the text box stays (still sent to the AI). Artifact stickers20 sha 3ce1548c…99f9. Rollback: stickers19 (46551d2a…).
+
+## Checkpoint — sale screen polish (stickers21)
+- Appended `NOVA_SALE_POLISH` style/script before `</body>`: hides the dead WhatsApp nav link, sticker launcher in app palette, toast moved to bottom-centre, landscape customer column 21% (230–270px) so the invoice is wider, portrait (>=700px) one column with full-width search/header and sticky checkout footer, broken logo image hidden.
+- Not changed (owner decision needed): bilingual product names, per-line discount column, +/- quantity order.
+- Artifact stickers21 sha 1c2a77c7…e3e7. Rollback: stickers20 (3ce1548c…).
