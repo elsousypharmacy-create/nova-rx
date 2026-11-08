@@ -350,3 +350,6 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint — chip fill (stickers19)
 - Condition chips now fill the row width in the right column. Artifact stickers19 sha 46551d2a…487d. Rollback: stickers18 (9a24cd96…).
+
+## Checkpoint — no condition chips (stickers20)
+- Owner: the pharmacist types faster than tapping, so the ready-made chips under «حالة المريض» were removed; only the text box stays (still sent to the AI). Artifact stickers20 sha 3ce1548c…99f9. Rollback: stickers19 (46551d2a…).
