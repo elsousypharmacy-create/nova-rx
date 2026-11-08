@@ -73,7 +73,8 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
     await pause(2500);
     const f2 = await flags();
     const stillLogin = /log ?in|sign ?in/i.test(page.url());
-    note('after-login', { url: tpl(page.url()), stillOnLogin: stillLogin, ...f2 });
+    const otherSession = /another device|other device|logged in (on|from)|already logged|logout others|log out other|جهاز آخر|جهاز اخر|مسجل الدخول|تسجيل الخروج من/i.test(await page.evaluate(() => document.body.innerText.slice(0, 4000)).catch(() => ''));
+    note('after-login', { url: tpl(page.url()), stillOnLogin: stillLogin, otherSessionPrompt: otherSession, ...f2 });
     if (f2.captchaFrame || f2.blockWords) throw new Error('verification step after login; stopping');
     if (stillLogin) throw new Error('login not confirmed');
 
