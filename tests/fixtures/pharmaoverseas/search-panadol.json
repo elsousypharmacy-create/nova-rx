@@ -1,0 +1,73 @@
+{
+  "type": "productCategorySearchPageWsDTO",
+  "freeTextSearch": "panadol",
+  "pagination": {
+    "currentPage": 0,
+    "pageSize": 24,
+    "sort": "relevance",
+    "totalPages": 1,
+    "totalResults": 3
+  },
+  "products": [
+    {
+      "code": "000000000000010101",
+      "configurable": false,
+      "multidimensional": false,
+      "name": "Panadol <em class=\"search-results-highlight\">Extra</em> 24 Tab",
+      "price": {
+        "currencyIso": "EGP",
+        "formattedValue": "EGP45.000",
+        "priceType": "BUY",
+        "value": 45
+      },
+      "publicPrice": {
+        "currencyIso": "EGP",
+        "formattedValue": "EGP54.000",
+        "priceType": "BUY",
+        "value": 54
+      },
+      "priceRange": {},
+      "stock": { "isValueRounded": false, "stockLevelStatus": "inStock" },
+      "purchasable": true
+    },
+    {
+      "code": "000000000000010102",
+      "configurable": false,
+      "multidimensional": false,
+      "name": "Panadol <em class=\"search-results-highlight\">Cold</em> and Flu 20 Tab",
+      "price": {
+        "currencyIso": "EGP",
+        "formattedValue": "EGP30.000",
+        "priceType": "BUY",
+        "value": 30
+      },
+      "priceRange": {},
+      "stock": { "isValueRounded": false, "stockLevelStatus": "outOfStock" },
+      "purchasable": false
+    },
+    {
+      "code": "000000000000010103",
+      "configurable": false,
+      "multidimensional": false,
+      "name": "Panadol <em class=\"search-results-highlight\">Joint</em> 18 Tab",
+      "price": {
+        "currencyIso": "EGP",
+        "formattedValue": "EGP40.000",
+        "priceType": "BUY",
+        "value": 40
+      },
+      "publicPrice": {
+        "currencyIso": "EGP",
+        "formattedValue": "EGP48.000",
+        "priceType": "BUY",
+        "value": 48
+      },
+      "priceRange": {},
+      "stock": { "isValueRounded": false, "stockLevelStatus": "lowStock" },
+      "purchasable": true
+    }
+  ],
+  "sorts": [
+    { "code": "relevance", "name": "Relevance", "selected": true }
+  ]
+}

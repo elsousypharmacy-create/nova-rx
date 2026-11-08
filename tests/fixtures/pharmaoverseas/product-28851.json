@@ -1,0 +1,50 @@
+{
+  "availableForPickup": false,
+  "baseOptions": [],
+  "categories": [
+    {
+      "code": "Pain_Relief",
+      "image": { "url": "/medias/cat-pain.jpg" },
+      "name": "Pain Relief",
+      "url": "/c/Pain_Relief"
+    }
+  ],
+  "code": "000000000000028851",
+  "configurable": false,
+  "description": "Synthetic fixture based on the sanitized 2026-11-08 capture.",
+  "images": [
+    {
+      "altText": "Panadol Megraine",
+      "format": "product",
+      "imageType": "PRIMARY",
+      "url": "/medias/28851.jpg"
+    }
+  ],
+  "manufacturer": "Synthetic Pharma",
+  "multidimensional": false,
+  "name": "Panadol <em class=\"search-results-highlight\">Megraine</em> 3 Tab",
+  "numberOfReviews": 0,
+  "pharmacyDiscount": {
+    "absolute": false,
+    "appliedValue": 12.75,
+    "code": "x",
+    "value": 25
+  },
+  "price": {
+    "currencyIso": "EGP",
+    "formattedValue": "EGP33.750",
+    "priceType": "BUY",
+    "value": 33.75
+  },
+  "priceRange": {},
+  "publicPrice": {
+    "currencyIso": "EGP",
+    "formattedValue": "EGP51.000",
+    "priceType": "BUY",
+    "value": 51
+  },
+  "purchasable": true,
+  "stock": { "isValueRounded": false, "stockLevelStatus": "inStock" },
+  "summary": "Synthetic fixture.",
+  "url": "/p/000000000000028851"
+}
