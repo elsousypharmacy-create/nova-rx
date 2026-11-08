@@ -1,5 +1,20 @@
 # BUILD_REPORT — NOVA Rx
 
+## Procurement 01 (2026-11-08): offline HAR sanitizer + discovery report skeleton — done
+
+- Task (`/tmp/kimi-task.txt`, epic #53): value-stripping HAR sanitizer so the owner can safely share browser captures (#68 PharmaOverseas, #63 Aumet). No network, no dependencies, no workflow/package.json changes.
+- Changed files (all new):
+  - `tools/discovery/sanitize-har.mjs`: `node tools/discovery/sanitize-har.mjs input.har > out.json`. Keeps only xhr/fetch or JSON-MIME entries; groups by method + host + path template (all-digit ≥8 chars, UUID, or hex ≥16 segments → `{id}`); per endpoint emits sorted query/header/body field **names** (JSON and urlencoded bodies, nested `a.b.c`), status codes, a response field-name→type tree (arrays described by first element), allowlist-only `sampleValues` (numbers or strings ≤ 40 chars), and `count`. Never emits header/cookie/query/body values or any value under a key matching the secret regex (allowlisted `token_type`/`expires_in` excepted; secret-keyed subtrees are not descended into).
+  - `tools/discovery/report-skeleton.mjs`: `node tools/discovery/report-skeleton.mjs out.json "Supplier"` prints Markdown with Summary, Endpoints (rows marked `Observed`), Login flow, Response field map, Pagination, Price fields, Stock fields, Cart, Open questions.
+  - `tests/unit/procurement-discovery.check.mjs`: synthetic HAR (form + JSON password logins, `access_token`/`refresh_token` response, `Authorization: Bearer` + `Cookie` headers, `?token=` query, `email`/`phone` response fields, PNG + CSS entries) + CLI end-to-end + 5 MB performance check.
+- Tests actually run:
+  - `node tests/unit/procurement-discovery.check.mjs` — **PASS** (`procurement-discovery checks passed`): no secret value appears in `JSON.stringify(output)`; names `access_token`/`Authorization`/`username`/`password` do; `/occ/v2/pharma/products/000000000000028851` → `{id}`; PNG/CSS dropped (endpointCount 2); `expires_in: 3600` kept; ≥5 MB synthetic HAR sanitized in < 2 s (measured in-test); both CLIs exit 0 and match the library output.
+  - `node tests/unit/procurement-contract.check.mjs` — **not present** in repo (task: "if present"); skipped.
+  - `npm run check` — PASS (pre-existing sticker/gemini checks, unrelated regression sweep).
+- Limitations: sanitizer assumes standard HAR (`log.entries`); non-JSON response bodies contribute no field tree; arrays described by their first element only (heterogeneous arrays under-described); sample values keep first observation per key. Not tested against a real supplier capture (none shared yet).
+- Remaining work: feed a real owner-supplied capture through the pipeline when #68/#63 arrive; `worker/procurement/` contract code does not exist yet, so the contract check referenced by the task is still to be created under its own issue.
+- Changes uncommitted; per instructions, no self-commit.
+
 ## UX batch 3 (2026-11-07): tablet/desktop polish — toasts, Arabic totals, touch targets, text floor, walk-in shortcut
 
 - Found by a UX evaluation of `main` (screenshots + measurements, emulator, demo data): three "Added: …" toasts piled up over the totals bar and CHECKOUT; the totals area stayed English in Arabic mode (CHECKOUT, NET TOTAL, SAR, items); 37 controls under 40px (tabs 37, invoice buttons 34, quantity 36); 27 texts at 10-11px; an extra customer step on every sale.
