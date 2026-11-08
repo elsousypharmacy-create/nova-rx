@@ -3586,7 +3586,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'حالات تانية ▾':'More conditions ▾','أقل ▴':'Less ▴','حساسية':'Allergies','أمراض مزمنة':'Chronic conditions','حالات خاصة':'Special cases','أسبرين ومسكنات':'Aspirin & painkillers','سلفا':'Sulfa','مضاد حيوي تاني':'Other antibiotic','ربو':'Asthma','غدة درقية':'Thyroid','صرع':'Epilepsy','جلوكوما':'Glaucoma','سيولة دم':'Blood thinner','مناعة ضعيفة':'Weak immunity','علاج كيماوي':'Chemotherapy','كبير سن':'Elderly','قبل عملية':'Before surgery','بيسوق':'Drives','مش بيبلع أقراص':'Cannot swallow pills','أدوية مزمنة':'Chronic medicines',
  'مثال: 4':'e.g. 4','مش عارف الوزن':'Weight unknown','بانتظار بيانات العميل':'Waiting for customer data','تحذير — المس':'Warning — tap','اطلعت':'Reviewed',
  'مين العميل؟':'Who is the customer?','بالغ':'Adult','طفل':'Child','حامل':'Pregnant','مرضعة':'Breastfeeding',
-  'حالة المريض':'Patient condition','اختياري — للذكاء الاصطناعي':'Optional — for the AI',
+  'حالة المريض':'Patient condition','اختياري — للذكاء الاصطناعي':'Optional — for the AI','اختياري. الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.':'Optional. The AI takes it into account for doses and warnings, and refreshes the instructions by itself after you stop typing.','معلومة':'Info',
   'مثال: التهاب حلق، حساسية بنسلين، ضغط مرتفع…':'Example: sore throat, penicillin allergy, high blood pressure…',
   'حساسية بنسلين':'Penicillin allergy','ضغط':'Blood pressure','سكر':'Diabetes','قلب':'Heart','كلى':'Kidney','كبد':'Liver','معدة':'Stomach',
   'الجرعات اقتراحات من الذكاء الاصطناعي — راجعها قبل الطباعة':'Doses are AI suggestions — review them before printing',
@@ -4130,7 +4130,7 @@ const cond=document.createElement('div');cond.className='nl-cond';
 const CHIPS=[['حساسية بنسلين','حساسية بنسلين'],['ضغط','ضغط مرتفع'],['سكر','سكر'],['قلب','مشاكل قلب'],['كلى','مشاكل كلى'],['كبد','مشاكل كبد'],['معدة','قرحة معدة']];
 const MORE=[['حساسية',[['أسبرين ومسكنات','حساسية أسبرين ومسكنات'],['سلفا','حساسية سلفا'],['مضاد حيوي تاني','حساسية مضاد حيوي']]],['أمراض مزمنة',[['ربو','ربو'],['غدة درقية','مشاكل غدة درقية'],['صرع','صرع'],['جلوكوما','جلوكوما (مياه زرقا)'],['سيولة دم','بياخد سيولة دم'],['مناعة ضعيفة','مناعة ضعيفة'],['علاج كيماوي','علاج كيماوي']]],['حالات خاصة',[['كبير سن','كبير سن (+65)'],['قبل عملية','قبل عملية'],['بيسوق','بيسوق ومحتاج تركيز'],['مش بيبلع أقراص','مش بيبلع الأقراص'],['أدوية مزمنة','بياخد أدوية مزمنة']]]];
 const chipBtn=c=>'<button type="button" data-p="'+c[1]+'">'+c[0]+'</button>';
-cond.innerHTML='<div class="lbl"><span>حالة المريض</span><em>اختياري — للذكاء الاصطناعي</em></div><textarea id="nlCondition" rows="3" maxlength="400" autocomplete="off" placeholder="مثال: التهاب حلق، حساسية بنسلين، ضغط مرتفع…"></textarea><div class="hint">الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.</div>';
+cond.innerHTML='<div class="lbl"><span>حالة المريض</span><button type="button" class="nl-info" aria-label="معلومة" aria-expanded="false">i</button></div><textarea id="nlCondition" rows="3" maxlength="400" autocomplete="off" placeholder="مثال: التهاب حلق، حساسية بنسلين، ضغط مرتفع…"></textarea><div class="nl-infotip" hidden>اختياري. الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.</div>';
 wrap.insertBefore(cond,grid);
 const ta=cond.querySelector('textarea');
 const condParts=()=>ta.value.split(/[،,]/).map(x=>x.trim()).filter(Boolean);
@@ -4138,7 +4138,7 @@ const chipSync=()=>{cond.classList.toggle('has-text',!!ta.value.trim());const ps
 const condChanged=delay=>{state.patient.condition=ta.value.trim();invalidateApproval();persist();chipSync();clearTimeout(autoTimer);autoTimer=setTimeout(runAuto,delay)};
 cond.addEventListener('input',e=>{e.stopPropagation();condChanged(1500)});
 cond.addEventListener('change',e=>e.stopPropagation());
-cond.addEventListener('click',e=>{const tg=e.target.closest('.chip-more');if(tg){const mm=cond.querySelector('.chips-more');mm.hidden=!mm.hidden;tg.setAttribute('aria-expanded',String(!mm.hidden));tg.textContent=mm.hidden?'حالات تانية ▾':'أقل ▴';return}const b=e.target.closest('button[data-p]');if(!b)return;const ph=b.dataset.p,ps=condParts();ta.value=(ps.includes(ph)?ps.filter(x=>x!==ph):ps.concat(ph)).join('، ');condChanged(900)});
+document.addEventListener('pointerdown',e=>{const tp=cond.querySelector('.nl-infotip');if(tp&&!tp.hidden&&!e.target.closest('.nl-info')&&!e.target.closest('.nl-infotip')){tp.hidden=true;const ib=cond.querySelector('.nl-info');if(ib)ib.setAttribute('aria-expanded','false')}});cond.addEventListener('click',e=>{const ib=e.target.closest('.nl-info');if(ib){const tp=cond.querySelector('.nl-infotip');tp.hidden=!tp.hidden;ib.setAttribute('aria-expanded',String(!tp.hidden));return}const tg=e.target.closest('.chip-more');if(tg){const mm=cond.querySelector('.chips-more');mm.hidden=!mm.hidden;tg.setAttribute('aria-expanded',String(!mm.hidden));tg.textContent=mm.hidden?'حالات تانية ▾':'أقل ▴';return}const b=e.target.closest('button[data-p]');if(!b)return;const ph=b.dataset.p,ps=condParts();ta.value=(ps.includes(ph)?ps.filter(x=>x!==ph):ps.concat(ph)).join('، ');condChanged(900)});
 let child=false;
 function refresh(){chipSync();wunk.setAttribute('aria-pressed',String(!!state.patient.weightUnknown));wInput.disabled=!!state.patient.weightUnknown;const P=state.patient;let q='';if(P.pregnancy==='yes')q='preg';else if(P.breastfeeding==='yes')q='nurse';else if(P.pregnancy==='no'&&P.breastfeeding==='no')q=child?'child':'adult';else child=false;if(q==='adult'||q==='preg'||q==='nurse')child=false;if(q)box.dataset.q=q;else delete box.dataset.q;box.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===q)))}
 function setRadio(name,val){const el=panel.querySelector('input[name="'+name+'"][value="'+val+'"]');if(el)el.click()}
@@ -4257,6 +4257,12 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .nl-cond .chips button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #2a3037;background:transparent;color:#a4adb7;font:500 13px var(--font,inherit);cursor:pointer}
 #novaLabelsPanel .nl-cond .chips button.on{border-color:#76b8d5;color:#c9e8f5;background:rgba(118,184,213,.1)}
 #novaLabelsPanel .nl-cond .hint{margin-top:8px;font-size:12px;line-height:1.5;color:#808b96}
+#novaLabelsPanel .nl-cond .lbl{justify-content:flex-start;align-items:center;gap:8px}
+#novaLabelsPanel .nl-cond .nl-info{position:relative;flex:none;width:24px;height:24px;border-radius:50%;border:1px solid #3a4651;background:transparent;color:#76b8d5;font:700 13px/1 Georgia,serif;font-style:italic;cursor:pointer;padding:0}
+#novaLabelsPanel .nl-cond .nl-info::after{content:'';position:absolute;inset:-10px}
+#novaLabelsPanel .nl-cond .nl-info[aria-expanded="true"]{background:rgba(118,184,213,.14);border-color:#76b8d5}
+#novaLabelsPanel .nl-cond .nl-infotip{margin-top:6px;padding:8px 10px;border-radius:8px;background:#1b2026;border:1px solid #2a3037;font-size:12.5px;line-height:1.6;color:#a4adb7}
+#novaLabelsPanel .nl-cond .nl-infotip[hidden]{display:none}
 /* medicines: a table like the POS table */
 #novaLabelsPanel .med-panel{background:transparent;border:0;box-shadow:none}
 #novaLabelsPanel .med-tabs,#novaLabelsPanel .med-count{display:none}
