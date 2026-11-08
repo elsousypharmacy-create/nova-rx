@@ -48,7 +48,8 @@ jobs:
         run: |
           set -euo pipefail
           test "$ISSUE_NUMBER" -ge 1 || exit 1
-          gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
+          LABELS="$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name')"
+          printf '%s\n' "$LABELS" | grep -Fxq kimi-ready || { echo "::error::Issue lacks kimi-ready approval"; exit 1; }
           test -f KIMI_CONTEXT.md || { echo '::error::Missing KIMI_CONTEXT.md'; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
