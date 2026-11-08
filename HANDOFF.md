@@ -327,3 +327,13 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Tests: tests/unit/gemini-batch.check.mjs (new), gemini-label-service.check.mjs, worker-gemini-route.check.mjs <artifact> (vm run of the real Worker file), tests/sticker-list-edit.mjs (rewritten: table, one request, condition, error), ux-batch1/2/3, issue-4-labels-panel. `sale-sticker-modal` still stops at the print step in the sandbox (font offline).
 - Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers15.js (base = live stickers14). NOT tested: real Gemini (no key in sandbox), real printer, real tablet.
 - Next exact step: owner tries a multi-medicine invoice with the real Gemini and reports the row messages; if a key error shows, replace the GEMINI_API_KEY secret.
+
+
+## Checkpoint — sticker screen polish: safe frame, child flow, warning acknowledgment (Claude Code, 2026-11-08)
+- Safe frame (>=700px): the window keeps >=32px left/right, >=24px top, >=28px bottom (plus env(safe-area-inset-*)), fills the screen height (max 940px) instead of a fixed 720px. Measured on 1024x768, 1080x810, 1180x820, 1194x834, 1280x800, 1366x1024, 834x1194, 820x1180.
+- Two columns from 900px (was 1100px): 1024x768 / 1080x810 tablets no longer fall back to the stacked layout that hid the table.
+- Child: age and weight (both required) appear right under the 4 buttons, start empty (no leftover adult 30), the AI waits for them; "weight unknown" button lets it run with a server-side prompt rule (approximate dose by age + mandatory warning). Table stays quiet (dashes, "waiting for customer data") until there is data.
+- Warnings: a red-warning row must be opened and closed once ("reviewed") before printing; changed warnings must be re-read.
+- Smaller things: error code shown small/dim, retry button only for total failures, hint hidden after typing, preview toggle is a link, age field no spinner/example 30.
+- Tests: sticker-list-edit now 86 checks (child flow, warning gate, 7 viewports frame/table/print button), gemini-batch (+weightUnknown), worker-gemini-route on the artifact, ux-batch1/2/3, issue-4. Artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers16.js (base stickers15).
+- NOT tested: real Gemini, real tablet/printer, iOS safe-area behaviour on a real device (emulated paddings only).
