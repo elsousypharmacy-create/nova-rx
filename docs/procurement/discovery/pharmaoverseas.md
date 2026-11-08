@@ -18,3 +18,21 @@ Builds on PR #25. Method: Playwright, **not logged in**, 3 page loads at human p
 
 ## Unknown (needs logged-in capture)
 Meaning of `pharmacyDiscount` fields vs. the displayed Pharmacy Price; numeric stock; cart endpoints; token lifetime. Run the "Supplier discovery" workflow after the owner adds `PO_USERNAME` / `PO_PASSWORD` secrets.
+
+## Logged in (2026-11-08, run 42450090854, pharmacy's own account, no cart)
+Capture: `captures/pharmaoverseas-42450090854.json` (sanitized on the GitHub runner; raw HAR deleted there; checked for emails, ids and tokens: none).
+
+| Finding | Evidence |
+|---|---|
+| Login = OAuth 2 **authorization code + PKCE**: `GET /authorizationserver/csrf`, login form on the storefront, then `POST /authorizationserver/oauth/token` with `client_id, code, code_verifier, grant_type, redirect_uri`. | Observed |
+| Token response: `access_token`, `refresh_token`, `token_type: Bearer`, `expires_in: 43199` (12 h). | Observed |
+| **Search returns the pharmacy price per product** (`products[].price.value`, e.g. 33.75 for Panadol Megraine): one search page prices up to `pageSize` products. | Observed |
+| Detail: `price` 33.75 (Pharmacy Price), `publicPrice` 51, `pharmacyDiscount` {`value` 25, `appliedValue` 12.75, `absolute`, `code`}, `stock.stockLevelStatus` inStock, `purchasable`. | Observed |
+| Stock: status only (`inStock`…), **no quantity**. | Observed |
+| Cart: `GET /users/current/carts`, `GET /users/current/carts/{id}` (add/remove not captured yet). | Observed |
+
+### Price meaning (decision for the connector)
+- `unitPrice` = `netEffectivePrice` = `price.value`: the Pharmacy Price the site shows and charges before checkout (taxes shown 0 %).
+- `publicPrice` = `publicPrice.value`.
+- `discountPct` = `1 - price/publicPrice`: **discount off the public price**, the way Egyptian pharmacies compare suppliers (33.82 % for Panadol Megraine). Computed only from those two observed fields.
+- `pharmacyDiscount` (25 % = 12.75 EGP) looks like the standard pharmacy margin; the extra 4.50 EGP (51 − 12.75 − 33.75) is the distributor's own discount. Kept in `raw`; not used for ranking until confirmed on more products.
