@@ -377,3 +377,6 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - English leftovers in the payment window are translated (إجمالي المستحق / بالضبط / إلغاء (Esc) / عميل عابر) with matching EN entries; verified AR and EN modes.
 - Tests updated: ux-batch3 (2 checks + touch), issue-4 L2. Stickers already open automatically after payment (`nova:invoice-completed`, existing feature), so no extra receipt button was added.
 - Artifact stickers25. Rollback: stickers24 (16a99d35…).
+
+## Checkpoint — project skill refreshed (docs only)
+- `docs/skills/nova/SKILL.md` updated to the state after stickers25 (live artifact + rollback chain, one-step checkout, splash, head-level layout rule, auto-open stickers, pending list). Rule added: update the skill and HANDOFF in the same PR as each deploy.
