@@ -13,7 +13,7 @@ async function send(supplierId, session, expiresAt) {
   const res = await fetch(`${WORKER}/api/suppliers/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Ingest-Secret': INGEST },
-    body: JSON.stringify({ supplierId, session, expiresAt }),
+    body: JSON.stringify({ supplierId, session, expiresAt: new Date(expiresAt).toISOString() }),
   });
   return res.status;
 }

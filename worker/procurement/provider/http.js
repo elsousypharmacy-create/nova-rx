@@ -6,6 +6,7 @@
 // Dependency-free ES module; runs in Cloudflare Workers and Node 22.
 
 const SEARCHES_PER_MINUTE = 40;
+const MAX_FAILED_AUTH_PER_MINUTE = 8;
 const RATE_WINDOW_MS = 60000;
 
 const ROUTES = new Set([
@@ -63,9 +64,26 @@ export function createSupplierApi({ hub, store, env = {} }) {
     return Math.max(1, Math.ceil((windowStart + RATE_WINDOW_MS - nowMs) / 1000));
   }
 
+  // Wrong-secret attempts are limited so a PIN cannot be guessed by trying many values.
+  let failWindowStart = 0;
+  let failCount = 0;
+  function tooManyFailures(nowMs) {
+    if (nowMs - failWindowStart >= RATE_WINDOW_MS) {
+      failWindowStart = nowMs;
+      failCount = 0;
+    }
+    return failCount >= MAX_FAILED_AUTH_PER_MINUTE;
+  }
+  function lockedResponse(nowMs) {
+    const retry = Math.max(1, Math.ceil((failWindowStart + RATE_WINDOW_MS - nowMs) / 1000));
+    return json({ error: 'too-many-attempts' }, 429, { 'Retry-After': String(retry) });
+  }
+
   async function requirePin(request) {
     if (!env.NOVA_API_PIN) return json({ error: 'not-configured' }, 503);
+    if (tooManyFailures(Date.now())) return lockedResponse(Date.now());
     if (!(await secretsEqual(request.headers.get('X-Nova-Pin'), env.NOVA_API_PIN))) {
+      failCount += 1;
       return json({ error: 'unauthorized' }, 401);
     }
     return null;
@@ -79,7 +97,9 @@ export function createSupplierApi({ hub, store, env = {} }) {
     if (path === '/api/suppliers/session') {
       if (request.method !== 'POST') return json({ error: 'method-not-allowed' }, 405);
       if (!env.NOVA_INGEST_SECRET) return json({ error: 'not-configured' }, 503);
+      if (tooManyFailures(Date.now())) return lockedResponse(Date.now());
       if (!(await secretsEqual(request.headers.get('X-Ingest-Secret'), env.NOVA_INGEST_SECRET))) {
+        failCount += 1;
         return json({ error: 'unauthorized' }, 401);
       }
       const body = await readJson(request);

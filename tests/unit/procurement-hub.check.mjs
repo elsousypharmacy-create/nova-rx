@@ -352,4 +352,17 @@ async function saveSession(store, id, session, ttlMs = 10 * HOUR) {
   }
 }
 
+// Wrong PIN / ingest secret attempts are limited (review fix): 8 failures per minute, then 429.
+{
+  const stubHub = { status: async () => [], search: async () => ({}) };
+  const lockApi = createSupplierApi({ hub: stubHub, store: { save: async () => {} }, env: { NOVA_API_PIN: 'right-pin-123456', NOVA_INGEST_SECRET: 'ingest-secret-123456' } });
+  const call = (headers) => lockApi(new Request('https://worker.test/api/suppliers/status', { headers }));
+  for (let i = 0; i < 8; i += 1) assert.equal((await call({ 'X-Nova-Pin': `wrong-${i}` })).status, 401);
+  const locked = await call({ 'X-Nova-Pin': 'right-pin-123456' });
+  assert.equal(locked.status, 429, 'even the right PIN is refused while locked');
+  assert.ok(Number(locked.headers.get('Retry-After')) >= 1);
+  const ingestLocked = await lockApi(new Request('https://worker.test/api/suppliers/session', { method: 'POST', headers: { 'X-Ingest-Secret': 'ingest-secret-123456' } }));
+  assert.equal(ingestLocked.status, 429, 'ingest shares the same lock');
+}
+
 process.stdout.write('procurement-hub checks passed\n');
