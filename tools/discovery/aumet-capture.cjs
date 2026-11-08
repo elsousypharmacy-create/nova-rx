@@ -54,7 +54,17 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
     if (!AUMET_USERNAME || !AUMET_PASSWORD) throw new Error('missing AUMET_USERNAME / AUMET_PASSWORD secrets');
     if (!(await page.$(passSel))) throw new Error('no password field found on the login page');
 
-    // Stage B: log in
+    // Stage B: log in. Never ask Aumet to end the pharmacy's other sessions.
+    await page.route('**/user/spa-login', async (route) => {
+      const req = route.request();
+      let data = null;
+      try { data = JSON.parse(req.postData() || 'null'); } catch { data = null; }
+      if (data && typeof data === 'object' && 'confirm_logout_others' in data) {
+        data.confirm_logout_others = false;
+        return route.continue({ postData: JSON.stringify(data) });
+      }
+      return route.continue();
+    });
     await page.fill(emailSel, AUMET_USERNAME);
     await page.fill(passSel, AUMET_PASSWORD);
     await pause(700);

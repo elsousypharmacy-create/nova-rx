@@ -1,12 +1,12 @@
 name: Aumet discovery (logged in)
 
-# Runs on a push to the branch "discovery/aumet". Logs in with the pharmacy's
+# Runs on a push to the branch "run/aumet-discovery". Logs in with the pharmacy's
 # own account from repository secrets, searches one drug and opens one product,
 # sanitizes the capture on the runner, deletes the raw file, and commits ONLY
 # the sanitized summary to the same branch. No cart, no orders.
 on:
   push:
-    branches: ['discovery/aumet']
+    branches: ['run/aumet-discovery']
   workflow_dispatch:
 
 permissions:
@@ -64,4 +64,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/procurement/discovery/captures
           git commit -m "discovery: sanitized Aumet capture (run ${GITHUB_RUN_ID})"
-          git push origin HEAD:discovery/aumet
+          git push origin HEAD:run/aumet-discovery
