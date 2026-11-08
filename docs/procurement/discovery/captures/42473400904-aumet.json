@@ -1,0 +1,767 @@
+{
+  "format": "nova-rx-discovery/1",
+  "endpointCount": 11,
+  "endpoints": [
+    {
+      "method": "GET",
+      "host": "aumet.com",
+      "pathTemplate": "/wp-admin/admin-ajax.php",
+      "queryParamNames": [
+        "action"
+      ],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cookie",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-requested-with"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "boolean",
+        "data": {
+          "pbid": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "POST",
+      "host": "bam.nr-data.net",
+      "pathTemplate": "/browser/connect/2/{id}",
+      "queryParamNames": [
+        "a",
+        "s",
+        "v"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Content-Length",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "content-type",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "config": {
+          "err": "number",
+          "ins": "number",
+          "spa": "number",
+          "sr": "number",
+          "srs": "number",
+          "st": "number",
+          "sts": "number",
+          "log": "number",
+          "logapi": "number"
+        },
+        "app": {
+          "agents": [
+            {
+              "entityGuid": "string"
+            }
+          ],
+          "igp": "string",
+          "nrServerTime": "number"
+        }
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "Accept",
+        "Accept-Language",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "0": {
+          "targetBanner": "number",
+          "condition": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/audit-table/PcygQuep.json",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "Accept",
+        "Accept-Language",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "cookies": {
+          "VISITOR_PRIVACY_METADATA": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "pll_language": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "cookieyes-*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "user_source": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "VISITOR_INFO1_LIVE": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "ytidb::LAST_RESULT_ENTRY_KEY": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "epvc_post_views": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "YSC": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_ga_*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_ga": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-YNID": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-ROLLOUT_TOKEN": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_gcl_au": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_fbp": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "test_cookie": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-YEC": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          }
+        },
+        "cky_audit_table_empty_text": "string",
+        "cky_audit_table_header_id": "string",
+        "cky_audit_table_header_duration": "string",
+        "cky_audit_table_header_description": "string",
+        "cky_preference_necessary_title": "string",
+        "cky_preference_necessary_description": "string",
+        "cky_preference_functional_title": "string",
+        "cky_preference_functional_description": "string",
+        "cky_preference_analytics_title": "string",
+        "cky_preference_analytics_description": "string",
+        "cky_preference_performance_title": "string",
+        "cky_preference_performance_description": "string",
+        "cky_preference_advertisement_title": "string",
+        "cky_preference_advertisement_description": "string",
+        "cky_preference_other_title": "string",
+        "cky_preference_other_description": "string"
+      },
+      "sampleValues": {},
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/config/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "Accept",
+        "Accept-Language",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "reloadOnAccept": "boolean",
+        "dataShortCodes": [
+          {
+            "key": "string",
+            "content": {
+              "button": "string"
+            },
+            "uiTag": "string",
+            "type": "string",
+            "customTag": "string",
+            "attributes": {},
+            "processedHTML": "string"
+          }
+        ],
+        "iabDataShortCodes": "array",
+        "activeLaw": "string",
+        "showAuditTable": "boolean",
+        "showToggler": "boolean",
+        "googleACMEnabled": "boolean",
+        "readMore": {
+          "status": "boolean",
+          "styles": {
+            "color": "string",
+            "border-color": "string",
+            "background-color": "string"
+          },
+          "type": "string"
+        },
+        "togglerSwitch": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "togglerIABSwitch": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "ccpaSwitch": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "placeHolder": {
+          "status": "boolean",
+          "styles": {
+            "border-color": "string",
+            "background-color": "string",
+            "color": "string"
+          }
+        },
+        "togglerIABTab": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "html": "string",
+        "css": "string",
+        "defaultLanguage": "string",
+        "bannerType": "string",
+        "respectGPC": "boolean",
+        "iabEnabled": "boolean",
+        "scriptExpiry": "string",
+        "manualLinkColor": "string",
+        "languageMap": {
+          "en": "string"
+        },
+        "globalLanguageMap": {
+          "en": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/translations/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "Accept",
+        "Accept-Language",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "cky_notice_title": "string",
+        "cky_notice_description": "string",
+        "cky_notice_close_label": "string",
+        "cky_readmore_text": "string",
+        "cky_readmore_privacyLink": "string",
+        "cky_revisit_title": "string",
+        "cky_video_placeholder_title": "string",
+        "cky_accept_text": "string",
+        "cky_reject_text": "string",
+        "cky_settings_text": "string",
+        "cky_preference_title": "string",
+        "cky_preference_description": "string",
+        "cky_preference_always_enabled": "string",
+        "cky_preference_save_text": "string",
+        "cky_preference_accept_text": "string",
+        "cky_preference_reject_text": "string",
+        "cky_preview_save_text": "string",
+        "cky_enable_category_label": "string",
+        "cky_disable_category_label": "string",
+        "cky_preference_close_label": "string",
+        "cky_showmore_text": "string",
+        "cky_showless_text": "string"
+      },
+      "sampleValues": {},
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "host": "ep1.adtrafficquality.google",
+      "pathTemplate": "/getconfig/sodar",
+      "queryParamNames": [
+        "sjk",
+        "st",
+        "sv",
+        "tid",
+        "tv"
+      ],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "sodar_query_id": "string",
+        "injector_basename": "string",
+        "bg_hash_basename": "string",
+        "bg_binary": "string",
+        "rc_enable": "string",
+        "bg_snapshot_delay_ms": "string",
+        "is_gen_204": "string"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/config",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-NewRelic-ID",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "newrelic",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "traceparent",
+        "tracestate",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "general": {
+          "huawei_app_gallery_url": "string",
+          "google_play_url": "string",
+          "apple_store_url": "string",
+          "low_stock_limit": "number"
+        }
+      },
+      "sampleValues": {
+        "low_stock_limit": 100
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/countries",
+      "queryParamNames": [
+        "is_registered"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-NewRelic-ID",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "newrelic",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "traceparent",
+        "tracestate",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "id": "number",
+            "country_name": "string",
+            "country_code": "string",
+            "prefix": "string",
+            "mobile_number_placeholder": "string",
+            "language_id": "number",
+            "currency_id": {
+              "id": "number",
+              "currency_name": "string",
+              "short_name": "string",
+              "symbol": "string",
+              "exchange_rate": "string"
+            },
+            "show_otp": "boolean",
+            "device_limitation_otp": "boolean",
+            "show_saved_amount": "number",
+            "is_show_notifications_promotions_tab": "boolean",
+            "contact_us": {
+              "email": "string",
+              "mobile": "string",
+              "location": "string",
+              "contact_url": "string"
+            },
+            "facebook": "string",
+            "instagram": "string",
+            "linkedin": "string",
+            "youtube": "string",
+            "show_pharmacy_doc_reminder_after_order": "boolean",
+            "show_pharmacy_location_reminder_after_order": "boolean",
+            "configuration": {
+              "show_knowlage_center": "boolean",
+              "enable_request_quotation": "boolean",
+              "screenshot_tracking_country": "boolean",
+              "display_offers_payment_method": "boolean",
+              "show_lite_version": "boolean",
+              "change_lite_version_days": "number",
+              "bulk_order_support": "boolean",
+              "can_see_request_for_quotation": "boolean"
+            },
+            "is_operating_country_in_marketplace": "boolean"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/support/reasons",
+      "queryParamNames": [
+        "is_auth"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-NewRelic-ID",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "newrelic",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "traceparent",
+        "tracestate",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "0": {
+          "id": "number",
+          "title": {
+            "ar": "string",
+            "en": "string",
+            "tr": "string"
+          },
+          "is_auth": "number",
+          "created_at": "null",
+          "updated_at": "null",
+          "slug": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 2
+    },
+    {
+      "method": "POST",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/user/spa-login",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Language",
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "Referer",
+        "User-Agent",
+        "X-NewRelic-ID",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "newrelic",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "traceparent",
+        "tracestate",
+        "x-request-source",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [
+        "confirm_logout_others",
+        "country",
+        "country.configuration",
+        "country.configuration.bulk_order_support",
+        "country.configuration.can_see_request_for_quotation",
+        "country.configuration.change_lite_version_days",
+        "country.configuration.display_offers_payment_method",
+        "country.configuration.enable_request_quotation",
+        "country.configuration.screenshot_tracking_country",
+        "country.configuration.show_knowlage_center",
+        "country.configuration.show_lite_version",
+        "country.contact_us",
+        "country.contact_us.contact_url",
+        "country.contact_us.email",
+        "country.contact_us.location",
+        "country.contact_us.mobile",
+        "country.country_code",
+        "country.country_name",
+        "country.currency_id",
+        "country.currency_id.currency_name",
+        "country.currency_id.exchange_rate",
+        "country.currency_id.id",
+        "country.currency_id.short_name",
+        "country.currency_id.symbol",
+        "country.device_limitation_otp",
+        "country.facebook",
+        "country.id",
+        "country.instagram",
+        "country.is_operating_country_in_marketplace",
+        "country.is_show_notifications_promotions_tab",
+        "country.language_id",
+        "country.linkedin",
+        "country.mobile_number_placeholder",
+        "country.prefix",
+        "country.show_otp",
+        "country.show_pharmacy_doc_reminder_after_order",
+        "country.show_pharmacy_location_reminder_after_order",
+        "country.show_saved_amount",
+        "country.youtube",
+        "device_id",
+        "email",
+        "mobile",
+        "password",
+        "verification_token"
+      ],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {},
+      "sampleValues": {},
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "step": "public-site",
+    "finalUrl": "aumet.com/",
+    "candidateLinks": [
+      "صيدلية -> pulse.aumet.com/login",
+      "موزع -> marketplace.aumet.com/user/login",
+      "ابدأ التجربة المجانية -> pulse.aumet.com/login/create-account",
+      "ابدأ تجربتك المجانية الآن -> pulse.aumet.com/login/create-account",
+      "للصيدليات -> aumet.com/for-pharmacis-ar/",
+      " -> apps.apple.com/jo/app/aumet-marketplace/{id}"
+    ],
+    "hosts": [
+      "www.cookieyes.com",
+      "aumet.com",
+      "pulse.aumet.com",
+      "marketplace.aumet.com",
+      "youtube.com",
+      "youtu.be",
+      "www.careers-page.com",
+      "www.linkedin.com",
+      "www.facebook.com",
+      "x.com",
+      "www.instagram.com",
+      "www.youtube.com",
+      "play.google.com",
+      "apps.apple.com",
+      "appgallery.huawei.com",
+      "api.whatsapp.com",
+      "ninjateam.org"
+    ]
+  },
+  {
+    "step": "login-page",
+    "url": "marketplace.aumet.com/user/login",
+    "inputs": [
+      "checkbox:ckySwitchfunctional",
+      "checkbox:ckySwitchanalytics",
+      "checkbox:ckySwitchadvertisement",
+      "search:",
+      "text:email",
+      "password:password",
+      "checkbox:rememberMe"
+    ],
+    "captchaFrame": false,
+    "blockWords": false,
+    "socialButtons": 0
+  },
+  {
+    "step": "after-login",
+    "url": "marketplace.aumet.com/pharmacy",
+    "stillOnLogin": false,
+    "otherSessionPrompt": false,
+    "captchaFrame": false,
+    "blockWords": false
+  },
+  {
+    "step": "search-box",
+    "found": false,
+    "placeholders": []
+  },
+  {
+    "step": "products-requests",
+    "requests": []
+  }
+]
