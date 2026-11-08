@@ -14,7 +14,13 @@ export const SAMPLE_ALLOWLIST = new Set([
 const SECRET_KEY = /auth|token|cookie|session|password|passwd|secret|phone|mobile|email|address|account|user|customer|uid|otp/i;
 
 const isUuid = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
-const isIdSegment = (s) => /^\d{8,}$/.test(s) || /^[0-9a-f]{16,}$/i.test(s) || isUuid(s);
+// Any segment that could identify a person, account or session becomes {id}:
+// long digit runs (ids, phone numbers), hex/UUIDs, emails, encoded text, and
+// long or mixed letter+digit tokens. Plain words like "products" stay.
+const isIdSegment = (s) =>
+  /\d{6,}/.test(s) || /^[0-9a-f]{16,}$/i.test(s) || isUuid(s) ||
+  /[@%=:+~]/.test(s) || s.length >= 24 ||
+  (s.length >= 10 && /[a-z]/i.test(s) && /\d/.test(s));
 
 export function templatePath(pathname) {
   return pathname
@@ -63,6 +69,18 @@ function collectBodyPaths(value, prefix, out) {
   }
 }
 
+// Sample values are only kept when they look like money, counts or short
+// status words, never free text (which could hide a card number or token).
+const ENUM_KEYS = new Set(['currencyIso', 'stockLevelStatus', 'token_type']);
+function isSafeSample(k, v) {
+  if (typeof v === 'number') return Number.isFinite(v);
+  if (typeof v !== 'string') return false;
+  if (ENUM_KEYS.has(k)) return /^[A-Za-z_]{1,24}$/.test(v);
+  // Money text such as "33.75 EGP", "EGP 1,250.00", "51 ج.م". At most 9 digits.
+  return /^(?:[A-Za-z\u0600-\u06FF.$£€]{0,4}\s?)?[\d٠-٩][\d٠-٩.,\s]{0,14}(?:\s?[A-Za-z\u0600-\u06FF.]{0,4})?$/.test(v) &&
+    (v.match(/[\d٠-٩]/g) || []).length <= 9;
+}
+
 function collectSamples(value, samples) {
   if (Array.isArray(value)) {
     for (const item of value) collectSamples(item, samples);
@@ -70,7 +88,7 @@ function collectSamples(value, samples) {
   }
   if (!isPlainObject(value)) return;
   for (const [k, v] of Object.entries(value)) {
-    if (SAMPLE_ALLOWLIST.has(k) && (typeof v === 'number' || (typeof v === 'string' && v.length <= 40))) {
+    if (SAMPLE_ALLOWLIST.has(k) && isSafeSample(k, v)) {
       if (!(k in samples)) samples[k] = v;
     }
     if (v !== null && typeof v === 'object') {
