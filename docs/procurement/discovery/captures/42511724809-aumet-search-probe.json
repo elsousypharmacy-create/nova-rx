@@ -1,0 +1,31 @@
+[
+  {
+    "step": "login-page",
+    "url": "marketplace.aumet.com/user/login",
+    "title": "Aumet Marketplace",
+    "inputs": [
+      "checkbox:ckySwitchfunctional:visible",
+      "checkbox:ckySwitchanalytics:visible",
+      "checkbox:ckySwitchadvertisement:visible",
+      "search::visible",
+      "text:email:visible",
+      "password:password:visible",
+      "checkbox:rememberMe:visible"
+    ],
+    "text": "We value your privacy We use cookies to enhance your browsing experience, serve personalised ads or content, and analyse our traffic. By clicking \"Accept All\", you consent to our use of cookies. Customise Reject All Acce"
+  },
+  {
+    "step": "login-refused",
+    "loginStatus": 401,
+    "messages": []
+  },
+  {
+    "step": "stopped",
+    "reason": "login not confirmed"
+  },
+  {
+    "step": "requests-while-typing",
+    "count": 0,
+    "requests": []
+  }
+]
