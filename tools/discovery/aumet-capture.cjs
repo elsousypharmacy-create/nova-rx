@@ -26,6 +26,17 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ recordHar: { path: `${OUT}/raw.har`, content: 'embed' }, locale: 'en-US' });
   const page = await ctx.newPage();
+  // Search parameters the site itself sends to /api/products (values kept only for non-identifying keys).
+  const productParams = [];
+  page.on('request', (r) => {
+    try {
+      const u = new URL(r.url());
+      if (u.pathname !== '/api/products') return;
+      const o = {};
+      for (const [k, v] of u.searchParams.entries()) o[k] = /id$|token|user|entity|pharmacy|customer|phone|email|address/i.test(k) ? '[hidden]' : v.slice(0, 40);
+      productParams.push(o);
+    } catch { /* ignore */ }
+  });
   const pause = (ms) => page.waitForTimeout(ms + Math.floor(Math.random() * 1200));
   const flags = async () => ({
     captchaFrame: !!(await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], iframe[src*="turnstile"], iframe[src*="hcaptcha"]')),
@@ -99,6 +110,7 @@ const BLOCK_WORDS = /captcha|verification code|one[- ]time|otp|two[- ]factor|2fa
   } catch (e) {
     note('stopped', { reason: String(e.message).replace(new RegExp(AUMET_USERNAME || '$^', 'gi'), '[login]').slice(0, 160) });
   } finally {
+    steps.push({ step: 'products-requests', requests: productParams.slice(0, 6) });
     fs.writeFileSync(`${OUT}/steps.json`, JSON.stringify(steps, null, 2));
     await ctx.close();
     await browser.close();
