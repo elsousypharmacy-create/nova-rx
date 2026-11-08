@@ -6,7 +6,8 @@ Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof
 - #57 normalize.js (Kimi run 42454746907): 134/134 real names parse. Claude review fixes: products without stated strength get a key; parse cache; tablet vs vial (different form) is never 0.8, only 0.5 + needsReview (found on real data: Nexium tab vs I.V. vial).
 - #59 compare.js (Kimi run 42455536138): 200 items x 10,000 offers in ~0.5 s. Checked on real PharmaOverseas prices.
 - All 6 procurement checks pass on the epic branch.
-- Next exact step: #58 scheduled collector (needs owner decision: schedules only run from main), then #60 PO drafts, #61 UI, Aumet discovery (#63).
+- #60 po-draft.js (Kimi run 42456014609): drafts per supplier, unmatched list, approval needs a name, Arabic WhatsApp text. Checked on real prices. 7/7 procurement checks pass.
+- Next exact step: owner decision on merging to main (needed for the 2-hour schedule, #58); then #61 UI; Aumet discovery (#63).
 
 ## Checkpoint 2026-11-08 — PharmaOverseas live prices working
 - Owner added repo secrets `PO_USERNAME` / `PO_PASSWORD`. Logged-in discovery run 42450090854: login = OAuth code+PKCE, 12 h token, search returns pharmacy price per product, stock status only.
