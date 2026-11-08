@@ -379,3 +379,33 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint — chip fill (stickers19)
 - Condition chips now fill the row width in the right column. Artifact stickers19 sha 46551d2a…487d. Rollback: stickers18 (9a24cd96…).
+
+## Checkpoint — no condition chips (stickers20)
+- Owner: the pharmacist types faster than tapping, so the ready-made chips under «حالة المريض» were removed; only the text box stays (still sent to the AI). Artifact stickers20 sha 3ce1548c…99f9. Rollback: stickers19 (46551d2a…).
+
+## Checkpoint — sale screen polish (stickers21)
+- Appended `NOVA_SALE_POLISH` style/script before `</body>`: hides the dead WhatsApp nav link, sticker launcher in app palette, toast moved to bottom-centre, landscape customer column 21% (230–270px) so the invoice is wider, portrait (>=700px) one column with full-width search/header and sticky checkout footer, broken logo image hidden.
+- Not changed (owner decision needed): bilingual product names, per-line discount column, +/- quantity order.
+- Artifact stickers21 sha 1c2a77c7…e3e7. Rollback: stickers20 (3ce1548c…).
+
+## Checkpoint — stable layout from first paint (stickers22)
+- Cause of "sizes change": (1) the sale-screen override block lived at the END of the 540KB body and applied only after all inline scripts ran (customer column 299px -> 251px ~1.8s after open); (2) html lang/dir and body lang class were set by a script mid-body, so the checkout button flipped sides and the footer grew 3px; (3) four stacked generations of width rules (73/70/67%) plus breakpoints at 780/1050/1100/1300.
+- Fix: `NOVA_SALE_POLISH` now in `<head>`, early `lang/dir` script in head, early body `lang-*` class script right after `<body>`, footer min-height 108px for >=1100px landscape. At <1100px the footer keeps its original wrapped layout (forcing one row squeezed the totals).
+- Artifact stickers22 sha dd6a4345…3459. Rollback: stickers21 (1c2a77c7…).
+
+## Checkpoint — loading splash (stickers23, NOT deployed yet)
+- Owner idea: show a logo + loading bar until the page is built, instead of letting the layout assemble on screen. Added `#novaSplash` (NOVA Rx wordmark, "جارٍ التحميل…", indeterminate bar in app palette) right after the charset meta + first element in `<body>`; removed after window `load` + fonts ready (capped at 1.5s) + 150ms, hard cap 4s, `pointer-events:none` so it can never block taps or tests.
+- Artifact stickers23 sha 75f6f76c…50ba (built, tested, awaiting owner OK to publish). Live is still stickers22 (dd6a4345…). Rollback = stickers22.
+
+## Checkpoint — small "i" instead of caption + hint (stickers24, NOT deployed yet)
+- Owner idea: replace «اختياري — للذكاء الاصطناعي» and the hint under the condition box with a small "i" next to «حالة المريض». Tap i = short tip («اختياري. الذكاء الاصطناعي هيراعيها…»); tap again or tap elsewhere = closes (works on touch, no hover needed). EN overlay entries added. Test updated + 4 new checks.
+- Artifact stickers24 (built, tested, awaiting owner OK). Live is still stickers23 (75f6f76c…). Rollback = stickers23.
+
+## Checkpoint — one-step checkout + Arabic payment window (stickers25)
+- F9 / «إتمام الدفع» now opens the payment window directly. The forced «رقم العميل قبل الدفع» step is gone: `customerGateSkipped` defaults to true; the payment window keeps its «إضافة رقم العميل (اختياري)» button which opens the old gate (lookup / new customer logic untouched); cancelling the gate returns to the invoice and the next checkout is direct again.
+- English leftovers in the payment window are translated (إجمالي المستحق / بالضبط / إلغاء (Esc) / عميل عابر) with matching EN entries; verified AR and EN modes.
+- Tests updated: ux-batch3 (2 checks + touch), issue-4 L2. Stickers already open automatically after payment (`nova:invoice-completed`, existing feature), so no extra receipt button was added.
+- Artifact stickers25. Rollback: stickers24 (16a99d35…).
+
+## Checkpoint — project skill refreshed (docs only)
+- `docs/skills/nova/SKILL.md` updated to the state after stickers25 (live artifact + rollback chain, one-step checkout, splash, head-level layout rule, auto-open stickers, pending list). Rule added: update the skill and HANDOFF in the same PR as each deploy.
