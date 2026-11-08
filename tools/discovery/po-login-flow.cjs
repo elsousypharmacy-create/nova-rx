@@ -34,7 +34,14 @@ const events = [];
       try { formNames = [...new URLSearchParams(post).keys()].sort(); } catch { formNames = []; }
       if (!formNames.length) { try { formNames = Object.keys(JSON.parse(post)).sort(); } catch { formNames = []; } }
     }
-    const ev = { n: events.length + 1, type: t, method: r.method(), url: tpl(r.url()), query: names(r.url()), bodyFields: formNames, redirectedFrom: r.redirectedFrom() ? tpl(r.redirectedFrom().url()) : null };
+    // Public client settings (not secrets): needed to repeat the login over plain HTTP.
+    let authorizeParams = null;
+    if (/authorizationserver\/oauth\/authorize/.test(r.url())) {
+      const u = new URL(r.url());
+      authorizeParams = {};
+      for (const k of ['client_id', 'redirect_uri', 'response_type', 'scope', 'code_challenge_method']) authorizeParams[k] = u.searchParams.get(k);
+    }
+    const ev = { authorizeParams, n: events.length + 1, type: t, method: r.method(), url: tpl(r.url()), query: names(r.url()), bodyFields: formNames, redirectedFrom: r.redirectedFrom() ? tpl(r.redirectedFrom().url()) : null };
     seen.set(r, ev);
     events.push(ev);
   });
@@ -48,6 +55,9 @@ const events = [];
     ev.contentType = ct.split(';')[0];
     const sc = res.headers()['set-cookie'];
     ev.setsCookie = !!sc;
+    if (/authorizationserver\/csrf/.test(res.url()) && res.status() === 200) {
+      res.json().then((j) => { ev.csrfResponseKeys = Object.keys(j || {}); ev.csrfFieldIsString = typeof (j && j.token) === 'string'; }).catch(() => { ev.csrfResponseKeys = 'not-json'; });
+    }
   });
   try {
     await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
