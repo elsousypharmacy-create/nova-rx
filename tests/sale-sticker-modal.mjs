@@ -71,6 +71,9 @@ async function geometry(page){
 
 async function runFlow(page,vp,errors){
   const L=vp.name;
+  check(`${L}: the sticker screen stays closed after payment (the pharmacist decides)`,!(await page.$eval('#novaLabelsPanel',el=>el.classList.contains('open'))));
+  await page.evaluate(()=>document.getElementById('novaAiLaunch').click());
+  await new Promise(r=>setTimeout(r,500));
   check(`${L}: modal opens from the sale flow`,await page.$eval('#novaLabelsPanel',el=>el.classList.contains('open')));
   const g0=await geometry(page);
   check(`${L}: no stepper, no tabs, no separate approval box`,!g0.stepper&&!g0.tabs&&!g0.approval);

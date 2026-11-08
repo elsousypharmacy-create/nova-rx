@@ -114,11 +114,14 @@ try {
   await sleep(200);
   check('L3 checkout modal active', await evalPage(`document.getElementById('checkoutModal').classList.contains('active')`));
 
-  // L4: confirm payment -> receipt opens AND labels panel auto-opens (existing feature)
+  // L4: confirm payment -> receipt opens; the labels panel stays closed until the pharmacist taps the launcher
   await evalPage(`document.getElementById('btnConfirmPayment').click()`);
   await sleep(300);
   check('L4 receipt modal active', await evalPage(`document.getElementById('receiptModal').classList.contains('active')`));
-  check('L5 labels panel auto-opened behind receipt', await evalPage(`document.getElementById('novaLabelsPanel').classList.contains('open')`));
+  check('L5 labels panel does NOT open by itself after payment (owner decision)', await evalPage(`!document.getElementById('novaLabelsPanel').classList.contains('open')`));
+  await evalPage(`document.getElementById('novaAiLaunch').click()`);
+  await sleep(400);
+  check('L5b the launcher opens it with the sold invoice medicines', await evalPage(`document.getElementById('novaLabelsPanel').classList.contains('open') && document.querySelectorAll('#nlMedicineList .med-card').length >= 1`));
 
   // L6: close receipt (X) -> new sale -> labels panel must NOT stay open
   await evalPage(`document.getElementById('btnCloseReceipt').click()`);

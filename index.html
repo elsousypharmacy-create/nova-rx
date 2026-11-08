@@ -4091,7 +4091,7 @@ const close=()=>panel.classList.remove('open');
 $('novaLabelsClose').onclick=close;
 panel.addEventListener('click',e=>{if(e.target===panel)close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))close()});
-window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;const queue=getQueue();queue.unshift(q);try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(0,40)))}catch(_){}loadInvoice(q,0);panel.classList.add('open')});
+window.addEventListener('nova:invoice-completed',e=>{const q=e.detail;if(!q)return;const queue=getQueue();queue.unshift(q);try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(0,40)))}catch(_){}loadInvoice(q,0)});
 new MutationObserver(()=>{if(!panel.classList.contains('open'))return;if(state.medications.some(m=>clean(m.name)))return;const items=typeof window.novaCartItems==='function'?window.novaCartItems():[];if(items.length)loadInvoice({customer:'',items},null)}).observe(panel,{attributes:true,attributeFilter:['class']});
 window.addEventListener('pageshow',()=>setTimeout(()=>{if(!panel.classList.contains('open'))syncPatientInputs()},0));
 (()=>{const more=panel.querySelector('.nl-more'),mq=window.matchMedia('(min-width:700px)');if(!more)return;const sync=()=>{if(mq.matches)more.open=true};sync();mq.addEventListener&&mq.addEventListener('change',sync);new MutationObserver(()=>{if(panel.classList.contains('open'))sync()}).observe(panel,{attributes:true,attributeFilter:['class']});more.addEventListener('toggle',()=>{if(more.open&&!mq.matches)setTimeout(()=>more.scrollIntoView({block:'start',behavior:'smooth'}),30)})})();

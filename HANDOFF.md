@@ -380,3 +380,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint — project skill refreshed (docs only)
 - `docs/skills/nova/SKILL.md` updated to the state after stickers25 (live artifact + rollback chain, one-step checkout, splash, head-level layout rule, auto-open stickers, pending list). Rule added: update the skill and HANDOFF in the same PR as each deploy.
+
+## Checkpoint — stickers open only by the pharmacist (stickers26)
+- Owner decision ("خليها مني"): the sticker screen no longer pops open after every payment. `nova:invoice-completed` still queues and loads the sold invoice, but `panel.classList.add('open')` was removed; the floating button «استيكرات الأدوية» opens it (right after paying it shows the sold invoice; in a new sale it shows the open cart).
+- Tests updated: issue-4 (L5 closed after payment, L5b launcher opens with the sold medicines), sale-sticker-modal (closed after payment, then opens via launcher). sale-sticker-modal still ends at the known sandbox baseline failure (long-text print click).
+- `docs/skills/nova/SKILL.md` updated in the same PR (rule: skill + HANDOFF move with every deploy).
+- Artifact stickers26 sha dba049d0…8c20. Rollback: stickers25 (0bbf7b3b…).
