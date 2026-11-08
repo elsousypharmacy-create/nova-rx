@@ -163,8 +163,11 @@ export function comparableUnitPrice(offer, parsed) {
 }
 
 export function productKey(parsed) {
-  if (!parsed || !parsed.brand || !parsed.strength) return null;
-  const strength = `${parsed.strength.value}${parsed.strength.unit}`;
+  if (!parsed || !parsed.brand) return null;
+  // Many supplier names carry no strength ("PANADOL EXTRA 24 F.C. TAB.").
+  // Those still get a key when the pack is known; "-" marks the missing strength.
+  if (!parsed.strength && !parsed.pack) return null;
+  const strength = parsed.strength ? `${parsed.strength.value}${parsed.strength.unit}` : '-';
   const packCount = parsed.pack ? String(parsed.pack.count) : '';
   return `${parsed.brand}|${strength}|${parsed.form}|${packCount}`.toLowerCase();
 }
@@ -173,13 +176,24 @@ function strengthId(strength) {
   return strength ? `${strength.value}|${strength.unit}` : null;
 }
 
+const parseCache = new Map();
+function parseCached(name) {
+  let hit = parseCache.get(name);
+  if (!hit) {
+    if (parseCache.size > 50000) parseCache.clear();
+    hit = parseProductName(name);
+    parseCache.set(name, hit);
+  }
+  return hit;
+}
+
 export function matchOffersToItem(item, offers) {
   const parsedItem = parseProductName(item?.name ?? '');
   const itemKey = productKey(parsedItem);
   const itemStrength = strengthId(parsedItem.strength);
   const results = [];
   for (const offer of offers ?? []) {
-    const parsedOffer = parseProductName(offer?.productName ?? '');
+    const parsedOffer = parseCached(offer?.productName ?? '');
     const offerKey = productKey(parsedOffer);
     const offerStrength = strengthId(parsedOffer.strength);
     let score = 0;
@@ -194,6 +208,10 @@ export function matchOffersToItem(item, offers) {
         reasons.push(
           parsedItem.pack?.count !== parsedOffer.pack?.count ? 'pack-differs' : 'form-differs',
         );
+      } else if (!itemStrength && !offerStrength && parsedItem.form === parsedOffer.form) {
+        // Neither name states a strength: same brand and form, only the pack differs.
+        score = 0.8;
+        reasons.push('pack-differs');
       } else if (itemStrength && offerStrength) {
         score = 0.5;
         reasons.push('strength-differs');

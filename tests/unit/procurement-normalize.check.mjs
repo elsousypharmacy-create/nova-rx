@@ -147,9 +147,17 @@ assert.equal(
 );
 assert.equal(
   productKey(parseProductName('PANADOL EXTRA 24 F.C. TAB.')),
-  null,
-  'no strength -> null key per spec',
+  'panadol extra|-|tab|24',
+  'no strength but known pack -> key with "-" (review fix)',
 );
+{
+  const m = matchOffersToItem({ name: 'PANADOL EXTRA 24 F.C. TAB.' }, [
+    { productName: 'PANADOL EXTRA 24 F.C. TAB.' },
+    { productName: 'PANADOL EXTRA 48 F.C. TAB.' },
+  ]);
+  assert.equal(m[0].score, 1, 'same name without strength matches exactly');
+  assert.equal(m[1].score, 0.8, 'same brand/form, other pack -> 0.8');
+}
 assert.equal(productKey(parseProductName('500MG 10 TAB')), null, 'no brand -> null key');
 
 // --- comparableUnitPrice -----------------------------------------------------
