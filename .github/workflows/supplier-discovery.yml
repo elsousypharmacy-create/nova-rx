@@ -3,7 +3,11 @@ name: Supplier discovery (PharmaOverseas, logged in)
 # Manual only. Logs in with the pharmacy's own account from repository
 # secrets, records the site's requests, sanitizes them on the runner, deletes
 # the raw capture, and uploads ONLY the sanitized JSON + report.
+# Also runs on a push to the branch "discovery/pharmaoverseas" (cart step off),
+# so it can be used before this file reaches main.
 on:
+  push:
+    branches: ['discovery/pharmaoverseas']
   workflow_dispatch:
     inputs:
       with_cart:
@@ -44,7 +48,7 @@ jobs:
         env:
           PO_USERNAME: ${{ secrets.PO_USERNAME }}
           PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
-          WITH_CART: ${{ inputs.with_cart }}
+          WITH_CART: ${{ inputs.with_cart || 'false' }}
         run: |
           mkdir -p "$RUNNER_TEMP/cap" out
           node tools/discovery/pharmaoverseas-capture.cjs "$RUNNER_TEMP/cap"
