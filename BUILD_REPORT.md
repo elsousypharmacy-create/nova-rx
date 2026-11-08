@@ -1,5 +1,19 @@
 # BUILD_REPORT — NOVA Rx
 
+## Procurement Task 02 (2026-11-08): connector contract, offer schema, registry + fixture connector
+
+- Issue: "[Procurement 02] Supplier connector contract, offer schema, registry + fixture connector" (epic #53), per `docs/procurement/ARCHITECTURE.md` sections 3–4 only.
+- Files created (all dependency-free ES modules, Workers + Node 22 compatible):
+  - `worker/procurement/offer-schema.js`: frozen `OFFER_FIELDS` (17 fields), `validateOffer(offer)` (required fields, enums for stockStatus/dataSource/syncStatus, `currency === 'EGP'`, finite >= 0 numbers or null, `discountPct` 0–100 or null, digits-only 8–14 barcode or null, no `<`/`>` in productName, recursive credential-key scan of `raw` via `/authorization|cookie|token|password|session/i`), `sanitizeName` (strips tags, collapses whitespace).
+  - `worker/procurement/connector-contract.js`: `ConnectorError` + `AuthRequiredError`, `RateLimitedError` (`retryAfterMs`), `SchemaDriftError` (`missing`/`unexpected`), `TransientError`, `NotAuthorizedError`; `AUTHORIZATION_KINDS`; `assertConnector` (TypeError with clear messages); registry `registerConnector` / `getConnector` / `listConnectors` / `clearRegistry`, duplicate id throws.
+  - `worker/procurement/connectors/fixture.js`: one synthetic supplier, 8 raw records incl. HTML-in-name, unknown discount, out-of-stock, no-barcode cases; case-insensitive paginated `search` (page/pageSize/totalPages), `getProduct`, pure `toOffer` with `netEffectivePrice = round2(unitPrice * (1 - discountPct/100))` only when both known, else null (unknown discount stays null, never 0).
+  - `tests/unit/procurement-contract.check.mjs`: `node:assert/strict`, prints `procurement-contract checks passed`.
+- Tests actually run (exact output):
+  - `node tests/unit/procurement-contract.check.mjs` → `procurement-contract checks passed`, exit=0. Covers: register succeeds / duplicate throws / missing `toOffer` TypeError / `authorization: 'scraping'` throws; all 8 fixture offers pass `validateOffer`; HTML name sanitized; unknown discount → `discountPct === null` and `netEffectivePrice === null`; rejects USD currency, discountPct 120, barcode `'12ab'`, `raw.headers.Authorization`; page 3 of 2 pages → empty `offers`, `totalPages === 2`; case-insensitive search; `RateLimitedError('x', 5000).retryAfterMs === 5000` and `instanceof ConnectorError`.
+  - `node tests/unit/supplier-price.check.mjs` → `supplier-price-service checks passed`, exit=0 (no regression).
+- Remaining work: none within this task. Later tasks per spec: 03 real supplier adapter (after authorization recorded), 04 normalization, 05 collector, 06 compare, 07 PO drafts, 08 UI.
+- Limitations: Node prints a `MODULE_TYPELESS_PACKAGE_JSON` warning because `package.json` has no `"type": "module"`; adding it was out of scope (pre-existing warning also fires for `worker/supplier-price-service.js`). No network, no real supplier data; fixtures are synthetic. `sanitizeName` strips tags but does not decode HTML entities (spec asks only for tags + whitespace). Not committed per instructions.
+
 ## UX batch 3 (2026-11-07): tablet/desktop polish — toasts, Arabic totals, touch targets, text floor, walk-in shortcut
 
 - Found by a UX evaluation of `main` (screenshots + measurements, emulator, demo data): three "Added: …" toasts piled up over the totals bar and CHECKOUT; the totals area stayed English in Arabic mode (CHECKOUT, NET TOTAL, SAR, items); 37 controls under 40px (tabs 37, invoice buttons 34, quantity 36); 27 texts at 10-11px; an extra customer step on every sale.
