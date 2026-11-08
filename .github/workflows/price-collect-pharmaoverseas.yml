@@ -1,0 +1,51 @@
+name: Price collect (PharmaOverseas)
+
+# Runs on a push to "collect/pharmaoverseas" or manually once this file is on
+# main. Logs in once with the pharmacy's own account (secrets), searches the
+# drug list with plain HTTP, commits the offers JSON to the same branch.
+# No AI, no cart, no orders.
+on:
+  push:
+    branches: ['collect/pharmaoverseas']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: price-collect-pharmaoverseas
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Collect prices
+        env:
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+        run: |
+          mkdir -p out
+          node tools/collectors/pharmaoverseas-prices.mjs tools/collectors/queries-sample.txt out/pharmaoverseas-prices.json
+          if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}' out/*; then echo "::error::token-like text in output"; rm -rf out; exit 1; fi
+          if grep -Fqi -- "$PO_USERNAME" out/*; then echo "::error::login name in output"; rm -rf out; exit 1; fi
+      - name: Commit offers
+        if: github.ref == 'refs/heads/collect/pharmaoverseas'
+        run: |
+          set -euo pipefail
+          mkdir -p data/supplier-prices
+          cp out/pharmaoverseas-prices.json data/supplier-prices/pharmaoverseas-latest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/supplier-prices
+          git commit -m "prices: PharmaOverseas collection (run ${GITHUB_RUN_ID})" || exit 0
+          git push origin HEAD:collect/pharmaoverseas
