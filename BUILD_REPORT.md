@@ -1,5 +1,22 @@
 # BUILD_REPORT — NOVA Rx
 
+## Procurement 07 (2026-11-08): purchase order drafts — done (drafts-only scope)
+
+- Issue: "[Procurement 07] Purchase order drafts + approved add-to-cart on supplier site" (epic #53). Scope for this run: drafts only (supplier cart comes later, after cart discovery). Read only: the issue and `worker/procurement/compare.js` exports (`compareMany` return shape).
+- Changed files (all new):
+  - `worker/procurement/po-draft.js`: dependency-free, supplier-agnostic ES module; no network, no `fetch`, no cart/order submission (static-checked). `buildDrafts(shortages, comparisons, { now = Date.now() })` routes each `{ name, qty }` shortage to the first eligible row of the matching `compareMany` result (same order); if that offer's `stockStatus` is `low`, `Math.ceil(qty / 2)` stays there and the rest goes to the next eligible offer from a *different* supplier (full qty stays when none exists). Items with no eligible offer go to `unmatched` with reason `no-match` (no offers), `all-out-of-stock` (every offer has reason `out_of_stock`), `all-stale` (every offer `stale`), else `needs-review`. Groups lines per supplier into `{ createdAt, drafts: [{ id: \`${supplierId}-${now}\`, supplierId, status: 'draft', lines: [{ name, supplierProductId, productName, qty, packPrice, lineTotal }], total }], unmatched }`; line/draft totals rounded to 2 dp (`lineTotal` null when no price). `approveDraft(draft, { approvedBy, now })` returns a copy with `status: 'approved'`, `approvedBy`, `approvedAt`; throws when `approvedBy` is missing/blank or status is not `draft` (so double-approval throws). `draftToText(draft, { lang = 'ar' })` returns WhatsApp-ready Arabic: supplier header, one line per item (`name × qty = lineTotal ج.م`), grand total in EGP; throws for non-`ar` lang.
+  - `tests/unit/procurement-po-draft.check.mjs`: `node:assert/strict`, fixed `NOW`, synthetic `compareMany`-shaped rows; prints `procurement-po-draft checks passed`.
+- Tests actually run (exact results):
+  - `node tests/unit/procurement-po-draft.check.mjs` → prints `procurement-po-draft checks passed`, exit 0. Covers all acceptance criteria: 3 shortages across 2 fake suppliers → 2 drafts with correct lines/totals (a: panadol 2×10=20 + insulin 3×5=15, total 35; b: cefixime 1×20=20, ids `a-${NOW}`/`b-${NOW}`); `low` stock on best with qty 10 → 5 there + 5 on next supplier (plus full-qty fallback when no other supplier); no eligible offer → `unmatched` with each of the 4 reasons, never dropped; `approveDraft` throws on empty/blank/missing `approvedBy` and on approving twice, returns untouched-original copy otherwise; static check asserts the source contains no `fetch(` and no `checkout`; `draftToText` Arabic output with per-item lines and 35.00 EGP total.
+  - `node tests/unit/procurement-compare.check.mjs` → `compareMany: 200 items x 10,000 offers in 307.6 ms`, `procurement-compare checks passed`, exit 0.
+  - `node tests/unit/procurement-contract.check.mjs` → `procurement-contract checks passed`, exit 0.
+  - `node tests/unit/procurement-discovery.check.mjs` → `procurement-discovery checks passed`, exit 0.
+  - `node tests/unit/procurement-discovery-leaks.check.mjs` → `procurement-discovery-leaks checks passed`, exit 0.
+  - `node tests/unit/procurement-normalize.check.mjs` → `134/134 names`, `procurement-normalize checks passed`, exit 0.
+  - `node tests/unit/procurement-pharmaoverseas.check.mjs` → `procurement-pharmaoverseas checks passed`, exit 0.
+- Remaining work: the approved add-to-cart on supplier sites (second half of the issue) is explicitly deferred until cart discovery; needs a later issue/run.
+- Limitations: `createdAt` is the numeric `now` (so draft `id` embeds epoch ms, matching the spec's `${supplierId}-${createdAt}`). `unmatched` reason precedence is `no-match` → `all-out-of-stock` → `all-stale` → `needs-review` (mixed ineligible reasons default to `needs-review`). `draftToText` supports Arabic only. Tests use hand-built `compareMany`-shaped fixtures, not live connector data. Pre-existing `MODULE_TYPELESS_PACKAGE_JSON` warning (package.json out of scope). Changes uncommitted per instructions.
+
 ## Procurement 06 (2026-11-08): price comparison engine on comparable units — done
 
 - Issue: "[Procurement 06] Price comparison engine on comparable units" (epic #53, depends on #57). Read only: the issue, `worker/procurement/normalize.js` exports, `worker/procurement/offer-schema.js` field names.
