@@ -51,7 +51,15 @@ const HIDE = /id$|token|user|entity|pharmacy|customer|phone|email|address|covera
     });
     await page.goto('https://marketplace.aumet.com/user/login', { waitUntil: 'networkidle', timeout: 60000 });
     if (await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], iframe[src*="turnstile"]')) throw new Error('CAPTCHA on login');
-    await page.fill('input[name="email"], input[type="email"]', AUMET_USERNAME);
+    // What the login page looks like (before login: generic page text only, no account data).
+    await page.waitForTimeout(4000);
+    note('login-page', {
+      url: tpl(page.url()),
+      title: (await page.title()).slice(0, 60),
+      inputs: await page.$$eval('input', (els) => els.map((e) => `${e.type || 'text'}:${e.name || e.id || ''}:${e.offsetParent ? 'visible' : 'hidden'}`).slice(0, 12)),
+      text: (await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 220))),
+    });
+    await page.fill('input[name="email"], input[type="email"], input[type="text"]:not([class*="cky"])', AUMET_USERNAME, { timeout: 20000 });
     await page.fill('input[type="password"]', AUMET_PASSWORD);
     await page.press('input[type="password"]', 'Enter');
     await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {});
