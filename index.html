@@ -4329,6 +4329,8 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .nl-thead{padding:0 10px;gap:8px}
 #novaLabelsPanel .med-sum .c{font-size:14px}
 #novaLabelsPanel .med-sum .nm small{display:none}
+#novaLabelsPanel .patient-card .nl-cond{position:sticky;top:0;z-index:3;background:#111418;padding-bottom:6px}
+#novaLabelsPanel .nl-cond .chips-more{max-height:min(34vh,230px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 }
 @media(min-width:1100px){
 #novaLabelsPanel{--nl-cols:34px minmax(120px,1.45fr) 70px 108px 82px minmax(120px,1.7fr) 100px}
@@ -4351,6 +4353,12 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .nl-cond .hint{display:none}
 #novaLabelsPanel .nl-cond .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
 #novaLabelsPanel .nl-cond .chips button{flex:none}
+#novaLabelsPanel .labels-sheet{max-height:none!important}
+#novaLabelsPanel .patient-card .card-body{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
+#novaLabelsPanel .patient-card .card-body>*{flex:1 1 100%;min-width:0}
+#novaLabelsPanel .patient-card .card-body>details{flex:1 1 calc(50% - 6px)}
+#novaLabelsPanel .patient-card .card-body>details[open]{flex-basis:100%}
+#novaLabelsPanel .nl-cond .chips-more{max-height:180px;overflow-y:auto;overscroll-behavior:contain}
 }
 </style>
 </body>
