@@ -1,0 +1,2526 @@
+{
+  "format": "nova-rx-discovery/1",
+  "endpointCount": 27,
+  "endpoints": [
+    {
+      "method": "GET",
+      "host": "aumet.com",
+      "pathTemplate": "/wp-admin/admin-ajax.php",
+      "queryParamNames": [
+        "action"
+      ],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cookie",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-requested-with"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "boolean",
+        "data": {
+          "pbid": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "0": {
+          "targetBanner": "number",
+          "condition": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/audit-table/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "cookies": {
+          "cookieyes_privacy_policy_generator_session": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "XSRF-TOKEN": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "cookieyes_cookie_policy_generator_session": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "irclickid": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "tpclickid": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "cookieyes-*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "ytidb::LAST_RESULT_ENTRY_KEY": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "intercom-id-*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "intercom-session-*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "intercom-device-id-*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-ROLLOUT_TOKEN": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "NEXT_LOCALE": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_ga": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_hjTLDTest": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_gcl_au": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_clck": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_clsk": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "MR": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_ga_*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_hjSessionUser_*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_hjSession_*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_cltk": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_hjAbsoluteSessionInProgress": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "VISITOR_PRIVACY_METADATA": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "mp_*_mixpanel": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "cky_flowId": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "SRM_B": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_uetsid": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_uetvid": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "YSC": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "VISITOR_INFO1_LIVE": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "test_cookie": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "SM": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "MUID": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "ANONCHK": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "IDE": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-YEC": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-YNID": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          }
+        },
+        "cky_audit_table_empty_text": "string",
+        "cky_audit_table_header_id": "string",
+        "cky_audit_table_header_duration": "string",
+        "cky_audit_table_header_description": "string",
+        "cky_preference_necessary_title": "string",
+        "cky_preference_necessary_description": "string",
+        "cky_preference_functional_title": "string",
+        "cky_preference_functional_description": "string",
+        "cky_preference_analytics_title": "string",
+        "cky_preference_analytics_description": "string",
+        "cky_preference_performance_title": "string",
+        "cky_preference_performance_description": "string",
+        "cky_preference_advertisement_title": "string",
+        "cky_preference_advertisement_description": "string"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/audit-table/PcygQuep.json",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "cookies": {
+          "VISITOR_PRIVACY_METADATA": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "pll_language": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "cookieyes-*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "user_source": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "VISITOR_INFO1_LIVE": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "ytidb::LAST_RESULT_ENTRY_KEY": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "epvc_post_views": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "YSC": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_ga_*": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_ga": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-YNID": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-ROLLOUT_TOKEN": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_gcl_au": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "_fbp": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "test_cookie": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          },
+          "__Secure-YEC": {
+            "cookie_id": "string",
+            "duration": "string",
+            "description": "string"
+          }
+        },
+        "cky_audit_table_empty_text": "string",
+        "cky_audit_table_header_id": "string",
+        "cky_audit_table_header_duration": "string",
+        "cky_audit_table_header_description": "string",
+        "cky_preference_necessary_title": "string",
+        "cky_preference_necessary_description": "string",
+        "cky_preference_functional_title": "string",
+        "cky_preference_functional_description": "string",
+        "cky_preference_analytics_title": "string",
+        "cky_preference_analytics_description": "string",
+        "cky_preference_performance_title": "string",
+        "cky_preference_performance_description": "string",
+        "cky_preference_advertisement_title": "string",
+        "cky_preference_advertisement_description": "string",
+        "cky_preference_other_title": "string",
+        "cky_preference_other_description": "string"
+      },
+      "sampleValues": {},
+      "count": 3
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/config/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "reloadOnAccept": "boolean",
+        "dataShortCodes": [
+          {
+            "key": "string",
+            "content": {
+              "button": "string"
+            },
+            "uiTag": "string",
+            "type": "string",
+            "customTag": "string",
+            "attributes": {},
+            "processedHTML": "string"
+          }
+        ],
+        "iabDataShortCodes": "array",
+        "activeLaw": "string",
+        "showAuditTable": "boolean",
+        "showToggler": "boolean",
+        "googleACMEnabled": "boolean",
+        "readMore": {
+          "status": "boolean",
+          "styles": {
+            "color": "string",
+            "border-color": "string",
+            "background-color": "string"
+          },
+          "type": "string"
+        },
+        "togglerSwitch": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "togglerIABSwitch": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "ccpaSwitch": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "placeHolder": {
+          "status": "boolean",
+          "styles": {
+            "border-color": "string",
+            "background-color": "string",
+            "color": "string"
+          }
+        },
+        "togglerIABTab": {
+          "status": "boolean",
+          "styles": {
+            "activeColor": "string",
+            "inactiveColor": "string"
+          }
+        },
+        "html": "string",
+        "css": "string",
+        "defaultLanguage": "string",
+        "bannerType": "string",
+        "respectGPC": "boolean",
+        "iabEnabled": "boolean",
+        "scriptExpiry": "string",
+        "manualLinkColor": "string",
+        "languageMap": {
+          "en": "string",
+          "nl": "string",
+          "fr": "string",
+          "de": "string",
+          "it": "string",
+          "es": "string",
+          "sv": "string"
+        },
+        "globalLanguageMap": {
+          "en": "string",
+          "nl": "string",
+          "fr": "string",
+          "de": "string",
+          "it": "string",
+          "es": "string",
+          "sv": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "cdn-cookieyes.com",
+      "pathTemplate": "/client_data/{id}/translations/{id}",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "if-modified-since",
+        "if-none-match",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "cky_notice_title": "string",
+        "cky_notice_description": "string",
+        "cky_notice_close_label": "string",
+        "cky_readmore_text": "string",
+        "cky_readmore_privacyLink": "string",
+        "cky_revisit_title": "string",
+        "cky_video_placeholder_title": "string",
+        "cky_accept_text": "string",
+        "cky_reject_text": "string",
+        "cky_settings_text": "string",
+        "cky_preference_title": "string",
+        "cky_preference_description": "string",
+        "cky_preference_always_enabled": "string",
+        "cky_preference_save_text": "string",
+        "cky_preference_accept_text": "string",
+        "cky_preference_reject_text": "string",
+        "cky_preview_save_text": "string",
+        "cky_enable_category_label": "string",
+        "cky_disable_category_label": "string",
+        "cky_preference_close_label": "string",
+        "cky_showmore_text": "string",
+        "cky_showless_text": "string"
+      },
+      "sampleValues": {},
+      "count": 4
+    },
+    {
+      "method": "GET",
+      "host": "ep1.adtrafficquality.google",
+      "pathTemplate": "/getconfig/sodar",
+      "queryParamNames": [
+        "sjk",
+        "st",
+        "sv",
+        "tid",
+        "tv"
+      ],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "origin",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "sodar_query_id": "string",
+        "injector_basename": "string",
+        "bg_hash_basename": "string",
+        "bg_binary": "string",
+        "rc_enable": "string",
+        "bg_snapshot_delay_ms": "string",
+        "is_gen_204": "string"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "POST",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/auth/update-device-data",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Content-Length",
+        "Content-Type",
+        "Cookie",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [
+        "device_model",
+        "entity_id",
+        "os",
+        "platform",
+        "user_id"
+      ],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "number"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/cart/{id}/count",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "boolean",
+        "message": "string",
+        "data": {
+          "cart_id": "number",
+          "cart_items_count": "number"
+        }
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/cart/{id}/products-quantities",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": {
+          "product_in_cart": [
+            {
+              "id": "number",
+              "quantity": "number",
+              "is_selected": "number",
+              "payment_method_id": "number",
+              "prefix_id": "string",
+              "entity_product_id": "number",
+              "entity_seller_id": "number",
+              "product_id": "number"
+            }
+          ]
+        }
+      },
+      "sampleValues": {
+        "quantity": 3
+      },
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/categories",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "id": "number",
+            "category_name": "string",
+            "category_name_ar": "string",
+            "category_name_en": "string",
+            "parent_id": "null",
+            "parent_name": "null",
+            "image": "string"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/config",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "general": {
+          "huawei_app_gallery_url": "string",
+          "google_play_url": "string",
+          "apple_store_url": "string",
+          "low_stock_limit": "number"
+        }
+      },
+      "sampleValues": {
+        "low_stock_limit": 100
+      },
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/countries",
+      "queryParamNames": [
+        "is_registered"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "id": "number",
+            "country_name": "string",
+            "country_code": "string",
+            "prefix": "string",
+            "mobile_number_placeholder": "string",
+            "language_id": "number",
+            "currency_id": {
+              "id": "number",
+              "currency_name": "string",
+              "short_name": "string",
+              "symbol": "string",
+              "exchange_rate": "string"
+            },
+            "show_otp": "boolean",
+            "device_limitation_otp": "boolean",
+            "show_saved_amount": "number",
+            "is_show_notifications_promotions_tab": "boolean",
+            "contact_us": {
+              "email": "string",
+              "mobile": "string",
+              "location": "string",
+              "contact_url": "string"
+            },
+            "facebook": "string",
+            "instagram": "string",
+            "linkedin": "string",
+            "youtube": "string",
+            "show_pharmacy_doc_reminder_after_order": "boolean",
+            "show_pharmacy_location_reminder_after_order": "boolean",
+            "configuration": {
+              "show_knowlage_center": "boolean",
+              "enable_request_quotation": "boolean",
+              "screenshot_tracking_country": "boolean",
+              "display_offers_payment_method": "boolean",
+              "show_lite_version": "boolean",
+              "change_lite_version_days": "number",
+              "bulk_order_support": "boolean",
+              "can_see_request_for_quotation": "boolean"
+            },
+            "is_operating_country_in_marketplace": "boolean"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/entity/{id}/all-distributors",
+      "queryParamNames": [
+        "with_delivery_time"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "id": "number",
+            "name": "string",
+            "type": "string",
+            "status": "number",
+            "country": {
+              "id": "number",
+              "country_name": "string",
+              "country_code": "string",
+              "prefix": "string",
+              "mobile_number_placeholder": "string",
+              "language_id": "number",
+              "currency_id": {
+                "id": "number",
+                "currency_name": "string",
+                "short_name": "string",
+                "symbol": "string",
+                "exchange_rate": "string"
+              },
+              "show_otp": "boolean",
+              "device_limitation_otp": "boolean",
+              "show_saved_amount": "number",
+              "is_show_notifications_promotions_tab": "boolean",
+              "contact_us": {
+                "email": "string",
+                "mobile": "string",
+                "location": "string",
+                "contact_url": "string"
+              },
+              "facebook": "string",
+              "instagram": "string",
+              "linkedin": "string",
+              "youtube": "string",
+              "show_pharmacy_doc_reminder_after_order": "boolean",
+              "show_pharmacy_location_reminder_after_order": "boolean",
+              "configuration": {
+                "show_knowlage_center": "boolean",
+                "enable_request_quotation": "boolean",
+                "screenshot_tracking_country": "boolean",
+                "display_offers_payment_method": "boolean",
+                "show_lite_version": "boolean",
+                "change_lite_version_days": "number",
+                "bulk_order_support": "boolean",
+                "can_see_request_for_quotation": "boolean"
+              },
+              "is_operating_country_in_marketplace": "boolean"
+            },
+            "is_locked": "number",
+            "locked_reason": "null",
+            "is_sub_agent": "number",
+            "image": "string",
+            "brand_page": {
+              "id": "number",
+              "description": "string",
+              "cover_photo": "null",
+              "order_limit": [
+                {
+                  "id": "number",
+                  "limit": "string",
+                  "payment_method_id": "number",
+                  "cities": [
+                    {
+                      "id": "number",
+                      "city": {
+                        "id": "number",
+                        "city_name": "string",
+                        "country_id": "number",
+                        "require_location_for_partial_approval": "number",
+                        "require_pharmacy_license_for_partial_approval": "number"
+                      },
+                      "areas": [
+                        {
+                          "limit": "null",
+                          "area_id": "number",
+                          "area_name": "string",
+                          "paymentMethod": "null"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "contact_us_email": "string",
+              "featured_products_limit": "number"
+            },
+            "agent_list": "array",
+            "manufactures_list": [
+              {
+                "id": "number",
+                "name": "string"
+              }
+            ],
+            "coverage_area": "number",
+            "minimum_order_value": [
+              {
+                "limit": "string",
+                "area_id": "number",
+                "area_name": "string",
+                "paymentMethod": {
+                  "id": "number",
+                  "payment_method_name": "string"
+                }
+              }
+            ],
+            "minimum_order_value_area": [
+              {
+                "limit": "string",
+                "area_id": "number",
+                "area_name": "string",
+                "paymentMethod": {
+                  "id": "number",
+                  "payment_method_name": "string"
+                }
+              }
+            ],
+            "paymentMethods": [
+              {
+                "id": "number",
+                "payment_method_name": "string"
+              }
+            ],
+            "estimated_delivery_time": "string",
+            "isTopDistributor": "number",
+            "averageRate": "number",
+            "countRate": "number",
+            "hasKnowledgeCenter": "boolean",
+            "hasFeedBack": "boolean",
+            "has_flash_sale": "boolean",
+            "has_exclusive_offer": "boolean",
+            "has_special_offer": "boolean",
+            "show_buyer_identifier_form": "boolean",
+            "have_aumet_pay": "boolean",
+            "has_partner_discount": "number",
+            "extra_order_discount": "null",
+            "has_loyalty_badge": "number",
+            "has_joined_cash_back_program": "number",
+            "has_apply_cat_restrictions": "number",
+            "wallet_payment_enabled": "number",
+            "credit_card_payment_enabled": "number",
+            "loyalty_badges": "string",
+            "loyalty_badge": "string",
+            "aumet_list": {
+              "discount_type": "number",
+              "pharmacy_discount": "string",
+              "aumet_fees": "string"
+            },
+            "seller_recommendation_popup_timing_type": "null",
+            "priority_score": "number",
+            "is_offline": "number",
+            "is_trusted": "boolean",
+            "loyalty_points": "number"
+          }
+        ],
+        "additional": {
+          "pagination": {
+            "current_page": "number",
+            "data": [
+              "number"
+            ],
+            "first_page_url": "string",
+            "from": "number",
+            "last_page": "number",
+            "last_page_url": "string",
+            "links": [
+              {
+                "url": "null",
+                "label": "string",
+                "active": "boolean"
+              }
+            ],
+            "next_page_url": "null",
+            "path": "string",
+            "per_page": "number",
+            "prev_page_url": "null",
+            "to": "number",
+            "total": "number"
+          },
+          "totalResult": "number",
+          "numPages": "number"
+        }
+      },
+      "sampleValues": {
+        "averageRate": 4.2,
+        "countRate": 1528,
+        "has_partner_discount": 0,
+        "discount_type": 0,
+        "total": 21,
+        "totalResult": 21
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/entity/{id}/banners",
+      "queryParamNames": [
+        "platform"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "id": "number",
+            "title": "string",
+            "country": {
+              "id": "number",
+              "country_name": "string",
+              "country_code": "string",
+              "prefix": "string",
+              "mobile_number_placeholder": "string",
+              "language_id": "number",
+              "currency_id": {
+                "id": "number",
+                "currency_name": "string",
+                "short_name": "string",
+                "symbol": "string",
+                "exchange_rate": "string"
+              },
+              "show_otp": "boolean",
+              "device_limitation_otp": "boolean",
+              "show_saved_amount": "number",
+              "is_show_notifications_promotions_tab": "boolean",
+              "contact_us": {
+                "email": "string",
+                "mobile": "string",
+                "location": "string",
+                "contact_url": "string"
+              },
+              "facebook": "string",
+              "instagram": "string",
+              "linkedin": "string",
+              "youtube": "string",
+              "show_pharmacy_doc_reminder_after_order": "boolean",
+              "show_pharmacy_location_reminder_after_order": "boolean",
+              "configuration": {
+                "show_knowlage_center": "boolean",
+                "enable_request_quotation": "boolean",
+                "screenshot_tracking_country": "boolean",
+                "display_offers_payment_method": "boolean",
+                "show_lite_version": "boolean",
+                "change_lite_version_days": "number",
+                "bulk_order_support": "boolean",
+                "can_see_request_for_quotation": "boolean"
+              },
+              "is_operating_country_in_marketplace": "boolean"
+            },
+            "image": "string",
+            "clickable_type": "string",
+            "clickable": "string",
+            "clickable_url": "string"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/entity/{id}/last-distributors",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "boolean",
+        "data": [
+          {
+            "entity_name": "string",
+            "id": "number"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/entity/{id}/top-distributors",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "boolean",
+        "data": [
+          {
+            "id": "number",
+            "entity_name": "string",
+            "image": "string"
+          }
+        ]
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/menu/items",
+      "queryParamNames": [
+        "entity_id",
+        "os"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "id": "number",
+            "parent_id": "null",
+            "ordering": "number",
+            "type": "string",
+            "layout": "null",
+            "title": "string",
+            "sub_title": "string",
+            "icon": "string",
+            "tap_action": "null",
+            "request_method": "null",
+            "callback_url": "string",
+            "has_payment": "null",
+            "is_lock": "null",
+            "is_entity_permission": "null",
+            "entity_plan_id": "null",
+            "has_custom_permission": "null",
+            "is_new": "number",
+            "is_beta": "number",
+            "country_id": "null",
+            "banners": "array"
+          }
+        ],
+        "success": "boolean"
+      },
+      "sampleValues": {
+        "averageRate": 0,
+        "countRate": 0,
+        "has_partner_discount": 0,
+        "discount_type": 0
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/orders/pending-orders",
+      "queryParamNames": [
+        "entity_id"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "success": "boolean",
+        "data": "array"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/products",
+      "queryParamNames": [
+        "country_id",
+        "coverage_area",
+        "entity_status",
+        "group_by",
+        "has_exclusive_offer",
+        "has_flash_sale",
+        "has_special_offer",
+        "in_stock",
+        "isNewHomePage",
+        "is_published",
+        "page",
+        "payment_method",
+        "payment_method_id",
+        "pharmacy_id",
+        "product_id",
+        "result_per_page",
+        "show_comparison",
+        "show_offline",
+        "sort",
+        "sort_by",
+        "spell",
+        "task"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200,
+        400
+      ],
+      "responseFields": {
+        "data": [
+          {
+            "payment_method_id": "number",
+            "exceeded_aumet_discount_budget": "boolean",
+            "id": "number",
+            "product_id": "number",
+            "product": {
+              "id": "number",
+              "made_in_country_id": "number",
+              "made_in_country": {
+                "id": "number",
+                "country_name": "string",
+                "country_code": "string",
+                "prefix": "string",
+                "mobile_number_placeholder": "string",
+                "language_id": "number",
+                "currency_id": "null",
+                "show_otp": "boolean",
+                "device_limitation_otp": "boolean",
+                "show_saved_amount": "number",
+                "is_show_notifications_promotions_tab": "boolean",
+                "contact_us": {
+                  "email": "string",
+                  "mobile": "string",
+                  "location": "string",
+                  "contact_url": "string"
+                },
+                "facebook": "string",
+                "instagram": "string",
+                "linkedin": "string",
+                "youtube": "string",
+                "show_pharmacy_doc_reminder_after_order": "boolean",
+                "show_pharmacy_location_reminder_after_order": "boolean",
+                "configuration": {
+                  "show_knowlage_center": "boolean",
+                  "enable_request_quotation": "boolean",
+                  "screenshot_tracking_country": "boolean",
+                  "display_offers_payment_method": "boolean",
+                  "show_lite_version": "boolean",
+                  "change_lite_version_days": "number",
+                  "bulk_order_support": "boolean",
+                  "can_see_request_for_quotation": "boolean"
+                },
+                "is_operating_country_in_marketplace": "boolean"
+              },
+              "details": "null",
+              "is_cold": "boolean",
+              "strength": "null",
+              "dosage": "null",
+              "manufacturer_name": "string",
+              "batch_number": "string",
+              "label": {
+                "name": "string",
+                "subtitle": "string",
+                "description": "string"
+              },
+              "labels": [
+                {
+                  "name": "string",
+                  "subtitle": "string",
+                  "description": "string"
+                }
+              ],
+              "image": "string",
+              "image_alt": "null",
+              "bar_code": "string",
+              "created_at": "string",
+              "updated_at": "string",
+              "scientific_name": "null",
+              "composition_id": "number",
+              "composition": "string",
+              "active_ingredient": [
+                "string"
+              ],
+              "is_medicine": "boolean",
+              "categories": [
+                {
+                  "id": "number",
+                  "category_name": "string",
+                  "category_name_ar": "string",
+                  "category_name_en": "string",
+                  "parent_id": "null",
+                  "image": "string",
+                  "parent_category": "null",
+                  "sub_categories_count": "number",
+                  "sub_categories": "array"
+                }
+              ],
+              "has_p2p": "boolean",
+              "has_alternative": "boolean"
+            },
+            "entity_id": "number",
+            "entity": {
+              "id": "number",
+              "hide_name": "boolean",
+              "name": "string",
+              "is_p2p": "boolean",
+              "type": "string",
+              "status": "number",
+              "country": {
+                "id": "number",
+                "country_name": "string",
+                "country_code": "string",
+                "prefix": "string",
+                "mobile_number_placeholder": "string",
+                "language_id": "number",
+                "currency_id": {
+                  "id": "number",
+                  "currency_name": "string",
+                  "short_name": "string",
+                  "symbol": "string",
+                  "exchange_rate": "string"
+                },
+                "show_otp": "boolean",
+                "device_limitation_otp": "boolean",
+                "show_saved_amount": "number",
+                "is_show_notifications_promotions_tab": "boolean",
+                "contact_us": {
+                  "email": "string",
+                  "mobile": "string",
+                  "location": "string",
+                  "contact_url": "string"
+                },
+                "facebook": "string",
+                "instagram": "string",
+                "linkedin": "string",
+                "youtube": "string",
+                "show_pharmacy_doc_reminder_after_order": "boolean",
+                "show_pharmacy_location_reminder_after_order": "boolean",
+                "configuration": {
+                  "show_knowlage_center": "boolean",
+                  "enable_request_quotation": "boolean",
+                  "screenshot_tracking_country": "boolean",
+                  "display_offers_payment_method": "boolean",
+                  "show_lite_version": "boolean",
+                  "change_lite_version_days": "number",
+                  "bulk_order_support": "boolean",
+                  "can_see_request_for_quotation": "boolean"
+                },
+                "is_operating_country_in_marketplace": "boolean"
+              },
+              "is_locked": "number",
+              "locked_reason": "string",
+              "is_sub_agent": "number",
+              "city_name": "string",
+              "city_name_en": "string",
+              "city_name_ar": "string",
+              "area_name": "string",
+              "area_name_en": "string",
+              "area_name_ar": "string",
+              "address": "string",
+              "location_lat": "null",
+              "location_long": "null",
+              "image": "string",
+              "is_offline": "number",
+              "pharmacy_id": "null",
+              "aumet_list": {
+                "discount_type": "number",
+                "pharmacy_discount": "string",
+                "aumet_fees": "string"
+              },
+              "coverage_area": "number",
+              "has_partner_discount": "number",
+              "priority_score": "number",
+              "is_trusted": "boolean",
+              "global_location_number": "null"
+            },
+            "is_trusted": "boolean",
+            "country_id": "number",
+            "agent_id": "number",
+            "seller_id": "number",
+            "item_code": "string",
+            "stock": "number",
+            "unit_price": "number",
+            "best_price": "number",
+            "retail_selling_price": "string",
+            "vat": "number",
+            "is_featured_distributor": "number",
+            "is_new_distributor": "number",
+            "exculde_auto_special_deal": "number",
+            "status": "number",
+            "batch_number": "number",
+            "discounts": [
+              {
+                "id": "number",
+                "discount": "number",
+                "payment_method": "null",
+                "group_id": "null",
+                "entityRelationGroup": "null",
+                "is_special_discount": "boolean",
+                "expiry_date": "null"
+              }
+            ],
+            "bonuses": "array",
+            "is_archived": "number",
+            "is_locked": "number",
+            "locked_reason_type": "null",
+            "locked_reason": "string",
+            "expiry_date": "null",
+            "order_quantities": "array",
+            "stock_updated_at": "null",
+            "tags": "array",
+            "created_at": "null",
+            "updated_at": "null",
+            "payment_methods": [
+              {
+                "id": "number",
+                "payment_method_name": "string"
+              }
+            ],
+            "num_found": "number",
+            "has_promoted": "number",
+            "image": "string",
+            "flash_sale": "null",
+            "all_flash_sale": "null",
+            "exclusive_offer": {
+              "id": "number",
+              "value": "number",
+              "start_datetime": "string",
+              "end_datetime": "string",
+              "status": "number",
+              "is_active": "number",
+              "created_at": "string",
+              "bonuses": "array",
+              "image": "string",
+              "type": "number",
+              "aumet_discount": "null",
+              "payment_method_id": "null",
+              "payment_method": "null"
+            },
+            "all_exclusive_offer": [
+              {
+                "id": "number",
+                "value": "number",
+                "start_datetime": "string",
+                "end_datetime": "string",
+                "status": "number",
+                "is_active": "number",
+                "created_at": "string",
+                "bonuses": "array",
+                "image": "string",
+                "type": "number",
+                "aumet_discount": "null"
+              }
+            ],
+            "has_exclusive_offer": "number",
+            "has_flash_sale": "number",
+            "entity_product_label_id": "number",
+            "entity_product_category_id": "number",
+            "slug": "string",
+            "has_special_offer": "number",
+            "special_offer": "null",
+            "all_special_offer": "null",
+            "is_erp_replinish_recommended": "boolean",
+            "has_recommendation_entity_sku": "number",
+            "has_shortage_min_value": "boolean",
+            "shortage_min_value": "number",
+            "is_recommendation_entity_sku": "number",
+            "is_net_partner": "number",
+            "is_offline": "number",
+            "loyalty_points": "number",
+            "is_offer": "boolean",
+            "distance": "null",
+            "duration_seconds": "null",
+            "eta_minutes": "null",
+            "delivery_fee": "number",
+            "pharmacy_id": "null",
+            "average_distributor_rate": "number"
+          }
+        ],
+        "additional": {
+          "pagination": {
+            "current_page": "number",
+            "data": [
+              "number"
+            ],
+            "first_page_url": "string",
+            "from": "number",
+            "next_page_url": "null",
+            "path": "string",
+            "per_page": "number",
+            "prev_page_url": "null",
+            "to": "number"
+          },
+          "totalResult": "number",
+          "numPages": "number"
+        },
+        "topP2PEntityProduct": "null",
+        "success": "number",
+        "error": "string"
+      },
+      "sampleValues": {
+        "discount_type": 0,
+        "has_partner_discount": 0,
+        "stock": 19,
+        "unit_price": 553,
+        "best_price": 447.93,
+        "vat": 0,
+        "discount": 19,
+        "value": 19,
+        "average_distributor_rate": 4.3,
+        "quantity": 651,
+        "interval_quantity": 5,
+        "totalResult": 16,
+        "has_limited_qty": 0,
+        "limited_qty": 0,
+        "remaining_qty": 0,
+        "order_quantity": 0
+      },
+      "count": 7
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/support/reasons",
+      "queryParamNames": [
+        "is_auth"
+      ],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "0": {
+          "id": "number",
+          "title": {
+            "ar": "string",
+            "en": "string",
+            "tr": "string"
+          },
+          "is_auth": "number",
+          "created_at": "null",
+          "updated_at": "null",
+          "slug": "string"
+        }
+      },
+      "sampleValues": {},
+      "count": 2
+    },
+    {
+      "method": "GET",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/api/users/me",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Authorization",
+        "Connection",
+        "Cookie",
+        "Host",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "data": {
+          "id": "number",
+          "full_name": "string",
+          "email": "string",
+          "mobile": "null",
+          "language": "string",
+          "status": "number",
+          "image": "null",
+          "accounts": [
+            {
+              "id": "number",
+              "entity": {
+                "id": "number",
+                "name": "string",
+                "type": "string",
+                "status": "number",
+                "country_id": "number",
+                "country": {
+                  "id": "number",
+                  "country_name": "string",
+                  "country_code": "string",
+                  "prefix": "string",
+                  "mobile_number_placeholder": "string",
+                  "language_id": "number",
+                  "currency_id": {
+                    "id": "number",
+                    "currency_name": "string",
+                    "short_name": "string",
+                    "symbol": "string",
+                    "exchange_rate": "string"
+                  },
+                  "show_otp": "boolean",
+                  "device_limitation_otp": "boolean",
+                  "show_saved_amount": "number",
+                  "is_show_notifications_promotions_tab": "boolean",
+                  "contact_us": {
+                    "email": "string",
+                    "mobile": "string",
+                    "location": "string",
+                    "contact_url": "string"
+                  },
+                  "facebook": "string",
+                  "instagram": "string",
+                  "linkedin": "string",
+                  "youtube": "string",
+                  "show_pharmacy_doc_reminder_after_order": "boolean",
+                  "show_pharmacy_location_reminder_after_order": "boolean",
+                  "configuration": {
+                    "show_knowlage_center": "boolean",
+                    "enable_request_quotation": "boolean",
+                    "screenshot_tracking_country": "boolean",
+                    "display_offers_payment_method": "boolean",
+                    "show_lite_version": "boolean",
+                    "change_lite_version_days": "number",
+                    "bulk_order_support": "boolean",
+                    "can_see_request_for_quotation": "boolean"
+                  },
+                  "is_operating_country_in_marketplace": "boolean"
+                },
+                "is_locked": "number",
+                "locked_reason": "null",
+                "is_sub_agent": "number",
+                "image": "null",
+                "details": [
+                  {
+                    "trade_licence_number": "null",
+                    "global_location_number": "null",
+                    "city": {
+                      "id": "number",
+                      "city_name": "string",
+                      "country_id": "number",
+                      "require_location_for_partial_approval": "number",
+                      "require_pharmacy_license_for_partial_approval": "number"
+                    },
+                    "area": {
+                      "id": "number",
+                      "area_name": "string",
+                      "city_id": "number",
+                      "distributors_covering_count": "number"
+                    },
+                    "address": "string",
+                    "trade_licence_url": "null",
+                    "province": "null",
+                    "sub_type": "null",
+                    "street": "string",
+                    "building": "null",
+                    "brick": "null",
+                    "location_lat": "string",
+                    "location_long": "string",
+                    "mobile": "null",
+                    "additional_directions": "null",
+                    "no_of_branches": "null",
+                    "preferred_distributors": "null",
+                    "documents": [
+                      "string"
+                    ],
+                    "document_types": "array",
+                    "document_files": [
+                      {
+                        "id": "number",
+                        "file_name": "string",
+                        "file_type": "string",
+                        "file_url": "string",
+                        "document_type": "null"
+                      }
+                    ]
+                  }
+                ],
+                "paymentMethods": "array",
+                "allPaymentMethods": [
+                  {
+                    "id": "number",
+                    "payment_method_name": "string"
+                  }
+                ],
+                "entityRelationGroups": "array",
+                "cart_id": "number",
+                "cart_new_design": "boolean",
+                "show_rewards": "boolean",
+                "is_display_goals": "boolean",
+                "cohort_id": "number",
+                "show_spinning_wheel": "boolean",
+                "percentage_complete_profile": "string",
+                "premium_trial_days": "number",
+                "premium_paid_days": "number",
+                "is_erp_pharmacy": "number",
+                "has_pulse_access": "number",
+                "show_aumet_offers": "boolean",
+                "show_non_pharma": "boolean",
+                "show_switch_cart_popup": "boolean",
+                "non_pharma_new_design": "boolean",
+                "show_product_card_grid_view": "boolean",
+                "show_product_card_list_view": "boolean",
+                "show_shortage_report_navbar_view": "boolean",
+                "show_new_cart": "boolean",
+                "show_new_cart_sku_recommendation": "boolean",
+                "show_share_winner": "boolean",
+                "home_page_sorting": "boolean",
+                "show_new_loyalty_points": "boolean",
+                "show_ahid": "boolean",
+                "show_shift_items": "boolean",
+                "apply_haptic_feedback": "boolean",
+                "apply_offline_search": "boolean",
+                "apply_add_to_cart_auto_adjust": "boolean",
+                "show_join_acquisition": "boolean",
+                "p2p_only_experience": "boolean",
+                "show_smart_order_banner": "boolean",
+                "default_wallet_payment_method": "boolean",
+                "membership_save_amount": "string",
+                "premium_save_amount": "string",
+                "show_virtual_distributor_list": "boolean",
+                "show_bnpl_list": "boolean",
+                "bnpl_balance": "string",
+                "show_premium_subscribe_now_btn": "boolean",
+                "bnpl_available_balance": "string",
+                "bnpl_current_balance": "string",
+                "bnpl_settlement": "array",
+                "completed_bnpl_order_id": "null",
+                "is_aumet_solution_user": "boolean",
+                "lite_version_last_order_days": "null",
+                "lite_version_none_placed_order_days": "null",
+                "is_active_inventory_optimization": "boolean",
+                "min_discount": "number",
+                "max_discount": "number",
+                "loyalty_level": "string",
+                "loyalty_total_points": "string",
+                "settings": {
+                  "is_bulk_order_best_price_enabled": "boolean",
+                  "bulk_order_support": "boolean",
+                  "canSeeRequestForQuotation": "boolean"
+                },
+                "is_loyalty_enabled": "boolean",
+                "lock_start_date": "null",
+                "lock_end_date": "null",
+                "use_lock_dates": "number",
+                "user_id": "number",
+                "pharmacy_seller_id": "number",
+                "priority_score": "number"
+              },
+              "is_pharmacy_premium": "null",
+              "is_account_premium": "null",
+              "is_pharmacy_premium_active": "boolean",
+              "retry_after_day": "number"
+            }
+          ],
+          "roles": [
+            {
+              "id": "number",
+              "name": "string"
+            }
+          ],
+          "has_new_content": "boolean",
+          "allow_screenshots": "boolean"
+        }
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "POST",
+      "host": "marketplace.aumet.com",
+      "pathTemplate": "/user/spa-login",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Content-Length",
+        "Content-Type",
+        "Cookie",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "X-Requested-With",
+        "X-XSRF-TOKEN",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "x-request-source",
+        "x-user-lang"
+      ],
+      "requestBodyFieldNames": [
+        "confirm_logout_others",
+        "country",
+        "country.configuration",
+        "country.configuration.bulk_order_support",
+        "country.configuration.can_see_request_for_quotation",
+        "country.configuration.change_lite_version_days",
+        "country.configuration.display_offers_payment_method",
+        "country.configuration.enable_request_quotation",
+        "country.configuration.screenshot_tracking_country",
+        "country.configuration.show_knowlage_center",
+        "country.configuration.show_lite_version",
+        "country.contact_us",
+        "country.contact_us.contact_url",
+        "country.contact_us.email",
+        "country.contact_us.location",
+        "country.contact_us.mobile",
+        "country.country_code",
+        "country.country_name",
+        "country.currency_id",
+        "country.currency_id.currency_name",
+        "country.currency_id.exchange_rate",
+        "country.currency_id.id",
+        "country.currency_id.short_name",
+        "country.currency_id.symbol",
+        "country.device_limitation_otp",
+        "country.facebook",
+        "country.id",
+        "country.instagram",
+        "country.is_operating_country_in_marketplace",
+        "country.is_show_notifications_promotions_tab",
+        "country.language_id",
+        "country.linkedin",
+        "country.mobile_number_placeholder",
+        "country.prefix",
+        "country.show_otp",
+        "country.show_pharmacy_doc_reminder_after_order",
+        "country.show_pharmacy_location_reminder_after_order",
+        "country.show_saved_amount",
+        "country.youtube",
+        "device_id",
+        "email",
+        "mobile",
+        "password",
+        "verification_token"
+      ],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {},
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "plb.arabot.io",
+      "pathTemplate": "/bots/{id}/languages",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "status": "string",
+        "message": "string",
+        "code": "number",
+        "total": "number",
+        "data": [
+          {
+            "id": "number",
+            "name": "string",
+            "display_name": "string",
+            "iso": "string",
+            "change_text": "string",
+            "flag_url": "string"
+          }
+        ]
+      },
+      "sampleValues": {
+        "total": 0
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "plb.arabot.io",
+      "pathTemplate": "/bots/{id}/uuid/settings",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        "Accept",
+        "Accept-Encoding",
+        "Accept-Language",
+        "Connection",
+        "Host",
+        "Origin",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "User-Agent",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "status": "string",
+        "message": "string",
+        "code": "number",
+        "total": "number",
+        "data": {
+          "bot_id": "number",
+          "type": "null",
+          "secret_key": "string",
+          "theme": {
+            "theme": {
+              "font": "string",
+              "delay": "number",
+              "avatar": "string",
+              "close_icon": "string",
+              "radius": "string",
+              "outline": "boolean",
+              "position": {
+                "x": "string",
+                "y": "string"
+              },
+              "tracking": "array",
+              "back_drop": "boolean",
+              "font_size": "string",
+              "background": "string",
+              "chat_radius": "number",
+              "full_avatar": "boolean",
+              "send_button": "string",
+              "show_avatar": "boolean",
+              "theme_color": "string",
+              "floating_menu": "boolean",
+              "quick_message": {
+                "enabled": "boolean",
+                "time_visit": "number",
+                "repetition": "string",
+                "time_trigger": "number",
+                "outer_message": {
+                  "ar": {
+                    "message": {
+                      "text": "string",
+                      "elements": "array"
+                    },
+                    "send_type": "string"
+                  },
+                  "en": {
+                    "message": {
+                      "text": "string",
+                      "elements": "array"
+                    },
+                    "send_type": "string"
+                  }
+                }
+              },
+              "toolbar_title": {
+                "ar": "string",
+                "en": "string",
+                "tr": "string",
+                "deu": "string",
+                "fra": "string",
+                "urd": "string"
+              },
+              "message_shadow": "boolean",
+              "messages_style": "string",
+              "show_thumbs_up": "boolean",
+              "toolbar_subtitle": {
+                "ar": "string",
+                "en": "string",
+                "tr": "string",
+                "deu": "string",
+                "fra": "string",
+                "urd": "string"
+              },
+              "animation_effect": "string",
+              "default_language": "string",
+              "my_message_color": "string",
+              "chat_button_image": "string",
+              "input_placeholder": {
+                "ar": "string",
+                "en": "string",
+                "tr": "string",
+                "deu": "string",
+                "fra": "string",
+                "urd": "string"
+              },
+              "messages_animation": "string",
+              "toolbar_text_color": "string",
+              "other_message_color": "string",
+              "reflect_site_lang_to_bot": "boolean",
+              "show_outer_notification": "boolean",
+              "toolbar_background_color": "string",
+              "my_message_background_color": "string",
+              "keep_messages_on_lang_change": "boolean",
+              "other_message_background_color": "string",
+              "footer": {
+                "enabled": "boolean",
+                "label": {
+                  "ar": "string",
+                  "en": "string",
+                  "tr": "string",
+                  "deu": "string",
+                  "fra": "string",
+                  "urd": "string"
+                }
+              },
+              "hyperlink_color": "string",
+              "start_button_color": "string",
+              "chat_width": "number"
+            },
+            "config": {
+              "version": "number",
+              "mode": "string",
+              "emoji": "boolean",
+              "media": "boolean",
+              "voice": "boolean",
+              "speech": "boolean",
+              "key_secret": "string",
+              "customer_key": "string",
+              "share_location": "boolean",
+              "has_history_mode": "boolean",
+              "welcome_message": {
+                "ar": "string",
+                "en": "string",
+                "tr": "string",
+                "deu": "string",
+                "fra": "string"
+              },
+              "require_user_info": "array",
+              "whitelist_domains": "array",
+              "hide_arabot_prompt": "boolean",
+              "auto_scroll_down": "boolean",
+              "ask_user_lang": "boolean",
+              "use_vertical_btn": "boolean",
+              "centered_title": "boolean",
+              "close_action": {
+                "type": "string",
+                "intent_id": "string",
+                "message": {
+                  "ar": "string",
+                  "en": "string",
+                  "tr": "string",
+                  "deu": "string",
+                  "fra": "string",
+                  "urd": "string"
+                },
+                "repetition": "boolean",
+                "session_duration": "number"
+              },
+              "enable_accessibility": "boolean",
+              "hide_header_mobile": "boolean",
+              "voice_auto_play": "boolean",
+              "response_type": "string",
+              "webchat_voice_to_text_enabled": "boolean",
+              "chat_style": "string"
+            }
+          },
+          "menus": [
+            {
+              "locale": "string",
+              "items": [
+                {
+                  "title": "string",
+                  "type": "string",
+                  "value": "string",
+                  "sub_items": "null"
+                }
+              ],
+              "default_locale": "boolean"
+            }
+          ]
+        }
+      },
+      "sampleValues": {
+        "total": 0
+      },
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "www.cookieyes.com",
+      "pathTemplate": "/api/affiliate/",
+      "queryParamNames": [
+        "page",
+        "ref",
+        "referrer"
+      ],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cookie",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "valid": "boolean"
+      },
+      "sampleValues": {},
+      "count": 1
+    },
+    {
+      "method": "GET",
+      "host": "www.cookieyes.com",
+      "pathTemplate": "/api/intercom-status/",
+      "queryParamNames": [],
+      "requestHeaderNames": [
+        ":authority",
+        ":method",
+        ":path",
+        ":scheme",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cookie",
+        "priority",
+        "referer",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent"
+      ],
+      "requestBodyFieldNames": [],
+      "statusCodes": [
+        200
+      ],
+      "responseFields": {
+        "showLauncher": "boolean",
+        "color": "string"
+      },
+      "sampleValues": {},
+      "count": 1
+    }
+  ]
+}
