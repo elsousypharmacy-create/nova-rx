@@ -29,6 +29,9 @@ const K = 'test-key-12345678';
   assert(p.includes('وليس تعليمات'), 'condition is declared as data, not instructions');
   const single = buildMedicationInstructionPrompt({ medication: { name: 'Augmentin 1g' }, patient: { condition: 'ضغط' } });
   assert(single.includes('"condition": "ضغط"'));
+  const unknownW = buildMedicationBatchPrompt({ medications: [{ name: 'Augmentin 1g' }], patient: { age: 4, weight: '18', weightUnknown: true } });
+  assert(unknownW.includes('"weightUnknown": true') && unknownW.includes('"weightKg": null'), 'unknown weight is passed on and the typed weight is dropped');
+  assert(unknownW.includes('الوزن غير معروف'), 'the prompt asks for an approximate dose + warning when the weight is unknown');
   const long = buildMedicationBatchPrompt({ medications: [{ name: 'x' }], patient: { condition: 'ا'.repeat(2000) } });
   assert(!long.includes('ا'.repeat(401)), 'condition is capped at 400 characters');
 }

@@ -26,9 +26,11 @@ async function openPanel(browser, width, height, mode = 'ok') {
     await sleep(400);
     if (mode === '403') return r.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'GEMINI_HTTP_ERROR', error: 'Gemini models/x returned HTTP 403.', details: { model: 'models/x', status: 403, geminiStatus: 'PERMISSION_DENIED', code: 403, message: 'API key not valid' } }) });
     const cond = (body.patient && body.patient.condition) || '';
+    const warnMode = mode === 'warn';
     const items = body.medications.map((m, i) => {
       const it = { index: i, dose: 'قرص', frequency: 'مرتين يوميًا', duration: '٥ أيام', instructions: 'بعد الأكل مع كوب ماء', warnings: [] };
-      if (i === 1) it.duration = null;
+      if (i === 1 && !warnMode) it.duration = null;
+      if (i === 0 && warnMode) it.warnings = ['حساسية بنسلين: الدواء من فصيلة البنسلين'];
       if (i === 0 && /بنسلين/.test(cond)) it.warnings = ['حساسية بنسلين: الدواء من فصيلة البنسلين'];
       return it;
     });
@@ -132,6 +134,69 @@ try {
     check(`${L}: zero page errors`, errors.length === 0);
     await page.close();
   }
+  // ---- child: age + weight are right under the buttons, required, and the table stays quiet until then
+  {
+    const { page, errors, calls } = await openPanel(browser, 1194, 834, 'ok');
+    const L = 'child';
+    await page.click('.nl-quick button[data-q="child"]');
+    await sleep(400);
+    const pos = await page.evaluate(() => { const y = id => document.getElementById(id).getBoundingClientRect().y; return { age: y('nlPatientAge'), weight: y('nlPatientWeight'), cond: y('nlCondition'), pad: document.querySelector('.nl-quick').getBoundingClientRect().bottom, ageVal: document.getElementById('nlPatientAge').value, wVal: document.getElementById('nlPatientWeight').value }; });
+    check(`${L}: age and weight sit right under the buttons, above the condition box`, pos.age > pos.pad - 2 && pos.age < pos.cond && pos.weight < pos.cond);
+    check(`${L}: they start empty (no adult age left over)`, pos.ageVal === '' && pos.wVal === '');
+    check(`${L}: the table is quiet (dashes, no amber "missing" cells) until there is data`, (await page.$$eval('#nlMedicineList .med-sum .gap', a => a.length)) === 0 && (await page.$eval('#nlMedicineList .med-card:nth-child(1)', e => e.classList.contains('idle'))));
+    check(`${L}: the bar asks for the age`, (await page.$eval('#nlBarWhy', e => e.textContent)).includes('عمر'));
+    await page.fill('#nlPatientAge', '4');
+    await page.dispatchEvent('#nlPatientAge', 'input');
+    await sleep(1200);
+    check(`${L}: age alone is not enough - nothing is sent and the bar asks for the weight`, calls.length === 0 && (await page.$eval('#nlBarWhy', e => e.textContent)).includes('وزن'));
+    await page.click('.nl-wunk');
+    for (let i = 0; i < 30 && calls.length < 1; i++) await sleep(200);
+    check(`${L}: "weight unknown" lets the AI run and says so`, calls.length === 1 && calls[0].patient.weightUnknown === true && !calls[0].patient.weightKg);
+    check(`${L}: the weight box is disabled while unknown`, await page.$eval('#nlPatientWeight', e => e.disabled));
+    await page.click('.nl-quick button[data-q="adult"]');
+    await sleep(400);
+    check(`${L}: switching to adult clears the child state`, await page.evaluate(() => !document.getElementById('nlPatientWeight').disabled && document.getElementById('nlPatientWeight').value === ''));
+    check(`${L}: zero page errors`, errors.length === 0);
+    await page.close();
+  }
+  // ---- warnings must be read before printing
+  {
+    const { page, errors } = await openPanel(browser, 1194, 834, 'warn');
+    const L = 'warning';
+    await page.click('.nl-quick button[data-q="adult"]');
+    await page.waitForFunction(() => document.querySelector('#nlMedicineList .med-card .st.err'), null, { timeout: 8000 });
+    await sleep(300);
+    check(`${L}: the row says "tap me" and printing is blocked`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .st', e => e.textContent)).includes('المس') && (await page.$eval('#nlBarWhy', e => e.textContent)).includes('المس'));
+    await page.$eval('#nlPrintAll', e => e.click());
+    await sleep(200);
+    check(`${L}: a print attempt is refused`, (await page.evaluate(() => (document.querySelector('.nlx-toast') || {}).textContent || '')).includes('التحذير'));
+    await page.click('#nlMedicineList .med-card:nth-child(1) .med-sum');
+    await sleep(300);
+    check(`${L}: the window shows the warning text`, (await page.$eval('.med-card.editing', e => e.textContent)).includes('بنسلين'));
+    await page.click('.med-card.editing .med-done');
+    await sleep(300);
+    check(`${L}: after reading it the row shows "reviewed" and the bar is clear`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .st', e => e.textContent)).includes('اطلعت') && (await page.$eval('#nlBarWhy', e => e.textContent)) === '');
+    check(`${L}: zero page errors`, errors.length === 0);
+    await page.close();
+  }
+  // ---- safe frame and layout on the common tablet / computer sizes
+  for (const [w, h] of [[1024, 768], [1080, 810], [1180, 820], [1194, 834], [1280, 800], [1366, 1024], [834, 1194]]) {
+    const { page, errors } = await openPanel(browser, w, h, 'ok');
+    const L = `${w}x${h}`;
+    await page.click('.nl-quick button[data-q="adult"]');
+    await sleep(2200);
+    const m = await page.evaluate(() => {
+      const R = e => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, r: r.right, b: r.bottom, w: r.width, h: r.height }; };
+      const sh = R(document.querySelector('#novaLabelsPanel .labels-sheet')), pa = R(document.getElementById('nlPrintAll')), tb = document.getElementById('nlMedicineList'), first = R(tb.querySelector('.med-card'));
+      return { left: sh.x, right: innerWidth - sh.r, top: sh.y, bottom: innerHeight - sh.b, pa, sh, hscroll: tb.scrollWidth > tb.clientWidth + 1, first, firstVisible: first.y >= 0 && first.b <= innerHeight, vw: innerWidth, vh: innerHeight };
+    });
+    check(`${L}: the window keeps at least 24px from every screen edge`, m.left >= 24 && m.right >= 24 && m.top >= 20 && m.bottom >= 24);
+    check(`${L}: the print button stays inside the window with room to spare`, m.pa.r <= m.sh.r - 12 && m.pa.b <= m.sh.b - 8 && m.pa.x >= m.sh.x);
+    check(`${L}: the table fits without sideways scrolling and its first row is on screen`, !m.hscroll && m.firstVisible);
+    check(`${L}: zero page errors`, errors.length === 0);
+    await page.close();
+  }
+
   {
     const { page, errors } = await openPanel(browser, 1194, 834, '403');
     const L = 'ai failure';
