@@ -61,10 +61,9 @@ try {
     const { ctx, page } = await open(browser, 'ar');
     await addItems(page, ['pana']);
     await page.keyboard.press('F9'); await sleep(400);
-    check('F9 opens the customer step first', await page.evaluate(() => !document.getElementById('customerCheckoutGate').hidden));
-    await page.focus('#gatePhone'); await page.keyboard.press('Enter'); await sleep(400);
+    check('F9 opens payment directly (one step, no forced customer step)', await page.evaluate(() => document.getElementById('customerCheckoutGate').hidden && document.getElementById('checkoutModal').classList.contains('active')));
     const st = await page.evaluate(() => ({ gate: document.getElementById('customerCheckoutGate').hidden, pay: !document.getElementById('checkoutModal').classList.contains('hidden') && getComputedStyle(document.getElementById('checkoutModal')).display !== 'none' }));
-    check('Enter on an empty number skips the customer and opens payment', st.gate && st.pay, JSON.stringify(st));
+    check('payment window keeps an optional add-customer button and no English leftovers', st.gate && st.pay && await page.evaluate(() => { const b = document.getElementById('checkoutAddCustomer'); const txt = document.querySelector('#checkoutModal .modal-card').innerText; return !!b && b.getBoundingClientRect().height > 0 && !/Total Amount Payable|Cancel \(Esc\)|\bExact\b/i.test(txt); }), JSON.stringify(st));
     await ctx.close();
   }
 
@@ -79,7 +78,7 @@ try {
         .map(e => ({ n: (e.id || e.className.toString().split(' ')[0]), w: Math.round(e.getBoundingClientRect().width), h: Math.round(e.getBoundingClientRect().height) })).filter(x => x.h < 43.5 || (/customer-action|more-action|refresh|qty-btn|btn-icon-del/.test(x.n) && x.w < 43.5));
     });
     check('touch: tabs, invoice buttons and quantity controls are >= 44px', small.length === 0, JSON.stringify(small.slice(0, 5)));
-    await page.keyboard.press('F9'); await sleep(300); await page.focus('#gatePhone'); await page.keyboard.press('Enter'); await sleep(400);
+    await page.keyboard.press('F9'); await sleep(500);
     const pay = await page.evaluate(() => [...document.querySelectorAll('.quick-cash-btn,#btnConfirmPayment,#btnCancelCheckout,#inputCashReceived')].filter(e => e.getBoundingClientRect().height > 0).map(e => Math.round(e.getBoundingClientRect().height)));
     check('touch: payment buttons and cash field are >= 44px', pay.length > 0 && pay.every(h => h >= 43.5), JSON.stringify(pay));
     await ctx.close();

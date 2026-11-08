@@ -110,8 +110,7 @@ try {
   // L2: checkout -> skip customer gate -> checkout modal opens
   await evalPage(`document.getElementById('btnCheckout').click()`);
   await sleep(200);
-  check('L2 customer gate opened', await evalPage(`!document.getElementById('customerCheckoutGate').hidden`));
-  await evalPage(`document.getElementById('gateSkipCustomer').click()`);
+  check('L2 payment opens directly (customer step is optional)', await evalPage(`document.getElementById('customerCheckoutGate').hidden`));
   await sleep(200);
   check('L3 checkout modal active', await evalPage(`document.getElementById('checkoutModal').classList.contains('active')`));
 

@@ -371,3 +371,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint — small "i" instead of caption + hint (stickers24, NOT deployed yet)
 - Owner idea: replace «اختياري — للذكاء الاصطناعي» and the hint under the condition box with a small "i" next to «حالة المريض». Tap i = short tip («اختياري. الذكاء الاصطناعي هيراعيها…»); tap again or tap elsewhere = closes (works on touch, no hover needed). EN overlay entries added. Test updated + 4 new checks.
 - Artifact stickers24 (built, tested, awaiting owner OK). Live is still stickers23 (75f6f76c…). Rollback = stickers23.
+
+## Checkpoint — one-step checkout + Arabic payment window (stickers25)
+- F9 / «إتمام الدفع» now opens the payment window directly. The forced «رقم العميل قبل الدفع» step is gone: `customerGateSkipped` defaults to true; the payment window keeps its «إضافة رقم العميل (اختياري)» button which opens the old gate (lookup / new customer logic untouched); cancelling the gate returns to the invoice and the next checkout is direct again.
+- English leftovers in the payment window are translated (إجمالي المستحق / بالضبط / إلغاء (Esc) / عميل عابر) with matching EN entries; verified AR and EN modes.
+- Tests updated: ux-batch3 (2 checks + touch), issue-4 L2. Stickers already open automatically after payment (`nova:invoice-completed`, existing feature), so no extra receipt button was added.
+- Artifact stickers25. Rollback: stickers24 (16a99d35…).
