@@ -347,3 +347,6 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Landscape (>=900px): the condition box is sticky at the top of the right column; the extra-chips groups scroll inside their own box (max 230px) so the typed text stays visible while choosing.
 - Portrait (700–899px): sheet uses the full height (no 940px cap), "previous invoices" + "patient name" share one row, extra chips box max 180px. 5 invoice rows fit without scrolling at 834x1194.
 - Artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers18.js sha 9a24cd96…d5f4. Rollback: stickers17 (4dfe1283…).
+
+## Checkpoint — chip fill (stickers19)
+- Condition chips now fill the row width in the right column. Artifact stickers19 sha 46551d2a…487d. Rollback: stickers18 (9a24cd96…).
