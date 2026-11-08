@@ -1,0 +1,70 @@
+name: Supplier discovery (PharmaOverseas, logged in)
+
+# Manual only. Logs in with the pharmacy's own account from repository
+# secrets, records the site's requests, sanitizes them on the runner, deletes
+# the raw capture, and uploads ONLY the sanitized JSON + report.
+on:
+  workflow_dispatch:
+    inputs:
+      with_cart:
+        description: "Also add one item to the cart and remove it (no checkout)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supplier-discovery
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Get sanitizer
+        run: |
+          if [ ! -f tools/discovery/sanitize-har.mjs ]; then
+            git fetch origin kimi/issue-55-42447687991-clean
+            git show FETCH_HEAD:tools/discovery/sanitize-har.mjs > tools/discovery/sanitize-har.mjs
+            git show FETCH_HEAD:tools/discovery/report-skeleton.mjs > tools/discovery/report-skeleton.mjs
+          fi
+      - name: Capture (logged in)
+        env:
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+          WITH_CART: ${{ inputs.with_cart }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/cap" out
+          node tools/discovery/pharmaoverseas-capture.cjs "$RUNNER_TEMP/cap"
+      - name: Sanitize and delete raw capture
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ -f "$RUNNER_TEMP/cap/raw.har" ]; then
+            node tools/discovery/sanitize-har.mjs "$RUNNER_TEMP/cap/raw.har" > out/pharmaoverseas.json
+            node tools/discovery/report-skeleton.mjs out/pharmaoverseas.json "PharmaOverseas (logged in)" > out/pharmaoverseas.md
+          fi
+          rm -rf "$RUNNER_TEMP/cap"
+          # Refuse to upload if anything that looks like a token slipped through.
+          if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}|bearer [a-z0-9]' out/* 2>/dev/null; then
+            echo "::error::Possible token in sanitized output; not uploading"; rm -rf out; exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pharmaoverseas-discovery-${{ github.run_id }}
+          path: out/
+          if-no-files-found: warn
+          retention-days: 7
