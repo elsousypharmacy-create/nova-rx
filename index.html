@@ -2375,7 +2375,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       const state = {
         mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
         attachedCustomer: null,
-        customerGateSkipped: false,
+        customerGateSkipped: true,
         customerGatePending: false,
         invoiceLines: [],
         percentDiscount: 0,
@@ -2729,7 +2729,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       // --- CUSTOMER PROFILE ACTIONS ---
       function attachCustomer(customer) {
         state.attachedCustomer = customer;
-        state.customerGateSkipped = false;
+        state.customerGateSkipped = true;
         elements.customerEmptyBox.style.display = "none";
         elements.customerSelectedBox.style.display = "flex";
         elements.sidebarCustBadge.style.display = "block";
@@ -2767,7 +2767,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       function detachCustomer() {
         state.attachedCustomer = null;
-        state.customerGateSkipped = false;
+        state.customerGateSkipped = true;
         elements.customerEmptyBox.style.display = "flex";
         elements.customerSelectedBox.style.display = "none";
         elements.sidebarCustBadge.style.display = "none";
@@ -3081,7 +3081,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
-        state.customerGateSkipped = false;
+        state.customerGateSkipped = true;
         state.customerGatePending = false;
         renderInvoice();
         showToast("Payment confirmed & Invoice completed!");
@@ -3093,7 +3093,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
-        state.customerGateSkipped = false;
+        state.customerGateSkipped = true;
         state.customerGatePending = false;
         setSearchMode("PRODUCT");
         showToast("New sale ready. Scan barcode or search medicine.");
@@ -3151,7 +3151,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         state.invoiceLines = JSON.parse(JSON.stringify(record.lines));
         state.percentDiscount = Number(record.percentDiscount) || 0;
         state.fixedDiscount = Number(record.fixedDiscount) || 0;
-        state.customerGateSkipped = !!record.customerGateSkipped;
+        state.customerGateSkipped = true;
         state.customerGatePending = false;
         elements.inputPercentDiscount.value = state.percentDiscount || '';
         elements.inputFixedDiscount.value = state.fixedDiscount || '';
@@ -3352,6 +3352,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
         });
         document.getElementById("gateCancelCustomer").addEventListener("click", () => {
           state.customerGatePending = false;
+          state.customerGateSkipped = true;
           document.getElementById("customerCheckoutGate").hidden = true;
           elements.mainSearchInput.focus();
         });
@@ -3573,7 +3574,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'No items found':'لا توجد أصناف','items':'أصناف'
  };
  const enToAr={};for(const [ar,en] of Object.entries(arToEn)){if(/[\u0600-\u06FF]/.test(ar)&&!/[\u0600-\u06FF]/.test(en))enToAr[en]=ar;else if(!/[\u0600-\u06FF]/.test(ar)&&/[\u0600-\u06FF]/.test(en))enToAr[ar]=en;}
- const arOverrides={'Sales':'البيع','Invoices':'الفواتير','Products':'المنتجات','Customers':'العملاء','Reports':'التقارير','Settings':'الإعدادات','Demo':'نسخة تجريبية','Point of Sale':'نظام نقاط البيع','Elsousy Pharmacy':'صيدلية السوسي','Dr. Ahmed Elsousy':'د. أحمد السوسي','Name':'الاسم','Phone':'الهاتف','Visits':'الزيارات','Points':'النقاط','Amount':'القيمة','Date':'التاريخ','Stock':'الرصيد','Category':'التصنيف'};
+ const arOverrides={'Sales':'البيع','Invoices':'الفواتير','Products':'المنتجات','Customers':'العملاء','Reports':'التقارير','Settings':'الإعدادات','Demo':'نسخة تجريبية','Point of Sale':'نظام نقاط البيع','Elsousy Pharmacy':'صيدلية السوسي','Dr. Ahmed Elsousy':'د. أحمد السوسي','Name':'الاسم','Phone':'الهاتف','Visits':'الزيارات','Points':'النقاط','Amount':'القيمة','Date':'التاريخ','Stock':'الرصيد','Category':'التصنيف','Total Amount Payable':'إجمالي المستحق','Exact':'بالضبط','Cancel (Esc)':'إلغاء (Esc)','Walk-in Customer (No loyalty attached)':'عميل عابر','No loyalty attached':'بدون رقم عميل'};
  Object.assign(enToAr,arOverrides);
  /* Directional dictionaries. arToEn mixes both directions, so English mode used to turn English words into Arabic (mixed text). */
  const toEn={};
@@ -3586,7 +3587,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'حالات تانية ▾':'More conditions ▾','أقل ▴':'Less ▴','حساسية':'Allergies','أمراض مزمنة':'Chronic conditions','حالات خاصة':'Special cases','أسبرين ومسكنات':'Aspirin & painkillers','سلفا':'Sulfa','مضاد حيوي تاني':'Other antibiotic','ربو':'Asthma','غدة درقية':'Thyroid','صرع':'Epilepsy','جلوكوما':'Glaucoma','سيولة دم':'Blood thinner','مناعة ضعيفة':'Weak immunity','علاج كيماوي':'Chemotherapy','كبير سن':'Elderly','قبل عملية':'Before surgery','بيسوق':'Drives','مش بيبلع أقراص':'Cannot swallow pills','أدوية مزمنة':'Chronic medicines',
  'مثال: 4':'e.g. 4','مش عارف الوزن':'Weight unknown','بانتظار بيانات العميل':'Waiting for customer data','تحذير — المس':'Warning — tap','اطلعت':'Reviewed',
  'مين العميل؟':'Who is the customer?','بالغ':'Adult','طفل':'Child','حامل':'Pregnant','مرضعة':'Breastfeeding',
-  'حالة المريض':'Patient condition','اختياري — للذكاء الاصطناعي':'Optional — for the AI','اختياري. الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.':'Optional. The AI takes it into account for doses and warnings, and refreshes the instructions by itself after you stop typing.','معلومة':'Info',
+  'حالة المريض':'Patient condition','اختياري — للذكاء الاصطناعي':'Optional — for the AI','إجمالي المستحق':'Total Amount Payable','بالضبط':'Exact','إلغاء (Esc)':'Cancel (Esc)','بدون رقم عميل':'No loyalty attached','اختياري. الذكاء الاصطناعي هيراعيها في الجرعات والتحذيرات، وهيحدّث التعليمات لوحده بعد ما تخلص كتابة.':'Optional. The AI takes it into account for doses and warnings, and refreshes the instructions by itself after you stop typing.','معلومة':'Info',
   'مثال: التهاب حلق، حساسية بنسلين، ضغط مرتفع…':'Example: sore throat, penicillin allergy, high blood pressure…',
   'حساسية بنسلين':'Penicillin allergy','ضغط':'Blood pressure','سكر':'Diabetes','قلب':'Heart','كلى':'Kidney','كبد':'Liver','معدة':'Stomach',
   'الجرعات اقتراحات من الذكاء الاصطناعي — راجعها قبل الطباعة':'Doses are AI suggestions — review them before printing',
