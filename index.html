@@ -1869,8 +1869,31 @@ body *:not(svg):not(svg *){
 .nova-customer-gate-card input{width:100%;box-sizing:border-box;background:#101820;border:1px solid #52687a;border-radius:9px;padding:13px;color:#fff;font-size:17px;outline:none}.nova-customer-gate-card input:focus{border-color:#6ec9f2;box-shadow:0 0 0 2px #6ec9f222}#gateCustomerResult{font-size:12px;color:#f5b7a5;min-height:0;margin-top:5px}.nova-customer-gate-card .nova-gate-primary{margin-top:10px}
 #gateCustomerResult.nova-customer-found{color:#86d9b4;font-weight:700;background:#183328;border:1px solid #35664e;border-radius:7px;padding:9px;margin-top:9px;line-height:1.6}
 </style>
+<style id="NOVA_SALE_POLISH">
+/* sale screen layout, applied BEFORE first paint (lives in <head>) so nothing jumps after load */
+#nova-wa-nav{display:none!important}
+#novaAiLaunch{background:#203d4c!important;border:1px solid #47758b!important;color:#e3f5ff!important;box-shadow:0 6px 22px #0006!important}
+#novaAiLaunch:hover{background:#2b5165!important}
+.toast-container{top:auto!important;bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center}
+@media(min-width:900px) and (orientation:landscape){
+html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width:none!important}
+html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}
+}
+@media(min-width:1100px) and (orientation:landscape){
+html body .invoice-footer{min-height:108px!important}
+}
+@media(orientation:portrait) and (min-width:700px){
+html body .pos-root{flex-direction:column!important;height:auto!important;min-height:calc(100dvh - 104px)!important;overflow:visible!important}
+html body .main-workspace,html body .customer-sidebar{flex:0 0 auto!important;width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important}
+html body .main-workspace{border-right:0!important}
+html body .customer-sidebar{min-height:0!important}
+html body .table-container{min-height:46dvh!important;overflow-x:auto}
+html body .invoice-footer{position:sticky;bottom:0;z-index:20}
+}
+</style>
+<script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
 </head>
-<body>
+<body><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
@@ -4362,24 +4385,6 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .nl-cond .chips-more{max-height:180px;overflow-y:auto;overscroll-behavior:contain}
 }
 </style>
-<style id="NOVA_SALE_POLISH">
-/* sale screen polish: calmer palette, wider invoice, usable portrait, toast out of the way */
-#nova-wa-nav{display:none!important}
-#novaAiLaunch{background:#203d4c!important;border:1px solid #47758b!important;color:#e3f5ff!important;box-shadow:0 6px 22px #0006!important}
-#novaAiLaunch:hover{background:#2b5165!important}
-.toast-container{top:auto!important;bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center}
-@media(min-width:900px) and (orientation:landscape){
-html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width:none!important}
-html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}
-}
-@media(orientation:portrait) and (min-width:700px){
-html body .pos-root{flex-direction:column!important;height:auto!important;min-height:calc(100dvh - 104px)!important;overflow:visible!important}
-html body .main-workspace,html body .customer-sidebar{flex:0 0 auto!important;width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important}
-html body .main-workspace{border-right:0!important}
-html body .customer-sidebar{min-height:0!important}
-html body .table-container{min-height:46dvh!important;overflow-x:auto}
-html body .invoice-footer{position:sticky;bottom:0;z-index:20}
-}
-</style><script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script>
-</body>
+
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script></body>
 </html>

@@ -358,3 +358,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Appended `NOVA_SALE_POLISH` style/script before `</body>`: hides the dead WhatsApp nav link, sticker launcher in app palette, toast moved to bottom-centre, landscape customer column 21% (230–270px) so the invoice is wider, portrait (>=700px) one column with full-width search/header and sticky checkout footer, broken logo image hidden.
 - Not changed (owner decision needed): bilingual product names, per-line discount column, +/- quantity order.
 - Artifact stickers21 sha 1c2a77c7…e3e7. Rollback: stickers20 (3ce1548c…).
+
+## Checkpoint — stable layout from first paint (stickers22)
+- Cause of "sizes change": (1) the sale-screen override block lived at the END of the 540KB body and applied only after all inline scripts ran (customer column 299px -> 251px ~1.8s after open); (2) html lang/dir and body lang class were set by a script mid-body, so the checkout button flipped sides and the footer grew 3px; (3) four stacked generations of width rules (73/70/67%) plus breakpoints at 780/1050/1100/1300.
+- Fix: `NOVA_SALE_POLISH` now in `<head>`, early `lang/dir` script in head, early body `lang-*` class script right after `<body>`, footer min-height 108px for >=1100px landscape. At <1100px the footer keeps its original wrapped layout (forcing one row squeezed the totals).
+- Artifact stickers22 sha dd6a4345…3459. Rollback: stickers21 (1c2a77c7…).
