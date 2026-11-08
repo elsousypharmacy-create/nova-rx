@@ -2,6 +2,18 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
+<style id="NOVA_SPLASH">
+#novaSplash{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#08090b;color:#f1f3f5;opacity:1;transition:opacity .3s ease;pointer-events:none;direction:ltr}
+#novaSplash.out{opacity:0}
+#novaSplash .ns-mark{font:800 44px/1 Cairo,Tahoma,Arial,sans-serif;letter-spacing:.5px}
+#novaSplash .ns-mark small{font-size:20px;font-weight:700;color:#76b8d5;margin-left:4px}
+#novaSplash .ns-sub{font:600 14px/1.4 Cairo,Tahoma,Arial,sans-serif;color:#808b96;direction:rtl}
+#novaSplash .ns-bar{width:min(240px,60vw);height:4px;border-radius:4px;background:#1b2026;overflow:hidden}
+#novaSplash .ns-bar i{display:block;height:100%;width:40%;border-radius:4px;background:#387e9e;animation:nsslide 1.1s ease-in-out infinite}
+@keyframes nsslide{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+@media(prefers-reduced-motion:reduce){#novaSplash .ns-bar i{animation:none;width:100%;opacity:.6}}
+</style>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA Rx | صيدلية السوسي</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1893,7 +1905,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
 </head>
-<body><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
+<body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
