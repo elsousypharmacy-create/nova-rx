@@ -1,0 +1,5110 @@
+{
+  "supplierId": "pharmaoverseas",
+  "started": "2026-11-08T07:03:39.199Z",
+  "finished": "2026-11-08T07:04:10.888Z",
+  "queries": [
+    "Panadol",
+    "Augmentin",
+    "Concor",
+    "Glucophage",
+    "Nexium",
+    "Brufen",
+    "Cataflam",
+    "Antinal"
+  ],
+  "offers": [
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000028851",
+      "barcode": null,
+      "productName": "Panadol megraine 30 tab",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 33.75,
+      "publicPrice": 51,
+      "discountPct": 33.82,
+      "netEffectivePrice": 33.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP33.750",
+          "priceType": "BUY",
+          "value": 33.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP51.000",
+          "priceType": "BUY",
+          "value": 51
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006917",
+      "barcode": null,
+      "productName": "PANADOL EXTRA 24 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 37.5,
+      "publicPrice": 54,
+      "discountPct": 30.56,
+      "netEffectivePrice": 37.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP37.500",
+          "priceType": "BUY",
+          "value": 37.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000037216",
+      "barcode": null,
+      "productName": "PANADOL EXTRA 48 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 75,
+      "publicPrice": 108,
+      "discountPct": 30.56,
+      "netEffectivePrice": 75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP75.000",
+          "priceType": "BUY",
+          "value": 75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP108.000",
+          "priceType": "BUY",
+          "value": 108
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000029021",
+      "barcode": null,
+      "productName": "PANADOL JOINT 24 ER TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 69,
+      "publicPrice": 96,
+      "discountPct": 28.13,
+      "netEffectivePrice": 69,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP69.000",
+          "priceType": "BUY",
+          "value": 69
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP96.000",
+          "priceType": "BUY",
+          "value": 96
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000036813",
+      "barcode": null,
+      "productName": "PANADOL ADVANCE 500MG 48 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 67.2,
+      "publicPrice": 92,
+      "discountPct": 26.96,
+      "netEffectivePrice": 67.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP67.200",
+          "priceType": "BUY",
+          "value": 67.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP92.000",
+          "priceType": "BUY",
+          "value": 92
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000037836",
+      "barcode": null,
+      "productName": "Panadol Acute Head Cold 20 Tab",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 43.5,
+      "publicPrice": 62,
+      "discountPct": 29.84,
+      "netEffectivePrice": 43.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP43.500",
+          "priceType": "BUY",
+          "value": 43.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP62.000",
+          "priceType": "BUY",
+          "value": 62
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000058784",
+      "barcode": null,
+      "productName": "Panadol Baby and Infant 100ml SYP",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 40,
+      "publicPrice": 53,
+      "discountPct": 24.53,
+      "netEffectivePrice": 40,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP40.000",
+          "priceType": "BUY",
+          "value": 40
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP53.000",
+          "priceType": "BUY",
+          "value": 53
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025733",
+      "barcode": null,
+      "productName": "Panadol cold& flu day 24 tab",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 54,
+      "publicPrice": 76,
+      "discountPct": 28.95,
+      "netEffectivePrice": 54,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP76.000",
+          "priceType": "BUY",
+          "value": 76
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000052871",
+      "barcode": null,
+      "productName": "Panadol Extra 500mg Optizorb 24 tabs",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 42,
+      "publicPrice": 58,
+      "discountPct": 27.59,
+      "netEffectivePrice": 42,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP42.000",
+          "priceType": "BUY",
+          "value": 42
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP58.000",
+          "priceType": "BUY",
+          "value": 58
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000052872",
+      "barcode": null,
+      "productName": "Panadol Extra 500mg Optizorb 48 tabs",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 84,
+      "publicPrice": 116,
+      "discountPct": 27.59,
+      "netEffectivePrice": 84,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP84.000",
+          "priceType": "BUY",
+          "value": 84
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP116.000",
+          "priceType": "BUY",
+          "value": 116
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000057048",
+      "barcode": null,
+      "productName": "Panadol Sinus relief pe 24 tab",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 31.5,
+      "publicPrice": 46,
+      "discountPct": 31.52,
+      "netEffectivePrice": 31.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP31.500",
+          "priceType": "BUY",
+          "value": 31.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP46.000",
+          "priceType": "BUY",
+          "value": 46
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000027512",
+      "barcode": null,
+      "productName": "Panadol cold& flu vapour releas 10 sache",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 97.5,
+      "publicPrice": 130,
+      "discountPct": 25,
+      "netEffectivePrice": 97.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:50.465Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP97.500",
+          "priceType": "BUY",
+          "value": 97.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP130.000",
+          "priceType": "BUY",
+          "value": 130
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001798",
+      "barcode": null,
+      "productName": "AUGMENTIN 625MG 10 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 92,
+      "publicPrice": 117,
+      "discountPct": 21.37,
+      "netEffectivePrice": 92,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP92.000",
+          "priceType": "BUY",
+          "value": 92
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP117.000",
+          "priceType": "BUY",
+          "value": 117
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024039",
+      "barcode": null,
+      "productName": "AUGMENTIN ADULTS 1GM/125MG 12 SACHETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 138.58,
+      "publicPrice": 169,
+      "discountPct": 18,
+      "netEffectivePrice": 138.58,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP138.580",
+          "priceType": "BUY",
+          "value": 138.58
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP169.000",
+          "priceType": "BUY",
+          "value": 169
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001827",
+      "barcode": null,
+      "productName": "AUGMENTIN 1 GM 14 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 164.8,
+      "publicPrice": 210,
+      "discountPct": 21.52,
+      "netEffectivePrice": 164.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP164.800",
+          "priceType": "BUY",
+          "value": 164.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP210.000",
+          "priceType": "BUY",
+          "value": 210
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006606",
+      "barcode": null,
+      "productName": "AUGMENTIN 6.25MG/ML INFANT DROPS 20 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 68.88,
+      "publicPrice": 86,
+      "discountPct": 19.91,
+      "netEffectivePrice": 68.88,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP68.880",
+          "priceType": "BUY",
+          "value": 68.88
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP86.000",
+          "priceType": "BUY",
+          "value": 86
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000011019",
+      "barcode": null,
+      "productName": "AUGMENTIN 312 MG/5ML SUSP. 80 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 93.6,
+      "publicPrice": 120,
+      "discountPct": 22,
+      "netEffectivePrice": 93.6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP93.600",
+          "priceType": "BUY",
+          "value": 93.6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP120.000",
+          "priceType": "BUY",
+          "value": 120
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000019977",
+      "barcode": null,
+      "productName": "AUGMENTIN DUO 228MG/5ML SUSP. 70 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 85.28,
+      "publicPrice": 107,
+      "discountPct": 20.3,
+      "netEffectivePrice": 85.28,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP85.280",
+          "priceType": "BUY",
+          "value": 85.28
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP107.000",
+          "priceType": "BUY",
+          "value": 107
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005187",
+      "barcode": null,
+      "productName": "AUGMENTIN 457MG/5ML SUSP. 70 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 107.2,
+      "publicPrice": 137,
+      "discountPct": 21.75,
+      "netEffectivePrice": 107.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP107.200",
+          "priceType": "BUY",
+          "value": 107.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP137.000",
+          "priceType": "BUY",
+          "value": 137
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000015095",
+      "barcode": null,
+      "productName": "AUGMENTIN 156 MG/5 ML SUSP. 80 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 76.8,
+      "publicPrice": 99,
+      "discountPct": 22.42,
+      "netEffectivePrice": 76.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP76.800",
+          "priceType": "BUY",
+          "value": 76.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP99.000",
+          "priceType": "BUY",
+          "value": 99
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006925",
+      "barcode": null,
+      "productName": "AUGMENTIN ES-600 PD. FOR ORAL SUSP 75 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 132.8,
+      "publicPrice": 169,
+      "discountPct": 21.42,
+      "netEffectivePrice": 132.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP132.800",
+          "priceType": "BUY",
+          "value": 132.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP169.000",
+          "priceType": "BUY",
+          "value": 169
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000002251",
+      "barcode": null,
+      "productName": "MAGNABIOTIC 156.25MG/5ML SUSP. 80 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 17.4,
+      "publicPrice": 21.75,
+      "discountPct": 20,
+      "netEffectivePrice": 17.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP17.400",
+          "priceType": "BUY",
+          "value": 17.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP21.750",
+          "priceType": "BUY",
+          "value": 21.75
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004060",
+      "barcode": null,
+      "productName": "CURAM 600 MG. /25 MG. 12 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 83.64,
+      "publicPrice": 108,
+      "discountPct": 22.56,
+      "netEffectivePrice": 83.64,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP83.640",
+          "priceType": "BUY",
+          "value": 83.64
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP108.000",
+          "priceType": "BUY",
+          "value": 108
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004659",
+      "barcode": null,
+      "productName": "E-MOXCLAV 1G 10 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 74.4,
+      "publicPrice": 96,
+      "discountPct": 22.5,
+      "netEffectivePrice": 74.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP74.400",
+          "priceType": "BUY",
+          "value": 74.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP96.000",
+          "priceType": "BUY",
+          "value": 96
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005506",
+      "barcode": null,
+      "productName": "MAGNABIOTIC 1.2 GM I.V. VIAL",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 23.2,
+      "publicPrice": 29,
+      "discountPct": 20,
+      "netEffectivePrice": 23.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP23.200",
+          "priceType": "BUY",
+          "value": 23.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP29.000",
+          "priceType": "BUY",
+          "value": 29
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005507",
+      "barcode": null,
+      "productName": "MAGNABIOTIC 625MG 8 TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 29.6,
+      "publicPrice": 37,
+      "discountPct": 20,
+      "netEffectivePrice": 29.6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP29.600",
+          "priceType": "BUY",
+          "value": 29.6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP37.000",
+          "priceType": "BUY",
+          "value": 37
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006610",
+      "barcode": null,
+      "productName": "MEGAMOX 625MG 14 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 114.49,
+      "publicPrice": 143,
+      "discountPct": 19.94,
+      "netEffectivePrice": 114.49,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP114.490",
+          "priceType": "BUY",
+          "value": 114.49
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP143.000",
+          "priceType": "BUY",
+          "value": 143
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000007839",
+      "barcode": null,
+      "productName": "MAGNABIOTIC 1 GM 10 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 37.2,
+      "publicPrice": 46.5,
+      "discountPct": 20,
+      "netEffectivePrice": 37.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP37.200",
+          "priceType": "BUY",
+          "value": 37.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP46.500",
+          "priceType": "BUY",
+          "value": 46.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000008665",
+      "barcode": null,
+      "productName": "HIBIOTIC 1 GM 16 TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 135.2,
+      "publicPrice": 173,
+      "discountPct": 21.85,
+      "netEffectivePrice": 135.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP135.200",
+          "priceType": "BUY",
+          "value": 135.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP173.000",
+          "priceType": "BUY",
+          "value": 173
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000011089",
+      "barcode": null,
+      "productName": "CURAM 875 MG /125 MG. 12 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 144.32,
+      "publicPrice": 182,
+      "discountPct": 20.7,
+      "netEffectivePrice": 144.32,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP144.320",
+          "priceType": "BUY",
+          "value": 144.32
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP182.000",
+          "priceType": "BUY",
+          "value": 182
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025869",
+      "barcode": null,
+      "productName": "AUGRAM 1 G 7 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 59.2,
+      "publicPrice": 76,
+      "discountPct": 22.11,
+      "netEffectivePrice": 59.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP59.200",
+          "priceType": "BUY",
+          "value": 59.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP76.000",
+          "priceType": "BUY",
+          "value": 76
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000002445",
+      "barcode": null,
+      "productName": "EMOXCLAV 500 MG. /125 MG. 10 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 64,
+      "publicPrice": 83,
+      "discountPct": 22.89,
+      "netEffectivePrice": 64,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP64.000",
+          "priceType": "BUY",
+          "value": 64
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP83.000",
+          "priceType": "BUY",
+          "value": 83
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005505",
+      "barcode": null,
+      "productName": "MAGNABIOTIC 600MG VIAL",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 17.2,
+      "publicPrice": 21.5,
+      "discountPct": 20,
+      "netEffectivePrice": 17.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP17.200",
+          "priceType": "BUY",
+          "value": 17.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP21.500",
+          "priceType": "BUY",
+          "value": 21.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000008462",
+      "barcode": null,
+      "productName": "CURAM 600 MG. /42.9 MG 75 ML. BOTTLE",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 88,
+      "publicPrice": 113,
+      "discountPct": 22.12,
+      "netEffectivePrice": 88,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP88.000",
+          "priceType": "BUY",
+          "value": 88
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP113.000",
+          "priceType": "BUY",
+          "value": 113
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000008666",
+      "barcode": null,
+      "productName": "HIBIOTIC 625MG 16 TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 111.2,
+      "publicPrice": 143,
+      "discountPct": 22.24,
+      "netEffectivePrice": 111.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP111.200",
+          "priceType": "BUY",
+          "value": 111.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP143.000",
+          "priceType": "BUY",
+          "value": 143
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000000190",
+      "barcode": null,
+      "productName": "HIBIOTIC 312MG/5 ML 60ML SUSP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 40,
+      "publicPrice": 53,
+      "discountPct": 24.53,
+      "netEffectivePrice": 40,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:53.197Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP40.000",
+          "priceType": "BUY",
+          "value": 40
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP53.000",
+          "priceType": "BUY",
+          "value": 53
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000013651",
+      "barcode": null,
+      "productName": "CONCOR 5MG 30 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 52.8,
+      "publicPrice": 72,
+      "discountPct": 26.67,
+      "netEffectivePrice": 52.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP52.800",
+          "priceType": "BUY",
+          "value": 52.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.000",
+          "priceType": "BUY",
+          "value": 72
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000028431",
+      "barcode": null,
+      "productName": "CONCOR AMLO 5- 5MG 30TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 167.28,
+      "publicPrice": 210,
+      "discountPct": 20.34,
+      "netEffectivePrice": 167.28,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP167.280",
+          "priceType": "BUY",
+          "value": 167.28
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP210.000",
+          "priceType": "BUY",
+          "value": 210
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000013653",
+      "barcode": null,
+      "productName": "CONCOR 10 MG 30 F.C. TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 74.4,
+      "publicPrice": 99,
+      "discountPct": 24.85,
+      "netEffectivePrice": 74.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP74.400",
+          "priceType": "BUY",
+          "value": 74.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP99.000",
+          "priceType": "BUY",
+          "value": 99
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000013652",
+      "barcode": null,
+      "productName": "CONCOR PLUS 5/12.5MG 30 F.C. TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 52.8,
+      "publicPrice": 72,
+      "discountPct": 26.67,
+      "netEffectivePrice": 52.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP52.800",
+          "priceType": "BUY",
+          "value": 52.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.000",
+          "priceType": "BUY",
+          "value": 72
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000013650",
+      "barcode": null,
+      "productName": "CONCOR COR 2.5 MG 30 F.C. TABS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 43.2,
+      "publicPrice": 60,
+      "discountPct": 28,
+      "netEffectivePrice": 43.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP43.200",
+          "priceType": "BUY",
+          "value": 43.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP60.000",
+          "priceType": "BUY",
+          "value": 60
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000013654",
+      "barcode": null,
+      "productName": "CONCOR PLUS 10/25MG 30 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 81.6,
+      "publicPrice": 108,
+      "discountPct": 24.44,
+      "netEffectivePrice": 81.6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP81.600",
+          "priceType": "BUY",
+          "value": 81.6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP108.000",
+          "priceType": "BUY",
+          "value": 108
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000022813",
+      "barcode": null,
+      "productName": "Maskjlokom ophthalmic solution 10 ml",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 18.45,
+      "publicPrice": 24.6,
+      "discountPct": 25,
+      "netEffectivePrice": 18.45,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP18.450",
+          "priceType": "BUY",
+          "value": 18.45
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.600",
+          "priceType": "BUY",
+          "value": 24.6
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000012633",
+      "barcode": null,
+      "productName": "DROPIFLOX 10 ML DROPS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 9,
+      "publicPrice": 12,
+      "discountPct": 25,
+      "netEffectivePrice": 9,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP9.000",
+          "priceType": "BUY",
+          "value": 9
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP12.000",
+          "priceType": "BUY",
+          "value": 12
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010801",
+      "barcode": null,
+      "productName": "BRIMONOCOND 0.2 % EYE DPS. 5 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 38.25,
+      "publicPrice": 53,
+      "discountPct": 27.83,
+      "netEffectivePrice": 38.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP38.250",
+          "priceType": "BUY",
+          "value": 38.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP53.000",
+          "priceType": "BUY",
+          "value": 53
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010266",
+      "barcode": null,
+      "productName": "ALBUSTIX D 32 MG. /12.5 MG. 30 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 157.5,
+      "publicPrice": 216,
+      "discountPct": 27.08,
+      "netEffectivePrice": 157.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP157.500",
+          "priceType": "BUY",
+          "value": 157.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP216.000",
+          "priceType": "BUY",
+          "value": 216
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000011482",
+      "barcode": null,
+      "productName": "ALBUSTIX 8MG 30 TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 56.25,
+      "publicPrice": 81,
+      "discountPct": 30.56,
+      "netEffectivePrice": 56.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP56.250",
+          "priceType": "BUY",
+          "value": 56.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP81.000",
+          "priceType": "BUY",
+          "value": 81
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010267",
+      "barcode": null,
+      "productName": "ALBUSTIX D 16 MG. /12.5 MG. 30 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 112.5,
+      "publicPrice": 156,
+      "discountPct": 27.88,
+      "netEffectivePrice": 112.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:55.997Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP112.500",
+          "priceType": "BUY",
+          "value": 112.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP156.000",
+          "priceType": "BUY",
+          "value": 156
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004227",
+      "barcode": null,
+      "productName": "GLUCOPHAGE 1000MG 30 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 38.4,
+      "publicPrice": 54,
+      "discountPct": 28.89,
+      "netEffectivePrice": 38.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP38.400",
+          "priceType": "BUY",
+          "value": 38.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004869",
+      "barcode": null,
+      "productName": "GLUCOPHAGE 500MG 50 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 40,
+      "publicPrice": 60,
+      "discountPct": 33.33,
+      "netEffectivePrice": 40,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP40.000",
+          "priceType": "BUY",
+          "value": 40
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP60.000",
+          "priceType": "BUY",
+          "value": 60
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000012408",
+      "barcode": null,
+      "productName": "GLUCOPHAGE XR 1000MG 30 TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 118.08,
+      "publicPrice": 150,
+      "discountPct": 21.28,
+      "netEffectivePrice": 118.08,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP118.080",
+          "priceType": "BUY",
+          "value": 118.08
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP150.000",
+          "priceType": "BUY",
+          "value": 150
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000031892",
+      "barcode": null,
+      "productName": "GLUCOPHAGE XR 500MG 30 TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 72.16,
+      "publicPrice": 92,
+      "discountPct": 21.57,
+      "netEffectivePrice": 72.16,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.160",
+          "priceType": "BUY",
+          "value": 72.16
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP92.000",
+          "priceType": "BUY",
+          "value": 92
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000002556",
+      "barcode": null,
+      "productName": "CIDOPHAGE RETARD 850 MG. 60 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 67.2,
+      "publicPrice": 96,
+      "discountPct": 30,
+      "netEffectivePrice": 67.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP67.200",
+          "priceType": "BUY",
+          "value": 67.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP96.000",
+          "priceType": "BUY",
+          "value": 96
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000009304",
+      "barcode": null,
+      "productName": "MEPAPHAGE 500MG 30 TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 16.8,
+      "publicPrice": 24,
+      "discountPct": 30,
+      "netEffectivePrice": 16.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP16.800",
+          "priceType": "BUY",
+          "value": 16.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.000",
+          "priceType": "BUY",
+          "value": 24
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000022961",
+      "barcode": null,
+      "productName": "Mibaphage 1000mg SR 30 tab",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 48,
+      "publicPrice": 66,
+      "discountPct": 27.27,
+      "netEffectivePrice": 48,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.000",
+          "priceType": "BUY",
+          "value": 48
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP66.000",
+          "priceType": "BUY",
+          "value": 66
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000000086",
+      "barcode": null,
+      "productName": "CIDOPHAGE 500 MG. 10 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 7.2,
+      "publicPrice": 11,
+      "discountPct": 34.55,
+      "netEffectivePrice": 7.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP7.200",
+          "priceType": "BUY",
+          "value": 7.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP11.000",
+          "priceType": "BUY",
+          "value": 11
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010717",
+      "barcode": null,
+      "productName": "AMARYL M 2/500MG 30 F.C.TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 72,
+      "publicPrice": 102,
+      "discountPct": 29.41,
+      "netEffectivePrice": 72,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.000",
+          "priceType": "BUY",
+          "value": 72
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP102.000",
+          "priceType": "BUY",
+          "value": 102
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025786",
+      "barcode": null,
+      "productName": "PRANDAGLIM MET 12.5 MG. /1000 MG 30 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 74.25,
+      "publicPrice": 99,
+      "discountPct": 25,
+      "netEffectivePrice": 74.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP74.250",
+          "priceType": "BUY",
+          "value": 74.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP99.000",
+          "priceType": "BUY",
+          "value": 99
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000000268",
+      "barcode": null,
+      "productName": "AMOPHAGE 500MG 30 TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 7.875,
+      "publicPrice": 10.5,
+      "discountPct": 25,
+      "netEffectivePrice": 7.875,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP7.875",
+          "priceType": "BUY",
+          "value": 7.875
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP10.500",
+          "priceType": "BUY",
+          "value": 10.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005949",
+      "barcode": null,
+      "productName": "DIAPHAGE 1000MG 30 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 9.6,
+      "publicPrice": 12,
+      "discountPct": 20,
+      "netEffectivePrice": 9.6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP9.600",
+          "priceType": "BUY",
+          "value": 9.6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP12.000",
+          "priceType": "BUY",
+          "value": 12
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000009191",
+      "barcode": null,
+      "productName": "GALVUS MET 50/1000MG 30 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 253.38,
+      "publicPrice": 315,
+      "discountPct": 19.56,
+      "netEffectivePrice": 253.38,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP253.380",
+          "priceType": "BUY",
+          "value": 253.38
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP315.000",
+          "priceType": "BUY",
+          "value": 315
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000017872",
+      "barcode": null,
+      "productName": "MAXOPHAGE XR 1000MG 30 EXT. REL. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 52.8,
+      "publicPrice": 72,
+      "discountPct": 26.67,
+      "netEffectivePrice": 52.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP52.800",
+          "priceType": "BUY",
+          "value": 52.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.000",
+          "priceType": "BUY",
+          "value": 72
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000020967",
+      "barcode": null,
+      "productName": "GLUCOLIGHT XR 1000MG 30 EX. REL .F.C TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 38.25,
+      "publicPrice": 54,
+      "discountPct": 29.17,
+      "netEffectivePrice": 38.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP38.250",
+          "priceType": "BUY",
+          "value": 38.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000021575",
+      "barcode": null,
+      "productName": "BIOGLITA PLUS 15/850MG 30 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 78.75,
+      "publicPrice": 111,
+      "discountPct": 29.05,
+      "netEffectivePrice": 78.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP78.750",
+          "priceType": "BUY",
+          "value": 78.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP111.000",
+          "priceType": "BUY",
+          "value": 111
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000023045",
+      "barcode": null,
+      "productName": "MEPAPHAGE SR 850MG 30 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 25.2,
+      "publicPrice": 34.5,
+      "discountPct": 26.96,
+      "netEffectivePrice": 25.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP25.200",
+          "priceType": "BUY",
+          "value": 25.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP34.500",
+          "priceType": "BUY",
+          "value": 34.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025608",
+      "barcode": null,
+      "productName": "Mellitofix Met 12.5/500 Mg 30 Tab",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 145.125,
+      "publicPrice": 193.5,
+      "discountPct": 25,
+      "netEffectivePrice": 145.125,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP145.125",
+          "priceType": "BUY",
+          "value": 145.125
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP193.500",
+          "priceType": "BUY",
+          "value": 193.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025609",
+      "barcode": null,
+      "productName": "MELLITOFIX MET 1000 MG. /12.5 MG 30 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 160.875,
+      "publicPrice": 214.5,
+      "discountPct": 25,
+      "netEffectivePrice": 160.875,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP160.875",
+          "priceType": "BUY",
+          "value": 160.875
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP214.500",
+          "priceType": "BUY",
+          "value": 214.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004889",
+      "barcode": null,
+      "productName": "GLIPTUS PLUS 50/850MG 30 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 139.5,
+      "publicPrice": 192,
+      "discountPct": 27.34,
+      "netEffectivePrice": 139.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP139.500",
+          "priceType": "BUY",
+          "value": 139.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP192.000",
+          "priceType": "BUY",
+          "value": 192
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000016717",
+      "barcode": null,
+      "productName": "GLIPTUS PLUS 50/1000MG 30 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 139.5,
+      "publicPrice": 192,
+      "discountPct": 27.34,
+      "netEffectivePrice": 139.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP139.500",
+          "priceType": "BUY",
+          "value": 139.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP192.000",
+          "priceType": "BUY",
+          "value": 192
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000023088",
+      "barcode": null,
+      "productName": "SUGARLO PLUS 50/850MG 30 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 100.8,
+      "publicPrice": 132,
+      "discountPct": 23.64,
+      "netEffectivePrice": 100.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP100.800",
+          "priceType": "BUY",
+          "value": 100.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP132.000",
+          "priceType": "BUY",
+          "value": 132
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024908",
+      "barcode": null,
+      "productName": "VILDAFORMIN 50-1000 MG 30 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 126,
+      "publicPrice": 174,
+      "discountPct": 27.59,
+      "netEffectivePrice": 126,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP126.000",
+          "priceType": "BUY",
+          "value": 126
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP174.000",
+          "priceType": "BUY",
+          "value": 174
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000009622",
+      "barcode": null,
+      "productName": "GLUOKAN 5/500MG 30 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 19.2,
+      "publicPrice": 24,
+      "discountPct": 20,
+      "netEffectivePrice": 19.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:03:59.171Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP19.200",
+          "priceType": "BUY",
+          "value": 19.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.000",
+          "priceType": "BUY",
+          "value": 24
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000019196",
+      "barcode": null,
+      "productName": "NEXIUM 10 MG 28 SACHETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 298.48,
+      "publicPrice": 364,
+      "discountPct": 18,
+      "netEffectivePrice": 298.48,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP298.480",
+          "priceType": "BUY",
+          "value": 298.48
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP364.000",
+          "priceType": "BUY",
+          "value": 364
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000019195",
+      "barcode": null,
+      "productName": "NEXIUM 40 MG 10 I.V. VIAL.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 850,
+      "publicPrice": 1000,
+      "discountPct": 15,
+      "netEffectivePrice": 850,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP850.000",
+          "priceType": "BUY",
+          "value": 850
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP1,000.000",
+          "priceType": "BUY",
+          "value": 1000
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025081",
+      "barcode": null,
+      "productName": "NEXIUM 20 MG 28 TAB ASTRA ZENECA",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 259.2,
+      "publicPrice": 332,
+      "discountPct": 21.93,
+      "netEffectivePrice": 259.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP259.200",
+          "priceType": "BUY",
+          "value": 259.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP332.000",
+          "priceType": "BUY",
+          "value": 332
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025082",
+      "barcode": null,
+      "productName": "NEXIUM 40 MG 28 TAB ASTRA ZENECA",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 384,
+      "publicPrice": 488,
+      "discountPct": 21.31,
+      "netEffectivePrice": 384,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP384.000",
+          "priceType": "BUY",
+          "value": 384
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP488.000",
+          "priceType": "BUY",
+          "value": 488
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024433",
+      "barcode": null,
+      "productName": "Zomegipral 40 gm 1 vail",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 34.5,
+      "publicPrice": 48,
+      "discountPct": 28.13,
+      "netEffectivePrice": 34.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP34.500",
+          "priceType": "BUY",
+          "value": 34.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.000",
+          "priceType": "BUY",
+          "value": 48
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010971",
+      "barcode": null,
+      "productName": "PROTOPAN 20 MG 14 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 20.25,
+      "publicPrice": 27,
+      "discountPct": 25,
+      "netEffectivePrice": 20.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP20.250",
+          "priceType": "BUY",
+          "value": 20.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP27.000",
+          "priceType": "BUY",
+          "value": 27
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000014279",
+      "barcode": null,
+      "productName": "ESMOPUMP 20MG 14 E.C.TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 118.5,
+      "publicPrice": 162,
+      "discountPct": 26.85,
+      "netEffectivePrice": 118.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP118.500",
+          "priceType": "BUY",
+          "value": 118.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP162.000",
+          "priceType": "BUY",
+          "value": 162
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000019787",
+      "barcode": null,
+      "productName": "Esogerdazol 40 mg 14 cap",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 54,
+      "publicPrice": 72,
+      "discountPct": 25,
+      "netEffectivePrice": 54,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.000",
+          "priceType": "BUY",
+          "value": 72
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025085",
+      "barcode": null,
+      "productName": "NEXICURE 20MG 20 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 45,
+      "publicPrice": 60,
+      "discountPct": 25,
+      "netEffectivePrice": 45,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP45.000",
+          "priceType": "BUY",
+          "value": 45
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP60.000",
+          "priceType": "BUY",
+          "value": 60
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010265",
+      "barcode": null,
+      "productName": "ESMATAC 20 MG 7 CAP",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 15.75,
+      "publicPrice": 21,
+      "discountPct": 25,
+      "netEffectivePrice": 15.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP15.750",
+          "priceType": "BUY",
+          "value": 15.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP21.000",
+          "priceType": "BUY",
+          "value": 21
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000014280",
+      "barcode": null,
+      "productName": "ESMOPUMP 40MG 14 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 134.4,
+      "publicPrice": 172,
+      "discountPct": 21.86,
+      "netEffectivePrice": 134.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP134.400",
+          "priceType": "BUY",
+          "value": 134.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP172.000",
+          "priceType": "BUY",
+          "value": 172
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024717",
+      "barcode": null,
+      "productName": "ATMIPRAZOLE 20 MG 30 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 47.25,
+      "publicPrice": 63,
+      "discountPct": 25,
+      "netEffectivePrice": 47.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP47.250",
+          "priceType": "BUY",
+          "value": 47.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP63.000",
+          "priceType": "BUY",
+          "value": 63
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024718",
+      "barcode": null,
+      "productName": "ATMIPRAZOLE 40 MG 30 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 77.625,
+      "publicPrice": 103.5,
+      "discountPct": 25,
+      "netEffectivePrice": 77.625,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP77.625",
+          "priceType": "BUY",
+          "value": 77.625
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP103.500",
+          "priceType": "BUY",
+          "value": 103.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025922",
+      "barcode": null,
+      "productName": "ESMORAP 40 MG 1VIAL",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 45,
+      "publicPrice": 60,
+      "discountPct": 25,
+      "netEffectivePrice": 45,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP45.000",
+          "priceType": "BUY",
+          "value": 45
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP60.000",
+          "priceType": "BUY",
+          "value": 60
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000010972",
+      "barcode": null,
+      "productName": "PROTOPAN 40 MG 14 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 38.8,
+      "publicPrice": 48.5,
+      "discountPct": 20,
+      "netEffectivePrice": 38.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP38.800",
+          "priceType": "BUY",
+          "value": 38.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.500",
+          "priceType": "BUY",
+          "value": 48.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000019874",
+      "barcode": null,
+      "productName": "KLEMAZICE 40 MG. 14 CAPSULES",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 60,
+      "publicPrice": 82,
+      "discountPct": 26.83,
+      "netEffectivePrice": 60,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP60.000",
+          "priceType": "BUY",
+          "value": 60
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP82.000",
+          "priceType": "BUY",
+          "value": 82
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024572",
+      "barcode": null,
+      "productName": "MEGAPRAZOLE 40 MG VIAL. FOR I.V. INF.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 38.25,
+      "publicPrice": 53,
+      "discountPct": 27.83,
+      "netEffectivePrice": 38.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP38.250",
+          "priceType": "BUY",
+          "value": 38.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP53.000",
+          "priceType": "BUY",
+          "value": 53
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025386",
+      "barcode": null,
+      "productName": "MERAZODEL 40 MG VIAL. FOR I.V. INF.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 23.4,
+      "publicPrice": 31.2,
+      "discountPct": 25,
+      "netEffectivePrice": 23.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP23.400",
+          "priceType": "BUY",
+          "value": 23.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP31.200",
+          "priceType": "BUY",
+          "value": 31.2
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000025687",
+      "barcode": null,
+      "productName": "Nexprazole 40 mg 14 cap",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 111,
+      "publicPrice": 152,
+      "discountPct": 26.97,
+      "netEffectivePrice": 111,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP111.000",
+          "priceType": "BUY",
+          "value": 111
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP152.000",
+          "priceType": "BUY",
+          "value": 152
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000011474",
+      "barcode": null,
+      "productName": "ESOMELODAN 40MG 20 ENTERIC COATED TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 51.75,
+      "publicPrice": 69,
+      "discountPct": 25,
+      "netEffectivePrice": 51.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP51.750",
+          "priceType": "BUY",
+          "value": 51.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP69.000",
+          "priceType": "BUY",
+          "value": 69
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000020667",
+      "barcode": null,
+      "productName": "ESMORAP 20MG 14 H.G. CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 54,
+      "publicPrice": 76,
+      "discountPct": 28.95,
+      "netEffectivePrice": 54,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP76.000",
+          "priceType": "BUY",
+          "value": 76
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000023198",
+      "barcode": null,
+      "productName": "ORGIXIUM 40 MG 21 CAP",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 64.5,
+      "publicPrice": 86,
+      "discountPct": 25,
+      "netEffectivePrice": 64.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP64.500",
+          "priceType": "BUY",
+          "value": 64.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP86.000",
+          "priceType": "BUY",
+          "value": 86
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000024870",
+      "barcode": null,
+      "productName": "NEXICURE 40MG 20 F.C. TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 111,
+      "publicPrice": 152,
+      "discountPct": 26.97,
+      "netEffectivePrice": 111,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:02.113Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP111.000",
+          "priceType": "BUY",
+          "value": 111
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP152.000",
+          "priceType": "BUY",
+          "value": 152
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001680",
+      "barcode": null,
+      "productName": "BRUFEN 200MG 30 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 33.6,
+      "publicPrice": 48,
+      "discountPct": 30,
+      "netEffectivePrice": 33.6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP33.600",
+          "priceType": "BUY",
+          "value": 33.6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.000",
+          "priceType": "BUY",
+          "value": 48
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001681",
+      "barcode": null,
+      "productName": "BRUFEN 400MG 30 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 57.6,
+      "publicPrice": 78,
+      "discountPct": 26.15,
+      "netEffectivePrice": 57.6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP57.600",
+          "priceType": "BUY",
+          "value": 57.6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP78.000",
+          "priceType": "BUY",
+          "value": 78
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001687",
+      "barcode": null,
+      "productName": "BRUFEN 600MG 30 TAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 69.75,
+      "publicPrice": 99,
+      "discountPct": 29.55,
+      "netEffectivePrice": 69.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP69.750",
+          "priceType": "BUY",
+          "value": 69.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP99.000",
+          "priceType": "BUY",
+          "value": 99
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005866",
+      "barcode": null,
+      "productName": "BRUFEN FLU 60ML SUSP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 23.25,
+      "publicPrice": 34,
+      "discountPct": 31.62,
+      "netEffectivePrice": 23.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP23.250",
+          "priceType": "BUY",
+          "value": 23.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP34.000",
+          "priceType": "BUY",
+          "value": 34
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005984",
+      "barcode": null,
+      "productName": "BRUFEN COLD 10 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 8.25,
+      "publicPrice": 11,
+      "discountPct": 25,
+      "netEffectivePrice": 8.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP8.250",
+          "priceType": "BUY",
+          "value": 8.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP11.000",
+          "priceType": "BUY",
+          "value": 11
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006247",
+      "barcode": null,
+      "productName": "BRUFEN FLU 10 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 12.75,
+      "publicPrice": 19,
+      "discountPct": 32.89,
+      "netEffectivePrice": 12.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP12.750",
+          "priceType": "BUY",
+          "value": 12.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP19.000",
+          "priceType": "BUY",
+          "value": 19
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000009141",
+      "barcode": null,
+      "productName": "BRUFEN 100MG/5ML SUSP. 150ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 32.8,
+      "publicPrice": 44,
+      "discountPct": 25.45,
+      "netEffectivePrice": 32.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP32.800",
+          "priceType": "BUY",
+          "value": 32.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP44.000",
+          "priceType": "BUY",
+          "value": 44
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000034237",
+      "barcode": null,
+      "productName": "BRUFEN COLD 20 F.C. TABS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 37.5,
+      "publicPrice": 54,
+      "discountPct": 30.56,
+      "netEffectivePrice": 37.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP37.500",
+          "priceType": "BUY",
+          "value": 37.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP54.000",
+          "priceType": "BUY",
+          "value": 54
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004986",
+      "barcode": null,
+      "productName": "BRUFEN RETARD 800MG 20 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 76.5,
+      "publicPrice": 106,
+      "discountPct": 27.83,
+      "netEffectivePrice": 76.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP76.500",
+          "priceType": "BUY",
+          "value": 76.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP106.000",
+          "priceType": "BUY",
+          "value": 106
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000008710",
+      "barcode": null,
+      "productName": "BRUFEN 600 MG 20 EFF. GR. IN SACHETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 43.875,
+      "publicPrice": 58.5,
+      "discountPct": 25,
+      "netEffectivePrice": 43.875,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP43.875",
+          "priceType": "BUY",
+          "value": 43.875
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP58.500",
+          "priceType": "BUY",
+          "value": 58.5
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000035987",
+      "barcode": null,
+      "productName": "BRUFEN 600 MG 10 EFF. GR. IN SACHETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 45,
+      "publicPrice": 60,
+      "discountPct": 25,
+      "netEffectivePrice": 45,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP45.000",
+          "priceType": "BUY",
+          "value": 45
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP60.000",
+          "priceType": "BUY",
+          "value": 60
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000041184",
+      "barcode": null,
+      "productName": "BRUFEN COLD 20 F.C TABS STAND 20 box",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 750,
+      "publicPrice": 1080,
+      "discountPct": 30.56,
+      "netEffectivePrice": 750,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP750.000",
+          "priceType": "BUY",
+          "value": 750
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP1,080.000",
+          "priceType": "BUY",
+          "value": 1080
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000035517",
+      "barcode": null,
+      "productName": "BRUFEN COLD 20 F.C TABS STAND 20+ 4",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 396,
+      "publicPrice": 528,
+      "discountPct": 25,
+      "netEffectivePrice": 396,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:05.055Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP396.000",
+          "priceType": "BUY",
+          "value": 396
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP528.000",
+          "priceType": "BUY",
+          "value": 528
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001303",
+      "barcode": null,
+      "productName": "CATAFLAM 75MG/3ML 3 AMP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 19.313,
+      "publicPrice": 25.75,
+      "discountPct": 25,
+      "netEffectivePrice": 19.313,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP19.313",
+          "priceType": "BUY",
+          "value": 19.313
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP25.750",
+          "priceType": "BUY",
+          "value": 25.75
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004900",
+      "barcode": null,
+      "productName": "CATAFLAM 75MG/3ML 6 AMP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 85.5,
+      "publicPrice": 120,
+      "discountPct": 28.75,
+      "netEffectivePrice": 85.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP85.500",
+          "priceType": "BUY",
+          "value": 85.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP120.000",
+          "priceType": "BUY",
+          "value": 120
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004420",
+      "barcode": null,
+      "productName": "CATAFLAM 25MG 20 SUGAR COATED TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 22.5,
+      "publicPrice": 34,
+      "discountPct": 33.82,
+      "netEffectivePrice": 22.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP22.500",
+          "priceType": "BUY",
+          "value": 22.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP34.000",
+          "priceType": "BUY",
+          "value": 34
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004843",
+      "barcode": null,
+      "productName": "CATAFLAM 50MG 20 SUGAR COATED TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 61.5,
+      "publicPrice": 86,
+      "discountPct": 28.49,
+      "netEffectivePrice": 61.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP61.500",
+          "priceType": "BUY",
+          "value": 61.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP86.000",
+          "priceType": "BUY",
+          "value": 86
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001327",
+      "barcode": null,
+      "productName": "CATAFLAM 15MG/ML ORAL DROPS 15 ML",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 7.5,
+      "publicPrice": 10,
+      "discountPct": 25,
+      "netEffectivePrice": 7.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP7.500",
+          "priceType": "BUY",
+          "value": 7.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP10.000",
+          "priceType": "BUY",
+          "value": 10
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000000899",
+      "barcode": null,
+      "productName": "DECLOPHEN S.R. 100MG 8 CAPS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 13.5,
+      "publicPrice": 18,
+      "discountPct": 25,
+      "netEffectivePrice": 13.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP13.500",
+          "priceType": "BUY",
+          "value": 13.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP18.000",
+          "priceType": "BUY",
+          "value": 18
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000001800",
+      "barcode": null,
+      "productName": "OLFEN 50MG 20 LACTAB",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 19.2,
+      "publicPrice": 24,
+      "discountPct": 20,
+      "netEffectivePrice": 19.2,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP19.200",
+          "priceType": "BUY",
+          "value": 19.2
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.000",
+          "priceType": "BUY",
+          "value": 24
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000002452",
+      "barcode": null,
+      "productName": "VASTAFLAM 50MG 20 SUGAR COATED TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 24,
+      "publicPrice": 36,
+      "discountPct": 33.33,
+      "netEffectivePrice": 24,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.000",
+          "priceType": "BUY",
+          "value": 24
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP36.000",
+          "priceType": "BUY",
+          "value": 36
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000003889",
+      "barcode": null,
+      "productName": "RAPIFLAM 50MG 10 ENTERIC COATED TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 6,
+      "publicPrice": 8,
+      "discountPct": 25,
+      "netEffectivePrice": 6,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP6.000",
+          "priceType": "BUY",
+          "value": 6
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP8.000",
+          "priceType": "BUY",
+          "value": 8
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004781",
+      "barcode": null,
+      "productName": "FLOTAC 75MG 20 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 64.5,
+      "publicPrice": 90,
+      "discountPct": 28.33,
+      "netEffectivePrice": 64.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP64.500",
+          "priceType": "BUY",
+          "value": 64.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP90.000",
+          "priceType": "BUY",
+          "value": 90
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004761",
+      "barcode": null,
+      "productName": "DICLAC 150 ID RETARD 10 TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 27,
+      "publicPrice": 36,
+      "discountPct": 25,
+      "netEffectivePrice": 27,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP27.000",
+          "priceType": "BUY",
+          "value": 27
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP36.000",
+          "priceType": "BUY",
+          "value": 36
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000004958",
+      "barcode": null,
+      "productName": "EPIFENAC 75MG/3ML I.M./I.V. 3 AMP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 26.4,
+      "publicPrice": 36,
+      "discountPct": 26.67,
+      "netEffectivePrice": 26.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP26.400",
+          "priceType": "BUY",
+          "value": 26.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP36.000",
+          "priceType": "BUY",
+          "value": 36
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005584",
+      "barcode": null,
+      "productName": "ADWIFLAM 50MG E.R.20 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 20.25,
+      "publicPrice": 29,
+      "discountPct": 30.17,
+      "netEffectivePrice": 20.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP20.250",
+          "priceType": "BUY",
+          "value": 20.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP29.000",
+          "priceType": "BUY",
+          "value": 29
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000005692",
+      "barcode": null,
+      "productName": "DOLPHIN K 75MG/3ML I.M. 6 AMP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 36,
+      "publicPrice": 48,
+      "discountPct": 25,
+      "netEffectivePrice": 36,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP36.000",
+          "priceType": "BUY",
+          "value": 36
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.000",
+          "priceType": "BUY",
+          "value": 48
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006001",
+      "barcode": null,
+      "productName": "EPIFENAC 50MG 20 ENTERIC COATED TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 20.8,
+      "publicPrice": 30,
+      "discountPct": 30.67,
+      "netEffectivePrice": 20.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP20.800",
+          "priceType": "BUY",
+          "value": 20.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP30.000",
+          "priceType": "BUY",
+          "value": 30
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006002",
+      "barcode": null,
+      "productName": "EPIFENAC 100MG 5 RECTAL SUPP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 14.25,
+      "publicPrice": 21,
+      "discountPct": 32.14,
+      "netEffectivePrice": 14.25,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP14.250",
+          "priceType": "BUY",
+          "value": 14.25
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP21.000",
+          "priceType": "BUY",
+          "value": 21
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006154",
+      "barcode": null,
+      "productName": "DOLPHIN K 50 MG. 20 TABLETS",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 28.5,
+      "publicPrice": 42,
+      "discountPct": 32.14,
+      "netEffectivePrice": 28.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP28.500",
+          "priceType": "BUY",
+          "value": 28.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP42.000",
+          "priceType": "BUY",
+          "value": 42
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006389",
+      "barcode": null,
+      "productName": "EPIFENAC 25MG 5 SUPP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 9.75,
+      "publicPrice": 15,
+      "discountPct": 35,
+      "netEffectivePrice": 9.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP9.750",
+          "priceType": "BUY",
+          "value": 9.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP15.000",
+          "priceType": "BUY",
+          "value": 15
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006806",
+      "barcode": null,
+      "productName": "OFLAM 50 MG 20 QUICKETAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 33,
+      "publicPrice": 48,
+      "discountPct": 31.25,
+      "netEffectivePrice": 33,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP33.000",
+          "priceType": "BUY",
+          "value": 33
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.000",
+          "priceType": "BUY",
+          "value": 48
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006791",
+      "barcode": null,
+      "productName": "OLFEN 75MG/2ML 6 AMP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 48,
+      "publicPrice": 66,
+      "discountPct": 27.27,
+      "netEffectivePrice": 48,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP48.000",
+          "priceType": "BUY",
+          "value": 48
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP66.000",
+          "priceType": "BUY",
+          "value": 66
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006912",
+      "barcode": null,
+      "productName": "DECLOPHEN 12.5MG 5 INFANTILE SUPP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 9,
+      "publicPrice": 14,
+      "discountPct": 35.71,
+      "netEffectivePrice": 9,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP9.000",
+          "priceType": "BUY",
+          "value": 9
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP14.000",
+          "priceType": "BUY",
+          "value": 14
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000006913",
+      "barcode": null,
+      "productName": "DECLOPHEN 25MG 5 INFANTILE SUPP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 9.75,
+      "publicPrice": 15,
+      "discountPct": 35,
+      "netEffectivePrice": 9.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP9.750",
+          "priceType": "BUY",
+          "value": 9.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP15.000",
+          "priceType": "BUY",
+          "value": 15
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000007320",
+      "barcode": null,
+      "productName": "ACTIFAST 50MG 30 F.C.TAB.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 24.75,
+      "publicPrice": 39,
+      "discountPct": 36.54,
+      "netEffectivePrice": 24.75,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.750",
+          "priceType": "BUY",
+          "value": 24.75
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP39.000",
+          "priceType": "BUY",
+          "value": 39
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000007327",
+      "barcode": null,
+      "productName": "ADWIFLAM 75MG/3ML 6 AMP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 49.5,
+      "publicPrice": 72,
+      "discountPct": 31.25,
+      "netEffectivePrice": 49.5,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:08.138Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP49.500",
+          "priceType": "BUY",
+          "value": 49.5
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP72.000",
+          "priceType": "BUY",
+          "value": 72
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000007692",
+      "barcode": null,
+      "productName": "ANTINAL 200MG 24 CAPS.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 38.4,
+      "publicPrice": 52,
+      "discountPct": 26.15,
+      "netEffectivePrice": 38.4,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:10.888Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP38.400",
+          "priceType": "BUY",
+          "value": 38.4
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP52.000",
+          "priceType": "BUY",
+          "value": 52
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    },
+    {
+      "supplierId": "pharmaoverseas",
+      "supplierProductId": "000000000000000180",
+      "barcode": null,
+      "productName": "ANTINAL 220MG/5ML 60ML SUSP.",
+      "packSize": null,
+      "currency": "EGP",
+      "unitPrice": 16.8,
+      "publicPrice": 24,
+      "discountPct": 30,
+      "netEffectivePrice": 16.8,
+      "availableQuantity": null,
+      "stockStatus": "in_stock",
+      "minimumOrderQuantity": null,
+      "lastUpdated": "2026-11-08T07:04:10.888Z",
+      "dataSource": "api",
+      "syncStatus": "fresh",
+      "raw": {
+        "price": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP16.800",
+          "priceType": "BUY",
+          "value": 16.8
+        },
+        "publicPrice": {
+          "currencyIso": "EGP",
+          "formattedValue": "EGP24.000",
+          "priceType": "BUY",
+          "value": 24
+        },
+        "pharmacyDiscount": null,
+        "stock": {
+          "isValueRounded": false,
+          "stockLevelStatus": "inStock"
+        },
+        "purchasable": null
+      }
+    }
+  ],
+  "errors": []
+}
