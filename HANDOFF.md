@@ -342,3 +342,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - «حالة المريض»: extra grouped chips behind "حالات تانية ▾" (allergy / chronic / special groups); choosing writes into the box and goes to the AI.
 - Fixed ≥900px `.layout` grid overflow (grid-template-rows:minmax(0,1fr) + overflow:clip) so tapping chips never scrolls the table away.
 - Artifact: worker/live/nova-rx-preview.with-ux-batch1-3-stickers17.js sha 4dfe1283…3348. Rollback: stickers16 (adaad6f9…).
+
+## Checkpoint — polish2 (stickers18)
+- Landscape (>=900px): the condition box is sticky at the top of the right column; the extra-chips groups scroll inside their own box (max 230px) so the typed text stays visible while choosing.
+- Portrait (700–899px): sheet uses the full height (no 940px cap), "previous invoices" + "patient name" share one row, extra chips box max 180px. 5 invoice rows fit without scrolling at 834x1194.
+- Artifact worker/live/nova-rx-preview.with-ux-batch1-3-stickers18.js sha 9a24cd96…d5f4. Rollback: stickers17 (4dfe1283…).
