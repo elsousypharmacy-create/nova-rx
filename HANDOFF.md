@@ -2,6 +2,11 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-08 — Aumet discovery done
+- Run 42463602885 (workflow `aumet-discovery.yml`, branch discovery/aumet): login OK, no CAPTCHA. Findings in `docs/procurement/discovery/aumet.md`. Aumet = marketplace, one offer per distributor, numeric stock, barcode, active ingredient.
+- Leak found and fixed: entity/cart ids in paths; sanitizer now templates 4+ digit ids; discovery/aumet branch rewritten without the leaked files.
+- Next exact step: Kimi builds `connectors/aumet.js` (+ seller field in schema/compare); owner decides on the Suppliers screen and the supplier button.
+
 ## Checkpoint 2026-11-08 — matching + comparison engine done (Kimi #57, #59)
 - #57 normalize.js (Kimi run 42454746907): 134/134 real names parse. Claude review fixes: products without stated strength get a key; parse cache; tablet vs vial (different form) is never 0.8, only 0.5 + needsReview (found on real data: Nexium tab vs I.V. vial).
 - #59 compare.js (Kimi run 42455536138): 200 items x 10,000 offers in ~0.5 s. Checked on real PharmaOverseas prices.
