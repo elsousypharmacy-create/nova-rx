@@ -2,6 +2,12 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-08 — Server side + packaging built, NOT deployed
+- Kimi #79 (run 42474421099): `worker/procurement/provider/{session-store,hub,http}.js` (AES-GCM encrypted sessions in KV, search + status API, rate limit). Claude review fixes: wrong-PIN lockout (8/min then 429), sessions job sends ISO `expiresAt`. 12 procurement checks pass.
+- Claude: `supplier-provider.js` (app -> `/api/suppliers/*`, PIN asked once, kept in the browser), `tools/inject-supplier-ui.mjs` (packs css+js+model into ONE html for the Worker; works on repo index.html and on HTML extracted from a live artifact), `tools/sessions/push-sessions.cjs` + `supplier-sessions.yml` (real-browser login every 10 h, posts sessions to the Worker; not run yet).
+- Aumet text search parameter is UNKNOWN (search box not found in 3 tries, public JS had no hint). Aumet live search will not work until that is found.
+- To go live (owner): merge PR #65 into main; create a new Cloudflare API token; add Worker secrets `NOVA_INGEST_SECRET`, `NOVA_API_PIN` (long PIN) and repo secrets `NOVA_WORKER_URL`, `NOVA_INGEST_SECRET`; then Claude: port the API route into the live Worker (diff onto the extracted live artifact), pack the UI with the inject tool, dry-run deploy, verify, run `supplier-sessions.yml`, try a real search.
+
 ## Checkpoint 2026-11-08 — Worker login attempt STOPPED (do not spoof a browser)
 - Wrote `worker/procurement/auth/pharmaoverseas-login.js` (plain-HTTP OAuth code + PKCE, 5 steps, unit test passes with a fake server). On GitHub it fails at step 2 (`/authorizationserver/csrf` returns 400 without a browser).
 - The fix I was about to apply (fake browser User-Agent and headers) is bot-check circumvention. NOT applied. Do not add it. The module stays as is and is NOT used live.
