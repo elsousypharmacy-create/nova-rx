@@ -2,6 +2,12 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-08 — matching + comparison engine done (Kimi #57, #59)
+- #57 normalize.js (Kimi run 42454746907): 134/134 real names parse. Claude review fixes: products without stated strength get a key; parse cache; tablet vs vial (different form) is never 0.8, only 0.5 + needsReview (found on real data: Nexium tab vs I.V. vial).
+- #59 compare.js (Kimi run 42455536138): 200 items x 10,000 offers in ~0.5 s. Checked on real PharmaOverseas prices.
+- All 6 procurement checks pass on the epic branch.
+- Next exact step: #58 scheduled collector (needs owner decision: schedules only run from main), then #60 PO drafts, #61 UI, Aumet discovery (#63).
+
 ## Checkpoint 2026-11-08 — PharmaOverseas live prices working
 - Owner added repo secrets `PO_USERNAME` / `PO_PASSWORD`. Logged-in discovery run 42450090854: login = OAuth code+PKCE, 12 h token, search returns pharmacy price per product, stock status only.
 - Kimi #56 (run 42450298609) built `worker/procurement/connectors/pharmaoverseas.js`; reviewed, merged into the epic branch with #54/#55 work. All 4 procurement checks pass.

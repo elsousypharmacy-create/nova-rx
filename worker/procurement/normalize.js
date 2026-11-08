@@ -203,7 +203,13 @@ export function matchOffersToItem(item, offers) {
       score = 1;
       reasons.push('exact-product-key');
     } else if (parsedItem.brand && parsedItem.brand === parsedOffer.brand) {
-      if (itemStrength && offerStrength && itemStrength === offerStrength) {
+      const formsKnown = parsedItem.form !== 'other' && parsedOffer.form !== 'other';
+      if (formsKnown && parsedItem.form !== parsedOffer.form) {
+        // Tablets vs vials (or syrup vs tablets) are never interchangeable.
+        score = 0.5;
+        reasons.push('form-differs');
+        needsReview = true;
+      } else if (itemStrength && offerStrength && itemStrength === offerStrength) {
         score = 0.8;
         reasons.push(
           parsedItem.pack?.count !== parsedOffer.pack?.count ? 'pack-differs' : 'form-differs',

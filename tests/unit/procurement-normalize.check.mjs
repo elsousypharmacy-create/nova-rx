@@ -160,6 +160,19 @@ assert.equal(
 }
 assert.equal(productKey(parseProductName('500MG 10 TAB')), null, 'no brand -> null key');
 
+// Review fix: same brand + strength but tablet vs vial must not be equivalent.
+{
+  const m = matchOffersToItem({ name: 'NEXIUM 40 MG 14 TAB' }, [
+    { productName: 'NEXIUM 40 MG 28 TAB ASTRA ZENECA' },
+    { productName: 'NEXIUM 40 MG 10 I.V. VIAL.' },
+  ]);
+  const tab = m.find((r) => r.offer.productName.includes('TAB'));
+  const vial = m.find((r) => r.offer.productName.includes('VIAL'));
+  assert.equal(tab.score, 0.8, 'other pack of the same tablet -> 0.8');
+  assert.equal(vial.score, 0.5, 'vial vs tablet -> 0.5');
+  assert.equal(vial.needsReview, true);
+}
+
 // --- comparableUnitPrice -----------------------------------------------------
 const parsed24 = parseProductName('Panadol Extra 500mg Optizorb 24 tabs');
 const parsed48 = parseProductName('Panadol Extra 500mg Optizorb 48 tabs');
