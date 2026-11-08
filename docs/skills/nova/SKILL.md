@@ -74,7 +74,7 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 
 ## Supplier lookup go-live checklist (2026-11-08)
 - Build: `node tools/build-supplier-artifact.mjs <base artifact> <out artifact>` (extract HTML, pack UI, add routes). Test: `node tests/unit/procurement-worker-artifact.check.mjs`.
-- Worker secrets come from repo secrets `NOVA_API_PIN` (>= 12 chars) and `NOVA_INGEST_SECRET` (>= 16): run workflow "Set Worker supplier secrets" (confirm text `SET nova-rx-preview secrets`). Repo secret `NOVA_WORKER_URL` + the supplier logins feed "Supplier sessions" (real-browser login every 10 h).
+- Worker secrets come from repo secrets `NOVA_API_PIN` (>= 12 chars) and `NOVA_INGEST_SECRET` (>= 16): run workflow "Set Worker supplier secrets" (confirm text `SET nova-rx-preview secrets`). The supplier logins + `NOVA_INGEST_SECRET` feed (the Worker URL is built into the workflow, no secret needed) "Supplier sessions" (real-browser login every 10 h).
 - First PIN use: the app asks once and keeps it in that browser (`novaApiPin`).
 
 ## Reply rules (owner said replies felt not smooth)

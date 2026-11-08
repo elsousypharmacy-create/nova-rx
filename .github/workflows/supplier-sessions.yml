@@ -2,7 +2,7 @@ name: Supplier sessions
 
 # Every 10 hours (and on demand): log in to each supplier with a real browser using the
 # pharmacy's own account and send the fresh session to the NOVA Worker, which stores it
-# encrypted. Needs repo secrets NOVA_WORKER_URL, NOVA_INGEST_SECRET and the supplier logins.
+# encrypted. Needs repo secrets NOVA_INGEST_SECRET and the supplier logins (the Worker address is built in).
 # Disable this workflow in Actions to stop it. No orders, no cart.
 on:
   schedule:
@@ -35,7 +35,8 @@ jobs:
           node node_modules/playwright/cli.js install --with-deps chromium
       - name: Log in and send sessions
         env:
-          NOVA_WORKER_URL: ${{ secrets.NOVA_WORKER_URL }}
+          # The Worker address is public, so it needs no secret (a NOVA_WORKER_URL secret still overrides it).
+          NOVA_WORKER_URL: ${{ secrets.NOVA_WORKER_URL || 'https://nova-rx-preview.elsousypharmacy.workers.dev' }}
           NOVA_INGEST_SECRET: ${{ secrets.NOVA_INGEST_SECRET }}
           PO_USERNAME: ${{ secrets.PO_USERNAME }}
           PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
