@@ -5,7 +5,8 @@ Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof
 ## Checkpoint 2026-11-08 (later) — owner decision: build our own integration
 - Owner: suppliers have no official API; NOVA Rx builds its own connectors on top of their websites using the pharmacy's own accounts (`owner-account`). Docs updated in `docs/procurement/` (assessment decisions 1-6, architecture rules, discovery protocol now includes login + cart).
 - Limits kept: own account only, low rate, stop on CAPTCHA/block, credentials only in Worker secrets, supplier cart filled only after owner approves a draft, checkout stays human.
-- Next exact step: PharmaOverseas login + cart capture in the owner's browser (issue for Grok/owner), sanitized with Task 01 (#55), then Kimi builds `connectors/pharmaoverseas.js` (#56).
+- #55 done by Kimi (run 42447687991) → draft PR #69. Claude review found 3 leaks (email/token in URL path, free text in sample values); fixed in `0bc33bc` with a permanent leak test. PR #66 now includes the `owner-account` kind.
+- Next exact step: owner does the PharmaOverseas capture (#68) and sanitizes it with PR #69's tool; then Kimi builds `connectors/pharmaoverseas.js` (#56) from the sanitized output.
 
 ## Checkpoint 2026-11-08 — Claude (Technical Director): Supplier Integration epic started
 - Branch `claude/nova-rx-supplier-integration-8pv5ix` (draft PR, base `main`). Docs only + workflow fixes; nothing deployed, nothing merged.
