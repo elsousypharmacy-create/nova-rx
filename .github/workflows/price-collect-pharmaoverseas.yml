@@ -1,10 +1,12 @@
 name: Price collect (PharmaOverseas)
 
-# Runs on a push to "collect/pharmaoverseas" or manually once this file is on
-# main. Logs in once with the pharmacy's own account (secrets), searches the
-# drug list with plain HTTP, commits the offers JSON to the same branch.
-# No AI, no cart, no orders.
+# Every 2 hours (and on demand): logs in once with the pharmacy's own account
+# (secrets), searches the drug list with plain HTTP, and saves the offers JSON
+# on the separate branch "supplier-prices" so main is not touched.
+# No AI, no cart, no orders. Disable this workflow in Actions to stop it.
 on:
+  schedule:
+    - cron: '17 */2 * * *'
   push:
     branches: ['collect/pharmaoverseas']
   workflow_dispatch:
@@ -38,14 +40,21 @@ jobs:
           node tools/collectors/pharmaoverseas-prices.mjs tools/collectors/queries-sample.txt out/pharmaoverseas-prices.json
           if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}' out/*; then echo "::error::token-like text in output"; rm -rf out; exit 1; fi
           if grep -Fqi -- "$PO_USERNAME" out/*; then echo "::error::login name in output"; rm -rf out; exit 1; fi
-      - name: Commit offers
-        if: github.ref == 'refs/heads/collect/pharmaoverseas'
+      - name: Save offers on the supplier-prices branch
         run: |
           set -euo pipefail
-          mkdir -p data/supplier-prices
-          cp out/pharmaoverseas-prices.json data/supplier-prices/pharmaoverseas-latest.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/supplier-prices
-          git commit -m "prices: PharmaOverseas collection (run ${GITHUB_RUN_ID})" || exit 0
-          git push origin HEAD:collect/pharmaoverseas
+          cp out/pharmaoverseas-prices.json "$RUNNER_TEMP/latest.json"
+          if git fetch -q origin supplier-prices; then
+            git switch -q -C supplier-prices FETCH_HEAD
+          else
+            git switch -q --orphan supplier-prices
+            git rm -rq --cached . >/dev/null 2>&1 || true
+            find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          fi
+          mkdir -p data
+          cp "$RUNNER_TEMP/latest.json" data/pharmaoverseas-latest.json
+          git add data/pharmaoverseas-latest.json
+          git commit -q -m "prices: PharmaOverseas (run ${GITHUB_RUN_ID})" || { echo "no change"; exit 0; }
+          git push -q origin supplier-prices
