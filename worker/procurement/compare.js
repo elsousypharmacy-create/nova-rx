@@ -37,7 +37,11 @@ function compareRows(a, b) {
   if (da !== db) return db - da;
   const sa = String(a.offer?.supplierId ?? '');
   const sb = String(b.offer?.supplierId ?? '');
-  return sa < sb ? -1 : sa > sb ? 1 : 0;
+  if (sa !== sb) return sa < sb ? -1 : 1;
+  // Marketplace suppliers (e.g. one row per seller) must stay distinct offers.
+  const ea = String(a.offer?.sellerId ?? '');
+  const eb = String(b.offer?.sellerId ?? '');
+  return ea < eb ? -1 : ea > eb ? 1 : 0;
 }
 
 export function compareForItem(item, offers, opts = {}) {

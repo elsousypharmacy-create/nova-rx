@@ -4,6 +4,8 @@
 export const OFFER_FIELDS = Object.freeze([
   'supplierId',
   'supplierProductId',
+  'sellerId',
+  'sellerName',
   'barcode',
   'productName',
   'packSize',
@@ -24,6 +26,9 @@ export const OFFER_FIELDS = Object.freeze([
 export const STOCK_STATUSES = Object.freeze(['in_stock', 'out_of_stock', 'low', 'unknown']);
 export const DATA_SOURCES = Object.freeze(['api', 'export', 'manual', 'fixture']);
 export const SYNC_STATUSES = Object.freeze(['fresh', 'stale', 'error']);
+
+// Optional marketplace-seller fields: null, or a non-empty string without HTML.
+const SELLER_FIELDS = ['sellerId', 'sellerName'];
 
 const NUMBER_FIELDS = [
   'unitPrice',
@@ -114,6 +119,16 @@ export function validateOffer(offer) {
   if (offer.barcode !== null && offer.barcode !== undefined) {
     if (typeof offer.barcode !== 'string' || !/^\d{8,14}$/.test(offer.barcode)) {
       errors.push('barcode must be digits only (8-14 chars) or null');
+    }
+  }
+
+  for (const field of SELLER_FIELDS) {
+    const value = offer[field];
+    if (value === null || value === undefined) continue;
+    if (typeof value !== 'string' || value === '') {
+      errors.push(`${field} must be a non-empty string or null`);
+    } else if (value.includes('<') || value.includes('>')) {
+      errors.push(`${field} must contain no HTML angle brackets`);
     }
   }
 

@@ -23,7 +23,7 @@ import {
 import { fixtureConnector } from '../../worker/procurement/connectors/fixture.js';
 
 // --- Schema basics -----------------------------------------------------------
-assert.equal(OFFER_FIELDS.length, 17, 'OFFER_FIELDS must list the 17 schema fields');
+assert.equal(OFFER_FIELDS.length, 19, 'OFFER_FIELDS must list the 19 schema fields');
 assert.ok(Object.isFrozen(OFFER_FIELDS), 'OFFER_FIELDS must be frozen');
 assert.equal(sanitizeName('Augmentin <b>1g</b>   14 Tab'), 'Augmentin 1g 14 Tab');
 assert.equal(sanitizeName('<i><b>X</b></i>'), 'X');
