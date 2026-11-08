@@ -1,0 +1,77 @@
+/* Supplier lookup on the sale screen (Epic #53, task 08).
+   CSS lifted from the owner-approved designs in docs/procurement/ui-reference/.
+   Palette variables only; tablet landscape first. */
+
+/* Row unit inside a product suggestion row (row-unit.cjs) */
+.su{display:inline-flex;align-items:stretch;height:32px;margin-inline-start:auto;margin-inline-end:28px;align-self:center;
+  background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;font-family:var(--font);font-size:12px;font-weight:600}
+.su-stock{display:flex;align-items:center;gap:7px;padding:0 12px;color:var(--text-main);white-space:nowrap}
+.su-dot{width:7px;height:7px;border-radius:50%}
+.su-low .su-dot{background:var(--accent-amber)} .su-ok .su-dot{background:var(--accent-green)}
+.su-low .su-stock b{color:var(--accent-amber)}
+.su-stock b{font:700 13px var(--font-mono)}
+.su-stock small{font-size:11px;font-weight:600;color:var(--text-muted)}
+.su-btn{display:flex;align-items:center;gap:6px;padding:0 12px;border:0;border-inline-start:1px solid var(--border-subtle);background:transparent;color:var(--accent-cyan-light);font:600 12px var(--font);cursor:pointer}
+.su-btn:hover{background:var(--bg-surface-hover)}
+.su-low .su-btn{background:rgba(56,126,158,.18)}
+.su-btn.icon{padding:0 11px}
+
+/* Empty-search row button */
+.su-empty{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.su-empty .su-btn{border:1px solid var(--border-subtle);border-radius:6px;height:32px}
+
+@media (pointer: coarse){
+  .su{min-height:44px}
+  .su .su-btn{min-height:44px}
+  .su-empty .su-btn{min-height:44px}
+  .sp-qty .btn{min-width:44px;min-height:44px}
+  .sp-add .btn-primary{min-height:44px}
+  .ss-row .btn{min-height:44px}
+}
+
+/* Popup (popup.cjs) */
+.sp-card{max-width:720px;width:92%;max-height:84vh}
+.sp-body{overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.sp-sec{font-size:11px;color:var(--text-dim);margin:6px 2px 0}
+.sp-group-head{font-size:12px;font-weight:700;color:var(--accent-cyan-light);margin:8px 2px 0}
+.sp-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:6px;padding:10px 12px}
+.sp-row.best{border-color:var(--accent-green)}
+.sp-row.off{opacity:.65}
+.sp-name{font-size:13px;font-weight:700;direction:ltr;text-align:right}
+.sp-meta{font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp-tag{border-radius:999px;padding:1px 8px;font-size:10.5px;font-weight:600}
+.t-best{background:rgba(96,185,155,.15);color:var(--accent-green)}
+.t-ok{background:rgba(96,185,155,.10);color:var(--accent-green)}
+.t-off{background:var(--bg-surface-active);color:var(--text-muted)}
+.sp-price{text-align:left;min-width:110px}
+.sp-p{font:700 16px var(--font-mono);color:var(--text-main)}
+.sp-pub{font:11px var(--font-mono);color:var(--text-dim);text-decoration:line-through;margin-inline-end:6px}
+.sp-disc{font-size:11px;font-weight:700;color:var(--accent-amber)}
+.sp-qty{direction:ltr;display:flex;align-items:center;gap:6px}
+.sp-qty b{min-width:26px;text-align:center;font:700 13px var(--font-mono)}
+.sp-qty .btn{width:30px;padding:6px 0}
+.sp-add{display:flex;gap:8px;align-items:center}
+.sp-foot-note{margin-inline-end:auto;font-size:11px;color:var(--text-dim)}
+.sp-state{padding:28px 12px;text-align:center;color:var(--text-muted);font-size:13px}
+.sp-err{font-size:11.5px;color:var(--accent-amber);background:var(--accent-amber-bg);border-radius:6px;padding:8px 12px}
+.sp-link{border:0;background:transparent;color:var(--accent-cyan-light);font:600 11px var(--font);cursor:pointer;text-decoration:underline}
+.sp-updated{font-size:11px;color:var(--text-dim)}
+
+/* Suppliers screen (suppliers-screen.cjs) */
+.ss-card{max-width:560px;width:92%}
+.ss-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px;max-height:70vh;overflow:auto}
+.ss-row{display:flex;align-items:center;gap:12px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:6px;padding:12px}
+.ss-logo{width:36px;height:36px;border-radius:6px;background:var(--bg-surface-active);display:flex;align-items:center;justify-content:center;font:700 14px var(--font-mono);color:var(--accent-cyan-light)}
+.ss-name{font-size:13px;font-weight:700}.ss-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+.ss-grow{flex:1}
+.ss-tag{font-size:11px;font-weight:600;border-radius:999px;padding:3px 9px;display:inline-flex;gap:6px;align-items:center}
+.ss-ok{background:rgba(96,185,155,.14);color:var(--accent-green)} .ss-off{background:var(--bg-surface-active);color:var(--text-muted)}
+.ss-err{background:rgba(187,164,119,.16);color:var(--accent-amber)}
+.ss-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.ss-lbl{font-size:11.5px;color:var(--text-muted);margin-bottom:5px;display:block}
+.ss-in{width:100%;height:38px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:6px;color:var(--text-main);padding:0 12px;font:13px var(--font);box-sizing:border-box}
+.ss-note{font-size:11.5px;color:var(--text-muted);background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:6px;padding:10px 12px;line-height:1.7}
+.ss-sel{display:flex;gap:8px}.ss-opt{flex:1;border:1px solid var(--border-subtle);border-radius:6px;padding:10px;background:var(--bg-surface);font-size:12.5px;font-weight:600;text-align:center;cursor:pointer;color:var(--text-main)}
+.ss-opt.on{border-color:var(--accent-cyan-light);background:rgba(56,126,158,.18)} .ss-opt.dis{opacity:.5;cursor:default}
+.ss-opt small{display:block;font-weight:500;color:var(--text-dim);margin-top:3px;font-size:10.5px}
+.ss-msg{font-size:12px;color:var(--text-muted);min-height:16px}
