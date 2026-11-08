@@ -1,0 +1,49 @@
+name: PO login flow
+
+# Runs on a push to the branch "run/po-login-flow". Logs in to PharmaOverseas
+# with the pharmacy's own account (repo secrets) and records only the page-level
+# flow (templates and field names). Commits the small result to that branch.
+on:
+  push:
+    branches: ['run/po-login-flow']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: po-login-flow
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Record flow
+        env:
+          PO_USERNAME: ${{ secrets.PO_USERNAME }}
+          PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
+        run: |
+          mkdir -p out
+          node tools/discovery/po-login-flow.cjs out
+          if grep -Eiq 'eyJ[a-zA-Z0-9_-]{10,}|bearer [a-z0-9]' out/*; then echo "::error::token-like text"; rm -rf out; exit 1; fi
+          if [ -n "$PO_USERNAME" ] && grep -Fqi -- "$PO_USERNAME" out/*; then echo "::error::login name in output"; rm -rf out; exit 1; fi
+          if [ -n "$PO_PASSWORD" ] && grep -Fq -- "$PO_PASSWORD" out/*; then echo "::error::password in output"; rm -rf out; exit 1; fi
+      - name: Commit result
+        run: |
+          set -euo pipefail
+          mkdir -p docs/procurement/discovery/captures
+          cp out/po-login-flow.json "docs/procurement/discovery/captures/${GITHUB_RUN_ID}-po-login-flow.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/procurement/discovery/captures
+          git commit -m "discovery: PO login flow (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:run/po-login-flow
