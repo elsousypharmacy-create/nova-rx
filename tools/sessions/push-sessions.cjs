@@ -88,7 +88,7 @@ async function aumet(browser) {
 }
 
 (async () => {
-  if (!WORKER || !INGEST) { console.log('Missing NOVA_WORKER_URL / NOVA_INGEST_SECRET'); process.exit(2); }
+  if (!WORKER || !INGEST) { console.log('Not configured yet: set repo secrets NOVA_WORKER_URL and NOVA_INGEST_SECRET. Nothing was done.'); process.exit(0); }
   const browser = await chromium.launch();
   for (const [id, fn] of [['pharmaoverseas', pharmaoverseas], ['aumet', aumet]]) {
     if (only !== 'all' && only !== id) continue;
