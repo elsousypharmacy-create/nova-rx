@@ -174,6 +174,10 @@
   function renderLookup(card, res) {
     var body = card.querySelector('.sp-body');
     if (!body || !modelApi) return;
+    // Re-read the shared saved selection at render time too, including injected providers.
+    var allowed=[];try{allowed=JSON.parse(localStorage.getItem('novaPurchasePrefsV1')||'{}').aumetSellers||[];}catch(e){}
+    res=JSON.parse(JSON.stringify(res));
+    (res.results||[]).forEach(function(r){r.offers=(r.offers||[]).filter(function(row){var o=row.offer||row;return o.supplierId!=='aumet'||allowed.map(String).indexOf(String(o.sellerId))!==-1;});r.best=null;});
     var model = modelApi.buildLookupModel(res, { requestedQty: 1 });
     var rowsByKey = {};
     var html = groupsHtml(model.groups, rowsByKey);
@@ -186,7 +190,7 @@
       html += '<div class="sp-sec">' + (i === 0 ? esc(model.suggestionsNote || '') : '') + '</div>';
       html += groupsHtml(alt.groups, rowsByKey);
     });
-    if (!Object.keys(rowsByKey).length) html = '<div class="sp-state">' + tr('الموردين غير مربوطين بعد') + '</div>';
+    if (!Object.keys(rowsByKey).length) html = '<div class="sp-state">' + tr('لا توجد عروض من المخازن المحددة؛ راجع إعدادات المشتريات') + '</div>';
     body.innerHTML = html;
 
     var foot = card.querySelector('.modal-footer');
@@ -194,7 +198,7 @@
       var note = tr('سعر الصيدلية قبل التوصيل');
       if (res.fetchedAt) {
         var t = new Date(res.fetchedAt);
-        if (!isNaN(t)) note += ' · ' + tr('آخر تحديث') + ' ' + t.toLocaleTimeString(isEn() ? 'en-GB' : 'ar-EG', { hour: '2-digit', minute: '2-digit' });
+        if (!isNaN(t)) note += ' · ' + tr('آخر تحديث') + ' ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       }
       foot.innerHTML = '<span class="sp-foot-note">' + note + '</span>' +
         '<button class="sp-link" data-suppliers>' + tr('إدارة الموردين') + '</button>' +
@@ -250,7 +254,7 @@
           stateChip(s.state) +
           (s.state !== 'off' ? '<button class="btn btn-secondary" data-test>' + tr('فحص') + '</button>' : '') +
           '</div>';
-      }).join('') || '<div class="sp-state">' + tr('الموردين غير مربوطين بعد') + '</div>';
+      }).join('') || '<div class="sp-state">' + tr('لا توجد عروض من المخازن المحددة؛ راجع إعدادات المشتريات') + '</div>';
       body.querySelectorAll('[data-test]').forEach(function (b) {
         b.addEventListener('click', function () {
           var id = b.closest('.ss-row').getAttribute('data-id');
@@ -406,3 +410,4 @@
       .observe(document.body, { childList: true, subtree: true });
   }
 })();
+

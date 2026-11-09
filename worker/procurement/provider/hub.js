@@ -131,7 +131,7 @@ export function createSupplierHub({
     return out;
   }
 
-  async function search(query, { requestedQty = 1, supplierIds } = {}) {
+  async function search(query, { requestedQty = 1, supplierIds, aumetSellerIds } = {}) {
     const fetchedAt = new Date(now()).toISOString();
     const latin = extractLatin(query);
     const searchText = leadingSearchText(latin);
@@ -168,10 +168,11 @@ export function createSupplierHub({
       }),
     );
 
-    let result = compareForItem({ name: itemName }, allOffers, { requestedQty, now: now() });
+    const allowedOffers=allOffers.filter(o=>o.supplierId!=='aumet'||!Array.isArray(aumetSellerIds)||aumetSellerIds.includes(String(o.sellerId)));
+    let result = compareForItem({ name: itemName }, allowedOffers, { requestedQty, now: now() });
     if (result.offers.length === 0) {
       // Brand-only matches (score 0.5) show up flagged needsReview.
-      result = compareForItem({ name: itemName }, allOffers, {
+      result = compareForItem({ name: itemName }, allowedOffers, {
         requestedQty,
         now: now(),
         minScore: FALLBACK_MIN_SCORE,
