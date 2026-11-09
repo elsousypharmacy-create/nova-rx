@@ -56,6 +56,7 @@ async function aumet(browser) {
   try {
     let observedProductUrl = null;
     let sellers = [];
+    let capturedCartRequest = null;
     let sellersTask = Promise.resolve();
     let auth = null;
     let xsrf = null;
@@ -136,20 +137,48 @@ async function aumet(browser) {
     if (process.env.INSPECT_CART === 'true') {
       const fs = require('node:fs');
       const urls = await page.$$eval('script[src]', nodes => nodes.map(n => n.src));
+      // Intercept and abort every write to cart/order APIs before touching quantity controls.
+      // This discovers the client request without adding/removing any account cart item.
+      await page.route('**/api/**', async route => {
+        const request = route.request(), path = new URL(request.url()).pathname;
+        if (request.method() !== 'GET' && /\/(?:cart|order)(?:\/|$)/.test(path)) {
+          if (path.includes('/cart/')) {
+            let body = null;
+            try { body = request.postDataJSON(); } catch {}
+            capturedCartRequest = { method: request.method(), path, body };
+          }
+          return route.abort();
+        }
+        return route.continue();
+      });
+      const reject = page.locator('.cky-btn-reject:visible');
+      if (await reject.count()) await reject.first().click();
+      const quantityButton = page.locator('button.dialerQuantity.show-details:visible');
+      if (await quantityButton.count()) {
+        await quantityButton.first().click();
+        await page.waitForTimeout(600);
+        const numeric = page.locator('input[type="number"]:visible');
+        if (!capturedCartRequest && await numeric.count()) {
+          await numeric.first().fill('1');
+          await numeric.first().press('Tab');
+          await page.waitForTimeout(1500);
+        }
+      }
       const snippets = [];
       for (const u of urls.filter(u => new URL(u).hostname === 'marketplace.aumet.com').slice(0, 12)) {
         const response = await ctx.request.get(u);
         if (!response.ok()) continue;
         const text = await response.text();
-        for (const m of text.matchAll(/(?:cart|Cart)[^;]{0,100}/g)) {
-          if (snippets.length >= 100) break;
-          const near = text.slice(Math.max(0,m.index-100),m.index+350);
+        for (const m of text.matchAll(/api\.v[23]\.cart\.store|entity_product_id|addToCart/g)) {
+          if (snippets.length >= 60) break;
+          const near = text.slice(Math.max(0,m.index-100),m.index+900);
           if (/add|quantity|post|put|delete|products-quantities|entity_product/i.test(near)) snippets.push(near);
         }
       }
+      const inputs = await page.$$eval('input', nodes => nodes.filter(n=>n.offsetParent).map(n=>({type:n.type,name:n.name,placeholder:n.placeholder,class:n.className})));
       const buttons = await page.$$eval('button', nodes => nodes.filter(n => n.offsetParent).map(n => ({text:(n.innerText||'').trim().slice(0,100),aria:n.getAttribute('aria-label'),class:n.className})).slice(0,60));
       fs.mkdirSync('reports',{recursive:true});
-      fs.writeFileSync('reports/aumet-cart-contract.json',JSON.stringify({publicStaticSnippets:snippets,buttons,noCartWrites:true},null,2));
+      fs.writeFileSync('reports/aumet-cart-contract.json',JSON.stringify({publicStaticSnippets:snippets,buttons,inputs,cartRequest:capturedCartRequest ? {method:capturedCartRequest.method,path:capturedCartRequest.path.replace(/\d+/g,'{id}'),body:JSON.parse(JSON.stringify(capturedCartRequest.body), (k,v)=>/token|cookie|password|email|authorization/i.test(k)?'[withheld]':/id$/i.test(k)&&v!=null?'[id]':v)} : null,noCartWrites:true},null,2));
     }
     phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
@@ -159,7 +188,7 @@ async function aumet(browser) {
     if (!searchTaskTemplate) return { id: 'aumet', result: 'error: query template not captured' };
     delete searchParams.task;
     await sellersTask;
-    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate, sellers }, Date.now() + 10 * 3600 * 1000);
+    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate, sellers, cartRequestTemplate: capturedCartRequest }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } catch (error) {
     return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : /context.*destroyed/i.test(error.message) ? 'navigation interrupted inspection' : /net::/i.test(error.message) ? 'navigation network error' : 'operation failed'})` };
