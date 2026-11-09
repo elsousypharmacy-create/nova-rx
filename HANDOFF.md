@@ -505,3 +505,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - الخطوة التالية: مراجعة ChatGPT ورد المالك على أسئلة FND-01 (النظام القديم للبيع، التشغيلات، الضريبة، الفروع)، ثم قياس FND-02.
 ## Checkpoint — nova skill refreshed (2026-11-09)
 - `docs/skills/nova/SKILL.md` brought up to date: owner device (Xiaomi Pad 5), the owner dashboard work (splash that waits for all data, PIN-loop fix, Android install, how to test without live data), hardware advice given (nothing tested), the ERP-1.0 plan status (FND-01 for_review in PR #90, FND-02 draft), the unauthenticated `scanSearch/scanLookup` finding, SAR/15% vs Egypt, and that `pharmacy/nova-status.json` is now the public ERP mirror.
+
+
+## Checkpoint 2026-11-09 — owner priority: inventory and purchasing reuse assessment
+- Branch review/inventory-purchasing-reuse-20261109, docs/erp/INVENTORY_PURCHASING_REUSE_REVIEW.md. Read NOVA package.json, supplier-provider.js and po-draft.js; preserve existing supplier comparison/draft work.
+- Inspected AureusERP root license/composer and actual InventoryServiceProvider, InventoryManager, Lot, inventory routes, PurchaseServiceProvider, PurchaseOrder and purchase routes. External head c31a0db21e00fa436c4949eb4f60ceef81e116ec. MIT core confirmed; dependency/license audit not complete. Laravel/PHP service required; no direct paste into Worker.
+- Documented interface sections, source-backed capability/unknown matrix, API integration boundary, supplier-cart vs internal PO distinction, and synthetic receipt/return/idempotency/expiry/unit/concurrency acceptance experiment. No runtime test, installation, deployment, migration or real order; no completed acceptance IDs or progress changes.
+- PR #90 was observed MERGED before this work; this assessment goes into a new draft PR. Next exact step: isolated Aureus trial with Products/Inventory/Purchases and dependencies, run the documented synthetic flow, then estimate actual adapter work. Existing role split Claude implementation/ChatGPT review retained.
