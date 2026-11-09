@@ -139,7 +139,11 @@ async function aumet(browser) {
     const searchParams = observedProductUrl ? Object.fromEntries(new URL(observedProductUrl).searchParams) : {};
     const probeUrl = new URL('https://marketplace.aumet.com/api/products');
     for (const [key, value] of Object.entries(searchParams)) probeUrl.searchParams.set(key, value);
-    probeUrl.searchParams.set('spell', 'Panadol');
+    const task = searchParams.task || '';
+    const searchTaskTemplate = task.includes('Panadol') ? task.replaceAll('Panadol', '__NOVA_QUERY__') : null;
+    console.log('aumet query template captured: ' + Boolean(searchTaskTemplate));
+    if (!searchTaskTemplate) return { id: 'aumet', result: 'error: query template not captured' };
+    probeUrl.searchParams.set('task', searchTaskTemplate.replaceAll('__NOVA_QUERY__', 'Augmentin'));
     const probe = await fetch(probeUrl, {
       headers: { Accept: 'application/json', Authorization: auth, Cookie: cookie, 'X-XSRF-TOKEN': xsrf || '', 'X-Requested-With': 'XMLHttpRequest', 'x-user-lang': 'ar' },
       signal: AbortSignal.timeout(15000),
@@ -156,7 +160,8 @@ async function aumet(browser) {
       rows: Array.isArray(data?.data) ? data.data.length : null,
       nestedRows: Array.isArray(data?.data?.data) ? data.data.data.length : null,
     }));
-    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams }, Date.now() + 10 * 3600 * 1000);
+    delete searchParams.task;
+    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } catch (error) {
     return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : /context.*destroyed/i.test(error.message) ? 'navigation interrupted inspection' : /net::/i.test(error.message) ? 'navigation network error' : 'operation failed'})` };
