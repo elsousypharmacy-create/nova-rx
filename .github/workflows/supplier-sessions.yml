@@ -1,12 +1,12 @@
 name: Supplier sessions
 
-# Every 10 hours (and on demand): log in to each supplier with a real browser using the
+# Every 4 hours (and on demand): log in to each supplier with a real browser using the
 # pharmacy's own account and send the fresh session to the NOVA Worker, which stores it
 # encrypted. Needs repo secrets NOVA_INGEST_SECRET and the supplier logins (the Worker address is built in).
 # Disable this workflow in Actions to stop it. No orders, no cart.
 on:
   schedule:
-    - cron: '23 */10 * * *'
+    - cron: '23 */4 * * *'
   workflow_dispatch:
     inputs:
       supplier:
