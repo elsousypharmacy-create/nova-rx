@@ -117,12 +117,16 @@ async function aumet(browser) {
     await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'networkidle', timeout: 45000 });
     if (observedProductUrl) {
       const params = Object.fromEntries(new URL(observedProductUrl).searchParams);
-      for (const key of Object.keys(params)) if (/id|token|email|phone|address|lat|long/i.test(key)) params[key] = '[redacted]';
+      for (const key of Object.keys(params)) if (!['is_published','entity_status','show_offline','sort_by','result_per_page','page'].includes(key)) params[key] = '[redacted]';
       console.log('aumet observed search params: ' + JSON.stringify(params));
     }
     phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
-    const probe = await fetch('https://marketplace.aumet.com/api/products?page=1&result_per_page=24&sort_by=price&show_comparison=1&in_stock=1&spell=Panadol', {
+    const searchParams = observedProductUrl ? Object.fromEntries(new URL(observedProductUrl).searchParams) : {};
+    const probeUrl = new URL('https://marketplace.aumet.com/api/products');
+    for (const [key, value] of Object.entries(searchParams)) probeUrl.searchParams.set(key, value);
+    probeUrl.searchParams.set('spell', 'Panadol');
+    const probe = await fetch(probeUrl, {
       headers: { Accept: 'application/json', Authorization: auth, Cookie: cookie, 'X-XSRF-TOKEN': xsrf || '', 'X-Requested-With': 'XMLHttpRequest', 'x-user-lang': 'ar' },
       signal: AbortSignal.timeout(15000),
       redirect: 'manual',
@@ -134,10 +138,11 @@ async function aumet(browser) {
       fields: data && typeof data === 'object' ? Object.keys(data) : [],
       validationFields: data?.errors && typeof data.errors === 'object' ? Object.keys(data.errors) : [],
       status: probe.status, json: Boolean(data), html: body.trimStart().startsWith('<'),
+      names: Array.isArray(data?.data) ? data.data.slice(0, 5).map(row => row.product?.label?.name ?? row.product?.label).filter(v => typeof v === 'string') : [],
       rows: Array.isArray(data?.data) ? data.data.length : null,
       nestedRows: Array.isArray(data?.data?.data) ? data.data.data.length : null,
     }));
-    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '' }, Date.now() + 10 * 3600 * 1000);
+    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } catch (error) {
     return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : 'operation failed'})` };
