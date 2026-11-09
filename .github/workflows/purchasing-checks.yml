@@ -14,6 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
       - run: node tests/unit/purchases.check.mjs
+      - run: node tests/unit/purchases-speed.check.mjs
       - run: npm install --no-save --no-package-lock playwright@1.58.2
       - run: node node_modules/playwright/cli.js install --with-deps chromium
       - run: python3 -m http.server 8766 --bind 127.0.0.1 &
