@@ -94,7 +94,7 @@ async function aumet(browser) {
     await page.goto('https://marketplace.aumet.com/user/login', { waitUntil: 'networkidle', timeout: 60000 });
     if (await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], iframe[src*="turnstile"]')) return { id: 'aumet', result: 'stopped: CAPTCHA on login' };
     phase = 'fill-username';
-    await page.fill('input[placeholder="Email address or Mobile number"]', AUMET_USERNAME);
+    await page.locator('input[type="text"]:visible, input[type="email"]:visible').first().fill(AUMET_USERNAME);
     phase = 'fill-password';
     await page.fill('input[type="password"]', AUMET_PASSWORD);
     phase = 'submit-login';
@@ -120,10 +120,12 @@ async function aumet(browser) {
     for (const input of await page.$('input')) {
       const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
       if (!eligible) continue;
+      const beforeKeys = new Set(observedProductUrl ? new URL(observedProductUrl).searchParams.keys() : []);
       await input.fill('Panadol');
       await page.waitForTimeout(2000);
       await input.press('Enter');
       await page.waitForTimeout(3000);
+      if (observedProductUrl) console.log('aumet search parameter names: ' + JSON.stringify([...new URL(observedProductUrl).searchParams.keys()].filter(key => !beforeKeys.has(key))));
       break;
     }
     if (observedProductUrl) {
