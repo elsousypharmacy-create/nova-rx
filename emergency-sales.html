@@ -290,7 +290,19 @@ try{ $('who').value=store.getItem(WHO_KEY)||''; }catch(e){}
 loadSnap(); renderBanner();
 var d=E.loadDraft(store); if(d){ basket=d.basket; $('disc').value=basket.discount||''; $('discBy').value=basket.discountBy||''; $('cust').value=d.customer||''; $('msg').textContent='تم استرجاع مسودة محفوظة من '+new Date(d.savedAt).toLocaleString('ar-EG'); }
 renderBasket(); renderQueue(); if(!snap) tab('Data');
-window.addEventListener('online',renderBanner);
+/* Auto-sync: same-origin price list built from STOCK LIVE (public prices only, no stock). Falls back to the saved copy. */
+function autoSync(){
+  if(location.protocol==='file:') return;
+  var had=!!snap;
+  fetch('/emergency/stock.json',{cache:'no-cache'}).then(function(r){return r.ok?r.text():null}).then(function(txt){
+    if(!txt) return; var p=E.parseSnapshot(txt); if(!p.ok) return;
+    if(snap&&snap.exportedAt&&p.exportedAt&&Date.parse(snap.exportedAt)>=Date.parse(p.exportedAt)) return;
+    saveSnap(p); renderBanner(); renderResults(); if(!had) tab('Sell');
+    $('dataMsg').textContent='تم تحديث الأسعار تلقائيًا من STOCK LIVE ('+p.items.length+' صنف).';
+  }).catch(function(){});
+}
+autoSync();
+window.addEventListener('online',function(){renderBanner();autoSync();});
 window.__nova={queue:queue,E:E,getBasket:function(){return basket}};
 })();
 </script>

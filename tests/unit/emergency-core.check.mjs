@@ -92,7 +92,9 @@ for (const m of txt.matchAll(/(\d{10}) 00000 n /g)) assert.match(txt.slice(+m[1]
 // static: no network, no secrets in the new files
 for (const f of ['emergency-core.js', 'emergency-sales.html']) {
   const src = fs.readFileSync(new URL('../../' + f, import.meta.url), 'utf8');
-  assert.equal(/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/.test(src), false, f + ' must not use the network');
+  const fetches = src.match(/\bfetch\(/g) || [];
+  assert.equal(/XMLHttpRequest|WebSocket|sendBeacon/.test(src) || fetches.length > (f.endsWith('.html') ? 1 : 0), false, f + ' network use limited to one same-origin fetch');
+  if (f.endsWith('.html')) assert.ok(src.includes("fetch('/emergency/stock.json'"), 'only the same-origin price list is fetched');
   assert.equal(/password|api[_-]?key|token|secret/i.test(src), false, f + ' must not mention credentials');
 }
 console.log('emergency-core checks passed');
