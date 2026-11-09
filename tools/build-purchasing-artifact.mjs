@@ -23,5 +23,8 @@ const block='/* NOVA_PURCHASING_ASSETS_BEGIN */\nconst NOVA_PURCHASING_ASSETS='+
 const listener="addEventListener('fetch', event => { const url=new URL(event.request.url);";
 if(!code.includes(listener))throw new Error('fetch listener missing');
 const route="if(NOVA_PURCHASING_ASSETS[url.pathname]){const a=NOVA_PURCHASING_ASSETS[url.pathname];event.respondWith(new Response(a.body,{headers:{'Content-Type':a.type+'; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}}));return;}";
+// Replace the existing purchasing asset table/route when rebuilding from the live baseline.
+code=code.replace(/\/\* NOVA_PURCHASING_ASSETS_BEGIN \*\/[\s\S]*?\/\* NOVA_PURCHASING_ASSETS_END \*\/\n?/g,'');
+code=code.split(route).join('');
 code=code.replace(listener,block+listener+route);
 fs.writeFileSync(out,code);console.log(JSON.stringify({out,bytes:Buffer.byteLength(code),sha256:createHash('sha256').update(code).digest('hex')}));

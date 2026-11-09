@@ -10,18 +10,24 @@ export function createSupplierCartService(options){
  async function apply(id,input){
   const p=await plans.unpack(input,true);
   if(id==='aumet'?p.version!==1:p.kind!=='po-cart')throw Error('cart-plan-invalid');
-  const old=await journal.lookup(input.signature);if(old?.state==='verified')return {...JSON.parse(old.receipt),alreadyApplied:true};
+  const old=await journal.lookup(input.signature);if(old?.state==='verified')return {...JSON.parse(old.receipt),alreadyApplied:true};if(old)throw Error('cart-operation-pending');
   if(p.expires<Date.now())throw Error('cart-plan-expired');
   const claim=await journal.claim(input.signature,id);
   if(!claim.claimed)return claim.receipt;
   let result;
   try{result=await adapter(id).apply(input);}
   catch(e){
-   const preflight=/^cart-(?:plan-|session-|conflict$|payment-|duplicate-lines|schema-changed$)/.test(e.message);
+   const preflight=/^cart-(?:plan-|session-|conflict$|payment-|offer-changed$|stock-changed$|duplicate-lines|schema-changed$)/.test(e.message);
    await journal.finish(input.signature,preflight?'failed':'unknown');throw e;
   }
   await journal.finish(input.signature,result.ok&&result.state==='verified'?'verified':'unknown',result);
   return result;
  }
- return {preview,apply,adapters};
+ async function status(id,input){
+  const p=await plans.unpack(input,true);if(id==='aumet'?p.version!==1:p.kind!=='po-cart')throw Error('cart-plan-invalid');
+  const old=await journal.lookup(input.signature);if(!old||old.state==='failed')return {ok:false,state:'not-started'};
+  if(old.state==='verified')return JSON.parse(old.receipt);
+  const r=await adapter(id).inspect(input);if(r.ok&&r.state==='verified')await journal.finish(input.signature,'verified',r);return r;
+ }
+ return {preview,apply,status,adapters};
 }

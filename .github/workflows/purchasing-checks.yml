@@ -15,6 +15,7 @@ jobs:
         with: { node-version: '22' }
       - run: node tests/unit/supplier-cart-client.check.mjs
       - run: node tests/unit/supplier-journal.check.mjs
+      - run: node tests/unit/supplier-transactions.check.mjs
       - run: node tests/unit/purchases.check.mjs
       - run: node tests/unit/purchases-speed.check.mjs
       - run: node tests/unit/purchases-seller-scope.check.mjs
@@ -22,20 +23,9 @@ jobs:
       - run: node node_modules/playwright/cli.js install --with-deps chromium
       - run: python3 -m http.server 8766 --bind 127.0.0.1 &
       - run: node tests/purchases-browser.mjs
+      - run: node tests/supplier-orders-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: purchasing-ui-evidence
           path: reports/purchasing/
-  public-contract:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 2
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '22' }
-      - run: node tools/discovery/aumet-public-order.cjs
-      - uses: actions/upload-artifact@v4
-        with:
-          name: aumet-public-order-source
-          path: reports/public-aumet/

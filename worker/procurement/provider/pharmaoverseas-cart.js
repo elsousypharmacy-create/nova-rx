@@ -27,13 +27,17 @@ export function createPharmaOverseasCart({store,hub,secret,fetch:fetchImpl=globa
   if(!offer||offer.unitPrice!==line.price||!['in_stock','low'].includes(offer.stockStatus))throw Error('cart-offer-changed');
   const cart=await active(c),before=entry(cart,line.productId).quantity,target=before+line.quantity;
   if(Number.isFinite(offer.availableQuantity)&&target>offer.availableQuantity)throw Error('cart-stock-changed');
-  const p=await signed.pack({kind:'po-cart',binding:c.record.savedAt,cart:cart?.code||null,product:line.productId,before,target,quantity:line.quantity,price:line.price});
+  const p=await signed.pack({kind:'po-cart',binding:c.record.savedAt,cart:cart?.code||null,product:line.productId,before,target,quantity:line.quantity,price:line.price,query:line.query},900000);
   return {...p,before,target,quantity:line.quantity};
  }
  async function apply(input){
   const p=await signed.unpack(input);if(p.kind!=='po-cart')throw Error('cart-plan-invalid');
   const c=await accounts.context('pharmaoverseas');if(c.record.savedAt!==p.binding)throw Error('cart-session-changed');
   let cart=await active(c);if((cart?.code||null)!==p.cart)throw Error('cart-conflict');
+  const fresh=await hub.search(p.query,{supplierIds:['pharmaoverseas'],requestedQty:p.target});
+  const offer=(fresh.results||[]).flatMap(r=>r.offers||[]).map(r=>r.offer||r).find(o=>o.supplierId==='pharmaoverseas'&&String(o.supplierProductId)===p.product);
+  if(!offer||offer.unitPrice!==p.price||!['in_stock','low'].includes(offer.stockStatus))throw Error('cart-offer-changed');
+  if(Number.isFinite(offer.availableQuantity)&&p.target>offer.availableQuantity)throw Error('cart-stock-changed');
   const current=entry(cart,p.product).quantity;
   if(current===p.target)return {ok:true,state:'verified',quantity:current,alreadyApplied:true};
   if(current!==p.before)throw Error('cart-conflict');
@@ -53,5 +57,11 @@ export function createPharmaOverseasCart({store,hub,secret,fetch:fetchImpl=globa
   try{const after=await active(c);if(after?.code!==cart.code)return {ok:false,state:'unknown',error:'cart-conflict'};const qty=entry(after,p.product).quantity;if(qty===p.target)return {ok:true,state:'verified',quantity:qty};return {ok:false,state:'unknown',error:'cart-readback-mismatch',quantity:qty};}
   catch{return {ok:false,state:'unknown',error:'cart-readback-unavailable'};}
  }
- return {preview,apply,active,entry,accounts};
+ async function inspect(input){
+  const p=await signed.unpack(input,true);if(p.kind!=='po-cart')throw Error('cart-plan-invalid');
+  const c=await accounts.context('pharmaoverseas'),cart=await active(c);
+  if(p.cart?(cart?.code!==p.cart):(c.record.savedAt!==p.binding))throw Error('cart-session-changed');
+  const quantity=entry(cart,p.product).quantity;return quantity===p.target?{ok:true,state:'verified',quantity}:{ok:false,state:'unknown',quantity,error:'cart-readback-mismatch'};
+ }
+ return {preview,apply,inspect,active,entry,accounts};
 }
