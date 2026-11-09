@@ -52,6 +52,7 @@ async function aumet(browser) {
   if (!AUMET_USERNAME || !AUMET_PASSWORD) return { id: 'aumet', result: 'skipped (no secrets)' };
   const ctx = await browser.newContext({ locale: 'en-US' });
   const page = await ctx.newPage();
+  let phase = 'prepare';
   try {
     let auth = null;
     let xsrf = null;
@@ -87,11 +88,16 @@ async function aumet(browser) {
       }
       return route.continue();
     });
+    phase = 'open-login-page';
     await page.goto('https://marketplace.aumet.com/user/login', { waitUntil: 'networkidle', timeout: 60000 });
     if (await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], iframe[src*="turnstile"]')) return { id: 'aumet', result: 'stopped: CAPTCHA on login' };
+    phase = 'fill-username';
     await page.fill('input[name="email"], input[type="email"]', AUMET_USERNAME);
+    phase = 'fill-password';
     await page.fill('input[type="password"]', AUMET_PASSWORD);
+    phase = 'submit-login';
     await page.press('input[type="password"]', 'Enter');
+    phase = 'wait-for-login';
     await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {});
     for (let i = 0; i < 20 && !auth; i += 1) await page.waitForTimeout(500);
     await loginResponseTask;
@@ -105,9 +111,12 @@ async function aumet(browser) {
       console.log('aumet login diagnostics: ' + JSON.stringify(diagnostics));
       return { id: 'aumet', result: 'login failed (see safe diagnostics)' };
     }
+    phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
     const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '' }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
+  } catch (error) {
+    return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : 'operation failed'})` };
   } finally {
     await ctx.close();
   }
