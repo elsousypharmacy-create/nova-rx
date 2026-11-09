@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>بيع طوارئ — صيدلية د. أحمد السوسي</title>
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo.woff) format('woff');font-weight:200 1000;font-display:swap}
+:root{--bg:#f4f6f8;--card:#fff;--ink:#15202b;--dim:#5b6b7a;--line:#d9e0e6;--pri:#0b6b5c;--pri-ink:#fff;--warn:#fff4d6;--warn-ink:#6b4a00;--bad:#fde4e1;--bad-ink:#8a1c10;--ok:#dff3ea;--ok-ink:#0a5a3b}
+@media (prefers-color-scheme:dark){:root{--bg:#11171c;--card:#1a232b;--ink:#e8eef2;--dim:#98a8b5;--line:#2c3945;--pri:#2aa58f;--pri-ink:#07201b;--warn:#3a2f10;--warn-ink:#f1d27a;--bad:#3a1c18;--bad-ink:#f4a79d;--ok:#12372a;--ok-ink:#8fe0bd}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Cairo,system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--pri);color:var(--pri-ink);padding:10px 16px}
+header h1{margin:0;font-size:19px}
+header small{opacity:.9}
+main{max-width:720px;margin:0 auto;padding:12px 16px}
+.banner{border-radius:12px;padding:10px 14px;margin:0 0 10px;font-size:15px}
+.banner.ok{background:var(--ok);color:var(--ok-ink)}.banner.stale,.banner.unknown{background:var(--warn);color:var(--warn-ink)}.banner.old,.banner.none,.banner.err{background:var(--bad);color:var(--bad-ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px}
+label{display:block;font-size:14px;color:var(--dim);margin:8px 0 4px}
+input,button,textarea{font:inherit;font-family:inherit}
+input[type=text],input[type=search],input[type=number]{width:100%;min-height:52px;border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--card);color:var(--ink)}
+button{min-height:52px;min-width:52px;border:0;border-radius:12px;padding:8px 16px;background:var(--pri);color:var(--pri-ink);font-weight:700;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+button.danger{background:var(--bad);color:var(--bad-ink)}
+button:disabled{opacity:.45}
+.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.row>.fit{flex:0 0 auto}
+.res{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res .nm{font-weight:700;overflow-wrap:anywhere}.res .meta{font-size:14px;color:var(--dim)}
+.price{font-size:22px;font-weight:800;white-space:nowrap}
+.line{padding:10px 0;border-bottom:1px solid var(--line)}
+.qty{display:flex;align-items:center;gap:6px}.qty button{min-height:46px;min-width:46px;padding:0}
+.qty span{min-width:34px;text-align:center;font-weight:800;font-size:19px}
+.tot{display:flex;justify-content:space-between;font-size:15px;padding:3px 0}.tot.big{font-size:24px;font-weight:800}
+nav{position:fixed;bottom:0;inset-inline:0;background:var(--card);border-top:1px solid var(--line);display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+nav button.on{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)}
+.hide{display:none!important}
+.chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+.chip.pending{background:var(--warn);color:var(--warn-ink)}.chip.synced{background:var(--ok);color:var(--ok-ink)}.chip.needs-review{background:var(--bad);color:var(--bad-ink)}
+.mono{direction:ltr;unicode-bidi:embed;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<header><h1>بيع طوارئ — صيدلية د. أحمد السوسي</h1><small>أسعار للقراءة فقط · فواتير مؤقتة</small></header>
+<main>
+  <div id="srcBanner" class="banner none" role="status"></div>
+  <div id="warnBanner" class="banner err hide" role="alert"></div>
+
+  <section id="vSell">
+    <div class="card">
+      <label for="who">اسم الموظف (مطلوب للفاتورة)</label>
+      <input id="who" type="text" autocomplete="off" placeholder="الاسم">
+      <label for="q">ابحث بالاسم أو الباركود</label>
+      <input id="q" type="search" inputmode="search" autocomplete="off" placeholder="اسم الدواء أو الكود">
+      <div id="results" aria-live="polite"></div>
+    </div>
+    <div class="card" id="basketCard">
+      <strong>السلة</strong> <span id="draftMark" class="chip pending hide">مسودة محفوظة على هذا الجهاز · لم تُرسل</span>
+      <div id="lines"><p style="color:var(--dim)">السلة فاضية</p></div>
+      <div class="tot"><span>الإجمالي قبل الخصم</span><span id="tSub" class="mono">0.00</span></div>
+      <div class="row">
+        <div><label for="disc">خصم (جنيه) — اختياري</label><input id="disc" type="number" inputmode="decimal" min="0" step="0.5" value=""></div>
+        <div><label for="discBy">اسم من اعتمد الخصم</label><input id="discBy" type="text" autocomplete="off"></div>
+      </div>
+      <div class="tot"><span>الخصم</span><span id="tDisc" class="mono">0.00</span></div>
+      <div class="tot big"><span>الصافي</span><span id="tTot" class="mono">0.00 ج.م</span></div>
+      <label for="cust">بيانات العميل (اختياري، لو لازم)</label>
+      <input id="cust" type="text" autocomplete="off">
+      <div class="row" style="margin-top:12px">
+        <button id="bMake">إنشاء فاتورة مؤقتة PDF</button>
+        <button id="bClear" class="ghost fit">تفريغ</button>
+      </div>
+      <p id="msg" role="status" style="margin:8px 0 0"></p>
+    </div>
+  </section>
+
+  <section id="vQueue" class="hide">
+    <div class="card"><strong>الفواتير المؤقتة</strong>
+      <div class="banner stale" style="margin-top:8px">هذه الفواتير محفوظة على هذا الجهاز فقط وقد تضيع لو اتمسح المتصفح. صدّرها بعد الانتهاء. لا يتم ترحيل أي شيء للنظام تلقائيًا.</div>
+      <div id="queue"></div>
+      <div class="row" style="margin-top:10px"><button id="bExport" class="ghost">تصدير للمراجعة (JSON)</button></div>
+    </div>
+  </section>
+
+  <section id="vData" class="hide">
+    <div class="card"><strong>أسعار الأصناف</strong>
+      <p style="color:var(--dim);margin:6px 0">الأسعار هنا نسخة للقراءة فقط من شيت STOCK LIVE (عمود price = سعر الجمهور). حمّل الملف وأنت عليك إنترنت، وبعدها يشتغل الجهاز بدون المخزن.</p>
+      <label for="exp">وقت تصدير الملف من الشيت (مهم لتحذير الأسعار القديمة)</label>
+      <input id="exp" type="datetime-local">
+      <label for="file">ملف الأسعار (CSV أو JSON)</label>
+      <input id="file" type="file" accept=".csv,.json,text/csv,application/json">
+      <p id="dataMsg" role="status"></p>
+    </div>
+  </section>
+</main>
+<nav>
+  <button id="nSell" class="on">بيع</button>
+  <button id="nQueue">الفواتير <span id="qCount"></span></button>
+  <button id="nData">الأسعار</button>
+</nav>
+<script src="emergency-core.js"></script>
+<script>
+(function(){
+'use strict';
+var E = window.NovaEmergency, $ = function(i){return document.getElementById(i)};
+var SNAP_KEY='novaEmergencySnapshot', WHO_KEY='novaEmergencyStaff';
+var store = (function(){ try{ var s=window.localStorage; s.setItem('__t','1'); s.removeItem('__t'); return s; }catch(e){ var m={}; return {getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},_mem:true}; } })();
+var queue = E.createQueue(store), basket = E.emptyBasket(), snap = null, lastHits = [];
+
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+function money(n){ return (Number(n)||0).toFixed(2); }
+
+/* ---- snapshot ---- */
+function loadSnap(){
+  try{ var s=JSON.parse(store.getItem(SNAP_KEY)||'null'); if(s&&Array.isArray(s.items)){ s.items.forEach(function(i){ i.key=E.keyOf(i.name+' '+(i.nameEn||'')); }); snap=s; } }catch(e){ snap=null; }
+}
+function saveSnap(parsed){
+  snap={items:parsed.items,exportedAt:parsed.exportedAt,importedAt:new Date().toISOString()};
+  var slim=parsed.items.map(function(i){return {code:i.code,gtin:i.gtin,name:i.name,nameEn:i.nameEn,price:i.price,stock:i.stock,units:i.units}});
+  try{ store.setItem(SNAP_KEY,JSON.stringify({items:slim,exportedAt:snap.exportedAt,importedAt:snap.importedAt})); return true; }catch(e){ return false; }
+}
+function renderBanner(){
+  var b=$('srcBanner');
+  if(!snap){ b.className='banner none'; b.textContent='لا توجد أسعار محمّلة على هذا الجهاز. افتح تبويب «الأسعار» وحمّل ملف STOCK LIVE.'; return; }
+  var f=E.freshness(snap.exportedAt);
+  b.className='banner '+f.level;
+  b.textContent=f.label+' · '+snap.items.length+' صنف'+(snap.exportedAt?' · '+new Date(snap.exportedAt).toLocaleString('ar-EG'):'')+' · نسخة محفوظة (قد تختلف عن النظام الآن). الرصيد تقريبي وليس لحظي.';
+}
+function warn(t){ var w=$('warnBanner'); if(t){ w.textContent=t; w.classList.remove('hide'); } else w.classList.add('hide'); }
+
+/* ---- search ---- */
+function renderResults(){
+  var q=$('q').value, box=$('results');
+  if(!snap){ box.innerHTML=''; return; }
+  lastHits=E.searchItems(snap.items,q,25);
+  if(q.trim().length>=2 && !lastHits.length){ box.innerHTML='<p style="color:var(--dim)">لا توجد نتائج</p>'; return; }
+  box.innerHTML=lastHits.map(function(it,i){
+    var st=it.stock==null?'':'الرصيد (تقريبي): '+it.stock;
+    return '<div class="res"><div><div class="nm">'+esc(it.name)+'</div><div class="meta mono">'+esc(it.code||it.gtin)+(st?' · '+esc(st):'')+'</div></div>'
+      +(it.price==null?'<span class="meta">لا يوجد سعر</span>':'<div style="text-align:left"><div class="price mono">'+money(it.price)+'</div><button data-add="'+i+'" aria-label="أضف '+esc(it.name)+'">أضف</button></div>')+'</div>';
+  }).join('');
+}
+$('results').addEventListener('click',function(e){
+  var b=e.target.closest('[data-add]'); if(!b) return;
+  E.addLine(basket,lastHits[+b.getAttribute('data-add')],1); afterBasket();
+});
+$('q').addEventListener('input',renderResults);
+$('q').addEventListener('keydown',function(e){ if(e.key==='Enter'&&lastHits.length===1&&lastHits[0].price!=null){ E.addLine(basket,lastHits[0],1); $('q').value=''; renderResults(); afterBasket(); } });
+
+/* ---- basket ---- */
+function afterBasket(){ renderBasket(); persistDraft(); }
+function renderBasket(){
+  $('lines').innerHTML=basket.lines.length?basket.lines.map(function(l){
+    return '<div class="line"><div class="nm">'+esc(l.name)+'</div><div class="row"><span class="mono">'+money(l.unitPrice)+' × '+l.qty+' = <b>'+money(l.unitPrice*l.qty)+'</b></span>'
+      +'<div class="qty fit"><button class="ghost" data-m="'+esc(l.code)+'" aria-label="نقص">−</button><span>'+l.qty+'</span><button class="ghost" data-p="'+esc(l.code)+'" aria-label="زيادة">+</button><button class="danger" data-r="'+esc(l.code)+'" aria-label="حذف">×</button></div></div></div>';
+  }).join(''):'<p style="color:var(--dim)">السلة فاضية</p>';
+  var t=E.totals(basket); $('tSub').textContent=money(t.subtotal); $('tDisc').textContent=money(t.discount); $('tTot').textContent=money(t.total)+' ج.م';
+  $('bMake').disabled=!basket.lines.length;
+  $('draftMark').classList.toggle('hide',!basket.lines.length);
+}
+$('lines').addEventListener('click',function(e){
+  var m=e.target.closest('[data-m]'),p=e.target.closest('[data-p]'),r=e.target.closest('[data-r]');
+  function ln(c){return basket.lines.filter(function(l){return l.code===c})[0]}
+  if(m){ var l=ln(m.getAttribute('data-m')); if(l) E.setQty(basket,l.code,l.qty-1); }
+  else if(p){ var l2=ln(p.getAttribute('data-p')); if(l2) E.setQty(basket,l2.code,l2.qty+1); }
+  else if(r) E.removeLine(basket,r.getAttribute('data-r')); else return;
+  afterBasket();
+});
+function readFields(){ basket.discount=parseFloat($('disc').value)||0; basket.discountBy=$('discBy').value; }
+['disc','discBy','cust','who'].forEach(function(id){ $(id).addEventListener('input',function(){ readFields(); if(id==='who') try{store.setItem(WHO_KEY,$('who').value)}catch(e){}; renderBasket(); persistDraft(); }); });
+function persistDraft(){
+  if(!basket.lines.length){ E.clearDraft(store); return; }
+  var ok=E.saveDraft(store,{basket:basket,customer:$('cust').value,savedAt:new Date().toISOString()});
+  if(!ok||store._mem) warn('تعذر حفظ المسودة على هذا الجهاز — لا تُغلق الصفحة قبل إنشاء الفاتورة.'); else warn('');
+}
+$('bClear').addEventListener('click',function(){ basket=E.emptyBasket(); $('disc').value=''; $('discBy').value=''; $('cust').value=''; afterBasket(); $('msg').textContent=''; });
+
+/* ---- invoice PDF (the browser shapes the Arabic; we pack canvas JPEGs into a PDF) ---- */
+var PW=794, PH=1123, SC=2, ROW=70;
+function wrap(ctx,text,maxW,maxLines){
+  var words=String(text).split(/\s+/), lines=[], cur='';
+  words.forEach(function(w){ var t=cur?cur+' '+w:w; if(ctx.measureText(t).width>maxW&&cur){ lines.push(cur); cur=w; } else cur=t; });
+  if(cur) lines.push(cur);
+  if(lines.length>maxLines){ lines=lines.slice(0,maxLines); var s=lines[maxLines-1]; while(s.length>1&&ctx.measureText(s+'…').width>maxW) s=s.slice(0,-1); lines[maxLines-1]=s+'…'; }
+  return lines;
+}
+function drawPage(inv,rows,idx,count,startNo){
+  var c=document.createElement('canvas'); c.width=PW*SC; c.height=PH*SC; var x=c.getContext('2d'); x.scale(SC,SC);
+  x.fillStyle='#fff'; x.fillRect(0,0,PW,PH); x.direction='rtl'; x.textAlign='right'; x.fillStyle='#111';
+  var R=PW-40, L=40, y=0;
+  var FONT='Cairo,"Segoe UI",Tahoma,Arial,sans-serif';
+  if(idx===0){
+    x.font='bold 30px '+FONT; x.fillText('صيدلية د. أحمد السوسي',R,56);
+    x.font='16px '+FONT; x.fillStyle='#444'; x.fillText('فاتورة بيع',R,82);
+    x.fillStyle='#8a1c10'; x.fillRect(L,100,PW-80,46); x.fillStyle='#fff'; x.textAlign='center'; x.font='bold 22px '+FONT; x.fillText(inv.label,PW/2,132);
+    x.textAlign='right'; x.fillStyle='#111'; x.font='17px '+FONT;
+    x.fillText('رقم مرجعي: '+inv.ref,R,174); x.fillText('التاريخ: '+new Date(inv.createdAt).toLocaleString('ar-EG'),R,200);
+    x.fillText('الموظف: '+inv.createdBy+(inv.customer?'   ·   العميل: '+inv.customer:''),R,226);
+    y=244;
+  } else { x.font='bold 18px '+FONT; x.fillText(inv.ref+' — تابع',R,50); y=70; }
+  // table header
+  var cNo=R, cName=R-40, cQty=270, cPrice=190, cTot=L+90;
+  x.fillStyle='#e8eef2'; x.fillRect(L,y,PW-80,34); x.fillStyle='#111'; x.font='bold 15px '+FONT;
+  x.fillText('#',cNo,y+23); x.fillText('الصنف',cName,y+23); x.textAlign='center'; x.fillText('الكمية',cQty,y+23); x.fillText('السعر',cPrice,y+23); x.fillText('الإجمالي',cTot,y+23);
+  y+=34;
+  rows.forEach(function(l,i){
+    x.textAlign='right'; x.font='17px '+FONT; x.fillStyle='#111';
+    x.fillText(String(startNo+i),cNo,y+40);
+    var ls=wrap(x,l.name,cName-cQty-60,2), off=ls.length>1?28:40;
+    ls.forEach(function(t,k){ x.fillText(t,cName,y+off+k*22-(ls.length>1?6:0)); });
+    x.textAlign='center'; x.fillText(String(l.qty),cQty,y+40); x.fillText(l.unitPrice.toFixed(2),cPrice,y+40); x.fillText(l.lineTotal.toFixed(2),cTot,y+40);
+    x.strokeStyle='#ccd5dc'; x.beginPath(); x.moveTo(L,y+ROW-2); x.lineTo(PW-40,y+ROW-2); x.stroke(); y+=ROW;
+  });
+  if(idx===count-1){
+    y+=14; x.textAlign='right'; x.font='17px '+FONT;
+    x.fillText('الإجمالي قبل الخصم: '+inv.subtotal.toFixed(2)+' ج.م',R,y+18);
+    if(inv.discount){ x.fillText('خصم ('+inv.discountBy+(inv.discountReason?' — '+inv.discountReason:'')+'): '+inv.discount.toFixed(2)+' ج.م',R,y+44); y+=26; }
+    x.font='bold 26px '+FONT; x.fillText('الصافي: '+inv.total.toFixed(2)+' ج.م',R,y+58);
+    x.font='15px '+FONT; x.fillStyle='#8a1c10';
+    x.fillText(inv.label+' — ليست فاتورة ضريبية ولم تُسجَّل في نظام الصيدلية.',R,y+92);
+  }
+  x.textAlign='left'; x.font='13px '+FONT; x.fillStyle='#666'; x.direction='ltr'; x.fillText((idx+1)+' / '+count+'  ·  '+inv.id,L,PH-24);
+  return c;
+}
+function canvasJpeg(c){ return new Promise(function(res,rej){ c.toBlob(function(b){ if(!b) return rej(new Error('jpeg')); b.arrayBuffer().then(function(a){res(new Uint8Array(a))}); },'image/jpeg',0.92); }); }
+function makePdf(inv){
+  return Promise.all([document.fonts.load('17px Cairo'),document.fonts.load('bold 17px Cairo')]).catch(function(){}).then(function(){ return makePdf2(inv); });
+}
+function makePdf2(inv){
+  var groups=E.paginate(inv.lines,9,10), no=1;
+  return Promise.all(groups.map(function(g,i){ var c=drawPage(inv,g,i,groups.length,no); no+=g.length; return canvasJpeg(c).then(function(j){ return {jpeg:j,w:c.width,h:c.height,pdfW:595,pdfH:842}; }); })).then(E.buildPdf);
+}
+function deliver(inv,bytes){
+  var name=inv.ref+'.pdf', blob=new Blob([bytes],{type:'application/pdf'}), file=new File([blob],name,{type:'application/pdf'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    return navigator.share({files:[file],title:inv.ref,text:inv.label}).then(function(){return 'shared'},function(e){ if(e&&e.name==='AbortError') return 'cancelled'; return download(blob,name); });
+  }
+  return Promise.resolve(download(blob,name));
+}
+function download(blob,name){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},4000); return 'downloaded'; }
+
+$('bMake').addEventListener('click',function(){
+  readFields(); var msg=$('msg'); msg.textContent='';
+  var inv; try{ inv=E.createInvoice({basket:basket,staff:$('who').value,customer:$('cust').value,sourceExportedAt:snap&&snap.exportedAt}); }
+  catch(e){ var m={'staff-required':'اكتب اسم الموظف أولًا','empty-basket':'السلة فاضية'}; msg.textContent=m[e.message]||e.message; return; }
+  if(!queue.add(inv)){ msg.textContent='الفاتورة موجودة بالفعل'; return; }   // saved BEFORE the PDF so a failure never loses it
+  basket=E.emptyBasket(); $('disc').value=''; $('discBy').value=''; $('cust').value=''; E.clearDraft(store); renderBasket(); renderQueue();
+  msg.textContent='تم حفظ الفاتورة المؤقتة '+inv.ref+' (في انتظار الترحيل). جاري تجهيز الـPDF…';
+  makePdf(inv).then(function(b){ return deliver(inv,b); }).then(function(r){
+    msg.textContent={shared:'تمت المشاركة. ',cancelled:'اتلغت المشاركة — الفاتورة محفوظة وتقدر تنزّلها من تبويب الفواتير. ',downloaded:'تم تنزيل الـPDF. '}[r]+inv.ref;
+  }).catch(function(){ msg.textContent='تم حفظ الفاتورة لكن تعذر إنشاء الـPDF — أعد المحاولة من تبويب الفواتير.'; });
+});
+
+/* ---- queue ---- */
+var LBL={pending:'في الانتظار','needs-review':'تحتاج مراجعة',synced:'تم الترحيل'};
+function renderQueue(){
+  var q=queue.list().slice().reverse(), c=queue.counts();
+  $('qCount').textContent=(c.pending+c['needs-review'])?'('+(c.pending+c['needs-review'])+')':'';
+  $('queue').innerHTML=q.length?q.map(function(i){
+    return '<div class="line"><div class="row"><div><b class="mono">'+esc(i.ref)+'</b> <span class="chip '+i.status+'">'+LBL[i.status]+'</span><div class="meta">'+esc(i.createdBy)+' · '+new Date(i.createdAt).toLocaleString('ar-EG')+' · '+i.lines.length+' صنف · <b>'+money(i.total)+'</b> ج.م</div></div>'
+      +'<button class="ghost fit" data-pdf="'+esc(i.id)+'">PDF</button></div></div>';
+  }).join(''):'<p style="color:var(--dim)">لا توجد فواتير بعد</p>';
+}
+$('queue').addEventListener('click',function(e){
+  var b=e.target.closest('[data-pdf]'); if(!b) return; var inv=queue.get(b.getAttribute('data-pdf')); if(!inv) return;
+  makePdf(inv).then(function(x){ return deliver(inv,x); });
+});
+$('bExport').addEventListener('click',function(){ download(new Blob([queue.exportForImport()],{type:'application/json'}),'nova-emergency-'+new Date().toISOString().slice(0,10)+'.json'); });
+
+/* ---- data import ---- */
+$('file').addEventListener('change',function(){
+  var f=this.files[0]; if(!f) return;
+  f.text().then(function(t){
+    var ev=$('exp').value, p=E.parseSnapshot(t,{exportedAt:ev?new Date(ev).toISOString():null});
+    if(!p.ok){ $('dataMsg').textContent=p.error; return; }
+    var saved=saveSnap(p); renderBanner(); renderResults();
+    $('dataMsg').textContent='تم تحميل '+p.items.length+' صنف'+(p.skipped?' (تجاهلنا '+p.skipped+' صف ناقص)':'')+(saved?'':' — تعذر حفظها على الجهاز، ستضيع عند إغلاق الصفحة')+'. '+(p.exportedAt?'':' وقت التصدير غير معروف — يظهر تحذير في كل شاشة.');
+  });
+});
+
+/* ---- tabs ---- */
+function tab(n){ ['Sell','Queue','Data'].forEach(function(k){ $('v'+k).classList.toggle('hide',k!==n); $('n'+k).classList.toggle('on',k===n); }); if(n==='Queue') renderQueue(); }
+$('nSell').onclick=function(){tab('Sell')}; $('nQueue').onclick=function(){tab('Queue')}; $('nData').onclick=function(){tab('Data')};
+
+/* ---- boot / recovery ---- */
+try{ $('who').value=store.getItem(WHO_KEY)||''; }catch(e){}
+loadSnap(); renderBanner();
+var d=E.loadDraft(store); if(d){ basket=d.basket; $('disc').value=basket.discount||''; $('discBy').value=basket.discountBy||''; $('cust').value=d.customer||''; $('msg').textContent='تم استرجاع مسودة محفوظة من '+new Date(d.savedAt).toLocaleString('ar-EG'); }
+renderBasket(); renderQueue(); if(!snap) tab('Data');
+window.addEventListener('online',renderBanner);
+window.__nova={queue:queue,E:E,getBasket:function(){return basket}};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+no snapshot -> explicit warning, data tab open  PASS
+unknown export time -> warning, never claims fresh  PASS
+search shows price  PASS
+total = 77.00  PASS
+no-price item cannot be added  PASS
+draft restored after refresh  PASS
+discount without approver blocked  PASS
+PDF produced offline, valid header  PASS
+invoice pending in queue with warning  PASS
+export has stable externalId  PASS
+PDF 1 items -> 1 page(s)  PASS
+PDF 6 items -> 1 page(s)  PASS
+PDF 20 items -> 3 page(s)  PASS
+no page errors  PASS

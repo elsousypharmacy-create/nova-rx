@@ -2,6 +2,14 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-09 — Issue #84 emergency mobile sales (MVP, Draft PR, NOT deployed)
+- Files: `emergency-sales.html`, `emergency-core.js`, `docs/EMERGENCY_SALES.md`, tests `tests/unit/emergency-core.check.mjs` + `tests/emergency-sales-browser.mjs` (both PASS), samples in `reports/`.
+- Source of truth: STOCK LIVE sheet via Apps Script `scanSearch/scanLookup` (`price` = public price). Live call NOT tested (network blocked). Finding: those two actions need no PIN. Details in the doc.
+- Built: read-only snapshot lookup, basket, authorised discount, temporary invoice + Arabic PDF + share/download, local queue (pending/needs-review/synced, audit, idempotent), conflict detector, JSON export.
+- Not built (needs owner approval): Worker read API, durable storage, POS import. Not tested: real phone, share sheet, live prices.
+- Deploy artifact: `worker/live/nova-rx-preview.with-emergency1.js` = aumet-search1 + public page `/emergency` (no PIN; page holds no data). Built by `tools/patch-worker-emergency.mjs`; test `tests/unit/emergency-worker.check.mjs`.
+- Next exact step: run Deploy NOVA Worker (dry run first), then open /emergency on a phone.
+
 ## Checkpoint 2026-11-08 — Supplier lookup deploy prepared (owner: "نفذ")
 - PR #65 merged into main (64bc813). Live Worker was exactly stickers27 (dry run: live code sha 1018c42a… = artifact, modified_on 2026-11-08T07:32:37Z; token secret present).
 - New artifact `worker/live/nova-rx-preview.with-suppliers1.js` sha256 `f208296786ac709e111d46bd4a0866c7c050b502d089156c451997c8e8ae2af9` = stickers27 + supplier UI packed into the page + `/api/suppliers/*` routes (built by `tools/build-supplier-artifact.mjs`, deterministic). Tests: `procurement-worker-artifact` (fake Worker: PIN, ingest, encrypted storage, search with a fake supplier, `/` still serves the app, 404 elsewhere), `worker-gemini-route` PASS, ux-batch1/2/3 PASS on the new page.
