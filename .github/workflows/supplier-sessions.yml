@@ -11,7 +11,7 @@ on:
     inputs:
       supplier:
         description: "pharmaoverseas, aumet or all"
-        default: "pharmaoverseas"
+        default: "all"
 
 permissions:
   contents: read
@@ -42,6 +42,5 @@ jobs:
           PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
           AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
           AUMET_PASSWORD: ${{ secrets.AUMET_PASSWORD }}
-        # Scheduled runs log in to PharmaOverseas only. Aumet refused the login (401) on 2026-11-08, so it is
-        # run by hand (supplier = aumet or all) until that is understood; repeated failed logins could lock the account.
-        run: node tools/sessions/push-sessions.cjs "${{ inputs.supplier || 'pharmaoverseas' }}"
+        # Refresh both suppliers with the pharmacy's existing saved credentials.
+        run: node tools/sessions/push-sessions.cjs "${{ inputs.supplier || 'all' }}"
