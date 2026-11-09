@@ -17,6 +17,7 @@ async function inspectStatic(page, request, supplierId, host) {
     const url=queue[j];if(seen.has(url))continue;seen.add(url);
     const res=await request.get(url,{timeout:15000});if(!res.ok())continue;
     const text=await res.text();if(text.length>16000000)continue;
+    const folder='reports/public-static/'+supplierId;fs.mkdirSync(folder,{recursive:true});fs.writeFileSync(folder+'/'+new URL(url).pathname.split('/').pop(),text);
     if(supplierId==='pharmaoverseas')for(const m of text.matchAll(/(?:from|import\()\s*["'](\.\/[^"']+\.js)["']/g)){
       const u=new URL(m[1],url).href;if(!seen.has(u)&&!queue.includes(u))queue.push(u);
     }

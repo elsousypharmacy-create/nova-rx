@@ -59,3 +59,4 @@ jobs:
             reports/aumet-cart-contract.json
             reports/*-static-contract.json
             reports/*-cart-reads.json
+            reports/public-static/
