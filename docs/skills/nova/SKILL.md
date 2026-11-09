@@ -121,3 +121,7 @@ Owner approved ChatGPT implementation of /purchases: free-form coverage days, sa
 
 #### Purchasing published 2026-11-10
 PR93 merged0b2ae49; live /purchases artifact purchases1 SHA25670e84705051113826993fb3d78fd799cb86c635b46e731836c10a7c70e5da513. Cloudflare modified2026-11-09T21:42:44.926256Z,5bindings kept. Pharmacy PR53 merged01c37e7. Three final CI checks PASS; browser screenshot qa/reports/purchases-live-20261110.png. Stock source and actual cart account acceptance remain blocked on owner UI authentication/testing, not a completed BUY milestone. Never claim mock cart success is a real account write.
+
+
+#### STOCK LIVE login UX fix (2026-11-10)
+The protected novaPurchasingFeed action is installed live (empty-PIN probe gives lockError; source update newer:false). A successful stock read still requires the owner's dashboard ADMIN_PIN as well as NOVA supplier PIN. Frontend opens dashboard PIN settings automatically before first read and resumes on Save. Never treat initial not-loaded label as evidence that Google Sheets is down, and never claim owner-account success from an empty-PIN probe.
