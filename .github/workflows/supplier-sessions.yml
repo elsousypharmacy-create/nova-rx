@@ -58,4 +58,4 @@ jobs:
           path: |
             reports/aumet-cart-contract.json
             reports/*-static-contract.json
-            reports/pharmaoverseas-cart-reads.json
+            reports/*-cart-reads.json

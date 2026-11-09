@@ -211,6 +211,12 @@ async function aumet(browser) {
           await page.waitForTimeout(1500);
         }
       }
+      if(capturedCartRequest){
+        const cartPath=capturedCartRequest.path.replace(/\/items$/,'/items');
+        const response=await ctx.request.get('https://marketplace.aumet.com'+cartPath,{headers:{Authorization:auth||'','X-XSRF-TOKEN':xsrf||''}});
+        let data=null;try{data=await response.json();}catch{}
+        fs.mkdirSync('reports',{recursive:true});fs.writeFileSync('reports/aumet-cart-reads.json',JSON.stringify({status:response.status(),path:cartPath.replace(/\d+/g,'{id}'),schema:schema(data),noCartWrites:true,noOrders:true},null,2));
+      }
       const snippets = [];
       for (const u of urls.filter(u => new URL(u).hostname === 'marketplace.aumet.com').slice(0, 12)) {
         const response = await ctx.request.get(u);
