@@ -1,4 +1,4 @@
-import { readDays, buildNeeds, distribute, filterOffers, offerKey, groupCart, numberOrNull } from './purchases-core.js';
+import { readDays, buildNeeds, distribute, filterOffers, offerKey, groupCart, numberOrNull, createOfferSearch } from './purchases-core.js';
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = n => Number.isFinite(n) ? new Intl.NumberFormat('ar-EG',{maximumFractionDigits:2}).format(n) : '—';
@@ -10,6 +10,9 @@ prefs.aumetSellers=Array.isArray(prefs.aumetSellers)?prefs.aumetSellers.map(Stri
 let rawItems=[],items=[],sellers=[],offersByItem=new Map(),dashboardPin='',busy=false,generation=0,lastText='',pendingSellerIds=new Set();
 let cartPlans=[],sentLines=new Set(),pendingStockLoad=false;
 const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
+let offerCacheHits=0;
+const offerSearch=createOfferSearch({request:async(query,opts)=>{const r=await provider().search(query,opts);return {rows:(r.results||[]).flatMap(x=>x.offers||[]),complete:opts.supplierIds.length>0&&opts.supplierIds.every(id=>(r.suppliers||[]).some(s=>s.id===id&&s.state==='ok'))};}});
+
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);}
 function persist(){try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
 function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();}
@@ -50,23 +53,24 @@ async function loadStock(){
  finally{setBusy(false);render();}
 }
 async function searchOffers(item){
- const r=await provider().search(item.nameEn||item.name,{requestedQty:item.qty,supplierIds:prefs.suppliers});
- const rows=(r.results||[]).flatMap(x=>x.offers||[]);offersByItem.set(item.key,rows);return rows;
+ const result=await offerSearch.search(item.nameEn||item.name,{requestedQty:item.qty,supplierIds:prefs.suppliers});
+ if(result.cached)offerCacheHits++;
+ const rows=result.value.rows;offersByItem.set(item.key,rows);return rows;
 }
 async function allocateAll(){
  if(busy||!configValid())return;if(!items.some(i=>i.selected)){status('حدّد الأصناف المطلوبة أولًا',true);return;}
  const token=++generation;setBusy(true);items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();
+ $('stopDistribute').hidden=false;const hitsBefore=offerCacheHits;
  let done=0,fail=0;const selected=items.filter(i=>i.selected&&!i.issue);
  try{for(const item of selected){
   status(`جارٍ مقارنة عروض الصنف ${fmt(++done)} من ${fmt(selected.length)}…`);
   try{const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));}catch{fail++;item.allocations=[];item.unallocated=item.qty;}
   render();
-  // Stay below the suppliers' 20 requests/minute per account, even for cached fast responses.
-  if(done<selected.length)await new Promise(resolve=>setTimeout(resolve,3100));
+
  }
  const remain=selected.filter(i=>i.unallocated>0).length;
- status(`تم توزيع ${fmt(selected.length-remain)} صنف. ${fmt(remain)} يحتاج اختيارًا أو مراجعة${fail?`؛ تعذر البحث عن ${fmt(fail)} صنف`:''}. القائمة لم تُرسل إلى الموردين.`,remain>0);
- }finally{setBusy(false);render();}
+ status(`تم توزيع ${fmt(selected.length-remain)} صنف. ${fmt(remain)} يحتاج اختيارًا أو مراجعة${fail?`؛ تعذر البحث عن ${fmt(fail)} صنف`:''}. القائمة لم تُرسل إلى الموردين.${offerCacheHits>hitsBefore?` تم استخدام ${fmt(offerCacheHits-hitsBefore)} عروض محفوظة خلال آخر دقيقتين.`:''}`,remain>0);
+ }finally{setBusy(false);$('stopDistribute').hidden=true;render();}
 }
 async function openOffers(item){
  if(busy)return;setBusy(true);$('offerTitle').textContent=item.name;$('offerRows').textContent='جارٍ البحث…';$('offers').showModal();
@@ -84,6 +88,7 @@ function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumet
 $('days').value=prefs.days;levelView();
 $('days').addEventListener('change',rebuild);
 ['minimum','ideal'].forEach(level=>$(level).onclick=()=>{prefs.level=level;levelView();rebuild();});
+$('stopDistribute').onclick=()=>{generation++;status('تم إيقاف المقارنة؛ النتائج المكتملة محفوظة. جارٍ إنهاء البحث الحالي إن وُجد.');};
 $('load').onclick=loadStock;$('distribute').onclick=allocateAll;$('search').oninput=render;
 $('openSettings').onclick=()=>openSettings();$('refreshSellers').onclick=refreshSellers;$('sellerSearch').oninput=renderSellers;
 $('sellers').addEventListener('change',e=>{const id=e.target.dataset.seller;if(!id)return;if(e.target.checked)pendingSellerIds.add(id);else pendingSellerIds.delete(id);});

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createOfferSearch} from '../../purchases-core.js';
+let clock=0;const starts=[],waits=[];
+const service=createOfferSearch({now:()=>clock,sleep:async n=>{waits.push(n);clock+=n;},request:async(q)=>{starts.push(clock);clock+=2000;return {complete:true,rows:[{lastUpdated:'original',q}]};}});
+const opts={supplierIds:['aumet'],requestedQty:1};
+await service.search('drug-a',opts);await service.search('drug-b',opts);await service.search('drug-c',opts);
+assert.deepEqual(starts,[0,3100,6200]);assert.deepEqual(waits,[1100,1100]);assert.equal(clock,8200,'three 2s responses take 8.2s rather than 12.2s with an extra 3.1s after each');
+const cached=await service.search('drug-a',{...opts,requestedQty:7});assert(cached.cached);assert.equal(cached.value.rows[0].lastUpdated,'original');assert.equal(starts.length,3);
+await service.search('drug-a',{supplierIds:['pharmaoverseas']});assert.equal(starts.length,4,'selected suppliers are part of the cache key');
+clock+=120000;assert(!(await service.search('drug-a',opts)).cached,'expired offers cause a new read');
+let calls=0;const incomplete=createOfferSearch({intervalMs:0,request:async()=>{calls++;return {complete:false,rows:[]};}});await incomplete.search('x');await incomplete.search('x');assert.equal(calls,2,'partial/error supplier responses are never cached');
+let release;let count=0;const dedup=createOfferSearch({intervalMs:0,request:()=>{count++;return new Promise(r=>release=r);}});
+const one=dedup.search('x'),two=dedup.search('x');await Promise.resolve();release({complete:true,rows:[]});await Promise.all([one,two]);assert.equal(count,1);
+let slowClock=0;const slowStarts=[];const slow=createOfferSearch({now:()=>slowClock,sleep:async n=>slowClock+=n,request:async()=>{slowStarts.push(slowClock);slowClock+=5000;return {complete:true};}});await slow.search('a');await slow.search('b');assert.deepEqual(slowStarts,[0,5000],'slow responses do not receive an extra idle delay');
+console.log('PASS spacing includes response latency, 2-minute TTL, original timestamp, supplier scope, failures and inflight dedup');

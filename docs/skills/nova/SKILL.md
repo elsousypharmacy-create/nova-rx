@@ -127,3 +127,7 @@ PR93 merged0b2ae49; live /purchases artifact purchases1 SHA25670e847050511138269
 The protected novaPurchasingFeed action is installed live (empty-PIN probe gives lockError; source update newer:false). A successful stock read still requires the owner's dashboard ADMIN_PIN as well as NOVA supplier PIN. Frontend opens dashboard PIN settings automatically before first read and resumes on Save. Never treat initial not-loaded label as evidence that Google Sheets is down, and never claim owner-account success from an empty-PIN probe.
 
 Fix published via PR94/51dca585: purchases2 hash321691ebe836022d1e6ce5535e69b9009f9ce7db11c3a82860321d174677621c, modified2026-11-09T22:10:52.261002Z. Browser verified automatic PIN field/focus. Two CI passes recorded in HANDOFF. Stock authenticated acceptance remains pending.
+
+
+#### Purchasing comparison speed
+Avoid unconditional sleep AFTER a supplier response: createOfferSearch in purchases-core counts response latency toward3100ms start spacing, dedups in-flight identical queries and caches complete results for120s in memory by query+suppliers. Original timestamps remain unchanged; partial failures are not cached; new cart preview always revalidates upstream. UI announces cached reuse and supports stopping comparison. Fake-clock timing is not proof of live-account timing.

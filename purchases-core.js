@@ -85,3 +85,24 @@ export function groupCart(items) {
   }
   return [...groups.values()].map(g => ({ ...g, total: Math.round(g.total * 100) / 100 }));
 }
+
+// One queue for actual supplier calls. Start spacing includes time already spent
+// waiting for the previous response; fresh cached comparisons make no request.
+export function createOfferSearch({request,now=()=>Date.now(),sleep=ms=>new Promise(r=>setTimeout(r,ms)),intervalMs=3100,ttlMs=120000,maxEntries=300}) {
+  const cache=new Map(),pending=new Map();let queue=Promise.resolve(),lastStart=-Infinity;
+  function keyFor(query,opts){return JSON.stringify([String(query).trim().toLocaleLowerCase(),[...(opts.supplierIds||[])].sort()]);}
+  function cached(key){const hit=cache.get(key);if(!hit)return null;if(now()-hit.at>=ttlMs){cache.delete(key);return null;}return {value:hit.value,cached:true};}
+  function search(query,opts={}){
+    const key=keyFor(query,opts),hit=cached(key);if(hit)return Promise.resolve(hit);
+    if(pending.has(key))return pending.get(key);
+    const task=queue.then(async()=>{
+      const other=cached(key);if(other)return other;
+      const delay=intervalMs-(now()-lastStart);if(delay>0)await sleep(delay);
+      lastStart=now();const value=await request(query,opts);
+      if(value.complete===true){cache.delete(key);cache.set(key,{at:now(),value});while(cache.size>maxEntries)cache.delete(cache.keys().next().value);}
+      return {value,cached:false};
+    });
+    const settled=task.finally(()=>pending.delete(key));pending.set(key,settled);queue=settled.catch(()=>{});return settled;
+  }
+  return {search,clear:()=>cache.clear()};
+}
