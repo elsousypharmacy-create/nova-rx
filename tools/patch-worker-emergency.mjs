@@ -21,11 +21,14 @@ if (html.includes('emergency-core.js"') || html.includes('fonts/cairo.woff')) th
 let code = fs.readFileSync(baseFile, 'utf8');
 const re = new RegExp(BEGIN.replace(/[*/]/g, '\\$&') + '[\\s\\S]*?' + END.replace(/[*/]/g, '\\$&') + '\\n?');
 code = code.replace(re, '');
-const ROUTE = "if(url.pathname==='/emergency'||url.pathname==='/emergency/'){event.respondWith(NOVA_EMERGENCY_PAGE());return;}";
+const ROUTE = "if(url.pathname==='/emergency'||url.pathname==='/emergency/'){event.respondWith(NOVA_EMERGENCY_PAGE());return;}if(url.pathname==='/emergency/stock.json'){event.respondWith(NOVA_EMERGENCY_STOCK());return;}";
 code = code.split(ROUTE).join('');
 const LISTENER = "addEventListener('fetch', event => { const url=new URL(event.request.url);";
 if (code.split(LISTENER).length !== 2) throw new Error('fetch listener not found exactly once');
 code = code.replace(LISTENER, () => LISTENER + ROUTE);
-const block = `${BEGIN}\nconst NOVA_EMERGENCY_HTML = ${JSON.stringify(html)};\nfunction NOVA_EMERGENCY_PAGE() {\n  return new Response(NOVA_EMERGENCY_HTML, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Robots-Tag': 'noindex', 'X-Content-Type-Options': 'nosniff' } });\n}\n${END}\n`;
+const stockFile = path.join(root, 'data/emergency-stock.json');
+const stock = fs.existsSync(stockFile) ? fs.readFileSync(stockFile, 'utf8') : JSON.stringify({ source: 'STOCK LIVE', exportedAt: null, items: [] });
+JSON.parse(stock);
+const block = `${BEGIN}\nconst NOVA_EMERGENCY_STOCK_JSON = ${JSON.stringify(stock)};\nfunction NOVA_EMERGENCY_STOCK() {\n  return new Response(NOVA_EMERGENCY_STOCK_JSON, { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Robots-Tag': 'noindex' } });\n}\nconst NOVA_EMERGENCY_HTML = ${JSON.stringify(html)};\nfunction NOVA_EMERGENCY_PAGE() {\n  return new Response(NOVA_EMERGENCY_HTML, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Robots-Tag': 'noindex', 'X-Content-Type-Options': 'nosniff' } });\n}\n${END}\n`;
 fs.writeFileSync(outFile, block + code);
 console.log('wrote', outFile);
