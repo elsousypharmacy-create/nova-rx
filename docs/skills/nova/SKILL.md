@@ -117,3 +117,7 @@ Owner approved ChatGPT implementation of /purchases: free-form coverage days, sa
 
 #### Aumet cart implementation checkpoint
 `provider/aumet-cart.js` uses the observed v2 contract stored encrypted by session refresh; preview/apply are authenticated, signed, short-lived, quantity-preserving, read-back verified. No order/checkout call exists. Automatic renewal keeps template only for identical pharmacy_id. Do not claim a real cart write was tested from synthetic CI. The live-cart button is user-triggered after quantity preview. PharmaOverseas remains local draft.
+
+
+#### Purchasing published 2026-11-10
+PR93 merged0b2ae49; live /purchases artifact purchases1 SHA25670e84705051113826993fb3d78fd799cb86c635b46e731836c10a7c70e5da513. Cloudflare modified2026-11-09T21:42:44.926256Z,5bindings kept. Pharmacy PR53 merged01c37e7. Three final CI checks PASS; browser screenshot qa/reports/purchases-live-20261110.png. Stock source and actual cart account acceptance remain blocked on owner UI authentication/testing, not a completed BUY milestone. Never claim mock cart success is a real account write.

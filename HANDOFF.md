@@ -528,3 +528,11 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Implemented signed 120s per-line cart plans: fresh offer/price/payment validation, read existing qty, absolute target, conflict/payment protection, read-back. Retries reuse the same target; no checkout/order routes. Normal same-account session refresh retains observed contract.
 - Unit mocks cover existing quantity, changed price/payment/cart, tamper, timeout-after-success and repeat-click. Real write/read-back remains NOT TESTED pending actual desired user basket. PharmaOverseas external cart remains NOT IMPLEMENTED; page labels it local.
 - CI procurement failure42703427363 was pre-existing performance threshold (1721ms vs1000ms), rerun requested; no test weakened. UI latest42703425962 PASS.
+
+
+### BUY deployment checkpoint — 2026-11-10 00:47 Riyadh
+- PR93 squash merged0b2ae49; pharmacy PR53 merged01c37e7. Final SHA294a812 CI all PASS: Purchasing42704624594, Procurement42704624610, POS42704624915. Price/stock source test and generated server check PASS.
+- GitHub UI dispatch attempts produced no new deploy run. Used connected Cloudflare API instead, after dry-run digest/baseline/exact5binding guard. Published2026-11-09T21:42:44.926256Z, startup1ms. Read back exact SHA25670e84705051113826993fb3d78fd799cb86c635b46e731836c10a7c70e5da513 and all5bindings (secret values never read).
+- Live browser /purchases renders; DOM1363x936 has scrollWidth1363 (fits). Screenshot qa/reports/purchases-live-20261110.png. Full-page RTL screenshot was offset; viewport capture is correct. Source reads not attempted with wrong/made-up credentials. Supplier PIN absent in browser; prompt was cancelled, no account state changed.
+- Remaining operational verification: owner enters existing NOVA supplier PIN and dashboard ADMIN_PIN in UI, chooses Aumet warehouses, checks true STOCK LIVE rows. Apps Script updater installation not yet verified. Real cart write/read-back NOT TESTED; only user-selected, explicitly confirmed cart lines should be used, never arbitrary drug test orders. PharmaOverseas cart remains local draft.
+- BUY tasks remain in_progress; no acceptance percentage raised. No checkout or order submitted. Do not close issue92 until operational acceptance.
