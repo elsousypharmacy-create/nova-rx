@@ -6,10 +6,11 @@
 <meta name="robots" content="noindex">
 <title>بيع طوارئ — صيدلية د. أحمد السوسي</title>
 <style>
+@font-face{font-family:Cairo;src:url(fonts/cairo.woff) format('woff');font-weight:200 1000;font-display:swap}
 :root{--bg:#f4f6f8;--card:#fff;--ink:#15202b;--dim:#5b6b7a;--line:#d9e0e6;--pri:#0b6b5c;--pri-ink:#fff;--warn:#fff4d6;--warn-ink:#6b4a00;--bad:#fde4e1;--bad-ink:#8a1c10;--ok:#dff3ea;--ok-ink:#0a5a3b}
 @media (prefers-color-scheme:dark){:root{--bg:#11171c;--card:#1a232b;--ink:#e8eef2;--dim:#98a8b5;--line:#2c3945;--pri:#2aa58f;--pri-ink:#07201b;--warn:#3a2f10;--warn-ink:#f1d27a;--bad:#3a1c18;--bad-ink:#f4a79d;--ok:#12372a;--ok-ink:#8fe0bd}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Cairo,system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 header{position:sticky;top:0;z-index:5;background:var(--pri);color:var(--pri-ink);padding:10px 16px}
 header h1{margin:0;font-size:19px}
 header small{opacity:.9}
@@ -18,7 +19,7 @@ main{max-width:720px;margin:0 auto;padding:12px 16px}
 .banner.ok{background:var(--ok);color:var(--ok-ink)}.banner.stale,.banner.unknown{background:var(--warn);color:var(--warn-ink)}.banner.old,.banner.none,.banner.err{background:var(--bad);color:var(--bad-ink)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px}
 label{display:block;font-size:14px;color:var(--dim);margin:8px 0 4px}
-input,button,textarea{font:inherit}
+input,button,textarea{font:inherit;font-family:inherit}
 input[type=text],input[type=search],input[type=number]{width:100%;min-height:52px;border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--card);color:var(--ink)}
 button{min-height:52px;min-width:52px;border:0;border-radius:12px;padding:8px 16px;background:var(--pri);color:var(--pri-ink);font-weight:700;cursor:pointer}
 button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
@@ -190,7 +191,7 @@ function drawPage(inv,rows,idx,count,startNo){
   var c=document.createElement('canvas'); c.width=PW*SC; c.height=PH*SC; var x=c.getContext('2d'); x.scale(SC,SC);
   x.fillStyle='#fff'; x.fillRect(0,0,PW,PH); x.direction='rtl'; x.textAlign='right'; x.fillStyle='#111';
   var R=PW-40, L=40, y=0;
-  var FONT='"Noto Naskh Arabic","Segoe UI",Tahoma,Arial,sans-serif';
+  var FONT='Cairo,"Segoe UI",Tahoma,Arial,sans-serif';
   if(idx===0){
     x.font='bold 30px '+FONT; x.fillText('صيدلية د. أحمد السوسي',R,56);
     x.font='16px '+FONT; x.fillStyle='#444'; x.fillText('فاتورة بيع',R,82);
@@ -226,6 +227,9 @@ function drawPage(inv,rows,idx,count,startNo){
 }
 function canvasJpeg(c){ return new Promise(function(res,rej){ c.toBlob(function(b){ if(!b) return rej(new Error('jpeg')); b.arrayBuffer().then(function(a){res(new Uint8Array(a))}); },'image/jpeg',0.92); }); }
 function makePdf(inv){
+  return Promise.all([document.fonts.load('17px Cairo'),document.fonts.load('bold 17px Cairo')]).catch(function(){}).then(function(){ return makePdf2(inv); });
+}
+function makePdf2(inv){
   var groups=E.paginate(inv.lines,9,10), no=1;
   return Promise.all(groups.map(function(g,i){ var c=drawPage(inv,g,i,groups.length,no); no+=g.length; return canvasJpeg(c).then(function(j){ return {jpeg:j,w:c.width,h:c.height,pdfW:595,pdfH:842}; }); })).then(E.buildPdf);
 }

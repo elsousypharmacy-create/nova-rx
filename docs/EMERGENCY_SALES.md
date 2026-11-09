@@ -26,7 +26,7 @@ Status: MVP, read-only prices + local temporary invoices. Nothing deployed, merg
 - Basket with quantity, unit price, subtotal, total; discount only with the approver's name; staff name required.
 - Draft autosaved on every change and restored after refresh; marked "pending / not sent".
 - Temporary invoice: UUID + readable ref (`EMG-YYMMDD-XXXXX`), frozen line-price snapshot, saved to the queue **before** the PDF is built.
-- Arabic PDF with pharmacy name and the banner **«فاتورة مؤقتة — لم تُرحّل للنظام»**, plus "not a tax invoice". Text is shaped by the browser canvas and packed into a PDF (no font bundle). Native share (WhatsApp) with automatic download fallback.
+- Arabic PDF with pharmacy name and the banner **«فاتورة مؤقتة — لم تُرحّل للنظام»**, plus "not a tax invoice". Font is Cairo, bundled at `fonts/cairo.woff` (works offline); text is shaped by the browser canvas and packed into a PDF. Native share (WhatsApp) with automatic download fallback.
 
 ## Phase 2 (safe reconciliation) — what exists / what does not
 Exists: local queue `pending / needs-review / synced`; audit trail (who/when); review needs a name; `synced` is terminal and idempotent (second mark is a no-op, one audit entry); `detectConflicts()` (price changed, stock too low, item missing); export of non-synced invoices as `nova-emergency-v1` JSON keyed by stable `externalId`.
@@ -44,7 +44,7 @@ Does **not** exist (needs owner approval, see below): the import into the main P
 | Browser, 390x844 Chromium: load snapshot, search, add, refresh recovery, discount needs approver, create invoice, queue, export | PASS — `tests/emergency-sales-browser.mjs`, `reports/emergency-sales-results.txt` |
 | Connectivity lost while creating invoice + PDF | PASS (browser set offline; PDF still produced) |
 | PDF with 1 / 6 / 20 items (1 / 1 / 3 pages), long item name wrapped and ellipsised | PASS; visually checked 2-item and 20-item page 1 (`reports/emergency-sample-*.pdf`) |
-| Arabic PDF font | PASS on this Chromium (system Arabic font). **NOT TESTED** on iPhone/Android: depends on the device's Arabic font |
+| Arabic PDF font | PASS on Chromium with bundled Cairo. **NOT TESTED** on iPhone/Android |
 | Native share / WhatsApp file share | **NOT TESTED** (headless Chromium has no share sheet); download fallback tested |
 | Same invoice imported twice → one sale | PASS for the local queue (`synced` idempotent). The POS import itself **does not exist yet** — NOT TESTED |
 | Catalog / price freshness against the real STOCK LIVE | **NOT TESTED** (network blocked; see Phase 0) |
