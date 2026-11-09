@@ -74,8 +74,17 @@ function buildDefaultConnectors(fetchImpl, holders) {
     aumet: createAumetConnector({
       request: async (url, params) => {
         const s = holders.aumet.current ?? {};
-        const qs = new URLSearchParams();
-        for (const [k, v] of Object.entries(params ?? {})) qs.set(k, String(v));
+        if (!s.searchParams || typeof s.searchTaskTemplate !== 'string' ||
+            !s.searchTaskTemplate.includes('__NOVA_QUERY__')) {
+          throw new AuthRequiredError('Aumet session needs search context');
+        }
+        const query = String(params?.spell ?? '');
+        const escapedQuery = JSON.stringify(query).slice(1, -1);
+        const qs = new URLSearchParams(s.searchParams);
+        qs.delete('spell');
+        qs.set('task', s.searchTaskTemplate.replaceAll('__NOVA_QUERY__', escapedQuery));
+        qs.set('page', String(params?.page ?? 1));
+        qs.set('result_per_page', String(params?.result_per_page ?? 24));
         const res = await fetchImpl(`${url}?${qs.toString()}`, {
           headers: {
             Accept: 'application/json',

@@ -52,11 +52,30 @@ async function aumet(browser) {
   if (!AUMET_USERNAME || !AUMET_PASSWORD) return { id: 'aumet', result: 'skipped (no secrets)' };
   const ctx = await browser.newContext({ locale: 'en-US' });
   const page = await ctx.newPage();
+  let phase = 'prepare';
   try {
+    let observedProductUrl = null;
     let auth = null;
     let xsrf = null;
+    let loginStatus = null;
+    let loginResponseTask = Promise.resolve();
+    let loginSignals = {};
+    page.on('response', (response) => {
+      if (new URL(response.url()).pathname !== '/user/spa-login') return;
+      loginStatus = response.status();
+      loginResponseTask = response.text().then((body) => {
+        // Emit fixed booleans only. Server messages can contain account data.
+        loginSignals = {
+          credentialsRejected: /invalid credentials|incorrect password|wrong password|invalid email|بيانات.*غير صحيحة|كلمة المرور.*غير صحيحة/i.test(body),
+          otherSession: /another device|other device|already logged|logout.others|log.out.other|جهاز آخر|جهاز اخر/i.test(body),
+          verificationRequired: /captcha|verification.code|one.time.password|two.factor|رمز التحقق/i.test(body),
+          rateLimited: /too many|rate.limit|محاولات كثيرة/i.test(body),
+        };
+      }).catch(() => { loginSignals = { responseUnreadable: true }; });
+    });
     page.on('request', (r) => {
       if (!/marketplace\.aumet\.com\/api\//.test(r.url())) return;
+      if (new URL(r.url()).pathname === '/api/products') observedProductUrl = r.url();
       const h = r.headers();
       if (h.authorization) auth = h.authorization;
       if (h['x-xsrf-token']) xsrf = h['x-xsrf-token'];
@@ -71,17 +90,52 @@ async function aumet(browser) {
       }
       return route.continue();
     });
+    phase = 'open-login-page';
     await page.goto('https://marketplace.aumet.com/user/login', { waitUntil: 'networkidle', timeout: 60000 });
     if (await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], iframe[src*="turnstile"]')) return { id: 'aumet', result: 'stopped: CAPTCHA on login' };
-    await page.fill('input[name="email"], input[type="email"]', AUMET_USERNAME);
+    phase = 'fill-username';
+    await page.locator('input[type="text"]:visible, input[type="email"]:visible').first().fill(AUMET_USERNAME);
+    phase = 'fill-password';
     await page.fill('input[type="password"]', AUMET_PASSWORD);
+    phase = 'submit-login';
     await page.press('input[type="password"]', 'Enter');
+    phase = 'wait-for-login';
     await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {});
     for (let i = 0; i < 20 && !auth; i += 1) await page.waitForTimeout(500);
-    if (/login/i.test(page.url()) || !auth) return { id: 'aumet', result: 'login not confirmed' };
+    await loginResponseTask;
+    if (/login/i.test(page.url()) || !auth) {
+      const diagnostics = {
+        httpStatus: loginStatus,
+        stillOnLogin: /login/i.test(page.url()),
+        apiAuthorizationObserved: Boolean(auth),
+        ...loginSignals,
+      };
+      console.log('aumet login diagnostics: ' + JSON.stringify(diagnostics));
+      return { id: 'aumet', result: 'login failed (see safe diagnostics)' };
+    }
+    phase = 'inspect-search';
+    await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(8000);
+    for (const input of await page.$$('input')) {
+      const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
+      if (!eligible) continue;
+      await input.fill('Panadol');
+      await page.waitForTimeout(2000);
+      await input.press('Enter');
+      await page.waitForTimeout(3000);
+      break;
+    }
+    phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
-    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '' }, Date.now() + 10 * 3600 * 1000);
+    const searchParams = observedProductUrl ? Object.fromEntries(new URL(observedProductUrl).searchParams) : {};
+    const task = searchParams.task || '';
+    const searchTaskTemplate = task.includes('Panadol') ? task.replaceAll('Panadol', '__NOVA_QUERY__') : null;
+    if (!searchTaskTemplate) return { id: 'aumet', result: 'error: query template not captured' };
+    delete searchParams.task;
+    const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
+  } catch (error) {
+    return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : /context.*destroyed/i.test(error.message) ? 'navigation interrupted inspection' : /net::/i.test(error.message) ? 'navigation network error' : 'operation failed'})` };
   } finally {
     await ctx.close();
   }
@@ -92,7 +146,7 @@ async function aumet(browser) {
   const browser = await chromium.launch();
   for (const [id, fn] of [['pharmaoverseas', pharmaoverseas], ['aumet', aumet]]) {
     if (only !== 'all' && only !== id) continue;
-    try { report.push(await fn(browser)); } catch (e) { report.push({ id, result: `error: ${String(e.message).slice(0, 80)}` }); }
+    try { report.push(await fn(browser)); } catch (e) { report.push({ id, result: 'error (details withheld to protect session credentials)' }); }
   }
   await browser.close();
   for (const r of report) console.log(`${r.id}: ${r.result}`);

@@ -452,3 +452,32 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Found while verifying stickers26: after removing the auto-open, opening the panel by hand in a NEW sale still showed the previous invoice's medicines (the open-cart reload only ran when the panel was empty). Reproduced by a new test, fixed: opening by hand with a non-empty cart that differs from the last loaded one (signature in panel.dataset.cartSig) loads the cart; the invoice-completed handler resets the signature.
 - Tests: issue-4 L5c/L5d (fail on the old code, pass on the new). All suites pass; sale-sticker-modal still ends at the known sandbox baseline failure (20 PASS, then the long-text print wait).
 - Artifact stickers27 sha 1018c42a6723012216b197e81329fb4c6465a4cfe26485193ec335d26b8db8ad. Rollback: stickers25 (0bbf7b3b…); do NOT roll back to 26 (has the bug).
+
+
+## Checkpoint 2026-11-09 — Aumet login diagnosis prepared
+- Branch `fix/aumet-login-diagnostics-20261109`. Last probe run 42511724809 confirms HTTP 401, no visible error message and no search requests. Cause remains unverified.
+- `tools/sessions/push-sessions.cjs` now reports login HTTP status, login-page and auth-observed flags, and fixed booleans for credential/session/verification/rate-limit signals. Raw server text is not logged; session-run exception text is withheld.
+- Validation: node --check PASS; four mocked rejection cases (credentials, other session, rate limit, verification) PASS, including no username/password output and no ingest after failed login. No live login or deploy performed.
+- Next: Actions > Supplier sessions > Run workflow, select this branch and supplier=aumet once; inspect safe diagnostics before any further attempt. Connector has no workflow-dispatch tool; browser GitHub is signed out. Do not claim integration fixed until a real session is saved and real search passes.
+
+
+## Verified 2026-11-09 — Aumet login and ingest PASS
+- Runs 42566888384 and 42567144339 exposed a timeout at fill-username. Live form has no name attribute and type=text, placeholder `Email address or Mobile number`. Fixed selector in 02891ab.
+- Run 42573770072 on fix/aumet-login-diagnostics-20261109 completed SUCCESS and logged `aumet: session saved`. Real login and Worker session ingest verified, no credentials printed.
+- PR #83 remains draft, not merged. Automatic refresh on main still uses the old selector. Real Aumet product search and price semantics remain unverified. Next: review/merge selector fix, then test actual Aumet search through NOVA.
+
+
+## Checkpoint 2026-11-09 — Aumet search NOT fixed
+- 42575225938: current connector query on GitHub runner returned HTTP 400 JSON, session ingest still succeeded.
+- 42575459471 captured site query shape (account context + coverage + compound sort). 42575689653 replayed original account query with spell=Panadol: HTTP 200, 20 rows, names unrelated to Panadol. Thus spell is not verified as text filtering. Account searchParams are now included in encrypted ingested session, but live Worker does not consume them yet.
+- 42575918452 attempted UI search observation, stopped at username field timeout before login. No CAPTCHA/block established by this timeout. Exact placeholder may vary, so investigate visible form and support existing name/email/text semantics before another login.
+- No Worker deployment, no merge, no successful end-to-end search. PR83 diagnostic changes remain draft. Some diagnostic runs saved sessions while product probe was unsuccessful, so green workflow is not proof of supplier search success. Next: capture real UI search parameter, integrate account query context without stale filtering keys, test Panadol and another query through actual Worker, then review/deploy and verify.
+
+
+## Verified 2026-11-09 — Aumet search live PASS
+- Fixed diagnostic collection typo ($eval/$ vs $$eval/$$), then captured real UI request: task is the actual search input. Original context parameters and sort are required. Panadol task returned Panadol; task-template substitution Augmentin returned Augmentin (42579860756 and the subsequent verified Augmentin probe).
+- Worker hub now consumes encrypted session searchParams + searchTaskTemplate with current query, preserving account coverage and original sort. Captured task is removed from defaults.
+- Saved artifact worker/live/nova-rx-preview.aumet-search1.js at 27da0e12d6def68fa3a96c5f6d0369c0470f29ee; exact SHA256 e41ba5ba49f634aa13527809004cab2cebe3565b84722db7366c59baf2b71a10. Earlier dry-run hash mismatch was a local trailing newline, corrected after byte-for-byte repository verification.
+- Dry run 42580555464 PASS; Deploy NOVA Worker 42580749323 PASS with bindings retained. Live check 42580852522 PASS: both suppliers ok for Augmentin (1652ms) and Panadol Extra (2030ms); Aumet Panadol Extra 24 Tablet appears among 4 offers.
+- Removed temporary product probes from refresh script, kept confirmed UI search-template capture; scheduled refresh now includes both suppliers. node --check PASS. Artifact syntax PASS. No actual orders placed.
+- Remaining product limitation: Aumet net/best_price semantics remain unverified, existing connector uses unit_price. Future end-to-end scheduled refresh still needs observation. PR83 should merge these verified fixes.
