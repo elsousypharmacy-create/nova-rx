@@ -113,6 +113,19 @@ async function aumet(browser) {
     }
     phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
+    const probe = await fetch('https://marketplace.aumet.com/api/products?page=1&result_per_page=24&sort_by=price&show_comparison=1&in_stock=1&spell=Panadol', {
+      headers: { Accept: 'application/json', Authorization: auth, Cookie: cookie, 'X-XSRF-TOKEN': xsrf || '', 'X-Requested-With': 'XMLHttpRequest', 'x-user-lang': 'ar' },
+      signal: AbortSignal.timeout(15000),
+      redirect: 'manual',
+    });
+    const body = await probe.text();
+    let data = null;
+    try { data = JSON.parse(body); } catch {}
+    console.log('aumet product probe: ' + JSON.stringify({
+      status: probe.status, json: Boolean(data), html: body.trimStart().startsWith('<'),
+      rows: Array.isArray(data?.data) ? data.data.length : null,
+      nestedRows: Array.isArray(data?.data?.data) ? data.data.data.length : null,
+    }));
     const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '' }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } catch (error) {
