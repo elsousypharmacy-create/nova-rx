@@ -8,6 +8,24 @@ const WORKER = (process.env.NOVA_WORKER_URL || '').replace(/\/+$/, '');
 const INGEST = process.env.NOVA_INGEST_SECRET || '';
 const only = process.argv[2] || 'all';
 const report = [];
+// Opt-in contract discovery: static shipped code only; no cart/order writes.
+async function inspectStatic(page, request, supplierId, host) {
+  const fs = require('node:fs');
+  const urls = await page.$$eval('script[src]', nodes => nodes.map(n => n.src));
+  const snippets=[];
+  for(const url of urls.filter(u=>new URL(u).hostname===host).slice(0,20)) {
+    const res=await request.get(url); if(!res.ok())continue;
+    const text=await res.text(); if(text.length>16000000)continue;
+    for(const m of text.matchAll(/placeOrder|submitOrder|addToCart|cartAdd|cartUpdate|cartDetails|checkout|api\.v[23]\.order|\/carts|products-quantities/g)) {
+      if(snippets.length>=100)break;
+      const snippet=text.slice(Math.max(0,m.index-200),m.index+1200);
+      if(!snippets.includes(snippet))snippets.push(snippet);
+    }
+  }
+  fs.mkdirSync('reports',{recursive:true});
+  fs.writeFileSync('reports/'+supplierId+'-static-contract.json',JSON.stringify({supplierId,publicStaticSnippets:snippets,noCartWrites:true,noOrders:true},null,2));
+}
+
 
 async function send(supplierId, session, expiresAt) {
   const res = await fetch(`${WORKER}/api/suppliers/session`, {
@@ -40,6 +58,10 @@ async function pharmaoverseas(browser) {
     for (let i = 0; i < 60 && status === null; i += 1) await page.waitForTimeout(500);
     if (status !== 200 || !body || !body.access_token) return { id: 'pharmaoverseas', result: `login failed (status ${status})` };
     const expiresAt = Date.now() + (Number(body.expires_in) > 0 ? Number(body.expires_in) : 3600) * 1000;
+    if(process.env.INSPECT_CART==='true') {
+      await page.waitForLoadState('networkidle',{timeout:30000}).catch(()=>{});
+      await inspectStatic(page,page.request,'pharmaoverseas','shop.pharmaemarket.com');
+    }
     const code = await send('pharmaoverseas', { accessToken: body.access_token }, expiresAt);
     return { id: 'pharmaoverseas', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } finally {
@@ -135,6 +157,7 @@ async function aumet(browser) {
       break;
     }
     if (process.env.INSPECT_CART === 'true') {
+      await inspectStatic(page,ctx.request,'aumet','marketplace.aumet.com');
       const fs = require('node:fs');
       const urls = await page.$$eval('script[src]', nodes => nodes.map(n => n.src));
       // Intercept and abort every write to cart/order APIs before touching quantity controls.

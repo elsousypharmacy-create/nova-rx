@@ -567,3 +567,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Owner approved compact mockup and reports sale Aumet showing every distributor. Confirmed sale lookup passed requestedQty only, bypassing purchase preferences. Shared provider now reads saved novaPurchasePrefsV1, sends allowed Aumet seller IDs and selected supplier IDs; empty Aumet selection skips Aumet, never opens all. Hub filters BEFORE ranking, sale renderer filters again including injected providers. Selection remains per browser, not synced across devices.
 - Compact single-row controls under full NOVA bar, no large header/explanation gap; dense rows and content-height cart (one total), inline progress ring/count/stop (no blocking modal), editable qty and eligible supplier dropdown. Source auth/cart safeguards retained.
 - Unit purchases + seller-scope checks PASS locally (unselected cheapest seller excluded, zero selection, provider request scope). Browser regression extended to assert selected IDs sent, dropdown excludes unselected sellers, inline progress visibility, layout geometry. CI/publish pending on fix/compact-and-sale-sellers-20261110; no live account cart/order test.
+
+
+### BUY-04/05 continuation — 2026-11-10
+- Owner asked for real supplier carts and final order execution from NOVA for Aumet and PharmaOverseas. No requested basket/real order submitted.
+- PR97 merged 74adc1c; purchasing5 published and read-back hash 9a6e3fa9ceafe4c496ffc8224965452b98cca535a86807835f28f36f4950e75b; all five bindings kept. Initial immediate read-back transiently returned no versions, later exact content confirmed. CI97 purchasing/procurement/POS PASS.
+- Branch feat/supplier-cart-order-20261110: opt-in existing supplier-session contract inspection now also reads shipped static JS for cart/checkout contracts on both suppliers. No new login cadence; inspection will abort Aumet cart writes as before. No cart write/order execution verified yet.
+- Next: run Supplier sessions on this branch with all + inspect_cart true, inspect sanitized static evidence, implement only observed contracts with read-back/idempotency and human confirmation for checkout.
