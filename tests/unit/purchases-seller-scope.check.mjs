@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import fs from 'node:fs';
+import {createSupplierHub} from '../../worker/procurement/provider/hub.js';
+let prefs={suppliers:['aumet','pharmaoverseas'],aumetSellers:['allowed']},sent;
+const context={window:{},localStorage:{getItem:k=>k==='novaApiPin'?'test':JSON.stringify(prefs)},fetch:async(p,init)=>{sent=JSON.parse(init.body);return {ok:true,status:200,json:async()=>({results:[]})};}};
+vm.runInNewContext(fs.readFileSync('supplier-provider.js','utf8'),context);
+await context.window.NOVA_SUPPLIER_PROVIDER.search('Panadol');assert.deepEqual(JSON.parse(JSON.stringify(sent.aumetSellerIds)),['allowed']);assert.equal(sent.supplierIds.length,2);
+prefs.aumetSellers=[];await context.window.NOVA_SUPPLIER_PROVIDER.search('Panadol');assert(!sent.supplierIds.includes('aumet'));
+const offer=id=>({supplierId:'aumet',supplierProductId:id,sellerId:id,productName:'Panadol Extra 24 tabs',unitPrice:id==='excluded'?1:40,netEffectivePrice:null,publicPrice:60,stockStatus:'in_stock',lastUpdated:new Date().toISOString()});
+const hub=createSupplierHub({store:{load:async()=>({session:{}})},connectors:{aumet:{search:async()=>({offers:[offer('allowed'),offer('excluded')]}),toOffer:r=>r}}});
+const r=await hub.search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});assert.equal(r.results[0].offers.length,1);assert.equal(r.results[0].best.sellerId,'allowed');
+const empty=await hub.search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:[]});assert.equal(empty.results[0].offers.length,0);
+console.log('PASS sale provider forwards saved seller scope; empty scope excludes Aumet; server removes unselected cheapest seller before ranking');

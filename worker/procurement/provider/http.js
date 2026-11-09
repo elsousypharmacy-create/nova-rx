@@ -196,7 +196,8 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
       ? Math.floor(Number(body.requestedQty))
       : 1;
     const supplierIds = Array.isArray(body.supplierIds) ? body.supplierIds.filter(id => ['aumet', 'pharmaoverseas'].includes(id)) : undefined;
-    return json(await hub.search(body.query, { requestedQty, supplierIds }));
+    const aumetSellerIds=Array.isArray(body.aumetSellerIds)?body.aumetSellerIds.map(String):undefined;
+    return json(await hub.search(body.query, { requestedQty, supplierIds, aumetSellerIds }));
   }
 
   return handle;

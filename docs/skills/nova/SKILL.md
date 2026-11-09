@@ -139,3 +139,7 @@ Published speed update PR95/fab13cd, purchases3 hash271f47d6e6b96095226b5465dbf0
 Keep NOVA's full top navigation (7 routes), no large purchasing-only sidebar. Dark slate/blue sticker-style panels, compact controls and grouped cart. All system digits Western, including dates and percentages. Progress circle is attempted-completed/total, never elapsed-time animation; failed lines count as reviewed and remain flagged. Stop/Escape exits after active read settles, preserving results. Owner approved this design explicitly2026-11-10.
 
 Published approved layout PR96/eee1d601, purchases4 hash4bdc3fc0568ab589aec198716d2f8629148dbf9765b9f337aa2a592fc7f52b1e, modified2026-11-09T22:33:01.908841Z. Two CI passes and live navigation/render verification recorded in HANDOFF. Owner-account acceptance remains pending.
+
+
+#### Shared Aumet selection and compact workspace
+Sale and purchases share novaPurchasePrefsV1 (per browser). Provider sends aumetSellerIds and selected supplier IDs; empty selection skips Aumet, never shows all sellers. Hub filters before comparison/ranking; sale rendering has a second filter. Compact toolbar and content-height cart, inline real progress/stop, eligible supplier dropdown; no blocking progress dialog. Never claim selections sync across devices.
