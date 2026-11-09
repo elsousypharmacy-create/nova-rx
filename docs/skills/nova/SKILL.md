@@ -131,3 +131,5 @@ Fix published via PR94/51dca585: purchases2 hash321691ebe836022d1e6ce5535e69b900
 
 #### Purchasing comparison speed
 Avoid unconditional sleep AFTER a supplier response: createOfferSearch in purchases-core counts response latency toward3100ms start spacing, dedups in-flight identical queries and caches complete results for120s in memory by query+suppliers. Original timestamps remain unchanged; partial failures are not cached; new cart preview always revalidates upstream. UI announces cached reuse and supports stopping comparison. Fake-clock timing is not proof of live-account timing.
+
+Published speed update PR95/fab13cd, purchases3 hash271f47d6e6b96095226b5465dbf06c80112cdd6a07b17c3b7cefba6e9550ba4a, modified2026-11-09T22:22:15.23066Z. CI browser confirmed repeat distribution reuses4 original searches with no additional calls. End-to-end owner-account latency still not measured.
