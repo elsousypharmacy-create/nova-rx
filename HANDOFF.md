@@ -459,3 +459,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - `tools/sessions/push-sessions.cjs` now reports login HTTP status, login-page and auth-observed flags, and fixed booleans for credential/session/verification/rate-limit signals. Raw server text is not logged; session-run exception text is withheld.
 - Validation: node --check PASS; four mocked rejection cases (credentials, other session, rate limit, verification) PASS, including no username/password output and no ingest after failed login. No live login or deploy performed.
 - Next: Actions > Supplier sessions > Run workflow, select this branch and supplier=aumet once; inspect safe diagnostics before any further attempt. Connector has no workflow-dispatch tool; browser GitHub is signed out. Do not claim integration fixed until a real session is saved and real search passes.
+
+
+## Verified 2026-11-09 — Aumet login and ingest PASS
+- Runs 42566888384 and 42567144339 exposed a timeout at fill-username. Live form has no name attribute and type=text, placeholder `Email address or Mobile number`. Fixed selector in 02891ab.
+- Run 42573770072 on fix/aumet-login-diagnostics-20261109 completed SUCCESS and logged `aumet: session saved`. Real login and Worker session ingest verified, no credentials printed.
+- PR #83 remains draft, not merged. Automatic refresh on main still uses the old selector. Real Aumet product search and price semantics remain unverified. Next: review/merge selector fix, then test actual Aumet search through NOVA.
