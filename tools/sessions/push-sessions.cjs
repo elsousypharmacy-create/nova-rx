@@ -54,6 +54,7 @@ async function aumet(browser) {
   const page = await ctx.newPage();
   let phase = 'prepare';
   try {
+    let observedProductUrl = null;
     let auth = null;
     let xsrf = null;
     let loginStatus = null;
@@ -74,6 +75,7 @@ async function aumet(browser) {
     });
     page.on('request', (r) => {
       if (!/marketplace\.aumet\.com\/api\//.test(r.url())) return;
+      if (new URL(r.url()).pathname === '/api/products') observedProductUrl = r.url();
       const h = r.headers();
       if (h.authorization) auth = h.authorization;
       if (h['x-xsrf-token']) xsrf = h['x-xsrf-token'];
@@ -111,6 +113,13 @@ async function aumet(browser) {
       console.log('aumet login diagnostics: ' + JSON.stringify(diagnostics));
       return { id: 'aumet', result: 'login failed (see safe diagnostics)' };
     }
+    phase = 'inspect-search';
+    await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'networkidle', timeout: 45000 });
+    if (observedProductUrl) {
+      const params = Object.fromEntries(new URL(observedProductUrl).searchParams);
+      for (const key of Object.keys(params)) if (/id|token|email|phone|address|lat|long/i.test(key)) params[key] = '[redacted]';
+      console.log('aumet observed search params: ' + JSON.stringify(params));
+    }
     phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
     const probe = await fetch('https://marketplace.aumet.com/api/products?page=1&result_per_page=24&sort_by=price&show_comparison=1&in_stock=1&spell=Panadol', {
@@ -122,6 +131,8 @@ async function aumet(browser) {
     let data = null;
     try { data = JSON.parse(body); } catch {}
     console.log('aumet product probe: ' + JSON.stringify({
+      fields: data && typeof data === 'object' ? Object.keys(data) : [],
+      validationFields: data?.errors && typeof data.errors === 'object' ? Object.keys(data.errors) : [],
       status: probe.status, json: Boolean(data), html: body.trimStart().startsWith('<'),
       rows: Array.isArray(data?.data) ? data.data.length : null,
       nestedRows: Array.isArray(data?.data?.data) ? data.data.data.length : null,
