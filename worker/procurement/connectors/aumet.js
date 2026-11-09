@@ -32,6 +32,7 @@ const RAW_KEPT_FIELDS = [
   'stock',
   'delivery_fee',
   'average_distributor_rate',
+  'paymentMethod',
 ];
 
 function round2(value) {
@@ -198,7 +199,7 @@ export function createAumetConnector({
 
     const kept = {};
     for (const field of RAW_KEPT_FIELDS) {
-      kept[field] = raw[field] ?? null;
+      kept[field] = field === 'paymentMethod' ? (Array.isArray(raw[field]) ? raw[field].filter(m=>m&&/^\d+$/.test(String(m.id))).map(m=>({id:String(m.id)})) : null) : raw[field] ?? null;
     }
 
     return {
@@ -235,3 +236,4 @@ export function createAumetConnector({
     toOffer,
   };
 }
+

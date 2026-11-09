@@ -1,3 +1,4 @@
+import { createAumetCart } from './aumet-cart.js';
 // Supplier HTTP API for the Worker (issue Procurement 10, epic #53).
 // JSON-only routes for session ingest (browser job) and the app's supplier
 // search/status. Both shared secrets are compared constant-time; when an env
@@ -14,6 +15,10 @@ const ROUTES = new Set([
   '/api/suppliers/status',
   '/api/suppliers/search',
   '/api/suppliers/list',
+  '/api/suppliers/sellers',
+  '/api/purchases/stock',
+  '/api/purchases/aumet-cart/preview',
+  '/api/purchases/aumet-cart/apply',
 ]);
 
 function json(body, status = 200, extraHeaders = {}) {
@@ -49,7 +54,8 @@ async function readJson(request) {
   }
 }
 
-export function createSupplierApi({ hub, store, env = {} }) {
+export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = globalThis.fetch }) {
+  const cart = createAumetCart({store,hub,secret:env.NOVA_SECRET_ENCRYPTION_KEY||'',fetch:fetchImpl});
   let windowStart = 0;
   let windowCount = 0;
 
@@ -114,6 +120,12 @@ export function createSupplierApi({ hub, store, env = {} }) {
         return json({ error: 'bad-request' }, 400);
       }
       try {
+        // Keep the observed contract only across renewal of the same pharmacy.
+        if(body.supplierId==='aumet'&&!body.session.cartRequestTemplate){
+          const old=await store.load('aumet',{ignoreExpiry:true});
+          const owner=body.session.searchParams?.pharmacy_id;
+          if(owner!=null&&String(owner)===String(old?.session?.searchParams?.pharmacy_id))body.session.cartRequestTemplate=old.session.cartRequestTemplate||null;
+        }
         await store.save(body.supplierId, body.session, body.expiresAt);
       } catch {
         return json({ error: 'bad-request' }, 400);
@@ -136,6 +148,38 @@ export function createSupplierApi({ hub, store, env = {} }) {
       return json({ suppliers });
     }
 
+    if (path === '/api/suppliers/sellers') {
+      if (request.method !== 'GET') return json({ error: 'method-not-allowed' }, 405);
+      const denied = await requirePin(request); if (denied) return denied;
+      return json({ sellers: await hub.sellers() });
+    }
+    if (path.startsWith('/api/purchases/aumet-cart/')) {
+      if(request.method!=='POST')return json({error:'method-not-allowed'},405);
+      const denied=await requirePin(request);if(denied)return denied;
+      if(!env.NOVA_SECRET_ENCRYPTION_KEY)return json({error:'not-configured'},503);
+      const retry=searchLimited(Date.now());if(retry)return json({error:'rate-limited'},429);
+      try{return json(await (path.endsWith('/preview')?cart.preview(await readJson(request)):cart.apply(await readJson(request))));}
+      catch(e){return json({ok:false,error:/^(cart-|bad-request)/.test(e.message)?e.message:'cart-unavailable'},409);}
+    }
+    if (path === '/api/purchases/stock') {
+      if (request.method !== 'POST') return json({ error: 'method-not-allowed' }, 405);
+      const denied = await requirePin(request); if (denied) return denied;
+      const body = await readJson(request);
+      if (!body || typeof body.dashboardPin !== 'string' || body.dashboardPin.length > 128) return json({ error: 'bad-request' }, 400);
+      const retry = searchLimited(Date.now());
+      if (retry) return json({ error: 'rate-limited' }, 429, { 'Retry-After': String(retry) });
+      try {
+        const upstream = await fetchImpl(env.NOVA_STOCK_SOURCE_URL || 'https://script.google.com/macros/s/AKfycbyETI5UTPwpMFOu-aWoKKHqyppa7ctTVJjckmbTxegDq7E3R3p6aEBzqt275HNL8SBfWg/exec', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'novaPurchasingFeed', pin: body.dashboardPin }),
+          signal: AbortSignal.timeout(45000), redirect: 'follow',
+        });
+        const data = await upstream.json();
+        if (data.lockError || data.pinError) return json({ ok: false, error: 'source-auth-required' }, 403);
+        if (!upstream.ok || !data.ok || data.schemaVersion !== 1 || !Array.isArray(data.items)) return json({ ok: false, error: 'source-not-ready' }, 503);
+        return json(data);
+      } catch { return json({ ok: false, error: 'source-unavailable' }, 502); }
+    }
     // path === '/api/suppliers/search'
     if (request.method !== 'POST') return json({ error: 'method-not-allowed' }, 405);
     const denied = await requirePin(request);
@@ -151,8 +195,10 @@ export function createSupplierApi({ hub, store, env = {} }) {
     const requestedQty = Number.isFinite(Number(body.requestedQty)) && Number(body.requestedQty) >= 1
       ? Math.floor(Number(body.requestedQty))
       : 1;
-    return json(await hub.search(body.query, { requestedQty }));
+    const supplierIds = Array.isArray(body.supplierIds) ? body.supplierIds.filter(id => ['aumet', 'pharmaoverseas'].includes(id)) : undefined;
+    return json(await hub.search(body.query, { requestedQty, supplierIds }));
   }
 
   return handle;
 }
+

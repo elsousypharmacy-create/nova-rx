@@ -131,7 +131,7 @@ export function createSupplierHub({
     return out;
   }
 
-  async function search(query, { requestedQty = 1 } = {}) {
+  async function search(query, { requestedQty = 1, supplierIds } = {}) {
     const fetchedAt = new Date(now()).toISOString();
     const latin = extractLatin(query);
     const searchText = leadingSearchText(latin);
@@ -139,7 +139,7 @@ export function createSupplierHub({
     const allOffers = [];
 
     const suppliers = await Promise.all(
-      SUPPLIERS.map(async (s) => {
+      SUPPLIERS.filter(s => !Array.isArray(supplierIds) || supplierIds.includes(s.id)).map(async (s) => {
         const rec = await store.load(s.id);
         if (!rec) return { id: s.id, name: s.name, state: 'off' };
         holders[s.id].current = rec.session;
@@ -181,5 +181,11 @@ export function createSupplierHub({
     return { fetchedAt, results: [result], suppliers };
   }
 
-  return { status, search };
+  async function sellers() {
+    const rec = await store.load('aumet');
+    if (!rec) return [];
+    return (rec.session.sellers || []).filter(s => s && s.id != null && typeof s.name === 'string').map(s => ({ id: String(s.id), name: s.name.slice(0, 150), locked: !!s.locked }));
+  }
+  return { status, search, sellers };
 }
+

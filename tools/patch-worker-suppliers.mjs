@@ -65,6 +65,7 @@ const NOVA_SUPPLIER_HANDLER = (function () {
       const secret = typeof NOVA_SECRET_ENCRYPTION_KEY !== 'undefined' ? NOVA_SECRET_ENCRYPTION_KEY : '';
       if (!kv || !secret) return new Response(JSON.stringify({ error: 'not-configured' }), { status: 503, headers: noStore });
       const env = {
+        NOVA_SECRET_ENCRYPTION_KEY: secret,
         NOVA_API_PIN: typeof NOVA_API_PIN !== 'undefined' ? NOVA_API_PIN : '',
         NOVA_INGEST_SECRET: typeof NOVA_INGEST_SECRET !== 'undefined' ? NOVA_INGEST_SECRET : '',
       };
@@ -85,7 +86,14 @@ let code = fs.readFileSync(baseFile, 'utf8');
 // Remove a previous patch so this is repeatable.
 code = code.replace(new RegExp(`${BEGIN.replace(/[*/]/g, '\\$&')}[\\s\\S]*?${END.replace(/[*/]/g, '\\$&')}\\n?`), '');
 
-const route = "if(url.pathname.startsWith('/api/suppliers/')){event.respondWith(NOVA_SUPPLIER_HANDLER(event.request));return;}";
+// Preserve the owner-dashboard CORS contract while extending same-origin purchase reads.
+const route = "if(url.pathname.startsWith('/api/suppliers/')||url.pathname.startsWith('/api/purchases/')){const origin=event.request.headers.get('Origin');const allow=origin==='https://elsousypharmacy-create.github.io'&&['/api/suppliers/search','/api/suppliers/status','/api/suppliers/list'].includes(url.pathname);event.respondWith((async()=>{if(allow&&event.request.method==='OPTIONS')return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, X-Nova-Pin','Access-Control-Max-Age':'600','Vary':'Origin'}});const res=await NOVA_SUPPLIER_HANDLER(event.request);if(!allow)return res;const headers=new Headers(res.headers);headers.set('Access-Control-Allow-Origin',origin);headers.set('Vary','Origin');return new Response(res.body,{status:res.status,headers});})());return;}";
+const oldStart = code.indexOf("if(url.pathname.startsWith('/api/suppliers/')){");
+if (oldStart >= 0) {
+  const oldEnd = code.indexOf("if(url.pathname==='/api/settings/secrets')", oldStart);
+  if (oldEnd < 0) throw new Error('existing supplier route boundary not found');
+  code = code.slice(0, oldStart) + code.slice(oldEnd);
+}
 code = code.split(route).join('');
 const LISTENER = "addEventListener('fetch', event => { const url=new URL(event.request.url);";
 const at = code.indexOf(LISTENER);
@@ -94,3 +102,4 @@ if (code.indexOf(LISTENER, at + 1) >= 0) throw new Error('more than one fetch li
 code = code.slice(0, at) + block + LISTENER + route + code.slice(at + LISTENER.length);
 fs.writeFileSync(outFile, code);
 console.log(`patched: +${block.length + route.length} chars, modules: ${order.map((r) => modules.get(r).id).join(', ')}`);
+

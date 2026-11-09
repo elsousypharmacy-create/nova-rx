@@ -28,8 +28,10 @@
         try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
         return call(path, options, true);
       }
-      if (!res.ok) throw new Error('http-' + res.status);
-      return res.json();
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || ('http-' + res.status));
+        return data;
+      });
     });
   }
 
@@ -40,10 +42,14 @@
   }
 
   window.NOVA_SUPPLIER_PROVIDER = {
+    previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(line)}); },
+    applyAumetCart: function (plan) { return call('/api/purchases/aumet-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
+    listSellers: function () { return call('/api/suppliers/sellers', { method: 'GET' }); },
+    purchasingStock: function (dashboardPin) { return call('/api/purchases/stock', { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }); },
     search: function (query, opts) {
       return call('/api/suppliers/search', {
         method: 'POST',
-        body: JSON.stringify({ query: query, requestedQty: (opts && opts.requestedQty) || 1 }),
+        body: JSON.stringify({ query: query, requestedQty: (opts && opts.requestedQty) || 1, supplierIds: opts && opts.supplierIds }),
       });
     },
     listSuppliers: function () {
@@ -70,3 +76,4 @@
     },
   };
 })();
+
