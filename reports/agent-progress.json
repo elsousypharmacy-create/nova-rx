@@ -1,43 +1,17 @@
 {
   "schema_version": 1,
   "project": "NOVA Rx",
-  "task_id": "UX-1",
-  "task_title": "UX batch 1: language, sticker button on phones, held invoices panel",
-  "status": "merged_deployed_awaiting_qa",
-  "percent_complete": null,
-  "percent_basis": "not computed: no weighted checklist; items below are verified locally only, none deployed",
-  "items": [
-    {
-      "id": "UX-MIXED-LANG",
-      "status": "fixed_on_branch",
-      "evidence": "tests/ux-batch1.mjs"
-    },
-    {
-      "id": "UX-LANG-SWITCH-WEAK",
-      "status": "fixed_on_branch",
-      "evidence": "tests/ux-batch1.mjs"
-    },
-    {
-      "id": "UX-FAB-OVERLAP-mobile",
-      "status": "fixed_on_branch",
-      "evidence": "tests/ux-batch1.mjs"
-    },
-    {
-      "id": "UX-FAB-MISLABEL",
-      "status": "fixed_on_branch",
-      "evidence": "tests/ux-batch1.mjs"
-    },
-    {
-      "id": "UX-HELD-PANEL-OFFSCREEN",
-      "status": "fixed_on_branch",
-      "evidence": "tests/ux-batch1.mjs"
-    }
-  ],
-  "verified_items": 5,
-  "total_items": 5,
+  "task_id": "ERP-1.0",
+  "task_title": "ERP كامل — خط أساس 17 مرحلة و85 بند قبول",
+  "status": "baseline_awaiting_reconciliation",
+  "percent_complete": 0,
+  "percent_basis": "0 accepted out of 85 in new weighted acceptance baseline; does not mean no existing implementation. Canonical reports/erp-roadmap.json; 9 tasks pending review.",
+  "verified_items": 0,
+  "total_items": 85,
+  "items": [],
   "run_id": null,
-  "run_url": null,
-  "checkpoint_at": "2026-11-07T12:20:00+03:00",
-  "updated_at": "2026-11-07",
-  "note": "UX batches 1+2 merged into main (PR #34, #35) and deployed to the live Worker (modified_on 2026-11-07T08:55:46Z). Awaiting Cursor QA and the owner phone test (issue #36). Not computed: percent."
+  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/issues/87",
+  "checkpoint_at": "2026-11-09T15:50:00+03:00",
+  "updated_at": "2026-11-09",
+  "note": "Claude implements, ChatGPT reviews. Dashboard mirror pharmacy/nova-status.json must be updated with canonical evidence-backed status."
 }
