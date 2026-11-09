@@ -497,3 +497,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Published main commits: plan 19033a5; canonical 6855910; public data 09c62b3; UI 384f66f; progress 40fbd0b; agent protocol 34843f0.
 - Validation: tools/test-erp-roadmap.cjs PASS: schema, 85 unique IDs, dependency order, inline JS syntax, unknown/0/100/weighted/rejected missing-evidence cases. Live public page observed ERP-1.0 and 0/85 with 9 pending review; search BUY-04 and status filter yielded expected task/9 items. Exact mobile viewport/screenshot QA not completed: local Chromium launch blocked by sandbox socket permissions; do not claim mobile pass.
 - Next exact implementation: Claude reconciles current evidence for FND-01 and the nine pending-review IDs, creates a focused linked execution issue, then FND-02 ADR for transactional storage. Update canonical JSON + sanitized mirror + progress + HANDOFF after each accepted batch; no automatic new coding agent dispatch.
+
+## Checkpoint — ERP-1.0: FND-01 للمراجعة، FND-02 مسودة (2026-11-09)
+- PR #90 (docs فقط): `docs/erp/FND-01_REALITY_MAP.md` (جرد الأنظمة ومصادر البيانات ومالك كل بيان ومسارات القراءة/الكتابة والفجوات وقرار مبدئي لكل جزء وأسئلة المالك)، `docs/erp/FND-02_STORAGE_ADR_DRAFT.md` (ADR مقترح: D1 مقابل Postgres مُدار مقابل VPS، أوزان معايير، خطة قياس، بروتوكول كتابة، ترحيل/رجوع)، `docs/erp/NAVIGATION.md` (تقسيم الأقسام وقواعد العرض). Issues #88 و#89.
+- الحالة: FND-01 `for_review` (مراجعة كود فقط، **لم يُدخل أي نظام حي** فحجم البيانات والأعمدة الحالية «يلزم تحقق»)، FND-02 `in_progress` (لا قياس ولا قرار). `reports/erp-roadmap.json` والنسخة العامة `pharmacy/nova-status.json` اتحدّثوا (pharmacy PR #52 مدموج).
+- لقطات مهمة: `scanSearch/scanLookup` بدون مصادقة (قرار المالك)؛ الكتالوج الحي = شيت STOCK LIVE (لقطة كل ~5 دقايق)؛ الصيدلية في مصر والبرنامج بيعرض ريال/15%.
+- الخطوة التالية: مراجعة ChatGPT ورد المالك على أسئلة FND-01 (النظام القديم للبيع، التشغيلات، الضريبة، الفروع)، ثم قياس FND-02.

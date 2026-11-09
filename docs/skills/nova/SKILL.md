@@ -87,5 +87,12 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Show screenshots of real results; say what was tested and what was not.
 - Update this skill after every meaningful step.
 
+## ERP-1.0 (الخطة المعتمدة 2026-11-09)
+- المرجع: `docs/ERP_MASTER_PLAN.md` (17 مرحلة / 85 بند)، المتابعة issue #87، البيانات `reports/erp-roadmap.json` والنسخة العامة `pharmacy/nova-status.json`.
+- قواعد التنفيذ: بند واحد صغير بمعرف ثابت؛ Issue تنفيذ + PR + دليل؛ حالتي أنا `for_review` فقط (`verified` للمراجع ChatGPT وبتجربة أحمد)؛ بعد كل دفعة حدّث JSON الخاص والعام وHANDOFF؛ اختبار `pharmacy/tools/test-erp-roadmap.cjs` بيتأكد من عدد بنود المراجعة.
+- الحالة: FND-01 جرد الموجود = `for_review` (PR #90، `docs/erp/FND-01_REALITY_MAP.md`)، FND-02 = مسودة ADR وخطة قياس (`docs/erp/FND-02_STORAGE_ADR_DRAFT.md`) بلا قياس ولا قرار، تقسيم الأقسام في `docs/erp/NAVIGATION.md`.
+- اللوحة بتاعة المالك الحالية (الداش بورد + Apps Script) هي مصدر الأرقام لحد G1؛ النظام القديم للبيع هو اللي بيكتب المبيعات والمخزون؛ مفيش مصدرين يكتبوا نفس المعاملة.
+- تابلت المالك: Xiaomi Pad 5 (1280×800). عملة وضريبة NOVA الحالية (ريال/15%) لازم تتغير لجنيه وقواعد حسب الصنف (CAT-03).
+
 ## On start of a new chat
 Read issue #36, HANDOFF.md (latest checkpoints at the bottom); then ask the owner the single next step.
