@@ -505,3 +505,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - الخطوة التالية: مراجعة ChatGPT ورد المالك على أسئلة FND-01 (النظام القديم للبيع، التشغيلات، الضريبة، الفروع)، ثم قياس FND-02.
 ## Checkpoint — nova skill refreshed (2026-11-09)
 - `docs/skills/nova/SKILL.md` brought up to date: owner device (Xiaomi Pad 5), the owner dashboard work (splash that waits for all data, PIN-loop fix, Android install, how to test without live data), hardware advice given (nothing tested), the ERP-1.0 plan status (FND-01 for_review in PR #90, FND-02 draft), the unauthenticated `scanSearch/scanLookup` finding, SAR/15% vs Egypt, and that `pharmacy/nova-status.json` is now the public ERP mirror.
+
+## Checkpoint 2026-11-09 — Supplier session renewal schedule (owner approved)
+- Changed only the existing Supplier sessions schedule from `23 */10 * * *` to `23 */4 * * *` in .github/workflows/supplier-sessions.yml; comment updated. Commit: 41bc3c583dcf46181fe780404f6648bc4e3c0e07 on main.
+- Manual refresh run https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42686377296 completed successfully; job logs explicitly reported both pharmaoverseas and aumet: session saved at 2026-11-09T19:46:28Z. This proves session ingest, not a new product-search check.
+- Cron is UTC: scheduled times in Asia/Riyadh are 03:23, 07:23, 11:23, 15:23, 19:23, 23:23. GitHub scheduling can be delayed; the new cadence has not yet been observed executing automatically.
+- Hourly health checks and expiry-aware renewal are proposed only, not implemented. No Worker deployment, order, stock update or new credentials.
+- Next exact step: observe the next scheduled run and confirm both session-saved results; investigate separately if a supplier still shows disconnected.
