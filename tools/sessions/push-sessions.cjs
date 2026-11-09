@@ -116,50 +116,21 @@ async function aumet(browser) {
     phase = 'inspect-search';
     await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
     await page.waitForTimeout(8000);
-    const inputs = await page.$$eval('input', els => els.filter(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]')).map(e => ({type: e.type, placeholder: e.placeholder})));
-    console.log('aumet search inputs: ' + JSON.stringify(inputs));
     for (const input of await page.$$('input')) {
       const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
       if (!eligible) continue;
-      const beforeKeys = new Set(observedProductUrl ? new URL(observedProductUrl).searchParams.keys() : []);
       await input.fill('Panadol');
       await page.waitForTimeout(2000);
       await input.press('Enter');
       await page.waitForTimeout(3000);
-      if (observedProductUrl) console.log('aumet search parameter names: ' + JSON.stringify([...new URL(observedProductUrl).searchParams.keys()].filter(key => !beforeKeys.has(key))));
       break;
-    }
-    if (observedProductUrl) {
-      const params = Object.fromEntries(new URL(observedProductUrl).searchParams);
-      for (const key of Object.keys(params)) if (!['is_published','entity_status','show_offline','sort_by','result_per_page','page'].includes(key)) params[key] = '[redacted]';
-      console.log('aumet observed search params: ' + JSON.stringify(params));
     }
     phase = 'save-session';
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
     const searchParams = observedProductUrl ? Object.fromEntries(new URL(observedProductUrl).searchParams) : {};
-    const probeUrl = new URL('https://marketplace.aumet.com/api/products');
-    for (const [key, value] of Object.entries(searchParams)) probeUrl.searchParams.set(key, value);
     const task = searchParams.task || '';
     const searchTaskTemplate = task.includes('Panadol') ? task.replaceAll('Panadol', '__NOVA_QUERY__') : null;
-    console.log('aumet query template captured: ' + Boolean(searchTaskTemplate));
     if (!searchTaskTemplate) return { id: 'aumet', result: 'error: query template not captured' };
-    probeUrl.searchParams.set('task', searchTaskTemplate.replaceAll('__NOVA_QUERY__', 'Augmentin'));
-    const probe = await fetch(probeUrl, {
-      headers: { Accept: 'application/json', Authorization: auth, Cookie: cookie, 'X-XSRF-TOKEN': xsrf || '', 'X-Requested-With': 'XMLHttpRequest', 'x-user-lang': 'ar' },
-      signal: AbortSignal.timeout(15000),
-      redirect: 'manual',
-    });
-    const body = await probe.text();
-    let data = null;
-    try { data = JSON.parse(body); } catch {}
-    console.log('aumet product probe: ' + JSON.stringify({
-      fields: data && typeof data === 'object' ? Object.keys(data) : [],
-      validationFields: data?.errors && typeof data.errors === 'object' ? Object.keys(data.errors) : [],
-      status: probe.status, json: Boolean(data), html: body.trimStart().startsWith('<'),
-      names: Array.isArray(data?.data) ? data.data.slice(0, 5).map(row => row.product?.label?.name ?? row.product?.label).filter(v => typeof v === 'string') : [],
-      rows: Array.isArray(data?.data) ? data.data.length : null,
-      nestedRows: Array.isArray(data?.data?.data) ? data.data.data.length : null,
-    }));
     delete searchParams.task;
     const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
