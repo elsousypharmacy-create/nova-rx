@@ -1,0 +1,1317 @@
+{
+  "schemaVersion": 2,
+  "planVersion": "ERP-1.0",
+  "updatedAt": "2026-11-09T15:46:00+03:00",
+  "phase": "ERP الكامل — تثبيت خط الأساس ثم النواة المعاملاتية",
+  "goal": "ERP صيدلي عربي سريع وسهل: السوسي أولًا، ثم صيدليات وفروع متعددة",
+  "readinessPercent": null,
+  "readinessNote": "نسبة القبول تُحسب من 85 بندًا موزونًا. لم يُسجّل قبول نهائي في هذا الخط الأساس؛ توجد أعمال مبنية تنتظر مطابقة شروط القبول.",
+  "currentCycle": {
+    "title": "تثبيت الموجود وقرار قاعدة البيانات والمعاملات",
+    "agent": "Claude ينفذ • ChatGPT يراجع • أحمد يعتمد تجربة التشغيل",
+    "status": "خطة تنفيذ معتمدة النطاق؛ التنفيذ السابق ينتظر مراجعة وفق البنود الجديدة",
+    "nextOwnerAction": "لا إجراء مطلوب الآن؛ قبول التشغيل الفعلي يُطلب عند جاهزية دفعة قابلة للتجربة."
+  },
+  "tasks": [],
+  "roadmap": [
+    {
+      "id": "FND",
+      "title": "الأساس والمعمارية",
+      "order": 1,
+      "weight": 8,
+      "dependencies": [],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "FND-01",
+          "title": "خريطة الواقع وترحيل البيانات",
+          "acceptance": "حصر شاشات NOVA وSheets وApps Script والداشبورد؛ توثيق مالك كل بيان ومسار قراءته وكتابته؛ تقرير فجوات وروابط أدلة دون بيانات عملاء.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FND-02",
+          "title": "تصميم التخزين والمعاملات",
+          "acceptance": "ADR يحدد قاعدة SQL تدعم المعاملات والقيود والعزل ونسخ الاستعادة؛ اختيار التقنية بقياس على بيئة تجريبية؛ مخطط ترحيل وإرجاع موثق قبل نقل التشغيل.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FND-03",
+          "title": "نموذج المجال",
+          "acceptance": "توثيق tenant/branch/user/product/variant/unit/batch/stockMovement/invoice/payment/return/purchaseOrder/receipt/journal؛ مفاتيح ثابتة وقيود العلاقات وحالات المستندات.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FND-04",
+          "title": "عقود API وإصداراتها",
+          "acceptance": "OpenAPI للقراءة والكتابة؛ أخطاء عربية برمز ثابت وrequestId؛ pagination ومهلات وإعادة محاولة آمنة وidempotency للكتابة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FND-05",
+          "title": "بيئات العمل والنشر",
+          "acceptance": "development/staging/production منفصلة؛ migrations مرقمة؛ سجل نسخة ونشر واسترجاع؛ منع نشر artifact قديم فوق تحديث أحدث.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "SEC",
+      "title": "الحسابات والصلاحيات والعزل",
+      "order": 2,
+      "weight": 8,
+      "dependencies": [
+        "FND"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "SEC-01",
+          "title": "تسجيل الدخول والجلسات",
+          "acceptance": "حسابات فردية بدل PIN مشترك للعمليات؛ انتهاء وإبطال الجلسات وأجهزة موثوقة؛ إعادة تحقق للتصدير والتغييرات الحساسة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SEC-02",
+          "title": "مصفوفة الصلاحيات",
+          "acceptance": "مالك/مدير/صيدلي/كاشير/مخزن/محاسب/توصيل؛ التحقق على السيرفر لكل action؛ منع تصعيد الصلاحية وتسجيل الرفض.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SEC-03",
+          "title": "عزل الصيدليات والفروع",
+          "acceptance": "tenantId وbranchId من جلسة موثقة؛ فحص كل استعلام وملف وتصدير؛ محاولات وصول متبادل تفشل دون تسريب.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SEC-04",
+          "title": "سجل التدقيق",
+          "acceptance": "سجل append-only للفاعل والوقت والقيم قبل/بعد وسبب التعديل وrequestId؛ لا حذف لسجل مالي؛ حجب الأسرار والبيانات الحساسة من اللوج.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SEC-05",
+          "title": "حماية وتشغيل الأسرار",
+          "acceptance": "تشفير النقل والتخزين المناسب؛ إدارة وتدوير الأسرار على السيرفر؛ rate limits وCSP وCSRF وسياسة حذف/احتفاظ وتصدير بيانات معتمدة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "CAT",
+      "title": "دليل الأصناف والتسعير",
+      "order": 3,
+      "weight": 7,
+      "dependencies": [
+        "FND",
+        "SEC"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "CAT-01",
+          "title": "الدليل الموحد",
+          "acceptance": "اسم عربي وإنجليزي وباركود متعدد ومادة فعالة وتركيز وشكل وحجم عبوة وتصنيف؛ كشف التكرار مع مراجعة صيدلي قبل الدمج.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CAT-02",
+          "title": "الوحدات والتحويل",
+          "acceptance": "علبة/شريط/قرص وتحويلات كسرية مضبوطة لكل صنف؛ شراء وبيع بوحدات مختلفة مع تطابق المخزون والقيمة؛ منع تحويل غير معروف.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CAT-03",
+          "title": "قواعد التسعير",
+          "acceptance": "سعر جمهور وشراء وخصم وحد أقصى وتاريخ سريان؛ decimal أو أصغر وحدة نقدية؛ سياسة تقريب موحدة واختبارات حدود الخصم والمرتجع.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CAT-04",
+          "title": "استيراد البيانات",
+          "acceptance": "CSV/XLSX معاينة وأخطاء صفوف ومطابقة أعمدة وdry run؛ منع التكرار بمفتاح مصدر؛ الاستيراد قابل للتراجع ومصدر STOCK LIVE محفوظ.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CAT-05",
+          "title": "بحث فوري وباركود",
+          "acceptance": "دعم عربي/لاتيني وأخطاء كتابة وباركود؛ نتائج محلية p95≤150ms وAPI p95≤500ms بحمولة مرجعية؛ تمييز الاسم والتركيز والعبوة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "INV",
+      "title": "المخزون والتشغيلات والصلاحية",
+      "order": 4,
+      "weight": 9,
+      "dependencies": [
+        "CAT"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "INV-01",
+          "title": "دفتر حركة المخزون",
+          "acceptance": "كل تغير بحركة مرجعية غير قابلة للحذف؛ onHand/reserved/available محسوبة؛ لا تعديل مباشر للرصد؛ تسوية يومية للدفتر والرصيد.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INV-02",
+          "title": "التشغيلات والصلاحيات",
+          "acceptance": "lot/expiry/cost/location وتتبع الاستلام حتى البيع والمرتجع؛ FEFO؛ حظر المنتهي افتراضيًا وتنبيهات صلاحية قابلة للضبط.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INV-03",
+          "title": "التزامن والحجز",
+          "acceptance": "عمليتا بيع آخر قطعة لا تنجحان معًا؛ الحجز مؤقت بسياسة انتهاء؛ commit الفاتورة والدفع والحركة ذري؛ idempotency يمنع التكرار.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INV-04",
+          "title": "الجرد والتسوية",
+          "acceptance": "جلسة جرد جزئي أو شامل وعد أعمى واختلافات؛ موافقة وسبب لكل تسوية؛ إقفال الجرد يمنع تعديله مع أثر مالي صحيح.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INV-05",
+          "title": "تحويلات الفروع والاستدعاء",
+          "acceptance": "طلب/إرسال/استلام وفروقات ونقل تحت الطريق؛ استدعاء تشغيلة يحجب البيع ويحدد العملاء المصرح الوصول لهم.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "POS",
+      "title": "شاشة البيع السريعة",
+      "order": 5,
+      "weight": 10,
+      "dependencies": [
+        "CAT",
+        "INV",
+        "SEC"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "POS-01",
+          "title": "تدفق البيع",
+          "acceptance": "بحث أو مسح ثم كمية وخصم ودفع في شاشة واحدة؛ هدف فاتورة 3 أصناف≤20ث بعد التدريب؛ كيبورد وتاتش بدون فقد التركيز.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "POS-02",
+          "title": "الفاتورة والدفع الذري",
+          "acceptance": "مسودة/معلقة/نهائية/ملغاة بأرقام فريدة؛ نقدي/بطاقة/آجل/مختلط؛ حساب الباقي والتحصيل والتكرار والفشل الجزئي دون ازدواج.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "POS-03",
+          "title": "العميل والفواتير المعلقة",
+          "acceptance": "طلب الهاتف مع تخطي وفق السياسة؛ حفظ/استرجاع مسودة بعد refresh وانقطاع؛ موظف وفرع واضحان؛ لا خلط مسودات المستخدمين.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "POS-04",
+          "title": "المرتجعات والإلغاء",
+          "acceptance": "مرجع للفاتورة وحد كمية مرتجع لا يتجاوز المباع؛ رد وسيلة الدفع وأثر التشغيلات والتكلفة؛ صلاحية وسبب واعتماد للإلغاء.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "POS-05",
+          "title": "الإيصال والأجهزة",
+          "acceptance": "طباعة حرارية 58/80mm وPDF عربي وباركود؛ حالات انقطاع الطابعة وإعادة الطبع بعلامة نسخة؛ قارئ بلوتوث وتجربة تابلت وكمبيوتر حقيقية.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "CLN",
+      "title": "السلامة الدوائية والاستيكرات",
+      "order": 6,
+      "weight": 7,
+      "dependencies": [
+        "CAT",
+        "POS"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "CLN-01",
+          "title": "ملف المريض المختصر",
+          "acceptance": "عمر ووزن ووحداتهما وحساسية وحمل/رضاعة وأسئلة إلزامية حسب الحالة؛ غير معروف يظل غير معروف؛ وصول محدود واحتفاظ مضبوط.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CLN-02",
+          "title": "قاعدة دوائية موثقة",
+          "acceptance": "مصدر مرخص وإصدار وتاريخ لكل مادة/تفاعل؛ قواعد محلية ثابتة أولًا؛ حفظ provenance وتصحيح مراجَع دون تغيير دليل STOCK LIVE الأصلي.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CLN-03",
+          "title": "التفاعلات والتحذيرات",
+          "acceptance": "شدة ومصدر وسبب وقرار صيدلي؛ منع خلط الشكل/التركيز؛ اختبارات أطفال وحساسية وتكرار المادة؛ لا توصية آلية بلا مراجعة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CLN-04",
+          "title": "الاستيكر داخل البيع",
+          "acceptance": "6 استيكرات 2×3 مع تنقل؛ اختيار وتعتيم غير المحدد؛ عمر بالسنوات ووزن kg؛ مقاسات محفوظة؛ طباعة فقط أو طباعة ودفع بعد اعتماد.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "CLN-05",
+          "title": "AI مساعد مضبوط",
+          "acceptance": "طلب موحد للفاتورة مع مهلة وإعادة محاولة محدودة وميزانية؛ validation للمخرجات؛ fallback قواعد محلية؛ اعتماد صيدلي قبل أي تعليمات للمريض.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        }
+      ]
+    },
+    {
+      "id": "BUY",
+      "title": "المشتريات والنواقص والموردون",
+      "order": 7,
+      "weight": 9,
+      "dependencies": [
+        "CAT",
+        "INV"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "BUY-01",
+          "title": "تجميع النواقص",
+          "acceptance": "مصدر الطلب Orders مستقل في الواجهة؛ دمج مكرر بالمعرف والوحدة؛ حد أدنى/أقصى ومعدل بيع وlead time؛ لا اعتماد من توقع بلا مراجعة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "BUY-02",
+          "title": "المقارنة والمطابقة",
+          "acceptance": "Aumet وPharmaOverseas وموصل قابل للتوسعة؛ بحث حقيقي مع sellerId لكل مخزن؛ التركيز والشكل والعبوة والكمية والتكلفة والتاريخ ظاهرة؛ جلسة منتهية برسالة واضحة.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "BUY-03",
+          "title": "اختيار المخازن والتوزيع",
+          "acceptance": "اختيار متعدد لمخازن Aumet واستبعاد محفوظ؛ وضع اقتراح آلي ووضع يدوي؛ مقارنة السعر والتوافر والحد الأدنى والمكافآت والشحن؛ تفسير التوزيع وإمكانية تعديله.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "BUY-04",
+          "title": "قوائم وسلال حقيقية",
+          "acceptance": "قائمة تجهيز محلية موسومة بوضوح؛ adapter لسلة المورد بعد اكتشاف موثق؛ تأكيد read-back لمعرف وكمية كل صنف؛ فشل جزئي وإعادة آمنة؛ لا ادعاء تم الإضافة قبل التأكيد.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "BUY-05",
+          "title": "الطلب والاستلام والمطابقة",
+          "acceptance": "مراجعة مجموعات الموردين ثم تأكيد بشري للطلب؛ PO وحالات إرسال/قبول/جزئي/إلغاء؛ مطابقة PO/GRN/فاتورة وتسجيل lot/expiry/cost ومرتجع المورد.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "CRM",
+      "title": "العملاء والآجل والولاء",
+      "order": 8,
+      "weight": 5,
+      "dependencies": [
+        "POS",
+        "SEC"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "CRM-01",
+          "title": "دليل العميل",
+          "acceptance": "توحيد الهاتف وموافقة التواصل وتفضيلات؛ دمج مع سجل مراجعة؛ لا كشف حساب عميل لمستخدم غير مصرح.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CRM-02",
+          "title": "دفتر الآجل",
+          "acceptance": "حد ائتمان ومواعيد وأعمار دين؛ تحصيل جزئي/كامل وإيصال؛ رصيد افتتاحي وعكس حركة؛ مطابقة مع دفتر الحسابات.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CRM-03",
+          "title": "الولاء والعروض",
+          "acceptance": "نقاط وقسائم وقواعد صلاحية وحدود استخدام؛ أثر المرتجع على النقاط؛ لا تجاوز لسعر/خصم معتمد.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CRM-04",
+          "title": "الوصفات والمتابعة",
+          "acceptance": "مرفقات خاصة وربطها بالزيارة والأصناف؛ تذكير opt-in وحالة موافقة؛ سجل تدقيق الوصول؛ لا قرارات علاجية أو إعادة صرف تلقائية.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "CRM-05",
+          "title": "خدمة العميل",
+          "acceptance": "بحث في التاريخ دون بطء شاشة البيع؛ معالجة شكوى واسترجاع؛ قياس الاحتفاظ ومتوسط الطلب دون خلط زيارة بفاتورة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "FIN",
+      "title": "الحسابات والمالية",
+      "order": 9,
+      "weight": 9,
+      "dependencies": [
+        "INV",
+        "POS",
+        "BUY",
+        "CRM"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "FIN-01",
+          "title": "دليل الحسابات والافتتاح",
+          "acceptance": "شجرة حسابات ومراكز تكلفة وفروع وفترات؛ أرصدة افتتاحية متوازنة مع مصدر واعتماد؛ عملة أساسية وقواعد تحويل مؤرخة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FIN-02",
+          "title": "القيد المزدوج",
+          "acceptance": "بيع/شراء/مرتجع/تحصيل/مصروف يولد قيدًا متوازنًا؛ idempotency؛ عكس بدل حذف؛ تكلفة بقاعدة متسقة موثقة وإعادة تقييم محكومة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FIN-03",
+          "title": "الخزينة والمناوبات",
+          "acceptance": "فتح وردية وعهدة وتوريد وسحب وإقفال وعد نقدي وفروقات؛ مطابقة النقد/بطاقة/بنك؛ اعتماد التفاوت وعدم تعديل وردية مقفلة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FIN-04",
+          "title": "الموردون والمصروفات",
+          "acceptance": "حسابات مورد ومدفوعات وآجال وخصومات؛ مصروف بمستند وتصنيف واعتماد؛ reconciliation مع المشتريات والبنك.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "FIN-05",
+          "title": "التقارير والإقفال",
+          "acceptance": "ميزان مراجعة وقائمة دخل ومركز مالي وتدفق نقدي؛ هوامش بعد المرتجع وتكلفة البضاعة؛ إقفال فترة وقفلها وإعادة فتح بصلاحية.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "OPS",
+      "title": "الفريق والتوصيل والتشغيل",
+      "order": 10,
+      "weight": 4,
+      "dependencies": [
+        "SEC",
+        "POS"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "OPS-01",
+          "title": "الموظفون والحضور",
+          "acceptance": "معرف موظف ثابت وربط البصمة والوردية؛ timezone القاهرة؛ دخول/خروج وساعات وفروقات؛ سياسات مراجعة وتصحيح.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "OPS-02",
+          "title": "مؤشرات عادلة",
+          "acceptance": "مبيعات وصافي وفواتير ومتوسط وزيارات وعملاء جدد وتسجيل؛ تعريف مصدر ومقام كل مؤشر؛ لا إسناد تلقائي ملتبس أو تقييم بصري بلا دليل.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "OPS-03",
+          "title": "توصيل الطلبات",
+          "acceptance": "ربط بالنظام الحالي عبر عقد API؛ تعيين/استلام/تسليم/تحصيل؛ أسباب فشل؛ تعديل موقع بعد الاستلام باعتماد؛ لا نشر تعديل تشغيل دون تدقيق.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "OPS-04",
+          "title": "المهام والموافقات",
+          "acceptance": "طلبات خصم وتسوية ونواقص وتأخير بمسؤول وموعد وسبب؛ مسار موافقة واضح؛ سجل يمنع إغلاق مهمة غير مكتملة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "OPS-05",
+          "title": "الكاميرات كمصدر مستقل",
+          "acceptance": "عرض تقارير محفوظة وحالة المصدر وتغطية الدليل؛ صلاحيات خاصة؛ تكلفة وحدود التحليل ظاهرة؛ لا نسبة جودة مختلقة ولا تغيير جدول الكاميرات ضمن ERP.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "MSG",
+      "title": "واتساب والقنوات",
+      "order": 11,
+      "weight": 4,
+      "dependencies": [
+        "SEC",
+        "CRM",
+        "POS"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "MSG-01",
+          "title": "استقبال موثوق",
+          "acceptance": "webhook موقع والتحقق من الرسالة وdedup بمعرف Meta؛ queue وإعادة محاولة وdead-letter؛ اختبار رسالة حقيقية واردة وصادرة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "MSG-02",
+          "title": "صندوق موحد",
+          "acceptance": "محادثة وتعيين موظف وتحويل للبشر وربط عميل/طلب؛ حالة ارسال/وصول/فشل من المصدر؛ استعادة بعد refresh.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "MSG-03",
+          "title": "سياسات الرسائل",
+          "acceptance": "opt-in والقوالب ونوافذ المراسلة حسب إعداد البلد والقناة؛ حدود إنفاق؛ لا حملات أو إرسال تلقائي دون إذن صريح.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "MSG-04",
+          "title": "الوصفة إلى طلب",
+          "acceptance": "صورة خاصة ثم استخراج مساعد ومراجعة صيدلي؛ مطابقة أصناف وبدائل معتمدة؛ عرض وسعر وموافقة عميل قبل الحجز/الدفع.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "MSG-05",
+          "title": "المراقبة والسرية",
+          "acceptance": "تنبيه جلسة/توكن/اشتراك webhook منته؛ حجب التوكن والهواتف في اللوج؛ رسائل تشغيل عربية وإيقاف آمن للرد الآلي.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "BI",
+      "title": "الإدارة والتقارير",
+      "order": 12,
+      "weight": 5,
+      "dependencies": [
+        "FIN",
+        "OPS"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "BI-01",
+          "title": "قاموس المؤشرات",
+          "acceptance": "تعريف إجمالي/صافي/خصم/مرتجع/تكلفة/هامش/زيارات؛ نفس المصدر والقواعد في POS والداشبورد والتصدير.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "BI-02",
+          "title": "لوحة المالك",
+          "acceptance": "اليوم والشهر والفريق والمخزون والنواقص والتنبيهات؛ بيانات متاحة/قديمة/غير معروفة؛ تحديث يحفظ الصفحة والفترة؛ تصميم هاتف مضغوط.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "BI-03",
+          "title": "تحليل المخزون",
+          "acceptance": "ABC/FSN وراكد ونقص وصلاحية ودوران وتغطية أيام؛ استبعاد الأيام الناقصة والترويج من الطلب الطبيعي؛ تفسير التوصيات.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "BI-04",
+          "title": "التقارير والتصدير",
+          "acceptance": "فلترة وصلاحيات وصفحات وتصدير CSV/XLSX/PDF عربي؛ وظائف كبيرة بالخلفية؛ حدود بيانات ومراجعة مشاركة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "BI-05",
+          "title": "التنبيهات وخارطة المشروع",
+          "acceptance": "عتبات قابلة للضبط بلا تكرار مزعج؛ roadmap من JSON منشور مع دليل وتاريخ؛ نسبة قبول موزونة منفصلة عن نسبة البناء.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "OFF",
+      "title": "الاستمرارية والعمل عند الانقطاع",
+      "order": 13,
+      "weight": 6,
+      "dependencies": [
+        "POS",
+        "INV",
+        "SEC"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "OFF-01",
+          "title": "أسعار الطوارئ",
+          "acceptance": "snapshot بتاريخ ومصدر أسعار وأصناف؛ تخزين محلي مع حدود وإشعار قدم البيانات؛ لا يُعرض رصيد قديم كمتاح حاليًا.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "OFF-02",
+          "title": "فواتير مؤقتة",
+          "acceptance": "معرف جهاز وUUID وفاتورة PDF ومشاركة؛ تحذير وضع طوارئ؛ حفظ متين ومبلغ/وحدة/مستخدم؛ لا ادعاء تحصيل مركزي قبل المزامنة.",
+          "weight": 1,
+          "status": "for_review",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null,
+          "note": "توجد أعمال سابقة حسب HANDOFF؛ تحتاج مطابقة شروط القبول وأدلة تشغيل قبل احتسابها."
+        },
+        {
+          "id": "OFF-03",
+          "title": "المزامنة وتسوية التعارض",
+          "acceptance": "outbox persistent وidempotency؛ retry/backoff؛ تعارض سعر/رصيد/تشغيلة في needs-review؛ لا بيع آخر قطعة مرتين ولا فقد فاتورة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "OFF-04",
+          "title": "نسخ احتياطي واستعادة",
+          "acceptance": "جدول نسخ مشفر واختبار restore دوري؛ هدف RPO≤15د وRTO≤60د مثبت بتمرين؛ تحميل نسخة المالك بصلاحية.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "OFF-05",
+          "title": "أعطال واعتمادية",
+          "acceptance": "queue للأعمال الثقيلة؛ health checks وrequestId وأخطاء محسوبة؛ degraded mode للمورد وAI والطابعة؛ runbook انقطاع وإنذار ومسؤول.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "UX",
+      "title": "تجربة الاستخدام والأداء",
+      "order": 14,
+      "weight": 6,
+      "dependencies": [
+        "POS",
+        "BI"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "UX-01",
+          "title": "نظام تصميم عربي",
+          "acceptance": "Cairo وRTL ولغة عربية واضحة وتباين WCAG AA؛ ألوان dark/light؛ مكونات ورسائل موحدة وبدون عناصر زخرفية معطلة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "UX-02",
+          "title": "الأجهزة والوصول",
+          "acceptance": "Xiaomi Pad 5 landscape 1280×800 وiPhone وdesktop؛ أهداف لمس≥44px وتركيز كيبورد وscreen reader؛ لا قص ولا scroll أفقي.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "UX-03",
+          "title": "ميزانية الأداء",
+          "acceptance": "p95 تفاعل محلي≤100ms وبحث API≤500ms وحفظ فاتورة≤1s ضمن الحمل المرجعي؛ زمن مزود خارجي منفصل؛ LCP≤2.5s على جهاز وشبكة موثقين.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "UX-04",
+          "title": "الحمل والقياس",
+          "acceptance": "حمل مرجعي 10 فروع×3 كاشيرات و100k صنف و1m حركة؛ قياس warm/cold وp50/p95/error rate؛ profiling قبل اختيار تحسينات.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "UX-05",
+          "title": "قابلية التعلم",
+          "acceptance": "جلسة صيدلي جديد: بحث وبيع ومرتجع واستلام دون مساعدة بعد تدريب≤30د؛ توثيق أخطاء وعدد خطوات؛ قبول أحمد لتدفق التابلت.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "INT",
+      "title": "التكاملات والهجرة",
+      "order": 15,
+      "weight": 4,
+      "dependencies": [
+        "FND",
+        "CAT",
+        "FIN"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "INT-01",
+          "title": "جسر النظام الحالي",
+          "acceptance": "mapping للمعرفات ومصدر الملكية؛ قراءة مبدئية دون dual-write عشوائي؛ ترحيل تدريجي مع reconciliation وأعلام تشغيل.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INT-02",
+          "title": "واجهة التكامل",
+          "acceptance": "API موثق وإصدار ومفاتيح مقيدة وwebhooks موقعة؛ replay آمن وعزل تطبيقات؛ sandbox ومثال موصل.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INT-03",
+          "title": "نقل الأرصدة",
+          "acceptance": "عينة ثم dry run ثم جرد واعتماد cutoff؛ تطابق أصناف ووحدات وأرصدة وموردين وآجل؛ تقرير فرق وخطة رجوع.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INT-04",
+          "title": "الطباعة والأجهزة",
+          "acceptance": "قائمة أجهزة مدعومة واختبار باركود وطابعة وفاتورة/استيكر؛ بوابة محلية اختيارية بعقد وصلاحيات؛ تعطل الجهاز لا يكرر البيع.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "INT-05",
+          "title": "المنصة والبلدان",
+          "acceptance": "adapters ضرائب/عملات/لغة/فواتير إلكترونية لكل بلد؛ متطلبات رسمية ومراجعة مختص محلي قبل التفعيل؛ لا ادعاء امتثال عالمي بمجرد التصميم.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "QA",
+      "title": "التحقق والتجربة الفعلية",
+      "order": 16,
+      "weight": 5,
+      "dependencies": [
+        "SEC",
+        "POS",
+        "FIN",
+        "OFF",
+        "UX"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "QA-01",
+          "title": "مصفوفة اختبار مخاطر",
+          "acceptance": "حسابات مالية ومخزون وصلاحيات وتزامن ومزامنة ومرتجعات وحالات مجهول/صفر؛ fixtures بلا بيانات خاصة؛ اختبارات تفشل عند كسر القواعد.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "QA-02",
+          "title": "التدفق الكامل",
+          "acceptance": "استيراد→شراء→استلام→بيع→مرتجع→تحصيل→إقفال؛ assertions على المخزون والقيود والدفع؛ منع نسخ الاختبار لمنطق التنفيذ.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "QA-03",
+          "title": "تجربة متجر",
+          "acceptance": "فرع السوسي أولًا ومناوبات وأجهزة حقيقية؛ سجل عيوب وأرقام مقارنة بالنظام القديم؛ فترة تشغيل تجريبي تغطي ورديات ومرتجعات واستلام.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "QA-04",
+          "title": "بوابة الإصدار",
+          "acceptance": "لا P0/P1 مفتوحة؛ migration وrollback وrestore مجرّبة؛ أدلة SHA وrun وviewport وطابعة وموافقة مالك؛ green CI وحده لا يكفي.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "QA-05",
+          "title": "قبول وتوثيق",
+          "acceptance": "دليل صيدلي وكاشير ومالك وتشغيل ودعم؛ فيديو قصير للمهام؛ صاحب المتجر يعتمد النتائج؛ فقط عندها تتحول المهام إلى verified.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    },
+    {
+      "id": "SAAS",
+      "title": "المنتج التجاري والتوسع",
+      "order": 17,
+      "weight": 3,
+      "dependencies": [
+        "QA",
+        "INT"
+      ],
+      "status": "queued",
+      "note": "لم يُسجل قبول نهائي ضمن خط الأساس الجديد",
+      "tasks": [
+        {
+          "id": "SAAS-01",
+          "title": "تهيئة صيدلية جديدة",
+          "acceptance": "onboarding واستيراد وافتتاح وصلاحيات وفروع بخطوات واضحة؛ sandbox مع بيانات تجريبية معزولة؛ rollback للتهيئة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SAAS-02",
+          "title": "الخطط والاشتراكات",
+          "acceptance": "features/limits لكل tenant ودورات فاتورة وإلغاء وتصدير؛ لا حذف بيانات عند انتهاء الاشتراك؛ سياسة دعم معتمدة.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SAAS-03",
+          "title": "التوسع والعزل المالي",
+          "acceptance": "قياس تكلفة مستأجر ومورد وAI وتخزين؛ quotas وjobs isolation؛ اختبار حمل وعزل tenant ساخن؛ أهداف خدمة مبنية على القياس.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SAAS-04",
+          "title": "الدعم والإصدارات",
+          "acceptance": "release notes ورقم نسخة وتشخيص opt-in بدون بيانات حساسة؛ مسار حادث واسترجاع؛ ترقية تدريجية وأعلام features.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        },
+        {
+          "id": "SAAS-05",
+          "title": "جاهزية البيع",
+          "acceptance": "شروط استخدام وخصوصية واتفاق معالجة يراجعها مختص؛ مصفوفة بلدان وأجهزة مدعومة؛ تجربة عميل خارجي وقياس نجاح قبل التسويق.",
+          "weight": 1,
+          "status": "queued",
+          "owner": "Claude",
+          "reviewer": "ChatGPT",
+          "evidence": [],
+          "verifiedAt": null,
+          "verification": null
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "label": "الخطة التفصيلية على GitHub",
+      "url": "https://github.com/elsousypharmacy-create/nova-rx/blob/main/docs/ERP_MASTER_PLAN.md"
+    },
+    {
+      "label": "المتابعة الرئيسية #87",
+      "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/87"
+    },
+    {
+      "label": "NOVA Rx",
+      "url": "https://nova-rx-preview.elsousypharmacy.workers.dev/"
+    }
+  ],
+  "prs": [],
+  "blockers": [
+    "إثبات قبول الأعمال السابقة وربطها ببنود الخطة الجديدة لم يكتمل.",
+    "الإضافة لسلال الموردين الفعلية لم تُثبت؛ قائمة التجهيز الحالية محلية.",
+    "يلزم اعتماد تخزين معاملاتي قبل اعتبار NOVA نظام بيع ومخزون وحسابات مكتملًا."
+  ],
+  "sourceNote": "نسخة عامة منقحة من reports/erp-roadmap.json في مستودع NOVA الخاص. تُحدّث عند كل دفعة تنفيذ/مراجعة؛ ليست اتصالًا لحظيًا بالمستودع الخاص.",
+  "changelog": [
+    {
+      "version": "ERP-1.0",
+      "date": "2026-11-09",
+      "change": "خط أساس أول: 17 مرحلة و85 بند قبول؛ لا تحويل آلي للأعمال القديمة إلى قبول."
+    }
+  ]
+}
