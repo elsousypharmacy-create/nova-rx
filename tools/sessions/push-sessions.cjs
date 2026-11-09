@@ -116,9 +116,9 @@ async function aumet(browser) {
     phase = 'inspect-search';
     await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
     await page.waitForTimeout(8000);
-    const inputs = await page.$eval('input', els => els.filter(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]')).map(e => ({type: e.type, placeholder: e.placeholder})));
+    const inputs = await page.$$eval('input', els => els.filter(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]')).map(e => ({type: e.type, placeholder: e.placeholder})));
     console.log('aumet search inputs: ' + JSON.stringify(inputs));
-    for (const input of await page.$('input')) {
+    for (const input of await page.$$('input')) {
       const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
       if (!eligible) continue;
       const beforeKeys = new Set(observedProductUrl ? new URL(observedProductUrl).searchParams.keys() : []);
