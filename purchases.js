@@ -8,7 +8,7 @@ try{const p=JSON.parse(localStorage.getItem(PREF)||'null');if(p&&typeof p==='obj
 prefs.suppliers=Array.isArray(prefs.suppliers)?prefs.suppliers.filter(x=>['aumet','pharmaoverseas'].includes(x)):[];
 prefs.aumetSellers=Array.isArray(prefs.aumetSellers)?prefs.aumetSellers.map(String):[];
 let rawItems=[],items=[],sellers=[],offersByItem=new Map(),dashboardPin='',busy=false,generation=0,lastText='',pendingSellerIds=new Set();
-let cartPlans=[],sentLines=new Set();
+let cartPlans=[],sentLines=new Set(),pendingStockLoad=false;
 const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);}
 function persist(){try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
@@ -33,9 +33,11 @@ function render(){
 }
 function supplierName(id){return id==='aumet'?'أوميت':id==='pharmaoverseas'?'فارما أوفرسيز':id;}
 function groupHtml(g){return `<section class="group"><h3>${esc(supplierName(g.supplierId))}</h3>${g.sellerName?`<small>${esc(g.sellerName)}</small>`:''}<ul>${g.lines.map(l=>`<li><span>${esc(l.name)}</span><b>${fmt(l.qty)} علبة</b></li>`).join('')}</ul><b>${fmt(g.total)} ج.م</b><small>قائمة تجهيز محلية · قبل الشحن وأي عروض غير مؤكدة</small></section>`;}
-function configValid(){if(!prefs.suppliers.length){status('اختَر موردًا واحدًا على الأقل من الإعدادات',true);return false;}if(prefs.suppliers.includes('aumet')&&!prefs.aumetSellers.length){status('حدّد مخازن أوميت المسموح بها أولًا',true);$('settings').showModal();return false;}return true;}
+function configValid(){if(!prefs.suppliers.length){status('اختَر موردًا واحدًا على الأقل من الإعدادات',true);return false;}if(prefs.suppliers.includes('aumet')&&!prefs.aumetSellers.length){status('حدّد مخازن أوميت المسموح بها أولًا',true);openSettings(false);return false;}return true;}
 async function loadStock(){
  if(busy)return;
+ if(!dashboardPin){pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();$('sourceState').textContent='STOCK LIVE · محتاج رقم الداشبورد';status('اكتب رقم دخول الداشبورد في الخانة المفتوحة ثم احفظ؛ هيبدأ تحميل النواقص تلقائيًا.',true);return;}
+ pendingStockLoad=false;
  try{prefs.days=readDays($('days').value);}catch(e){status(e.message,true);return;}
  setBusy(true);status('جارٍ قراءة النواقص من STOCK LIVE…');
  try{
@@ -44,7 +46,7 @@ async function loadStock(){
   rawItems=result.items;rebuild();$('sourceState').textContent='STOCK LIVE · متصل';$('sourceState').parentElement.classList.add('ready');
   const date=new Date(result.sourceUpdatedAt||result.generatedAt);$('sourceTime').textContent=Number.isNaN(date.getTime())?'وقت تحديث المصدر غير متاح':'آخر تحديث المصدر '+date.toLocaleString('ar-EG',{timeZone:'Africa/Cairo'});
   status(`تمت قراءة ${fmt(rawItems.length)} صنف؛ ${fmt(items.length)} بحاجة للطلب. راجع الكميات قبل التوزيع.`);
- }catch(e){const message=e.message==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين':e.message==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر':e.message==='source-unavailable'?'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة':e.message;status(message||'تعذر الاتصال بالمصدر',true);$('sourceState').textContent='STOCK LIVE · لم يتحدث';$('sourceState').parentElement.classList.remove('ready');}
+ }catch(e){if(e.message==='source-auth-required'){dashboardPin='';pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();}const message=e.message==='pin-required'?'اكتب رقم موردين نوفا عند طلبه للاتصال':e.message==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين':e.message==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر':e.message==='source-unavailable'?'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة':e.message;status(message||'تعذر الاتصال بالمصدر',true);$('sourceState').textContent=e.message==='source-auth-required'?'STOCK LIVE · راجع رقم الداشبورد':e.message==='pin-required'?'STOCK LIVE · محتاج رقم موردين نوفا':'STOCK LIVE · تعذر التحديث';$('sourceState').parentElement.classList.remove('ready');}
  finally{setBusy(false);render();}
 }
 async function searchOffers(item){
@@ -78,14 +80,14 @@ async function refreshSellers(){
  try{const r=await provider().listSellers();sellers=(r.sellers||[]).map(s=>({...s,id:String(s.id)}));renderSellers();if(!sellers.length)status('قائمة المخازن غير متاحة في جلسة أوميت الحالية؛ جدّد الجلسة ثم أعد القراءة',true);}
  catch{status('تعذر قراءة مخازن أوميت؛ الاختيارات المحفوظة لم تتغير',true);}finally{$('refreshSellers').disabled=false;}
 }
-function openSettings(){pendingSellerIds=new Set(prefs.aumetSellers);['aumet','pharmaoverseas'].forEach(id=>$('supplier-'+id).checked=prefs.suppliers.includes(id));$('dashboardPin').value=dashboardPin;renderSellers();$('settings').showModal();provider().listSuppliers().then(list=>{for(const s of list){const el=$(s.id==='aumet'?'aumetState':'pharmaState');el.textContent=s.state==='ok'?'متصل':'الجلسة تحتاج تجديد';}}).catch(()=>status('تعذر فحص اتصال الموردين',true));}
+function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumetSellers);['aumet','pharmaoverseas'].forEach(id=>$('supplier-'+id).checked=prefs.suppliers.includes(id));$('dashboardPin').value=dashboardPin;renderSellers();$('settings').showModal();if(checkConnection)provider().listSuppliers().then(list=>{for(const s of list){const el=$(s.id==='aumet'?'aumetState':'pharmaState');el.textContent=s.state==='ok'?'متصل':'الجلسة تحتاج تجديد';}}).catch(()=>status('تعذر فحص اتصال الموردين',true));}
 $('days').value=prefs.days;levelView();
 $('days').addEventListener('change',rebuild);
 ['minimum','ideal'].forEach(level=>$(level).onclick=()=>{prefs.level=level;levelView();rebuild();});
 $('load').onclick=loadStock;$('distribute').onclick=allocateAll;$('search').oninput=render;
-$('openSettings').onclick=openSettings;$('refreshSellers').onclick=refreshSellers;$('sellerSearch').oninput=renderSellers;
+$('openSettings').onclick=()=>openSettings();$('refreshSellers').onclick=refreshSellers;$('sellerSearch').oninput=renderSellers;
 $('sellers').addEventListener('change',e=>{const id=e.target.dataset.seller;if(!id)return;if(e.target.checked)pendingSellerIds.add(id);else pendingSellerIds.delete(id);});
-$('saveSettings').onclick=()=>{prefs.aumetSellers=[...pendingSellerIds];prefs.suppliers=['aumet','pharmaoverseas'].filter(id=>$('supplier-'+id).checked);dashboardPin=$('dashboardPin').value.trim();$('dashboardPin').value='';persist();invalidate();$('settings').close();status('تم حفظ الموردين والمخازن؛ حدّث النواقص أو أعد التوزيع.');};
+$('saveSettings').onclick=()=>{prefs.aumetSellers=[...pendingSellerIds];prefs.suppliers=['aumet','pharmaoverseas'].filter(id=>$('supplier-'+id).checked);dashboardPin=$('dashboardPin').value.trim();$('dashboardPin').value='';persist();invalidate();$('settings').close();status('تم حفظ الموردين والمخازن؛ حدّث النواقص أو أعد التوزيع.');if(pendingStockLoad)loadStock();};
 $('selectAll').onchange=()=>{visibleItems().forEach(i=>{if(!i.issue)i.selected=$('selectAll').checked;});render();};
 $('rows').addEventListener('change',event=>{const row=event.target.closest('[data-key]');if(!row)return;const item=items.find(i=>i.key===row.dataset.key);if(event.target.dataset.action==='select'){item.selected=event.target.checked;render();}if(event.target.dataset.action==='qty'){try{item.qty=readDays(event.target.value);item.allocations=[];item.unallocated=item.qty;render();}catch{status('اكتب كمية صحيحة أكبر من صفر',true);event.target.value=item.qty;}}});
 $('rows').addEventListener('click',event=>{const button=event.target.closest('[data-action=offers]');if(button)openOffers(items.find(i=>i.key===button.closest('[data-key]').dataset.key));});
