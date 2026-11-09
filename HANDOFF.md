@@ -503,3 +503,5 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - الحالة: FND-01 `for_review` (مراجعة كود فقط، **لم يُدخل أي نظام حي** فحجم البيانات والأعمدة الحالية «يلزم تحقق»)، FND-02 `in_progress` (لا قياس ولا قرار). `reports/erp-roadmap.json` والنسخة العامة `pharmacy/nova-status.json` اتحدّثوا (pharmacy PR #52 مدموج).
 - لقطات مهمة: `scanSearch/scanLookup` بدون مصادقة (قرار المالك)؛ الكتالوج الحي = شيت STOCK LIVE (لقطة كل ~5 دقايق)؛ الصيدلية في مصر والبرنامج بيعرض ريال/15%.
 - الخطوة التالية: مراجعة ChatGPT ورد المالك على أسئلة FND-01 (النظام القديم للبيع، التشغيلات، الضريبة، الفروع)، ثم قياس FND-02.
+## Checkpoint — nova skill refreshed (2026-11-09)
+- `docs/skills/nova/SKILL.md` brought up to date: owner device (Xiaomi Pad 5), the owner dashboard work (splash that waits for all data, PIN-loop fix, Android install, how to test without live data), hardware advice given (nothing tested), the ERP-1.0 plan status (FND-01 for_review in PR #90, FND-02 draft), the unauthenticated `scanSearch/scanLookup` finding, SAR/15% vs Egypt, and that `pharmacy/nova-status.json` is now the public ERP mirror.
