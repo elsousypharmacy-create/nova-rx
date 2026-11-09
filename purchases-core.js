@@ -2,7 +2,7 @@ import { normalizeDigits, matchOffersToItem } from './worker/procurement/normali
 
 export function readDays(value) {
   const text = normalizeDigits(String(value ?? '')).trim();
-  if (!/^\d+$/.test(text) || Number(text) < 1 || Number(text) > 3650) throw new Error('اكتب مدة صحيحة من ١ إلى ٣٦٥٠ يوم');
+  if (!/^\d+$/.test(text) || Number(text) < 1 || Number(text) > 3650) throw new Error('اكتب مدة صحيحة من 1 إلى 3650 يوم');
   return Number(text);
 }
 export function numberOrNull(value) {
