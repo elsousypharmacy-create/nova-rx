@@ -465,3 +465,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Runs 42566888384 and 42567144339 exposed a timeout at fill-username. Live form has no name attribute and type=text, placeholder `Email address or Mobile number`. Fixed selector in 02891ab.
 - Run 42573770072 on fix/aumet-login-diagnostics-20261109 completed SUCCESS and logged `aumet: session saved`. Real login and Worker session ingest verified, no credentials printed.
 - PR #83 remains draft, not merged. Automatic refresh on main still uses the old selector. Real Aumet product search and price semantics remain unverified. Next: review/merge selector fix, then test actual Aumet search through NOVA.
+
+
+## Checkpoint 2026-11-09 — Aumet search NOT fixed
+- 42575225938: current connector query on GitHub runner returned HTTP 400 JSON, session ingest still succeeded.
+- 42575459471 captured site query shape (account context + coverage + compound sort). 42575689653 replayed original account query with spell=Panadol: HTTP 200, 20 rows, names unrelated to Panadol. Thus spell is not verified as text filtering. Account searchParams are now included in encrypted ingested session, but live Worker does not consume them yet.
+- 42575918452 attempted UI search observation, stopped at username field timeout before login. No CAPTCHA/block established by this timeout. Exact placeholder may vary, so investigate visible form and support existing name/email/text semantics before another login.
+- No Worker deployment, no merge, no successful end-to-end search. PR83 diagnostic changes remain draft. Some diagnostic runs saved sessions while product probe was unsuccessful, so green workflow is not proof of supplier search success. Next: capture real UI search parameter, integrate account query context without stale filtering keys, test Panadol and another query through actual Worker, then review/deploy and verify.
