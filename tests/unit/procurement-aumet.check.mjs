@@ -181,6 +181,7 @@ assert.deepEqual(buildSearchParams('panadol', 2, 24), {
     'bonuses',
     'delivery_fee',
     'discounts',
+    'paymentMethod',
     'retail_selling_price',
     'stock',
     'unit_price',
