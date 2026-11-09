@@ -452,3 +452,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Found while verifying stickers26: after removing the auto-open, opening the panel by hand in a NEW sale still showed the previous invoice's medicines (the open-cart reload only ran when the panel was empty). Reproduced by a new test, fixed: opening by hand with a non-empty cart that differs from the last loaded one (signature in panel.dataset.cartSig) loads the cart; the invoice-completed handler resets the signature.
 - Tests: issue-4 L5c/L5d (fail on the old code, pass on the new). All suites pass; sale-sticker-modal still ends at the known sandbox baseline failure (20 PASS, then the long-text print wait).
 - Artifact stickers27 sha 1018c42a6723012216b197e81329fb4c6465a4cfe26485193ec335d26b8db8ad. Rollback: stickers25 (0bbf7b3b…); do NOT roll back to 26 (has the bug).
+
+
+## Checkpoint 2026-11-09 — Aumet login diagnosis prepared
+- Branch `fix/aumet-login-diagnostics-20261109`. Last probe run 42511724809 confirms HTTP 401, no visible error message and no search requests. Cause remains unverified.
+- `tools/sessions/push-sessions.cjs` now reports login HTTP status, login-page and auth-observed flags, and fixed booleans for credential/session/verification/rate-limit signals. Raw server text is not logged; session-run exception text is withheld.
+- Validation: node --check PASS; four mocked rejection cases (credentials, other session, rate limit, verification) PASS, including no username/password output and no ingest after failed login. No live login or deploy performed.
+- Next: Actions > Supplier sessions > Run workflow, select this branch and supplier=aumet once; inspect safe diagnostics before any further attempt. Connector has no workflow-dispatch tool; browser GitHub is signed out. Do not claim integration fixed until a real session is saved and real search passes.
