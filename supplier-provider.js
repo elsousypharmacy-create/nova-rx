@@ -40,10 +40,12 @@
   }
 
   window.NOVA_SUPPLIER_PROVIDER = {
+    listSellers: function () { return call('/api/suppliers/sellers', { method: 'GET' }); },
+    purchasingStock: function (dashboardPin) { return call('/api/purchases/stock', { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }); },
     search: function (query, opts) {
       return call('/api/suppliers/search', {
         method: 'POST',
-        body: JSON.stringify({ query: query, requestedQty: (opts && opts.requestedQty) || 1 }),
+        body: JSON.stringify({ query: query, requestedQty: (opts && opts.requestedQty) || 1, supplierIds: opts && opts.supplierIds }),
       });
     },
     listSuppliers: function () {
@@ -70,3 +72,4 @@
     },
   };
 })();
+

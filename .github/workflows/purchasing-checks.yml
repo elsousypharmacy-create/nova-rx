@@ -1,0 +1,25 @@
+name: Purchasing page checks
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['purchases*', 'worker/procurement/**', 'tests/*purchases*', 'tests/unit/purchases*', '.github/workflows/purchasing-checks.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: node tests/unit/purchases.check.mjs
+      - run: npm install --no-save --no-package-lock playwright@1.58.2
+      - run: node node_modules/playwright/cli.js install --with-deps chromium
+      - run: python3 -m http.server 8766 --bind 127.0.0.1 &
+      - run: node tests/purchases-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: purchasing-ui-evidence
+          path: reports/purchasing/

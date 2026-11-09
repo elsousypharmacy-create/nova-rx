@@ -12,6 +12,10 @@ on:
       supplier:
         description: "pharmaoverseas, aumet or all"
         default: "all"
+      inspect_cart:
+        description: "Inspect public cart UI contract; no cart writes"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -41,6 +45,14 @@ jobs:
           PO_USERNAME: ${{ secrets.PO_USERNAME }}
           PO_PASSWORD: ${{ secrets.PO_PASSWORD }}
           AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
+          INSPECT_CART: ${{ inputs.inspect_cart || 'false' }}
           AUMET_PASSWORD: ${{ secrets.AUMET_PASSWORD }}
         # Refresh both suppliers with the pharmacy's existing saved credentials.
         run: node tools/sessions/push-sessions.cjs "${{ inputs.supplier || 'all' }}"
+
+
+      - uses: actions/upload-artifact@v4
+        if: always() && inputs.inspect_cart
+        with:
+          name: aumet-cart-contract
+          path: reports/aumet-cart-contract.json
