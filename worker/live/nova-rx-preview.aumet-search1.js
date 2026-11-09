@@ -2007,7 +2007,7 @@ function createSupplierHub({
     return out;
   }
 
-  async function search(query, { requestedQty = 1 } = {}) {
+  async function search(query, { requestedQty = 1, supplierIds } = {}) {
     const fetchedAt = new Date(now()).toISOString();
     const latin = extractLatin(query);
     const searchText = leadingSearchText(latin);
@@ -2015,7 +2015,7 @@ function createSupplierHub({
     const allOffers = [];
 
     const suppliers = await Promise.all(
-      SUPPLIERS.map(async (s) => {
+      (Array.isArray(supplierIds) ? SUPPLIERS.filter((x) => supplierIds.includes(x.id)) : SUPPLIERS).map(async (s) => {
         const rec = await store.load(s.id);
         if (!rec) return { id: s.id, name: s.name, state: 'off' };
         holders[s.id].current = rec.session;
@@ -2216,7 +2216,10 @@ function createSupplierApi({ hub, store, env = {} }) {
     const requestedQty = Number.isFinite(Number(body.requestedQty)) && Number(body.requestedQty) >= 1
       ? Math.floor(Number(body.requestedQty))
       : 1;
-    return json(await hub.search(body.query, { requestedQty }));
+    const supplierIds = Array.isArray(body.supplierIds)
+      ? body.supplierIds.filter((id) => id === 'aumet' || id === 'pharmaoverseas')
+      : undefined;
+    return json(await hub.search(body.query, { requestedQty, supplierIds }));
   }
 
   return handle;
