@@ -42,6 +42,8 @@
   }
 
   window.NOVA_SUPPLIER_PROVIDER = {
+    previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(line)}); },
+    applyAumetCart: function (plan) { return call('/api/purchases/aumet-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
     listSellers: function () { return call('/api/suppliers/sellers', { method: 'GET' }); },
     purchasingStock: function (dashboardPin) { return call('/api/purchases/stock', { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }); },
     search: function (query, opts) {

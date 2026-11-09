@@ -521,3 +521,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Cart truth: saved local draft does NOT fill supplier cart. Aumet cart inspection 42702572030 read static contracts and saved session; second inspection 42703168722 captures and ABORTS every cart/order write to discover the payload, no checkout. Run 42702355454 was cancelled after a mis-entered supplier input (no intended supplier refresh). No real supplier orders placed.
 - Live baseline downloaded via Cloudflare API: modified_on 2026-11-09T11:57:20.882869Z; preserve old POS/admin/AI routes and supplier CORS. Built first artifact, not deployed yet. Keep pre-change live code for rollback; do not deploy stale emergency artifact.
 - Next exact steps: finish cart contract inspection; verify new UI polish in CI; merge/deploy via guarded dry-run and verify; install source feed and require owner UI authentication for live data. Do not mark BUY tasks verified from CI alone.
+
+
+### BUY cart follow-up — 2026-11-10
+- Safe Aumet capture run 42703168722 succeeded: actual POST v2 cart/items payload captured and aborted, zero cart writes. Stored only in encrypted session, sanitized artifact13712147556.
+- Implemented signed 120s per-line cart plans: fresh offer/price/payment validation, read existing qty, absolute target, conflict/payment protection, read-back. Retries reuse the same target; no checkout/order routes. Normal same-account session refresh retains observed contract.
+- Unit mocks cover existing quantity, changed price/payment/cart, tamper, timeout-after-success and repeat-click. Real write/read-back remains NOT TESTED pending actual desired user basket. PharmaOverseas external cart remains NOT IMPLEMENTED; page labels it local.
+- CI procurement failure42703427363 was pre-existing performance threshold (1721ms vs1000ms), rerun requested; no test weakened. UI latest42703425962 PASS.

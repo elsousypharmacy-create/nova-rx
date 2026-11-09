@@ -65,6 +65,7 @@ const NOVA_SUPPLIER_HANDLER = (function () {
       const secret = typeof NOVA_SECRET_ENCRYPTION_KEY !== 'undefined' ? NOVA_SECRET_ENCRYPTION_KEY : '';
       if (!kv || !secret) return new Response(JSON.stringify({ error: 'not-configured' }), { status: 503, headers: noStore });
       const env = {
+        NOVA_SECRET_ENCRYPTION_KEY: secret,
         NOVA_API_PIN: typeof NOVA_API_PIN !== 'undefined' ? NOVA_API_PIN : '',
         NOVA_INGEST_SECRET: typeof NOVA_INGEST_SECRET !== 'undefined' ? NOVA_INGEST_SECRET : '',
       };

@@ -1,3 +1,4 @@
+import { createAumetCart } from './aumet-cart.js';
 // Supplier HTTP API for the Worker (issue Procurement 10, epic #53).
 // JSON-only routes for session ingest (browser job) and the app's supplier
 // search/status. Both shared secrets are compared constant-time; when an env
@@ -16,6 +17,8 @@ const ROUTES = new Set([
   '/api/suppliers/list',
   '/api/suppliers/sellers',
   '/api/purchases/stock',
+  '/api/purchases/aumet-cart/preview',
+  '/api/purchases/aumet-cart/apply',
 ]);
 
 function json(body, status = 200, extraHeaders = {}) {
@@ -52,6 +55,7 @@ async function readJson(request) {
 }
 
 export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = globalThis.fetch }) {
+  const cart = createAumetCart({store,hub,secret:env.NOVA_SECRET_ENCRYPTION_KEY||'',fetch:fetchImpl});
   let windowStart = 0;
   let windowCount = 0;
 
@@ -116,6 +120,12 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
         return json({ error: 'bad-request' }, 400);
       }
       try {
+        // Keep the observed contract only across renewal of the same pharmacy.
+        if(body.supplierId==='aumet'&&!body.session.cartRequestTemplate){
+          const old=await store.load('aumet',{ignoreExpiry:true});
+          const owner=body.session.searchParams?.pharmacy_id;
+          if(owner!=null&&String(owner)===String(old?.session?.searchParams?.pharmacy_id))body.session.cartRequestTemplate=old.session.cartRequestTemplate||null;
+        }
         await store.save(body.supplierId, body.session, body.expiresAt);
       } catch {
         return json({ error: 'bad-request' }, 400);
@@ -142,6 +152,14 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
       if (request.method !== 'GET') return json({ error: 'method-not-allowed' }, 405);
       const denied = await requirePin(request); if (denied) return denied;
       return json({ sellers: await hub.sellers() });
+    }
+    if (path.startsWith('/api/purchases/aumet-cart/')) {
+      if(request.method!=='POST')return json({error:'method-not-allowed'},405);
+      const denied=await requirePin(request);if(denied)return denied;
+      if(!env.NOVA_SECRET_ENCRYPTION_KEY)return json({error:'not-configured'},503);
+      const retry=searchLimited(Date.now());if(retry)return json({error:'rate-limited'},429);
+      try{return json(await (path.endsWith('/preview')?cart.preview(await readJson(request)):cart.apply(await readJson(request))));}
+      catch(e){return json({ok:false,error:/^(cart-|bad-request)/.test(e.message)?e.message:'cart-unavailable'},409);}
     }
     if (path === '/api/purchases/stock') {
       if (request.method !== 'POST') return json({ error: 'method-not-allowed' }, 405);

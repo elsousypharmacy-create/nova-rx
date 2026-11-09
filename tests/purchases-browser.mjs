@@ -12,6 +12,8 @@ try{
   if(path==='/api/purchases/stock')data={ok:true,schemaVersion:1,sourceUpdatedAt:stamp,items:stock};
   else if(path==='/api/suppliers/status')data={suppliers:[{id:'aumet',state:'ok'},{id:'pharmaoverseas',state:'ok'}]};
   else if(path==='/api/suppliers/sellers')data={sellers:[{id:'one',name:'مخزن تجريبي أ'},{id:'excluded',name:'مخزن مستبعد'},{id:'two',name:'مخزن تجريبي ب'}]};
+  else if(path==='/api/purchases/aumet-cart/preview'){const line=route.request().postDataJSON();data={ok:true,plan:JSON.stringify(line),signature:'synthetic',before:2,quantity:line.quantity,target:2+line.quantity};}
+  else if(path==='/api/purchases/aumet-cart/apply'){data={ok:true,state:'verified'};}
   else if(path==='/api/suppliers/search'){
    const body=route.request().postDataJSON();assert.deepEqual(body.supplierIds,['aumet']);
    data={results:[{offers:[['one',3,50],['excluded',100,10],['two',20,60]].map(([seller,qty,price])=>({offer:{supplierId:'aumet',sellerId:seller,sellerName:{one:'مخزن تجريبي أ',two:'مخزن تجريبي ب',excluded:'مخزن مستبعد'}[seller],supplierProductId:seller+body.query,productName:body.query,availableQuantity:qty,unitPrice:price,publicPrice:100,stockStatus:'in_stock',currency:'EGP',lastUpdated:stamp}}))}]};
@@ -25,7 +27,7 @@ try{
  await page.locator('#distribute').click();await page.waitForFunction(()=>!document.getElementById('distribute').disabled,{timeout:30000});
  assert.equal(await page.locator('#groups .group').count(),2);assert(!(await page.locator('#groups').innerText()).includes('مخزن مستبعد'));
  await page.locator('#review').click();assert((await page.locator('#reviewDialog').innerText()).includes('لم تُرسل'));await page.locator('#saveDraft').click();assert((await page.locator('#savedState').innerText()).includes('لم تُضف'));
- const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('novaPurchaseDraftV1')));assert.equal(saved.state,'local-draft');assert.equal(saved.groups.length,2);await page.locator('#closeReview').click();
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('novaPurchaseDraftV1')));assert.equal(saved.state,'local-draft');assert.equal(saved.groups.length,2);await page.locator('#prepareAumet').click();await page.waitForFunction(()=>!document.getElementById('prepareAumet').disabled,{timeout:40000});assert(!(await page.locator('#applyAumet').isHidden()));await page.locator('#applyAumet').click();await page.waitForFunction(()=>!document.getElementById('applyAumet').disabled,{timeout:30000});assert((await page.locator('#cartStatus').innerText()).includes('تم التحقق'));assert(await page.locator('#applyAumet').isHidden());await page.locator('#closeReview').click();
  await page.locator('#openSettings').click();await page.locator('#refreshSellers').click();await page.locator('[data-seller=two]').waitFor();await page.locator('[data-seller=two]').uncheck();await page.locator('#settings .close').click();
  await page.locator('#openSettings').click();assert(await page.locator('[data-seller=two]').isChecked());await page.locator('[data-seller=two]').uncheck();await page.locator('#saveSettings').click();assert.equal(await page.locator('#groups .group').count(),0);
  await page.locator('#openSettings').click();await page.locator('[data-seller=two]').check();await page.locator('#saveSettings').click();await page.locator('#distribute').click();await page.waitForFunction(()=>!document.getElementById('distribute').disabled,{timeout:30000});

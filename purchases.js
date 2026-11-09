@@ -8,10 +8,11 @@ try{const p=JSON.parse(localStorage.getItem(PREF)||'null');if(p&&typeof p==='obj
 prefs.suppliers=Array.isArray(prefs.suppliers)?prefs.suppliers.filter(x=>['aumet','pharmaoverseas'].includes(x)):[];
 prefs.aumetSellers=Array.isArray(prefs.aumetSellers)?prefs.aumetSellers.map(String):[];
 let rawItems=[],items=[],sellers=[],offersByItem=new Map(),dashboardPin='',busy=false,generation=0,lastText='',pendingSellerIds=new Set();
+let cartPlans=[],sentLines=new Set();
 const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);}
 function persist(){try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
-function invalidate(){generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();}
+function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();}
 function setBusy(value){busy=value;['load','distribute','days','minimum','ideal','openSettings'].forEach(id=>$(id).disabled=value);}
 function levelView(){['minimum','ideal'].forEach(id=>$(id).setAttribute('aria-pressed',String(id===prefs.level)));}
 function rebuild(){try{prefs.days=readDays($('days').value);items=buildNeeds(rawItems,prefs);offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
@@ -89,7 +90,27 @@ $('selectAll').onchange=()=>{visibleItems().forEach(i=>{if(!i.issue)i.selected=$
 $('rows').addEventListener('change',event=>{const row=event.target.closest('[data-key]');if(!row)return;const item=items.find(i=>i.key===row.dataset.key);if(event.target.dataset.action==='select'){item.selected=event.target.checked;render();}if(event.target.dataset.action==='qty'){try{item.qty=readDays(event.target.value);item.allocations=[];item.unallocated=item.qty;render();}catch{status('اكتب كمية صحيحة أكبر من صفر',true);event.target.value=item.qty;}}});
 $('rows').addEventListener('click',event=>{const button=event.target.closest('[data-action=offers]');if(button)openOffers(items.find(i=>i.key===button.closest('[data-key]').dataset.key));});
 $('closeOffers').onclick=()=>$('offers').close();$('closeReview').onclick=()=>$('reviewDialog').close();
-$('review').onclick=()=>{const groups=groupCart(items);$('reviewGroups').innerHTML=groups.map(groupHtml).join('');lastText=groups.map(g=>`${supplierName(g.supplierId)}${g.sellerName?' — '+g.sellerName:''}\n${g.lines.map(l=>`${l.name} × ${l.qty} — ${l.price} ج.م`).join('\n')}\nالإجمالي ${g.total} ج.م`).join('\n\n');$('savedState').textContent='';$('reviewDialog').showModal();};
+$('review').onclick=()=>{const groups=groupCart(items);$('reviewGroups').innerHTML=groups.map(groupHtml).join('');lastText=groups.map(g=>`${supplierName(g.supplierId)}${g.sellerName?' — '+g.sellerName:''}\n${g.lines.map(l=>`${l.name} × ${l.qty} — ${l.price} ج.م`).join('\n')}\nالإجمالي ${g.total} ج.م`).join('\n\n');$('savedState').textContent='';cartPlans=[];$('cartPlans').textContent='';$('cartStatus').textContent='';$('applyAumet').hidden=true;$('prepareAumet').disabled=!groups.some(g=>g.supplierId==='aumet');$('reviewDialog').showModal();};
 $('saveDraft').onclick=()=>{try{const groups=groupCart(items);localStorage.setItem(DRAFT,JSON.stringify({version:1,id:crypto.randomUUID(),savedAt:new Date().toISOString(),state:'local-draft',days:prefs.days,level:prefs.level,groups}));$('savedState').textContent='اتحفظت قائمة التجهيز في نوفا على الجهاز. لم تُضف إلى سلة المورد.';}catch{$('savedState').textContent='تعذر حفظ القائمة على الجهاز؛ انسخها قبل إغلاق الصفحة.';}};
 $('copyDraft').onclick=async()=>{try{await navigator.clipboard.writeText(lastText);$('savedState').textContent='تم نسخ القائمة.';}catch{$('savedState').textContent='النسخ غير متاح في المتصفح الحالي.';}};
 render();
+
+const lineIdentity=l=>[l.offer.supplierProductId,l.offer.sellerId,l.qty].join('::');
+const cartMessage=code=>({'cart-session-required':'جلسة أوميت تحتاج تجديدًا يدعم السلة','cart-payment-conflict':'هناك طريقة دفع مختلفة في السلة؛ راجعها داخل أوميت أولًا','cart-payment-unverified':'طريقة الدفع لهذا العرض غير مؤكدة؛ أضفه من أوميت مباشرة','cart-offer-changed':'عرض المورد أو السعر اتغير؛ أعد مقارنة العروض','cart-stock-changed':'الكمية المتاحة اتغيرت؛ راجع الكمية','cart-conflict':'السلة اتغيرت أثناء المراجعة؛ اقرأها من جديد','cart-plan-expired':'انتهت مدة المراجعة؛ اقرأ السلة من جديد','cart-session-changed':'الجلسة اتجددت؛ اقرأ السلة من جديد','cart-readback-unavailable':'لم نتمكن من تأكيد النتيجة؛ راجع سلة أوميت قبل أي محاولة جديدة','cart-upstream-error':'تعذرت الإضافة؛ راجع سلة أوميت قبل المحاولة'})[code]||'تعذر تأكيد سلة أوميت؛ راجعها في حسابك';
+function cartBusy(value){setBusy(value);['prepareAumet','applyAumet','closeReview'].forEach(id=>$(id).disabled=value);$('reviewDialog').onkeydown=e=>{if(value&&e.key==='Escape')e.preventDefault();};}
+$('prepareAumet').onclick=async()=>{
+ if(busy)return;cartPlans=[];$('applyAumet').hidden=true;$('cartPlans').textContent='';
+ const lines=groupCart(items).filter(g=>g.supplierId==='aumet').flatMap(g=>g.lines).filter(l=>!sentLines.has(lineIdentity(l)));
+ if(!lines.length){$('cartStatus').textContent='لا توجد أصناف أوميت جديدة للإضافة في هذه القائمة.';return;}
+ cartBusy(true);
+ try{for(const line of lines){$('cartStatus').textContent=`قراءة سلة أوميت ومراجعة ${line.name}…`;const item=items.find(i=>i.key===line.itemKey);const plan=await provider().previewAumetCart({productId:String(line.offer.supplierProductId),sellerId:String(line.offer.sellerId),quantity:line.qty,price:line.price,query:item.nameEn||item.name});cartPlans.push({...plan,line});if(lines.length>1)await new Promise(r=>setTimeout(r,3100));}
+ $('cartPlans').innerHTML=cartPlans.map(p=>`<p>${esc(p.line.name)}: في السلة ${fmt(p.before)} + المطلوب ${fmt(p.quantity)} = ${fmt(p.target)}</p>`).join('');$('cartStatus').textContent='راجع الكميات ثم أكد الإضافة. لن يتم إرسال طلب شراء. فارما أوفرسيز يظل قائمة تجهيز محلية.';$('applyAumet').hidden=false;
+ }catch(e){cartPlans=[];$('cartStatus').textContent=cartMessage(e.message);}finally{cartBusy(false);}
+};
+$('applyAumet').onclick=async()=>{
+ if(busy||!cartPlans.length)return;cartBusy(true);let verified=0;
+ try{for(const p of cartPlans){if(sentLines.has(lineIdentity(p.line)))continue;$('cartStatus').textContent=`جارٍ إضافة ومراجعة ${p.line.name}…`;const r=await provider().applyAumetCart({plan:p.plan,signature:p.signature});if(!r.ok||r.state!=='verified')throw new Error(r.error);sentLines.add(lineIdentity(p.line));verified++;}
+ $('cartStatus').textContent=`تم التحقق من إضافة ${fmt(verified)} صنف إلى سلة حسابك في أوميت. لم يتم تأكيد أي طلب شراء.`;cartPlans=[];$('applyAumet').hidden=true;
+ }catch(e){$('cartStatus').textContent=`تم التحقق من ${fmt(verified)} صنف. ${cartMessage(e.message)}`;/* Keep signed plans for read-back retry; never calculate a new additive target. */}
+ finally{cartBusy(false);}
+};

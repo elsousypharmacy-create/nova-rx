@@ -32,6 +32,7 @@ const RAW_KEPT_FIELDS = [
   'stock',
   'delivery_fee',
   'average_distributor_rate',
+  'paymentMethod',
 ];
 
 function round2(value) {
@@ -235,3 +236,4 @@ export function createAumetConnector({
     toOffer,
   };
 }
+
