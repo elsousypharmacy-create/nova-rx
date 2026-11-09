@@ -92,7 +92,7 @@ async function aumet(browser) {
     await page.goto('https://marketplace.aumet.com/user/login', { waitUntil: 'networkidle', timeout: 60000 });
     if (await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], iframe[src*="turnstile"]')) return { id: 'aumet', result: 'stopped: CAPTCHA on login' };
     phase = 'fill-username';
-    await page.fill('input[name="email"], input[type="email"]', AUMET_USERNAME);
+    await page.fill('input[placeholder="Email address or Mobile number"]', AUMET_USERNAME);
     phase = 'fill-password';
     await page.fill('input[type="password"]', AUMET_PASSWORD);
     phase = 'submit-login';
