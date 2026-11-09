@@ -475,7 +475,7 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 
 ## Verified 2026-11-09 — Aumet search live PASS
-- Fixed diagnostic collection typo ($eval/$ vs $$eval/$$), then captured real UI request: task is the actual search input. Original context parameters and sort are required. Panadol task returned Panadol; task-template substitution Augmentin returned Augmentin (42579860756 and 42580016480).
+- Fixed diagnostic collection typo ($eval/$ vs $$eval/$$), then captured real UI request: task is the actual search input. Original context parameters and sort are required. Panadol task returned Panadol; task-template substitution Augmentin returned Augmentin (42579860756 and the subsequent verified Augmentin probe).
 - Worker hub now consumes encrypted session searchParams + searchTaskTemplate with current query, preserving account coverage and original sort. Captured task is removed from defaults.
 - Saved artifact worker/live/nova-rx-preview.aumet-search1.js at 27da0e12d6def68fa3a96c5f6d0369c0470f29ee; exact SHA256 e41ba5ba49f634aa13527809004cab2cebe3565b84722db7366c59baf2b71a10. Earlier dry-run hash mismatch was a local trailing newline, corrected after byte-for-byte repository verification.
 - Dry run 42580555464 PASS; Deploy NOVA Worker 42580749323 PASS with bindings retained. Live check 42580852522 PASS: both suppliers ok for Augmentin (1652ms) and Panadol Extra (2030ms); Aumet Panadol Extra 24 Tablet appears among 4 offers.
