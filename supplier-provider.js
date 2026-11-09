@@ -28,8 +28,10 @@
         try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
         return call(path, options, true);
       }
-      if (!res.ok) throw new Error('http-' + res.status);
-      return res.json();
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || ('http-' + res.status));
+        return data;
+      });
     });
   }
 

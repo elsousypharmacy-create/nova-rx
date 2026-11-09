@@ -109,3 +109,7 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 
 ## On start of a new chat
 Read issue #36, HANDOFF.md (latest checkpoints at the bottom); then ask the owner the single next step.
+
+
+## Purchasing implementation (2026-11-10, PR #93)
+Owner approved ChatGPT implementation of /purchases: free-form coverage days, saved min/ideal stock, STOCK LIVE read-only via protected JSON POST, Aumet seller allowlist, grouped local purchasing drafts. Pharmacy/PharmaClick remains stock writer. Backend source feed is pharmacy PR #53 and requires installed Apps Script source plus owner authentication. Initial synthetic browser/unit/legacy smoke checks PASS; deployment and actual supplier cart writes are NOT yet verified. Do not call local draft "added to supplier cart". See latest HANDOFF checkpoint for runs and exact pending steps.
