@@ -1,7 +1,7 @@
 import { readDays, buildNeeds, distribute, filterOffers, offerKey, groupCart, numberOrNull, createOfferSearch } from './purchases-core.js';
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt = n => Number.isFinite(n) ? new Intl.NumberFormat('ar-EG',{maximumFractionDigits:2}).format(n) : '—';
+const fmt = n => Number.isFinite(n) ? new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n) : '—';
 const PREF='novaPurchasePrefsV1', DRAFT='novaPurchaseDraftV1';
 let prefs={days:21,level:'ideal',suppliers:['aumet','pharmaoverseas'],aumetSellers:[]};
 try{const p=JSON.parse(localStorage.getItem(PREF)||'null');if(p&&typeof p==='object')prefs={...prefs,...p};}catch{}
@@ -18,7 +18,7 @@ function persist(){try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{s
 function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();}
 function setBusy(value){busy=value;['load','distribute','days','minimum','ideal','openSettings'].forEach(id=>$(id).disabled=value);}
 function levelView(){['minimum','ideal'].forEach(id=>$(id).setAttribute('aria-pressed',String(id===prefs.level)));}
-function rebuild(){try{prefs.days=readDays($('days').value);items=buildNeeds(rawItems,prefs);offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
+function rebuild(){try{prefs.days=readDays($('days').value);$('days').value=prefs.days;items=buildNeeds(rawItems,prefs);offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
 function visibleItems(){const q=$('search').value.trim().toLocaleLowerCase();return items.filter(i=>!q||`${i.name} ${i.nameEn||''} ${i.code||''}`.toLocaleLowerCase().includes(q));}
 function render(){
  const view=visibleItems();$('count').textContent=`(${items.length})`;
@@ -47,7 +47,7 @@ async function loadStock(){
   const result=await provider().purchasingStock(dashboardPin);
   if(!result.ok||!Array.isArray(result.items))throw new Error(result.error==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين لقراءة المخزون':result.error==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر؛ لم يتم تحميل بيانات قديمة بدلًا منه':'تعذر قراءة مخزون الصيدلية');
   rawItems=result.items;rebuild();$('sourceState').textContent='STOCK LIVE · متصل';$('sourceState').parentElement.classList.add('ready');
-  const date=new Date(result.sourceUpdatedAt||result.generatedAt);$('sourceTime').textContent=Number.isNaN(date.getTime())?'وقت تحديث المصدر غير متاح':'آخر تحديث المصدر '+date.toLocaleString('ar-EG',{timeZone:'Africa/Cairo'});
+  const date=new Date(result.sourceUpdatedAt||result.generatedAt);$('sourceTime').textContent=Number.isNaN(date.getTime())?'وقت تحديث المصدر غير متاح':'آخر تحديث المصدر '+date.toLocaleString('en-GB',{timeZone:'Africa/Cairo'});
   status(`تمت قراءة ${fmt(rawItems.length)} صنف؛ ${fmt(items.length)} بحاجة للطلب. راجع الكميات قبل التوزيع.`);
  }catch(e){if(e.message==='source-auth-required'){dashboardPin='';pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();}const message=e.message==='pin-required'?'اكتب رقم موردين نوفا عند طلبه للاتصال':e.message==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين':e.message==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر':e.message==='source-unavailable'?'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة':e.message;status(message||'تعذر الاتصال بالمصدر',true);$('sourceState').textContent=e.message==='source-auth-required'?'STOCK LIVE · راجع رقم الداشبورد':e.message==='pin-required'?'STOCK LIVE · محتاج رقم موردين نوفا':'STOCK LIVE · تعذر التحديث';$('sourceState').parentElement.classList.remove('ready');}
  finally{setBusy(false);render();}
@@ -57,20 +57,26 @@ async function searchOffers(item){
  if(result.cached)offerCacheHits++;
  const rows=result.value.rows;offersByItem.set(item.key,rows);return rows;
 }
+function showProgress(done,total,name=''){
+ const pct=total?Math.floor(done/total*100):0;
+ $('progressRing').style.setProperty('--progress',pct+'%');$('progressRing').setAttribute('aria-valuenow',String(pct));
+ $('progressPercent').textContent=pct+'%';$('progressCount').textContent=`تمت مراجعة ${done} من ${total} صنف`;$('progressProduct').textContent=name;
+}
 async function allocateAll(){
  if(busy||!configValid())return;if(!items.some(i=>i.selected)){status('حدّد الأصناف المطلوبة أولًا',true);return;}
  const token=++generation;setBusy(true);items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();
- $('stopDistribute').hidden=false;const hitsBefore=offerCacheHits;
- let done=0,fail=0;const selected=items.filter(i=>i.selected&&!i.issue);
+ const hitsBefore=offerCacheHits;
+ let done=0,fail=0;const selected=items.filter(i=>i.selected&&!i.issue);$('stopDistribute').disabled=false;showProgress(0,selected.length);$('distributionProgress').showModal();
  try{for(const item of selected){
-  status(`جارٍ مقارنة عروض الصنف ${fmt(++done)} من ${fmt(selected.length)}…`);
+  status(`جارٍ مقارنة عروض الصنف ${fmt(done+1)} من ${fmt(selected.length)}…`);
+  showProgress(done,selected.length,item.name);
   try{const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));}catch{fail++;item.allocations=[];item.unallocated=item.qty;}
-  render();
-
+  done++;showProgress(done,selected.length,item.name);
+  const scroll=$('rows').parentElement.scrollTop;render();$('rows').parentElement.scrollTop=scroll;
  }
  const remain=selected.filter(i=>i.unallocated>0).length;
  status(`تم توزيع ${fmt(selected.length-remain)} صنف. ${fmt(remain)} يحتاج اختيارًا أو مراجعة${fail?`؛ تعذر البحث عن ${fmt(fail)} صنف`:''}. القائمة لم تُرسل إلى الموردين.${offerCacheHits>hitsBefore?` تم استخدام ${fmt(offerCacheHits-hitsBefore)} عروض محفوظة خلال آخر دقيقتين.`:''}`,remain>0);
- }finally{setBusy(false);$('stopDistribute').hidden=true;render();}
+ }finally{setBusy(false);$('distributionProgress').close();render();}
 }
 async function openOffers(item){
  if(busy)return;setBusy(true);$('offerTitle').textContent=item.name;$('offerRows').textContent='جارٍ البحث…';$('offers').showModal();
@@ -88,7 +94,8 @@ function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumet
 $('days').value=prefs.days;levelView();
 $('days').addEventListener('change',rebuild);
 ['minimum','ideal'].forEach(level=>$(level).onclick=()=>{prefs.level=level;levelView();rebuild();});
-$('stopDistribute').onclick=()=>{generation++;status('تم إيقاف المقارنة؛ النتائج المكتملة محفوظة. جارٍ إنهاء البحث الحالي إن وُجد.');};
+$('distributionProgress').addEventListener('cancel',e=>{e.preventDefault();$('stopDistribute').click();});
+$('stopDistribute').onclick=()=>{generation++;$('stopDistribute').disabled=true;$('progressProduct').textContent='جارٍ إيقاف المقارنة…';status('تم إيقاف المقارنة؛ النتائج المكتملة محفوظة. جارٍ إنهاء البحث الحالي إن وُجد.');};
 $('load').onclick=loadStock;$('distribute').onclick=allocateAll;$('search').oninput=render;
 $('openSettings').onclick=()=>openSettings();$('refreshSellers').onclick=refreshSellers;$('sellerSearch').oninput=renderSellers;
 $('sellers').addEventListener('change',e=>{const id=e.target.dataset.seller;if(!id)return;if(e.target.checked)pendingSellerIds.add(id);else pendingSellerIds.delete(id);});
