@@ -512,3 +512,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Inspected AureusERP root license/composer and actual InventoryServiceProvider, InventoryManager, Lot, inventory routes, PurchaseServiceProvider, PurchaseOrder and purchase routes. External head c31a0db21e00fa436c4949eb4f60ceef81e116ec. MIT core confirmed; dependency/license audit not complete. Laravel/PHP service required; no direct paste into Worker.
 - Documented interface sections, source-backed capability/unknown matrix, API integration boundary, supplier-cart vs internal PO distinction, and synthetic receipt/return/idempotency/expiry/unit/concurrency acceptance experiment. No runtime test, installation, deployment, migration or real order; no completed acceptance IDs or progress changes.
 - PR #90 was observed MERGED before this work; this assessment goes into a new draft PR. Next exact step: isolated Aureus trial with Products/Inventory/Purchases and dependencies, run the documented synthetic flow, then estimate actual adapter work. Existing role split Claude implementation/ChatGPT review retained.
+
+
+## Checkpoint 2026-11-09 — purchase intake and receiving design added
+- Extended docs/erp/INVENTORY_PURCHASING_REUSE_REVIEW.md on branch review/inventory-purchasing-reuse-20261109 / draft PR #91 with owner-requested Aumet + PharmaOverseas purchase workflow.
+- Spec: one order entry, supplier confirmation reference, awaiting-arrival does not affect stock, partial/full receiving session, barcode scan + batch/expiry, OCR/AI extraction suggestions that require staff confirmation, discrepancy handling, approve-receipt-only stock ledger, receipt/label printing and internal QR traceability.
+- Clarified product GTIN/EAN is preserved; internal labels use a separate NOVA identifier; QR is for internal batch/receipt navigation, not a replacement retail barcode. GS1 references and ERPNext purchase receipt/barcode docs added.
+- Live supplier order-detail export/API and physical scanner/printer compatibility are unverified. No code, installation, tests, purchase, or stock write. Next: synthetic trial of the receipt lifecycle, then prototype architecture selection.
