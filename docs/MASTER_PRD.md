@@ -20,3 +20,7 @@ NOVA Rx is an Arabic-first, RTL pharmacy POS and ERP product for landscape table
 5. Configured AI providers, import/export, safe offline drafts and commercial readiness.
 
 The current repository is a frontend prototype with Worker integration helpers. Later phases are requirements, not claims of implemented functionality.
+
+## Detailed execution roadmap — ERP-1.0 (9 November 2026)
+
+The detailed acceptance plan is [ERP_MASTER_PLAN.md](ERP_MASTER_PLAN.md): 17 phases, 85 stable task IDs, dependencies, roles, data invariants and evidence requirements. [Master issue #87](https://github.com/elsousypharmacy-create/nova-rx/issues/87) coordinates execution. Machine-readable canonical state: `reports/erp-roadmap.json`; sanitized dashboard mirror: `pharmacy/nova-status.json`. Claude implements; ChatGPT reviews; Ahmed accepts real operating workflows. Only evidence-backed verified tasks contribute to weighted acceptance progress. Existing prototype work is pending baseline reconciliation, not automatically complete.
