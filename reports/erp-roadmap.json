@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
   "planVersion": "ERP-1.0",
-  "updatedAt": "2026-11-09T15:46:00+03:00",
+  "updatedAt": "2026-11-09T17:10:00+03:00",
   "phase": "ERP الكامل — تثبيت خط الأساس ثم النواة المعاملاتية",
   "goal": "ERP صيدلي عربي سريع وسهل: السوسي أولًا، ثم صيدليات وفروع متعددة",
   "readinessPercent": null,
   "readinessNote": "نسبة القبول تُحسب من 85 بندًا موزونًا. لم يُسجّل قبول نهائي في هذا الخط الأساس؛ توجد أعمال مبنية تنتظر مطابقة شروط القبول.",
   "currentCycle": {
-    "title": "تثبيت الموجود وقرار قاعدة البيانات والمعاملات",
+    "title": "FND-01 للمراجعة، وFND-02 مسودة ADR وخطة قياس",
     "agent": "Claude ينفذ • ChatGPT يراجع • أحمد يعتمد تجربة التشغيل",
-    "status": "خطة تنفيذ معتمدة النطاق؛ التنفيذ السابق ينتظر مراجعة وفق البنود الجديدة",
-    "nextOwnerAction": "لا إجراء مطلوب الآن؛ قبول التشغيل الفعلي يُطلب عند جاهزية دفعة قابلة للتجربة."
+    "status": "جرد الموجود وتقسيم الأقسام جاهزان للمراجعة (PR #90)؛ ADR التخزين مسودة بلا قياس ولا قرار",
+    "nextOwnerAction": "راجع أسئلة FND-01 (النظام القديم للبيع، التشغيلات والصلاحية، الضريبة) ووافق أو عدّل أوزان معايير FND-02"
   },
   "tasks": [],
   "roadmap": [
@@ -28,10 +28,17 @@
           "title": "خريطة الواقع وترحيل البيانات",
           "acceptance": "حصر شاشات NOVA وSheets وApps Script والداشبورد؛ توثيق مالك كل بيان ومسار قراءته وكتابته؛ تقرير فجوات وروابط أدلة دون بيانات عملاء.",
           "weight": 1,
-          "status": "queued",
+          "status": "for_review",
           "owner": "Claude",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/pull/90",
+              "kind": "doc",
+              "sha": "374665cf52986406c01e4301d683d1123960bff2",
+              "note": "docs/erp/FND-01_REALITY_MAP.md — مراجعة كود فقط؛ لم يُدخل أي نظام حي"
+            }
+          ],
           "verifiedAt": null,
           "verification": null
         },
@@ -40,10 +47,17 @@
           "title": "تصميم التخزين والمعاملات",
           "acceptance": "ADR يحدد قاعدة SQL تدعم المعاملات والقيود والعزل ونسخ الاستعادة؛ اختيار التقنية بقياس على بيئة تجريبية؛ مخطط ترحيل وإرجاع موثق قبل نقل التشغيل.",
           "weight": 1,
-          "status": "queued",
+          "status": "in_progress",
           "owner": "Claude",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/pull/90",
+              "kind": "doc",
+              "sha": "374665cf52986406c01e4301d683d1123960bff2",
+              "note": "docs/erp/FND-02_STORAGE_ADR_DRAFT.md — مسودة وخطة قياس؛ لا قرار قبل القياس"
+            }
+          ],
           "verifiedAt": null,
           "verification": null
         },

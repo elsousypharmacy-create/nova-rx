@@ -3,14 +3,14 @@ name: nova
 description: Use when working on NOVA Rx (نوفا) — Dr. Ahmed Elsousy's Arabic-first RTL pharmacy POS/ERP (repo elsousypharmacy-create/nova-rx, dashboard in repo pharmacy). Covers owner preferences, roles, rules, current state, test and guarded-deploy procedure, and what is pending.
 ---
 
-# NOVA Rx — project memory (updated 2026-11-08, after stickers27)
+# NOVA Rx — project memory (updated 2026-11-09)
 
 KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every deploy, not later.
 
 ## Owner and style
 - Owner: Dr. Ahmed Elsousy, pharmacist, NOT a programmer. Judges by hands-on trial and screenshots.
 - Reply in plain Egyptian Arabic: short, outcome first, no jargon. Give ONE next step. Be honest about what was NOT tested.
-- Main device: tablet LANDSCAPE (also computer). Phone and portrait are secondary.
+- Main device: Xiaomi Pad 5 (11", 1280×800 landscape; per ERP plan), also computer. Dashboard on his Android phone. Phone and portrait for NOVA are secondary.
 - Standing rules: after every deploy, test what was deployed and send screenshots. For design suggestions ("ايه رايك"): give an opinion; for taste changes show a screenshot and wait for "انشر"/"نفذ" before publishing; "نفذ" = build, test, publish, verify.
 - Priorities: stable sale screen, stickers inside the sale flow, fast polished Arabic RTL UX (app palette, no emoji, no English leftovers in Arabic mode).
 
@@ -30,7 +30,7 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Loading splash `#novaSplash` (NOVA Rx + bar) is the first element in `<body>` (style right after the charset meta); removed after window load + fonts ready (cap 1.5s) + 150ms, hard cap 4s, `pointer-events:none`.
 - Checkout is ONE step: F9 / «إتمام الدفع» opens the payment window directly. `state.customerGateSkipped` defaults to true; the payment window's «إضافة رقم العميل (اختياري)» opens the old gate (lookup/new customer). Payment window texts are Arabic in AR mode (arOverrides + enExtra pairs).
 - The WhatsApp nav tab is hidden (dead link); sticker launcher button uses the app palette.
-- Demo data only: 5 hard-coded products and demo customers; no persistence (see `docs/IMPLEMENTATION_STATUS.md`).
+- Demo data only: 12 hard-coded products (repo main; the live older lineage may differ) and a few demo customers; no persistence (see `docs/IMPLEMENTATION_STATUS.md`). Currency/tax shown are SAR/15% but the pharmacy is in Egypt: must become EGP + per-item tax rules (CAT-03).
 
 ## Sticker flow (current design)
 - Panel `#novaLabelsPanel` opens ONLY when the pharmacist taps the floating button «استيكرات الأدوية» (owner decision 2026-11-08: no auto-open after payment). After a payment the sold invoice is still queued/loaded (event `nova:invoice-completed`), so tapping the button right after paying shows its medicines. SAFETY RULE: when the open cart is non-empty and differs from what the panel last loaded (signature `panel.dataset.cartSig`), opening the panel loads the cart and replaces any previous invoice, so a new patient never sees the previous patient's medicines (stickers26 had this bug for ~30 minutes; fixed in 27, covered by issue-4 L5c/L5d). Tap Adult / Child / Pregnant / Breastfeeding -> ONE batch request to `/api/ai/medication-labels` -> table (dose, frequency, duration, instructions, status). Tap a row to edit in a window. Printing = pharmacist approval ("راجعت وطباعة"); incomplete rows and unacknowledged red warnings block printing.
@@ -54,9 +54,10 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Never tested with the REAL Gemini, a real printer, or the real tablet. AI doses are suggestions: pharmacist reviews before print.
 - Owner must delete the Cloudflare API token and GitHub secret `CLOUDFLARE_API_TOKEN`.
 - WhatsApp PAUSED (number on the sunset On-Premises API).
-- Dashboard `nova-status.json` updated 2026-11-08 07:55 (+03) via pharmacy #45; refresh it after major deploys.
+- `pharmacy/nova-status.json` is now the sanitized PUBLIC mirror of `nova-rx/reports/erp-roadmap.json` (ERP-1.0 schema, rendered by `nova-monitor.html`); update both after every roadmap batch and run `node tools/test-erp-roadmap.cjs` (it hard-codes the number of `for_review` items: bump it when a task enters review).
 - Closed as superseded/duplicate (branches kept): nova-rx #18, #19, #21, #23, pharmacy #44. Still open: nova-rx #20 (WhatsApp draft), #25 (PharmaOverseas research doc), #65/#66 (procurement drafts); pharmacy #9, #10, #11, #28 (bot/Apps Script, owner decision, may auto-deploy).
-- Not an ERP yet: no database, catalog is demo, no inventory/purchasing/accounting (roadmap phase 2 = database + real catalog + saved invoices).
+- Not an ERP yet: no transactional database, NOVA catalog is demo, no inventory ledger/purchasing/accounting. Real catalog today = Google Sheet «STOCK LIVE» (snapshot every ~5 min from the legacy POS). The ERP-1.0 plan (below) is the path.
+- SECURITY FINDING (needs owner decision): Apps Script actions `scanSearch` / `scanLookup` have no authentication, so anyone with the web-app URL can read prices and stock (documented in `docs/EMERGENCY_SALES.md`).
 - Deferred: bilingual product names (data issue), per-line discount column, +/- order, phone layout, portrait polish.
 
 ## Procurement (supplier prices) — updated 2026-11-08
@@ -86,6 +87,25 @@ KEEP THIS FILE CURRENT: update it (and `HANDOFF.md`) in the same PR as every dep
 - Short, Egyptian Arabic, outcome first, ONE question at most, no jargon, no issue numbers unless asked.
 - Show screenshots of real results; say what was tested and what was not.
 - Update this skill after every meaningful step.
+
+## Owner dashboard (repo `pharmacy`, GitHub Pages `index.html`) — work of 2026-11-08/09
+- It is the owner's management app (sales today, team, customers, WhatsApp bot chats, stock aging/shortages/expiry/counts, money: closing/expenses/debts/«بروجكت إكس», admin). Data comes from the Apps Script server through the cache Worker `wispy-cloud`. It is PIN-locked: ONE shared admin PIN stored in the Script Property `ADMIN_PIN`; the browser keeps it in `localStorage.adminPin`. NEVER ask for, read or log the PIN; the owner types it himself.
+- Loading splash `#sSplash` (logo + name + bar, uses the theme variables) from first paint. It stays until: first fresh data (`#sync` shows «آخر اتصال») AND no dashboard request in flight (own `fetch` calls are counted and passed through unchanged, `window.fetch` restored afterwards) AND no answer flagged `_stale` (the 5 s re-ask) AND no `.spin` placeholder, plus 0.6 s without new requests and 0.7 s without DOM changes. Sign-in/error screens (`.access-card`) hide it at once. Caps 8 s after first fresh data, 12 s overall. Shown once per page open. Also sets `body.light` before first paint.
+- PIN loop bug (fixed): parallel requests that left before a PIN existed each got `lockError`, and the older responses deleted the PIN the user had just typed. `api()`/`post()` now delete the stored PIN only if THAT request sent it, otherwise they retry with the saved PIN; `normPin()` converts Arabic-Indic/Persian digits to ASCII (the server compares exact strings). If it still loops with a correct PIN, check Script Property `ADMIN_PIN` exists (ASCII digits).
+- Installable as an Android app: `manifest-index.json` + `sw.js` (network-first) registered from `index.html`. Chrome → ⋮ → Install app. `apple-touch-icon.png` referenced by the page does not exist (iPhone only).
+- Dashboard changes go live ~2 min after merge to main (pages build); the sandbox cannot reach github.io or the Apps Script/Worker hosts, so verify with Playwright against a local `python3 -m http.server` and a mocked network (see HANDOFF checkpoints), and say clearly that live data was not tested.
+- Public repo: no secrets, PINs, tokens, customer names or sheet IDs in any file.
+
+## Hardware advice given to the owner (2026-11-09, general knowledge, NOTHING tested)
+- Selling screen: touch tablet 11–12.4" landscape (he already has Xiaomi Pad 5) + Bluetooth 2D barcode scanner (scanning is the main input).
+- Printing today = browser print (`window.print()` for the receipt, hidden print frame for stickers). Cable-free idea proposed, NOT built: the tablet sends the print job to a cloud queue and a small agent on the always-on PC/mini-PC/Raspberry Pi next to the printers prints it (receipt 80 mm ESC/POS, stickers 30×50). Prefer Wi-Fi/LAN printers over Bluetooth; Web Bluetooth only works with BLE printers on Android.
+- Waiting for the owner: receipt-printer model + paper width (80 vs 58 mm), sticker-printer model, whether the PC is Windows and always on. Verify any candidate's official spec before he buys.
+
+## ERP-1.0 (approved 2026-11-09)
+- Reference: `docs/ERP_MASTER_PLAN.md` (17 phases / 85 acceptance items), master issue #87, data `reports/erp-roadmap.json`, public mirror `pharmacy/nova-status.json`, `AGENTS.md` section "ERP master roadmap".
+- Execution rules: ONE small task with a fixed ID at a time; implementation issue + PR + evidence; my status is `for_review` at most (`verified` needs reviewer ChatGPT + a real trial by Ahmed); after each batch update the private JSON, the public mirror and HANDOFF; CI success/deploy/issue closure alone is never acceptance.
+- Status: FND-01 (reality map) = `for_review` (PR #90, `docs/erp/FND-01_REALITY_MAP.md`; code review only, no live system touched); FND-02 (storage ADR) = `in_progress`: DRAFT with options (D1 vs managed Postgres vs VPS), weighted criteria and a measurement plan, NO measurement and NO decision yet (`docs/erp/FND-02_STORAGE_ADR_DRAFT.md`); agreed section structure in `docs/erp/NAVIGATION.md` (SAFETY is inside sales/stickers, not a main section; menu collapsible; unfinished sections not shown as usable).
+- Until G1 the legacy POS writes sales/stock; NOVA reads. Never two writers for one transaction. Owner questions pending: legacy POS name and export/DB access, where batches/expiry live, branches, tax classes, controlled-drug register.
 
 ## On start of a new chat
 Read issue #36, HANDOFF.md (latest checkpoints at the bottom); then ask the owner the single next step.
