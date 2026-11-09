@@ -115,6 +115,17 @@ async function aumet(browser) {
     }
     phase = 'inspect-search';
     await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'networkidle', timeout: 45000 });
+    const inputs = await page.$eval('input', els => els.filter(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]')).map(e => ({type: e.type, placeholder: e.placeholder})));
+    console.log('aumet search inputs: ' + JSON.stringify(inputs));
+    for (const input of await page.$('input')) {
+      const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
+      if (!eligible) continue;
+      await input.fill('Panadol');
+      await page.waitForTimeout(2000);
+      await input.press('Enter');
+      await page.waitForTimeout(3000);
+      break;
+    }
     if (observedProductUrl) {
       const params = Object.fromEntries(new URL(observedProductUrl).searchParams);
       for (const key of Object.keys(params)) if (!['is_published','entity_status','show_offline','sort_by','result_per_page','page'].includes(key)) params[key] = '[redacted]';
