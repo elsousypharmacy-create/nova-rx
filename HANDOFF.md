@@ -7,7 +7,7 @@ Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof
 - Source of truth: STOCK LIVE sheet via Apps Script `scanSearch/scanLookup` (`price` = public price). Live call NOT tested (network blocked). Finding: those two actions need no PIN. Details in the doc.
 - Built: read-only snapshot lookup, basket, authorised discount, temporary invoice + Arabic PDF + share/download, local queue (pending/needs-review/synced, audit, idempotent), conflict detector, JSON export.
 - Not built (needs owner approval): Worker read API, durable storage, POS import. Not tested: real phone, share sheet, live prices.
-- Deploy artifact: `worker/live/nova-rx-preview.with-emergency1.js` = aumet-search1 + public page `/emergency` (no PIN; page holds no data). Built by `tools/patch-worker-emergency.mjs`; test `tests/unit/emergency-worker.check.mjs`.
+- Deploy artifact: `worker/live/nova-rx-preview.with-emergency2.js` = aumet-search1 + public `/emergency` page + `/emergency/stock.json` (prices from STOCK LIVE, no stock levels; exportedAt = sheet modifiedTime). Refresh: read STOCK LIVE from Drive as CSV, `python3 tools/build-emergency-stock.py CSV data/emergency-stock.json <modifiedTime>`, `node tools/patch-worker-emergency.mjs <base> <out>`, deploy.
 - Next exact step: run Deploy NOVA Worker (dry run first), then open /emergency on a phone.
 
 ## Checkpoint 2026-11-08 — Supplier lookup deploy prepared (owner: "نفذ")
