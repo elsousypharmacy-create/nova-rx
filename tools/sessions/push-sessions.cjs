@@ -114,7 +114,8 @@ async function aumet(browser) {
       return { id: 'aumet', result: 'login failed (see safe diagnostics)' };
     }
     phase = 'inspect-search';
-    await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'networkidle', timeout: 45000 });
+    await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(8000);
     const inputs = await page.$eval('input', els => els.filter(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]')).map(e => ({type: e.type, placeholder: e.placeholder})));
     console.log('aumet search inputs: ' + JSON.stringify(inputs));
     for (const input of await page.$('input')) {
@@ -158,7 +159,7 @@ async function aumet(browser) {
     const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams }, Date.now() + 10 * 3600 * 1000);
     return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } catch (error) {
-    return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : 'operation failed'})` };
+    return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : /context.*destroyed/i.test(error.message) ? 'navigation interrupted inspection' : /net::/i.test(error.message) ? 'navigation network error' : 'operation failed'})` };
   } finally {
     await ctx.close();
   }
