@@ -2,7 +2,7 @@
 export function createSupplierAccounts({store,fetch:fetchImpl=globalThis.fetch}){
  async function context(supplier){
   if(!['aumet','pharmaoverseas'].includes(supplier))throw Error('cart-not-supported');
-  const record=await store.load(supplier),s=record?.session;
+  let record;try{record=await store.load(supplier);}catch{throw Error('cart-session-load-failed');}const s=record?.session;
   if(!s)throw Error('cart-session-required');
   if(supplier==='aumet'){
    const t=s.cartRequestTemplate;if(!t||!/^\/api\/v2\/cart\/\d+\/items$/.test(t.path)||!/^\d+$/.test(String(t.body?.entity_id)))throw Error('cart-session-required');
@@ -16,7 +16,7 @@ export function createSupplierAccounts({store,fetch:fetchImpl=globalThis.fetch})
   const headers={Accept:'application/json','Content-Type':form?'application/x-www-form-urlencoded':'application/json'};
   if(a)Object.assign(headers,{Authorization:c.s.authorization||'',Cookie:c.s.cookie||'','X-XSRF-TOKEN':c.s.xsrf||'','X-Requested-With':'XMLHttpRequest'});
   else headers.Authorization='Bearer '+c.s.accessToken;
-  const r=await fetchImpl((a?'https://marketplace.aumet.com':'https://api.pharmaemarket.com')+path,{method,headers,...(body!==undefined?{body:form?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000),redirect:'error'});
+  let r;try{r=await fetchImpl((a?'https://marketplace.aumet.com':'https://api.pharmaemarket.com')+path,{method,headers,...(body!==undefined?{body:form?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000),redirect:'error'});}catch(e){throw Error(e.name==='TypeError'?'cart-request-runtime-error':'cart-network-error');}
   if(r.status===401||r.status===403)throw Error('cart-session-required');if(!r.ok)throw Error('cart-upstream-error');
   let d;try{d=await r.json();}catch{throw Error('cart-schema-changed');}return d;
  }

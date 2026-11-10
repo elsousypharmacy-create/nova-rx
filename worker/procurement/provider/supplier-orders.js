@@ -43,8 +43,8 @@ export function createSupplierOrders(options){
  async function preview({supplierId,aumetSellerIds=[]}={}){
   if(!['aumet','pharmaoverseas'].includes(supplierId)||!Array.isArray(aumetSellerIds)||aumetSellerIds.length>500)throw Error('bad-request');
   // Validate durable execution storage even when the supplier cart is empty.
-  await journal.lookup('readiness');
-  const snap=await snapshot(supplierId,aumetSellerIds);
+  try{await journal.lookup('readiness');}catch{throw Error('cart-journal-read-failed');}
+  let snap;try{snap=await snapshot(supplierId,aumetSellerIds);}catch(e){if(/^(cart-|order-)/.test(e.message))throw e;throw Error('order-cart-read-failed');}
   const p=await plans.pack({kind:'supplier-order',supplierId,binding:snap.c.record.savedAt,hash:snap.hash,allowedSellers:aumetSellerIds,orderCount:snap.body.sellers?.length||1,total:snap.view.total,currency:snap.view.currency});return {...p,cart:snap.view};
  }
  async function apply(input={}){
