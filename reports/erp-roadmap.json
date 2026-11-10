@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "planVersion": "ERP-1.0",
-  "updatedAt": "2026-11-10T05:23:37.792Z",
+  "updatedAt": "2026-11-10T05:31:37.562Z",
   "phase": "ERP الكامل — تثبيت خط الأساس ثم النواة المعاملاتية",
   "goal": "ERP صيدلي عربي سريع وسهل: السوسي أولًا، ثم صيدليات وفروع متعددة",
   "readinessPercent": null,
@@ -9,7 +9,7 @@
   "currentCycle": {
     "title": "عرض المهام في الداشبورد ودفعة Kimi التأسيسية",
     "agent": "ChatGPT — اللوحة والمراجعة • Kimi — 5 مهام مُسندة",
-    "status": "Kimi بدأ FND-03؛ أربع مهام مُسندة تنتظر التشغيل ومراجعة التبعيات",
+    "status": "مسودةFND-03 سُلّمت وتحتاج تعديلًا؛ Kimi ينفذFND-05 المستقلة، وثلاث مهام تنتظر مراجعة التبعيات",
     "nextOwnerAction": "لا إجراء مطلوب الآن؛ المهام غير معتمدة حتى اكتمال أدلة المراجعة"
   },
   "tasks": [],
@@ -66,7 +66,7 @@
           "title": "نموذج المجال",
           "acceptance": "توثيق tenant/branch/user/product/variant/unit/batch/stockMovement/invoice/payment/return/purchaseOrder/receipt/journal؛ مفاتيح ثابتة وقيود العلاقات وحالات المستندات.",
           "weight": 1,
-          "status": "in_progress",
+          "status": "for_review",
           "owner": "Kimi",
           "reviewer": "ChatGPT",
           "evidence": [
@@ -74,19 +74,28 @@
               "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/103",
               "kind": "issue",
               "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            },
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/pull/108",
+              "kind": "pr",
+              "sha": "675f28c08c37187905ef344fa7e98c4f7f24fc16",
+              "note": "مسودة مع ملاحظات تغيير؛ لا قبول نهائي."
             }
           ],
           "verifiedAt": null,
           "verification": null,
           "assignment": {
             "agent": "Kimi",
-            "state": "running",
+            "state": "for_review",
             "order": 1,
             "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/103",
             "dependsOn": [],
             "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل",
-            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42761851699"
-          }
+            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42761851699",
+            "reviewResult": "changes_requested",
+            "prUrl": "https://github.com/elsousypharmacy-create/nova-rx/pull/108"
+          },
+          "note": "Kimi سلّم المسودة على675f28c؛ Draft108 مفتوح. تحتاج تصحيح تعريفGoodsReceipt وحسابات المثال وتحديث وصف تكامل المشتريات. Workflow أخفق عندإنشاءPRفقط؛ لم نعد تشغيلKimi."
         },
         {
           "id": "FND-04",
@@ -121,7 +130,7 @@
           "title": "بيئات العمل والنشر",
           "acceptance": "development/staging/production منفصلة؛ migrations مرقمة؛ سجل نسخة ونشر واسترجاع؛ منع نشر artifact قديم فوق تحديث أحدث.",
           "weight": 1,
-          "status": "queued",
+          "status": "in_progress",
           "owner": "Kimi",
           "reviewer": "ChatGPT",
           "evidence": [
@@ -135,11 +144,12 @@
           "verification": null,
           "assignment": {
             "agent": "Kimi",
-            "state": "queued",
+            "state": "running",
             "order": 3,
             "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/105",
             "dependsOn": [],
-            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
+            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل",
+            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42762500180"
           }
         }
       ]
