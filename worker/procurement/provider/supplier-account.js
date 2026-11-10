@@ -16,7 +16,8 @@ export function createSupplierAccounts({store,fetch:fetchImpl=globalThis.fetch})
   const headers={Accept:'application/json','Content-Type':form?'application/x-www-form-urlencoded':'application/json'};
   if(a)Object.assign(headers,{Authorization:c.s.authorization||'',Cookie:c.s.cookie||'','X-XSRF-TOKEN':c.s.xsrf||'','X-Requested-With':'XMLHttpRequest'});
   else headers.Authorization='Bearer '+c.s.accessToken;
-  let r;try{r=await fetchImpl((a?'https://marketplace.aumet.com':'https://api.pharmaemarket.com')+path,{method,headers,...(body!==undefined?{body:form?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000),redirect:'error'});}catch(e){throw Error(e.name==='TypeError'?'cart-request-runtime-error':'cart-network-error');}
+  let r;try{r=await fetchImpl((a?'https://marketplace.aumet.com':'https://api.pharmaemarket.com')+path,{method,headers,...(body!==undefined?{body:form?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000),redirect:'manual'});}catch(e){throw Error(e.name==='TypeError'?'cart-request-runtime-error':'cart-network-error');}
+  if(r.status>=300&&r.status<400)throw Error('cart-upstream-redirect');
   if(r.status===401||r.status===403)throw Error('cart-session-required');if(!r.ok)throw Error('cart-upstream-error');
   let d;try{d=await r.json();}catch{throw Error('cart-schema-changed');}return d;
  }

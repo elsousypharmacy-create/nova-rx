@@ -32,3 +32,8 @@
 اختبارات unit ببيانات مصطنعة تغطي تغير السعر، السلال المحفوظة، الإنشاء بعد الموافقة، PATCH المطلق، double click، replay عبر instances، قفل unknown، terms، تغير السلة، IDs وread-back. SQLite حقيقي لاختبار القيود. Playwright لاختبار مراجعة/تأكيد/refresh/status على1280×800 و390×844. فحص حي منفصل `Supplier cart read check` يقرأ فقط.
 
 الإضافة الحقيقية والشراء لأول قائمة يحتاجان تجربة المالك بأصناف مطلوبة فعلًا. اختبارات fixtures وقراءة السلة ونشر الكود لا تُثبت تنفيذ طلب شراء حي. لا ترفع BUY إلى verified لهذا السبب وحده.
+
+
+## توافق Cloudflare Workers
+
+التكامل يعمل على Module Worker لأن D1 لا يدعم service-worker format. غلاف التشغيل يحافظ على fetch listener والمسارات القديمة وrate-limit لكل env. `redirect: manual` إلزامي؛ Workers لا يدعم `error` ويقذف TypeError قبل إرسال الطلب. أي3xx تُرفض ولا تُتبع، لمنع انتقال Authorization/Cookie إلى مضيف آخر. المصدر: https://developers.cloudflare.com/workers/runtime-apis/request/ . اختبار supplier-platform يحاكي هذا القيد.

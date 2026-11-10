@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {createSupplierAccounts} from '../../worker/procurement/provider/supplier-account.js';
+import {createAumetCart} from '../../worker/procurement/provider/aumet-cart.js';
+let requests=0;
+const session={accessToken:'fixture',authorization:'fixture',sellers:[{id:'7'}],cartRequestTemplate:{method:'POST',path:'/api/v2/cart/9/items',body:{entity_id:8,payment_method_id:1}}};
+const store={load:async()=>({session,savedAt:'fixture'})};
+const fetch=async(url,opts)=>{requests++;if(opts.redirect==='error')throw new TypeError('Unsupported redirect mode: error');assert.equal(opts.redirect,'manual');return new Response('',{status:302,headers:{Location:'https://other-host.invalid/login'}});};
+const accounts=createSupplierAccounts({store,fetch});const c=await accounts.context('pharmaoverseas');await assert.rejects(accounts.request(c,'/occ/v2/pharma/users/current/carts'),/cart-upstream-redirect/);assert.equal(requests,1);
+const hub={search:async()=>({results:[{offers:[{offer:{supplierId:'aumet',supplierProductId:'5',sellerId:'7',unitPrice:40,stockStatus:'in_stock',raw:{paymentMethod:[{id:1}]}}}]}]})};
+const a=createAumetCart({store,hub,secret:'fixture',fetch});await assert.rejects(a.preview({productId:'5',sellerId:'7',quantity:1,price:40,query:'fixture'}),/cart-upstream-redirect/);assert.equal(requests,2);
+console.log('PASS Workers-compatible manual redirects: unsupported error mode reproduced; supplier credentials never follow redirects');

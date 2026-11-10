@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 import fs from 'node:fs';
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
-const code=fs.readFileSync('worker/live/nova-rx-preview.purchases8.js','utf8');
+const code=fs.readFileSync('worker/live/nova-rx-preview.purchases9.js','utf8');
 const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 let journalReads=0;
 const env={NOVA_API_PIN:'fixture-pin',NOVA_INGEST_SECRET:'fixture-ingest',NOVA_SECRET_ENCRYPTION_KEY:'fixture-key',NOVA_SECRETS_KV:{get:async()=>null},NOVA_PURCHASE_OPS:{prepare:()=>({bind:()=>({first:async()=>{journalReads++;return null;}})})}};
