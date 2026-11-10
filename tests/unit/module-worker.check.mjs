@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 import fs from 'node:fs';
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
-const artifact=process.argv[2]||'worker/live/nova-rx-preview.purchases13.js';
+const artifact=process.argv[2]||'worker/live/nova-rx-preview.purchases14.js';
 const code=fs.readFileSync(artifact,'utf8');
 const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 let journalReads=0;
@@ -18,7 +18,7 @@ const search=await request('/api/suppliers/search',{query:'Panadol Extra 24 tabs
 for(let i=0;i<8;i++)assert.equal((await request('/api/suppliers/status',null,'wrong-pin')).status,401);
 assert.equal((await request('/api/suppliers/status',null,'wrong-pin')).status,429,'rate limiter persists across requests in module adapter');
 // Release checks: the embedded code is the merged #112 / #119 / #120 behavior, not a stale bundle.
-for(const marker of ['IncompleteSearchError','AUMET_MAX_PAGES','cart-seller-not-selected','Fail closed: a missing or malformed selection means NO Aumet warehouse','aumetSearchTimeoutMs','MSG_SCHEMA','readable: stat.readable'])assert(code.includes(marker),'artifact is missing release code: '+marker);
+for(const marker of ['IncompleteSearchError','AUMET_MAX_PAGES','cart-seller-not-selected','Fail closed: a missing or malformed selection means NO Aumet warehouse','aumetSearchTimeoutMs','MSG_SCHEMA','readable: stat.readable','sellerSample'])assert(code.includes(marker),'artifact is missing release code: '+marker);
 const page=await (await request('/purchases')).text();for(const marker of ['id="scopeChip"','offer-state','data-state=\\"incomplete\\"'])assert(page.includes(marker)||code.includes(marker),'purchases page is missing: '+marker);
 assert((await (await request('/supplier-provider.js')).text()).includes('savePurchasePrefs'),'provider must expose savePurchasePrefs (DOM layer must not write storage)');
 console.log('PASS module Worker: original POS/stickers, purchasing assets, D1 scope, persistent auth limiter');

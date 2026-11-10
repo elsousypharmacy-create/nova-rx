@@ -64,6 +64,9 @@ const filler=n=>Array.from({length:24},(_,i)=>row('other'+n+'-'+i,50));
  // rows readable but the selection excludes them all: ok, selected 0 (distinguishable from "no rows")
  out=await hubFor([{}],()=>offer('other')).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
  assert.equal(out.suppliers[0].state,'ok');assert.deepEqual([out.suppliers[0].rows,out.suppliers[0].readable,out.suppliers[0].selected,out.suppliers[0].shown],[1,1,0,0]);
+ // diagnostics: rows without a seller id are counted and a small id/name sample is exposed
+ {const rowsNoId=[{},{},{}];let k=0;out=await hubFor(rowsNoId,()=>({...offer('x'),sellerId:k++===0?'555':null,sellerName:k===1?'Distributor A':null})).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
+  assert.equal(out.suppliers[0].noSeller,2);assert.deepEqual(JSON.parse(JSON.stringify(out.suppliers[0].sellerSample)),[{id:'555',name:'Distributor A'}]);assert.equal(out.suppliers[0].selected,0);}
  // no rows at all
  out=await hubFor([],()=>offer('x')).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
  assert.equal(out.suppliers[0].state,'ok');assert.equal(out.suppliers[0].rows,0);
