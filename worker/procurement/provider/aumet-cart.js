@@ -1,4 +1,5 @@
 import { createSignedPlans } from './signed-plan.js';
+import { resolveSellerId } from './seller-id.js';
 // Owner-account cart only. Observed Aumet v2 request, absolute quantities, signed
 // short-lived plans and read-back. Never calls an order/checkout endpoint.
 function fail(code){throw new Error(code);}
@@ -21,10 +22,12 @@ export function createAumetCart({store,hub,secret,fetch:fetchImpl=globalThis.fet
   try{return await res.json();}catch{fail('cart-schema-changed');}
  }
  async function read(c){const d=await request(c,`/api/cart/${c.cart}/products-quantities`);const rows=d?.data?.product_in_cart??d?.product_in_cart;if(!Array.isArray(rows))fail('cart-schema-changed');return rows;}
- function existing(rows,product,seller,payment){
+ function existing(rows,product,seller,payment,known){
+  // Cart rows may carry the warehouse id with the suffix; compare on the listed id (see seller-id.js).
+  const sid=r=>resolveSellerId(r.entity_seller_id,known);
   const same=rows.filter(r=>String(r.entity_product_id)===product);
-  if(same.some(r=>String(r.entity_seller_id)!==seller||String(r.payment_method_id)!==payment))fail('cart-payment-conflict');
-  if(rows.some(r=>String(r.entity_seller_id)===seller&&String(r.payment_method_id)!==payment))fail('cart-payment-conflict');
+  if(same.some(r=>sid(r)!==seller||String(r.payment_method_id)!==payment))fail('cart-payment-conflict');
+  if(rows.some(r=>sid(r)===seller&&String(r.payment_method_id)!==payment))fail('cart-payment-conflict');
   if(same.length>1)fail('cart-duplicate-lines');
   const n=same.length?Number(same[0].quantity):0;
   if(!Number.isInteger(n)||n<0)fail('cart-schema-changed');return n;
@@ -42,7 +45,7 @@ export function createAumetCart({store,hub,secret,fetch:fetchImpl=globalThis.fet
   if(!offer||offer.unitPrice!==line.price||!['in_stock','low'].includes(offer.stockStatus))fail('cart-offer-changed');
   const methods=offer.raw?.paymentMethod;
   if(!Array.isArray(methods)||!methods.some(m=>String(m.id)===payment))fail('cart-payment-unverified');
-  const rows=await read(c),before=existing(rows,product,seller,payment),target=before+line.quantity;
+  const rows=await read(c),before=existing(rows,product,seller,payment,(c.s.sellers||[]).map(x=>String(x.id))),target=before+line.quantity;
   if(Number.isFinite(offer.availableQuantity)&&target>offer.availableQuantity)fail('cart-stock-changed');
   const payload={version:1,expires:now()+900000,binding:c.binding,product,seller,payment,before,target,price:line.price,query:line.query,cart:c.cart,entity:c.t.body.entity_id};
   const value=JSON.stringify(payload);return {ok:true,plan:value,signature:await sign(value),before,quantity:line.quantity,target,expires:payload.expires};
@@ -53,7 +56,7 @@ export function createAumetCart({store,hub,secret,fetch:fetchImpl=globalThis.fet
   let p;try{p=JSON.parse(plan);}catch{fail('cart-plan-invalid');}
   if(p.expires<now())fail('cart-plan-expired');
   const c=await context();if(p.binding!==c.binding)fail('cart-session-changed');
-  const beforeRows=await read(c),current=existing(beforeRows,p.product,p.seller,p.payment);
+  const beforeRows=await read(c),current=existing(beforeRows,p.product,p.seller,p.payment,(c.s.sellers||[]).map(x=>String(x.id)));
   if(current===p.target)return {ok:true,state:'verified',quantity:p.target,alreadyApplied:true};
   if(current!==p.before)fail('cart-conflict');
   const fresh=await hub.search(p.query,{supplierIds:['aumet'],requestedQty:p.target});
@@ -64,14 +67,14 @@ export function createAumetCart({store,hub,secret,fetch:fetchImpl=globalThis.fet
   let writeError=false;
   try{await request(c,c.t.path,{entity_id:c.t.body.entity_id,quantity:p.target,entity_product_id:Number(p.product),payment_method_id:Number(p.payment),withoutCartResponse:1,with_replace:1,source:null});}catch{writeError=true;}
   // A timeout is never retried as a mutation; read the actual account cart.
-  let after;try{after=existing(await read(c),p.product,p.seller,p.payment);}catch{return {ok:false,state:'unknown',error:'cart-readback-unavailable'};}
+  let after;try{after=existing(await read(c),p.product,p.seller,p.payment,(c.s.sellers||[]).map(x=>String(x.id)));}catch{return {ok:false,state:'unknown',error:'cart-readback-unavailable'};}
   if(after===p.target)return {ok:true,state:'verified',quantity:after};
   return {ok:false,state:after===p.before?'not-added':'conflict',error:writeError?'cart-upstream-error':'cart-readback-mismatch',quantity:after};
  }
  async function inspect(input){
   const p=await createSignedPlans(secret,now).unpack(input,true),c=await context();
   if(p.cart!==c.cart||String(p.entity)!==String(c.t.body.entity_id))fail('cart-session-changed');
-  const quantity=existing(await read(c),p.product,p.seller,p.payment);
+  const quantity=existing(await read(c),p.product,p.seller,p.payment,(c.s.sellers||[]).map(x=>String(x.id)));
   return quantity===p.target?{ok:true,state:'verified',quantity}:{ok:false,state:'unknown',quantity,error:'cart-readback-mismatch'};
  }
  return {preview,apply,inspect};

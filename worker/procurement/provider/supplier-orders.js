@@ -1,4 +1,5 @@
 import { createSignedPlans } from './signed-plan.js';
+import { resolveSellerId } from './seller-id.js';
 import { createSupplierAccounts } from './supplier-account.js';
 import { createPharmaOverseasCart } from './pharmaoverseas-cart.js';
 import { createOperationJournal } from './operation-journal.js';
@@ -14,10 +15,10 @@ export function createSupplierOrders(options){
    if(!cart||String(cart.buyer?.id)!==c.entity||!Array.isArray(cart.sellers))throw Error('order-schema-changed');
    const sellers=cart.sellers.filter(s=>(s.items||[]).some(i=>Number(i.is_selected)===1));
    if(!sellers.length)throw Error('order-cart-empty');
-   const allow=new Set(allowedSellers.map(String));
+   const allow=new Set(allowedSellers.map(String)),known=(c.s.sellers||[]).map(x=>String(x.id));
    for(const s of sellers){
     // Cart display entities can include a payment-method suffix. Offers and saved warehouse choices use each entityProduct.entity_id.
-    if(s.items.some(i=>Number(i.is_selected)===1&&!allow.has(String(i.entityProduct?.entity_id))))throw Error('order-extra-sellers');
+    if(s.items.some(i=>Number(i.is_selected)===1&&!allow.has(String(resolveSellerId(i.entityProduct?.entity_id,known)))))throw Error('order-extra-sellers');
     if(s.entity?.is_locked||s.entity?.is_offline)throw Error('order-seller-unavailable');
     if(s.items.some(i=>Number(i.is_selected)===1&&(i.has_issue||i.entityProduct?.is_locked||i.is_offline)))throw Error('order-cart-needs-review');
     if(num(s.seller_total)<num(s.minimum_order_value_area?.limit??0))throw Error('order-minimum-not-met');
