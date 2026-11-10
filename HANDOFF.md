@@ -1,7 +1,10 @@
 # NOVA Rx — HANDOFF (living project state)
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
-
+## Checkpoint 2026-11-10 — Issue #101 test(BUY-04): add duplicate cart items and reload recovery tests for supplier orders
+- Added automated QA tests for duplicate cart item handling and reload recovery for supplier orders (#101)
+Verified cart state recovery and idempotency upon reload.
+- 
 ## Checkpoint 2026-11-09 — Issue #84 emergency mobile sales (MVP, Draft PR, NOT deployed)
 - Files: `emergency-sales.html`, `emergency-core.js`, `docs/EMERGENCY_SALES.md`, tests `tests/unit/emergency-core.check.mjs` + `tests/emergency-sales-browser.mjs` (both PASS), samples in `reports/`.
 - Source of truth: STOCK LIVE sheet via Apps Script `scanSearch/scanLookup` (`price` = public price). Live call NOT tested (network blocked). Finding: those two actions need no PIN. Details in the doc.
