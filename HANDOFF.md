@@ -658,6 +658,20 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Resume support completion: PR110 merged46fa55d7. Workflow YAML/wiring, bash syntax and synthetic git recovery regression all PASS locally. No model run, quota probe, deployment or permission changes. Canonical/public status notes and hourly reviewer instructions updated. Gemini acknowledgment alone remains insufficient evidence of active progress.
 
 
+### BUY-P0 #115 checkpoint — cart-add warehouse scope (branch claude/practical-tesla-xndif9, NOT merged/deployed)
+- Gap (code read): Aumet cart preview/apply took `sellerId` from the client without checking the owner's selected warehouses; the only check was at order time (`order-extra-sellers`). Cause of the owner's live cart containing outside-selection warehouses is NOT established (items may have been added outside NOVA).
+- Change: `aumet-cart.js` preview rejects unselected/missing/empty selection with `cart-seller-not-selected` before any session load, search or write; invalid shape = `bad-request`. `supplier-provider.js` attaches the saved Aumet selection to every Aumet cart preview. Tests written first and seen failing, then passing: aumet-cart, cart-client; `supplier-platform` fixture updated to pass a selection (intent unchanged: redirect still not followed).
+- Evidence (local, synthetic fixtures only): 8 supplier unit checks PASS (aumet-cart, cart-client, journal, platform, transactions, module-worker, seller-scope, price); browser purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS. No real supplier write, no live check.
+- Open owner decision (unchanged): a cart operation ending `unknown`, including a definite `not-added` read-back, locks the supplier scope and also blocks that supplier's orders; no documented release path.
+- Follow-up for #116 owner: add an Arabic message for `cart-seller-not-selected` in `purchases.js` `cartMessage` (it currently falls back to the generic text).
+
+### BUY-P0 #115 READY_FOR_REVIEW matrix — 2026-11-10 (Draft PR, NOT merged/deployed)
+- Branch `claude/practical-tesla-xndif9`, Draft PR #119, code commit efc346e + docs commit 9eb1ef9. Base: main @ 41f0b9e (unchanged when compared). Next owner: ChatGPT reviewer, then owner.
+- COMPLETED (code level, synthetic fixtures): selected Aumet warehouses sent by client and enforced server-side in cart preview; missing/empty/unselected rejected before session load, search or write (unit asserts zero writes and zero supplier searches); invalid shape = bad-request; signed-plan tamper rejected, replay returns alreadyApplied, lost response resolved by read-back, conflict/payment/price checks (aumet-cart, transactions, journal on real SQLite); PharmaOverseas flow unchanged (supplier-transactions PASS).
+- Regression: 30 of 32 unit checks PASS. The 2 failing also fail on main, not caused by this change: `procurement-ui-model` (assertion "no direct localStorage writes") and `worker-gemini-route` (needs the Worker artifact path argument). Browser: purchases-browser, purchases-seller-search-browser, supplier-orders-browser (main's version) PASS.
+- NOT TESTED: any real Aumet/PharmaOverseas cart write or read-back, live account behavior, checkout, CI result for this PR. No claim of real-account success.
+- BLOCKED / owner decision: `unknown` stays fail-closed; reconciliation is DESIGN ONLY in docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md (no unlock implemented). Arabic message for `cart-seller-not-selected` belongs to #116 (purchases.js).
+
 ### BUY-03 #112 consolidated update — Aumet visibility / selected-seller search (Draft PR #112, NOT merged/deployed)
 - Branch `fix/aumet-per-seller-20261110`, continued from ChatGPT's commits 3291e8d/afbd736 (not restarted). Base main @ 41f0b9e.
 - ROOT CAUSE of red CI: `tests/unit/procurement-ui-model.check.mjs:138` forbids `localStorage.setItem` in `supplier-lookup.js` (DOM layer must not write storage). PR #102 (459dc9e) added a direct write of `novaPurchasePrefsV1` there, so the check was ALREADY failing on main; #112 did not introduce it. Fix keeps the assertion untouched: the write moved to `NOVA_SUPPLIER_PROVIDER.savePurchasePrefs` (plain values only, other pref fields preserved, no credentials).
@@ -676,3 +690,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - (2) CONFIRMED: the timeout only stopped WAITING (`Promise.race`); the sequential scan kept requesting pages in the background, up to 12, spending Aumet request budget for nobody. Fix: a cancel flag set on timeout stops further page requests (at most the one in-flight request completes); a timed-out scoped scan raises the "search incomplete" error and leaks no offers. Timeout is injectable (`aumetSearchTimeoutMs`, default unchanged 45 s). The new test fails on the previous hub.js.
 - Evidence (local): 32/32 unit checks PASS (`worker-gemini-route` skipped, needs the artifact path); purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS. New unit file is picked up by the existing unit job automatically (no workflow change).
 - NOT TESTED: live; a real in-flight HTTP request is not aborted (no AbortController in the connector); CI on this head not yet observed.
+
+### BUY-P0 #119 rebased on main after #112 merged — 2026-11-10
+- #112 merged to main as 6cd5f5e. Main merged into the #119 branch; the only conflict was HANDOFF.md (both sides appended), resolved by keeping both blocks; `supplier-provider.js` merged cleanly (cart-selection and prefs-write are different regions).
+- Re-verified on the merged tree (local): 32/32 unit checks, purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS. `procurement-ui-model` is now green because #112 is in.
+- Unchanged limits: no real supplier write or read-back, nothing live. Merging does not deploy (`deploy-worker.yml` is `workflow_dispatch` only).
