@@ -1,4 +1,10 @@
 # NOVA Rx — HANDOFF (living project state)
+## Checkpoint 2026-11-10 — Premium agent routing policy (policy PR only; not yet merged)
+- Owner decision: Claude Sonnet (account 1) is primary developer for premium core features; Claude Opus (account 2) independently reviews high-risk architecture/security/financial/inventory work. ChatGPT coordinates; Kimi/Gemini implement isolated bounded tasks; Grok performs independent QA. Haiku is not default for core features.
+- Changed `AGENTS.md` on `policy/premium-agent-ownership-20261110` to override old blanket Claude/Kimi implementation defaults, require issue claims, non-overlapping file ownership, one active task per agent, explicit handoffs and review gates.
+- Documentation-only change; no application code, CI, deployment, live behavior or agent account/model configuration changed. Existing active issue/PR ownership must be reconciled; do not assume agents automatically received this policy before merge.
+- Next exact step: review and merge policy PR, notify agents to reread `AGENTS.md` and `HANDOFF.md`, then reconcile active claims (#111/#112 and Kimi #103–#107) before assigning new work.
+
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
