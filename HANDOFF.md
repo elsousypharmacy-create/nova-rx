@@ -647,3 +647,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ### Kimi status follow-up — 2026-11-10
 - Owner asked whether Kimi started. Confirmed two design drafts delivered:103 PR108 changes requested;105 run42762500180 CLI/commit/push succeeded at7f3b99a, workflow failed onlyPRcreate permissions. Created/reused Draft 109 from savedbranch without rerun. FND-05 nowfor_review;104/106/107queued, no activeKimi run atthischeckpoint. Review environment draft againstactual D1 migrations beforeacceptance. Canonical andpublicmirrorupdated; no acceptanceincrease.
+
+
+### Owner instruction: resume from checkpoint near Kimi quota — 2026-11-10
+- Ahmed says Kimi approaches the five-hour usage limit and must always continue where it stopped. KIMI_CONTEXT now requires branch/PR/diff/checkpoint/review read before edits, early draft and per-batch progress, precise next step, no repeat completed work/tests without reason, and no provider quota-probing retries.
+- Workflow now records original base/issue in job env and runs a no-model always-step to capture tracked AND new draft files into recovery.patch/resume-note after CLI failure; existing pre-clean/push recovery patch is preserved. Artifact includes patch/reports/note instead of redundant full app/tests. Does not guarantee a platform hard termination can run cleanup; frequent written checkpoints remain required.
+- New .github/scripts/kimi-save-checkpoint.sh + tests/unit/kimi-checkpoint.check.py. bash syntax and synthetic git regression PASS: tracked/new docs capture, excluded env/workflow paths, patch applies to base, earlier patch survives later unrelated working-tree change. No Kimi run or quota retry used for this change.
+- Gemini #101 acknowledged start2026-11-10T04:49:41Z, no PR/posted checkpoint found. Requested bounded progress/checkpoint comment; two uncovered test cases only. Do not equate acknowledgment with continuing liveness or completed tests.
