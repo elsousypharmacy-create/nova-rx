@@ -16,7 +16,7 @@ async function call(path, init = {}) {
   try { body = await res.json(); } catch { body = null; }
   return { status: res.status, ms: Date.now() - t0, body };
 }
-const counts = s => (s.rows === undefined ? '' : `(rows=${s.rows},readable=${s.readable},drifted=${s.drifted},selected=${s.selected},shown=${s.shown})`);
+const counts = s => (s.rows === undefined ? '' : `(rows=${s.rows},readable=${s.readable},drifted=${s.drifted},selected=${s.selected},shown=${s.shown},noSeller=${s.noSeller}${s.sellerSample && s.sellerSample.length ? ',sample=' + JSON.stringify(s.sellerSample) : ''})`);
 const states = r => JSON.stringify((r.body && r.body.suppliers || []).map(s => `${s.id}:${s.state}${counts(s)}${s.message ? ' ' + s.message : ''}`));
 const allOffers = r => ((r.body && r.body.results) || []).flatMap(x => x.offers || []);
 let failed = false;
@@ -26,7 +26,9 @@ const status = await call('/api/suppliers/status');
 console.log(`status: HTTP ${status.status}`, JSON.stringify((status.body && status.body.suppliers || []).map(s => ({ id: s.id, state: s.state }))));
 
 const sellers = await call('/api/suppliers/sellers');
-const unlocked = ((sellers.body && sellers.body.sellers) || []).filter(s => !s.locked).map(s => String(s.id));
+const sellerRows = (sellers.body && sellers.body.sellers) || [];
+const unlocked = sellerRows.filter(s => !s.locked).map(s => String(s.id));
+console.log('LIST id:name -> ' + JSON.stringify(sellerRows.slice(0, 20).map(s => `${s.id}:${s.name}${s.locked ? ':locked' : ''}`)));
 console.log(`sellers: HTTP ${sellers.status}, unlocked Aumet warehouses: ${unlocked.length}${unlocked.length ? '' : ' (none readable: the Aumet session is missing or expired)'}`);
 const scope = unlocked.slice(0, 5);
 

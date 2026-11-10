@@ -166,7 +166,8 @@ export function createSupplierHub({
           // rows that parsed, rows dropped as unreadable, and rows that survived the warehouse selection.
           const stat = await withTimeout(
             (async () => {
-              let drifted = 0, rows = 0, readable = 0, matched = 0;
+              let drifted = 0, rows = 0, readable = 0, matched = 0, noSeller = 0;
+              const sellerSample = new Map();
               const supplierOffers = [];
               let pageNumber = 1;
               let totalPages = 1;
@@ -180,6 +181,9 @@ export function createSupplierHub({
                   try {
                     const offer = connector.toOffer(rawRow, { fetchedAt });
                     readable += 1;
+                    // Diagnostic only (ids and public distributor names): what id do the rows really carry?
+                    if (offer.sellerId == null) noSeller += 1;
+                    else if (sellerSample.size < 6 && !sellerSample.has(String(offer.sellerId))) sellerSample.set(String(offer.sellerId), offer.sellerName ?? null);
                     // Filter before storing: excluded distributors must never appear.
                     if (s.id !== 'aumet' || !Array.isArray(aumetSellerIds) ||
                         aumetSellerIds.includes(String(offer.sellerId))) {
@@ -200,14 +204,14 @@ export function createSupplierHub({
                 throw new IncompleteSearchError('Aumet seller search incomplete; pagination safety limit reached');
               }
               allOffers.push(...supplierOffers);
-              return { drifted, rows, readable, matched };
+              return { drifted, rows, readable, matched, noSeller, sellerSample: [...sellerSample].map(([id, name]) => ({ id, name })) };
             })(),
             scopedAumet ? aumetSearchTimeoutMs : SEARCH_TIMEOUT_MS,
             scopedAumet
               ? { onTimeout: () => { run.cancelled = true; }, makeError: () => new IncompleteSearchError('Aumet seller search timed out') }
               : undefined,
           );
-          const entry = { id: s.id, name: s.name, state: 'ok', rows: stat.rows, readable: stat.readable, drifted: stat.drifted, selected: stat.matched };
+          const entry = { id: s.id, name: s.name, state: 'ok', rows: stat.rows, readable: stat.readable, drifted: stat.drifted, selected: stat.matched, noSeller: stat.noSeller, sellerSample: stat.sellerSample };
           // Every row unreadable is not "no offers": the supplier's data shape changed. Say so.
           if (stat.rows > 0 && stat.readable === 0) { entry.state = 'error'; entry.message = MSG_SCHEMA; }
           return entry;
