@@ -1,0 +1,502 @@
+# FND-04 — عقود API وإصداراتها (مسودة OpenAPI 3.1 للمراجعة)
+# البند: FND-04 من docs/ERP_MASTER_PLAN.md · المتابعة #87 · التفويض #104.
+# الحالة: DRAFT — توثيق عقود فقط، مش تنفيذ. x-nova-status يميز:
+#   current  = route موجود فعلاً في worker/procurement/provider/http.js على main (موثق كما هو)
+#   proposed = مقترح لـ ERP v1 — لم يُنفذ، ولا يُقرأ كالتزام تشغيلي
+openapi: 3.1.0
+info:
+  title: NOVA Rx API
+  version: "0.1.0-draft"
+  description: >-
+    مسودة عقود API لبند FND-04. القسم current يوثق Worker المشتريات الحي
+    كما هو مقروء من الكود؛ القسم proposed يقترح واجهة ERP v1 (كتالوج/فواتير/
+    مدفوعات/مرتجعات/مشتريات/استلام) ولم يُنفذ أي جزء منه.
+  x-nova-status: draft-for-review
+servers:
+  - url: https://nova-rx-preview.elsousypharmacy.workers.dev
+    description: Worker المعاينة الحالي (current فقط — لا توجد بيئة ERP production؛ انظر FND-05)
+tags:
+  - name: suppliers-current
+    x-nova-status: current
+  - name: purchases-current
+    x-nova-status: current
+  - name: catalog-proposed
+    x-nova-status: proposed
+  - name: sales-proposed
+    x-nova-status: proposed
+  - name: procurement-proposed
+    x-nova-status: proposed
+
+components:
+  securitySchemes:
+    NovaPin:
+      type: apiKey
+      in: header
+      name: X-Nova-Pin
+      description: PIN التطبيق الحالي (current). مقارنة constant-time؛ محاولات الفشل محدودة 8/دقيقة (429). الانتقال لحسابات فردية موثق في SEC-01 وليس هنا.
+    IngestSecret:
+      type: apiKey
+      in: header
+      name: X-Ingest-Secret
+      description: سر استقبال جلسات الموردين من متصفح الصيدلية (current).
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, maxLength: 128 }
+      description: (proposed) إلزامي لكل كتابة مالية/مخزنية؛ إعادة نفس المفتاح بنفس المحتوى تعيد النتيجة نفسها، وبمحتوى مختلف تُرفض 409 content-conflict.
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: { type: string }
+      description: (proposed) ETag/version للمستند؛ عدم التطابق = 409 content-conflict.
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema: { type: string }
+      description: (proposed) ترقيم مؤشري opaque؛ الاستجابة تحمل nextCursor أو null.
+    PageLimit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+  schemas:
+    ErrorCurrent:
+      type: object
+      description: مغلف الخطأ الحالي المقروء من الكود — بلا requestId (فجوة موثقة).
+      required: [error]
+      properties:
+        error:
+          type: string
+          enum: [bad-request, unauthorized, not-configured, method-not-allowed, too-many-attempts, rate-limited, source-auth-required, source-not-ready, source-unavailable, cart-unavailable, order-unavailable]
+        ok: { type: boolean }
+    ErrorV1:
+      type: object
+      description: (proposed) مغلف خطأ ERP v1 — عربي أولًا مع code ثابت وrequestId لكل استجابة.
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code:
+              type: string
+              description: "رمز ثابت لا يتغير بين الإصدارات الفرعية، مثال synthetic: invoice.already-posted"
+            message:
+              type: string
+              description: رسالة عربية واضحة للمستخدم النهائي (RTL).
+            messageEn: { type: string }
+            requestId:
+              type: string
+              description: معرف فريد لكل طلب يُعاد في الاستجابة وفي السجلات (SEC-04).
+            details: { type: object, additionalProperties: true }
+    Money:
+      type: string
+      pattern: '^-?\d+\.\d{2}$'
+      description: decimal ثابت كنص (قرار التمثيل النهائي مع FND-02). مثال "187.00". لا float.
+    Product:
+      type: object
+      x-nova-status: proposed
+      required: [id, tenantId, sku, nameAr]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        sku: { type: string }
+        nameAr: { type: string }
+        nameEn: { type: string }
+        barcodes: { type: array, items: { type: string } }
+        taxClass: { type: string, description: enum غير محسوم — بانتظار CAT-03 (FND-03 §7). }
+        version: { type: integer }
+    InvoiceLine:
+      type: object
+      required: [variantId, qty, unitPrice]
+      properties:
+        variantId: { type: string }
+        qty: { type: integer, minimum: 1 }
+        unitPrice: { $ref: '#/components/schemas/Money' }
+        discount: { $ref: '#/components/schemas/Money' }
+        taxClass: { type: string }
+    Invoice:
+      type: object
+      x-nova-status: proposed
+      required: [id, tenantId, branchId, invoiceNo, status, lines, total]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        branchId: { type: string }
+        invoiceNo: { type: integer }
+        status: { type: string, enum: [draft, posted, voided] }
+        customerId: { type: [string, 'null'] }
+        lines: { type: array, items: { $ref: '#/components/schemas/InvoiceLine' } }
+        subtotal: { $ref: '#/components/schemas/Money' }
+        discountTotal: { $ref: '#/components/schemas/Money' }
+        taxTotal: { $ref: '#/components/schemas/Money' }
+        total: { $ref: '#/components/schemas/Money' }
+        version: { type: integer }
+    Payment:
+      type: object
+      x-nova-status: proposed
+      required: [id, invoiceId, method, amount, status]
+      properties:
+        id: { type: string }
+        invoiceId: { type: string }
+        method: { type: string, enum: [cash, visa, wallet, debt] }
+        amount: { $ref: '#/components/schemas/Money' }
+        status: { type: string, enum: [settled, refunded] }
+    ReturnDoc:
+      type: object
+      x-nova-status: proposed
+      required: [id, invoiceId, lines, status]
+      properties:
+        id: { type: string }
+        invoiceId: { type: string, description: الأصل إلزامي (FND-03). }
+        status: { type: string, enum: [draft, posted] }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [variantId, qty]
+            properties:
+              variantId: { type: string }
+              qty: { type: integer, minimum: 1, description: المرتجع التراكمي ≤ المباع الصافي (ثابت FND-03 §4). }
+    PurchaseOrder:
+      type: object
+      x-nova-status: proposed
+      required: [id, tenantId, branchId, poNo, supplierId, status, lines]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        branchId: { type: string }
+        poNo: { type: integer }
+        supplierId: { type: string }
+        status: { type: string, enum: [draft, approved, sent, partiallyReceived, received, cancelled] }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [id, qty]
+            properties:
+              id: { type: string }
+              variantId: { type: string }
+              freeTextName: { type: string, description: عند غياب مطابقة كتالوج مؤكدة. }
+              qty: { type: integer, minimum: 1 }
+              agreedPrice: { $ref: '#/components/schemas/Money' }
+    GoodsReceipt:
+      type: object
+      x-nova-status: proposed
+      required: [id, tenantId, branchId, grnNo, purchaseOrderId, supplierId, status, lines]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        branchId: { type: string }
+        grnNo: { type: integer }
+        purchaseOrderId: { type: string }
+        supplierId: { type: string }
+        status: { type: string, enum: [draft, posted] }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [poLineId, variantId, qty, batchId, unitCost]
+            properties:
+              poLineId: { type: string }
+              variantId: { type: string }
+              qty: { type: integer, minimum: 1 }
+              batchId: { type: string, description: يُنشأ أو يُطابَق عند الاستلام (FND-03 §7-5). }
+              expiryDate: { type: string, format: date }
+              unitCost: { $ref: '#/components/schemas/Money' }
+    Page:
+      type: object
+      properties:
+        nextCursor: { type: [string, 'null'] }
+  responses:
+    BadRequest:
+      description: مدخلات غير صالحة.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorV1' }
+          example: { error: { code: bad-request, message: "البيانات المدخلة غير مكتملة.", requestId: "req_syn_001" } }
+    Unauthorized:
+      description: مصادقة مفقودة أو خاطئة.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorV1' }
+          example: { error: { code: unauthorized, message: "غير مصرح. سجّل الدخول من جديد.", requestId: "req_syn_002" } }
+    ContentConflict:
+      description: تعارض نسخة (If-Match) أو idempotency key بمحتوى مختلف.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorV1' }
+          example: { error: { code: content-conflict, message: "المستند اتعدّل من مستخدم آخر. حدّث الصفحة وحاول تاني.", requestId: "req_syn_003" } }
+    RateLimited:
+      description: تجاوز المعدل.
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorV1' }
+          example: { error: { code: rate-limited, message: "طلبات كتير متتالية. استنى دقيقة وحاول تاني.", requestId: "req_syn_004" } }
+    TimeoutOrUpstream:
+      description: مهلة أو فشل مصدر خارجي (مورد/شيت). مهلة الاستدعاء الخارجي الموثقة حاليًا 45 ثانية في مسار المخزون؛ قيم v1 تُثبت عند التنفيذ.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorV1' }
+          example: { error: { code: upstream-unavailable, message: "المصدر الخارجي مش متاح دلوقتي. البيانات المعروضة قد تكون قديمة.", requestId: "req_syn_005" } }
+
+paths:
+  # ============ current — Worker المشتريات الحي (موثق كما هو، بلا تجميل) ============
+  /api/suppliers/session:
+    post:
+      tags: [suppliers-current]
+      x-nova-status: current
+      summary: استقبال جلسة مورد من متصفح الصيدلية (ingest)
+      security: [{ IngestSecret: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [supplierId, session, expiresAt]
+              properties:
+                supplierId: { type: string, enum: [aumet, pharmaoverseas] }
+                session: { type: object, description: يُخزن مشفرًا؛ لا يُعاد في أي استجابة. }
+                expiresAt: { type: string, format: date-time }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { type: object, properties: { ok: { type: boolean } } } } } }
+        '400': { description: bad-request, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '429': { description: too-many-attempts, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '503': { description: not-configured — السر غير موجود؛ يفشل مغلقًا, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/suppliers/status:
+    get:
+      tags: [suppliers-current]
+      x-nova-status: current
+      summary: حالة جلسات الموردين
+      security: [{ NovaPin: [] }]
+      responses:
+        '200': { description: suppliers, content: { application/json: { schema: { type: object, properties: { suppliers: { type: array, items: { type: object } } } } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '503': { description: not-configured, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/suppliers/list:
+    get:
+      tags: [suppliers-current]
+      x-nova-status: current
+      summary: قائمة الموردين (id/name)
+      security: [{ NovaPin: [] }]
+      responses:
+        '200': { description: suppliers, content: { application/json: { schema: { type: object } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/suppliers/sellers:
+    get:
+      tags: [suppliers-current]
+      x-nova-status: current
+      summary: مخازن Aumet المتاحة للاختيار
+      security: [{ NovaPin: [] }]
+      responses:
+        '200': { description: sellers, content: { application/json: { schema: { type: object } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/suppliers/search:
+    post:
+      tags: [suppliers-current]
+      x-nova-status: current
+      summary: بحث في عروض الموردين (فشل مغلق على اختيار مخازن Aumet)
+      security: [{ NovaPin: [] }]
+      description: |-
+        حد معدل 40 بحثًا/دقيقة (429 مع Retry-After). `aumetSellerIds` غائب أو غير صالح = **لا مخزن Aumet إطلاقًا** (fail-closed)، وليس كل المخازن.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string }
+                requestedQty: { type: integer, minimum: 1, default: 1 }
+                supplierIds: { type: array, items: { type: string, enum: [aumet, pharmaoverseas] } }
+                aumetSellerIds: { type: array, items: { type: string } }
+      responses:
+        '200': { description: نتائج موحدة, content: { application/json: { schema: { type: object } } } }
+        '400': { description: bad-request, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '429': { description: rate-limited, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/purchases/stock:
+    post:
+      tags: [purchases-current]
+      x-nova-status: current
+      summary: تغذية مخزون الشراء من الشيت عبر المصدر الخارجي (مهلة 45 ثانية موثقة)
+      security: [{ NovaPin: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dashboardPin]
+              properties:
+                dashboardPin: { type: string, maxLength: 128 }
+      responses:
+        '200': { description: schemaVersion=1 وitems, content: { application/json: { schema: { type: object } } } }
+        '400': { description: bad-request, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '403': { description: source-auth-required, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '429': { description: rate-limited, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '502': { description: source-unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '503': { description: source-not-ready, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/purchases/{supplier}-cart/{action}:
+    post:
+      tags: [purchases-current]
+      x-nova-status: current
+      summary: سلة مورد حقيقية — preview/apply/status مع read-back وسجل D1 ذري
+      security: [{ NovaPin: [] }]
+      parameters:
+        - name: supplier
+          in: path
+          required: true
+          schema: { type: string, enum: [aumet, pharmaoverseas] }
+        - name: action
+          in: path
+          required: true
+          schema: { type: string, enum: [preview, apply, status] }
+      description: |-
+        apply يكتب في سلة المورد الفعلية بعد مراجعة، مع تحقق read-back للمعرف والكمية، وسجل عمليات D1 ذري (`NOVA_PURCHASE_OPS`) يمنع تكرار العملية؛ الانقطاع يبقي الحالة unknown (fail-closed) ولا يُستأنف بإعادة شراء. الخطأ 409 بكود cart-* أو cart-unavailable.
+      responses:
+        '200': { description: نتيجة العملية, content: { application/json: { schema: { type: object } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '409': { description: cart-*/cart-unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '429': { description: rate-limited, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '503': { description: not-configured, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+  /api/purchases/orders/{action}:
+    post:
+      tags: [purchases-current]
+      x-nova-status: current
+      summary: تأكيد طلب شراء منشور للمورد — preview/apply/status
+      security: [{ NovaPin: [] }]
+      parameters:
+        - name: action
+          in: path
+          required: true
+          schema: { type: string, enum: [preview, apply, status] }
+      description: |-
+        تأكيد بشري صريح ثم إرسال الطلب للمورد بأرقام طلب مورد مقروءة read-back؛ ذرية عبر سجل D1. الخطأ 409 بكود order-*/cart-*/bad-request أو order-unavailable. لا يوجد إرسال تلقائي.
+      responses:
+        '200': { description: نتيجة العملية, content: { application/json: { schema: { type: object } } } }
+        '401': { description: unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '409': { description: order-*/order-unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '429': { description: rate-limited, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+        '503': { description: not-configured, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorCurrent' } } } }
+
+  # ============ proposed — ERP v1 (لم يُنفذ؛ للمراجعة فقط) ============
+  /api/v1/catalog/products:
+    get:
+      tags: [catalog-proposed]
+      x-nova-status: proposed
+      summary: قائمة الأصناف (ترقيم مؤشري)
+      parameters: [{ $ref: '#/components/parameters/Cursor' }, { $ref: '#/components/parameters/PageLimit' }]
+      responses:
+        '200': { description: صفحة أصناف, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Product' } }, nextCursor: { type: [string, 'null'] } } } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    post:
+      tags: [catalog-proposed]
+      x-nova-status: proposed
+      summary: إنشاء صنف
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+      responses:
+        '201': { description: تم الإنشاء, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+  /api/v1/catalog/products/{id}:
+    get:
+      tags: [catalog-proposed]
+      x-nova-status: proposed
+      summary: قراءة صنف
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: صنف, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    patch:
+      tags: [catalog-proposed]
+      x-nova-status: proposed
+      summary: تعديل صنف (If-Match إلزامي)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+      responses:
+        '200': { description: تم التعديل, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+  /api/v1/sales/invoices:
+    post:
+      tags: [sales-proposed]
+      x-nova-status: proposed
+      summary: إنشاء فاتورة draft
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
+      responses:
+        '201': { description: draft, content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+  /api/v1/sales/invoices/{id}/post:
+    post:
+      tags: [sales-proposed]
+      x-nova-status: proposed
+      summary: اعتماد فاتورة — ذري (دفع + حركة مخزون + قيد) وفق بروتوكول الكتابة FND-02 §6
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      description: عند timeout يُستعلم بنفس الـIdempotency-Key قبل إعادة الدفع (تدفق القبول 1 في الخطة) — لا نجاح صامت ولا ازدواج بيع.
+      responses:
+        '200': { description: posted مع payment وstockMovements وjournalEntry, content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+        '502': { $ref: '#/components/responses/TimeoutOrUpstream' }
+  /api/v1/sales/invoices/{id}/payments:
+    post:
+      tags: [sales-proposed]
+      x-nova-status: proposed
+      summary: إضافة دفعة لفاتورة (مجموع الدفعات = الإجمالي)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Payment' } } } }
+      responses:
+        '201': { description: settled, content: { application/json: { schema: { $ref: '#/components/schemas/Payment' } } } }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+  /api/v1/sales/returns:
+    post:
+      tags: [sales-proposed]
+      x-nova-status: proposed
+      summary: مرتجع مرتبط بفاتورة أصل (الكمية التراكمية ≤ المباع الصافي)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReturnDoc' } } } }
+      responses:
+        '201': { description: posted — يعكس مخزون/تكلفة/قيد, content: { application/json: { schema: { $ref: '#/components/schemas/ReturnDoc' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+  /api/v1/procurement/purchase-orders:
+    get:
+      tags: [procurement-proposed]
+      x-nova-status: proposed
+      summary: قائمة أوامر الشراء
+      parameters: [{ $ref: '#/components/parameters/Cursor' }, { $ref: '#/components/parameters/PageLimit' }]
+      responses:
+        '200': { description: صفحة POs, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/PurchaseOrder' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [procurement-proposed]
+      x-nova-status: proposed
+      summary: إنشاء أمر شراء draft (كيان مالي داخلي — يكمل ما بدأته BUY-04/05 تشغيليًا)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PurchaseOrder' } } } }
+      responses:
+        '201': { description: draft, content: { application/json: { schema: { $ref: '#/components/schemas/PurchaseOrder' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/ContentConflict' }
+  /api/v1/procurement/purchase-orders/{id}/receipts:
+    post:
+      tags: [procurement-proposed]
+      x-nova-status: proposed
+      summary: تسجيل استلام بضاعة (GRN) جزئي أو كامل مرتبط بالـPO
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      description: posting يولّد stockMovement موجبة مع batch ويحدّث حالة الـPO تلقائيًا (partiallyReceived/received)؛ المستلم التراكمي ≤ المطلوب (ثوابت FND-03 §4-5).
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GoodsReceipt' } } } }
+      responses:
+        '201': { description: GRN posted, content: { application/json: { schema: { $ref: '#/components/schemas/GoodsReceipt' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/ContentConflict' }
