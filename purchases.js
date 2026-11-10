@@ -14,12 +14,30 @@ let offerCacheHits=0;
 const offerSearch=createOfferSearch({request:async(query,opts)=>{const r=await provider().search(query,opts);return {rows:(r.results||[]).flatMap(x=>x.offers||[]),complete:opts.supplierIds.length>0&&opts.supplierIds.every(id=>(r.suppliers||[]).some(s=>s.id===id&&s.state==='ok'))};}});
 
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);}
-function persist(){try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
-function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();}
+function scopeView(){
+ const chip=$('scopeChip');if(!chip)return;
+ const a=prefs.suppliers.includes('aumet'),p=prefs.suppliers.includes('pharmaoverseas'),n=prefs.aumetSellers.length,parts=[];
+ if(a)parts.push(n?`أوميت: ${fmt(n)} ${n===1?'مخزن':'مخازن'}`:'أوميت: لا مخازن مختارة');
+ if(p)parts.push('فارما أوفرسيز');
+ chip.textContent=parts.length?parts.join(' · '):'لا موردين مختارين';
+ chip.dataset.state=(!parts.length||(a&&!n))?'warn':'ok';
+ chip.title=a&&!n?'أوميت لن يُبحث فيه قبل اختيار المخازن':'نطاق البحث الحالي، اضغط للتعديل';
+}
+function persist(){scopeView();try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
+function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;delete i.offerState;});render();}
 function setBusy(value){busy=value;['load','distribute','days','minimum','ideal','openSettings'].forEach(id=>$(id).disabled=value);}
 function levelView(){['minimum','ideal'].forEach(id=>$(id).setAttribute('aria-pressed',String(id===prefs.level)));}
 function rebuild(){try{prefs.days=readDays($('days').value);$('days').value=prefs.days;items=buildNeeds(rawItems,prefs);offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
 function visibleItems(){const q=$('search').value.trim().toLocaleLowerCase();return items.filter(i=>!q||`${i.name} ${i.nameEn||''} ${i.code||''}`.toLocaleLowerCase().includes(q));}
+function offerNote(i){
+ if(i.issue)return `<small>${esc(i.issue)}</small>`;
+ if(i.offerState==='searching')return '<small class="offer-state searching" data-state="searching" role="status">جارٍ البحث عن عرض…</small>';
+ if(i.offerState==='none')return '<small class="offer-state none" data-state="none">لا عرض مناسب<span class="sub">جرّب «العروض» أو راجع المخازن المختارة</span></small>';
+ if(i.offerState==='incomplete')return '<small class="offer-state incomplete" data-state="incomplete">لم يكتمل البحث<span class="sub">مورد لم يرد؛ لا نعتبرها «لا عرض»، أعد المحاولة من «العروض»</span></small>';
+ if(i.offerState==='error')return '<small class="offer-state error" data-state="error">تعذر البحث عن عرض<span class="sub">أعد المحاولة من «العروض»</span></small>';
+ return '<small>اختَر عرضًا أو وزّع تلقائيًا</small>';
+}
+function renderKeep(){const el=$('rows').parentElement,top=el.scrollTop;render();el.scrollTop=top;}
 function supplierSelect(item,found){
  const choices=filterOffers(item,offersByItem.get(item.key)||[],prefs).filter(r=>r.eligible);
  if(!choices.length)return '';
@@ -30,7 +48,7 @@ function render(){
  $('rows').innerHTML=view.length?view.map(i=>{
   const allocation=i.allocations?.[0],found=allocation?.offer;
   const warning=i.issue||(i.unallocated>0&&i.allocations?.length?'كمية متبقية بلا عرض':'');
-  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small></td><td>${fmt(numberOrNull(i.stock))}</td><td>${fmt(i.target)}</td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td>${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small>${i.allocations.length>1?`<small>مقسم على ${fmt(i.allocations.length)} عروض</small>`:''}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}`:`<small>${esc(i.issue||'اختَر عرضًا أو وزّع تلقائيًا')}</small>`}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action" data-action="offers" ${busy?'disabled':''}>العروض</button></td></tr>`;
+  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small></td><td>${fmt(numberOrNull(i.stock))}</td><td>${fmt(i.target)}</td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td>${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small>${i.allocations.length>1?`<small>مقسم على ${fmt(i.allocations.length)} عروض</small>`:''}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}${i.searchComplete===false?'<small class="warning partial-note">بعض الموردين لم يرد؛ النتيجة ناقصة</small>':''}`:offerNote(i)}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action" data-action="offers" ${busy?'disabled':''}>العروض</button></td></tr>`;
  }).join(''):'<tr><td colspan="7" class="empty">'+(rawItems.length?'لا توجد نواقص مطابقة للاختيار الحالي.':'حدّث النواقص لقراءة مخزون الصيدلية.')+'</td></tr>';
  $('selectAll').disabled=busy;
  $('selectAll').checked=view.length>0&&view.every(i=>i.selected||i.issue);
@@ -60,7 +78,7 @@ async function loadStock(){
 async function searchOffers(item){
  const result=await offerSearch.search(item.nameEn||item.name,{requestedQty:item.qty,supplierIds:prefs.suppliers});
  if(result.cached)offerCacheHits++;
- const rows=result.value.rows;offersByItem.set(item.key,rows);return rows;
+ const rows=result.value.rows;item.searchComplete=result.value.complete===true;offersByItem.set(item.key,rows);return rows;
 }
 function showProgress(done,total,name=''){
  const pct=total?Math.floor(done/total*100):0;
@@ -69,25 +87,25 @@ function showProgress(done,total,name=''){
 }
 async function allocateAll(){
  if(busy||!configValid())return;if(!items.some(i=>i.selected)){status('حدّد الأصناف المطلوبة أولًا',true);return;}
- const token=++generation;setBusy(true);items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;});render();
+ const token=++generation;setBusy(true);items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;delete i.offerState;});render();
  const hitsBefore=offerCacheHits;
  let done=0,fail=0;const selected=items.filter(i=>i.selected&&!i.issue);$('stopDistribute').disabled=false;showProgress(0,selected.length);$('distributionProgress').hidden=false;
  try{for(const item of selected){
   status(`جارٍ مقارنة عروض الصنف ${fmt(done+1)} من ${fmt(selected.length)}…`);
   showProgress(done,selected.length,item.name);
-  try{const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));}catch{fail++;item.allocations=[];item.unallocated=item.qty;}
+  try{item.offerState='searching';renderKeep();const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));item.offerState=item.allocations?.length?'ok':(item.searchComplete?'none':'incomplete');}catch{fail++;item.offerState='error';item.allocations=[];item.unallocated=item.qty;}
   done++;showProgress(done,selected.length,item.name);
-  const scroll=$('rows').parentElement.scrollTop;render();$('rows').parentElement.scrollTop=scroll;
+  renderKeep();
  }
  const remain=selected.filter(i=>i.unallocated>0).length;
  status(`تم توزيع ${fmt(selected.length-remain)} صنف. ${fmt(remain)} يحتاج اختيارًا أو مراجعة${fail?`؛ تعذر البحث عن ${fmt(fail)} صنف`:''}. القائمة لم تُرسل إلى الموردين.${offerCacheHits>hitsBefore?` تم استخدام ${fmt(offerCacheHits-hitsBefore)} عروض محفوظة خلال آخر دقيقتين.`:''}`,remain>0);
- }finally{setBusy(false);$('distributionProgress').hidden=true;render();}
+ }finally{items.forEach(i=>{if(i.offerState==='searching')delete i.offerState;});setBusy(false);$('distributionProgress').hidden=true;render();}
 }
 async function openOffers(item){
- if(busy)return;setBusy(true);$('offerTitle').textContent=item.name;$('offerRows').textContent='جارٍ البحث…';$('offers').showModal();
- try{const rows=await searchOffers(item);const mapped=filterOffers(item,rows,prefs);$('offerRows').innerHTML=mapped.length?mapped.map((r,index)=>`<section class="offer"><b>${esc(r.offer.productName)}</b><p>${esc(supplierName(r.offer.supplierId))} · ${esc(r.offer.sellerName||'')}</p><p>${fmt(r.price)} ج.م · خصم ${fmt(r.discount)}٪ · ${r.offer.availableQuantity==null?'كمية التوفر غير محددة':`المتاح ${fmt(r.offer.availableQuantity)}`}</p>${r.reason?`<small class="warning">${esc(r.reason)}</small>`:''}<button data-offer="${index}" ${r.eligible?'':'disabled'}>اختيار هذا العرض</button></section>`).join(''):'لا توجد عروض مطابقة حاليًا.';
+ if(busy)return;let dirty=false;setBusy(true);$('offerTitle').textContent=item.name;$('offerRows').textContent='جارٍ البحث…';$('offers').showModal();
+ try{const rows=await searchOffers(item);const mapped=filterOffers(item,rows,prefs);if(!item.allocations?.length){if(mapped.some(r=>r.eligible))delete item.offerState;else item.offerState=item.searchComplete?'none':'incomplete';dirty=true;}$('offerRows').innerHTML=mapped.length?mapped.map((r,index)=>`<section class="offer"><b>${esc(r.offer.productName)}</b><p>${esc(supplierName(r.offer.supplierId))} · ${esc(r.offer.sellerName||'')}</p><p>${fmt(r.price)} ج.م · خصم ${fmt(r.discount)}٪ · ${r.offer.availableQuantity==null?'كمية التوفر غير محددة':`المتاح ${fmt(r.offer.availableQuantity)}`}</p>${r.reason?`<small class="warning">${esc(r.reason)}</small>`:''}<button data-offer="${index}" ${r.eligible?'':'disabled'}>اختيار هذا العرض</button></section>`).join(''):'لا توجد عروض مطابقة حاليًا.';
  $('offerRows').querySelectorAll('[data-offer]').forEach(button=>button.onclick=()=>{const row=mapped[Number(button.dataset.offer)],offer=row.offer;const available=numberOrNull(offer.availableQuantity);const qty=Math.min(item.qty,available===null?item.qty:Math.floor(available));if(qty<=0||qty<(numberOrNull(offer.minimumOrderQuantity)||1)){status('الكمية أقل من الحد الأدنى لطلب المورد',true);return;}item.allocations=[{...row,key:offerKey(offer),qty,quantityUnconfirmed:available===null,cartState:'local-draft'}];item.unallocated=item.qty-qty;item.selected=true;$('offers').close();render();});
- }catch{$('offerRows').textContent='تعذر قراءة عروض الموردين؛ لم تتغير الكميات.';}finally{setBusy(false);}
+ }catch{$('offerRows').textContent='تعذر قراءة عروض الموردين؛ لم تتغير الكميات.';if(!item.allocations?.length){item.offerState='error';dirty=true;}}finally{setBusy(false);if(dirty)renderKeep();}
 }
 function renderSellers(){const q=$('sellerSearch').value.trim().toLocaleLowerCase();$('sellers').innerHTML=sellers.length?sellers.filter(s=>s.name.toLocaleLowerCase().includes(q)).map(s=>`<label class="check"><input type="checkbox" data-seller="${esc(s.id)}" ${pendingSellerIds.has(String(s.id))?'checked':''} ${s.locked?'disabled':''}>${esc(s.name)}${s.locked?'<small>غير متاح لحسابك</small>':''}</label>`).join(''):'لم تُقرأ مخازن حسابك بعد. جدّد جلسة أوميت ثم اضغط تحديث.';}
 async function refreshSellers(){
@@ -116,7 +134,7 @@ render();
 
 const lineIdentity=l=>[l.offer.supplierId,l.offer.supplierProductId,l.offer.sellerId,l.qty,l.price].join('::');
 const cartLine=l=>({supplierId:l.offer.supplierId,productId:String(l.offer.supplierProductId),sellerId:l.offer.sellerId==null?null:String(l.offer.sellerId),quantity:l.qty,price:l.price,query:items.find(i=>i.key===l.itemKey)?.nameEn||l.name});
-const cartMessage=code=>({'cart-journal-unavailable':'سجل التنفيذ غير متاح؛ لم تتم الإضافة','cart-account-busy':'عملية سابقة غير محسومة عند المورد؛ تحقق من نتيجتها أولًا','cart-operation-pending':'هناك إضافة سابقة تحتاج التحقق؛ لا تكرر الطلب','cart-storage-unavailable':'تعذر حفظ حالة العملية على الجهاز؛ لم نبدأ إضافة جديدة','cart-session-required':'جلسة المورد تحتاج تجديدًا يدعم السلة','cart-payment-conflict':'هناك طريقة دفع مختلفة في السلة؛ راجعها داخل أوميت أولًا','cart-payment-unverified':'طريقة الدفع لهذا العرض غير مؤكدة؛ أضفه من أوميت مباشرة','cart-offer-changed':'عرض المورد أو السعر اتغير؛ أعد مقارنة العروض','cart-stock-changed':'الكمية المتاحة اتغيرت؛ راجع الكمية','cart-conflict':'السلة اتغيرت أثناء المراجعة؛ اقرأها من جديد','cart-plan-expired':'انتهت مدة المراجعة؛ اقرأ السلة من جديد','cart-session-changed':'الجلسة اتجددت؛ اقرأ السلة من جديد','cart-readback-unavailable':'لم نتمكن من تأكيد النتيجة؛ راجع سلة أوميت قبل أي محاولة جديدة','cart-upstream-error':'تعذرت الإضافة؛ راجع سلة أوميت قبل المحاولة'})[code]||'تعذر تأكيد سلة المورد؛ راجعها في حسابك';
+const cartMessage=code=>({'cart-journal-unavailable':'سجل التنفيذ غير متاح؛ لم تتم الإضافة','cart-account-busy':'عملية سابقة غير محسومة عند المورد؛ تحقق من نتيجتها أولًا','cart-operation-pending':'هناك إضافة سابقة تحتاج التحقق؛ لا تكرر الطلب','cart-storage-unavailable':'تعذر حفظ حالة العملية على الجهاز؛ لم نبدأ إضافة جديدة','cart-session-required':'جلسة المورد تحتاج تجديدًا يدعم السلة','cart-seller-not-selected':'هذا المخزن ليس ضمن مخازن أوميت المختارة؛ حدّد المخازن من الإعدادات ثم اقرأ السلة من جديد','cart-payment-conflict':'هناك طريقة دفع مختلفة في السلة؛ راجعها داخل أوميت أولًا','cart-payment-unverified':'طريقة الدفع لهذا العرض غير مؤكدة؛ أضفه من أوميت مباشرة','cart-offer-changed':'عرض المورد أو السعر اتغير؛ أعد مقارنة العروض','cart-stock-changed':'الكمية المتاحة اتغيرت؛ راجع الكمية','cart-conflict':'السلة اتغيرت أثناء المراجعة؛ اقرأها من جديد','cart-plan-expired':'انتهت مدة المراجعة؛ اقرأ السلة من جديد','cart-session-changed':'الجلسة اتجددت؛ اقرأ السلة من جديد','cart-readback-unavailable':'لم نتمكن من تأكيد النتيجة؛ راجع سلة أوميت قبل أي محاولة جديدة','cart-upstream-error':'تعذرت الإضافة؛ راجع سلة أوميت قبل المحاولة'})[code]||'تعذر تأكيد سلة المورد؛ راجعها في حسابك';
 function cartBusy(value){setBusy(value);['prepareAumet','applyAumet','closeReview'].forEach(id=>$(id).disabled=value);$('reviewDialog').onkeydown=e=>{if(value&&e.key==='Escape')e.preventDefault();};}
 $('prepareAumet').onclick=async()=>{
  if(busy)return;cartPlans=[];$('applyAumet').hidden=true;$('cartPlans').textContent='';
@@ -196,3 +214,4 @@ $('checkSupplierOrder').onclick=async()=>{
  try{const r=await provider().supplierOrderStatus({plan:orderPlan.plan,signature:orderPlan.signature});if(r.state==='not-started'||r.state==='failed'){localStorage.removeItem(orderKey(orderSupplier));orderPending=false;orderPlan=null;$('checkSupplierOrder').hidden=true;$('orderStatus').textContent=orderError('order-not-started');}else orderReceipt(r);}
  catch(e){$('orderStatus').textContent=orderError(e.message);}finally{orderInFlight=false;orderControls();}
 };
+$('scopeChip').onclick=()=>openSettings();scopeView();

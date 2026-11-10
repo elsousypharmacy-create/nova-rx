@@ -1,5 +1,18 @@
 # BUILD_REPORT — NOVA Rx
 
+## FND-03 (2026-11-10): ERP domain model document (design draft) — done
+
+- Task (`/tmp/kimi-task.txt`, delegation [Kimi][FND-03][1/5], linked to plan #87): create `docs/erp/FND-03_DOMAIN_MODEL.md` only — entity/key map for tenant/branch/user/product/variant/unit/batch/stockMovement/invoice/payment/return/purchaseOrder/receipt/journal, relationships and constraints, document states, and source ownership, linking FND-01 reality to the proposed model and listing unsettled storage decisions. No migrations, no database implementation, no status change to `verified`.
+- Read only: `KIMI_CONTEXT.md`, `HANDOFF.md` (latest checkpoints), the FND-03 section of `docs/ERP_MASTER_PLAN.md` and its `reports/erp-roadmap.json` entry (acceptance: «توثيق … مفاتيح ثابتة وقيود العلاقات وحالات المستندات», status `queued`), plus allowed `docs/erp/FND-01_REALITY_MAP.md` and `docs/erp/FND-02_STORAGE_ADR_DRAFT.md`.
+- Changed files:
+  - `docs/erp/FND-03_DOMAIN_MODEL.md` (new, Arabic, DRAFT): general principles from FND-02 §6 (mandatory `tenant_id`/`branch_id`, stable keys, UTC, fixed decimal, immutable ledger, idempotency, EGP); entity table with keys, alternate keys/UNIQUE constraints, relationships, current owner per FND-01 vs proposed, and current/proposed marking; document state machines (invoice/payment/return/purchaseOrder/receipt, immutable stockMovement/journal); six integration invariants mirroring FND-02 §4; single-writer source ownership until gate G1; one synthetic JSON example; ten unsettled storage decisions (D1 vs Postgres pending FND-02 measurement, money representation, key shape, unit conversion, batch mandatoriness, branch count, receipt meaning, tax classes, historical sales migration, unified customer key). Explicitly notes `DATABASE_SCHEMA.md` was not read this run (outside allowed files); its group names were taken from FND-02 §7's summary and the entity grouping matches.
+- Tests actually run (exact results):
+  - `sed -n '/^```json$/,/^```$/p' docs/erp/FND-03_DOMAIN_MODEL.md | sed '1d;$d' > /tmp/fnd03-example.json && python3 -m json.tool /tmp/fnd03-example.json > /dev/null` → exit 0, printed `JSON_VALID` (synthetic example is valid JSON).
+  - `node --check`: not applicable — no JS file created in this task.
+  - Manual consistency review: keys/relationships/states cross-checked between §2–§4 of the doc and against the FND-03 acceptance text in the plan and roadmap.
+- Remaining work: ChatGPT reviews this draft; roadmap status stays `queued` (unchanged per task); FND-02 storage measurement is the open predecessor for the unsettled decisions; tasks 2/5–5/5 of the delegation batch not started.
+- Limitations: document-level design only — NOT TESTED against any database or runtime; no `DATABASE_SCHEMA.md` deep-read (out of allowed scope); customer entity deliberately deferred (unified key unresolved, FND-01 gap 5); receipt semantics flagged as an open question. Changes uncommitted per instructions.
+
 ## Procurement 10 (2026-11-08): Supplier hub for the Worker — encrypted sessions, search API, compare — done
 
 - Issue: "[Procurement 10] Supplier hub for the Worker: encrypted sessions, search API, compare" (epic #53). Read only: the issue, `worker/procurement/compare.js`, `normalize.js` (exports + `matchOffersToItem`), `connectors/pharmaoverseas.js`, `connectors/aumet.js`, `ui-model.js`, and the `provider()` lines of `supplier-lookup.js`.

@@ -106,6 +106,55 @@
   });
 
   /* ---------- lookup popup ---------- */
+  function purchasePrefs() {
+    var defaults = { suppliers: ['aumet', 'pharmaoverseas'], aumetSellers: [] };
+    try { return Object.assign(defaults, JSON.parse(localStorage.getItem('novaPurchasePrefsV1') || '{}')); }
+    catch (e) { return defaults; }
+  }
+  function sellerScopeHtml() {
+    var prefs = purchasePrefs();
+    var enabled = Array.isArray(prefs.suppliers) && prefs.suppliers.indexOf('aumet') !== -1;
+    var count = Array.isArray(prefs.aumetSellers) ? prefs.aumetSellers.length : 0;
+    var message = !enabled ? 'أوميت متوقف في اختيارات الموردين' : !count
+      ? 'أوميت مستبعد من البحث: اختَر مخازنك أولًا على هذا المتصفح'
+      : 'البحث في أوميت داخل ' + count + ' مخزن محدد على هذا المتصفح';
+    return '<div class="sp-scope"><span>' + esc(tr(message)) + '</span> <button type="button" class="sp-link" data-aumet-scope>' + tr('اختيار مخازن أوميت') + '</button></div>';
+  }
+  function bindSellerScope(card, query, stock) {
+    var button = card.querySelector('[data-aumet-scope]');
+    if (button) button.addEventListener('click', function () { openSellerScope(query, stock); });
+  }
+  function openSellerScope(query, stock) {
+    var prefs = purchasePrefs();
+    var selected = (Array.isArray(prefs.aumetSellers) ? prefs.aumetSellers : []).map(String);
+    var card = openModal('ss-card', tr('اختيار مخازن أوميت'));
+    card.innerHTML = '<div class="modal-header"><h3>' + tr('اختيار مخازن أوميت') + '</h3></div><div class="ss-body">' + tr('جاري قراءة المخازن…') + '</div><div class="modal-footer"><button class="btn btn-secondary" data-back>' + tr('إلغاء') + '</button><button class="btn btn-primary" data-save-scope disabled>' + tr('حفظ وإعادة البحث') + '</button></div>';
+    card.querySelector('[data-back]').addEventListener('click', function () { openLookup(query, stock); });
+    provider().listSellers().then(function (r) {
+      if (!document.body.contains(card)) return;
+      var sellers = (r.sellers || []).filter(function (s) { return !s.locked; });
+      var body = card.querySelector('.ss-body');
+      if (!sellers.length) { body.textContent = tr('مخازن حساب أوميت غير متاحة؛ جدّد جلسة المورد ثم حاول تاني. الاختيارات المحفوظة لم تتغير.'); return; }
+      body.innerHTML = '<p>' + tr('اختَر المخازن المسموح البحث فيها. الحفظ يفعّل أوميت على هذا المتصفح.') + '</p>' + sellers.map(function (s) {
+        return '<label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" data-seller-id="' + esc(s.id) + '"' + (selected.indexOf(String(s.id)) !== -1 ? ' checked' : '') + '>' + esc(s.name) + '</label>';
+      }).join('') + '<p class="sp-err" data-scope-error></p>';
+      var save = card.querySelector('[data-save-scope]'); save.disabled = false;
+      save.addEventListener('click', function () {
+        var ids = Array.from(body.querySelectorAll('[data-seller-id]:checked')).map(function (input) { return input.getAttribute('data-seller-id'); });
+        var error = body.querySelector('[data-scope-error]');
+        if (!ids.length) { error.textContent = tr('اختَر مخزنًا واحدًا على الأقل'); return; }
+        // Re-read before saving so days, coverage and other supplier choices survive.
+        var latest = purchasePrefs(); latest.aumetSellers = ids;
+        latest.suppliers = Array.isArray(latest.suppliers) ? latest.suppliers.slice() : [];
+        if (latest.suppliers.indexOf('aumet') === -1) latest.suppliers.push('aumet');
+        try { provider().savePurchasePrefs(latest); }
+        catch (e) { error.textContent = tr('تعذر حفظ الاختيار؛ فعّل تخزين المتصفح ثم حاول تاني'); return; }
+        openLookup(query, stock);
+      });
+    }).catch(function () {
+      if (document.body.contains(card)) card.querySelector('.ss-body').textContent = tr('تعذر قراءة مخازن أوميت؛ الاختيارات المحفوظة لم تتغير. جدّد جلسة المورد ثم حاول تاني.');
+    });
+  }
   function openLookup(query, stock) {
     var card = openModal('sp-card', tr('الموردين'));
     var title = esc(query || '');
@@ -118,9 +167,10 @@
       bindClose(card);
       return;
     }
-    card.innerHTML = head + '<div class="sp-body"><div class="sp-state">' + tr('جاري البحث عند الموردين…') + '</div></div>' +
+    card.innerHTML = head + sellerScopeHtml() + '<div class="sp-body"><div class="sp-state">' + tr('جاري البحث عند الموردين…') + '</div></div>' +
       '<div class="modal-footer"><span class="sp-foot-note">' + tr('سعر الصيدلية قبل التوصيل') + '</span><button class="btn btn-secondary" data-close>' + tr('إغلاق') + '</button></div>';
     bindClose(card);
+    bindSellerScope(card, query, stock);
     provider().search(query, { requestedQty: 1 }).then(function (res) {
       if (!document.body.contains(card)) return;
       renderLookup(card, res);
@@ -190,7 +240,7 @@
       html += '<div class="sp-sec">' + (i === 0 ? esc(model.suggestionsNote || '') : '') + '</div>';
       html += groupsHtml(alt.groups, rowsByKey);
     });
-    if (!Object.keys(rowsByKey).length) html = '<div class="sp-state">' + tr('لا توجد عروض من المخازن المحددة؛ راجع إعدادات المشتريات') + '</div>';
+    if (!Object.keys(rowsByKey).length) html += '<div class="sp-state">' + tr('لا توجد عروض من المخازن المحددة؛ راجع إعدادات المشتريات') + '</div>';
     body.innerHTML = html;
 
     var foot = card.querySelector('.modal-footer');

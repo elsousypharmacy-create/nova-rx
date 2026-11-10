@@ -2,7 +2,7 @@ name: Purchasing page checks
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['purchases*', 'worker/procurement/**', 'tests/*purchases*', 'tests/unit/purchases*', '.github/workflows/purchasing-checks.yml']
+    paths: ['purchases*', 'supplier-lookup.*', 'supplier-provider.js', 'worker/procurement/**', 'tests/*purchases*', 'tests/unit/purchases*', '.github/workflows/purchasing-checks.yml']
 permissions:
   contents: read
 jobs:
@@ -28,6 +28,8 @@ jobs:
       - run: python3 -m http.server 8766 --bind 127.0.0.1 &
       - run: node tests/purchases-browser.mjs
       - run: node tests/supplier-orders-browser.mjs
+      - run: node tests/purchases-seller-search-browser.mjs
+      - run: node tests/purchases-ux-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
