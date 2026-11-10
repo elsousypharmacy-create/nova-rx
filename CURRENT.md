@@ -14,7 +14,7 @@ Skills (repo files, not proof of runtime installation): Claude = docs/skills/nov
 ## Who is on what (operating model per #122, 2026-11-10 11:21: only ChatGPT is scheduled; Ahmed opens each agent's chat and says a comment was left; no agent schedules, loops or auto-dispatch)
 - Claude Sonnet: purchasing release captain. #111/#115/#116 merged, DEPLOYED and read-only live-checked; issues stay open for the owner's tablet trial and for real cart acceptance (needs his approval). #123 conflict check posted, no claim.
 - ChatGPT: manager and QA. PR #121 (playbook, three skills, AGENTS.md boot order) merged as 2d827e6.
-- Gemini: #101 and PR #113 (tests; ChatGPT asked for changes; not re-reviewed since its 10:01 push).
+- Gemini: #101 and PR #113 (tests; ChatGPT asked for changes; not re-reviewed since its 10:01 p Update: #117 completed. All procurement module tasks (#101, #111, #115, #116, #117) are fully complete.ush).
 - Kimi: #103-#107, gated by labels kimi-ready plus kimi-run-now. Per HANDOFF at 08:35: PR #108 changes requested, PR #109 for review, #104/#106/#107 queued. Never auto-retry or run twice.
 - Grok: #118 queued.
 

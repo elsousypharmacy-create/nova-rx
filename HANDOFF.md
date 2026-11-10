@@ -3,8 +3,12 @@
 > **Start with `CURRENT.md`** (about 40 lines: priorities, who is on what, open PRs, breakages, what waits on the owner). This file is the history and evidence archive: read only the section for your task (search its issue or PR number, or read the last 60 lines), not the whole file. Nothing here is deleted.
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
-
-## Checkpoint 2026-11-10 — FND-03 domain model draft (Kimi, task 1/5, NOT committed)
+## Checkpoint 2026-11-10 — Issue #117: Shortages-to-procurement mapping audit and isolated adapter
+- Completed Issue #117: Shortages-to-procurement mapping audit and isolated adapter.
+- Added files: worker/procurement/shortages-adapter.js, tests/unit/shortages-adapter.check.mjs, docs/erp/BUY-OPS_SHORTAGES_MAPPING_AUDIT.md.-
+- Test results: PASS on contract & unit tests, NOT TESTED on live supplier cart writes per security guidelines.
+- Procurement Module Summary: All procurement module tasks (#101, #111, #115, #116, #117) are now fully completed.
+ ## Checkpoint 2026-11-10 — FND-03 domain model draft (Kimi, task 1/5, NOT committed)
 - Created `docs/erp/FND-03_DOMAIN_MODEL.md` (DRAFT, docs only): entity/key/constraint map for tenant/branch/user/product/variant/unit/batch/stockMovement/invoice/payment/return/purchaseOrder/receipt/journal, document state machines, six invariants (mirroring FND-02 §4), single-writer source ownership until G1, synthetic JSON example, ten unsettled storage decisions (D1 vs Postgres pending FND-02 measurement, money representation, key shape, unit conversion, batch mandatoriness, receipt semantics, tax, customer key, …).
 - Linked to FND-01 reality (current owner per entity: legacy system E / STOCK LIVE snapshot vs proposed NOVA master). Roadmap status unchanged (`queued`); no `verified`, no acceptance increase. No migrations, no DB, no code.
 - Evidence: synthetic JSON block validated with `python3 -m json.tool` (exit 0); no JS created so `node --check` n/a; manual key/state consistency review. Full details in `BUILD_REPORT.md` top entry.
