@@ -29,6 +29,7 @@ jobs:
       - run: node tests/purchases-browser.mjs
       - run: node tests/supplier-orders-browser.mjs
       - run: node tests/purchases-seller-search-browser.mjs
+      - run: node tests/purchases-ux-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
