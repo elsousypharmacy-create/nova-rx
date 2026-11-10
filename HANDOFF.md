@@ -2,6 +2,12 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-10 — FND-05 [3/5] environments/deploy/rollback design draft (docs-only, review pending)
+- New file `docs/erp/FND-05_ENVIRONMENTS.md`: current-vs-required inventory (only `nova-rx-preview` exists; dev/production missing), secrets isolation, numbered-migrations spec (PROPOSED, none exist), stale-artifact gap (`modified_on` blocks concurrent overwrite but not older-artifact-over-newer; two proposals), backup/restore/rollback checklist reusing the existing deploy guard (`.github/workflows/deploy-worker.yml` + `.github/scripts/deploy_worker.sh`), proven vs NOT-implemented vs NOT-TESTED sections, 6 open decisions.
+- Verification: code reading + manual reference-consistency check only; no new JS/JSON (node --check / json.tool N/A); no dry run, deploy, or migration. Full entry at top of BUILD_REPORT.md.
+- Roadmap/HANDOFF status untouched: FND-05 stays `queued`; no acceptance percentage change. ChatGPT reviews before merge.
+- Next exact step: owner/ChatGPT review of the draft and decisions on the 6 open questions; do not implement workflows/migrations/deploy from this draft without explicit approval.
+
 ## Checkpoint 2026-11-09 — Issue #84 emergency mobile sales (MVP, Draft PR, NOT deployed)
 - Files: `emergency-sales.html`, `emergency-core.js`, `docs/EMERGENCY_SALES.md`, tests `tests/unit/emergency-core.check.mjs` + `tests/emergency-sales-browser.mjs` (both PASS), samples in `reports/`.
 - Source of truth: STOCK LIVE sheet via Apps Script `scanSearch/scanLookup` (`price` = public price). Live call NOT tested (network blocked). Finding: those two actions need no PIN. Details in the doc.
