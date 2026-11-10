@@ -16,7 +16,8 @@ async function call(path, init = {}) {
   try { body = await res.json(); } catch { body = null; }
   return { status: res.status, ms: Date.now() - t0, body };
 }
-const states = r => JSON.stringify((r.body && r.body.suppliers || []).map(s => `${s.id}:${s.state}`));
+const counts = s => (s.rows === undefined ? '' : `(rows=${s.rows},readable=${s.readable},drifted=${s.drifted},selected=${s.selected},shown=${s.shown})`);
+const states = r => JSON.stringify((r.body && r.body.suppliers || []).map(s => `${s.id}:${s.state}${counts(s)}${s.message ? ' ' + s.message : ''}`));
 const allOffers = r => ((r.body && r.body.results) || []).flatMap(x => x.offers || []);
 let failed = false;
 const fail = msg => { console.log('FAIL: ' + msg); failed = true; };
