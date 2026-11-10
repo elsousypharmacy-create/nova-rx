@@ -15,7 +15,7 @@ Use when Ahmed asks about NOVA, the purchasing module, Aumet, agent work, issues
 3. Classify each task as QUEUED / CLAIMED / CODE_PUSHED / PR_OPEN / CI_PASS / MERGED / DEPLOYED / LIVE_VERIFIED / BLOCKED. These are **distinct evidence states**, not interchangeable success labels.
 4. Identify the highest-impact blocker; propose or post **one consolidated GitHub directive** to the responsible agent with exact files, test criteria, and safety limits. Do not ask Ahmed to copy messages to Claude.
 5. Independently review PR diff and security/functional tests. Distinguish fixture coverage from real supplier account behavior. Document findings on PR; do not mark accepted without evidence.
-6. When authorized, merge only after checking CI, conflicts, real regression risks and any auto-deploy effect. For production deployment or external writes, obtain specific owner authorization.
+6. When authorized, merge only after checking CI, conflicts, real regression risks and any auto-deploy effect. Use the existing guarded deployment workflow under the owner's standing authorization for ordinary tested releases; obtain specific owner approval for external supplier writes, orders, secrets or destructive actions.
 7. Record factual checkpoint in GitHub and give Ahmed a short Egyptian Arabic report: **what changed / what remains / who owns it / what is verified**.
 
 ## Responsibility routing
@@ -26,7 +26,7 @@ Use when Ahmed asks about NOVA, the purchasing module, Aumet, agent work, issues
 - Emails are routing labels, not authentication proof.
 
 ## Current decision context (must refresh)
-Owner's 2026-11-10 sequential procurement queue: #115 / PR #119 → #112 (Aumet) → #116 (purchases UX). Owner permits routine completion and GitHub merges after quality gates, but not independent production deployment, real supplier-cart writes, checkout, secrets changes, or bypass of fail-closed states. Aumet live status was NOT VERIFIED at this checkpoint. Re-query GitHub; this paragraph is historical context, never the current status source.
+Owner's 2026-11-10 procurement dependency queue: #112 (Aumet) → #115 / PR #119 → #116 (purchases UX). Owner permits normal merge and guarded deployment after relevant quality gates, without routine independent pre-merge approval, but not unsafe production operations, real supplier-cart writes, checkout, secrets changes, or bypass of fail-closed states. Aumet live status was NOT VERIFIED at this checkpoint. Re-query GitHub; this paragraph is historical context, never the current status source.
 
 ## Manager review checklist
 - Product: does this solve the user's reported problem, not merely pass a synthetic test?
@@ -41,3 +41,6 @@ Read targeted diffs first; avoid rereading the entire repository or duplicating 
 
 ## Stop conditions
 Stop an unsafe operation (real orders, irreversible data mutation, credential exposure, uncontrolled deploy), **not** the entire independent work queue. Escalate once with the exact decision required. Never claim an agent was triggered solely by writing a GitHub comment.
+
+## Shared coordination protocol (2026-11-10)
+GitHub Issues own tasks; PRs own diffs. Limit active implementation PRs to three. A comment does not prove agent acknowledgement. Claude Sonnet owns implementation end-to-end through tests, merge and authorized guarded deploy; ChatGPT tracks evidence and weekly QA. Independent pre-merge review is not a routine gate, but known material security/data-integrity defects block shipping. Gemini may take a separately claimed non-overlapping analysis/test task, not Sonnet's active code paths; Kimi/Grok standby. Claude skill location requested in Issue #122; do not claim its contents were read until the exact file is retrieved. Review weekly, and never conflate merge, deploy and live verification.
