@@ -13,6 +13,7 @@ import {
 import { createPharmaOverseasConnector } from '../connectors/pharmaoverseas.js';
 import { createAumetConnector } from '../connectors/aumet.js';
 import { compareForItem } from '../compare.js';
+import { resolveSellerId } from './seller-id.js';
 
 const SUPPLIERS = [
   { id: 'pharmaoverseas', name: 'PharmaOverseas' },
@@ -159,6 +160,7 @@ export function createSupplierHub({
         if (!rec) return { id: s.id, name: s.name, state: 'off' };
         holders[s.id].current = rec.session;
         const connector = conns[s.id];
+        const knownSellers = (rec.session?.sellers || []).map((x) => String(x.id));
         const run = { cancelled: false };
         const scopedAumet = s.id === 'aumet' && Array.isArray(aumetSellerIds) && aumetSellerIds.length > 0;
         try {
@@ -180,6 +182,8 @@ export function createSupplierHub({
                   rows += 1;
                   try {
                     const offer = connector.toOffer(rawRow, { fetchedAt });
+                    // Rows carry the warehouse id plus a suffix; use the id the account lists (see seller-id.js).
+                    if (s.id === 'aumet') offer.sellerId = resolveSellerId(offer.sellerId, knownSellers);
                     readable += 1;
                     // Diagnostic only (ids and public distributor names): what id do the rows really carry?
                     if (offer.sellerId == null) noSeller += 1;
