@@ -1,5 +1,7 @@
 # NOVA Rx — HANDOFF (living project state)
 
+> **Start with `CURRENT.md`** (about 40 lines: priorities, who is on what, open PRs, breakages, what waits on the owner). This file is the history and evidence archive: read only the section for your task (search its issue or PR number, or read the last 60 lines), not the whole file. Nothing here is deleted.
+
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
 ## Checkpoint 2026-11-09 — Issue #84 emergency mobile sales (MVP, Draft PR, NOT deployed)
@@ -719,3 +721,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ### nova skill refreshed in the repo — 2026-11-10
 - `docs/skills/nova/SKILL.md` (the source of truth) corrected: the "Live now" line pointed at `with-suppliers1`, which was replaced; it now records the last live state per HANDOFF (purchases11 over purchases10, hashes verified against the artifact files, NOT re-verified live), and a new section lists #112 / #119 / #120 as merged and NOT deployed, what is not verified (Aumet visibility undetermined), the open `unknown`-lock decision, the owner delivery policy and what a deploy still needs.
 - Docs only; no code, workflow or `worker/live/` change.
+
+
+### CURRENT.md boot file added — 2026-11-10
+- New `CURRENT.md` (about 40 lines): boot order, priorities, who is on what, merged-not-deployed, open PRs, breakages, what waits on the owner. `HANDOFF.md` now starts with a pointer to it and is otherwise unchanged (nothing deleted, 721 lines of history kept). New `tests/unit/current-md.check.mjs` (picked up by the existing unit job) keeps CURRENT.md short, sectioned, pointing at files that exist, free of secret-looking text, and keeps HANDOFF.md as the archive; verified to fail when CURRENT.md is too long, loses a section or contains secret-like text.
+- Why: the old boot read about 94k tokens (HANDOFF ~38k, plan ~24k, roadmap ~21k, skill ~9k) every session; a scheduler would pay that each run. The new order reads AGENTS.md + CURRENT.md first and stops if nothing is new. Estimate only (chars/3); real usage not visible from here.
+- NOT done: the AGENTS.md boot text. PR #121 rewrites the same lines, so the exact replacement text is proposed on that PR instead of creating a conflict. NOT tested: that a real second agent resumes from CURRENT.md (only structure is checked mechanically). The hourly scheduler stays NOT configured; owner wants the real cost reviewed first.
