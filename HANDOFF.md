@@ -656,3 +656,11 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Gemini #101 acknowledged start2026-11-10T04:49:41Z, no PR/posted checkpoint found. Requested bounded progress/checkpoint comment; two uncovered test cases only. Do not equate acknowledgment with continuing liveness or completed tests.
 
 - Resume support completion: PR110 merged46fa55d7. Workflow YAML/wiring, bash syntax and synthetic git recovery regression all PASS locally. No model run, quota probe, deployment or permission changes. Canonical/public status notes and hourly reviewer instructions updated. Gemini acknowledgment alone remains insufficient evidence of active progress.
+
+
+### BUY-P0 #115 checkpoint — cart-add warehouse scope (branch claude/practical-tesla-xndif9, NOT merged/deployed)
+- Gap (code read): Aumet cart preview/apply took `sellerId` from the client without checking the owner's selected warehouses; the only check was at order time (`order-extra-sellers`). Cause of the owner's live cart containing outside-selection warehouses is NOT established (items may have been added outside NOVA).
+- Change: `aumet-cart.js` preview rejects unselected/missing/empty selection with `cart-seller-not-selected` before any session load, search or write; invalid shape = `bad-request`. `supplier-provider.js` attaches the saved Aumet selection to every Aumet cart preview. Tests written first and seen failing, then passing: aumet-cart, cart-client; `supplier-platform` fixture updated to pass a selection (intent unchanged: redirect still not followed).
+- Evidence (local, synthetic fixtures only): 8 supplier unit checks PASS (aumet-cart, cart-client, journal, platform, transactions, module-worker, seller-scope, price); browser purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS. No real supplier write, no live check.
+- Open owner decision (unchanged): a cart operation ending `unknown`, including a definite `not-added` read-back, locks the supplier scope and also blocks that supplier's orders; no documented release path.
+- Follow-up for #116 owner: add an Arabic message for `cart-seller-not-selected` in `purchases.js` `cartMessage` (it currently falls back to the generic text).

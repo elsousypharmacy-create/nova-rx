@@ -45,9 +45,14 @@
   function cartKey(line){return JSON.stringify([line.supplierId,line.productId,line.sellerId,line.quantity,line.price]);}
   function pendingCarts(){try{return JSON.parse(localStorage.getItem('novaPendingSupplierCartsV1')||'{}');}catch(e){throw new Error('cart-storage-unavailable');}}
   function savePending(value){try{localStorage.setItem('novaPendingSupplierCartsV1',JSON.stringify(value));}catch(e){throw new Error('cart-storage-unavailable');}}
+  // Saved Aumet warehouse selection (per browser). Empty means none selected, never "all".
+  function selectedAumetSellers(){
+    try{var saved=JSON.parse(localStorage.getItem('novaPurchasePrefsV1')||'null');return saved&&Array.isArray(saved.aumetSellers)?saved.aumetSellers.map(String):[];}catch(e){return [];}
+  }
+  function withSelection(supplier,line){return supplier==='aumet'?Object.assign({},line,{aumetSellerIds:selectedAumetSellers()}):line;}
   function prepareCart(supplier,line){
     line=Object.assign({},line,{supplierId:supplier});var saved=pendingCarts()[cartKey(line)];
-    return saved?Promise.resolve(saved):call('/api/purchases/'+supplier+'-cart/preview',{method:'POST',body:JSON.stringify(line)});
+    return saved?Promise.resolve(saved):call('/api/purchases/'+supplier+'-cart/preview',{method:'POST',body:JSON.stringify(withSelection(supplier,line))});
   }
   async function applyPreparedCart(supplier,line,plan){
     line=Object.assign({},line,{supplierId:supplier});var key=cartKey(line),saved=pendingCarts();
@@ -75,9 +80,9 @@
     addToSupplierCart: supplierCartAdd,
     prepareSupplierCart: prepareCart,
     applyPreparedSupplierCart: applyPreparedCart,
-    previewSupplierCart: function (supplier,line) { return call('/api/purchases/'+supplier+'-cart/preview', {method:'POST',body:JSON.stringify(line)}); },
+    previewSupplierCart: function (supplier,line) { return call('/api/purchases/'+supplier+'-cart/preview', {method:'POST',body:JSON.stringify(withSelection(supplier,line))}); },
     applySupplierCart: function (supplier,plan) { return call('/api/purchases/'+supplier+'-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
-    previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(line)}); },
+    previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(withSelection('aumet',line))}); },
     applyAumetCart: function (plan) { return call('/api/purchases/aumet-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
     listSellers: function () { return call('/api/suppliers/sellers', { method: 'GET' }); },
     purchasingStock: function (dashboardPin) { return call('/api/purchases/stock', { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }); },
