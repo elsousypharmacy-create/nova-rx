@@ -147,7 +147,7 @@
         var latest = purchasePrefs(); latest.aumetSellers = ids;
         latest.suppliers = Array.isArray(latest.suppliers) ? latest.suppliers.slice() : [];
         if (latest.suppliers.indexOf('aumet') === -1) latest.suppliers.push('aumet');
-        try { localStorage.setItem('novaPurchasePrefsV1', JSON.stringify(latest)); }
+        try { provider().savePurchasePrefs(latest); }
         catch (e) { error.textContent = tr('تعذر حفظ الاختيار؛ فعّل تخزين المتصفح ثم حاول تاني'); return; }
         openLookup(query, stock);
       });
