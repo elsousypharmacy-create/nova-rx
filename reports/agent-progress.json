@@ -3,15 +3,15 @@
   "project": "NOVA Rx",
   "task_id": "ERP-1.0",
   "task_title": "ERP كامل — خط أساس 17 مرحلة و85 بند قبول",
-  "status": "baseline_awaiting_reconciliation",
+  "status": "in_progress",
   "percent_complete": 0,
-  "percent_basis": "0 accepted out of 85 in new weighted acceptance baseline; does not mean no existing implementation. Canonical reports/erp-roadmap.json; 9 tasks pending review.",
+  "percent_basis": "0 accepted out of 85 in weighted ERP baseline; 10 tasks pending review; implementation/deployment is not product acceptance.",
   "verified_items": 0,
   "total_items": 85,
   "items": [],
-  "run_id": null,
-  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/issues/87",
-  "checkpoint_at": "2026-11-09T15:50:00+03:00",
-  "updated_at": "2026-11-09",
-  "note": "Claude implements, ChatGPT reviews. Dashboard mirror pharmacy/nova-status.json must be updated with canonical evidence-backed status."
+  "run_id": 42754557565,
+  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42754557565",
+  "checkpoint_at": "2026-11-10T04:29:17.104Z",
+  "updated_at": "2026-11-10T04:29:17.104Z",
+  "note": "PR98/99/100 نشروا تكامل سلال أوميت وأوفرسيز والتأكيد البشري للطلب. قراءة الحسابين وD1 نجحت؛ سلة أوفرسيز فارغة وأوميت موقوف بقيود المخازن. لا إضافة حية أو شراء تجريبي، ولا زيادة لقبول ERP. أحدث browser CI تأخر عند تثبيت Chromium؛ واجهة PR99 نفسها مختبرة بنجاح."
 }
