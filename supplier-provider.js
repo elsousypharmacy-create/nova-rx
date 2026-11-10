@@ -74,6 +74,17 @@
   }
 
   window.NOVA_SUPPLIER_PROVIDER = {
+    // Only the provider writes purchase preferences; the DOM layer must not touch storage directly.
+    savePurchasePrefs: function(value){
+      if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('prefs-invalid');
+      var clean={};
+      Object.keys(value).forEach(function(k){
+        var v=value[k],t=typeof v;
+        if(t==='string'||t==='boolean'||(t==='number'&&isFinite(v)))clean[k]=v;
+        else if(Array.isArray(v)&&v.every(function(x){return typeof x==='string'||typeof x==='number';}))clean[k]=v.slice();
+      });
+      localStorage.setItem('novaPurchasePrefsV1',JSON.stringify(clean));
+    },
     previewSupplierOrder: function(supplierId,aumetSellerIds){return call('/api/purchases/orders/preview',{method:'POST',body:JSON.stringify({supplierId:supplierId,aumetSellerIds:aumetSellerIds||[]})});},
     supplierOrderStatus: function(plan){return call('/api/purchases/orders/status',{method:'POST',body:JSON.stringify(plan)});},
     applySupplierOrder: function(plan){return call('/api/purchases/orders/apply',{method:'POST',body:JSON.stringify(plan)});},
