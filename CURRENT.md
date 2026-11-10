@@ -1,19 +1,19 @@
 # NOVA Rx — CURRENT (read this, not all of HANDOFF.md)
-Last updated: 2026-11-10 10:31 UTC by Claude Sonnet. main @ 045911d. This is an index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same commit.
+Last updated: 2026-11-10 10:50 UTC by Claude Sonnet. main @ 2d827e6. This is an index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same commit.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines)  4. YOUR OWN skill, not the others'  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when your task needs acceptance criteria or changes scope.
 Nothing new for you here or on your issue? Stop and report IDLE; do not start a coding session.
-Skills: Claude = docs/skills/nova/SKILL.md; ChatGPT = skills/nova-rx-chatgpt-manager/SKILL.md (PR #121, not on main yet); Gemini/Kimi = none yet (#124).
+Skills (repo files, not proof of runtime installation): Claude = docs/skills/nova/SKILL.md; ChatGPT = skills/nova-rx-chatgpt-manager/SKILL.md; Gemini = skills/nova-rx-gemini/SKILL.md; Kimi = skills/nova-rx-kimi/SKILL.md.
 
 ## Priorities (owner direction, newest first)
 1. P0 pharmacy#59: owner mobile dashboard shows header and tabs but a blank body. Separate repo; root cause NOT proven; not started.
 2. Aumet missing for the owner (#111/#112): code merged, NOT verified live, cause undetermined.
-3. Deploy decision (see Waiting on the owner). 4. #123 progress dashboard (overlaps pharmacy PR #56). 5. #124 Gemini/Kimi skills. 6. ERP-1.0 roadmap (#87).
+3. Deploy decision (see Waiting on the owner). 4. #123 progress dashboard (overlaps pharmacy PR #56). 5. #124: skill files merged via #121; each agent must still acknowledge its own at its next real run. 6. ERP-1.0 roadmap (#87).
 
 ## Who is on what (a comment is not proof of a running agent)
 - Claude Sonnet: #115, #116 delivered; both issues stay open until the owner tries them on the tablet. Next: #122 answered, #123 conflict check posted, no new claim.
-- ChatGPT: manager and QA; owns PR #121 (playbook plus an AGENTS.md rewrite).
+- ChatGPT: manager and QA. PR #121 (playbook, three skills, AGENTS.md boot order) merged as 2d827e6.
 - Gemini: #101 and PR #113 (tests; ChatGPT asked for changes; not re-reviewed since its 10:01 push).
 - Kimi: #103-#107, gated by labels kimi-ready plus kimi-run-now. Per HANDOFF at 08:35: PR #108 changes requested, PR #109 for review, #104/#106/#107 queued. Never auto-retry or run twice.
 - Grok: #118 queued.
@@ -23,7 +23,7 @@ Skills: Claude = docs/skills/nova/SKILL.md; ChatGPT = skills/nova-rx-chatgpt-man
 Last recorded live Worker artifact (from HANDOFF, NOT re-verified): purchases11 sha256 41ea0f923241d5d7a840674ab5a3a91d115b4a2e329c191289f45ed89450abeb, over purchases10 as rollback.
 
 ## Open PRs
-nova-rx: #121 playbook docs (ChatGPT); #113 Gemini tests; #114 old policy PR (superseded by later owner decisions); #108/#109 Kimi drafts; #91 review draft; #25 research; #20 old WhatsApp draft.
+nova-rx: #113 Gemini tests; #114 old policy PR (superseded by later owner decisions); #108/#109 Kimi drafts; #91 review draft; #25 research; #20 old WhatsApp draft.
 pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only. Merging in pharmacy can publish or deploy: the owner decides.
 
 ## Known breakages and risks
