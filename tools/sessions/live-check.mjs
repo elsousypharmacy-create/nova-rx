@@ -48,4 +48,16 @@ for (const query of ['أوجمنتين 1 جم (Augmentin 1g)', 'بانادول �
   if (outside > 0) fail('a scoped search returned an Aumet offer from an unselected warehouse');
   for (const o of offers.slice(0, 3)) console.log(`   ${o.offer.supplierId} | ${o.offer.productName} | ${o.packPrice} | stock ${o.offer.stockStatus}`);
 }
+// C) Aumet visibility with every readable warehouse selected (Aumet only, read only, one search per query).
+// Shows whether Aumet offers survive the selection AND the comparison, and which warehouses they come from.
+if (unlocked.length) {
+  for (const query of ['أوجمنتين 1 جم (Augmentin 1g)', 'بانادول إكسترا (Panadol Extra 24 Tab)']) {
+    const all = await call('/api/suppliers/search', { method: 'POST', body: JSON.stringify({ query, requestedQty: 1, supplierIds: ['aumet'], aumetSellerIds: unlocked }) });
+    const aumet = allOffers(all).filter(o => o.offer && o.offer.supplierId === 'aumet');
+    const outside = aumet.filter(o => !unlocked.includes(String(o.offer.sellerId))).length;
+    console.log(`ALL-WAREHOUSES "${query}" (${unlocked.length} warehouses, Aumet only): HTTP ${all.status} in ${all.ms} ms, Aumet offers ${aumet.length} from ${new Set(aumet.map(o => String(o.offer.sellerId))).size} warehouses, outside selection ${outside} (must be 0), suppliers: ${states(all)}`);
+    if (outside > 0) fail('an all-warehouses search returned an Aumet offer from an unselected warehouse');
+    for (const o of aumet.slice(0, 4)) console.log(`   aumet | seller ${o.offer.sellerId} ${o.offer.sellerName} | ${o.offer.productName} | ${o.packPrice} | stock ${o.offer.stockStatus} | eligible ${o.eligible}`);
+  }
+}
 if (failed) process.exitCode = 1;
