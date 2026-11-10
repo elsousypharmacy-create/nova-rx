@@ -24,3 +24,5 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:10px;flex-wrap:nowrap;alig
 .supplier-select{min-height:32px!important;width:100%;padding:3px 5px!important;font-size:11px;background:#131a23;border:1px solid var(--line);border-radius:6px}
 
 .dialog-actions{flex-wrap:wrap}.group li{flex-wrap:wrap}.group li small{width:100%;text-align:left;color:#98c8a9}#orderCart ul{list-style:none;margin:10px 0;padding:0}#orderCart li{padding:9px 0;border-bottom:1px solid var(--line)}#orderCart p{margin:10px 0}#orderDialog .check{align-items:flex-start;margin-top:14px}#orderDialog a{color:var(--light)}[hidden]{display:none!important}
+
+@media(min-width:801px){.cart{max-height:calc(100dvh - 174px);overflow:hidden}.cart #groups{flex:1 1 auto;min-height:0;overflow-y:auto}.cart-footer,.cart>.panel-head{flex-shrink:0}}
