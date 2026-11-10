@@ -4,6 +4,12 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 
+## Checkpoint 2026-11-10 — FND-03 domain model draft (Kimi, task 1/5, NOT committed)
+- Created `docs/erp/FND-03_DOMAIN_MODEL.md` (DRAFT, docs only): entity/key/constraint map for tenant/branch/user/product/variant/unit/batch/stockMovement/invoice/payment/return/purchaseOrder/receipt/journal, document state machines, six invariants (mirroring FND-02 §4), single-writer source ownership until G1, synthetic JSON example, ten unsettled storage decisions (D1 vs Postgres pending FND-02 measurement, money representation, key shape, unit conversion, batch mandatoriness, receipt semantics, tax, customer key, …).
+- Linked to FND-01 reality (current owner per entity: legacy system E / STOCK LIVE snapshot vs proposed NOVA master). Roadmap status unchanged (`queued`); no `verified`, no acceptance increase. No migrations, no DB, no code.
+- Evidence: synthetic JSON block validated with `python3 -m json.tool` (exit 0); no JS created so `node --check` n/a; manual key/state consistency review. Full details in `BUILD_REPORT.md` top entry.
+- Next exact step: ChatGPT reviews the draft; then delegation tasks 2/5–5/5 (queued). `DATABASE_SCHEMA.md` deep-read was out of scope this run.
+
 ## Checkpoint 2026-11-09 — Issue #84 emergency mobile sales (MVP, Draft PR, NOT deployed)
 - Files: `emergency-sales.html`, `emergency-core.js`, `docs/EMERGENCY_SALES.md`, tests `tests/unit/emergency-core.check.mjs` + `tests/emergency-sales-browser.mjs` (both PASS), samples in `reports/`.
 - Source of truth: STOCK LIVE sheet via Apps Script `scanSearch/scanLookup` (`price` = public price). Live call NOT tested (network blocked). Finding: those two actions need no PIN. Details in the doc.
