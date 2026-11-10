@@ -4,7 +4,7 @@ import fs from 'node:fs';
 // #116: per-row offer states, selected-warehouse scope chip, seller-scope cart message.
 // Synthetic fixtures only (intercepted routes). Nothing here talks to a real supplier.
 const stamp = new Date().toISOString();
-const stock = ['found', 'none', 'flaky'].map((k, i) => ({ id: String(i + 1), code: String(1301 + i), name: `صنف ${k}`, nameEn: `Ux${k} 500mg 20 tabs`, stock: 1, minStock: 4, idealStock: 8, dailySales: null, observedDays: 0 }));
+const stock = ['found', 'none', 'flaky', 'partial', 'pfound'].map((k, i) => ({ id: String(i + 1), code: String(1301 + i), name: `صنف ${k}`, nameEn: `Ux${k} 500mg 20 tabs`, stock: 1, minStock: 4, idealStock: 8, dailySales: null, observedDays: 0 }));
 let searchCalls = 0, flakyFailures = 1, scopeBody = null;
 const offerFor = q => ({ offer: { supplierId: 'aumet', sellerId: 'one', sellerName: 'مخزن تجريبي أ', supplierProductId: 'one' + q, productName: q, availableQuantity: 100, unitPrice: 40, publicPrice: 100, stockStatus: 'in_stock', currency: 'EGP', lastUpdated: stamp } });
 const browser = await chromium.launch({ headless: true });
@@ -25,8 +25,10 @@ try {
       const body = route.request().postDataJSON(); searchCalls++;
       await new Promise(r => setTimeout(r, 450)); // keep the "searching" state observable
       if (/flaky/.test(body.query) && flakyFailures > 0) { flakyFailures--; return route.fulfill({ status: 502, contentType: 'application/json', body: '{"error":"upstream"}' }); }
-      const rows = /none/.test(body.query) ? [] : [offerFor(body.query)];
-      data = { suppliers: [{ id: 'aumet', state: 'ok' }], results: [{ offers: rows }] };
+      // A supplier that did not answer (state error) makes the search INCOMPLETE even with HTTP 200.
+      if (/partial/.test(body.query)) { data = { suppliers: [{ id: 'aumet', state: 'error', message: 'x' }], results: [{ offers: [] }] }; }
+      else if (/pfound/.test(body.query)) { data = { suppliers: [{ id: 'aumet', state: 'error', message: 'x' }], results: [{ offers: [offerFor(body.query)] }] }; }
+      else { const rows = /none/.test(body.query) ? [] : [offerFor(body.query)]; data = { suppliers: [{ id: 'aumet', state: 'ok' }], results: [{ offers: rows }] }; }
     } else return route.fulfill({ status: 404, body: '{}' });
     await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(data) });
   });
@@ -53,7 +55,13 @@ try {
   assert.equal(await page.locator('.offer-state[data-state=searching]').count(), 0, 'no row stays in searching');
   assert.equal(await page.locator('.offer-state[data-state=none]').count(), 1);
   assert.equal(await page.locator('.offer-state[data-state=error]').count(), 1);
-  assert.equal(await page.locator('.supplier-select').count(), 1);
+  assert.equal(await page.locator('.supplier-select').count(), 2);
+  // An empty result from an INCOMPLETE search is never shown as "no suitable offer".
+  assert.equal(await page.locator('.offer-state[data-state=incomplete]').count(), 1);
+  assert((await page.locator('.offer-state[data-state=incomplete]').innerText()).includes('لم يكتمل'));
+  assert.equal(await page.locator('.offer-state[data-state=none]').count(), 1, 'only the genuinely empty, complete search says none');
+  // Offers found by a partial search are kept but flagged as incomplete.
+  assert.equal(await page.locator('.partial-note').count(), 1);
   assert((await page.locator('.offer-state[data-state=none]').innerText()).includes('لا عرض مناسب'));
   assert((await page.locator('.offer-state[data-state=error]').innerText()).includes('تعذر البحث'));
   const noneRow = page.locator('tr', { has: page.locator('.offer-state[data-state=none]') });
@@ -65,7 +73,7 @@ try {
   await page.locator('[data-offer]').first().waitFor();
   await page.locator('[data-offer]').first().click();
   await page.waitForFunction(() => document.querySelectorAll('.offer-state[data-state=error]').length === 0);
-  assert.equal(await page.locator('.supplier-select').count(), 2, 'manual pick turned the failed row into a found row');
+  assert.equal(await page.locator('.supplier-select').count(), 3, 'manual pick turned the failed row into a found row');
   await noneRow.locator('[data-action=offers]').click(); await page.locator('#offerRows').waitFor();
   await page.locator('#closeOffers').click();
   assert.equal(await page.locator('.offer-state[data-state=none]').count(), 1, 'a genuinely empty row stays "no suitable offer"');

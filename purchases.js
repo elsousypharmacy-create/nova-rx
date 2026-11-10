@@ -33,6 +33,7 @@ function offerNote(i){
  if(i.issue)return `<small>${esc(i.issue)}</small>`;
  if(i.offerState==='searching')return '<small class="offer-state searching" data-state="searching" role="status">جارٍ البحث عن عرض…</small>';
  if(i.offerState==='none')return '<small class="offer-state none" data-state="none">لا عرض مناسب<span class="sub">جرّب «العروض» أو راجع المخازن المختارة</span></small>';
+ if(i.offerState==='incomplete')return '<small class="offer-state incomplete" data-state="incomplete">لم يكتمل البحث<span class="sub">مورد لم يرد؛ لا نعتبرها «لا عرض»، أعد المحاولة من «العروض»</span></small>';
  if(i.offerState==='error')return '<small class="offer-state error" data-state="error">تعذر البحث عن عرض<span class="sub">أعد المحاولة من «العروض»</span></small>';
  return '<small>اختَر عرضًا أو وزّع تلقائيًا</small>';
 }
@@ -47,7 +48,7 @@ function render(){
  $('rows').innerHTML=view.length?view.map(i=>{
   const allocation=i.allocations?.[0],found=allocation?.offer;
   const warning=i.issue||(i.unallocated>0&&i.allocations?.length?'كمية متبقية بلا عرض':'');
-  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small></td><td>${fmt(numberOrNull(i.stock))}</td><td>${fmt(i.target)}</td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td>${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small>${i.allocations.length>1?`<small>مقسم على ${fmt(i.allocations.length)} عروض</small>`:''}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}`:offerNote(i)}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action" data-action="offers" ${busy?'disabled':''}>العروض</button></td></tr>`;
+  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small></td><td>${fmt(numberOrNull(i.stock))}</td><td>${fmt(i.target)}</td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td>${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small>${i.allocations.length>1?`<small>مقسم على ${fmt(i.allocations.length)} عروض</small>`:''}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}${i.searchComplete===false?'<small class="warning partial-note">بعض الموردين لم يرد؛ النتيجة ناقصة</small>':''}`:offerNote(i)}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action" data-action="offers" ${busy?'disabled':''}>العروض</button></td></tr>`;
  }).join(''):'<tr><td colspan="7" class="empty">'+(rawItems.length?'لا توجد نواقص مطابقة للاختيار الحالي.':'حدّث النواقص لقراءة مخزون الصيدلية.')+'</td></tr>';
  $('selectAll').disabled=busy;
  $('selectAll').checked=view.length>0&&view.every(i=>i.selected||i.issue);
@@ -77,7 +78,7 @@ async function loadStock(){
 async function searchOffers(item){
  const result=await offerSearch.search(item.nameEn||item.name,{requestedQty:item.qty,supplierIds:prefs.suppliers});
  if(result.cached)offerCacheHits++;
- const rows=result.value.rows;offersByItem.set(item.key,rows);return rows;
+ const rows=result.value.rows;item.searchComplete=result.value.complete===true;offersByItem.set(item.key,rows);return rows;
 }
 function showProgress(done,total,name=''){
  const pct=total?Math.floor(done/total*100):0;
@@ -92,7 +93,7 @@ async function allocateAll(){
  try{for(const item of selected){
   status(`جارٍ مقارنة عروض الصنف ${fmt(done+1)} من ${fmt(selected.length)}…`);
   showProgress(done,selected.length,item.name);
-  try{item.offerState='searching';renderKeep();const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));item.offerState=item.allocations?.length?'ok':'none';}catch{fail++;item.offerState='error';item.allocations=[];item.unallocated=item.qty;}
+  try{item.offerState='searching';renderKeep();const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));item.offerState=item.allocations?.length?'ok':(item.searchComplete?'none':'incomplete');}catch{fail++;item.offerState='error';item.allocations=[];item.unallocated=item.qty;}
   done++;showProgress(done,selected.length,item.name);
   renderKeep();
  }
@@ -102,7 +103,7 @@ async function allocateAll(){
 }
 async function openOffers(item){
  if(busy)return;let dirty=false;setBusy(true);$('offerTitle').textContent=item.name;$('offerRows').textContent='جارٍ البحث…';$('offers').showModal();
- try{const rows=await searchOffers(item);const mapped=filterOffers(item,rows,prefs);if(!item.allocations?.length){if(mapped.some(r=>r.eligible))delete item.offerState;else item.offerState='none';dirty=true;}$('offerRows').innerHTML=mapped.length?mapped.map((r,index)=>`<section class="offer"><b>${esc(r.offer.productName)}</b><p>${esc(supplierName(r.offer.supplierId))} · ${esc(r.offer.sellerName||'')}</p><p>${fmt(r.price)} ج.م · خصم ${fmt(r.discount)}٪ · ${r.offer.availableQuantity==null?'كمية التوفر غير محددة':`المتاح ${fmt(r.offer.availableQuantity)}`}</p>${r.reason?`<small class="warning">${esc(r.reason)}</small>`:''}<button data-offer="${index}" ${r.eligible?'':'disabled'}>اختيار هذا العرض</button></section>`).join(''):'لا توجد عروض مطابقة حاليًا.';
+ try{const rows=await searchOffers(item);const mapped=filterOffers(item,rows,prefs);if(!item.allocations?.length){if(mapped.some(r=>r.eligible))delete item.offerState;else item.offerState=item.searchComplete?'none':'incomplete';dirty=true;}$('offerRows').innerHTML=mapped.length?mapped.map((r,index)=>`<section class="offer"><b>${esc(r.offer.productName)}</b><p>${esc(supplierName(r.offer.supplierId))} · ${esc(r.offer.sellerName||'')}</p><p>${fmt(r.price)} ج.م · خصم ${fmt(r.discount)}٪ · ${r.offer.availableQuantity==null?'كمية التوفر غير محددة':`المتاح ${fmt(r.offer.availableQuantity)}`}</p>${r.reason?`<small class="warning">${esc(r.reason)}</small>`:''}<button data-offer="${index}" ${r.eligible?'':'disabled'}>اختيار هذا العرض</button></section>`).join(''):'لا توجد عروض مطابقة حاليًا.';
  $('offerRows').querySelectorAll('[data-offer]').forEach(button=>button.onclick=()=>{const row=mapped[Number(button.dataset.offer)],offer=row.offer;const available=numberOrNull(offer.availableQuantity);const qty=Math.min(item.qty,available===null?item.qty:Math.floor(available));if(qty<=0||qty<(numberOrNull(offer.minimumOrderQuantity)||1)){status('الكمية أقل من الحد الأدنى لطلب المورد',true);return;}item.allocations=[{...row,key:offerKey(offer),qty,quantityUnconfirmed:available===null,cartState:'local-draft'}];item.unallocated=item.qty-qty;item.selected=true;$('offers').close();render();});
  }catch{$('offerRows').textContent='تعذر قراءة عروض الموردين؛ لم تتغير الكميات.';if(!item.allocations?.length){item.offerState='error';dirty=true;}}finally{setBusy(false);if(dirty)renderKeep();}
 }
