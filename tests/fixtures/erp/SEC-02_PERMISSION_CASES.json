@@ -1,0 +1,93 @@
+{
+  "test_suite": "SEC-02 Permission Authorization Test Cases",
+  "version": "1.0",
+  "cases": [
+    {
+      "id": "TC-PERM-001",
+      "category": "accepted_permission",
+      "role": "Owner",
+      "description": "Owner role requesting full tenant management access",
+      "request": {
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "action": "system:configure",
+        "resource": "tenant/settings"
+      },
+      "expected_status": 200,
+      "expected_result": "ALLOWED"
+    },
+    {
+      "id": "TC-PERM-002",
+      "category": "accepted_permission",
+      "role": "Pharmacist",
+      "description": "Pharmacist role dispensing clinical prescription",
+      "request": {
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "action": "prescription:dispense",
+        "resource": "rx/order_4092"
+      },
+      "expected_status": 200,
+      "expected_result": "ALLOWED"
+    },
+    {
+      "id": "TC-PERM-003",
+      "category": "accepted_permission",
+      "role": "Cashier",
+      "description": "Cashier role processing checkout payment at POS",
+      "request": {
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "action": "pos:checkout",
+        "resource": "sale/pos_881"
+      },
+      "expected_status": 200,
+      "expected_result": "ALLOWED"
+    },
+    {
+      "id": "TC-PERM-004",
+      "category": "accepted_permission",
+      "role": "InventoryManager",
+      "description": "InventoryManager role updating inventory batch stock",
+      "request": {
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "action": "inventory:stock_in",
+        "resource": "inventory/batch_771"
+      },
+      "expected_status": 200,
+      "expected_result": "ALLOWED"
+    },
+    {
+      "id": "TC-PERM-005",
+      "category": "rejected_permission",
+      "role": "Cashier",
+      "description": "Cashier role attempting unauthorized financial report export (deny-by-default)",
+      "request": {
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "action": "reports:export_financials",
+        "resource": "finance/reports"
+      },
+      "expected_status": 403,
+      "expected_result": "DENIED",
+      "reason": "Permission denied by default: Cashier role lacks reports:export_financials capability"
+    },
+    {
+      "id": "TC-PERM-006",
+      "category": "rejected_permission",
+      "role": "Pharmacist",
+      "description": "Pharmacist attempting operation on unauthorized branch_west_02 context",
+      "request": {
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_west_02",
+        "user_assigned_branch": "branch_east_01",
+        "action": "prescription:dispense",
+        "resource": "rx/order_4092"
+      },
+      "expected_status": 403,
+      "expected_result": "DENIED",
+      "reason": "Branch scope mismatch: user is assigned to branch_east_01"
+    }
+  ]
+}
