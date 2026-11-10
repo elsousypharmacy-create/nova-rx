@@ -20,7 +20,8 @@ const SUPPLIERS = [
 ];
 const SEARCH_TIMEOUT_MS = 8000;
 const FALLBACK_MIN_SCORE = 0.5;
-const AUMET_MAX_PAGES = 12; // Safety bound; never silently claim full seller coverage.
+const AUMET_MAX_PAGES = 12;
+const AUMET_SEARCH_TIMEOUT_MS = 45000; // Safety bound; never silently claim full seller coverage.
 
 const MSG_AUTH = 'الجلسة انتهت، سجّل دخول المورد';
 const MSG_RATE = 'كتير طلبات، جرّب بعد شوية';
@@ -149,6 +150,7 @@ export function createSupplierHub({
           await withTimeout(
             (async () => {
               let drifted = 0;
+              const supplierOffers = [];
               let pageNumber = 1;
               let totalPages = 1;
               do {
@@ -160,7 +162,7 @@ export function createSupplierHub({
                     // Filter before storing: excluded distributors must never appear.
                     if (s.id !== 'aumet' || !Array.isArray(aumetSellerIds) ||
                         aumetSellerIds.includes(String(offer.sellerId))) {
-                      allOffers.push(offer);
+                      supplierOffers.push(offer);
                     }
                   } catch (err) {
                     if (!(err instanceof SchemaDriftError)) throw err;
@@ -175,9 +177,11 @@ export function createSupplierHub({
                   aumetSellerIds.length > 0 && pageNumber <= totalPages) {
                 throw new TransientError('Aumet seller search incomplete; pagination safety limit reached');
               }
+              allOffers.push(...supplierOffers);
               return drifted;
             })(),
-            SEARCH_TIMEOUT_MS,
+            s.id === 'aumet' && Array.isArray(aumetSellerIds) && aumetSellerIds.length > 0
+              ? AUMET_SEARCH_TIMEOUT_MS : SEARCH_TIMEOUT_MS,
           );
           return { id: s.id, name: s.name, state: 'ok' };
         } catch (err) {
