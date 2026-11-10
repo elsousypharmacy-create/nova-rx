@@ -16,8 +16,8 @@ Before choosing a task, read `docs/ERP_MASTER_PLAN.md`, `reports/erp-roadmap.jso
 ## Premium product agent policy — owner decision 2026-11-10 (takes precedence over older routing rules)
 - Quality first: NOVA Rx is a premium, production-intended pharmacy ERP/POS. Passing CI alone does not establish product acceptance.
 - ChatGPT: product manager, issue decomposition, scope/ownership coordination, initial QA and acceptance tracking; does not silently assign implementation to itself.
-- Claude account 1 / Sonnet: primary developer for core product features, premium UX, multi-file integration and nontrivial bugs.
-- Claude account 2 / Opus: independent reviewer for architecture, security, financial/inventory correctness and high-risk changes; not routine implementation or automatic review of every cosmetic change. Sonnet may review ordinary changes where appropriate.
+- Claude account `ahmedmelsousy@gmail.com` / Sonnet: primary developer for core product features, premium UX, multi-file integration and nontrivial bugs.
+- Claude account `elsousypharmacy@gmail.com` / Opus: independent reviewer for architecture, security, financial/inventory correctness and high-risk changes; not routine implementation or automatic review of every cosmetic change. Sonnet may review ordinary changes where appropriate.
 - Kimi and Gemini: narrowly scoped, independent implementation/tests/docs tasks with explicit file boundaries; their output requires tests and review before merge. Grok: independent browser/live QA; QA observations do not authorize code changes.
 - Haiku is not the default developer or approval authority for core premium features; use only for low-risk bounded tasks if explicitly assigned.
 - Ownership lock: BEFORE editing, check current issue, PR, branch and HANDOFF; post a claim on the issue with agent/model, exact file paths, branch, acceptance criteria and status `IN_PROGRESS`. If another active claim overlaps files or scope, STOP and coordinate; never launch a second agent on the same work. A label/assignment is not evidence of an actual running agent; verify Actions/run state.
