@@ -9,9 +9,9 @@
   "verified_items": 0,
   "total_items": 85,
   "items": [],
-  "run_id": 42754557565,
-  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42754557565",
-  "checkpoint_at": "2026-11-10T04:29:17.104Z",
-  "updated_at": "2026-11-10T04:29:17.104Z",
-  "note": "PR98/99/100 نشروا تكامل سلال أوميت وأوفرسيز والتأكيد البشري للطلب. قراءة الحسابين وD1 نجحت؛ سلة أوفرسيز فارغة وأوميت موقوف بقيود المخازن. لا إضافة حية أو شراء تجريبي، ولا زيادة لقبول ERP. أحدث browser CI تأخر عند تثبيت Chromium؛ واجهة PR99 نفسها مختبرة بنجاح."
+  "run_id": 42761851699,
+  "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42761851699",
+  "checkpoint_at": "2026-11-10T05:26:32.193Z",
+  "updated_at": "2026-11-10T05:26:32.193Z",
+  "note": "أحمد فوّض خمس مسودات تأسيسية لـKimi:103–107، أول تشغيل42761851699 بدأ، والأربعة ينتظرون دورهم. pharmacy PR54 يعرض المهام والمسؤولين والحالات والنسبة؛ browser CI pending. لا قبول نهائي أو زيادة للنسبة."
 }
