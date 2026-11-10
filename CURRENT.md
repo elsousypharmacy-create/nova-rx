@@ -46,3 +46,8 @@ Whoever changes the state edits this file in the same commit. Keep it at 60 line
 - Source of truth: master Issue #87, section "توزيع Gemini A / Gemini B — 2026-11-10". QUEUED/RESERVED, not claimed or started; agent must ACK/CLAIM in its own session. Up to 5 queued items per account, max 3 active implementation PRs repo-wide, no overlapping files.
 - Gemini A queue: CAT-01, CAT-02, CAT-05, INV-01, POS-02 (respect dependencies and existing work). Gemini B queue: FND-02, FND-04, SEC-03, SEC-04, SEC-05 (respect dependencies). Claude consolidated module review; ChatGPT manager/QA.
 - Procurement BUY acceptance and real-cart verification remain distinct from merged code; real supplier writes/orders require owner approval. Existing CURRENT/HANDOFF older assignment text may conflict: latest owner queue in #87 governs, but don't overwrite active claims.
+
+## Scheduled execution clarification (2026-11-10)
+- Owner requests hourly autonomous Gemini A/B execution. ChatGPT scheduled automations **cannot start Gemini sessions**; they can inspect GitHub and report stalled work/prepare resume prompts. No claim that Gemini schedules are installed.
+- Gemini A/B each read #87, AGENTS.md and CURRENT.md; acknowledge their queue, CLAIM one eligible task, implement/test on separate branch, push Draft PR, checkpoint, repeat as session permits. No overlapping claims; max 3 implementation PRs. ChatGPT reviews/merges/deploys only after gates and authorization; Claude module-level review.
+- For true unattended execution, an authenticated Gemini-capable runner/workflow with approved credentials and trigger is required; do not install or enable without validating permissions/cost/safety. Do not use scheduled checks to mutate live supplier carts/orders.
