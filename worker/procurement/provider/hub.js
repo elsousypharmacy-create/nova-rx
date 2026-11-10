@@ -26,6 +26,7 @@ const AUMET_SEARCH_TIMEOUT_MS = 45000; // Safety bound; never silently claim ful
 const MSG_AUTH = 'الجلسة انتهت، سجّل دخول المورد';
 const MSG_RATE = 'كتير طلبات، جرّب بعد شوية';
 const MSG_DOWN = 'تعذر الاتصال';
+const MSG_SCHEMA = 'شكل بيانات المورد اتغيّر؛ لا نعرض نتيجة ناقصة';
 const MSG_INCOMPLETE = 'البحث في المخازن المختارة لم يكتمل؛ أخفينا النتائج بدل عرض نتيجة ناقصة';
 class IncompleteSearchError extends TransientError {}
 
@@ -161,9 +162,11 @@ export function createSupplierHub({
         const run = { cancelled: false };
         const scopedAumet = s.id === 'aumet' && Array.isArray(aumetSellerIds) && aumetSellerIds.length > 0;
         try {
-          await withTimeout(
+          // Counts (numbers only) make a silent empty result diagnosable: rows read from the supplier,
+          // rows that parsed, rows dropped as unreadable, and rows that survived the warehouse selection.
+          const stat = await withTimeout(
             (async () => {
-              let drifted = 0;
+              let drifted = 0, rows = 0, readable = 0, matched = 0;
               const supplierOffers = [];
               let pageNumber = 1;
               let totalPages = 1;
@@ -173,12 +176,15 @@ export function createSupplierHub({
                 const page = await connector.search(searchText, { page: pageNumber, pageSize: 24 });
                 totalPages = Number.isFinite(page?.totalPages) ? page.totalPages : 1;
                 for (const rawRow of page?.offers ?? []) {
+                  rows += 1;
                   try {
                     const offer = connector.toOffer(rawRow, { fetchedAt });
+                    readable += 1;
                     // Filter before storing: excluded distributors must never appear.
                     if (s.id !== 'aumet' || !Array.isArray(aumetSellerIds) ||
                         aumetSellerIds.includes(String(offer.sellerId))) {
                       supplierOffers.push(offer);
+                      matched += 1;
                     }
                   } catch (err) {
                     if (!(err instanceof SchemaDriftError)) throw err;
@@ -194,14 +200,17 @@ export function createSupplierHub({
                 throw new IncompleteSearchError('Aumet seller search incomplete; pagination safety limit reached');
               }
               allOffers.push(...supplierOffers);
-              return drifted;
+              return { drifted, rows, readable, matched };
             })(),
             scopedAumet ? aumetSearchTimeoutMs : SEARCH_TIMEOUT_MS,
             scopedAumet
               ? { onTimeout: () => { run.cancelled = true; }, makeError: () => new IncompleteSearchError('Aumet seller search timed out') }
               : undefined,
           );
-          return { id: s.id, name: s.name, state: 'ok' };
+          const entry = { id: s.id, name: s.name, state: 'ok', rows: stat.rows, readable: stat.readable, drifted: stat.drifted, selected: stat.matched };
+          // Every row unreadable is not "no offers": the supplier's data shape changed. Say so.
+          if (stat.rows > 0 && stat.readable === 0) { entry.state = 'error'; entry.message = MSG_SCHEMA; }
+          return entry;
         } catch (err) {
           return { id: s.id, name: s.name, state: 'error', message: errorMessage(err) };
         }
@@ -219,6 +228,9 @@ export function createSupplierHub({
       });
     }
 
+    const shownBy = {};
+    for (const r of result.offers) { const id = (r.offer || r).supplierId; shownBy[id] = (shownBy[id] || 0) + 1; }
+    for (const sup of suppliers) if (sup.rows !== undefined) sup.shown = shownBy[sup.id] || 0;
     return { fetchedAt, results: [result], suppliers };
   }
 

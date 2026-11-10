@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs';
 import {createSupplierHub} from '../../worker/procurement/provider/hub.js';
+import {SchemaDriftError} from '../../worker/procurement/connector-contract.js';
 let prefs={suppliers:['aumet','pharmaoverseas'],aumetSellers:['allowed']},sent;
 const context={window:{},localStorage:{getItem:k=>k==='novaApiPin'?'test':JSON.stringify(prefs)},fetch:async(p,init)=>{sent=JSON.parse(init.body);return {ok:true,status:200,json:async()=>({results:[]})};}};
 vm.runInNewContext(fs.readFileSync('supplier-provider.js','utf8'),context);
@@ -49,6 +50,23 @@ const filler=n=>Array.from({length:24},(_,i)=>row('other'+n+'-'+i,50));
  assert.equal(out.suppliers[0].state,'error');assert.match(out.suppliers[0].message,/لم يكتمل/);assert.equal(out.results[0].offers.length,0,'a timed-out scan leaks no offers');
  const atTimeout=calls.length;await sleep(500);
  assert.ok(calls.length<=atTimeout+1,'scan must stop after the timeout (pages at timeout '+atTimeout+', later '+calls.length+')');assert.ok(calls.length<6);
+}
+// --- silent empty results must be diagnosable and, when every row is unreadable, visible as an error ---
+{
+ const hubFor=(rows,toOffer)=>createSupplierHub({store:{load:async()=>({session:{}})},connectors:{aumet:{search:async()=>({offers:rows,page:1,pageSize:24,totalPages:1}),toOffer}}});
+ const drift=()=>{throw new SchemaDriftError('shape changed');};
+ // every row unreadable: an error with an honest message, never a quiet "ok" with zero offers
+ let out=await hubFor([{},{},{}],drift).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
+ assert.equal(out.suppliers[0].state,'error');assert.match(out.suppliers[0].message,/اتغيّر/);assert.equal(out.suppliers[0].rows,3);assert.equal(out.suppliers[0].readable,0);assert.equal(out.suppliers[0].drifted,3);assert.equal(out.results[0].offers.length,0);
+ // some rows unreadable: still ok, with the numbers exposed
+ let n=0;out=await hubFor([{},{}],()=>{if(n++===0)throw new SchemaDriftError('x');return offer('allowed');}).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
+ assert.equal(out.suppliers[0].state,'ok');assert.deepEqual([out.suppliers[0].rows,out.suppliers[0].readable,out.suppliers[0].drifted,out.suppliers[0].selected,out.suppliers[0].shown],[2,1,1,1,1]);
+ // rows readable but the selection excludes them all: ok, selected 0 (distinguishable from "no rows")
+ out=await hubFor([{}],()=>offer('other')).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
+ assert.equal(out.suppliers[0].state,'ok');assert.deepEqual([out.suppliers[0].rows,out.suppliers[0].readable,out.suppliers[0].selected,out.suppliers[0].shown],[1,1,0,0]);
+ // no rows at all
+ out=await hubFor([],()=>offer('x')).search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['allowed']});
+ assert.equal(out.suppliers[0].state,'ok');assert.equal(out.suppliers[0].rows,0);
 }
 // --- #112: preference writes go through the provider, keep other fields, drop non-plain values ---
 {
