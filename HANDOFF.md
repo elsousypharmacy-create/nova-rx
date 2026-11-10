@@ -1,4 +1,7 @@
 # NOVA Rx — HANDOFF (living project state)
+## Account assignment correction — 2026-11-10
+- Owner explicitly assigns `elsousypharmacy@gmail.com` as Claude Opus independent reviewer and `ahmedmelsousy@gmail.com` as Claude Sonnet primary implementer. This overrides earlier account-number assumptions. Account login, actual model selection and automation access remain unverified; no task is automatically started by this documentation change.
+
 ## Checkpoint 2026-11-10 — Premium agent routing policy (policy PR only; not yet merged)
 - Owner decision: Claude Sonnet (account 1) is primary developer for premium core features; Claude Opus (account 2) independently reviews high-risk architecture/security/financial/inventory work. ChatGPT coordinates; Kimi/Gemini implement isolated bounded tasks; Grok performs independent QA. Haiku is not default for core features.
 - Changed `AGENTS.md` on `policy/premium-agent-ownership-20261110` to override old blanket Claude/Kimi implementation defaults, require issue claims, non-overlapping file ownership, one active task per agent, explicit handoffs and review gates.
