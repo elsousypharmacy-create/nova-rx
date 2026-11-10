@@ -45,9 +45,14 @@
   function cartKey(line){return JSON.stringify([line.supplierId,line.productId,line.sellerId,line.quantity,line.price]);}
   function pendingCarts(){try{return JSON.parse(localStorage.getItem('novaPendingSupplierCartsV1')||'{}');}catch(e){throw new Error('cart-storage-unavailable');}}
   function savePending(value){try{localStorage.setItem('novaPendingSupplierCartsV1',JSON.stringify(value));}catch(e){throw new Error('cart-storage-unavailable');}}
+  // Saved Aumet warehouse selection (per browser). Empty means none selected, never "all".
+  function selectedAumetSellers(){
+    try{var saved=JSON.parse(localStorage.getItem('novaPurchasePrefsV1')||'null');return saved&&Array.isArray(saved.aumetSellers)?saved.aumetSellers.map(String):[];}catch(e){return [];}
+  }
+  function withSelection(supplier,line){return supplier==='aumet'?Object.assign({},line,{aumetSellerIds:selectedAumetSellers()}):line;}
   function prepareCart(supplier,line){
     line=Object.assign({},line,{supplierId:supplier});var saved=pendingCarts()[cartKey(line)];
-    return saved?Promise.resolve(saved):call('/api/purchases/'+supplier+'-cart/preview',{method:'POST',body:JSON.stringify(line)});
+    return saved?Promise.resolve(saved):call('/api/purchases/'+supplier+'-cart/preview',{method:'POST',body:JSON.stringify(withSelection(supplier,line))});
   }
   async function applyPreparedCart(supplier,line,plan){
     line=Object.assign({},line,{supplierId:supplier});var key=cartKey(line),saved=pendingCarts();
@@ -69,15 +74,26 @@
   }
 
   window.NOVA_SUPPLIER_PROVIDER = {
+    // Only the provider writes purchase preferences; the DOM layer must not touch storage directly.
+    savePurchasePrefs: function(value){
+      if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('prefs-invalid');
+      var clean={};
+      Object.keys(value).forEach(function(k){
+        var v=value[k],t=typeof v;
+        if(t==='string'||t==='boolean'||(t==='number'&&isFinite(v)))clean[k]=v;
+        else if(Array.isArray(v)&&v.every(function(x){return typeof x==='string'||typeof x==='number';}))clean[k]=v.slice();
+      });
+      localStorage.setItem('novaPurchasePrefsV1',JSON.stringify(clean));
+    },
     previewSupplierOrder: function(supplierId,aumetSellerIds){return call('/api/purchases/orders/preview',{method:'POST',body:JSON.stringify({supplierId:supplierId,aumetSellerIds:aumetSellerIds||[]})});},
     supplierOrderStatus: function(plan){return call('/api/purchases/orders/status',{method:'POST',body:JSON.stringify(plan)});},
     applySupplierOrder: function(plan){return call('/api/purchases/orders/apply',{method:'POST',body:JSON.stringify(plan)});},
     addToSupplierCart: supplierCartAdd,
     prepareSupplierCart: prepareCart,
     applyPreparedSupplierCart: applyPreparedCart,
-    previewSupplierCart: function (supplier,line) { return call('/api/purchases/'+supplier+'-cart/preview', {method:'POST',body:JSON.stringify(line)}); },
+    previewSupplierCart: function (supplier,line) { return call('/api/purchases/'+supplier+'-cart/preview', {method:'POST',body:JSON.stringify(withSelection(supplier,line))}); },
     applySupplierCart: function (supplier,plan) { return call('/api/purchases/'+supplier+'-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
-    previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(line)}); },
+    previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(withSelection('aumet',line))}); },
     applyAumetCart: function (plan) { return call('/api/purchases/aumet-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
     listSellers: function () { return call('/api/suppliers/sellers', { method: 'GET' }); },
     purchasingStock: function (dashboardPin) { return call('/api/purchases/stock', { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }); },

@@ -31,6 +31,10 @@ export function createAumetCart({store,hub,secret,fetch:fetchImpl=globalThis.fet
  }
  async function preview(line){
   if(!line||!id(line.productId)||!id(line.sellerId)||!Number.isInteger(line.quantity)||line.quantity<1||line.quantity>10000||typeof line.query!=='string'||line.query.length>200||!Number.isFinite(line.price))fail('bad-request');
+  // The owner's selected warehouses are enforced here, before any session load or upstream call.
+  const allowed=line.aumetSellerIds;
+  if(allowed!==undefined&&(!Array.isArray(allowed)||allowed.length>500||allowed.some(x=>typeof x!=='string'||!id(x))))fail('bad-request');
+  if(!Array.isArray(allowed)||!allowed.includes(id(line.sellerId)))fail('cart-seller-not-selected');
   const c=await context(),product=id(line.productId),seller=id(line.sellerId),payment=id(c.t.body.payment_method_id);
   if(!(c.s.sellers||[]).some(s=>String(s.id)===seller&&!s.locked))fail('cart-seller-unavailable');
   const fresh=await hub.search(line.query,{supplierIds:['aumet'],requestedQty:line.quantity});

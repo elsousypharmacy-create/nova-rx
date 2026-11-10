@@ -82,7 +82,7 @@ try {
   await page.locator('#review').click(); await page.locator('#saveDraft').click();
   await page.locator('#prepareAumet').click();
   await page.getByText('ليس ضمن مخازن أوميت المختارة', { exact: false }).first().waitFor({ timeout: 10000 });
-  assert.deepEqual(scopeBody.aumetSellerIds ?? null, null, 'this fixture does not assert the provider field (covered by unit tests in #119)');
+  assert.deepEqual(scopeBody.aumetSellerIds, ['one', 'two'], 'the cart preview carries the selected warehouses (provider change from #119)');
   await page.locator('#closeReview').click();
 
   // Layout: no horizontal overflow and no overlap in the controls row, tablet and phone.

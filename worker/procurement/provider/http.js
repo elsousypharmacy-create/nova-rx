@@ -213,7 +213,8 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
       ? Math.floor(Number(body.requestedQty))
       : 1;
     const supplierIds = Array.isArray(body.supplierIds) ? body.supplierIds.filter(id => ['aumet', 'pharmaoverseas'].includes(id)) : undefined;
-    const aumetSellerIds=Array.isArray(body.aumetSellerIds)?body.aumetSellerIds.map(String):undefined;
+    // Fail closed: a missing or malformed selection means NO Aumet warehouse, never all of them.
+    const aumetSellerIds=Array.isArray(body.aumetSellerIds)?body.aumetSellerIds.map(String):[];
     return json(await hub.search(body.query, { requestedQty, supplierIds, aumetSellerIds }));
   }
 
