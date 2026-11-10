@@ -20,6 +20,7 @@ const SUPPLIERS = [
 ];
 const SEARCH_TIMEOUT_MS = 8000;
 const FALLBACK_MIN_SCORE = 0.5;
+const AUMET_MAX_PAGES = 12; // Safety bound; never silently claim full seller coverage.
 
 const MSG_AUTH = 'الجلسة انتهت، سجّل دخول المورد';
 const MSG_RATE = 'كتير طلبات، جرّب بعد شوية';
@@ -147,15 +148,32 @@ export function createSupplierHub({
         try {
           await withTimeout(
             (async () => {
-              const page = await connector.search(searchText, { page: 1, pageSize: 24 });
               let drifted = 0;
-              for (const rawRow of page?.offers ?? []) {
-                try {
-                  allOffers.push(connector.toOffer(rawRow, { fetchedAt }));
-                } catch (err) {
-                  if (!(err instanceof SchemaDriftError)) throw err;
-                  drifted += 1;
+              let pageNumber = 1;
+              let totalPages = 1;
+              do {
+                const page = await connector.search(searchText, { page: pageNumber, pageSize: 24 });
+                totalPages = Number.isFinite(page?.totalPages) ? page.totalPages : 1;
+                for (const rawRow of page?.offers ?? []) {
+                  try {
+                    const offer = connector.toOffer(rawRow, { fetchedAt });
+                    // Filter before storing: excluded distributors must never appear.
+                    if (s.id !== 'aumet' || !Array.isArray(aumetSellerIds) ||
+                        aumetSellerIds.includes(String(offer.sellerId))) {
+                      allOffers.push(offer);
+                    }
+                  } catch (err) {
+                    if (!(err instanceof SchemaDriftError)) throw err;
+                    drifted += 1;
+                  }
                 }
+                pageNumber++;
+              } while (s.id === 'aumet' && Array.isArray(aumetSellerIds) &&
+                       aumetSellerIds.length > 0 && pageNumber <= totalPages &&
+                       pageNumber <= AUMET_MAX_PAGES);
+              if (s.id === 'aumet' && Array.isArray(aumetSellerIds) &&
+                  aumetSellerIds.length > 0 && pageNumber <= totalPages) {
+                throw new TransientError('Aumet seller search incomplete; pagination safety limit reached');
               }
               return drifted;
             })(),
