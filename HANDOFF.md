@@ -605,3 +605,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Cloudflare's actual single-module download omits Content-Type and filename on its sole named worker.js part. Backup normalizer now accepts that exact named-JS + export-default form; bare-part and typed multipart/legacy byte-equivalence tests PASS locally, shell syntax PASS. App artifact unchanged by this tooling fix.
 - Canonical roadmap/agent-progress updated without acceptance increase. Sanitized pharmacy/nova-status.json publication succeeded; mirror commit b159260697ece1cd10b8503bd70a890baebf6447.
 - Next exact operating step: refresh /purchases, choose allowed warehouses, review desired real shortages then confirm add-to-supplier-cart; read-back must mark verified. For first real checkout, review the COMPLETE actual account basket (including outside-NOVA items), totals/payment/delivery, then owner confirms in UI. Real mutation acceptance, PO/GRN/invoice receipt/stock accounting remain pending; BUY-04 for_review, BUY-05 in_progress, ERP acceptance0/85 unchanged.
+
+
+### Gemini delegated QA checkpoint — 2026-11-10
+- Ahmed explicitly requested one task for connected Gemini. Created #101: https://github.com/elsousypharmacy-create/nova-rx/issues/101, narrow QA-01/BUY-04 supplier recovery tests, related #62. Choose two uncovered fixture cases, separate branch and Draft PR; no product fixes, merge, deploy or live supplier mutations.
+- Status queued: no Gemini workflow or invocation tool was found in this session. Issue creation is not evidence Gemini started. Require acknowledgment/branch/PR before in_progress. ChatGPT reviews; other agent roles and ERP acceptance unchanged.
