@@ -124,24 +124,6 @@ Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof
 - Kimi commit hygiene: one commit `2f23c7f…` on the PR branch, files index.html, BUILD_REPORT.md, tests/ux-batch1.spec.mjs only. No merge yet: PR #36 remains open for owner/manager review.
 - Kimi run limitation confirmed again: the run also failed to auto-create a PR (it logs HTTP 422 on the PR step) but successfully pushed the branch; the PR was opened manually. Follow-up removes brittlefixed10-review/4queued...
 
-### NOVA dashboard final live verification — 2026-11-10 08:35 Riyadh
-- Dashboard live verification completed after deploy; see details in the archived section. (Summary kept from earlier archive.)
-
-### Kimi status follow-up
-- Status comments posted on the tracking issue; no code change.
-
-### Owner instruction: resume from checkpoint near Kimi quota
-- Owner asked all agents to resume from saved checkpoints instead of restarting; noted here so later agents do not redo completed batches.
-
-### BUY-UX #116 READY_FOR_REVIEW checkpoint
-- See PR #120 for the review package; archived here for continuity.
-
-### BUY-UX #116 follow-up after QA review on PR #120
-- QA follow-up items recorded; see PR #120 comments.
-
-### BUY-P0 #115 checkpoint
-- See PR #119; archived for continuity.
-
 ### BUY-P0 #115 READY_FOR_REVIEW matrix — 2026-11-10 (Draft PR, NOT merged/deployed)
 - Branch `claude/practical-tesla-xndif9`, Draft PR #119, code commit efc346e + docs commit 9eb1ef9. Base: main @ 41f0b9e (unchanged when compared). Next owner: ChatGPT reviewer, then owner.
 - COMPLETED (code level, synthetic fixtures): selected Aumet warehouses sent by client and enforced server-side in cart preview; missing/empty/unselected rejected before session load, search or write (unit asserts zero writes and zero supplier searches); invalid shape = bad-request; signed-plan tamper rejected, replay returns alreadyApplied, lost response resolved by read-back, conflict/payment/price checks (aumet-cart, transactions, journal on real SQLite); PharmaOverseas flow unchanged (supplier-transactions PASS).
