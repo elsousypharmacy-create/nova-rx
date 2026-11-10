@@ -666,7 +666,7 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Follow-up for #116 owner: add an Arabic message for `cart-seller-not-selected` in `purchases.js` `cartMessage` (it currently falls back to the generic text).
 
 ### BUY-P0 #115 READY_FOR_REVIEW matrix — 2026-11-10 (Draft PR, NOT merged/deployed)
-- Branch `claude/practical-tesla-xndif9`, code commit efc346e (+ docs/HANDOFF commit). Base: main @ 41f0b9e (unchanged when compared). Next owner: ChatGPT reviewer, then owner.
+- Branch `claude/practical-tesla-xndif9`, Draft PR #119, code commit efc346e + docs commit 9eb1ef9. Base: main @ 41f0b9e (unchanged when compared). Next owner: ChatGPT reviewer, then owner.
 - COMPLETED (code level, synthetic fixtures): selected Aumet warehouses sent by client and enforced server-side in cart preview; missing/empty/unselected rejected before session load, search or write (unit asserts zero writes and zero supplier searches); invalid shape = bad-request; signed-plan tamper rejected, replay returns alreadyApplied, lost response resolved by read-back, conflict/payment/price checks (aumet-cart, transactions, journal on real SQLite); PharmaOverseas flow unchanged (supplier-transactions PASS).
 - Regression: 30 of 32 unit checks PASS. The 2 failing also fail on main, not caused by this change: `procurement-ui-model` (assertion "no direct localStorage writes") and `worker-gemini-route` (needs the Worker artifact path argument). Browser: purchases-browser, purchases-seller-search-browser, supplier-orders-browser (main's version) PASS.
 - NOT TESTED: any real Aumet/PharmaOverseas cart write or read-back, live account behavior, checkout, CI result for this PR. No claim of real-account success.
