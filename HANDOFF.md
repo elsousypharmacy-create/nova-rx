@@ -2,7 +2,11 @@
 
 Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof of current CI status. Verify GitHub before making changes.
 ## Checkpoint 2026-11-10 — Issue #101 test(BUY-04): add duplicate cart items and reload recovery tests for supplier orders
-- Added automated QA tests for duplicate cart item handling and reload recovery for supplier orders (#101)
+`{state: 'unknown'}`.
+- **سلات الموردين الحقيقية**: اختبار سلة Aumet و PharmaOverseas والتحقق من دمج الكميات لنفس الصنف (Quantity Merging).
+- **إعادة التحميل والتعافي (Reload Recovery)**: طلب `apply` واحد فقط (zero repeat apply POSTs)، استعلام واحد `status lookup` حالة المعاملة المعلقة، ومسح المعاملة المعلقة فقط بعد العودة باستجابة محققة `verified` مع بقائها محفوظة أثناء حالة `unknown`.
+- **النتائج**: PASS على جميع السيناريوهات الاصطناعية، NOT TESTED على بوابات الموردين الحقيقية لحظر الشراء الحقيقي.
+- **التقرير**: تم توثيق النتائج والأدلة الكاملة في `qa/reports/qa-01-buy-04-gemini-report.md`.ted QA tests for duplicate cart item handling and reload recovery for supplier orders (#101)
 Verified cart state recovery and idempotency upon reload.
 - 
 ## Checkpoint 2026-11-09 — Issue #84 emergency mobile sales (MVP, Draft PR, NOT deployed)
