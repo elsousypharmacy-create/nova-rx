@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
   "planVersion": "ERP-1.0",
-  "updatedAt": "2026-11-10T05:03:29.465Z",
+  "updatedAt": "2026-11-10T05:23:37.792Z",
   "phase": "ERP الكامل — تثبيت خط الأساس ثم النواة المعاملاتية",
   "goal": "ERP صيدلي عربي سريع وسهل: السوسي أولًا، ثم صيدليات وفروع متعددة",
   "readinessPercent": null,
   "readinessNote": "نسبة القبول تُحسب من 85 بندًا موزونًا. لم يُسجّل قبول نهائي في هذا الخط الأساس؛ توجد أعمال مبنية تنتظر مطابقة شروط القبول.",
   "currentCycle": {
-    "title": "سلال الموردين وتنفيذ الطلب من نوفا",
-    "agent": "ChatGPT ينفذ بطلب أحمد المباشر",
-    "status": "نُشر ربط السلال والتأكيد البشري للطلب؛ قراءة السلال وسجل التنفيذ الحية نجحت للحسابين، والشراء الحي لم يُختبر",
-    "nextOwnerAction": "حدّث المشتريات وحدد المخازن، ثم أكد إضافة قائمة مطلوبة فعلًا. راجع السلة الفعلية والإجمالي قبل تنفيذ أول طلب. سلة أوفرسيز فارغة؛ سلة أوميت الحالية تتوقف على مخازن خارج الاختيار/القائمة المتاحة."
+    "title": "عرض المهام في الداشبورد ودفعة Kimi التأسيسية",
+    "agent": "ChatGPT — اللوحة والمراجعة • Kimi — 5 مهام مُسندة",
+    "status": "Kimi بدأ FND-03؛ أربع مهام مُسندة تنتظر التشغيل ومراجعة التبعيات",
+    "nextOwnerAction": "لا إجراء مطلوب الآن؛ المهام غير معتمدة حتى اكتمال أدلة المراجعة"
   },
   "tasks": [],
   "roadmap": [
@@ -66,12 +66,27 @@
           "title": "نموذج المجال",
           "acceptance": "توثيق tenant/branch/user/product/variant/unit/batch/stockMovement/invoice/payment/return/purchaseOrder/receipt/journal؛ مفاتيح ثابتة وقيود العلاقات وحالات المستندات.",
           "weight": 1,
-          "status": "queued",
-          "owner": "Claude",
+          "status": "in_progress",
+          "owner": "Kimi",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/103",
+              "kind": "issue",
+              "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            }
+          ],
           "verifiedAt": null,
-          "verification": null
+          "verification": null,
+          "assignment": {
+            "agent": "Kimi",
+            "state": "running",
+            "order": 1,
+            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/103",
+            "dependsOn": [],
+            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل",
+            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42761851699"
+          }
         },
         {
           "id": "FND-04",
@@ -79,11 +94,27 @@
           "acceptance": "OpenAPI للقراءة والكتابة؛ أخطاء عربية برمز ثابت وrequestId؛ pagination ومهلات وإعادة محاولة آمنة وidempotency للكتابة.",
           "weight": 1,
           "status": "queued",
-          "owner": "Claude",
+          "owner": "Kimi",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/104",
+              "kind": "issue",
+              "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            }
+          ],
           "verifiedAt": null,
-          "verification": null
+          "verification": null,
+          "assignment": {
+            "agent": "Kimi",
+            "state": "queued",
+            "order": 2,
+            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/104",
+            "dependsOn": [
+              "FND-03"
+            ],
+            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
+          }
         },
         {
           "id": "FND-05",
@@ -91,11 +122,25 @@
           "acceptance": "development/staging/production منفصلة؛ migrations مرقمة؛ سجل نسخة ونشر واسترجاع؛ منع نشر artifact قديم فوق تحديث أحدث.",
           "weight": 1,
           "status": "queued",
-          "owner": "Claude",
+          "owner": "Kimi",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/105",
+              "kind": "issue",
+              "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            }
+          ],
           "verifiedAt": null,
-          "verification": null
+          "verification": null,
+          "assignment": {
+            "agent": "Kimi",
+            "state": "queued",
+            "order": 3,
+            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/105",
+            "dependsOn": [],
+            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
+          }
         }
       ]
     },
@@ -116,11 +161,28 @@
           "acceptance": "حسابات فردية بدل PIN مشترك للعمليات؛ انتهاء وإبطال الجلسات وأجهزة موثوقة؛ إعادة تحقق للتصدير والتغييرات الحساسة.",
           "weight": 1,
           "status": "queued",
-          "owner": "Claude",
+          "owner": "Kimi",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/106",
+              "kind": "issue",
+              "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            }
+          ],
           "verifiedAt": null,
-          "verification": null
+          "verification": null,
+          "assignment": {
+            "agent": "Kimi",
+            "state": "queued",
+            "order": 4,
+            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/106",
+            "dependsOn": [
+              "FND-03",
+              "FND-04"
+            ],
+            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
+          }
         },
         {
           "id": "SEC-02",
@@ -128,11 +190,28 @@
           "acceptance": "مالك/مدير/صيدلي/كاشير/مخزن/محاسب/توصيل؛ التحقق على السيرفر لكل action؛ منع تصعيد الصلاحية وتسجيل الرفض.",
           "weight": 1,
           "status": "queued",
-          "owner": "Claude",
+          "owner": "Kimi",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/107",
+              "kind": "issue",
+              "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            }
+          ],
           "verifiedAt": null,
-          "verification": null
+          "verification": null,
+          "assignment": {
+            "agent": "Kimi",
+            "state": "queued",
+            "order": 5,
+            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/107",
+            "dependsOn": [
+              "FND-03",
+              "SEC-01"
+            ],
+            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
+          }
         },
         {
           "id": "SEC-03",
@@ -490,7 +569,7 @@
           "acceptance": "مصدر الطلب Orders مستقل في الواجهة؛ دمج مكرر بالمعرف والوحدة؛ حد أدنى/أقصى ومعدل بيع وlead time؛ لا اعتماد من توقع بلا مراجعة.",
           "weight": 1,
           "status": "in_progress",
-          "owner": "Claude",
+          "owner": "ChatGPT",
           "reviewer": "ChatGPT",
           "evidence": [],
           "verifiedAt": null,
@@ -516,7 +595,7 @@
           "acceptance": "اختيار متعدد لمخازن Aumet واستبعاد محفوظ؛ وضع اقتراح آلي ووضع يدوي؛ مقارنة السعر والتوافر والحد الأدنى والمكافآت والشحن؛ تفسير التوزيع وإمكانية تعديله.",
           "weight": 1,
           "status": "in_progress",
-          "owner": "Claude",
+          "owner": "ChatGPT",
           "reviewer": "ChatGPT",
           "evidence": [
             {
@@ -536,7 +615,7 @@
           "acceptance": "قائمة تجهيز محلية موسومة بوضوح؛ adapter لسلة المورد بعد اكتشاف موثق؛ تأكيد read-back لمعرف وكمية كل صنف؛ فشل جزئي وإعادة آمنة؛ لا ادعاء تم الإضافة قبل التأكيد.",
           "weight": 1,
           "status": "for_review",
-          "owner": "Claude",
+          "owner": "ChatGPT",
           "reviewer": "ChatGPT",
           "evidence": [
             {
@@ -562,7 +641,7 @@
           "acceptance": "مراجعة مجموعات الموردين ثم تأكيد بشري للطلب؛ PO وحالات إرسال/قبول/جزئي/إلغاء؛ مطابقة PO/GRN/فاتورة وتسجيل lot/expiry/cost ومرتجع المورد.",
           "weight": 1,
           "status": "in_progress",
-          "owner": "Claude",
+          "owner": "ChatGPT",
           "reviewer": "ChatGPT",
           "evidence": [
             {
