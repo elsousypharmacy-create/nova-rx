@@ -16,12 +16,13 @@ export function createSupplierOrders(options){
    if(!sellers.length)throw Error('order-cart-empty');
    const allow=new Set(allowedSellers.map(String));
    for(const s of sellers){
-    if(!allow.has(String(s.entity?.id)))throw Error('order-extra-sellers');
+    // Cart display entities can include a payment-method suffix. Offers and saved warehouse choices use each entityProduct.entity_id.
+    if(s.items.some(i=>Number(i.is_selected)===1&&!allow.has(String(i.entityProduct?.entity_id))))throw Error('order-extra-sellers');
     if(s.entity?.is_locked||s.entity?.is_offline)throw Error('order-seller-unavailable');
     if(s.items.some(i=>Number(i.is_selected)===1&&(i.has_issue||i.entityProduct?.is_locked||i.is_offline)))throw Error('order-cart-needs-review');
     if(num(s.seller_total)<num(s.minimum_order_value_area?.limit??0))throw Error('order-minimum-not-met');
    }
-   const lines=sellers.flatMap(s=>s.items.filter(i=>Number(i.is_selected)===1).map(i=>({productId:String(i.entityProduct?.id),sellerId:String(s.entity.id),seller:s.entity.name||String(s.entity.id),name:typeof (i.entityProduct?.product?.label?.name??i.entityProduct?.product?.label)==='string'?(i.entityProduct.product.label.name??i.entityProduct.product.label):'صنف '+i.entityProduct?.id,quantity:num(i.quantity),unitPrice:num(i.unit_price),total:num(i.total),payment:String(i.payment_method_id)})));
+   const lines=sellers.flatMap(s=>s.items.filter(i=>Number(i.is_selected)===1).map(i=>({productId:String(i.entityProduct?.id),sellerId:String(i.entityProduct.entity_id),seller:s.entity.name||String(s.entity.id),name:typeof (i.entityProduct?.product?.label?.name??i.entityProduct?.product?.label)==='string'?(i.entityProduct.product.label.name??i.entityProduct.product.label):'صنف '+i.entityProduct?.id,quantity:num(i.quantity),unitPrice:num(i.unit_price),total:num(i.total),payment:String(i.payment_method_id)})));
    if(lines.some(l=>!safeId(l.productId)||!Number.isInteger(l.quantity)||l.quantity<1)||lines.length>300)throw Error('order-schema-changed');
    body={entity_id:Number(c.entity),sellers:sellers.map(s=>({entity_id:s.id,note:s.note??null,promo_code:null}))};
    if(typeof cart.currency?.symbol!=='string'||!cart.currency.symbol.trim())throw Error('order-currency-unverified');
@@ -43,8 +44,8 @@ export function createSupplierOrders(options){
  async function preview({supplierId,aumetSellerIds=[]}={}){
   if(!['aumet','pharmaoverseas'].includes(supplierId)||!Array.isArray(aumetSellerIds)||aumetSellerIds.length>500)throw Error('bad-request');
   // Validate durable execution storage even when the supplier cart is empty.
-  await journal.lookup('readiness');
-  const snap=await snapshot(supplierId,aumetSellerIds);
+  try{await journal.lookup('readiness');}catch{throw Error('cart-journal-read-failed');}
+  let snap;try{snap=await snapshot(supplierId,aumetSellerIds);}catch(e){if(/^(cart-|order-)/.test(e.message))throw e;throw Error('order-cart-read-failed');}
   const p=await plans.pack({kind:'supplier-order',supplierId,binding:snap.c.record.savedAt,hash:snap.hash,allowedSellers:aumetSellerIds,orderCount:snap.body.sellers?.length||1,total:snap.view.total,currency:snap.view.currency});return {...p,cart:snap.view};
  }
  async function apply(input={}){

@@ -14,7 +14,8 @@ export function createAumetCart({store,hub,secret,fetch:fetchImpl=globalThis.fet
   return {s,t,cart,binding:await sign(t.path+'|'+rec.savedAt)};
  }
  async function request(c,path,body){
-  const res=await fetchImpl('https://marketplace.aumet.com'+path,{method:body?'POST':'GET',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:c.s.authorization||'',Cookie:c.s.cookie||'','X-XSRF-TOKEN':c.s.xsrf||'','X-Requested-With':'XMLHttpRequest'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(15000),redirect:'error'});
+  const res=await fetchImpl('https://marketplace.aumet.com'+path,{method:body?'POST':'GET',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:c.s.authorization||'',Cookie:c.s.cookie||'','X-XSRF-TOKEN':c.s.xsrf||'','X-Requested-With':'XMLHttpRequest'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(15000),redirect:'manual'});
+  if(res.status>=300&&res.status<400)fail('cart-upstream-redirect');
   if(res.status===401||res.status===403)fail('cart-session-required');
   if(!res.ok)fail('cart-upstream-error');
   try{return await res.json();}catch{fail('cart-schema-changed');}

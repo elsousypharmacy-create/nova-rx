@@ -19,6 +19,7 @@ jobs:
       - run: node tests/unit/supplier-cart-client.check.mjs
       - run: node tests/unit/supplier-journal.check.mjs
       - run: node tests/unit/supplier-transactions.check.mjs
+      - run: node tests/unit/supplier-platform.check.mjs
       - run: node tests/unit/purchases.check.mjs
       - run: node tests/unit/purchases-speed.check.mjs
       - run: node tests/unit/purchases-seller-scope.check.mjs
