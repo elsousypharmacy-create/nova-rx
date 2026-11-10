@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'seller-search-'));
-fs.writeFileSync(path.join(dir,'in.html'),'<!DOCTYPE html><html lang="ar" dir="rtl"><body><input id="mainSearchInput" value="Panadol"><div id="suggestionsBox"><div>لا توجد منتجات مطابقة</div></div></body></html>');
+fs.writeFileSync(path.join(dir,'in.html'),'<!DOCTYPE html><html lang="ar" dir="rtl"><meta charset="UTF-8"><body><input id="mainSearchInput" value="Panadol"><div id="suggestionsBox"><div>لا توجد منتجات مطابقة</div></div></body></html>');
 execFileSync('node',['tools/inject-supplier-ui.mjs',path.join(dir,'in.html'),path.join(dir,'out.html')]);
 const html=fs.readFileSync(path.join(dir,'out.html'),'utf8');
 const browser=await chromium.launch();
