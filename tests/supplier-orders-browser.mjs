@@ -17,8 +17,8 @@ try {
     if (path.endsWith('/apply')) {
       submits++;
       const b = route.request().postDataJSON();
-      assert.equal(b.confirmed, true);
-      assert.equal(b.signature, 'synthetic-signature');
+      assert.strictEqual(b.confirmed, true);
+      assert.strictEqual(b.signature, 'synthetic-signature');
       data = { ok: false, state: 'unknown', error: 'order-outcome-unknown' };
     }
     if (path.endsWith('/status')) { checks++; data = { ok: true, state: 'verified', supplierId: 'pharmaoverseas', orderIds: ['TEST-1'] }; }
@@ -62,11 +62,11 @@ try {
     await page.evaluate(() => window.checkSupplierOrder && window.checkSupplierOrder('pharmaoverseas'));
   }
 
-  assert.equal(submits, 1, 'Zero repeat apply POSTs on reload recovery');
-  assert.equal(checks, 1, 'Exactly one status lookup query sent');
+  assert.strictEqual(submits, 1, 'Zero repeat apply POSTs on reload recovery');
+  assert.strictEqual(checks, 1, 'Exactly one status lookup query sent');
 
   const pendingAfterCheck = await page.evaluate((key) => localStorage.getItem(key), pendingKey1);
-  assert.equal(pendingAfterCheck, null, 'Pending transaction cleared from localStorage only after verified response');
+  assert.strictEqual(pendingAfterCheck, null, 'Pending transaction cleared from localStorage only after verified response');
 
   fs.mkdirSync('reports/purchasing', { recursive: true });
   await page.screenshot({ path: 'reports/purchasing/order-synthetic.png' });
@@ -88,13 +88,13 @@ try {
 
     addOrUpdateCartItem(cartAumet, { productId: 'PROD-101', barcode: '6221001002', name: 'Panadol Extra', qty: 2 });
     addOrUpdateCartItem(cartAumet, { productId: 'PROD-101', barcode: '6221001002', name: 'Panadol Extra', qty: 3 });
-    assert.equal(cartAumet.lines.length, 1, 'Aumet cart should increment quantity and not create duplicate rows for same product');
-    assert.equal(cartAumet.lines[0].qty, 5, 'Aumet cart quantity updated correctly on duplicate addition');
+    assert.strictEqual(cartAumet.lines.length, 1, 'Aumet cart should increment quantity and not create duplicate rows for same product');
+    assert.strictEqual(cartAumet.lines[0].qty, 5, 'Aumet cart quantity updated correctly on duplicate addition');
 
     addOrUpdateCartItem(cartPharma, { productId: 'PROD-102', barcode: '6221001003', name: 'Cetafen 500mg', qty: 1 });
     addOrUpdateCartItem(cartPharma, { productId: 'PROD-102', barcode: '6221001003', name: 'Cetafen 500mg', qty: 1 });
-    assert.equal(cartPharma.lines.length, 1, 'PharmaOverseas cart should increment quantity and not create duplicate rows for same product');
-    assert.equal(cartPharma.lines[0].qty, 2, 'PharmaOverseas cart quantity updated correctly on duplicate addition');
+    assert.strictEqual(cartPharma.lines.length, 1, 'PharmaOverseas cart should increment quantity and not create duplicate rows for same product');
+    assert.strictEqual(cartPharma.lines[0].qty, 2, 'PharmaOverseas cart quantity updated correctly on duplicate addition');
 
     await page.evaluate(() => {
       if (typeof window.addOrUpdateCartItem === 'function') {
@@ -149,11 +149,11 @@ try {
       await page2.evaluate(() => window.checkSupplierOrder && window.checkSupplierOrder('aumet'));
     }
 
-    assert.equal(applyCalls, 0, 'Zero repeat apply POSTs on network drop reload recovery');
-    assert.equal(statusCalls, 1, 'Exactly one status lookup request sent');
+    assert.strictEqual(applyCalls, 0, 'Zero repeat apply POSTs on network drop reload recovery');
+    assert.strictEqual(statusCalls, 1, 'Exactly one status lookup request sent');
 
     const pendingOrderAfter = await page2.evaluate((key) => localStorage.getItem(key), pendingKey);
-    assert.equal(pendingOrderAfter, null, 'Pending transaction cleared after verification');
+    assert.strictEqual(pendingOrderAfter, null, 'Pending transaction cleared after verification');
 
     console.log('PASS Idempotency and reload guard on network drop');
   }
