@@ -1,0 +1,78 @@
+{
+  "test_suite": "SEC-01 Session Authentication Test Cases",
+  "version": "1.0",
+  "cases": [
+    {
+      "id": "TC-SESS-001",
+      "category": "valid_session",
+      "description": "Valid active session token with correct tenant binding",
+      "request": {
+        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.valid_payload",
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "device_id": "dev_macbook_pro_01"
+      },
+      "expected_status": 200,
+      "expected_result": "AUTHORIZED",
+      "details": {
+        "token_valid": true,
+        "ttl_remaining_seconds": 600,
+        "tenant_match": true,
+        "device_matched": true
+      }
+    },
+    {
+      "id": "TC-SESS-002",
+      "category": "expired_session",
+      "description": "Session access token past 15-minute TTL expiration limit",
+      "request": {
+        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.expired_payload",
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "device_id": "dev_macbook_pro_01"
+      },
+      "expected_status": 401,
+      "expected_result": "TOKEN_EXPIRED",
+      "details": {
+        "token_valid": false,
+        "reason": "Token TTL expired at 2026-11-10T10:00:00Z",
+        "refresh_eligible": true
+      }
+    },
+    {
+      "id": "TC-SESS-003",
+      "category": "revoked_session",
+      "description": "Explicitly logged-out / revoked session token present on Redis blacklist",
+      "request": {
+        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.revoked_payload",
+        "tenant_id": "tenant_1001",
+        "branch_id": "branch_east_01",
+        "device_id": "dev_macbook_pro_01"
+      },
+      "expected_status": 401,
+      "expected_result": "SESSION_REVOKED",
+      "details": {
+        "token_valid": false,
+        "reason": "Token identifier jti present in Redis revocation list"
+      }
+    },
+    {
+      "id": "TC-SESS-004",
+      "category": "tenant_isolation",
+      "description": "Attempt to access tenant_2002 resource using tenant_1001 session token",
+      "request": {
+        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.tenant1_payload",
+        "tenant_id": "tenant_1001",
+        "target_resource_tenant": "tenant_2002",
+        "branch_id": "branch_east_01",
+        "device_id": "dev_macbook_pro_01"
+      },
+      "expected_status": 403,
+      "expected_result": "TENANT_ACCESS_DENIED",
+      "details": {
+        "token_valid": true,
+        "reason": "Cross-tenant access violation: session tenant_id mismatch"
+      }
+    }
+  ]
+}
