@@ -1,14 +1,15 @@
 # AI Agent Instructions — NOVA Rx
 
-These instructions apply to every AI agent operating in this repository, including ChatGPT, Kimi, Grok, and review agents.
+These instructions apply to every AI agent operating in this repository.
 
-**First action:** Read `HANDOFF.md` and inspect current issue/branch/PR/CI status before starting work. Follow owner priorities and token-saving rules in that file.
+**First action every session:** Read `HANDOFF.md`, `docs/ERP_MASTER_PLAN.md`, `reports/erp-roadmap.json`, and inspect live Issues/PRs/CI/deploy state. Read `docs/NOVA_MANAGER_PLAYBOOK.md` for team operating policy; ChatGPT manager also uses `skills/nova-rx-chatgpt-manager/SKILL.md`. These files are repository guidance, not proof of runtime skill installation.
 
-**Mandatory progress persistence:** After each meaningful batch, and before handoff or exit, update `HANDOFF.md` with a short factual checkpoint: what changed, files, branch/commit/PR, test evidence, blockers, and next exact step. Commit and push the update. If unable to push, report that clearly and supply the checkpoint text; never claim it was saved.
+**One source of work:** GitHub Issues are assignments; PRs are implementation artifacts, not extra queues. Record one accountable agent, scoped files, acceptance checks, claim/checkpoint, and exact next action in the Issue. Maximum three active implementation PRs by default; prefer finishing existing PRs before opening more. No overlapping edits without explicit coordination. A posted Issue/comment does not trigger an agent or prove receipt; require acknowledgement or execution evidence.
 
-**Never automatically restart a failed AI coding job.** First inspect committed progress and owner approval. Use Kimi 2 by default for routine coding; reserve Kimi 3 for justified complex work. This policy does not prove the runtime model currently selected.
+**Roles:** Claude Sonnet primary coder; ChatGPT manager/QA; Claude Opus optional independent high-risk reviewer; Gemini optional for explicitly assigned, isolated analysis/tests, never overlapping Sonnet-owned files; Kimi and Grok standby/isolated tasks only by explicit assignment. Never infer a running session from historical comments or email addresses. Previous Kimi-default instructions are superseded.
 
-When concurrent agents work, read latest `HANDOFF.md` before editing and do not overwrite another agent's updates. Never expose secrets.
+**Definition of done:** CLAIM → implement → relevant tests/CI → fix failures → resolve conflicts → merge when checks and safety gates pass → deploy through authorized workflow → verify deployed SHA and available live evidence → update Issue, HANDOFF and roadmap. Do not stop at Draft PR or ask routine approval each stage. Independent pre-merge review is optional for ordinary changes under the owner's 2026-11-10 direction; material security/data-integrity defects remain blocking. Real supplier cart writes/orders/checkout, destructive operations and secrets changes still require specific owner approval. Do not claim untested real supplier behavior as PASS. Weekly QA is follow-up, not a substitute for critical safety checks.
 
-## ERP master roadmap (owner request, 2026-11-09)
-Before choosing a task, read `docs/ERP_MASTER_PLAN.md`, `reports/erp-roadmap.json`, and master issue #87. Claude is the implementation owner; ChatGPT reviews acceptance evidence. Use a stable roadmap task ID in each implementation issue/PR. Existing work must be reconciled against acceptance criteria before `verified`. After each checkpoint update the canonical JSON, HANDOFF, and sanitized public `elsousypharmacy-create/pharmacy/nova-status.json` mirror; do not include customer data or secrets. If mirror publication fails, record the failure and do not claim the dashboard is current. Never count CI success, deployment, or issue closure alone as product acceptance. Scope/weight changes require a new planVersion and changelog.
+**Mandatory checkpoint:** After each meaningful batch and before exit, update `HANDOFF.md` with actual branch/SHA/PR, tests, blocker and next action, commit and push. If push fails, report it. Re-read latest HANDOFF before writing to avoid overwriting concurrent work. Never expose secrets.
+
+**Roadmap:** Master Issue #87 and `docs/ERP_MASTER_PLAN.md` define acceptance; use stable roadmap IDs. Keep `reports/erp-roadmap.json` and sanitized public dashboard mirror consistent; report mirror failures. Distinguish CODE_PUSHED / CI_PASS / MERGED / DEPLOYED / LIVE_VERIFIED. Scope/weight changes need planVersion and changelog.
