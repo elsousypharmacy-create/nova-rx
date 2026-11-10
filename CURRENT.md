@@ -41,3 +41,8 @@ Real supplier cart writes, orders or checkout; secrets or credential changes; un
 
 ## Update rule
 Whoever changes the state edits this file in the same commit. Keep it at 60 lines or fewer; move detail to HANDOFF.md and link it. Do not put secrets, customer data or private chat text here.
+
+## Gemini dual-account queue (owner 2026-11-10)
+- Source of truth: master Issue #87, section "توزيع Gemini A / Gemini B — 2026-11-10". QUEUED/RESERVED, not claimed or started; agent must ACK/CLAIM in its own session. Up to 5 queued items per account, max 3 active implementation PRs repo-wide, no overlapping files.
+- Gemini A queue: CAT-01, CAT-02, CAT-05, INV-01, POS-02 (respect dependencies and existing work). Gemini B queue: FND-02, FND-04, SEC-03, SEC-04, SEC-05 (respect dependencies). Claude consolidated module review; ChatGPT manager/QA.
+- Procurement BUY acceptance and real-cart verification remain distinct from merged code; real supplier writes/orders require owner approval. Existing CURRENT/HANDOFF older assignment text may conflict: latest owner queue in #87 governs, but don't overwrite active claims.
