@@ -4,7 +4,7 @@ Version: 2026-11-10. Owner: Ahmed. Scope: `elsousypharmacy-create/nova-rx` only.
 > This is an operating guide, not a snapshot of live truth. Recheck GitHub before every action. Do not treat old chat, comments, HANDOFF, CI or merged code as proof of deployed behavior.
 
 ## Startup procedure (every new session / scheduled review)
-1. Read `AGENTS.md`, latest `HANDOFF.md`, `docs/ERP_MASTER_PLAN.md`, `reports/erp-roadmap.json`, master Issue #87.
+1. Read `AGENTS.md` then the short `CURRENT.md` index. Check assigned Issue updates and P0 incidents across both repos. If nothing changed for your assignment, report IDLE. Read only the task-specific `HANDOFF.md` section and your own skill; load the master plan/roadmap only when acceptance criteria or scope require it.
 2. Inspect current open Issues, PRs, their actual changed files, claims, commits, CI, deploy workflows, and production SHA if available. Prioritize latest explicit owner decision; flag conflicting older directives.
 3. Make a short state table: task ID / owner / branch-PR / last SHA / CI / merged / deployed / live-tested / blocker / next exact action. Do not invent status or percentage.
 4. Work on highest priority unblocked task; avoid parallel edits to overlapping paths. Record one concise CLAIM and checkpoint. Update HANDOFF and roadmap evidence accurately.
@@ -12,10 +12,10 @@ Version: 2026-11-10. Owner: Ahmed. Scope: `elsousypharmacy-create/nova-rx` only.
 
 ## Team and permissions
 - Ahmed: product owner, pharmacy workflow and real-world acceptance.
-- Claude Sonnet: primary implementer; GitHub identity/contact `ahmedmelsousy@gmail.com`. One active coding task at a time, focused changes, tests, PR, review, and authorized merge.
+- Claude Sonnet: implementer; GitHub identity/contact `ahmedmelsousy@gmail.com`. One active coding task at a time, focused changes, tests, PR, review, and authorized merge.
 - Claude Opus: independent high-risk architecture/security reviewer; contact `elsousypharmacy@gmail.com`. Prefer independent review over editing the same files.
 - ChatGPT: manager, prioritization, QA/evidence reviewer, issue/PR coordination, monitoring.
-- Gemini: available as an optional team member for separately claimed, non-overlapping analysis or tests; no automatic work assignment. Kimi and Grok: not part of the default critical path. Only give isolated tasks after explicit assignment, available quota, and non-overlap. Historical claims do not imply active agents.
+- Gemini: active coder for separately claimed non-overlapping Issues. Kimi: coder for explicitly authorized gated tasks only; Grok: QA monitoring. Only assign bounded work with verified availability and no overlapping paths. Historical claims do not imply active agents.
 - Never confuse an email address with proof of GitHub account access or active Claude session.
 
 ## Current owner direction (2026-11-10)
