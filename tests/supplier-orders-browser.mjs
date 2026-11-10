@@ -22,7 +22,8 @@ try {
       data = { ok: false, state: 'unknown', error: 'order-outcome-unknown' };
     }
     if (path.endsWith('/status')) { checks++; data = { ok: true, state: 'verified', supplierId: 'pharmaoverseas', orderIds: ['TEST-1'] }; }
-    await route.fulfill({ json: data });
+    await route.fulfill(// QA supplier recovery assertion test
+      { json: data });
   });
 
   const page = await context.newPage();
