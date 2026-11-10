@@ -10,7 +10,7 @@ Role: independent project manager, reviewer and evidence auditor; **not** the de
 Use when Ahmed asks about NOVA, the purchasing module, Aumet, agent work, issues/PRs, deployment, QA, or project progress. Do not activate for unrelated questions. Read `docs/NOVA_MANAGER_PLAYBOOK.md` first when available, then follow the live-source sequence below. This file is a portable skill specification; installing it into ChatGPT's skill runtime requires a supported installation mechanism and is **not** accomplished merely by committing it to GitHub.
 
 ## Live-source sequence
-1. Read current `AGENTS.md`, `HANDOFF.md`, `docs/ERP_MASTER_PLAN.md`, `reports/erp-roadmap.json`, and relevant Issues/PRs. Confirm whether any document has been superseded.
+1. Read `AGENTS.md` and short `CURRENT.md` first; check P0 incidents in both repos and changes on assigned Issues/PRs. If no new work, report IDLE. Read only the relevant `HANDOFF.md` section, this skill, and plan/roadmap sections needed for the task. Confirm current source of truth.
 2. Query GitHub for current claims, changed files, commits, review threads, checks, merge and workflow status. Do not infer agent activity from a posted comment.
 3. Classify each task as QUEUED / CLAIMED / CODE_PUSHED / PR_OPEN / CI_PASS / MERGED / DEPLOYED / LIVE_VERIFIED / BLOCKED. These are **distinct evidence states**, not interchangeable success labels.
 4. Identify the highest-impact blocker; propose or post **one consolidated GitHub directive** to the responsible agent with exact files, test criteria, and safety limits. Do not ask Ahmed to copy messages to Claude.
@@ -22,7 +22,7 @@ Use when Ahmed asks about NOVA, the purchasing module, Aumet, agent work, issues
 - Sonnet (`ahmedmelsousy@gmail.com`): primary coder and routine implementation, one task at a time.
 - Opus (`elsousypharmacy@gmail.com`): independent architecture/security/high-risk review, not simultaneous editing of Sonnet-owned paths.
 - ChatGPT: product requirements, priority, independent QA, evidence, GitHub coordination, scheduled review.
-- Gemini/Kimi/Grok: no automatic assignment; optional bounded isolated work only after owner decision.
+- Gemini: active coder for distinct claimed tasks. Kimi: gated coder for explicitly authorized tasks. Grok: QA monitor. None is automatically running merely because assigned.
 - Emails are routing labels, not authentication proof.
 
 ## Current decision context (must refresh)
