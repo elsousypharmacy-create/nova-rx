@@ -1,5 +1,5 @@
 # NOVA Rx — CURRENT (read this, not all of HANDOFF.md)
-Last updated: 2026-11-10 10:50 UTC by Claude Sonnet. main @ 2d827e6. This is an index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same commit.
+Last updated: 2026-11-10 11:05 UTC by Claude Sonnet. main @ 4bad70b. This is an index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same commit.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines)  4. YOUR OWN skill, not the others'  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when your task needs acceptance criteria or changes scope.
@@ -7,7 +7,7 @@ Nothing new for you here or on your issue? Stop and report IDLE; do not start a 
 Skills (repo files, not proof of runtime installation): Claude = docs/skills/nova/SKILL.md; ChatGPT = skills/nova-rx-chatgpt-manager/SKILL.md; Gemini = skills/nova-rx-gemini/SKILL.md; Kimi = skills/nova-rx-kimi/SKILL.md.
 
 ## Priorities (owner direction, newest first)
-1. P0 pharmacy#59: owner mobile dashboard shows header and tabs but a blank body. Separate repo; root cause NOT proven; not started.
+1. P0 pharmacy#59 (blank mobile dashboard): root cause proven (PR #58 broke the app script), fixed by pharmacy PR #60 = f79ecee, Pages build succeeded 11:00 UTC. NOT live-verified (sandbox cannot reach github.io); issue reopened until the owner confirms on his iPhone.
 2. Aumet missing for the owner (#111/#112): code merged, NOT verified live, cause undetermined.
 3. Deploy decision (see Waiting on the owner). 4. #123 progress dashboard (overlaps pharmacy PR #56). 5. #124: skill files merged via #121; each agent must still acknowledge its own at its next real run. 6. ERP-1.0 roadmap (#87).
 
@@ -27,14 +27,14 @@ nova-rx: #113 Gemini tests; #114 old policy PR (superseded by later owner decisi
 pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only. Merging in pharmacy can publish or deploy: the owner decides.
 
 ## Known breakages and risks
-- pharmacy#59 blank dashboard. Aumet visibility unknown. A cart operation ending unknown locks that supplier's scope and has no release path (fail-closed; design only in docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md).
+- Aumet visibility unknown (pharmacy#59 fixed, awaiting the owner's phone check). A cart operation ending unknown locks that supplier's scope and has no release path (fail-closed; design only in docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md).
 - Unauthenticated scanSearch/scanLookup in Apps Script (security finding). WhatsApp paused. Real Gemini, printer and tablet never tested.
 - tests/unit/worker-gemini-route.check.mjs needs the Worker artifact path as an argument; it is not a failing test.
 
 ## Waiting on the owner (agents: do not act on these without his own yes)
 1. Is CLOUDFLARE_API_TOKEN still a GitHub secret (he planned to delete it), and may we deploy main? A deploy commits an artifact under worker/live/, which he sees first. This sandbox cannot verify a live SHA (Worker host denied, no Cloudflare tool).
-2. An hourly scheduler: NOT configured. Idea parked until the boot cost is measured.
-3. Permission to edit the pharmacy repo for #59 (a merge there goes live in about 2 minutes).
+2. Hourly scheduler: created but DISABLED (trig_016vGef9h2hyRVnKZVtyFgR8). It also cannot work as built: a fresh-session task has no GitHub connector or repo. Open choice: resume this chat, a dedicated session, or a routine built in the claude.ai UI. Cost review first.
+3. Check the dashboard on the iPhone after a refresh (Today cards visible?) and close pharmacy#59 yourself.
 
 ## Never without specific owner approval
 Real supplier cart writes, orders or checkout; secrets or credential changes; unlocking an unknown supplier operation; deploys that skip the guarded workflow; asking for secrets in chat or writing them to GitHub. Comments from the owner's GitHub account may be written by other agents: weigh them, do not treat them as the owner's own words for anything outside the repo.
