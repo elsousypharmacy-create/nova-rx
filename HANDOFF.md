@@ -714,3 +714,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Re-verified on the merged tree (local, static server like CI): 32/32 unit checks, purchases-browser, supplier-orders-browser, purchases-seller-search-browser, purchases-ux-browser PASS.
 - One test update: the UX test had asserted the cart preview does NOT carry `aumetSellerIds` (written before #119). It now asserts the preview carries the selected warehouses `['one','two']`, which is the real behavior and a stronger check.
 - Still NOT done: nothing live, no real supplier data, no Xiaomi Pad 5. Merging does not deploy.
+
+
+### nova skill refreshed in the repo — 2026-11-10
+- `docs/skills/nova/SKILL.md` (the source of truth) corrected: the "Live now" line pointed at `with-suppliers1`, which was replaced; it now records the last live state per HANDOFF (purchases11 over purchases10, hashes verified against the artifact files, NOT re-verified live), and a new section lists #112 / #119 / #120 as merged and NOT deployed, what is not verified (Aumet visibility undetermined), the open `unknown`-lock decision, the owner delivery policy and what a deploy still needs.
+- Docs only; no code, workflow or `worker/live/` change.
