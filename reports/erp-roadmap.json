@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "planVersion": "ERP-1.0",
-  "updatedAt": "2026-11-10T05:31:37.562Z",
+  "updatedAt": "2026-11-10T05:42:29.086Z",
   "phase": "ERP الكامل — تثبيت خط الأساس ثم النواة المعاملاتية",
   "goal": "ERP صيدلي عربي سريع وسهل: السوسي أولًا، ثم صيدليات وفروع متعددة",
   "readinessPercent": null,
@@ -9,7 +9,7 @@
   "currentCycle": {
     "title": "عرض المهام في الداشبورد ودفعة Kimi التأسيسية",
     "agent": "ChatGPT — اللوحة والمراجعة • Kimi — 5 مهام مُسندة",
-    "status": "مسودةFND-03 سُلّمت وتحتاج تعديلًا؛ Kimi ينفذFND-05 المستقلة، وثلاث مهام تنتظر مراجعة التبعيات",
+    "status": "Kimi سلّم مسودتين: FND-03 يحتاج تعديلًا، وFND-05 للمراجعة. ثلاث مهام تنتظر التبعيات؛ لا تشغيل Kimi جارٍ الآن.",
     "nextOwnerAction": "لا إجراء مطلوب الآن؛ المهام غير معتمدة حتى اكتمال أدلة المراجعة"
   },
   "tasks": [],
@@ -130,7 +130,7 @@
           "title": "بيئات العمل والنشر",
           "acceptance": "development/staging/production منفصلة؛ migrations مرقمة؛ سجل نسخة ونشر واسترجاع؛ منع نشر artifact قديم فوق تحديث أحدث.",
           "weight": 1,
-          "status": "in_progress",
+          "status": "for_review",
           "owner": "Kimi",
           "reviewer": "ChatGPT",
           "evidence": [
@@ -138,19 +138,27 @@
               "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/105",
               "kind": "issue",
               "note": "تفويض أحمد لـKimi؛ ليس دليل إنجاز."
+            },
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/pull/109",
+              "kind": "pr",
+              "sha": "7f3b99a",
+              "note": "مسودة للمراجعة؛ الفشل في إنشاءPR لايعني فقدانالتسليم."
             }
           ],
           "verifiedAt": null,
           "verification": null,
           "assignment": {
             "agent": "Kimi",
-            "state": "running",
+            "state": "for_review",
             "order": 3,
             "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/105",
             "dependsOn": [],
             "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل",
-            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42762500180"
-          }
+            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42762500180",
+            "prUrl": "https://github.com/elsousypharmacy-create/nova-rx/pull/109"
+          },
+          "note": "Kimi سلّم مسودة بيئات العمل على7f3b99a. تعطل إنشاءPR فقط، وفتحناه من الفرع المحفوظ دون إعادة التشغيل. تحتاج مراجعة دقة الجرد وحدود ما نُفذ؛ لا قبول نهائي."
         }
       ]
     },
