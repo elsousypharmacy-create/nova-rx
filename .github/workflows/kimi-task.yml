@@ -59,6 +59,8 @@ jobs:
           BASE_REF="${GITHUB_REF_NAME}"
           START_SHA="$(git rev-parse HEAD)"
           git switch -c "$BRANCH"
+          echo "KIMI_CHECKPOINT_BASE_SHA=$START_SHA" >> "$GITHUB_ENV"
+          echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> "$GITHUB_ENV"
           gh issue view "$ISSUE_NUMBER" --json title,body --jq '.title + "\n" + .body' > /tmp/kimi-task.txt
           kimi -p "Read KIMI_CONTEXT.md FIRST (maximum 120 lines), then /tmp/kimi-task.txt, which is your ONLY task. Do exactly the scope and acceptance criteria in that task; nothing else. Read only the files the task names, in bounded ranges with rg/sed; do not dump index.html or redo repository-wide analysis. Do not repeat failed tool calls. Run the tests the task names and record exact results in BUILD_REPORT.md (new top entry: issue, changed files, tests run and results, remaining work, limitations). Never claim untested success. Keep total work within 12 minutes; stop promptly and leave a useful report. If the task is UI work, preserve Black Edition Arabic RTL UX. No secrets, no network calls to supplier sites, no workflow edits, no node_modules, no deployment, merge, or self-commit. If no work remains, report that and make no changes."
 
@@ -88,6 +90,10 @@ jobs:
             exit 1
           fi
 
+      - name: Save resumable checkpoint after success or interruption
+        if: always()
+        run: bash .github/scripts/kimi-save-checkpoint.sh
+
       - name: Preserve Kimi work even when push fails
         if: always()
         uses: actions/upload-artifact@v4
@@ -97,8 +103,6 @@ jobs:
             kimi-recovery.patch
             BUILD_REPORT.md
             HANDOFF.md
-            index.html
-            README.md
-            tests/
+            kimi-resume-note.md
           if-no-files-found: warn
           retention-days: 14

@@ -8,6 +8,16 @@
 5. No secrets, workflow modifications, backend/database migrations, autonomous merge/deploy.
 6. If quota/provider error occurs, do not retry automatically. Leave remaining work for the next explicitly approved run.
 
+## Mandatory resume protocol — Ahmed, 2026-11-10
+- Continue the SAME task from its last saved checkpoint. Never re-plan/rebuild completed work just because a new session or quota window started.
+- Before editing, locate the latest issue branch/Draft PR and read its BUILD_REPORT/HANDOFF entries, diff and relevant review comments. Identify exact completed/remaining items, SHA and next command. A task label alone is not progress evidence.
+- Save a small draft early, then update BUILD_REPORT/HANDOFF after every meaningful batch: issue, branch/base SHA, changed files, actual checks/results, remaining items and one exact next step. Do not leave all edits/checkpoints until the end of the 12-minute run.
+- When a quota warning appears, stop new work and write that checkpoint immediately. Do not repeatedly retry the provider or start a different task to test the limit.
+- If interrupted before commit/push, the workflow captures tracked AND new product files as kimi-recovery.patch plus kimi-resume-note.md in its recovery artifact. The coordinator must inspect saved branches first; if needed recover the patch against its recorded base, preserving newer changes. Never apply a recovery patch blindly over current main.
+- On resumption after capacity is actually available, use the latest recovered branch/files and continue only the remaining items. If a CLI session is available it may help, but the session is not a replacement for committed files/artifacts.
+- Record prior test results; repeat a test only when code changed, the result is missing, or the review needs it. No deployment/merge, supplier mutations or automatic quota-probing retries.
+- PR-create permission failure AFTER successful push is a publishing problem: keep the saved branch, have the coordinator open the Draft PR, and do not rerun the model.
+
 ## Verified history
 - Issue #2 was implemented and tested in BUILD_REPORT.md: 21/21 acceptance checks reported passing for invoice discount/customer draft persistence, search mode badge click, receipt close overlay and i18n DOMStringMap error.
 - Preserve those fixes; the report documents browser-local prototype persistence and no backend synchronization.
