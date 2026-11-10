@@ -583,3 +583,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Local tests PASS: supplier-cart-client, supplier-journal (real SQLite), supplier-transactions (both suppliers, terms, price conflict, order read-back, cross-service dedup, unknown lock), existing purchasing/seller scope/Aumet. Generated purchases6 syntax PASS. Local browser test could not import playwright; CI includes synthetic checkout/reload browser checks. CI, live read check and deployment pending. No real supplier mutations tested.
 
 - Resume: PR98 head14bfe007 CI42720571341 purchasing+checkout-browser PASS, procurement42720571106 PASS, POS42720571339 PASS. Visual review found long grouped-cart content could push its footer below viewport; constrained desktop cart height and made only group list scroll. Added actual review-button visibility assertion. Rebuilt artifact; final CI and deploy pending. No supplier mutations.
+
+
+### BUY-04/05 module deployment correction — 2026-11-10
+- PR98 merged37bad6e, final CI de2355a purchasing42753552538/procurement42753552522/POS42753552780 PASS. Guarded legacy purchases6 upload was rejected400/100329: D1 requires ES module. No live code/binding change; baseline still purchases5 hash9a6e3fa9… and five bindings.
+- Built purchases7 ES-module adapter around unchanged legacy fetch routes, per-env WeakMap retaining supplier/auth limiter state. Explicit six env bindings include NOVA_PURCHASE_OPS. Local module test PASS for POS/stickers, purchasing assets, D1 scope and persisted wrong-PIN rate limit.
+- Deploy script now supports both formats and normalizes one-module multipart downloads for exact backup/read-back/rollback. Tests for exact module/legacy bytes + shell syntax PASS. New branch fix/purchase-module-20261110 awaits CI; no live supplier mutations.
+- Next: merge after CI, upload module with preserved original five bindings plus the dedicated D1; verify exact content and six bindings, run read-only Supplier cart read check. Checkout/addition still not live-tested on arbitrary medicine orders.
