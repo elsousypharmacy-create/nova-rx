@@ -55,4 +55,8 @@ jobs:
         if: always() && inputs.inspect_cart
         with:
           name: aumet-cart-contract
-          path: reports/aumet-cart-contract.json
+          path: |
+            reports/aumet-cart-contract.json
+            reports/*-static-contract.json
+            reports/*-cart-reads.json
+            reports/public-static/

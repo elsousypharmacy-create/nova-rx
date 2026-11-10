@@ -1,0 +1,12 @@
+import {DatabaseSync} from 'node:sqlite';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {createOperationJournal} from '../../worker/procurement/provider/operation-journal.js';
+const sqlite=new DatabaseSync(':memory:');sqlite.exec(fs.readFileSync('worker/procurement/migrations/0001_supplier_operations.sql','utf8'));
+const db={prepare(sql){return {bind(...params){return {async run(){const r=sqlite.prepare(sql).run(...params);return {meta:{changes:Number(r.changes)}};},async first(){return sqlite.prepare(sql).get(...params)||null;}};}};}};
+const a=createOperationJournal(db),b=createOperationJournal(db);
+const claims=await Promise.allSettled([a.claim('op1','aumet'),b.claim('op2','aumet')]);assert.equal(claims.filter(x=>x.status==='fulfilled').length,1);
+await a.finish('op1','unknown');await assert.rejects(b.claim('op3','aumet'),/cart-account-busy/);await assert.rejects(b.claim('op1','aumet'),/cart-operation-pending/);
+const receipt={ok:true,state:'verified',orderIds:['123']};await a.finish('op1','verified',receipt);assert.deepEqual((await b.claim('op1','aumet')).receipt,receipt);assert.equal((await b.claim('op3','aumet')).claimed,true);
+assert.equal((await a.claim('op4','pharmaoverseas')).claimed,true);await a.finish('op4','failed');assert.equal((await b.claim('op5','pharmaoverseas')).claimed,true);
+console.log('PASS real SQLite uniqueness: competing claims, durable unknown lock, verified receipt replay, supplier isolation');

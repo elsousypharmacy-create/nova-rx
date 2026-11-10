@@ -1,4 +1,5 @@
-import { createAumetCart } from './aumet-cart.js';
+import { createSupplierOrders } from './supplier-orders.js';
+import { createSupplierCartService } from './supplier-cart-service.js';
 // Supplier HTTP API for the Worker (issue Procurement 10, epic #53).
 // JSON-only routes for session ingest (browser job) and the app's supplier
 // search/status. Both shared secrets are compared constant-time; when an env
@@ -19,6 +20,13 @@ const ROUTES = new Set([
   '/api/purchases/stock',
   '/api/purchases/aumet-cart/preview',
   '/api/purchases/aumet-cart/apply',
+  '/api/purchases/aumet-cart/status',
+  '/api/purchases/pharmaoverseas-cart/preview',
+  '/api/purchases/pharmaoverseas-cart/apply',
+  '/api/purchases/pharmaoverseas-cart/status',
+  '/api/purchases/orders/preview',
+  '/api/purchases/orders/apply',
+  '/api/purchases/orders/status',
 ]);
 
 function json(body, status = 200, extraHeaders = {}) {
@@ -55,7 +63,8 @@ async function readJson(request) {
 }
 
 export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = globalThis.fetch }) {
-  const cart = createAumetCart({store,hub,secret:env.NOVA_SECRET_ENCRYPTION_KEY||'',fetch:fetchImpl});
+  const orders=createSupplierOrders({store,hub,secret:env.NOVA_SECRET_ENCRYPTION_KEY||'',db:env.NOVA_PURCHASE_OPS,fetch:fetchImpl});
+  const cart = createSupplierCartService({store,hub,secret:env.NOVA_SECRET_ENCRYPTION_KEY||'',db:env.NOVA_PURCHASE_OPS,fetch:fetchImpl});
   let windowStart = 0;
   let windowCount = 0;
 
@@ -153,12 +162,20 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
       const denied = await requirePin(request); if (denied) return denied;
       return json({ sellers: await hub.sellers() });
     }
-    if (path.startsWith('/api/purchases/aumet-cart/')) {
+    if(path.startsWith('/api/purchases/orders/')){
       if(request.method!=='POST')return json({error:'method-not-allowed'},405);
       const denied=await requirePin(request);if(denied)return denied;
       if(!env.NOVA_SECRET_ENCRYPTION_KEY)return json({error:'not-configured'},503);
       const retry=searchLimited(Date.now());if(retry)return json({error:'rate-limited'},429);
-      try{return json(await (path.endsWith('/preview')?cart.preview(await readJson(request)):cart.apply(await readJson(request))));}
+      try{return json(await (path.endsWith('/preview')?orders.preview(await readJson(request)):path.endsWith('/status')?orders.status(await readJson(request)):orders.apply(await readJson(request))));}
+      catch(e){return json({ok:false,error:/^(order-|cart-|bad-request)/.test(e.message)?e.message:'order-unavailable'},409);}
+    }
+    if (/^\/api\/purchases\/(?:aumet|pharmaoverseas)-cart\//.test(path)) {
+      if(request.method!=='POST')return json({error:'method-not-allowed'},405);
+      const denied=await requirePin(request);if(denied)return denied;
+      if(!env.NOVA_SECRET_ENCRYPTION_KEY)return json({error:'not-configured'},503);
+      const retry=searchLimited(Date.now());if(retry)return json({error:'rate-limited'},429);
+      try{const supplier=path.includes('/aumet-cart/')?'aumet':'pharmaoverseas';return json(await (path.endsWith('/preview')?cart.preview(supplier,await readJson(request)):path.endsWith('/status')?cart.status(supplier,await readJson(request)):cart.apply(supplier,await readJson(request))));}
       catch(e){return json({ok:false,error:/^(cart-|bad-request)/.test(e.message)?e.message:'cart-unavailable'},409);}
     }
     if (path === '/api/purchases/stock') {

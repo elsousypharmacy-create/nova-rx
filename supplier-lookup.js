@@ -213,12 +213,24 @@
       var qty = 1;
       el.querySelector('[data-dec]').addEventListener('click', function () { qty = Math.max(1, qty - 1); qtyEl.textContent = qty; });
       el.querySelector('[data-inc]').addEventListener('click', function () { qty = Math.min(999, qty + 1); qtyEl.textContent = qty; });
-      el.querySelector('[data-add]').addEventListener('click', function (e) {
-        var store = draft();
-        if (store) store.add(row, qty);
-        var b = e.currentTarget;
-        b.textContent = tr('تمت الإضافة');
-        setTimeout(function () { b.textContent = tr('أضف لطلبية المورد'); }, 1200);
+      el.querySelector('[data-add]').textContent=tr('إضافة لسلة المورد');
+      el.querySelector('[data-add]').disabled=!row.eligible;
+      el.querySelector('[data-add]').addEventListener('click', async function (e) {
+        var b=e.currentTarget;if(b.disabled)return;
+        if(qty<Number(row.minimumOrderQuantity||1)||(Number.isFinite(row.availableQuantity)&&qty>row.availableQuantity)){
+          b.textContent=tr('راجع الكمية المتاحة والحد الأدنى');return;
+        }
+        b.disabled=true;b.textContent=tr('جارٍ مراجعة سلة المورد…');
+        try {
+          var r=await provider().addToSupplierCart({supplierId:row.supplierId,productId:row.supplierProductId,sellerId:row.sellerId,quantity:qty,price:row.unitPrice,query:row.productName},function(p){return window.confirm(row.supplierName+' — '+(row.sellerName||'')+'\n'+row.productName+'\n'+tr('في السلة')+': '+p.before+' + '+p.quantity+' = '+p.target+'\n'+tr('تأكيد الإضافة الفعلية لسلة المورد؟'));});
+          if(r.ok&&r.state==='verified') {b.textContent=tr('تم التأكد من الإضافة عند المورد');return;}
+          if(r.state==='cancelled'){b.textContent=tr('إضافة لسلة المورد');b.disabled=false;return;}
+          throw new Error(r.error||'cart-readback-unavailable');
+        } catch(error) {
+          b.disabled=false;b.textContent=tr('لم تتأكد الإضافة — إعادة التحقق');
+          var note=el.querySelector('.sp-cart-error');if(!note){note=document.createElement('p');note.className='sp-cart-error sp-err';el.appendChild(note);}
+          note.textContent=tr(error.message==='cart-storage-unavailable'?'فعّل تخزين المتصفح لحفظ حالة الإضافة قبل التنفيذ':error.message==='cart-session-required'?'جلسة المورد تحتاج تجديدًا يدعم السلة':error.message==='cart-not-supported'?'ربط سلة هذا المورد غير جاهز بعد؛ لم تتم الإضافة':'تعذر تأكيد الإضافة؛ راجع سلة المورد قبل محاولة جديدة');
+        }
       });
     });
   }

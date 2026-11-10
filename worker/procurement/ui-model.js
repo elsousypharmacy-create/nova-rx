@@ -72,6 +72,11 @@ function toRow(row) {
   return {
     key: `${supplierId}::${offer.sellerId ?? ''}::${offer.productName ?? ''}`,
     supplierId,
+    supplierProductId: String(offer.supplierProductId ?? ''),
+    sellerId: offer.sellerId == null ? null : String(offer.sellerId),
+    unitPrice: Number.isFinite(offer.unitPrice) ? offer.unitPrice : null,
+    minimumOrderQuantity: offer.minimumOrderQuantity ?? 1,
+    availableQuantity: offer.availableQuantity ?? null,
     supplierName: offer.supplierName ?? SUPPLIER_DISPLAY[supplierId] ?? supplierId,
     sellerName: offer.sellerName ?? offer.sellerId ?? null,
     productName: offer.productName ?? '',
@@ -208,3 +213,4 @@ export function createDraftStore(storage) {
     },
   };
 }
+

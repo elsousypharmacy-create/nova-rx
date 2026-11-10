@@ -8,6 +8,37 @@ const WORKER = (process.env.NOVA_WORKER_URL || '').replace(/\/+$/, '');
 const INGEST = process.env.NOVA_INGEST_SECRET || '';
 const only = process.argv[2] || 'all';
 const report = [];
+// Opt-in contract discovery: static shipped code only; no cart/order writes.
+async function inspectStatic(page, request, supplierId, host) {
+  const fs = require('node:fs');
+  const urls = await page.$$eval('script[src]', nodes => nodes.map(n => n.src));
+  const queue=urls.filter(u=>new URL(u).hostname===host),seen=new Set(),snippets=[];
+  for(let j=0;j<queue.length&&seen.size<100;j++) {
+    const url=queue[j];if(seen.has(url))continue;seen.add(url);
+    const res=await request.get(url,{timeout:15000});if(!res.ok())continue;
+    const text=await res.text();if(text.length>16000000)continue;
+    const folder='reports/public-static/'+supplierId;fs.mkdirSync(folder,{recursive:true});fs.writeFileSync(folder+'/'+new URL(url).pathname.split('/').pop(),text);
+    if(supplierId==='pharmaoverseas')for(const m of text.matchAll(/(?:from|import\()\s*["'](\.\/[^"']+\.js)["']/g)){
+      const u=new URL(m[1],url).href;if(!seen.has(u)&&!queue.includes(u))queue.push(u);
+    }
+    // Technical adapters first; skip human copy/translation dictionaries.
+    for(const pattern of [/\/(?:orgUsers|users)\/[^"']{0,160}(?:carts|orders)/g,/cartAddEntry|cartUpdateEntry|loadAll\(|placeOrder\(|addEntries:|cart:[{]|createCart\(|loadCart\(/g,/api\.v[23]\.(?:order|cart)[.\w]*|Fe\.post\(["']api\/v2\/order/g]){
+      let count=0;for(const m of text.matchAll(pattern)){
+        if(++count>18)break;
+        const snippet=text.slice(Math.max(0,m.index-300),m.index+2200);
+        if(!snippets.some(n=>n.snippet===snippet))snippets.push({file:new URL(url).pathname,snippet});
+      }
+    }
+  }
+  fs.mkdirSync('reports',{recursive:true});
+  fs.writeFileSync('reports/'+supplierId+'-static-contract.json',JSON.stringify({supplierId,scripts:seen.size,publicStaticSnippets:snippets.slice(0,400),noCartWrites:true,noOrders:true},null,2));
+}
+function schema(value, depth=0){
+  if(depth>7)return 'depth-limit';
+  if(Array.isArray(value))return value.length?[schema(value[0],depth+1)]:[];
+  if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).slice(0,90).map(([k,v])=>[k,schema(v,depth+1)]));
+  return value===null?'null':typeof value;
+}
 
 async function send(supplierId, session, expiresAt) {
   const res = await fetch(`${WORKER}/api/suppliers/session`, {
@@ -39,8 +70,24 @@ async function pharmaoverseas(browser) {
     await page.press('input[type="password"]', 'Enter');
     for (let i = 0; i < 60 && status === null; i += 1) await page.waitForTimeout(500);
     if (status !== 200 || !body || !body.access_token) return { id: 'pharmaoverseas', result: `login failed (status ${status})` };
+    let cartReadTemplates=[];
+    if(process.env.INSPECT_CART==='true') {
+      const reads=[],tasks=[];
+      page.on('response',res=>{const url=new URL(res.url());if(url.hostname!=='api.pharmaemarket.com'||!/(?:carts|orders)/.test(url.pathname)||res.request().method()!=='GET')return;
+        cartReadTemplates.push({method:'GET',url:url.href});
+        tasks.push(res.json().then(v=>reads.push({path:url.pathname.replace(/[^/]*%40[^/]*/ig,'{user}').replace(/\/[^/]*@[^/]*/g,'/{user}').replace(/\d{4,}/g,'{id}'),queryKeys:[...url.searchParams.keys()],status:res.status(),schema:schema(v)})).catch(()=>{}));
+      });
+      await page.route('https://api.pharmaemarket.com/**',route=>['GET','HEAD','OPTIONS'].includes(route.request().method())?route.continue():route.abort());
+      await page.goto('https://shop.pharmaemarket.com/pharma/en/EGP/my-account/quick-order',{waitUntil:'networkidle',timeout:45000}).catch(()=>{});
+      await Promise.allSettled(tasks);
+      const fs=require('node:fs');fs.mkdirSync('reports',{recursive:true});fs.writeFileSync('reports/pharmaoverseas-cart-reads.json',JSON.stringify({reads,noCartWrites:true,noOrders:true},null,2));
+    }
     const expiresAt = Date.now() + (Number(body.expires_in) > 0 ? Number(body.expires_in) : 3600) * 1000;
-    const code = await send('pharmaoverseas', { accessToken: body.access_token }, expiresAt);
+    if(process.env.INSPECT_CART==='true') {
+      await page.waitForLoadState('networkidle',{timeout:30000}).catch(()=>{});
+      await inspectStatic(page,page.request,'pharmaoverseas','shop.pharmaemarket.com');
+    }
+    const code = await send('pharmaoverseas', { accessToken: body.access_token, cartReadTemplates }, expiresAt);
     return { id: 'pharmaoverseas', result: code === 200 ? 'session saved' : `worker answered ${code}` };
   } finally {
     await page.close();
@@ -135,6 +182,7 @@ async function aumet(browser) {
       break;
     }
     if (process.env.INSPECT_CART === 'true') {
+      await inspectStatic(page,ctx.request,'aumet','marketplace.aumet.com');
       const fs = require('node:fs');
       const urls = await page.$$eval('script[src]', nodes => nodes.map(n => n.src));
       // Intercept and abort every write to cart/order APIs before touching quantity controls.
@@ -163,6 +211,12 @@ async function aumet(browser) {
           await numeric.first().press('Tab');
           await page.waitForTimeout(1500);
         }
+      }
+      if(capturedCartRequest){
+        const cartPath=capturedCartRequest.path.replace(/\/items$/,'/items');
+        const response=await ctx.request.get('https://marketplace.aumet.com'+cartPath,{headers:{Authorization:auth||'','X-XSRF-TOKEN':xsrf||''}});
+        let data=null;try{data=await response.json();}catch{}
+        fs.mkdirSync('reports',{recursive:true});fs.writeFileSync('reports/aumet-cart-reads.json',JSON.stringify({status:response.status(),path:cartPath.replace(/\d+/g,'{id}'),schema:schema(data),noCartWrites:true,noOrders:true},null,2));
       }
       const snippets = [];
       for (const u of urls.filter(u => new URL(u).hostname === 'marketplace.aumet.com').slice(0, 12)) {

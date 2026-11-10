@@ -1,0 +1,3 @@
+// Read the exact public JS asset observed in supplier UI. No login/session/API mutation.
+const fs=require('node:fs');
+(async()=>{const url='https://marketplace.aumet.com/build/assets/app-DwBKkwMO.js';const r=await fetch(url,{signal:AbortSignal.timeout(30000),redirect:'error'});if(!r.ok)throw Error('static-source-unavailable');const text=await r.text();fs.mkdirSync('reports/public-aumet',{recursive:true});fs.writeFileSync('reports/public-aumet/app.js',text);console.log('Public static source saved; no account access or writes.');})().catch(()=>{console.error('Public source unavailable');process.exitCode=1;});
