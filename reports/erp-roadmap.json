@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "planVersion": "ERP-1.0",
-  "updatedAt": "2026-11-10T04:26:08.480Z",
+  "updatedAt": "2026-11-10T04:40:20.831Z",
   "phase": "ERP الكامل — تثبيت خط الأساس ثم النواة المعاملاتية",
   "goal": "ERP صيدلي عربي سريع وسهل: السوسي أولًا، ثم صيدليات وفروع متعددة",
   "readinessPercent": null,
@@ -1196,9 +1196,16 @@
           "status": "queued",
           "owner": "Claude",
           "reviewer": "ChatGPT",
-          "evidence": [],
+          "evidence": [
+            {
+              "url": "https://github.com/elsousypharmacy-create/nova-rx/issues/101",
+              "kind": "issue",
+              "note": "تكليف جاهز؛ ليس دليل تنفيذ أو قبول."
+            }
+          ],
           "verifiedAt": null,
-          "verification": null
+          "verification": null,
+          "note": "مهمة فرعية #101 محجوزة لـGemini بطلب أحمد: اختبار فجوتين لمنع تكرار السلة/الطلب بعد انقطاع الاتصال، fixtures وDraft PR فقط. queued؛ لم يؤكد الاستلام بعد. بقية QA-01 ومسؤولياتها كما هي."
         },
         {
           "id": "QA-02",
