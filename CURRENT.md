@@ -18,7 +18,7 @@ Skills (repo files, not proof of runtime installation): Claude = docs/skills/nov
 - Kimi: #103-#107, gated by labels kimi-ready plus kimi-run-now. Per HANDOFF at 08:35: PR #108 changes requested, PR #109 for review, #104/#106/#107 queued. Never auto-retry or run twice.
 - Grok: #118 queued.
 
-## Merged to main and DEPLOYED: Worker nova-rx-preview (deploy is workflow_dispatch only; every deploy: CI, dry run, real run, code digest read back)
+## Merged to main and DEPLOYED: Worker nova-rx-preview (deploy-worker.yml, workflow_dispatch only; every deploy: CI, dry run, real run, code digest read back)
 LIVE = purchases15, sha256 08ceb32af224b076492b5d70f35960e828b7081b40d8ac97e9b83faadd6ce866, modified 2026-11-10T13:21:42Z (run 42823785960, main 687f880). Same-day chain: purchases12 (#112/#119/#120), 13 (per-supplier counters), 14 (id sample), 15 (id fix). Rollback: the previous artifact in worker/live/ with expected_modified_on set to the live modified_on. Recipe and the id lesson are in the skill.
 Authorization: routine merge and deploy after the safety gates (owner in chat and manager comments, 2026-11-10 12:33-12:38). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check".
 
