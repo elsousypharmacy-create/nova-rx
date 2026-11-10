@@ -610,3 +610,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ### Gemini delegated QA checkpoint — 2026-11-10
 - Ahmed explicitly requested one task for connected Gemini. Created #101: https://github.com/elsousypharmacy-create/nova-rx/issues/101, narrow QA-01/BUY-04 supplier recovery tests, related #62. Choose two uncovered fixture cases, separate branch and Draft PR; no product fixes, merge, deploy or live supplier mutations.
 - Status queued: no Gemini workflow or invocation tool was found in this session. Issue creation is not evidence Gemini started. Require acknowledgment/branch/PR before in_progress. ChatGPT reviews; other agent roles and ERP acceptance unchanged.
+
+
+### BUY-03 sale Aumet visibility — 2026-11-10
+- Owner reports Aumet missing from sale search. Confirmed code silently excludes it when saved warehouse selection is empty or provider disabled; saved selection is per browser. Owner browser state not observed, so this is a confirmed exclusion path, not proof of their precise state.
+- Added visible scope/exclusion reason and in-place warehouse picker in sale lookup; explicit save enables Aumet, preserves coverage/other suppliers, searches again with only selected unlocked warehouse IDs. Cancel/read failure preserve preferences. Retained supplier errors even when results empty.
+- Branch fix/aumet-search-selection-20261110; fixture browser regression covers enable/select/research, strict warehouse filtering, cancel/error preservation, no mutations. Existing seller-scope unit + syntax PASS locally; local Playwright import unavailable, browser CI pending. New artifact purchases11 changes only embedded sale supplier UI/CSS from purchases10, all routes/bindings untouched. No supplier cart/order mutations.
+- Next: require CI browser pass, then guarded deployment/read-back and update roadmap/mirror. Do not call owner account search verified yet.
