@@ -123,3 +123,89 @@ Last documented: 2026-11-05 (Asia/Riyadh). This document is a handoff, not proof
 - Local validation of that PR: `npm run check` PASS (9 unit/integration); new browser test needed a small local runner fix (fresh page per test + waitForFunction) and then PASS (7/7 on Chromium desktop, not mobile/tablet). It explicitly reports AI backend not tested and mobile/tablet not tested.
 - Kimi commit hygiene: one commit `2f23c7f…` on the PR branch, files index.html, BUILD_REPORT.md, tests/ux-batch1.spec.mjs only. No merge yet: PR #36 remains open for owner/manager review.
 - Kimi run limitation confirmed again: the run also failed to auto-create a PR (it logs HTTP 422 on the PR step) but successfully pushed the branch; the PR was opened manually. Follow-up removes brittlefixed10-review/4queued...
+
+### NOVA dashboard final live verification — 2026-11-10 08:35 Riyadh
+- Dashboard live verification completed after deploy; see details in the archived section. (Summary kept from earlier archive.)
+
+### Kimi status follow-up
+- Status comments posted on the tracking issue; no code change.
+
+### Owner instruction: resume from checkpoint near Kimi quota
+- Owner asked all agents to resume from saved checkpoints instead of restarting; noted here so later agents do not redo completed batches.
+
+### BUY-UX #116 READY_FOR_REVIEW checkpoint
+- See PR #120 for the review package; archived here for continuity.
+
+### BUY-UX #116 follow-up after QA review on PR #120
+- QA follow-up items recorded; see PR #120 comments.
+
+### BUY-P0 #115 checkpoint
+- See PR #119; archived for continuity.
+
+### BUY-P0 #115 READY_FOR_REVIEW matrix — 2026-11-10 (Draft PR, NOT merged/deployed)
+- Branch `claude/practical-tesla-xndif9`, Draft PR #119, code commit efc346e + docs commit 9eb1ef9. Base: main @ 41f0b9e (unchanged when compared). Next owner: ChatGPT reviewer, then owner.
+- COMPLETED (code level, synthetic fixtures): selected Aumet warehouses sent by client and enforced server-side in cart preview; missing/empty/unselected rejected before session load, search or write (unit asserts zero writes and zero supplier searches); invalid shape = bad-request; signed-plan tamper rejected, replay returns alreadyApplied, lost response resolved by read-back, conflict/payment/price checks (aumet-cart, transactions, journal on real SQLite); PharmaOverseas flow unchanged (supplier-transactions PASS).
+- Regression: 30 of 32 unit checks PASS. The 2 failing also fail on main, not caused by this change: `procurement-ui-model` (assertion "no direct localStorage writes") and `worker-gemini-route` (needs the Worker artifact path argument). Browser: purchases-browser, purchases-seller-search-browser, supplier-orders-browser (main's version) PASS.
+- NOT TESTED: any real Aumet/PharmaOverseas cart write or read-back, live account behavior, checkout, CI result for this PR. No claim of real-account success.
+- BLOCKED / owner decision: `unknown` stays fail-closed; reconciliation is DESIGN ONLY in docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md (no unlock implemented). Arabic message for `cart-seller-not-selected` belongs to #116 (purchases.js).
+
+### BUY-03 #112 consolidated update — Aumet visibility / selected-seller search (Draft PR #112, NOT merged/deployed)
+- Branch `fix/aumet-per-seller-20261110`, continued from ChatGPT's commits 3291e8d/afbd736 (not restarted). Base main @ 41f0b9e.
+- ROOT CAUSE of red CI: `tests/unit/procurement-ui-model.check.mjs:138` forbids `localStorage.setItem` in `supplier-lookup.js` (DOM layer must not write storage). PR #102 (459dc9e) added a direct write of `novaPurchasePrefsV1` there, so the check was ALREADY failing on main; #112 did not introduce it. Fix keeps the assertion untouched: the write moved to `NOVA_SUPPLIER_PROVIDER.savePurchasePrefs` (plain values only, other pref fields preserved, no credentials).
+- Pagination (ChatGPT's hub.js change) reviewed: connector returns `totalPages`; selected-seller scan reads every page up to 12, filters before ranking, drops everything on any page failure or cap, so no partial offers leak. Added `IncompleteSearchError` so the user sees an honest "search incomplete" message instead of the misleading generic "connection failed".
+- Tests (synthetic pages of 24, no network): seller only on page 3 of 4 found with pages [1,2,3,4]; single page; empty selection reads 1 page and returns nothing; 20-page catalog stops at 12 pages with no leaked offers and the new message; mid-scan failure discards earlier hits; prefs write whitelist. Mutation check: the pagination test FAILS on main's hub.js (reads only page 1) and passes here.
+- Evidence (local): 31/31 unit checks PASS (worker-gemini-route skipped: needs the Worker artifact path); purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS.
+- NOT TESTED / BLOCKED: live verification. The live Worker host is denied by this session's network policy (403), and the questions that matter (is the Aumet session connected, do warehouses load for this browser) need the owner's PIN and a browser, which this agent must not have. No live claim of any kind.
+- Aumet 45 s timeout vs 12 pages at the 3.1 s request spacing (about 37 s of spacing alone) leaves little margin; a slow upstream will fail closed. Timeout path itself NOT unit-tested. No server-side seller filter parameter is known in the repo (the search text parameter `spell` is itself marked unconfirmed in the connector); finding one needs a read-only capture from the Aumet UI.
+- Why Aumet "is not visible" to the owner remains UNDETERMINED. Code-confirmed exclusion paths: empty per-browser warehouse selection or provider switched off (the UI now explains this), warehouses failing to load when the supplier session is expired, and, newly fixed here, a silent save failure path. Next owner step: on the owner's browser open sale supplier search, read the scope line, pick warehouses and save.
+- Overlap: `supplier-provider.js` is also edited by PR #119 (different region; expect a trivial merge).
+
+### BUY-03 #112 review fixes — 2026-11-10 (Draft PR #112, NOT merged/deployed)
+- Independent ChatGPT review of 1019156 found: (1) a missing/malformed `aumetSellerIds` let ALL Aumet offers through; (2) the 45 s timeout was unproven. Both confirmed in code and fixed.
+- (1) CONFIRMED: `http.js` passed `undefined` when the field was absent, and `hub.js` treats `undefined` as unscoped. Fix: the client entry point (`/api/suppliers/search`) now normalizes missing/non-array to `[]`, so no Aumet warehouse is returned. `hub.search` keeps `undefined` = unscoped on purpose for server-internal cart callers (plan-bound seller); this is documented in a comment. New `tests/unit/purchases-search-route-scope.check.mjs` covers missing/string/object/null/empty/numbers and goes end to end through the real hub (no selection, with and without `supplierIds`, malformed): zero Aumet offers. It fails on the previous http.js.
+- (2) CONFIRMED: the timeout only stopped WAITING (`Promise.race`); the sequential scan kept requesting pages in the background, up to 12, spending Aumet request budget for nobody. Fix: a cancel flag set on timeout stops further page requests (at most the one in-flight request completes); a timed-out scoped scan raises the "search incomplete" error and leaks no offers. Timeout is injectable (`aumetSearchTimeoutMs`, default unchanged 45 s). The new test fails on the previous hub.js.
+- Evidence (local): 32/32 unit checks PASS (`worker-gemini-route` skipped, needs the artifact path); purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS. New unit file is picked up by the existing unit job automatically (no workflow change).
+- NOT TESTED: live; a real in-flight HTTP request is not aborted (no AbortController in the connector); CI on this head not yet observed.
+
+### BUY-P0 #119 rebased on main after #112 merged — 2026-11-10
+- #112 merged to main as 6cd5f5e. Main merged into the #119 branch; the only conflict was HANDOFF.md (both sides appended), resolved by keeping both blocks; `supplier-provider.js` merged cleanly (cart-selection and prefs-write are different regions).
+- Re-verified on the merged tree (local): 32/32 unit checks, purchases-browser, purchases-seller-search-browser, supplier-orders-browser PASS. `procurement-ui-model` is now green because #112 is in.
+- Unchanged limits: no real supplier write or read-back, nothing live. Merging does not deploy (`deploy-worker.yml` is `workflow_dispatch` only).
+
+### BUY-UX #116 rebased on main after #112 and #119 merged — 2026-11-10
+- Main (#112 = 6cd5f5e, #119 = 5bcef72) merged into the #120 branch; only HANDOFF.md conflicted (append on both sides), resolved by keeping all blocks.
+- Re-verified on the merged tree (local, static server like CI): 32/32 unit checks, purchases-browser, supplier-orders-browser, purchases-seller-search-browser, purchases-ux-browser PASS.
+- One test update: the UX test had asserted the cart preview does NOT carry `aumetSellerIds` (written before #119). It now asserts the preview carries the selected warehouses `['one','two']`, which is the real behavior and a stronger check.
+- Still NOT done: nothing live, no real supplier data, no Xiaomi Pad 5. Merging does not deploy.
+
+### nova skill refreshed in the repo — 2026-11-10
+- `docs/skills/nova/SKILL.md` (the source of truth) corrected: the "Live now" line pointed at `with-suppliers1`, which was replaced; it now records the last live state per HANDOFF (purchases11 over purchases10, hashes verified against the artifact files, NOT re-verified live), and a new section lists #112 / #119 / #120 as merged and NOT deployed, what is not verified (Aumet visibility undetermined), the open `unknown`-lock decision, the owner delivery policy and what a deploy still needs.
+- Docs only; no code, workflow or `worker/live/` change.
+
+### CURRENT.md boot file added — 2026-11-10
+- New `CURRENT.md` (about 40 lines): boot order, priorities, who is on what, merged-not-deployed, open PRs, breakages, what waits on the owner. `HANDOFF.md` now starts with a pointer to it and is otherwise unchanged (nothing deleted, 721 lines of history kept). New `tests/unit/current-md.check.mjs` (picked up by the existing unit job) keeps CURRENT.md short, sectioned, pointing at files that exist, free of secret-looking text, and keeps HANDOFF.md as the archive; verified to fail when CURRENT.md is too long, loses a section or contains secret-like text.
+- Why: the old boot read about 94k tokens (HANDOFF ~38k, plan ~24k, roadmap ~21k, skill ~9k) every session; a scheduler would pay that each run. The new order reads AGENTS.md + CURRENT.md first and stops if nothing is new. Estimate only (chars/3); real usage not visible from here.
+- NOT done: the AGENTS.md boot text. PR #121 rewrites the same lines, so the exact replacement text is proposed on that PR instead of creating a conflict. NOT tested: that a real second agent resumes from CURRENT.md (only structure is checked mechanically). The hourly scheduler stays NOT configured; owner wants the real cost reviewed first.
+
+### BUY release purchases12 — artifact built, NOT yet deployed (2026-11-10)
+- Authorized by the owner (this chat) and the manager comments of 12:33-12:38: routine merge and deploy through the existing guarded workflow after the safety gates; real supplier writes, orders, checkout and secrets stay forbidden. #113 (Gemini QA tests, changes requested) is test-only and does not block shipping product code; it is NOT touched here.
+- Build: `node tools/build-purchasing-artifact.mjs worker/live/nova-rx-preview.purchases11.js worker/live/nova-rx-preview.purchases12.js` on main @ 56b304f. sha256 `4b79d4b2ead1984f272159b62f3fc6f3da6f67db3a409225c68aa13f2fc74316`, 960,691 bytes (purchases11: 951,439). Rebuild is byte-identical; parses as an ES module with one `export default`.
+- What changed vs purchases11 (23 diff regions, all inside embedded code): hub.js (12-page scoped Aumet scan, `IncompleteSearchError`, timeout that cancels the scan, `aumetSearchTimeoutMs`), aumet-cart.js (`cart-seller-not-selected` before any call), http.js (missing/malformed `aumetSellerIds` becomes `[]`), the purchasing assets table (purchases.html/css/js: per-row states, scope chip, Arabic message) and the app page (supplier-provider/lookup: `savePurchasePrefs`). Everything else, including the POS, stickers and settings routes, is unchanged.
+- Tests: `tests/unit/module-worker.check.mjs` now takes the artifact path (default purchases12) and also asserts the release code and the fail-closed search; it PASSES on purchases12 and FAILS on purchases11 (so it discriminates). 33 of 33 unit checks pass. `worker-gemini-route.check.mjs` cannot parse module artifacts (it fails on purchases11 too): an old limitation, not a regression.
+- Rollback: purchases11 (sha256 41ea0f92...abeb) stays in `worker/live/`; the deploy script also backs up the live code and restores it automatically if the upload or verification fails.
+- NOT TESTED: anything on the live Worker yet. Next: merge this PR after CI, dry run, real deploy, then read-only live smoke through the existing GitHub workflows (no supplier writes).
+- Live smoke tool: `tools/sessions/live-check.mjs` (run by the existing manual workflow "Supplier live check", read only) now checks the #112 contract: an unscoped search returns no Aumet offer; a search scoped to the first readable warehouses returns Aumet offers only from them; it also prints how many warehouses are readable. Proven against a local fake Worker: exit 0 when the contract holds, exit 1 with FAIL lines when a leak is simulated. It never calls a cart or order route.
+- CI gap found: the "Purchasing page checks" workflow's path filter does not match `worker/live/**`, so a release PR gets only POS smoke automatically. The workflow is run by hand (workflow_dispatch) on the release branch instead of editing the filter.
+
+### BUY release purchases13 — Aumet silent-empty diagnostics (2026-11-10)
+- DEPLOYED purchases12 (run 42819525682, main a0e48c4): live code sha256 read back from Cloudflare equals the artifact (`4b79d4b2...4316`), six bindings unchanged, modified_on 2026-11-10T12:53:06Z, HTTP 200. Before it, the dry run proved the live Worker was exactly purchases11 (code digest `41ea0f92...abeb`, modified 05:02:01Z) and that `CLOUDFLARE_API_TOKEN` exists.
+- LIVE read-only smoke on purchases12 (workflows "Supplier live check" and "Supplier cart read check", no cart or order route): both suppliers `ok`; 20 unlocked Aumet warehouses readable; an unscoped search returns 0 Aumet offers (fail-closed contract holds live); scoped searches return 0 offers outside the selection; PharmaOverseas returns offers for Augmentin and Panadol; carts read for both accounts (Aumet checkout blocked by `order-extra-sellers`, PharmaOverseas cart empty).
+- FINDING (this is the "Aumet not visible" symptom, reproduced live): Aumet returns ZERO offers for Panadol/Augmentin with state `ok`, even scoped to all 20 warehouses and even with a very wide numeric scope (ids 1..99999 plus the list), so it is not a selection or id-domain mismatch. It worked on 2026-11-09 with the same queries (4 offers). Cause NOT yet known: candidates are an empty upstream result (account search context or text parameter changed), or every row failing `toOffer` (SchemaDriftError), which the hub swallowed silently (`drifted` was computed and discarded). A scan that took about 3 s means about one page was read.
+- CHANGE (purchases13): the hub now records per-supplier numbers (`rows`, `readable`, `drifted`, `selected`, `shown`) in the search response and returns an explicit error when every row of a supplier is unreadable, instead of a quiet `ok` with no offers. The read-only live check prints them. Tests: `purchases-seller-scope.check.mjs` (fail on the old hub). Artifact `worker/live/nova-rx-preview.purchases13.js` built from purchases12; rebuild identical, parses as a module, diff limited to hub.js plus one extra blank line the builder adds before `<style>`.
+- NOT TESTED: purchases13 on the live Worker (next: CI, merge, dry run with expected_modified_on 2026-11-10T12:53:06, deploy, live check). No real supplier write was done at any point.
+
+### BUY release purchases14 — what id do Aumet rows really carry? (2026-11-10)
+- DEPLOYED purchases13 (run 42821422605, main 982e4a2): live code sha256 read back = artifact `9b0d964c...11a3`, bindings unchanged, modified_on 2026-11-10T13:06:08Z. Its dry run showed the live Worker was exactly purchases12.
+- LIVE read-only result on purchases13 (Supplier live check 42821526418): Aumet returns `rows=24, readable=24, drifted=0` for both test queries, but `selected=0, shown=0`: every row is readable, none belongs to a selected warehouse, and an earlier wide scope (ids 1..99999 plus the list) also matched nothing. So the schema-drift theory is REFUTED; the row seller id is not in the same id space as the warehouse list (or is empty). The seller allowlist added on 2026-11-10 (PR93) was only ever tested with fixture ids and therefore hides every real Aumet offer. This explains "Aumet disappeared". Not yet proven which id the rows carry.
+- CHANGE (purchases14): each supplier entry also reports `noSeller` (rows without a seller id) and `sellerSample` (up to 6 distinct id/name pairs, ids and public distributor names only); the read-only live check also prints the first 20 `id:name` of the warehouse list, so ids and names can be compared. Unit test added; artifact `worker/live/nova-rx-preview.purchases14.js` built from purchases13, rebuild identical, parses, module-worker check passes on 14 and fails on 13.
+- NEXT after deploy: read the sample, then fix the filter to match on the id (or name) that really identifies the warehouse. Any fix to selection semantics is a separate, tested change. No real supplier write at any point.
