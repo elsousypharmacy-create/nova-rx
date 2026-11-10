@@ -50,13 +50,18 @@ function errorMessage(err) {
   return MSG_DOWN;
 }
 
-async function withTimeout(promise, ms) {
+// The timeout only stops WAITING; the work keeps running unless it checks `onTimeout`'s flag.
+// Callers that page through results use it to stop issuing further upstream requests.
+async function withTimeout(promise, ms, { onTimeout, makeError } = {}) {
   let timer;
   try {
     return await Promise.race([
       promise,
       new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new TransientError('supplier search timed out')), ms);
+        timer = setTimeout(() => {
+          if (onTimeout) onTimeout();
+          reject(makeError ? makeError() : new TransientError('supplier search timed out'));
+        }, ms);
       }),
     ]);
   } finally {
@@ -111,6 +116,7 @@ export function createSupplierHub({
   now = () => Date.now(),
   fetch: fetchImpl = globalThis.fetch,
   connectors,
+  aumetSearchTimeoutMs = AUMET_SEARCH_TIMEOUT_MS,
 } = {}) {
   const holders = Object.fromEntries(SUPPLIERS.map((s) => [s.id, { current: null }]));
   const conns = connectors ?? buildDefaultConnectors(fetchImpl, holders);
@@ -136,6 +142,9 @@ export function createSupplierHub({
     return out;
   }
 
+  // aumetSellerIds: `undefined` means UNSCOPED and is only for server-internal callers keyed by a
+  // signed plan (the cart adapters). Every client entry point goes through http.js, which turns a
+  // missing or malformed selection into [] so it can never widen the search to all warehouses.
   async function search(query, { requestedQty = 1, supplierIds, aumetSellerIds } = {}) {
     const fetchedAt = new Date(now()).toISOString();
     const latin = extractLatin(query);
@@ -149,6 +158,8 @@ export function createSupplierHub({
         if (!rec) return { id: s.id, name: s.name, state: 'off' };
         holders[s.id].current = rec.session;
         const connector = conns[s.id];
+        const run = { cancelled: false };
+        const scopedAumet = s.id === 'aumet' && Array.isArray(aumetSellerIds) && aumetSellerIds.length > 0;
         try {
           await withTimeout(
             (async () => {
@@ -157,6 +168,8 @@ export function createSupplierHub({
               let pageNumber = 1;
               let totalPages = 1;
               do {
+                // After a timeout nobody is waiting for this scan: stop spending upstream requests.
+                if (run.cancelled) throw new IncompleteSearchError('Aumet seller search cancelled after timeout');
                 const page = await connector.search(searchText, { page: pageNumber, pageSize: 24 });
                 totalPages = Number.isFinite(page?.totalPages) ? page.totalPages : 1;
                 for (const rawRow of page?.offers ?? []) {
@@ -183,8 +196,10 @@ export function createSupplierHub({
               allOffers.push(...supplierOffers);
               return drifted;
             })(),
-            s.id === 'aumet' && Array.isArray(aumetSellerIds) && aumetSellerIds.length > 0
-              ? AUMET_SEARCH_TIMEOUT_MS : SEARCH_TIMEOUT_MS,
+            scopedAumet ? aumetSearchTimeoutMs : SEARCH_TIMEOUT_MS,
+            scopedAumet
+              ? { onTimeout: () => { run.cancelled = true; }, makeError: () => new IncompleteSearchError('Aumet seller search timed out') }
+              : undefined,
           );
           return { id: s.id, name: s.name, state: 'ok' };
         } catch (err) {

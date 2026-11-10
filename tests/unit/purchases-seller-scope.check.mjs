@@ -42,6 +42,14 @@ const filler=n=>Array.from({length:24},(_,i)=>row('other'+n+'-'+i,50));
  const {hub:h}=pagedHub([[row('target',30),...filler(1).slice(1)],filler(2),filler(3)],{failAt:2});
  const out=await h.search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['target']});assert.equal(out.suppliers[0].state,'error');assert.equal(out.results[0].offers.length,0);
 }
+{ // the timeout stops the background scan too: no more upstream pages after nobody is waiting
+ const calls=[];const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ const slow=createSupplierHub({aumetSearchTimeoutMs:80,store:{load:async()=>({session:{}})},connectors:{aumet:{toOffer:r=>r,search:async(q,{page})=>{calls.push(page);await sleep(50);return {offers:[row('target',30)],page,pageSize:24,totalPages:12};}}}});
+ const out=await slow.search('Panadol Extra 24 tabs',{supplierIds:['aumet'],aumetSellerIds:['target']});
+ assert.equal(out.suppliers[0].state,'error');assert.match(out.suppliers[0].message,/لم يكتمل/);assert.equal(out.results[0].offers.length,0,'a timed-out scan leaks no offers');
+ const atTimeout=calls.length;await sleep(500);
+ assert.ok(calls.length<=atTimeout+1,'scan must stop after the timeout (pages at timeout '+atTimeout+', later '+calls.length+')');assert.ok(calls.length<6);
+}
 // --- #112: preference writes go through the provider, keep other fields, drop non-plain values ---
 {
  const store=new Map();const ctx={window:{},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)}};
