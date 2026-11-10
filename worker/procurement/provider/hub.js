@@ -26,6 +26,8 @@ const AUMET_SEARCH_TIMEOUT_MS = 45000; // Safety bound; never silently claim ful
 const MSG_AUTH = 'الجلسة انتهت، سجّل دخول المورد';
 const MSG_RATE = 'كتير طلبات، جرّب بعد شوية';
 const MSG_DOWN = 'تعذر الاتصال';
+const MSG_INCOMPLETE = 'البحث في المخازن المختارة لم يكتمل؛ أخفينا النتائج بدل عرض نتيجة ناقصة';
+class IncompleteSearchError extends TransientError {}
 
 // Text inside parentheses wins when it holds Latin letters, else the query.
 function extractLatin(query) {
@@ -44,6 +46,7 @@ function leadingSearchText(latin) {
 function errorMessage(err) {
   if (err instanceof AuthRequiredError) return MSG_AUTH;
   if (err instanceof RateLimitedError) return MSG_RATE;
+  if (err instanceof IncompleteSearchError) return MSG_INCOMPLETE;
   return MSG_DOWN;
 }
 
@@ -175,7 +178,7 @@ export function createSupplierHub({
                        pageNumber <= AUMET_MAX_PAGES);
               if (s.id === 'aumet' && Array.isArray(aumetSellerIds) &&
                   aumetSellerIds.length > 0 && pageNumber <= totalPages) {
-                throw new TransientError('Aumet seller search incomplete; pagination safety limit reached');
+                throw new IncompleteSearchError('Aumet seller search incomplete; pagination safety limit reached');
               }
               allOffers.push(...supplierOffers);
               return drifted;
