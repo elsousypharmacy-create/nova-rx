@@ -41,6 +41,8 @@ jobs:
           exit 1
       - name: Run isolated demo smoke test
         run: npx playwright test tests/nova-pos-smoke.spec.cjs --browser=chromium --reporter=line,html
+      - name: Run real-catalog UI checks (endpoint answered from the committed snapshot, no backend)
+        run: node tests/ui-real-catalog.mjs
       - name: Write machine-readable result
         if: always()
         run: |
