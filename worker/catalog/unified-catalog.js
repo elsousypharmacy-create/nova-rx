@@ -1,6 +1,8 @@
 // CAT-01 unified product catalog. Pure module: no I/O, no network, no writes to any live sheet.
 // Rule: bad data is rejected with a reason, never defaulted; a duplicate is never merged without a named pharmacist reviewer.
 
+import { canonicalPackaging, normalizePackaging } from './unit-conversion.js';
+
 const ARABIC = /[؀-ۿ]/;
 const DIGIT_MAP = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9', '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
 
@@ -88,11 +90,14 @@ export function normalizeProductRecord(record) {
     if (!d.ok || (d.value !== null && !(Number.isInteger(d.value) && d.value > 0 && d.value <= MAX_PACK))) errors.push('packSize-invalid'); else if (d.value !== null) packSize = d.value;
   }
 
+  const pk = canonicalPackaging(pick(record, 'packaging'));
+  if (!pk.ok) errors.push(pk.error);
+
   if (errors.length) return { ok: false, product: null, errors };
   return {
     ok: true, errors: [],
     product: freeze({
-      id, nameAr, nameEn, barcodes, price, packSize,
+      id, nameAr, nameEn, barcodes, price, packSize, packaging: pk.packaging,
       activeIngredient: sanitizeCatalogText(pick(record, 'activeIngredient', 'active_ingredient')),
       strength: sanitizeCatalogText(record.strength),
       form: sanitizeCatalogText(record.form),
@@ -104,7 +109,9 @@ export function normalizeProductRecord(record) {
 }
 
 const searchKeyOf = p => normalizeArabicSearchKey([p.nameAr, p.nameEn, p.activeIngredient, p.strength, p.form, p.category].join(' '));
-const same = (a, b) => (a.strength ? normalizeArabicSearchKey(a.strength) : '') === (b.strength ? normalizeArabicSearchKey(b.strength) : '')
+const boxFactor = p => (p.packaging ? normalizePackaging(p.packaging).factors.box ?? null : null);
+const sameBox = (a, b) => { const x = boxFactor(a), y = boxFactor(b); return x === null || y === null || x === y; };
+const same = (a, b) => sameBox(a, b) && (a.strength ? normalizeArabicSearchKey(a.strength) : '') === (b.strength ? normalizeArabicSearchKey(b.strength) : '')
   && (a.form ? normalizeArabicSearchKey(a.form) : '') === (b.form ? normalizeArabicSearchKey(b.form) : '');
 
 export function createUnifiedCatalog(items = []) {
@@ -168,7 +175,7 @@ export function createUnifiedCatalog(items = []) {
       nameAr: keep.nameAr || drop.nameAr, nameEn: keep.nameEn || drop.nameEn,
       activeIngredient: keep.activeIngredient || drop.activeIngredient, strength: keep.strength || drop.strength,
       form: keep.form || drop.form, category: keep.category || drop.category,
-      price: keep.price ?? drop.price, barcodes: [...keep.barcodes, ...drop.barcodes],
+      price: keep.price ?? drop.price, barcodes: [...keep.barcodes, ...drop.barcodes], packaging: keep.packaging ?? drop.packaging,
     });
     if (!merged.ok) throw new Error(`merge produced an invalid record: ${merged.errors.join(',')}`);
     products.delete(drop.id); keys.delete(drop.id);
@@ -177,6 +184,7 @@ export function createUnifiedCatalog(items = []) {
     alias.set(drop.id, keep.id);
     const discarded = {};
     for (const f of ['price', 'active', 'unit']) if (drop[f] !== keep[f]) discarded[f] = drop[f];
+    if (keep.packaging && drop.packaging && JSON.stringify(keep.packaging) !== JSON.stringify(drop.packaging)) discarded.packaging = drop.packaging;
     const entry = Object.freeze({ at: new Date().toISOString(), keptId: keep.id, droppedId: drop.id, reviewedBy: reviewer, reason: group.reason, key: group.key, discarded: Object.freeze(discarded) });
     mergeLog.push(entry);
     return { ok: true, product: merged.product, log: entry };
@@ -187,6 +195,7 @@ export function createUnifiedCatalog(items = []) {
     get rejected() { return Object.freeze(rejected.map(r => Object.freeze({ ...r, errors: Object.freeze([...r.errors]) }))); },
     get mergeLog() { return Object.freeze([...mergeLog]); },
     add, merge, detectDuplicates, resolveId,
+    packagingOf: id => products.get(resolveId(id))?.packaging ?? null,
     getAll: () => [...products.values()],
     findById: id => products.get(resolveId(id)) || null,
     findByBarcode: barcode => { const b = normalizeBarcode(barcode); return b && byBarcode.has(b) ? products.get(byBarcode.get(b)) : null; },
