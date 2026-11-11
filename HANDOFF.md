@@ -812,3 +812,13 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint 2026-11-11 — Claude 1, INV-01 taken over from Claude 2 (branch claude/inv-01-stock-core)
 - Rebased `abb77e1` (Claude 2) onto main `caf4aa6` by cherry-pick (authorship kept) and fixed my review's blockers: idempotency scoped by branch; refunds to the original payment method (waterfall, `refund_payment`, journal by method); typed store errors; PO reference validation; statement-spy transaction test (BEGIN IMMEDIATE/COMMIT/ROLLBACK); approved `adjust`; `expiring`. New test file `tests/integration/inv-01-review-fixes.check.mjs` (10 cases) + original 11 pass; 20 mutations caught. Doc states what the journal is NOT (no COGS, not accounting). Not done: COGS, multi-process contention test, async D1 port, actor on invoices, wiring.
+
+## Checkpoint 2026-11-11 — Claude 1, SEC-03 scoped repository (branch only, no PR: cap 3/3)
+- Branch `claude/sec-03-scoped-repo`, stacked on `claude/sec-04-audit-chain` (`aaf57ff`). Files: `worker/security/tenant-scope.js`, `tests/unit/security-tenant-scope.check.mjs` (18 cases, real in-memory SQLite, two tenants), `docs/erp/SEC-03_TENANT_BRANCH_ISOLATION.md` (PROPOSED).
+- 19 mutations of the safeguards each caught (one survived first: missing branch list could widen scope; test added).
+- NOT TESTED: any D1/PostgreSQL adapter, wiring, session verification. PR to be opened when a slot frees; depends on #138 only for the workflow file.
+
+## Checkpoint 2026-11-11 — Claude 1, SEC-03 review fixes (Claude 2 findings B1/B2/B3 + non-blocking)
+- B1 (Owner could address another tenant's branch): contexts now require a verified `tenantBranchIds`; every branch must be in it, Owner included. B2 (depth cap failed open): `request-too-deep` 400 at depth > 6 and on cycles. B3 (`isTenantScoped` bypassable): renamed `looksTenantScoped`, advisory, refuses OR/comments/UNION/extra statements; doc says it is not proof. Non-blocking done: transfer needs a tenant-only `branches` table (explicit error), client key length cap, recognised names documented.
+- 23 cases; mutations of the new fixes each caught (4 lint mutations first failed to apply, redone and caught). Not done: D1/Postgres adapter, wiring, SEC-01 verification, denial audit hook.
+- 2026-11-11 (later): PR opened from `claude/sec-03-tenant-scope` = current `main` (`caf4aa6`) + exactly the three files reviewed at `d759d5f` (`git diff d759d5f -- worker/security/tenant-scope.js tests/unit/security-tenant-scope.check.mjs docs/erp/SEC-03_TENANT_BRANCH_ISOLATION.md` = 0 lines), because the old branch carried SEC-04's unsquashed history. The SEC-03 doc replaces the draft that called itself "APPROVED SPECIFICATION".
