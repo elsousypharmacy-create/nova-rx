@@ -6,6 +6,7 @@ on:
       - 'worker/procurement/**'
       - 'tools/discovery/**'
       - 'tests/unit/procurement-*.check.mjs'
+      - 'tests/unit/shortages-adapter.check.mjs'
       - '.github/workflows/procurement-unit.yml'
   push:
     branches: [main]
@@ -35,3 +36,4 @@ jobs:
           if [ ${#files[@]} -eq 0 ]; then echo "No procurement checks yet"; exit 0; fi
           for f in "${files[@]}"; do echo "== $f"; node "$f"; done
           node tests/unit/supplier-price.check.mjs
+          node tests/unit/shortages-adapter.check.mjs
