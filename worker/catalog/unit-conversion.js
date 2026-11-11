@@ -66,6 +66,21 @@ export function normalizePackaging(def) {
   return { ok: true, factors };
 }
 
+// Validates a packaging definition (same rules as normalizePackaging) and returns it in canonical field names with numeric values,
+// plus the derived factors. null / undefined / {} mean "no packaging" (never a guess). Used by the catalog to store packaging on a product.
+export function canonicalPackaging(def) {
+  if (def === undefined || def === null) return { ok: true, packaging: null };
+  if (typeof def !== 'object' || Array.isArray(def)) return { ok: false, error: 'packaging-invalid:definition' };
+  const p = normalizePackaging(def); if (!p.ok) return p;
+  const pick = (...names) => { for (const n of names) if (def[n] !== undefined && def[n] !== null) return toNumber(def[n]); return undefined; };
+  const out = {};
+  const put = (key, v) => { if (v !== undefined) out[key] = v; };
+  put('unitsPerStrip', pick('unitsPerStrip', 'tabletsPerStrip')); put('stripsPerBox', pick('stripsPerBox'));
+  put('unitsPerBox', pick('unitsPerBox')); put('boxesPerCarton', pick('boxesPerCarton', 'packsPerCarton'));
+  if (Object.keys(out).length === 0) return { ok: true, packaging: null };
+  return { ok: true, packaging: Object.freeze(out), factors: p.factors };
+}
+
 function factorFor(unit, def) {
   const canon = canonicalUnit(unit);
   if (!canon) return fail('unit-unknown');
