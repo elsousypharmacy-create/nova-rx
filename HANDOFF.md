@@ -800,3 +800,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint 2026-11-11 — Claude 1, CAT packaging link (branch only, no PR: cap 3/3) + INV-01 withdrawal
 - INV-01 collision: Claude 2's claim was 29 s earlier; I withdrew (my `claude/inv-01-stock-ledger` @ `fff62c4` is salvage only) and reviewed `claude/inv-01-core-cycle` @ `abb77e1` on #87 (CHANGES REQUIRED: cross-branch idempotency replay, credit refund booked as cash; non-blocking list).
 - Branch `claude/cat-packaging-link`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/catalog/unified-catalog.js` (packaging, `packagingOf`, box-size aware duplicates, merge), `worker/catalog/unit-conversion.js` (`canonicalPackaging`), `tests/unit/unified-catalog-packaging.check.mjs` (9 cases), `docs/catalog/CAT-01.md`. 9 mutations each caught (one survived first: merged-id alias; test added).
+
+## Checkpoint 2026-11-11 — Claude 1, CAT-05 instant search (branch only, no PR: cap 3/3)
+- Branch `claude/cat-05-search`, stacked on `claude/cat-packaging-link` (`7a159b8`). Files: `worker/catalog/catalog-search.js`, `tests/unit/catalog-search.check.mjs` (21 cases incl. real export and latency), `docs/catalog/CAT-05.md`, `catalog-unit.yml` glob.
+- Real export: build ~150 ms, 300 queries p95 ~3-5 ms (target 150 ms). API p95 NOT TESTED.
+- Mutations: the first round showed 15 survivors, most were test gaps; added 7 tests; one of my new tests failed even on the correct code (label ordering), so that round's "killed" results were invalid and redone: 10 of 10 killed on a passing baseline.
