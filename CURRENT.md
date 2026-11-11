@@ -1,5 +1,5 @@
 # NOVA Rx — CURRENT (read this, not all of HANDOFF.md)
-Last updated: 2026-11-11 by Claude 2 (lead manager). main @ 61a2d7b. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
+Last updated: 2026-11-11 by Claude 2 (lead manager). main @ cb12ca6. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines) and Issue #87 since your last checkpoint  4. docs/skills/nova/SKILL.md  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when acceptance or scope matters.
@@ -7,7 +7,7 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 
 ## Priorities (owner direction, newest first)
 1. **UI first (owner, 2026-11-11): finish the interface and its trial, THEN the hidden parts (backend, database).** Real price list in the app (#146), currency ج.م (#147), then the sale screen with local invoice saving (U1), Invoices/Reports from saved invoices. Backend/database work is frozen until the UI trial. Truth today: accepted 0 of 85; merged code is pure modules, nothing is wired to a screen except what the UI PRs add.
-2. PR order: #146, #147, then U1 (sale screen); backend branches wait. Deploying the UI batch to the live preview Worker is one owner approval at the end.
+2. Next: #148 currency (UI), then U1 (sale screen with local invoice saving), Invoices/Reports from saved invoices; backend branches wait. Deploying the UI batch to the live preview Worker is one owner approval at the end.
 3. P0 pharmacy#59 (blank mobile dashboard): fixed by pharmacy PR #60 (f79ecee); NOT live-verified (sandbox cannot reach github.io); close it only after the owner confirms on his phone.
 
 ## Who is on what
@@ -18,10 +18,10 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 
 ## Merged to main and DEPLOYED: Worker nova-rx-preview (deploy-worker.yml, workflow_dispatch only; every deploy: CI, dry run, real run, code digest read back)
 LIVE (as recorded 2026-11-10, not re-verified today) = purchases15, sha256 08ceb32af224b076492b5d70f35960e828b7081b40d8ac97e9b83faadd6ce866, modified 2026-11-10T13:21:42Z. Rollback: the previous artifact in worker/live/ with expected_modified_on set to the live modified_on. Recipe and the id lesson are in the skill.
-Merged since, NOT deployed, NOT wired: CAT-01 catalog (#136), CAT-02 conversion (#137), SEC-04 audit-log core (#138), SEC-03 tenant scope (#141), INV-01 stock core (#142), catalog packaging link (#145), shortages-adapter test fix (#140), restored supplier-orders test (#144), UX-01 audit + purchases contrast (#143). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check". No deploy happens without the owner's approval.
+Merged since, NOT deployed, NOT wired: CAT-01 catalog (#136), CAT-02 conversion (#137), SEC-04 audit-log core (#138), SEC-03 tenant scope (#141), INV-01 stock core (#142), catalog packaging link (#145), shortages-adapter test fix (#140), restored supplier-orders test (#144), UX-01 audit + purchases contrast (#143), real price list in the app (#146; merged without Claude 1's review on the owner's explicit instruction of 2026-11-11, review still welcome). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check". No deploy happens without the owner's approval.
 
 ## Open PRs
-nova-rx: #146 real price list and #147 currency (UI; both need Claude 1's independent review before merge). Closed unmerged: #114, #91, #25, #20, #109 (branches kept).
+nova-rx: #148 currency ج.م/EGP (UI). Closed unmerged: #114, #91, #25, #20, #109, #147 (branches kept).
 pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only (not re-checked today). Merging in pharmacy can publish a page: only for explicit owner requests.
 
 ## Known breakages and risks
