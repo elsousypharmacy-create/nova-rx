@@ -1,82 +1,39 @@
-# SEC-03: Tenant & Branch Isolation Architecture (Multi-Tenancy)
+# SEC-03: Tenant and branch isolation
 
-**Status:** APPROVED SPECIFICATION  
-**Track:** SEC (Security & Access Control)  
-**Task ID:** SEC-03  
-**Dependencies:** FND-03, SEC-01, SEC-02  
+**Status: PROPOSED** (the first draft said "APPROVED SPECIFICATION"; nobody approved it). Task SEC-03. Depends on FND-03, SEC-01, SEC-02.
+Implemented as a pure module, **not wired**: `worker/security/tenant-scope.js`, tests `tests/unit/security-tenant-scope.check.mjs` (23 cases on a real in-memory SQLite with two tenants; the safeguard mutations are each caught).
+Revised by Claude 1 after Claude 2's security-gate findings (Issue #87, comment 6786485245). The first draft stays in the history of branch `gemini/sec-03-04-05-foundation`.
 
----
+## 1. Reality check
+The live Worker authenticates with one shared PIN and has no tenant concept; there is no `worker/security/sec-foundation.js` and no `/api/v1/...`. This document and module describe the isolation layer for the future session and storage design (SEC-01, FND-02). The storage engine is **undecided**.
 
-## 1. Overview & Security Objective
+## 2. Context (`createIsolationContext`)
+Built only from claims already verified by SEC-01: `actorId`, `tenantId`, `roles`, `tenantBranchIds` (**the branches that belong to this tenant**, required), `assignedBranchIds`, `activeBranchId`. Every branch a context can name must be in `tenantBranchIds`, Owner included: a tenant-wide role is wide inside its tenant, never across tenants (`activeBranch-not-in-tenant`, `assignedBranch-not-in-tenant`; a branch added after login needs a session refresh). Ids match `^[A-Za-z0-9_-]{1,64}$` (no `:`). Roles come from SEC-02 only: `Owner`, `Pharmacist`, `Cashier`, `InventoryManager`. **`Auditor` (used by the first draft) is not defined in SEC-02 and is refused until SEC-02 defines it.** `isTenantWide` is derived from the role (`Owner`) and is **refused as input**. A user who is not tenant-wide must have an assigned active branch; a missing branch list never widens access. The context is frozen and branded: the repository accepts only contexts built by this function, never a hand-made object.
 
-NOVA Rx ERP operates as a multi-tenant, multi-branch pharmacy platform where each pharmacy organization (`tenantId`) may manage one or more physical branches (`branchId`). **SEC-03** enforces strict logical and cryptographic isolation across tenants and branches so that:
+## 3. Request scope (`checkRequestScope`)
+Any tenant or branch the client names (headers `X-Tenant-Id`/`X-Branch-Id`, query, params, body, nested, arrays, any case or separator) must equal the verified context: `403 SEC_TENANT_MISMATCH`, `403 SEC_BRANCH_FORBIDDEN`. Non-array, non-string or object values (`{"$ne":..}`) are mismatches. A non-wide user may name only an assigned branch; an Owner may name any branch id of its own tenant (the repository still filters by tenant). The resolved branch is returned; nothing is trusted from the request beyond that. **The scan fails closed**: nesting deeper than 6 levels (or a cyclic object) returns `400 request-too-deep` instead of ignoring what lies below. Only `tenantId`/`branchId` (any case or separator) and `X-Tenant-Id`/`X-Branch-Id` are recognised names; other spellings (`org_id`, `tenant`) are not. An Owner may name only branches in its own tenant's `tenantBranchIds`.
 
-1. **Zero Cross-Tenant Data Leakage:** A user or token bound to `tenant_A` can never read, write, aggregate, or infer records belonging to `tenant_B` (`403 Forbidden` on any mismatch).
-2. **Scoped Branch Isolation:** Operational roles (`Pharmacist`, `Cashier`, `InventoryManager`) are restricted to their assigned `branchId` claims unless executing an explicitly permitted cross-branch workflow (such as `Owner` tenant-wide analytics or authorized inter-branch stock transfers).
-3. **Defense-in-Depth Enforcement:** Isolation is enforced simultaneously at three layers:
-   - **Edge / API Gateway Guard (`worker/security/sec-foundation.js`):** Validates JWT claims (`tenant_id`, `branch_id`, `roles`) against request headers, URL parameters, and payload bodies before any handler executes.
-   - **Storage Query / Row-Level Security (RLS) Boundary:** Every storage adapter query requires a mandatory `{ tenantId, branchId }` context envelope and injects deterministic filtering predicates (`WHERE tenant_id = ? AND branch_id = ?`).
-   - **Cache & Idempotency Key Namespacing:** All KV/Redis/D1 cache and idempotency keys are prefixed with `t:{tenantId}:b:{branchId}:` to prevent cross-tenant cache poisoning or idempotency collisions.
+## 4. Scoped repository (`createScopedRepository`)
+The only way to reach operational tables. Each table is declared in a schema (`columns`, `branchScoped`); names are plain identifiers and `tenant_id`/`branch_id` are reserved.
+- Every statement filters `tenant_id = ?` (and `branch_id = ?` for branch-scoped tables unless the context is tenant-wide and no branch is chosen). Values are parameters; identifiers come from the schema allowlist, never from the caller.
+- `tenant_id` and `branch_id` in `where`, `row` or `patch` are refused (`scope-field-not-allowed`). Inserts are stamped from the context. This is the equivalent of PostgreSQL `WITH CHECK`.
+- `update` and `delete` require a `where`. There is no raw SQL method.
+- **A row of another tenant looks exactly like a missing row** (`not-found`), so existence is not leaked (the first draft's `403` would reveal it).
+- `looksTenantScoped(sql)` is an **advisory heuristic** (renamed from `isTenantScoped`): it requires `tenant_id = ?` and refuses OR, comments, UNION and extra statements, but a regex cannot prove isolation. **Do not use it in CI as proof;** the barrier is the repository, which never accepts caller SQL.
+- `validateTransfer`: role `Owner` or `InventoryManager`; both branches must be in the tenant's branch list and exist in a **tenant-only** `branches` table (`repo.describe('branches')` is checked; a branch-scoped table returns `branches-table-must-be-tenant-only` instead of a misleading denial), else `SEC_CROSS_TENANT_TRANSFER_DENIED`; the source must be an assigned branch unless tenant-wide.
+- `scopedKey(ctx, kind, clientKey)` -> `t:{tenant}:b:{branch|*}:{idem|cache|queue}:{encodeURIComponent(clientKey)}`: ids cannot contain `:` and the client part is encoded, so two tuples cannot produce the same key. The encoded client part is capped at 256 characters so the whole key stays under the 512 byte KV limit.
 
----
+## 5. Storage contract (when FND-02 decides)
+- **Cloudflare D1 (SQLite) has no row level security.** The wrapper is the only barrier there; add the lint gate and a test that every statement touching an operational table is scoped.
+- **PostgreSQL**, if chosen: per-request context must be `SET LOCAL app.current_tenant_id = ...` **inside the transaction** (never session level; a pooled connection such as Hyperdrive would leak tenant A's context into tenant B's next request); `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` **and `FORCE ROW LEVEL SECURITY`** (the table owner bypasses RLS otherwise); a non-superuser application role; policies on **every** operational table with `USING` and `WITH CHECK`.
 
-## 2. Canonical Isolation Context Envelope
+## 6. Role scope (from SEC-02, unchanged)
+| Role | Branches | Cross-branch |
+|---|---|---|
+| Owner | all branches of its tenant | read and write inside the tenant |
+| Pharmacist, Cashier | assigned branch(es) | none |
+| InventoryManager | assigned branch(es) | only the two-step transfer, validated by `validateTransfer` |
+Undefined in the first draft and still open (owner/SEC-02): the "controlled stock lookup when explicitly enabled" for pharmacists, and an Auditor role.
 
-Every authenticated request produces an immutable `IsolationContext` derived exclusively from verified `SEC-01` session claims:
-
-```json
-{
-  "actorId": "usr_901",
-  "tenantId": "tenant_1001",
-  "assignedBranchIds": ["branch_east_01"],
-  "activeBranchId": "branch_east_01",
-  "roles": ["Pharmacist"],
-  "isTenantWide": false
-}
-```
-
-### Rules of Trust
-- **Never Trust Client Headers Alone:** If a client sends `X-Tenant-Id` or `X-Branch-Id` headers or body fields (`tenant_id`, `branch_id`), they must strictly match the authenticated JWT claims. Any mismatch between JWT `tenant_id` and requested `tenant_id` immediately triggers `403 Forbidden` with RFC-7807 error code `SEC_TENANT_MISMATCH` and logs a high-severity `SEC-04` security audit event.
-- **Branch Switching:** A user assigned to multiple branches (or holding the `Owner` role) may specify a target `branch_id` only if `roles.includes('Owner')` within the same `tenant_id` or `assignedBranchIds.includes(targetBranchId)`. Otherwise, the guard returns `403 Forbidden` (`SEC_BRANCH_FORBIDDEN`).
-
----
-
-## 3. Role-Based Branch Scope Matrix
-
-| Role | Tenant Scope | Default Branch Scope | Cross-Branch Read | Cross-Branch Write / Transfer |
-| :--- | :--- | :--- | :--- | :--- |
-| `Owner` | Single `tenant_id` (strict) | All branches in `tenant_id` | Allowed within `tenant_id` | Allowed within `tenant_id` |
-| `Pharmacist` | Single `tenant_id` (strict) | Assigned `branch_id` only | Denied (`403`) except controlled stock lookup when explicitly enabled | Denied (`403`) |
-| `Cashier` | Single `tenant_id` (strict) | Assigned `branch_id` only | Denied (`403`) | Denied (`403`) |
-| `InventoryManager` | Single `tenant_id` (strict) | Assigned `branch_id` only | Allowed for inter-branch transfer manifest preview within `tenant_id` | Allowed only via two-step inter-branch transfer (`source_branch_id` -> `dest_branch_id`) within same `tenant_id` |
-| `Auditor` | Single `tenant_id` (strict) | Read-only across assigned branches or tenant | Read-only within `tenant_id` | Denied (`403`) |
-
----
-
-## 4. Storage & Query Enforcement Contract
-
-All database operations (Cloudflare D1 / PostgreSQL) must pass through the scoped repository wrapper:
-
-1. **Mandatory Predicate Injection:** Queries touching operational tables (`invoices`, `batches`, `stock_movements`, `customers`, `shifts`, `journal_entries`, `purchase_orders`, `shortages`) must include `tenant_id = :ctxTenantId`.
-2. **PostgreSQL RLS Policy Standard:**
-   ```sql
-   ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-   CREATE POLICY tenant_branch_isolation_policy ON invoices
-     USING (
-       tenant_id = current_setting('app.current_tenant_id', true)
-       AND (
-         current_setting('app.is_tenant_wide', true) = 'true'
-         OR branch_id = current_setting('app.current_branch_id', true)
-       )
-     );
-   ```
-3. **Inter-Branch Stock Transfers:**
-   - Must validate that both `sourceBranchId` and `destinationBranchId` belong to `ctx.tenantId`.
-   - If either branch belongs to a different tenant, reject with `403 Forbidden` (`SEC_CROSS_TENANT_TRANSFER_DENIED`).
-
----
-
-## 5. Cache, Queue & Idempotency Isolation
-
-- **Idempotency Keys (`FND-04`):** Stored and evaluated as `t:{tenantId}:b:{branchId}:idem:{clientKey}` so two tenants sending the same UUID or client key never collide or replay each other's responses.
-- **Sync Outbox (`FND-03`):** Each outbox record carries `tenant_id` and `branch_id`; background workers process batches partitioned by `tenant_id`.
+## 7. Not covered
+Wiring, D1/PostgreSQL adapters, session and JWT verification (SEC-01), audit events for denials (SEC-04 hook, with rate limiting so denials cannot flood the log), rate limits/CSP/HSTS (SEC-05).
