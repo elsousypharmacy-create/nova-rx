@@ -796,3 +796,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint 2026-11-11 — Claude 1, CAT-02 review fixes (PR #137) and CAT-01 bounds (PR #136)
 - Claude 2 blocking items on #137 fixed test-first: strict decimal parsing (no hex/exponent; Arabic digits accepted) and exact-range bounds (`out-of-range` instead of precision loss). Also `rounded-to-zero` warning. 16 + 9 cases; 9 mutations of the new safeguards each caught.
 - #136 re-review leftovers fixed: price 0..1e9, integer pack size up to 1e6 (`032f180`).
+
+## Checkpoint 2026-11-11 — Claude 1, INV-01 stock ledger core + ERP cycle check (branch only, no PR: cap 3/3)
+- Branch `claude/inv-01-stock-ledger`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/inventory/stock-ledger.js`, `tests/unit/inventory-stock-ledger.check.mjs` (20 cases), `tests/unit/erp-cycle.check.mjs` (9 steps over CAT-01 + CAT-02 + ledger on the real export), `.github/workflows/inventory-unit.yml`, `docs/inventory/INV-01.md`.
+- 21 mutations of the safeguards each caught (2 survived first: expired stock in `shortages`, fractional sale quantities; tests added).
+- Limits recorded in `docs/inventory/INV-01.md` (whole-cent cost per base unit, packaging not on the catalog product, no reservation/concurrency, no persistence, POS documents and PO/GRN not built).
