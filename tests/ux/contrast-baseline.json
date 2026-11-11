@@ -1,0 +1,6 @@
+{
+ "_note": "Ratchet, not a goal: measured on a touch tablet context (1280x800, hasTouch). Numbers may only go DOWN. Fix a finding, then lower the number.",
+ "maxFailingGroups": 0,
+ "maxFailingTexts": 0,
+ "maxSmallTargetsUnique": 4
+}
