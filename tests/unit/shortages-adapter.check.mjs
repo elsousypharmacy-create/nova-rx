@@ -100,7 +100,7 @@ console.log('Running shortages-adapter.check.mjs unit tests...');
 {
   const offers = [
     { code: 'ITEM-MK-OFF', supplierId: 'sup-1', warehouseId: 'unselected-wh', mk: false },
-    { code: 'ITEM-MK-ON', supplierId: 'sup-1', warehouseId: 'unselected-wh', mk: true }
+    { code: 'ITEM-MK-ON', supplierId: 'sup-1', warehouseId: 'unselected-wh', mk: true, price: 12.5 }
   ];
 
   const manualOffers = filterEligibleOffersForNeed(offers, {
@@ -113,6 +113,7 @@ console.log('Running shortages-adapter.check.mjs unit tests...');
   assert.strictEqual(manualOffers.length, 1);
   assert.strictEqual(manualOffers[0].code, 'ITEM-MK-ON');
 
+  // The matching offer must carry a price; without it the plan total is 0 and a "tampered" copy is identical to the plan.
   const ordersData = {
     zero: [{ co: 'Co', n: 'Item MK', q: '2', c: 'ITEM-MK-ON', mk: true }]
   };
@@ -125,11 +126,31 @@ console.log('Running shortages-adapter.check.mjs unit tests...');
     selectedOmetWarehouses: ['omet-wh-1']
   });
 
-  // External tamper attempt
-  const tampered = { ...plan, totalCost: 0 };
-  const tamperedGate = verifyOwnerConfirmationGate(tampered, { ownerConfirmed: true });
-  assert.strictEqual(tamperedGate.valid, false);
-  assert.strictEqual(tamperedGate.reason.includes('Signature verification failed'), true);
+  // The fixture must really have something to tamper with (this assertion guards the test itself).
+  assert.strictEqual(plan.items.length, 1);
+  assert.strictEqual(plan.totalCost, 25);
+  const intactGate = verifyOwnerConfirmationGate(plan, { ownerConfirmed: true });
+  assert.strictEqual(intactGate.valid, true);
+  // External tamper attempts: every signed field must be covered.
+  const tamperCases = {
+    totalCost: { ...plan, totalCost: 0 },
+    quantity: { ...plan, items: [{ ...plan.items[0], quantity: 20 }] },
+    price: { ...plan, items: [{ ...plan.items[0], price: 1 }] },
+    supplier: { ...plan, selectedSupplierId: 'other' },
+    mode: { ...plan, mode: 'auto' },
+    extraItem: { ...plan, items: [...plan.items, { ...plan.items[0], code: 'X' }] },
+    warehouses: { ...plan, selectedWarehouses: [...plan.selectedWarehouses, 'wh-evil'] }
+  };
+  for (const [name, tampered] of Object.entries(tamperCases)) {
+    const gate = verifyOwnerConfirmationGate(tampered, { ownerConfirmed: true });
+    assert.strictEqual(gate.valid, false, `tamper "${name}" must be refused`);
+    assert.strictEqual(gate.reason.includes('Signature verification failed'), true, name);
+  }
+  // Without the owner's confirmation nothing passes, even an intact plan.
+  assert.strictEqual(verifyOwnerConfirmationGate(plan, {}).valid, false);
+  // KNOWN LIMIT (not asserted as desired behaviour): the signature is an unkeyed SHA-256, so it detects accidental
+  // edits only. Anyone who can edit a plan can also recompute it. It is NOT an authorization control: a real
+  // supplier write needs a keyed signature or a server-side record of what the owner confirmed.
 }
 
 console.log('PASS');
