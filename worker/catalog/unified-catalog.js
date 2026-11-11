@@ -42,6 +42,9 @@ function parseDecimal(raw) {
   return { ok: false };
 }
 
+const MAX_PRICE = 1e9;   // EGP; anything above is a data error
+const MAX_PACK = 1e6;    // units in one pack
+
 const pick = (r, ...names) => { for (const n of names) if (r[n] !== undefined && r[n] !== null && r[n] !== '') return r[n]; return undefined; };
 const freeze = p => { Object.freeze(p.barcodes); return Object.freeze(p); };
 
@@ -75,14 +78,14 @@ export function normalizeProductRecord(record) {
   const rawPrice = pick(record, 'price');
   if (rawPrice !== undefined) {
     const d = parseDecimal(rawPrice);
-    if (!d.ok || (d.value !== null && d.value < 0)) errors.push('price-invalid'); else price = d.value;
+    if (!d.ok || (d.value !== null && (d.value < 0 || d.value > MAX_PRICE))) errors.push('price-invalid'); else price = d.value;
   }
 
   let packSize = 1;
   const rawPack = pick(record, 'packSize');
   if (rawPack !== undefined) {
     const d = parseDecimal(rawPack);
-    if (!d.ok || (d.value !== null && d.value <= 0)) errors.push('packSize-invalid'); else if (d.value !== null) packSize = d.value;
+    if (!d.ok || (d.value !== null && !(Number.isInteger(d.value) && d.value > 0 && d.value <= MAX_PACK))) errors.push('packSize-invalid'); else if (d.value !== null) packSize = d.value;
   }
 
   if (errors.length) return { ok: false, product: null, errors };

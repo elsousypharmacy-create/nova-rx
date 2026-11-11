@@ -23,3 +23,4 @@ Units and conversions (CAT-02, PR #135), search speed and ranking (CAT-05), pers
 - A product with one invalid barcode is rejected as a whole (reported in `rejected`), so a pharmacist must fix the barcode; it is not loaded without it.
 - Barcodes must be read as strings (a JS number loses leading zeros).
 - Token search is substring based (`500` also matches `1500`); ranking and word boundaries are CAT-05.
+- Bounds (re-review): price must be between 0 and 1,000,000,000 EGP; pack size must be a positive integer up to 1,000,000. CAT-02 packaging uses the same integer rule.
