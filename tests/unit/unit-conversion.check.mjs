@@ -131,4 +131,12 @@ t('numbers are bounded: nothing above the safe range is accepted or silently rou
   err(normalizePackaging({ unitsPerBox: 1e6, boxesPerCarton: 1e6 }), 'packaging-invalid:boxesPerCarton'); // carton would exceed 1e9 base units
 });
 
+t('the range limit also applies when converting from base units and when splitting', () => {
+  err(fromBaseUnits(1e9 + 1, 'unit', full), 'out-of-range');
+  err(fromBaseUnits(9007199254740993, 'strip', full), 'out-of-range');
+  err(splitBaseUnits(1e9 + 1, full), 'out-of-range');
+  assert.equal(val(fromBaseUnits(1e9, 'unit', full)), 1e9);
+  assert.equal(val(splitBaseUnits(1e9, full)).carton, 3333333);
+});
+
 console.log(`PASS unit-conversion checks (CAT-02): ${n} cases`);
