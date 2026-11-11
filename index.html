@@ -2372,6 +2372,48 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       // --- APPLICATION STATE ---
       window.NOVA_DEMO = { products: DEMO_PRODUCTS, customers: DEMO_CUSTOMERS };
+      // --- REAL PRICE LIST (read-only STOCK LIVE snapshot, prices only) ---
+      // Same-origin `/emergency/stock.json`. If it is missing (file://, offline, 404, bad data) the 12 demo products stay.
+      const escH = s => String(s ?? "").replace(/[&<>"'`]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" }[c]));
+      const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+      const foldKey = s => String(s ?? "").toLowerCase()
+        .replace(/[٠-٩]/g, d => String(AR_DIGITS.indexOf(d)))
+        .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
+        .replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+      const productKey = p => p._k || (p._k = foldKey(p.name + " " + p.generic));
+      const searchProducts = q => {
+        const tokens = foldKey(q).split(" ").filter(Boolean);
+        if (!tokens.length) return [];
+        return DEMO_PRODUCTS.filter(p => p.barcode.includes(q) || tokens.every(t => productKey(p).includes(t)));
+      };
+      window.novaFold = foldKey;
+      window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
+      function loadRealPrices() {
+        if (location.protocol === "file:") return;
+        fetch("/emergency/stock.json", { cache: "no-cache" }).then(r => (r.ok ? r.text() : null)).then(txt => {
+          if (!txt) return;
+          let j; try { j = JSON.parse(String(txt).replace(/^\uFEFF/, "")); } catch (e) { return; }
+          const raw = Array.isArray(j) ? j : j && j.items;
+          if (!Array.isArray(raw)) return;
+          const seen = new Set(), out = [];
+          for (const r of raw) {
+            const code = String(r.code == null ? "" : r.code).replace(/[^\d]/g, "");
+            const gtin = String(r.gtin == null ? "" : r.gtin).replace(/[^\d]/g, "");
+            const nameAr = String(r.namear || r.name || "").trim(), nameEn = String(r.nameen || "").trim();
+            const price = Number(r.price);
+            if ((!code && !gtin) || !(nameAr || nameEn) || !Number.isFinite(price) || price <= 0 || seen.has(code || gtin)) continue;
+            seen.add(code || gtin);
+            out.push({ id: code || gtin, barcode: gtin || code, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
+          }
+          if (out.length < 50) return; // an almost empty file is not a catalog: keep the demo data
+          DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
+          const ts = Date.parse(j && j.exportedAt);
+          window.novaCatalog = { source: "STOCK LIVE", exportedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null, count: out.length };
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+        }).catch(() => {});
+      }
+      loadRealPrices();
       window.novaCartItems=()=>{try{return state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}catch(e){return[]}};
       const state = {
         mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
@@ -2566,13 +2608,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           );
           renderCustomerSuggestions(matches);
         } else {
-          const qLower = query.toLowerCase();
-          const matches = DEMO_PRODUCTS.filter(p => 
-            p.name.toLowerCase().includes(qLower) || 
-            p.generic.toLowerCase().includes(qLower) || 
-            p.barcode.includes(query)
-          );
-          renderProductSuggestions(matches);
+          renderProductSuggestions(searchProducts(query).slice(0, 40));
         }
       }
 
@@ -2620,12 +2656,12 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         elements.suggestionsBox.innerHTML = matches.map((prod, idx) => `
           <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
             <div>
-              <div class="sugg-primary" dir="auto">${prod.name}</div>
-              <div class="sugg-sub">${prod.generic} • ${prod.form}</div>
+              <div class="sugg-primary" dir="auto">${escH(prod.name)}</div>
+              <div class="sugg-sub">${escH(prod.generic)}${prod.generic && prod.form ? " • " : ""}${escH(prod.form)}</div>
             </div>
             <div class="sugg-meta">
               <div class="sugg-price">${prod.price.toFixed(2)} SAR</div>
-              <span class="sugg-tag">${prod.barcode}</span>
+              <span class="sugg-tag">${escH(prod.barcode)}</span>
             </div>
           </div>
         `).join("");
@@ -2830,7 +2866,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           });
         }
         renderInvoice();
-        showToast(`Added to invoice: ${product.name}`);
+        showToast(`Added to invoice: ${escH(product.name)}`);
       }
 
       function updateLineQty(productId, newQty) {
@@ -2890,8 +2926,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               <tr data-id="${line.productId}">
                 <td class="col-idx">${idx + 1}</td>
                 <td class="col-item">
-                  <div class="item-title" dir="auto">${line.name}</div>
-                  <div class="item-generic">${line.generic} • ${line.form}</div>
+                  <div class="item-title" dir="auto">${escH(line.name)}</div>
+                  <div class="item-generic">${escH(line.generic)}${line.generic && line.form ? " • " : ""}${escH(line.form)}</div>
                 </td>
                 <td class="col-barcode">${line.barcode}</td>
                 <td class="col-price">${line.price.toFixed(2)}</td>
@@ -3499,10 +3535,15 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const title={invoices:'الفواتير',products:'المنتجات والمخزون',customers:'العملاء',reports:'التقارير',settings:'الإعدادات'}[page];
  let content='';
  if(page==='products'){
- const list=filtered(products,['name','barcode','generic','category']);
- content=head(title,'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
- +'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>'
- +table(['الصنف','الباركود','السعر','الرصيد','التصنيف'],rows(list,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td>'+esc(p.stock)+'</td><td>'+esc(p.category)+'</td></tr>'));
+ const cat=window.novaCatalog||{},real=cat.source==='STOCK LIVE',fold=window.novaFold||(x=>String(x).toLowerCase());
+ const tokens=fold(filter).split(' ').filter(Boolean);
+ const list=real?(tokens.length?products.filter(p=>String(p.barcode).includes(filter.trim())||tokens.every(t=>fold(p.name).includes(t))):products):filtered(products,['name','barcode','generic','category']);
+ const shown=real?list.slice(0,300):list;
+ const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
+ content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+' — الأسعار فقط، الرصيد غير متاح في هذه القائمة':'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
+ +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi('الرصيد','غير متاح')+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
+ :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
+ +table(['الصنف','الباركود','السعر','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
@@ -3529,6 +3570,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
  function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
  switchPage(location.hash.slice(1)||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
