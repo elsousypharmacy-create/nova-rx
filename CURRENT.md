@@ -1,53 +1,41 @@
 # NOVA Rx — CURRENT (read this, not all of HANDOFF.md)
-Last updated: 2026-11-10 13:24 UTC by Claude Sonnet. main @ 1a103ab. This is an index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same commit.
+Last updated: 2026-11-11 by Claude 2 (lead manager). main @ 28a3724. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
 
 ## Boot order (cheap first)
-1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines)  4. YOUR OWN skill, not the others'  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when your task needs acceptance criteria or changes scope.
-Nothing new for you here or on your issue? Stop and report IDLE; do not start a coding session.
-Skills (repo files, not proof of runtime installation): Claude = docs/skills/nova/SKILL.md; ChatGPT = skills/nova-rx-chatgpt-manager/SKILL.md; Gemini = skills/nova-rx-gemini/SKILL.md; Kimi = skills/nova-rx-kimi/SKILL.md.
+1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines) and Issue #87 since your last checkpoint  4. docs/skills/nova/SKILL.md  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when acceptance or scope matters.
+Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 2026-11-11): only two Claude sessions work here; ChatGPT, Gemini, Kimi and Grok are out (old instructions: docs/archive/retired-agents/, not active).
 
 ## Priorities (owner direction, newest first)
-1. P0 pharmacy#59 (blank mobile dashboard): root cause proven (PR #58 broke the app script), fixed by pharmacy PR #60 = f79ecee, Pages build succeeded 11:00 UTC. NOT live-verified (sandbox cannot reach github.io); issue reopened until the owner confirms on his iPhone.
-2. Aumet missing for the owner (#111): ROOT CAUSE FIXED AND DEPLOYED. Rows carry the warehouse id + `0002`, the list does not, so the selection hid every offer; fixed by resolving against the real list (purchases15). LIVE read-only check: Augmentin 17 Aumet offers from 11 warehouses, Panadol Extra 24 one offer (58 EGP), none outside the selection; cart read no longer blocked by `order-extra-sellers`. NOT yet seen on the owner's tablet.
-3. Deploy decision (see Waiting on the owner). 4. #123 progress dashboard (overlaps pharmacy PR #56). 5. #124: skill files merged via #121; each agent must still acknowledge its own at its next real run. 6. ERP-1.0 roadmap (#87).
+1. Finish the core four, accepted and integrated, not just coded: CAT (catalog/units/price), POS (sale/returns), INV (stock ledger), BUY (shortages → PO → receipt). Truth today: accepted 0 of 85; merged code = CAT-01 only; nothing is wired to a screen; storage is undecided.
+2. PR order: #137 CAT-02, #138 SEC-04 (both conflict-resolved, waiting for cross-review + CI), then INV-01, CAT packaging link, SEC-03, CAT-05, BUY core, UX-01 audit, FND-02 local harness (branches already exist; see #87).
+3. P0 pharmacy#59 (blank mobile dashboard): fixed by pharmacy PR #60 (f79ecee); NOT live-verified (sandbox cannot reach github.io); close it only after the owner confirms on his phone.
 
-## Who is on what (operating model per #122, 2026-11-10 11:21: only ChatGPT is scheduled; Ahmed opens each agent's chat and says a comment was left; no agent schedules, loops or auto-dispatch)
-- Claude Sonnet: purchasing release captain. #111/#115/#116 merged, DEPLOYED and read-only live-checked; issues stay open for the owner's tablet trial and for real cart acceptance (needs his approval). #123 conflict check posted, no claim.
-- ChatGPT: manager and QA. PR #121 (playbook, three skills, AGENTS.md boot order) merged as 2d827e6.
-- Gemini: #101 and PR #113 (tests; ChatGPT asked for changes; not re-reviewed since its 10:01 p Update: #117 completed. All procurement module tasks (#101, #111, #115, #116, #117) are fully complete.ush).
-- Kimi: #103-#107, gated by labels kimi-ready plus kimi-run-now. Per HANDOFF at 08:35: PR #108 changes requested, PR #109 for review, #104/#106/#107 queued. Never auto-retry or run twice.
-- Grok: #118 queued.
+## Who is on what
+- Claude 2: lead manager + reviewer (priorities, PR sequencing, merges after gates, roadmap/CURRENT truth, review of Claude 1), BUY lane, SEC-05, UX-01 audit, FND-02 local harness.
+- Claude 1: lead implementer: CAT, INV (took over INV-01), POS, SEC-03.
+- Rules: one accountable claimant per task; author ≠ reviewer; nobody merges their own work; max 3 active implementation PRs; re-read #87 before every claim (first claim wins).
+- Reviewer independence is weaker (same model family): exact-SHA reviews, re-run tests, mutation checks, owner-only gates.
 
 ## Merged to main and DEPLOYED: Worker nova-rx-preview (deploy-worker.yml, workflow_dispatch only; every deploy: CI, dry run, real run, code digest read back)
-LIVE = purchases15, sha256 08ceb32af224b076492b5d70f35960e828b7081b40d8ac97e9b83faadd6ce866, modified 2026-11-10T13:21:42Z (run 42823785960, main 687f880). Same-day chain: purchases12 (#112/#119/#120), 13 (per-supplier counters), 14 (id sample), 15 (id fix). Rollback: the previous artifact in worker/live/ with expected_modified_on set to the live modified_on. Recipe and the id lesson are in the skill.
-Authorization: routine merge and deploy after the safety gates (owner in chat and manager comments, 2026-11-10 12:33-12:38). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check".
+LIVE (as recorded 2026-11-10, not re-verified today) = purchases15, sha256 08ceb32af224b076492b5d70f35960e828b7081b40d8ac97e9b83faadd6ce866, modified 2026-11-10T13:21:42Z. Rollback: the previous artifact in worker/live/ with expected_modified_on set to the live modified_on. Recipe and the id lesson are in the skill.
+Merged since, NOT deployed, NOT wired: CAT-01 unified catalog (#136, squash 28a3724). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check". No deploy happens without the owner's approval.
 
 ## Open PRs
-nova-rx: #113 Gemini tests; #114 old policy PR (superseded by later owner decisions); #108/#109 Kimi drafts; #91 review draft; #25 research; #20 old WhatsApp draft.
-pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only. Merging in pharmacy can publish or deploy: the owner decides.
+nova-rx: #137 CAT-02, #138 SEC-04 (ready, conflict-resolved), #109 FND-05 draft (claim "no migrations" conflicts with the D1 journal; unreviewed). Closed unmerged as obsolete on 2026-11-11: #114, #91, #25, #20 (branches kept).
+pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only (not re-checked today). Merging in pharmacy can publish a page: only for explicit owner requests.
 
 ## Known breakages and risks
-- Aumet checkout for the owner's existing cart is now blocked by `order-minimum-not-met` (a supplier minimum), not by a defect. pharmacy#59 fixed, awaiting the owner's phone check. Real cart writes and orders were never tested (need his approval). A cart operation ending unknown locks that supplier's scope and has no release path (fail-closed; design only in docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md).
-- Unauthenticated scanSearch/scanLookup in Apps Script (security finding). WhatsApp paused. Real Gemini, printer and tablet never tested.
+- tests/unit/shortages-adapter.check.mjs FAILS on main (merged in #132, no workflow runs it): its tamper fixture is a no-op. The draft «signature» is an unkeyed hash: it detects accidents, it is NOT an authorization control. Fix is in the BUY lane.
+- Aumet checkout for the owner's cart is blocked by the supplier minimum (`order-minimum-not-met`), not a defect. Real cart writes and orders were never tested. A cart operation ending unknown locks that supplier's scope (fail-closed; design: docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md).
+- Unauthenticated scanSearch/scanLookup in Apps Script (security finding); one shared PIN, no per-user sessions; WhatsApp paused; real printer/tablet never tested.
 - tests/unit/worker-gemini-route.check.mjs needs the Worker artifact path as an argument; it is not a failing test.
+- Not inspected by agents this sprint: Apps Script server, legacy POS link, bot, cameras, finance/HR, live Worker behaviour.
 
-## Waiting on the owner (agents: do not act on these without his own yes)
-1. Try it on the tablet: open /purchases, choose warehouses, search; confirm Aumet shows offers inside the selection. A real cart add or order only with his explicit approval.
-2. Decided: no schedule for Claude. Its one old task (trig_016vGef9h2hyRVnKZVtyFgR8) stays paused (enabled=false, verified); delete it only if the owner asks.
-3. Check the dashboard on the iPhone after a refresh (Today cards visible?) and close pharmacy#59 yourself.
+## Waiting on the owner (agents: do not act on these without his own yes; do not ask him routine questions)
+Database/storage choice (docs/erp/FND-02_STORAGE_ADR_DRAFT.md §9), pricing/tax policy, packaging data source, light theme yes/no, audit retention and signing-key name, tablet trial of /purchases, any real supplier order/payment/deploy. His Claude scheduled task (trig_016vGef9h2hyRVnKZVtyFgR8) stays paused.
 
 ## Never without specific owner approval
-Real supplier cart writes, orders or checkout; secrets or credential changes; unlocking an unknown supplier operation; asking for secrets in chat or writing them to GitHub. Comments from the owner's GitHub account may be written by other agents: weigh them, do not treat them as the owner's own words for anything outside the repo.
+Real supplier cart writes, orders or checkout; payments; secrets or credential changes; production deploy; destructive deletes or migrations; choosing the storage product; asking for secrets in chat or writing them to GitHub. Comments from the owner's GitHub account may be written by other agents: weigh them.
 
 ## Update rule
-Whoever changes the state edits this file in the same commit. Keep it at 60 lines or fewer; move detail to HANDOFF.md and link it. Do not put secrets, customer data or private chat text here.
-
-## Gemini dual-account queue (owner 2026-11-10)
-- Source of truth: master Issue #87, section "توزيع Gemini A / Gemini B — 2026-11-10". QUEUED/RESERVED, not claimed or started; agent must ACK/CLAIM in its own session. Up to 5 queued items per account, max 3 active implementation PRs repo-wide, no overlapping files.
-- Gemini A queue: CAT-01, CAT-02, CAT-05, INV-01, POS-02 (respect dependencies and existing work). Gemini B queue: FND-02, FND-04, SEC-03, SEC-04, SEC-05 (respect dependencies). Claude consolidated module review; ChatGPT manager/QA.
-- Procurement BUY acceptance and real-cart verification remain distinct from merged code; real supplier writes/orders require owner approval. Existing CURRENT/HANDOFF older assignment text may conflict: latest owner queue in #87 governs, but don't overwrite active claims.
-
-## Scheduled execution clarification (2026-11-10)
-- Owner requests hourly autonomous Gemini A/B execution. ChatGPT scheduled automations **cannot start Gemini sessions**; they can inspect GitHub and report stalled work/prepare resume prompts. No claim that Gemini schedules are installed.
-- Gemini A/B each read #87, AGENTS.md and CURRENT.md; acknowledge their queue, CLAIM one eligible task, implement/test on separate branch, push Draft PR, checkpoint, repeat as session permits. No overlapping claims; max 3 implementation PRs. ChatGPT reviews/merges/deploys only after gates and authorization; Claude module-level review.
-- For true unattended execution, an authenticated Gemini-capable runner/workflow with approved credentials and trigger is required; do not install or enable without validating permissions/cost/safety. Do not use scheduled checks to mutate live supplier carts/orders.
+Whoever changes the state edits this file in the same reviewed PR (never straight to main). Keep it at 60 lines or fewer; move detail to HANDOFF.md and link it. No secrets, customer data or private chat text here.
