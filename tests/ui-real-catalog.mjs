@@ -108,6 +108,17 @@ await t('a hostile product name (<img onerror>) is inert: shown as text in the l
   await ctx.close();
 });
 
+await t('currency is the Egyptian pound everywhere on the sale screen (ج.م in Arabic, EGP in English), never Saudi riyals', async () => {
+  const ar = await real.page.evaluate(() => document.body.innerText);
+  assert.ok(/ج\.م/.test(ar), 'Arabic UI shows ج.م'); assert.ok(!/ر\.س|SAR/.test(ar), 'no Saudi riyal text: ' + (ar.match(/.{12}(ر\.س|SAR).{4}/) || [''])[0]);
+  const ectx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'en-US', hasTouch: true });
+  await ectx.route('**/*', r => { const u = r.request().url(); return u.startsWith(new URL(BASE).origin) || u.startsWith('data:') ? r.continue() : r.abort(); });
+  const epage = await ectx.newPage(); await epage.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'en'); } catch {} });
+  await epage.goto(BASE, { waitUntil: 'load' }); await epage.waitForTimeout(900);
+  const txt = await epage.evaluate(() => document.body.innerText);
+  assert.ok(/EGP/.test(txt) && !/SAR|ر\.س/.test(txt), 'English UI shows EGP only'); await ectx.close();
+});
+
 for (const mode of ['missing', 'bad']) {
   await t(`fallback: endpoint ${mode} -> the 12 demo products stay and nothing breaks`, async () => {
     const d = await open({ stock: mode === 'missing' ? 'none' : 'bad' }); await d.page.waitForTimeout(1200);

@@ -27,7 +27,7 @@ const collect = (extra) => {
 const AR = /[؀-ۿ]/, LAT = /[A-Za-z]{3,}/;
 // Demo customer names ("عربي (English)"), brand/tech words are data, not UI text.
 const isData = t => /\([A-Za-z .'-]+\)\s*$/.test(t);
-const brandOnly = t => !LAT.test(t.replace(/NOVA Rx|PWA|Black Edition|Cairo|API|Gemini|F\d+|Enter|Esc|POS|PDF|AI|SAR|VAT/g, ''));
+const brandOnly = t => !LAT.test(t.replace(/NOVA Rx|PWA|Black Edition|Cairo|API|Gemini|F\d+|Enter|Esc|POS|PDF|AI|SAR|EGP|VAT/g, ''));
 
 const browser = await chromium.launch({ executablePath, args: ['--no-sandbox'] });
 try {
