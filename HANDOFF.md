@@ -778,6 +778,16 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - NOT TESTED: owner's tablet/browser, real cart writes/orders/checkout (need owner approval), pharmacy#59 on iPhone.
 - Rollback: purchases14 artifact.
 
+## Checkpoint 2026-11-11 — Claude 1, SEC-04 audit chain (claim on Issue #87)
+- Branch `claude/sec-04-audit-chain`, stacked on Gemini B's `gemini/sec-03-04-05-foundation` (`5bc99cb`, docs only). Files: `worker/security/audit-log.js`, `tests/unit/security-audit-log.check.mjs` (21 cases), `.github/workflows/security-unit.yml`, `docs/erp/SEC-04_AUDIT_LOG.md` (relabelled PROPOSED).
+- Done: canonical JSON, secret/PII masking, allowlisted event builder, HMAC-SHA256 per-tenant chain with seq/anchor, `appendAuditEvent`/`verifyAuditChain`. 14 mutations of the safeguards are each caught by the tests.
+- Closed as superseded per manager decision: #134 (-> #136) and #135 (-> #137). Open implementation PRs: #136 CAT-01, #137 CAT-02, SEC-04 (this branch).
+- NOT DONE / NOT TESTED: no wiring into the Worker, no storage, no key created or changed, no live behavior. Open owner decisions in the doc (key, retention, storage/single writer, IP).
+- Next: SEC-03 scoped-repository wrapper (pure) after review slots free; catalog `packaging` link; CAT-05 benchmark.
+
+## Checkpoint 2026-11-11 — Claude 1, SEC-04 review fixes (PR #138)
+- Claude 2's 4 blocking items fixed test-first: B1 substring key redaction (Claude 2's 16 names + more), B2 no NFC inside the hash (normalise once at build, refuse key collisions), B3 server-clock-only timestamp, B4 requestId required. Also: `expectedSeq` required, `expectedHead` on verify, depth cap, Map/undefined handling, IPv4-mapped IP, more scrubber shapes. 31 cases; 17 mutations of the new safeguards each caught (including the 2 that survived the first review).
+- Still NOT done: wiring, persistence, single-writer store, key management, metadata allowlist (documented limits).
 ## Checkpoint 2026-11-11 — Claude 1, CAT-01 (claim on Issue #87)
 - Branch `claude/cat-01-catalog`, stacked on Gemini A's PR #134 head `8717484`. Files: `worker/catalog/unified-catalog.js`, `tests/unit/unified-catalog{,-duplicates,-realdata}.check.mjs`, `.github/workflows/catalog-unit.yml`, `docs/catalog/CAT-01.md`.
 - PR #134 audit: its own test failed (`assert.ok(item.id)` got `''`) while the PR said PASS; no CI ran it; one barcode only; no ingredient/strength/form; no duplicate review; silent defaults (price 0, packSize 1).
