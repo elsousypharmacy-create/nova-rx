@@ -7,7 +7,7 @@
 export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS batch(id INTEGER PRIMARY KEY, tenant_id TEXT NOT NULL, product_id TEXT NOT NULL, lot TEXT NOT NULL, expiry TEXT NOT NULL, UNIQUE(tenant_id, product_id, lot));
 CREATE TABLE IF NOT EXISTS stock_balance(tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), on_hand INTEGER NOT NULL CHECK(on_hand >= 0), PRIMARY KEY(tenant_id, branch_id, batch_id));
-CREATE TABLE IF NOT EXISTS stock_movement(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty_delta INTEGER NOT NULL CHECK(qty_delta <> 0), kind TEXT NOT NULL CHECK(kind IN ('receive','sale','return')), ref_type TEXT NOT NULL, ref_id TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS stock_movement(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty_delta INTEGER NOT NULL CHECK(qty_delta <> 0), kind TEXT NOT NULL CHECK(kind IN ('receive','sale','return','adjust')), ref_type TEXT NOT NULL, ref_id TEXT NOT NULL);
 CREATE TRIGGER IF NOT EXISTS stock_movement_no_update BEFORE UPDATE ON stock_movement BEGIN SELECT RAISE(ABORT,'stock_movement is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS stock_movement_no_delete BEFORE DELETE ON stock_movement BEGIN SELECT RAISE(ABORT,'stock_movement is append-only'); END;
 CREATE TABLE IF NOT EXISTS stock_policy(tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, product_id TEXT NOT NULL, min_base INTEGER NOT NULL CHECK(min_base >= 0), max_base INTEGER NOT NULL CHECK(max_base >= min_base), PRIMARY KEY(tenant_id, branch_id, product_id));
@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS return_line(id INTEGER PRIMARY KEY AUTOINCREMENT, inv
 CREATE TRIGGER IF NOT EXISTS return_not_above_sold BEFORE INSERT ON return_line BEGIN
   SELECT RAISE(ABORT,'return exceeds sold') WHERE (SELECT COALESCE(SUM(qty),0) FROM return_line WHERE invoice_line_id = NEW.invoice_line_id) + NEW.qty > (SELECT qty FROM invoice_line WHERE id = NEW.invoice_line_id);
 END;
+CREATE TABLE IF NOT EXISTS refund_payment(id INTEGER PRIMARY KEY AUTOINCREMENT, payment_id INTEGER NOT NULL REFERENCES payment(id), return_key TEXT NOT NULL, amount_cents INTEGER NOT NULL CHECK(amount_cents > 0));
+CREATE TRIGGER IF NOT EXISTS refund_not_above_payment BEFORE INSERT ON refund_payment BEGIN
+  SELECT RAISE(ABORT,'refund exceeds payment') WHERE (SELECT COALESCE(SUM(amount_cents),0) FROM refund_payment WHERE payment_id = NEW.payment_id) + NEW.amount_cents > (SELECT amount_cents FROM payment WHERE id = NEW.payment_id);
+END;
+CREATE TABLE IF NOT EXISTS stock_adjustment(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), delta INTEGER NOT NULL CHECK(delta <> 0), reason TEXT NOT NULL, approved_by TEXT NOT NULL, actor TEXT NOT NULL, adjust_key TEXT NOT NULL, CHECK(approved_by <> actor));
 CREATE TABLE IF NOT EXISTS purchase_order(tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, po_ref TEXT NOT NULL, PRIMARY KEY(tenant_id, po_ref));
 CREATE TABLE IF NOT EXISTS po_line(tenant_id TEXT NOT NULL, po_ref TEXT NOT NULL, product_id TEXT NOT NULL, ordered_base INTEGER NOT NULL CHECK(ordered_base > 0), PRIMARY KEY(tenant_id, po_ref, product_id));
 CREATE TABLE IF NOT EXISTS receipt_line(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, po_ref TEXT NOT NULL, receipt_key TEXT NOT NULL, product_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty INTEGER NOT NULL CHECK(qty > 0), cost_cents INTEGER NOT NULL CHECK(cost_cents >= 0));
@@ -29,6 +34,8 @@ CREATE TABLE IF NOT EXISTS idempotency_key(tenant_id TEXT NOT NULL, key TEXT NOT
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 const REF = /^[A-Za-z0-9_./-]{1,128}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const validRef = v => typeof v === 'string' && REF.test(v) && !v.includes('..');
+const ACCOUNT = { cash: 'cash', card: 'card', credit: 'receivable' };   // where a refund of each payment method is booked
 // calendar-exact: '2026-02-31' must not silently roll over to March
 const validDate = d => typeof d === 'string' && DATE.test(d) && new Date(d + 'T00:00:00Z').toISOString().slice(0, 10) === d;
 const METHODS = new Set(['cash', 'card', 'credit']);
@@ -36,6 +43,20 @@ const MAX_QTY = 1e9, MAX_CENTS = 1e12;
 
 export class CoreError extends Error { constructor(code, detail) { super(code); this.code = code; this.detail = detail; } }
 const bad = (code, detail) => { throw new CoreError(code, detail); };
+// Store constraint errors become typed errors: a caller can tell a business conflict from a failure, and no SQL text leaks.
+function storeError(e) {
+  if (e instanceof CoreError) return e;
+  const m = String(e?.message ?? '');
+  if (/UNIQUE constraint failed: invoice\.tenant_id, invoice\.number/.test(m)) return new CoreError('invoice-number-exists');
+  if (/UNIQUE constraint failed: purchase_order\./.test(m)) return new CoreError('po-exists');
+  if (/UNIQUE constraint failed: po_line\./.test(m)) return new CoreError('po-line-duplicate');
+  if (/return exceeds sold/.test(m)) return new CoreError('return-exceeds-sold');
+  if (/refund exceeds payment/.test(m)) return new CoreError('refund-exceeds-payment');
+  if (/stock_balance\.on_hand/.test(m)) return new CoreError('insufficient-stock');
+  if (/constraint failed/i.test(m)) return new CoreError('constraint-violation');
+  return new CoreError('store-error');
+}
+const addDays = (d, k) => new Date(new Date(d + 'T00:00:00Z').getTime() + k * 864e5).toISOString().slice(0, 10);
 const posInt = (v, max) => Number.isSafeInteger(v) && v > 0 && v <= max;
 const nonNegInt = (v, max) => Number.isSafeInteger(v) && v >= 0 && v <= max;
 
@@ -70,7 +91,7 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
 
   // one writer transaction; an idempotency record makes a retried request return the stored result (never a second effect)
   function atomic(s, ns, rawKey, fp, work) {
-    if (typeof rawKey !== 'string' || !REF.test(rawKey)) bad('idempotency-key-invalid');
+    if (typeof rawKey !== 'string' || !validRef(rawKey)) bad('idempotency-key-invalid');
     const key = `${ns}:${rawKey}`;
     db.exec('BEGIN IMMEDIATE');
     try {
@@ -80,7 +101,7 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
       run('INSERT INTO idempotency_key(tenant_id, key, request_hash, response_json) VALUES(?,?,?,?)', s.t, key, fp, JSON.stringify(result));
       db.exec('COMMIT');
       return result;
-    } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
+    } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw storeError(e); }
   }
   const prepare = async (key, payload) => ({ key, fp: await sha256(fingerprint(payload)) });
 
@@ -126,13 +147,14 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
   // ---- write: goods receipt, optionally against a purchase order ---------------------------------------------------
   function registerPurchaseOrder(scope, { poRef, lines }) {
     const s = scopeOf(scope);
-    if (!REF.test(String(poRef ?? '')) || !Array.isArray(lines) || lines.length === 0) bad('po-invalid');
+    if (!validRef(String(poRef ?? '')) || !Array.isArray(lines) || lines.length === 0) bad('po-invalid');
+    if (new Set(lines.map(l => String(l?.productId))).size !== lines.length) bad('po-line-duplicate');
     db.exec('BEGIN IMMEDIATE');
     try {
       run('INSERT INTO purchase_order(tenant_id, branch_id, po_ref) VALUES(?,?,?)', s.t, s.b, poRef);
       for (const l of lines) { if (!ID.test(String(l.productId)) || !posInt(l.orderedBase, MAX_QTY)) bad('po-line-invalid'); run('INSERT INTO po_line(tenant_id, po_ref, product_id, ordered_base) VALUES(?,?,?,?)', s.t, poRef, l.productId, l.orderedBase); }
       db.exec('COMMIT');
-    } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
+    } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw storeError(e); }
   }
   function poStatus(scope, poRef) {
     const s = scopeOf(scope);
@@ -145,11 +167,11 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
     const s = scopeOf(scope);
     if (!Array.isArray(lines) || lines.length === 0 || lines.length > 500) bad('receipt-invalid');
     const norm = lines.map(l => {
-      if (!ID.test(String(l.productId)) || !REF.test(String(l.lot ?? '')) || !validDate(l.expiry) || !posInt(l.qtyBase, MAX_QTY) || !nonNegInt(l.costCents ?? 0, MAX_CENTS)) bad('receipt-line-invalid', l);
+      if (!ID.test(String(l.productId)) || !validRef(String(l.lot ?? '')) || !validDate(l.expiry) || !posInt(l.qtyBase, MAX_QTY) || !nonNegInt(l.costCents ?? 0, MAX_CENTS)) bad('receipt-line-invalid', l);
       return { productId: String(l.productId), lot: String(l.lot), expiry: l.expiry, qtyBase: l.qtyBase, costCents: l.costCents ?? 0 };
     });
-    if (poRef !== null && !REF.test(String(poRef))) bad('po-invalid');
-    const { fp } = await prepare(key, { poRef, norm });
+    if (poRef !== null && !validRef(String(poRef))) bad('po-invalid');
+    const { fp } = await prepare(key, { branch: s.b, poRef, norm });
     return atomic(s, 'receipt', key, fp, () => {
       if (poRef !== null) {
         if (!one('SELECT 1 AS x FROM purchase_order WHERE tenant_id=? AND branch_id=? AND po_ref=?', s.t, s.b, poRef)) bad('po-not-found');
@@ -177,13 +199,13 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
   // ---- write: sale. lines = [{productId, qtyBase, lineTotalCents}] already converted and priced by the POS layer ------
   async function sell(scope, { key, number, lines, payments }, hooks = {}) {
     const s = scopeOf(scope);
-    if (!REF.test(String(number ?? '')) || !Array.isArray(lines) || lines.length === 0 || lines.length > 200 || !Array.isArray(payments) || payments.length === 0) bad('sale-invalid');
+    if (!validRef(String(number ?? '')) || !Array.isArray(lines) || lines.length === 0 || lines.length > 200 || !Array.isArray(payments) || payments.length === 0) bad('sale-invalid');
     const ls = lines.map(l => { if (!ID.test(String(l.productId)) || !posInt(l.qtyBase, MAX_QTY) || !nonNegInt(l.lineTotalCents, MAX_CENTS)) bad('line-invalid', l); return { productId: String(l.productId), qtyBase: l.qtyBase, lineTotalCents: l.lineTotalCents }; });
     const ps = payments.map(p => { if (!METHODS.has(p.method) || !posInt(p.amountCents, MAX_CENTS)) bad('payment-invalid', p); return { method: p.method, amountCents: p.amountCents }; });
     const total = ls.reduce((n, l) => n + l.lineTotalCents, 0), paid = ps.reduce((n, p) => n + p.amountCents, 0);
     if (total > MAX_CENTS) bad('sale-invalid');
     if (paid !== total) bad('payment-mismatch', { total, paid });
-    const { fp } = await prepare(key, { number, ls, ps });
+    const { fp } = await prepare(key, { branch: s.b, number, ls, ps });
     return atomic(s, 'sale', key, fp, () => {
       const inv = Number(run('INSERT INTO invoice(tenant_id, branch_id, number, total_cents) VALUES(?,?,?,?)', s.t, s.b, String(number), total).lastInsertRowid);
       for (const l of ls) {
@@ -210,9 +232,9 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
   // ---- write: return. items = [{productId, qtyBase}] taken back from ONE invoice; stock is restored to the same batches ---
   async function returnItems(scope, { key, invoiceNumber, items }) {
     const s = scopeOf(scope);
-    if (!REF.test(String(invoiceNumber ?? '')) || !Array.isArray(items) || items.length === 0) bad('return-invalid');
+    if (!validRef(String(invoiceNumber ?? '')) || !Array.isArray(items) || items.length === 0) bad('return-invalid');
     const its = items.map(i => { if (!ID.test(String(i.productId)) || !posInt(i.qtyBase, MAX_QTY)) bad('return-line-invalid', i); return { productId: String(i.productId), qtyBase: i.qtyBase }; });
-    const { fp } = await prepare(key, { invoiceNumber, its });
+    const { fp } = await prepare(key, { branch: s.b, invoiceNumber, its });
     return atomic(s, 'return', key, fp, () => {
       const inv = getInvoice({ tenantId: s.t, branchId: s.b }, invoiceNumber);
       if (!inv) bad('invoice-not-found');
@@ -233,9 +255,48 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
         }
         if (rest > 0) bad('return-exceeds-sold', { productId: it.productId, excess: rest });
       }
-      if (refund > 0) journal(s, 'return', String(invoiceNumber), [['sales', refund]], [['cash', refund]]);
-      return { invoiceNumber: String(invoiceNumber), refundCents: refund };
+      // The refund goes back to the ORIGINAL payment methods in the order they were taken, never more than each one paid.
+      const refundedTo = []; const credits = new Map();
+      if (refund > 0) {
+        let left = refund;
+        for (const p of q('SELECT p.id, p.method, p.amount_cents AS amount, COALESCE((SELECT SUM(amount_cents) FROM refund_payment rp WHERE rp.payment_id = p.id),0) AS refunded FROM payment p WHERE p.invoice_id = ? ORDER BY p.id', inv.id)) {
+          if (left === 0) break;
+          const take = Math.min(left, p.amount - p.refunded); if (take <= 0) continue;
+          run('INSERT INTO refund_payment(payment_id, return_key, amount_cents) VALUES(?,?,?)', p.id, key, take);
+          refundedTo.push({ method: p.method, amountCents: take });
+          credits.set(ACCOUNT[p.method], (credits.get(ACCOUNT[p.method]) ?? 0) + take); left -= take;
+        }
+        if (left > 0) bad('refund-exceeds-payment', { left });
+        journal(s, 'return', String(invoiceNumber), [['sales', refund]], [...credits]);
+      }
+      return { invoiceNumber: String(invoiceNumber), refundCents: refund, refundedTo };
     });
+  }
+
+  // ---- write: stock adjustment (count difference, breakage, expired write-off). Reason and a DIFFERENT approver are mandatory. -----
+  async function adjust(scope, { key, productId, lot, delta, reason, approvedBy, actor } = {}) {
+    const s = scopeOf(scope);
+    if (!ID.test(String(productId)) || !validRef(String(lot ?? ''))) bad('adjust-invalid');
+    if (!(Number.isSafeInteger(delta) && delta !== 0 && Math.abs(delta) <= MAX_QTY)) bad('quantity-invalid');
+    if (typeof reason !== 'string' || reason.trim().length < 5) bad('reason-required');
+    if (typeof actor !== 'string' || !ID.test(actor)) bad('actor-invalid');
+    if (typeof approvedBy !== 'string' || !ID.test(approvedBy) || approvedBy === actor) bad('approver-required');
+    const { fp } = await prepare(key, { branch: s.b, productId: String(productId), lot, delta, reason: reason.trim(), approvedBy, actor });
+    return atomic(s, 'adjust', key, fp, () => {
+      const b = one('SELECT id FROM batch WHERE tenant_id=? AND product_id=? AND lot=?', s.t, String(productId), lot);
+      const bal = b && one('SELECT on_hand AS onHand FROM stock_balance WHERE tenant_id=? AND branch_id=? AND batch_id=?', s.t, s.b, b.id);
+      if (!b || !bal) bad('lot-unknown');                                   // an adjustment never creates a lot or stock out of nothing
+      if (bal.onHand + delta < 0) bad('insufficient-stock', { onHand: bal.onHand });
+      move(s, b.id, delta, 'adjust', 'adjustment', key);
+      run('INSERT INTO stock_adjustment(tenant_id, branch_id, batch_id, delta, reason, approved_by, actor, adjust_key) VALUES(?,?,?,?,?,?,?,?)', s.t, s.b, b.id, delta, reason.trim(), approvedBy, actor, key);
+      return { productId: String(productId), lot, delta, onHand: bal.onHand + delta };
+    });
+  }
+  // lots with stock that expire within `days` (not yet expired), soonest first; scoped to the caller's tenant and branch
+  function expiring(scope, days) {
+    const s = scopeOf(scope);
+    if (!Number.isInteger(days) || days < 0 || days > 3650) return [];
+    return q('SELECT b.product_id AS productId, b.lot AS lot, b.expiry AS expiry, sb.on_hand AS onHand FROM stock_balance sb JOIN batch b ON b.id = sb.batch_id WHERE sb.tenant_id=? AND sb.branch_id=? AND sb.on_hand > 0 AND b.expiry >= ? AND b.expiry <= ? ORDER BY b.expiry, b.product_id, b.lot', s.t, s.b, today(), addDays(today(), days)).map(r => ({ ...r }));
   }
 
   // ---- reconciliation: every invariant, for one tenant (daily close / after any incident) -------------------------------
@@ -253,8 +314,10 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
       if (r.ret === r.qty && r.rc !== r.lt) v.push(`line ${r.id}: fully returned but refund ${r.rc} != ${r.lt}`);
     }
     for (const r of q('SELECT pl.po_ref AS po, pl.product_id AS p, pl.ordered_base AS o, COALESCE((SELECT SUM(qty) FROM receipt_line r WHERE r.tenant_id=pl.tenant_id AND r.po_ref=pl.po_ref AND r.product_id=pl.product_id),0) AS got FROM po_line pl WHERE pl.tenant_id=?', s.t)) if (r.got > r.o) v.push(`po ${r.po}/${r.p}: received ${r.got} > ordered ${r.o}`);
+    for (const r of q('SELECT p.id, p.amount_cents AS amount, COALESCE(SUM(rp.amount_cents),0) AS refunded FROM payment p JOIN invoice i ON i.id = p.invoice_id LEFT JOIN refund_payment rp ON rp.payment_id = p.id WHERE i.tenant_id=? GROUP BY p.id', s.t)) if (r.refunded > r.amount) v.push(`payment ${r.id}: refunded ${r.refunded} > paid ${r.amount}`);
+    for (const r of q('SELECT i.number AS number, COALESCE((SELECT SUM(rp.amount_cents) FROM refund_payment rp JOIN payment p ON p.id = rp.payment_id WHERE p.invoice_id = i.id),0) AS paidOut, COALESCE((SELECT SUM(rl.refund_cents) FROM return_line rl JOIN invoice_line il ON il.id = rl.invoice_line_id WHERE il.invoice_id = i.id),0) AS owed FROM invoice i WHERE i.tenant_id=?', s.t)) if (r.paidOut !== r.owed) v.push(`invoice ${r.number}: refunds paid out ${r.paidOut} != refunds owed ${r.owed}`);
     return v;
   }
 
-  return Object.freeze({ install, setPolicy, stockOf, shortages, getInvoice, registerPurchaseOrder, poStatus, receiveGoods, sell, returnItems, reconcile });
+  return Object.freeze({ install, adjust, expiring, setPolicy, stockOf, shortages, getInvoice, registerPurchaseOrder, poStatus, receiveGoods, sell, returnItems, reconcile });
 }

@@ -28,4 +28,5 @@ jobs:
           set -euo pipefail
           node --version
           node --no-warnings tests/integration/core-cycle.check.mjs
+          node --no-warnings tests/integration/inv-01-review-fixes.check.mjs
           node --no-warnings tests/unit/procurement-po-draft.check.mjs
