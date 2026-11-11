@@ -31,6 +31,17 @@ export function normalizeBarcode(barcode) {
   return /^\d{8,14}$/.test(s) ? s : null;
 }
 
+// Strict decimal: digits (Arabic-Indic converted), optional "." or Arabic decimal separator, optional comma thousands groups.
+// Blank text means "not given". Hex, exponents, signs, arrays, booleans and anything else are rejected.
+function parseDecimal(raw) {
+  if (typeof raw === 'number') return Number.isFinite(raw) ? { ok: true, value: raw } : { ok: false };
+  if (typeof raw !== 'string') return { ok: false };
+  const s = normalizeDigits(raw).replace(/\u066C/g, ',').replace(/\u066B/g, '.').trim();
+  if (s === '') return { ok: true, value: null };
+  if (/^\d+(\.\d+)?$/.test(s) || /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) return { ok: true, value: Number(s.replace(/,/g, '')) };
+  return { ok: false };
+}
+
 const pick = (r, ...names) => { for (const n of names) if (r[n] !== undefined && r[n] !== null && r[n] !== '') return r[n]; return undefined; };
 const freeze = p => { Object.freeze(p.barcodes); return Object.freeze(p); };
 
@@ -63,15 +74,15 @@ export function normalizeProductRecord(record) {
   let price = null;
   const rawPrice = pick(record, 'price');
   if (rawPrice !== undefined) {
-    const p = typeof rawPrice === 'number' ? rawPrice : Number(normalizeDigits(rawPrice));
-    if (Number.isFinite(p) && p >= 0) price = p; else errors.push('price-invalid');
+    const d = parseDecimal(rawPrice);
+    if (!d.ok || (d.value !== null && d.value < 0)) errors.push('price-invalid'); else price = d.value;
   }
 
   let packSize = 1;
   const rawPack = pick(record, 'packSize');
   if (rawPack !== undefined) {
-    const n = typeof rawPack === 'number' ? rawPack : Number(normalizeDigits(rawPack));
-    if (Number.isFinite(n) && n > 0) packSize = n; else errors.push('packSize-invalid');
+    const d = parseDecimal(rawPack);
+    if (!d.ok || (d.value !== null && d.value <= 0)) errors.push('packSize-invalid'); else if (d.value !== null) packSize = d.value;
   }
 
   if (errors.length) return { ok: false, product: null, errors };
@@ -84,7 +95,7 @@ export function normalizeProductRecord(record) {
       form: sanitizeCatalogText(record.form),
       category: sanitizeCatalogText(record.category),
       unit: sanitizeCatalogText(record.unit) || 'pack',
-      active: record.active !== false,
+      active: !(record.active === false || record.active === 0 || /^(false|0|no|n|inactive)$/i.test(String(record.active ?? ''))),
     }),
   };
 }
@@ -161,13 +172,18 @@ export function createUnifiedCatalog(items = []) {
     products.set(keep.id, merged.product); keys.set(keep.id, searchKeyOf(merged.product));
     for (const b of merged.product.barcodes) byBarcode.set(b, keep.id);
     alias.set(drop.id, keep.id);
-    const entry = Object.freeze({ at: new Date().toISOString(), keptId: keep.id, droppedId: drop.id, reviewedBy: reviewer, reason: group.reason, key: group.key });
+    const discarded = {};
+    for (const f of ['price', 'active', 'unit']) if (drop[f] !== keep[f]) discarded[f] = drop[f];
+    const entry = Object.freeze({ at: new Date().toISOString(), keptId: keep.id, droppedId: drop.id, reviewedBy: reviewer, reason: group.reason, key: group.key, discarded: Object.freeze(discarded) });
     mergeLog.push(entry);
     return { ok: true, product: merged.product, log: entry };
   }
 
   return {
-    rejected, mergeLog, add, merge, detectDuplicates, resolveId,
+    // Read-only views: the audit trail cannot be wiped or edited by callers.
+    get rejected() { return Object.freeze(rejected.map(r => Object.freeze({ ...r, errors: Object.freeze([...r.errors]) }))); },
+    get mergeLog() { return Object.freeze([...mergeLog]); },
+    add, merge, detectDuplicates, resolveId,
     getAll: () => [...products.values()],
     findById: id => products.get(resolveId(id)) || null,
     findByBarcode: barcode => { const b = normalizeBarcode(barcode); return b && byBarcode.has(b) ? products.get(byBarcode.get(b)) : null; },
@@ -177,7 +193,7 @@ export function createUnifiedCatalog(items = []) {
       const tokens = normalizeArabicSearchKey(q).split(' ').filter(Boolean);
       const code = normalizeBarcode(q);
       return [...products.values()].filter(p =>
-        p.id === q || (code && p.barcodes.includes(code)) || (tokens.length > 0 && tokens.every(t => keys.get(p.id).includes(t))));
+        p.id === q || p.id === normalizeDigits(q) || (code && p.barcodes.includes(code)) || (tokens.length > 0 && tokens.every(t => keys.get(p.id).includes(t))));
     },
   };
 }

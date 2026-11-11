@@ -15,3 +15,11 @@ Units and conversions (CAT-02, PR #135), search speed and ranking (CAT-05), pers
 
 ## Evidence (real export, read only)
 4378 rows -> 4378 loaded, 0 rejected, 9 duplicate-candidate groups for pharmacist review (for example `سرنجة 3سم كبار` / `سرنجه 3سم كبار`), catalog build about 50 ms. Run: `for f in tests/unit/unified-catalog*.check.mjs; do node --no-warnings $f; done`.
+
+## Review follow-up (Claude 2, PR #136) and known limits
+- Fixed: whitespace price is "not given" (null), never 0; prices and pack sizes must be strict decimals (Arabic digits and `٫`/`٬` separators accepted; `0x10`, `1e3`, signs and non-text types rejected); `mergeLog` and `rejected` are read-only views; a test now proves that strength/form differences prevent a duplicate group; the merge log records the discarded `price`/`active`/`unit`; import-style inactive flags (`0`, `"false"`, `"no"`, `"inactive"`) deactivate; ids typed with Arabic-Indic digits are found.
+- `price` is a JS number for display and comparison. Money arithmetic must use the integer-cent functions of CAT-02 (`unit-conversion.js`).
+- `reviewedBy` is a name recorded in the log, not an approval control, until identity exists (SEC-01/02).
+- A product with one invalid barcode is rejected as a whole (reported in `rejected`), so a pharmacist must fix the barcode; it is not loaded without it.
+- Barcodes must be read as strings (a JS number loses leading zeros).
+- Token search is substring based (`500` also matches `1500`); ranking and word boundaries are CAT-05.

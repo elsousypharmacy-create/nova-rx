@@ -105,4 +105,38 @@ t('products are frozen so callers cannot corrupt the indexes', () => {
   assert.throws(() => { 'use strict'; p.barcodes.push('11111111'); }, TypeError);
 });
 
+t('price and pack size: strict decimals, blank means unknown, never 0 by accident (review finding)', () => {
+  const price = v => normalizeProductRecord({ id: '1', name: 'x', price: v });
+  for (const blank of ['', '  ', '\t\n']) { const r = price(blank); assert.equal(r.ok, true); assert.equal(r.product.price, null, JSON.stringify(blank)); }
+  for (const bad of ['0x10', '1e3', '12abc', '--5', '-5', '1.2.3', '1,25', '1,2500', [], {}, true, '٫', 'Infinity', 'NaN']) assert.ok(price(bad).errors.includes('price-invalid'), `${JSON.stringify(bad)} must be rejected`);
+  assert.equal(price('1,250.50').product.price, 1250.5);
+  assert.equal(price('٣٥٫٧٥').product.price, 35.75, 'Arabic digits and Arabic decimal separator');
+  assert.equal(price('٣٬٠٠٠').product.price, 3000, 'Arabic thousands separator');
+  assert.equal(price(0).product.price, 0, 'a real 0 stays 0');
+  assert.equal(price('0').product.price, 0);
+  const pack = v => normalizeProductRecord({ id: '1', name: 'x', packSize: v });
+  for (const bad of ['0x10', '1e1', '0', '-3', [], true, 'abc']) assert.ok(pack(bad).errors.includes('packSize-invalid'), `${JSON.stringify(bad)} must be rejected`);
+  assert.equal(pack('٢٤').product.packSize, 24);
+  assert.equal(pack(' ').product.packSize, 1, 'blank pack size = not given');
+});
+
+t('inactive flags from imports: false, 0, "false", "0", "no", "inactive" deactivate; anything else stays active', () => {
+  for (const v of [false, 0, 'false', 'FALSE', '0', 'no', 'inactive']) assert.equal(normalizeProductRecord({ id: '1', name: 'x', active: v }).product.active, false, String(v));
+  for (const v of [true, 1, 'true', undefined, 'yes', '']) assert.equal(normalizeProductRecord({ id: '1', name: 'x', active: v }).product.active, true, String(v));
+});
+
+t('search finds an id typed with Arabic-Indic digits', () => {
+  const c = createUnifiedCatalog([{ id: '123', name: 'x' }]);
+  assert.deepEqual(c.search('١٢٣').map(p => p.id), ['123']);
+});
+
+t('rejected rows cannot be edited from outside', () => {
+  const c = createUnifiedCatalog([{ name: 'no id' }]);
+  assert.equal(c.rejected.length, 1);
+  assert.throws(() => { c.rejected.length = 0; }, TypeError);
+  assert.throws(() => c.rejected.push({}), TypeError);
+  assert.throws(() => { c.rejected[0].errors.push('x'); }, TypeError);
+  assert.equal(c.rejected.length, 1);
+});
+
 console.log(`PASS unified-catalog core checks (CAT-01): ${n} cases`);
