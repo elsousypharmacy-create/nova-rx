@@ -1,0 +1,32 @@
+name: Security unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'worker/security/**'
+      - 'tests/unit/security-*.check.mjs'
+      - '.github/workflows/security-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'worker/security/**'
+      - 'tests/unit/security-*.check.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run security checks (no dependencies, no network)
+        run: |
+          set -euo pipefail
+          files=(tests/unit/security-*.check.mjs)
+          for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done

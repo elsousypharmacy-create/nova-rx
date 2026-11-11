@@ -778,12 +778,34 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - NOT TESTED: owner's tablet/browser, real cart writes/orders/checkout (need owner approval), pharmacy#59 on iPhone.
 - Rollback: purchases14 artifact.
 
+## Checkpoint 2026-11-11 — Claude 1, SEC-04 audit chain (claim on Issue #87)
+- Branch `claude/sec-04-audit-chain`, stacked on Gemini B's `gemini/sec-03-04-05-foundation` (`5bc99cb`, docs only). Files: `worker/security/audit-log.js`, `tests/unit/security-audit-log.check.mjs` (21 cases), `.github/workflows/security-unit.yml`, `docs/erp/SEC-04_AUDIT_LOG.md` (relabelled PROPOSED).
+- Done: canonical JSON, secret/PII masking, allowlisted event builder, HMAC-SHA256 per-tenant chain with seq/anchor, `appendAuditEvent`/`verifyAuditChain`. 14 mutations of the safeguards are each caught by the tests.
+- Closed as superseded per manager decision: #134 (-> #136) and #135 (-> #137). Open implementation PRs: #136 CAT-01, #137 CAT-02, SEC-04 (this branch).
+- NOT DONE / NOT TESTED: no wiring into the Worker, no storage, no key created or changed, no live behavior. Open owner decisions in the doc (key, retention, storage/single writer, IP).
+- Next: SEC-03 scoped-repository wrapper (pure) after review slots free; catalog `packaging` link; CAT-05 benchmark.
+
+## Checkpoint 2026-11-11 — Claude 1, SEC-04 review fixes (PR #138)
+- Claude 2's 4 blocking items fixed test-first: B1 substring key redaction (Claude 2's 16 names + more), B2 no NFC inside the hash (normalise once at build, refuse key collisions), B3 server-clock-only timestamp, B4 requestId required. Also: `expectedSeq` required, `expectedHead` on verify, depth cap, Map/undefined handling, IPv4-mapped IP, more scrubber shapes. 31 cases; 17 mutations of the new safeguards each caught (including the 2 that survived the first review).
+- Still NOT done: wiring, persistence, single-writer store, key management, metadata allowlist (documented limits).
 ## Checkpoint 2026-11-11 — Claude 1, CAT-01 (claim on Issue #87)
 - Branch `claude/cat-01-catalog`, stacked on Gemini A's PR #134 head `8717484`. Files: `worker/catalog/unified-catalog.js`, `tests/unit/unified-catalog{,-duplicates,-realdata}.check.mjs`, `.github/workflows/catalog-unit.yml`, `docs/catalog/CAT-01.md`.
 - PR #134 audit: its own test failed (`assert.ok(item.id)` got `''`) while the PR said PASS; no CI ran it; one barcode only; no ingredient/strength/form; no duplicate review; silent defaults (price 0, packSize 1).
 - Now: new tests written first (red on #134's code), module rewritten, 3 check files green locally (11 + 4 cases, real export 4378 loaded / 0 rejected / 9 duplicate groups).
 - NOT TESTED: CI run of the new workflow (pending), the live STOCK LIVE sheet, any UI use. Not merged, not deployed. Next: Claude 2 review.
 
+## Checkpoint 2026-11-11 — Claude 1, CAT-02 (audit of PR #135 + fix branch)
+- Branch `claude/cat-02-unit-conversion`, stacked on `claude/cat-01-catalog` (so the shared `catalog-unit.yml` runs both) and merged with Gemini A's #135 head `86f76cf`. Files: `worker/catalog/unit-conversion.js`, `tests/unit/unit-conversion{,-price}.check.mjs`, `docs/catalog/CAT-02.md`, workflow globs.
+- #135 audit (probed, not guessed): unknown unit `bottle` x2 -> 2; no packaging: 1 box -> 1, 1 carton -> 1; qty -5 -> -150; qty 'abc' -> 0; line price with qty 0 -> 20 (treated as 1); bad price -> 0; `tabletsPerStrip: 0` silently became 1; 7 separate strip lines of a 100 EGP box summed to 99.9999; fractional tablets accepted; its check ran in no workflow.
+- Fix: 14 + 7 test cases (written first, red on #135's code), 5 safeguard mutations each killed. NOT TESTED: CI run of the branch, any use in purchasing/POS, linking packaging to catalog products.
+- No PR opened for this branch: #134, #135, #136 already fill the 3-PR cap. Needs the manager to close/supersede #134 or #135, then I open the Draft PR.
+## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
+- Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
+- Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
+
+## Checkpoint 2026-11-11 — Claude 1, CAT-02 review fixes (PR #137) and CAT-01 bounds (PR #136)
+- Claude 2 blocking items on #137 fixed test-first: strict decimal parsing (no hex/exponent; Arabic digits accepted) and exact-range bounds (`out-of-range` instead of precision loss). Also `rounded-to-zero` warning. 16 + 9 cases; 9 mutations of the new safeguards each caught.
+- #136 re-review leftovers fixed: price 0..1e9, integer pack size up to 1e6 (`032f180`).
 ## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
 - Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
 - Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
@@ -794,3 +816,5 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Stale open PRs closed unmerged with a pointer comment (branches kept): #114, #91, #25, #20.
 - NOT done / needs the owner: GitHub account `ahmedmelsousy-sketch` (write access, used by the retired Gemini A session) is still a collaborator; ChatGPT is not a GitHub collaborator (it acted through the owner's account), so nothing can be removed from GitHub for it. Revoking a collaborator or deleting remote branches is destructive/permission work and is not done by agents.
 - Next: cross-review by Claude 1, merge #137 then #138, INV-01 fixes (Claude 1), BUY lane (Claude 2).
+
+- 2026-11-11 (later): #137 CAT-02 merged as 595b2a8 and #138 SEC-04 as caf4aa6 (squash; gates: independent PASS on the exact reviewed code, green PR checks on the conflict-resolved heads, code diff vs the reviewed SHAs = 0 lines; no deploy). Main re-tested: catalog 16+7+4378/0, conversion 17+9, audit-log 31, current-md pass. No dependency on ChatGPT anywhere.

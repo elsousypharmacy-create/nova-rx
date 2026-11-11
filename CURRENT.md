@@ -1,13 +1,13 @@
 # NOVA Rx — CURRENT (read this, not all of HANDOFF.md)
-Last updated: 2026-11-11 by Claude 2 (lead manager). main @ 28a3724. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
+Last updated: 2026-11-11 by Claude 2 (lead manager). main @ caf4aa6. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines) and Issue #87 since your last checkpoint  4. docs/skills/nova/SKILL.md  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when acceptance or scope matters.
 Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 2026-11-11): only two Claude sessions work here; ChatGPT, Gemini, Kimi and Grok are out (old instructions: docs/archive/retired-agents/, not active).
 
 ## Priorities (owner direction, newest first)
-1. Finish the core four, accepted and integrated, not just coded: CAT (catalog/units/price), POS (sale/returns), INV (stock ledger), BUY (shortages → PO → receipt). Truth today: accepted 0 of 85; merged code = CAT-01 only; nothing is wired to a screen; storage is undecided.
-2. PR order: #137 CAT-02, #138 SEC-04 (both conflict-resolved, waiting for cross-review + CI), then INV-01, CAT packaging link, SEC-03, CAT-05, BUY core, UX-01 audit, FND-02 local harness (branches already exist; see #87).
+1. Finish the core four, accepted and integrated, not just coded: CAT (catalog/units/price), POS (sale/returns), INV (stock ledger), BUY (shortages → PO → receipt). Truth today: accepted 0 of 85; merged code = CAT-01, CAT-02, SEC-04 (pure modules); nothing is wired to a screen; storage is undecided.
+2. PR order now: #139 (this governance PR, needs Claude 1's cross-review), then INV-01, CAT packaging link, SEC-03, CAT-05, BUY core, UX-01 audit, FND-02 local harness (branches already exist; see #87).
 3. P0 pharmacy#59 (blank mobile dashboard): fixed by pharmacy PR #60 (f79ecee); NOT live-verified (sandbox cannot reach github.io); close it only after the owner confirms on his phone.
 
 ## Who is on what
@@ -18,10 +18,10 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 
 ## Merged to main and DEPLOYED: Worker nova-rx-preview (deploy-worker.yml, workflow_dispatch only; every deploy: CI, dry run, real run, code digest read back)
 LIVE (as recorded 2026-11-10, not re-verified today) = purchases15, sha256 08ceb32af224b076492b5d70f35960e828b7081b40d8ac97e9b83faadd6ce866, modified 2026-11-10T13:21:42Z. Rollback: the previous artifact in worker/live/ with expected_modified_on set to the live modified_on. Recipe and the id lesson are in the skill.
-Merged since, NOT deployed, NOT wired: CAT-01 unified catalog (#136, squash 28a3724). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check". No deploy happens without the owner's approval.
+Merged since, NOT deployed, NOT wired: CAT-01 catalog (#136, 28a3724), CAT-02 unit/price conversion (#137, 595b2a8), SEC-04 audit-log core (#138, caf4aa6). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check". No deploy happens without the owner's approval.
 
 ## Open PRs
-nova-rx: #137 CAT-02, #138 SEC-04 (ready, conflict-resolved), #109 FND-05 draft (claim "no migrations" conflicts with the D1 journal; unreviewed). Closed unmerged as obsolete on 2026-11-11: #114, #91, #25, #20 (branches kept).
+nova-rx: #139 governance/CURRENT/roadmap (docs), #109 FND-05 draft (claim "no migrations" conflicts with the D1 journal; unreviewed). Closed unmerged as obsolete on 2026-11-11: #114, #91, #25, #20 (branches kept).
 pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only (not re-checked today). Merging in pharmacy can publish a page: only for explicit owner requests.
 
 ## Known breakages and risks
