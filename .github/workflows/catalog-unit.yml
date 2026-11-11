@@ -6,6 +6,9 @@ on:
       - 'worker/catalog/**'
       - 'tests/unit/unified-catalog*.check.mjs'
       - 'tests/unit/unit-conversion*.check.mjs'
+      - 'worker/inventory/**'
+      - 'tests/unit/inventory-*.check.mjs'
+      - 'tests/unit/erp-cycle.check.mjs'
       - 'data/emergency-stock.json'
       - '.github/workflows/catalog-unit.yml'
   push:
@@ -14,6 +17,9 @@ on:
       - 'worker/catalog/**'
       - 'tests/unit/unified-catalog*.check.mjs'
       - 'tests/unit/unit-conversion*.check.mjs'
+      - 'worker/inventory/**'
+      - 'tests/unit/inventory-*.check.mjs'
+      - 'tests/unit/erp-cycle.check.mjs'
   workflow_dispatch:
 
 permissions:
@@ -31,5 +37,5 @@ jobs:
       - name: Run catalog checks (no dependencies, no network, read-only)
         run: |
           set -euo pipefail
-          files=(tests/unit/unified-catalog*.check.mjs tests/unit/unit-conversion*.check.mjs)
+          files=(tests/unit/unified-catalog*.check.mjs tests/unit/unit-conversion*.check.mjs tests/unit/inventory-*.check.mjs tests/unit/erp-cycle.check.mjs)
           for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done
