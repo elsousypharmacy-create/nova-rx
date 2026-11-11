@@ -24,3 +24,7 @@ Units and conversions (CAT-02, PR #135), search speed and ranking (CAT-05), pers
 - Barcodes must be read as strings (a JS number loses leading zeros).
 - Token search is substring based (`500` also matches `1500`); ranking and word boundaries are CAT-05.
 - Bounds (re-review): price must be between 0 and 1,000,000,000 EGP; pack size must be a positive integer up to 1,000,000. CAT-02 packaging uses the same integer rule.
+
+## Packaging on the product (CAT-02 link)
+A product may carry `packaging` (`unitsPerStrip`, `stripsPerBox`, `unitsPerBox`, `boxesPerCarton`; legacy `tabletsPerStrip`/`packsPerCarton` accepted), validated by CAT-02 (`canonicalPackaging`): strict decimals, integers within range, consistent, nothing guessed. No packaging is `null`, never a default. `catalog.packagingOf(id)` returns the frozen canonical definition (resolving merged ids) so POS, inventory and purchasing take packaging from the catalog instead of a fixture. Invalid packaging rejects the product with the CAT-02 reason (`packaging-invalid:<field>`, `packaging-inconsistent`). Duplicate detection treats two products with different box sizes as different products; a merge keeps the kept record's packaging, adopts the dropped one's when the kept record has none, and logs a different discarded packaging in `mergeLog[].discarded.packaging`.
+**Still open:** the real source of packaging data (owner/pharmacist or supplier data; the STOCK LIVE export has none), CAT-04 import, and `packSize` (a single legacy number) is not reconciled with `packaging` (documented, not guessed).

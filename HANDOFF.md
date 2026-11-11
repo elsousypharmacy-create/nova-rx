@@ -809,3 +809,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
 - Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
 - Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
+
+
+## Checkpoint 2026-11-11 — Claude 1, CAT packaging link (branch only, no PR: cap 3/3) + INV-01 withdrawal
+- INV-01 collision: Claude 2's claim was 29 s earlier; I withdrew (my `claude/inv-01-stock-ledger` @ `fff62c4` is salvage only) and reviewed `claude/inv-01-core-cycle` @ `abb77e1` on #87 (CHANGES REQUIRED: cross-branch idempotency replay, credit refund booked as cash; non-blocking list).
+- Branch `claude/cat-packaging-link`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/catalog/unified-catalog.js` (packaging, `packagingOf`, box-size aware duplicates, merge), `worker/catalog/unit-conversion.js` (`canonicalPackaging`), `tests/unit/unified-catalog-packaging.check.mjs` (9 cases), `docs/catalog/CAT-01.md`. 9 mutations each caught (one survived first: merged-id alias; test added).
+- 2026-11-11 (later): clean branch `claude/cat-packaging-main` = main `caf4aa6` + exactly the changes of `7a159b8` (git diff 7a159b8 over `worker/catalog/unified-catalog.js`, `worker/catalog/unit-conversion.js`, `tests/unit/unified-catalog-packaging.check.mjs`, `docs/catalog/CAT-01.md` = 0 lines); PR opens when a slot frees.
