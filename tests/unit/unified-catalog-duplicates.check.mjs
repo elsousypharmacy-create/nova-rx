@@ -60,4 +60,35 @@ t('approved merge keeps one record, unions barcodes, keeps an alias and an audit
 });
 
 
+t('same name and pack size but different strength or form is not a duplicate (review finding)', () => {
+  const mk = (a, b) => createUnifiedCatalog([
+    { id: '1', nameAr: 'بانادول', nameEn: 'PANADOL', packSize: 24, ...a },
+    { id: '2', nameAr: 'بانادول', nameEn: 'PANADOL', packSize: 24, ...b },
+  ]);
+  assert.equal(mk({ strength: '500 mg' }, { strength: '1000 mg' }).detectDuplicates().length, 0);
+  assert.equal(mk({ form: 'tablet' }, { form: 'syrup' }).detectDuplicates().length, 0);
+  assert.equal(mk({ strength: '500 mg' }, { strength: '500  MG' }).detectDuplicates().length, 1, 'same strength after normalisation');
+  assert.equal(mk({}, {}).detectDuplicates().length, 1);
+});
+
+t('merge history cannot be wiped or edited from outside (review finding)', () => {
+  const c = base();
+  c.merge('A1', 'A2', { reviewedBy: 'Dr Ahmed' });
+  assert.throws(() => { c.mergeLog.length = 0; }, TypeError);
+  assert.throws(() => c.mergeLog.push({}), TypeError);
+  assert.throws(() => { c.mergeLog[0].reviewedBy = 'x'; }, TypeError);
+  assert.equal(c.mergeLog.length, 1);
+  assert.equal(c.mergeLog[0].reviewedBy, 'Dr Ahmed');
+});
+
+t('merge log records the values that were discarded so the decision is reviewable', () => {
+  const c = createUnifiedCatalog([
+    { id: 'P1', nameAr: 'اسبرين', nameEn: 'ASPIRIN', price: 10, packSize: 20, active: true },
+    { id: 'P2', nameAr: 'اسبرين', nameEn: 'ASPIRIN', price: 99, packSize: 20, active: false, unit: 'strip' },
+  ]);
+  const r = c.merge('P1', 'P2', { reviewedBy: 'Dr Ahmed' });
+  assert.equal(r.product.price, 10, 'kept record wins');
+  assert.deepEqual(c.mergeLog[0].discarded, { price: 99, active: false, unit: 'strip' });
+});
+
 console.log(`PASS unified-catalog duplicate checks (CAT-01): ${n} cases`);
