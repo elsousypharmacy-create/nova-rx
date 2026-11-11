@@ -1,0 +1,33 @@
+name: Catalog unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'worker/catalog/**'
+      - 'tests/unit/unified-catalog*.check.mjs'
+      - 'data/emergency-stock.json'
+      - '.github/workflows/catalog-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'worker/catalog/**'
+      - 'tests/unit/unified-catalog*.check.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run catalog checks (no dependencies, no network, read-only)
+        run: |
+          set -euo pipefail
+          files=(tests/unit/unified-catalog*.check.mjs)
+          for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done
