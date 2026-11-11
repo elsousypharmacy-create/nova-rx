@@ -48,9 +48,9 @@ try {
     const foot = await page.evaluate(() => document.querySelector('.totals-breakdown, #displayGrandTotal')?.closest('.invoice-footer, .totals-breakdown, body').innerText.replace(/\s+/g, ' ') || '');
     const btn = (await page.textContent('#btnCheckout')).replace(/\s+/g, ' ').trim();
     if (lang === 'ar') {
-      check('ar: CHECKOUT / NET TOTAL / SAR are Arabic', !/CHECKOUT|NET TOTAL|SAR|items/.test(foot + ' ' + btn) && /إتمام الدفع/.test(btn), `${btn} | ${foot.slice(0, 120)}`);
+      check('ar: CHECKOUT / NET TOTAL / EGP are Arabic', !/CHECKOUT|NET TOTAL|EGP|items/.test(foot + ' ' + btn) && /إتمام الدفع/.test(btn), `${btn} | ${foot.slice(0, 120)}`);
     } else {
-      check('en: totals labels are English', /CHECKOUT/.test(btn) && /SAR/.test(foot) && !AR.test(btn), `${btn} | ${foot.slice(0, 100)}`);
+      check('en: totals labels are English', /CHECKOUT/.test(btn) && /EGP/.test(foot) && !AR.test(btn), `${btn} | ${foot.slice(0, 100)}`);
     }
     check(`${lang}: no page errors`, errs.length === 0, errs.join(';'));
     await ctx.close();

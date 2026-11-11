@@ -2015,7 +2015,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               <input type="number" id="inputPercentDiscount" min="0" max="100" step="1" placeholder="0">
             </div>
             <div class="input-grp">
-              <span>SAR</span>
+              <span>EGP</span>
               <input type="number" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
             </div>
           </div>
@@ -2026,19 +2026,19 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div class="totals-breakdown">
           <div class="tot-row">
             <span>Subtotal (<span id="totalItemsCount">0</span> items)</span>
-            <span id="displaySubtotal">0.00 SAR</span>
+            <span id="displaySubtotal">0.00 EGP</span>
           </div>
           <div id="discountRow" class="tot-row discount-applied" style="display:none;">
             <span>Discount Applied</span>
-            <span id="displayDiscount">-0.00 SAR</span>
+            <span id="displayDiscount">-0.00 EGP</span>
           </div>
           <div class="tot-row">
             <span>VAT (15% Included)</span>
-            <span id="displayVat">0.00 SAR</span>
+            <span id="displayVat">0.00 EGP</span>
           </div>
           <div class="tot-row grand-total">
             <span>NET TOTAL</span>
-            <span id="displayGrandTotal">0.00 SAR</span>
+            <span id="displayGrandTotal">0.00 EGP</span>
           </div>
         </div>
 
@@ -2138,7 +2138,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       <div class="modal-body">
         <div class="checkout-amount-display">
           <div class="label">Total Amount Payable</div>
-          <div id="modalAmountDue" class="val">0.00 SAR</div>
+          <div id="modalAmountDue" class="val">0.00 EGP</div>
           <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div><button type="button" id="checkoutAddCustomer" class="nova-checkout-customer">إضافة رقم العميل (اختياري)</button>
         </div>
 
@@ -2160,7 +2160,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div id="cashDetailsBox">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
             <label style="font-size:11px; font-weight:600; color:#94a3b8;">Cash Received</label>
-            <span style="font-size:11px; color:var(--text-dim);">SAR</span>
+            <span style="font-size:11px; color:var(--text-dim);">EGP</span>
           </div>
           <input 
             type="number" 
@@ -2179,7 +2179,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
           <div class="change-due-box" style="margin-top:10px;">
             <span class="title">Change Due:</span>
-            <span id="displayChangeDue" class="amount">0.00 SAR</span>
+            <span id="displayChangeDue" class="amount">0.00 EGP</span>
           </div>
         </div>
       </div>
@@ -2272,7 +2272,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           offers: [
             "خصم 10% على أدوية القلب والضغط (Chronic Care)",
             "فحص سكر وضغط مجاني عند كل زيارة",
-            "قسيمة مشتريات متاحة بقيمة 30 ر.س"
+            "قسيمة مشتريات متاحة بقيمة 30 ج.م"
           ],
           pastInvoices: [
             {
@@ -2305,7 +2305,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           points: 210,
           visits: 11,
           offers: [
-            "توصيل مجاني للطلبات أكثر من 100 ر.س",
+            "توصيل مجاني للطلبات أكثر من 100 ج.م",
             "خصم 5% على منتجات العناية بالفيتامينات"
           ],
           pastInvoices: [
@@ -2547,8 +2547,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         }, type === 'error' ? 4500 : 2200);
       }
 
-      function formatSAR(val) {
-        return (Math.max(0, val) || 0).toFixed(2) + " SAR";
+      function formatMoney(val) {
+        return (Math.max(0, val) || 0).toFixed(2) + " EGP";
       }
 
       // --- SWITCH SEARCH MODE ---
@@ -2660,7 +2660,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               <div class="sugg-sub">${escH(prod.generic)}${prod.generic && prod.form ? " • " : ""}${escH(prod.form)}</div>
             </div>
             <div class="sugg-meta">
-              <div class="sugg-price">${prod.price.toFixed(2)} SAR</div>
+              <div class="sugg-price">${prod.price.toFixed(2)} EGP</div>
               <span class="sugg-tag">${escH(prod.barcode)}</span>
             </div>
           </div>
@@ -2841,7 +2841,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
                 </div>
               </div>
               <div class="cust-purchase-side">
-                <span class="cust-purchase-price">${Number(price || 0).toFixed(2)} SAR</span>
+                <span class="cust-purchase-price">${Number(price || 0).toFixed(2)} EGP</span>
                 <button class="btn-add-history" data-prod-id="${item.productId}" title="إضافة للفاتورة بالسعر الحالي" aria-label="إضافة ${item.name} للفاتورة">+</button>
               </div>
             </div>`;
@@ -2993,17 +2993,17 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const vatIncluded = grandTotal * (15 / 115); // Standard KSA 15% VAT component
 
         elements.totalItemsCount.textContent = totalQty;
-        elements.displaySubtotal.textContent = formatSAR(subtotal);
+        elements.displaySubtotal.textContent = formatMoney(subtotal);
 
         if (actualDiscount > 0) {
           elements.discountRow.style.display = "flex";
-          elements.displayDiscount.textContent = "-" + formatSAR(actualDiscount);
+          elements.displayDiscount.textContent = "-" + formatMoney(actualDiscount);
         } else {
           elements.discountRow.style.display = "none";
         }
 
-        elements.displayVat.textContent = formatSAR(vatIncluded);
-        elements.displayGrandTotal.textContent = formatSAR(grandTotal);
+        elements.displayVat.textContent = formatMoney(vatIncluded);
+        elements.displayGrandTotal.textContent = formatMoney(grandTotal);
 
         return { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty };
       }
@@ -3027,7 +3027,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           return;
         }
         document.getElementById("customerCheckoutGate").hidden = true;
-        elements.modalAmountDue.textContent = formatSAR(grandTotal);
+        elements.modalAmountDue.textContent = formatMoney(grandTotal);
         document.getElementById("checkoutAddCustomer").hidden = !!state.attachedCustomer;
         elements.modalCustomerInfo.textContent = state.attachedCustomer 
           ? `Customer: ${state.attachedCustomer.name} (${state.attachedCustomer.phone})`
@@ -3048,7 +3048,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       function updateChangeDue(received, total) {
         const change = Math.max(0, received - total);
-        elements.displayChangeDue.textContent = formatSAR(change);
+        elements.displayChangeDue.textContent = formatMoney(change);
       }
 
       function confirmPayment() {
@@ -3092,13 +3092,13 @@ ITEM                QTY   PRICE    TOTAL
         });
 
         slip += `----------------------------------------
-Subtotal:                    ${subtotal.toFixed(2).padStart(8, " ")} SAR
-Discount:                   -${actualDiscount.toFixed(2).padStart(8, " ")} SAR
-VAT (15% Included):          ${vatIncluded.toFixed(2).padStart(8, " ")} SAR
+Subtotal:                    ${subtotal.toFixed(2).padStart(8, " ")} EGP
+Discount:                   -${actualDiscount.toFixed(2).padStart(8, " ")} EGP
+VAT (15% Included):          ${vatIncluded.toFixed(2).padStart(8, " ")} EGP
 ----------------------------------------
-NET TOTAL PAYABLE:           ${grandTotal.toFixed(2).padStart(8, " ")} SAR
-Payment: ${state.checkoutPaymentMethod.toUpperCase()} (Received: ${cashRec.toFixed(2)} SAR)
-Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padStart(8, " ")} SAR
+NET TOTAL PAYABLE:           ${grandTotal.toFixed(2).padStart(8, " ")} EGP
+Payment: ${state.checkoutPaymentMethod.toUpperCase()} (Received: ${cashRec.toFixed(2)} EGP)
+Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padStart(8, " ")} EGP
 ========================================
     Thank you for choosing NOVA Rx!
    Please retain this slip for returns.
@@ -3321,7 +3321,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           const product = DEMO_PRODUCTS.find(p => p.id === prodId);
           if (product) {
             addProductToInvoice(product);
-            showToast(`Re-added from history at current price: ${product.price.toFixed(2)} SAR`);
+            showToast(`Re-added from history at current price: ${product.price.toFixed(2)} EGP`);
           }
         });
 
@@ -3523,7 +3523,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tabs=[...document.querySelectorAll('.nova-tab')];
  const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const money=n=>(Number(n)||0).toFixed(2)+' ر.س';
+ const money=n=>(Number(n)||0).toFixed(2)+' ج.م';
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
@@ -3693,8 +3693,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const preserved=new WeakMap();
  function translateText(text,lang){
   const trimmed=text.trim();if(!trimmed)return text;
-  if(lang==='en'&&text.includes('ر.س'))text=text.split('ر.س').join('SAR');
-  if(lang==='ar'&&text.includes('SAR'))text=text.replace(/\bSAR\b/g,'ر.س');
+  if(lang==='en'&&text.includes('ج.م'))text=text.split('ج.م').join('EGP');
+  if(lang==='ar'&&text.includes('EGP'))text=text.replace(/\bEGP\b/g,'ج.م');
   const mixed=mixedText[trimmed];if(mixed)return text.replace(trimmed,mixed[lang==='en'?0:1]);
   const dict=lang==='en'?toEn:enToAr;
   if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
