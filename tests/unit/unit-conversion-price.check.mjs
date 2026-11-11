@@ -6,7 +6,7 @@ const t = (name, fn) => { fn(); n++; console.log('  ok', name); };
 const full = { unitsPerStrip: 10, stripsPerBox: 3, boxesPerCarton: 10 };
 const seven = { unitsPerStrip: 10, stripsPerBox: 7 };
 const val = r => { assert.equal(r.ok, true, JSON.stringify(r)); return r.value; };
-const err = (r, code) => { assert.equal(r.ok, false, `expected ${code}`); assert.equal(r.error, code); };
+const err = (r, code, note = '') => { assert.equal(r.ok, false, `expected ${code} ${note}`); assert.equal(r.error, code); };
 console.log('unit-conversion price checks (CAT-02)');
 
 t('price per unit follows the price unit', () => {
@@ -67,6 +67,26 @@ t('allocation refuses unknown units and fractional base quantities', () => {
   err(allocateLinePrices(100, 'box', [{ unit: 'strip', qty: 0.25 }], seven), 'fractional-base-units');
   err(allocateLinePrices(100, 'box', [], seven), 'lines-empty');
   err(allocateLinePrices(100, 'box', [{ unit: 'strip', qty: -1 }], seven), 'quantity-invalid');
+});
+
+t('money stays inside the exact range: no precision loss (review blocking 2)', () => {
+  err(linePrice(1e15, 'box', 'box', 1e6, full), 'price-invalid', 'the review example is refused outright');
+  err(linePrice(1e10, 'box', 'box', 1e6, full), 'out-of-range', 'largest valid price times a huge quantity');
+  err(linePrice(1e10 + 1, 'box', 'box', 1, full), 'price-invalid');
+  err(linePrice(1e9, 'box', 'unit', 1e9, { unitsPerBox: 1 }), 'out-of-range', 'line above 1e11 EGP');
+  assert.equal(val(linePrice(1e9, 'box', 'box', 1, full)), 1e9);
+  err(allocateLinePrices(1e9, 'box', [{ unit: 'box', qty: 1e6 }], full), 'out-of-range');
+  err(linePrice('0x10', 'box', 'strip', 1, full), 'price-invalid');
+  err(linePrice('1e3', 'box', 'strip', 1, full), 'price-invalid');
+  assert.equal(val(linePrice('٦٠٫٥٠', 'box', 'box', 1, full)), 60.5);
+});
+
+t('a positive price that rounds to 0.00 is flagged, not silently zero (review non-blocking)', () => {
+  const r = linePrice(0.01, 'box', 'strip', 1, full);
+  assert.equal(r.ok, true); assert.equal(r.value, 0); assert.equal(r.warning, 'rounded-to-zero');
+  assert.equal(linePrice(60, 'box', 'strip', 1, full).warning, undefined);
+  assert.equal(linePrice(0, 'box', 'strip', 1, full).warning, undefined, 'a free item is not a rounding case');
+  assert.equal(linePrice(60, 'box', 'strip', 0, full).warning, undefined, 'quantity 0 is not a rounding case');
 });
 
 console.log(`PASS unit-conversion price checks (CAT-02): ${n} cases`);

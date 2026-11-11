@@ -14,13 +14,26 @@ const ORDER = ['carton', 'box', 'strip', 'unit'];
 const ok = value => ({ ok: true, value });
 const fail = error => ({ ok: false, error });
 const EPS = 1e-9;
+// Exact-range limits (everything stays well inside Number's safe integer range, so nothing is silently rounded).
+const MAX_BASE = 1e9;            // base units in one quantity or one pack level
+const MAX_FIELD = 1e6;           // each packaging field
+const MAX_PRICE = 1e10;          // EGP, price of one priced unit
+const MAX_LINE_CENTS = 1e14;     // 1e12 EGP per line
 
 export function canonicalUnit(name) {
   if (typeof name !== 'string') return null;
   return LOOKUP.get(name.trim().toLowerCase()) ?? null;
 }
 
-const toNumber = v => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN);
+// Strict decimal: a finite number, or text of digits (Arabic-Indic converted) with one optional '.' or Arabic decimal separator.
+// Hex, exponents, signs, blanks, separators and non-text are NaN.
+const DIGITS = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9', '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
+function toNumber(v) {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v !== 'string') return NaN;
+  const s = v.replace(/[٠-٩۰-۹]/g, c => DIGITS[c]).replace(/\u066B/g, '.').trim();
+  return /^\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+}
 const first = (def, ...names) => { for (const n of names) if (def[n] !== undefined && def[n] !== null) return def[n]; return undefined; };
 
 // -> {ok, factors:{unit:1, strip?, box?, carton?}} (factor = base units in one of that level) or {ok:false, error:'packaging-invalid:<field>'|'packaging-inconsistent'}.
@@ -36,7 +49,7 @@ export function normalizePackaging(def) {
   for (const [name, raw] of Object.entries(fields)) {
     if (raw === undefined) continue;
     const num = toNumber(raw);
-    if (!Number.isInteger(num) || num <= 0) return { ok: false, error: `packaging-invalid:${name}` };
+    if (!Number.isInteger(num) || num <= 0 || num > MAX_FIELD) return { ok: false, error: `packaging-invalid:${name}` };
     v[name] = num;
   }
   const factors = { unit: 1 };
@@ -44,8 +57,12 @@ export function normalizePackaging(def) {
   const fromParts = v.stripsPerBox && v.unitsPerStrip ? v.stripsPerBox * v.unitsPerStrip : undefined;
   if (v.unitsPerBox && fromParts && v.unitsPerBox !== fromParts) return { ok: false, error: 'packaging-inconsistent' };
   const box = v.unitsPerBox ?? fromParts;
+  if (fromParts && fromParts > MAX_BASE) return { ok: false, error: 'packaging-invalid:stripsPerBox' };
   if (box) factors.box = box;
-  if (box && v.boxesPerCarton) factors.carton = box * v.boxesPerCarton;
+  if (box && v.boxesPerCarton) {
+    if (box * v.boxesPerCarton > MAX_BASE) return { ok: false, error: 'packaging-invalid:boxesPerCarton' };
+    factors.carton = box * v.boxesPerCarton;
+  }
   return { ok: true, factors };
 }
 
@@ -70,6 +87,7 @@ export function toBaseUnits(quantity, unit, def, { requireWhole = false } = {}) 
   const f = factorFor(unit, def); if (!f.ok) return f;
   const q = quantityOf(quantity); if (!q.ok) return q;
   const base = clean(q.value * f.value);
+  if (!(base <= MAX_BASE)) return fail('out-of-range');
   if (requireWhole && !isWhole(base)) return fail('fractional-base-units');
   return ok(base);
 }
@@ -77,6 +95,7 @@ export function toBaseUnits(quantity, unit, def, { requireWhole = false } = {}) 
 export function fromBaseUnits(baseQuantity, unit, def) {
   const f = factorFor(unit, def); if (!f.ok) return f;
   const q = quantityOf(baseQuantity); if (!q.ok) return q;
+  if (q.value > MAX_BASE) return fail('out-of-range');
   return ok(clean(q.value / f.value));
 }
 
@@ -88,6 +107,7 @@ export function convertQuantity(quantity, fromUnit, toUnit, def, opts) {
 // Whole carton/box/strip/unit breakdown of a base quantity, using only the levels the product has.
 export function splitBaseUnits(baseQuantity, def) {
   const q = quantityOf(baseQuantity); if (!q.ok) return q;
+  if (q.value > MAX_BASE) return fail('out-of-range');
   if (!isWhole(q.value)) return fail('fractional-base-units');
   const p = normalizePackaging(def); if (!p.ok) return fail(p.error);
   let rest = Math.round(q.value); const parts = {};
@@ -102,7 +122,7 @@ export function splitBaseUnits(baseQuantity, def) {
 
 function centsOf(price) {
   const n = toNumber(price);
-  if (!Number.isFinite(n) || n < 0) return fail('price-invalid');
+  if (!Number.isFinite(n) || n < 0 || n > MAX_PRICE) return fail('price-invalid');
   const c = n * 100;
   if (Math.abs(c - Math.round(c)) > 1e-6) return fail('price-invalid'); // price must be whole cents
   return ok(BigInt(Math.round(c)));
@@ -125,7 +145,11 @@ export function linePrice(price, priceUnit, targetUnit, quantity, def) {
   const fp = factorFor(priceUnit, def); if (!fp.ok) return fp;
   const base = toBaseUnits(quantity, targetUnit, def, { requireWhole: true }); if (!base.ok) return base;
   const { num, den } = exactLine(c.value, fp.value, base.value);
-  return ok(Number(roundHalfUp(num, den)) / 100);
+  const cents = roundHalfUp(num, den);
+  if (cents > BigInt(MAX_LINE_CENTS)) return fail('out-of-range');
+  const result = ok(Number(cents) / 100);
+  if (cents === 0n && c.value > 0n && base.value > 0) result.warning = 'rounded-to-zero'; // a priced item must not become free unnoticed
+  return result;
 }
 
 // Split lines of one priced pack (for example 7 single strips of a box) so the rounded lines add up to exactly
@@ -143,6 +167,7 @@ export function allocateLinePrices(price, priceUnit, lines, def) {
   }
   const totalNum = parts.reduce((s, p) => s + p.sum, 0n);
   const totalCents = roundHalfUp(totalNum, den);
+  if (totalCents > BigInt(MAX_LINE_CENTS)) return fail('out-of-range');
   let extra = Number(totalCents - parts.reduce((s, p) => s + p.floor, 0n));
   const out = parts.map(p => p.floor);
   const order = parts.map((p, i) => i).sort((a, b) => (parts[b].rem === parts[a].rem ? a - b : parts[b].rem > parts[a].rem ? 1 : -1));

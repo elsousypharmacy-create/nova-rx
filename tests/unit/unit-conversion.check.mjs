@@ -110,4 +110,25 @@ t('split a base quantity into whole carton/box/strip/unit', () => {
   err(splitBaseUnits(-1, full), 'quantity-invalid');
 });
 
+t('numbers are strict decimals: hex, exponents, signs and non-text are refused (review blocking 1)', () => {
+  for (const bad of ['0x10', '1e2', '1E2', '+5', '-5', '5.', '.5', '1,5', '1 000', [], {}, true, '٣x']) err(toBaseUnits(bad, 'unit', full), 'quantity-invalid');
+  assert.equal(normalizePackaging({ unitsPerStrip: '0x1A' }).error, 'packaging-invalid:unitsPerStrip');
+  assert.equal(normalizePackaging({ unitsPerStrip: '1e1' }).error, 'packaging-invalid:unitsPerStrip');
+  assert.equal(normalizePackaging({ stripsPerBox: ' ' }).error, 'packaging-invalid:stripsPerBox');
+  assert.equal(val(toBaseUnits('٣', 'box', full)), 90, 'Arabic-Indic digits accepted, same rule as CAT-01');
+  assert.equal(val(toBaseUnits('٢٫٥', 'unit', full)), 2.5, 'Arabic decimal separator');
+  assert.equal(val(toBaseUnits('2.5', 'unit', full)), 2.5);
+  assert.deepEqual(normalizePackaging({ unitsPerStrip: '١٠', stripsPerBox: '3' }).factors, { unit: 1, strip: 10, box: 30 });
+});
+
+t('numbers are bounded: nothing above the safe range is accepted or silently rounded (review blocking 2)', () => {
+  err(toBaseUnits(9007199254740993, 'unit', full), 'out-of-range');
+  err(toBaseUnits(1e15, 'box', full), 'out-of-range');
+  err(toBaseUnits('1000000000000001', 'unit', full), 'out-of-range');
+  assert.equal(val(toBaseUnits(1e9, 'unit', full)), 1e9);
+  for (const huge of [1e21, 1e7, 1e6 + 1]) assert.match(normalizePackaging({ unitsPerStrip: huge }).error, /^packaging-invalid:/, String(huge));
+  assert.equal(normalizePackaging({ unitsPerStrip: 1e6 }).ok, true);
+  err(normalizePackaging({ unitsPerBox: 1e6, boxesPerCarton: 1e6 }), 'packaging-invalid:boxesPerCarton'); // carton would exceed 1e9 base units
+});
+
 console.log(`PASS unit-conversion checks (CAT-02): ${n} cases`);
