@@ -783,3 +783,9 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - PR #134 audit: its own test failed (`assert.ok(item.id)` got `''`) while the PR said PASS; no CI ran it; one barcode only; no ingredient/strength/form; no duplicate review; silent defaults (price 0, packSize 1).
 - Now: new tests written first (red on #134's code), module rewritten, 3 check files green locally (11 + 4 cases, real export 4378 loaded / 0 rejected / 9 duplicate groups).
 - NOT TESTED: CI run of the new workflow (pending), the live STOCK LIVE sheet, any UI use. Not merged, not deployed. Next: Claude 2 review.
+
+## Checkpoint 2026-11-11 — Claude 1, CAT-02 (audit of PR #135 + fix branch)
+- Branch `claude/cat-02-unit-conversion`, stacked on `claude/cat-01-catalog` (so the shared `catalog-unit.yml` runs both) and merged with Gemini A's #135 head `86f76cf`. Files: `worker/catalog/unit-conversion.js`, `tests/unit/unit-conversion{,-price}.check.mjs`, `docs/catalog/CAT-02.md`, workflow globs.
+- #135 audit (probed, not guessed): unknown unit `bottle` x2 -> 2; no packaging: 1 box -> 1, 1 carton -> 1; qty -5 -> -150; qty 'abc' -> 0; line price with qty 0 -> 20 (treated as 1); bad price -> 0; `tabletsPerStrip: 0` silently became 1; 7 separate strip lines of a 100 EGP box summed to 99.9999; fractional tablets accepted; its check ran in no workflow.
+- Fix: 14 + 7 test cases (written first, red on #135's code), 5 safeguard mutations each killed. NOT TESTED: CI run of the branch, any use in purchasing/POS, linking packaging to catalog products.
+- No PR opened for this branch: #134, #135, #136 already fill the 3-PR cap. Needs the manager to close/supersede #134 or #135, then I open the Draft PR.
