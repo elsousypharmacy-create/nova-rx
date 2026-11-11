@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { createIsolationContext, checkRequestScope, createScopedRepository, validateTransfer, scopedKey, isTenantScoped } from '../../worker/security/tenant-scope.js';
+import { createIsolationContext, checkRequestScope, createScopedRepository, validateTransfer, scopedKey, looksTenantScoped } from '../../worker/security/tenant-scope.js';
 
 let n = 0;
 const t = async (name, fn) => { await fn(); n++; console.log('  ok', name); };
@@ -24,7 +24,7 @@ const schema = {
   branches: { columns: ['id', 'name'], branchScoped: false },
 };
 const raw = sql => db.prepare(sql).all().map(r => ({ ...r }));
-const claims = (over = {}) => ({ actorId: 'usr_1', tenantId: 'tenant_A', roles: ['Pharmacist'], assignedBranchIds: ['a1'], activeBranchId: 'a1', ...over });
+const claims = (over = {}) => ({ actorId: 'usr_1', tenantId: 'tenant_A', roles: ['Pharmacist'], tenantBranchIds: ['a1', 'a2'], assignedBranchIds: ['a1'], activeBranchId: 'a1', ...over });
 const ctxOf = over => { const r = createIsolationContext(claims(over)); assert.equal(r.ok, true, JSON.stringify(r)); return r.context; };
 const pharmacist = () => createScopedRepository(ctxOf(), execute, schema);
 const owner = (branchId) => createScopedRepository(ctxOf({ roles: ['Owner'], assignedBranchIds: [], activeBranchId: null }), execute, schema, branchId ? { branchId } : {});
@@ -54,7 +54,7 @@ await t('context: bad claims are refused (separators in ids, unknown roles, clie
 });
 
 await t('context: missing fields never widen access (no branch list means no branch, not every branch)', () => {
-  const noList = { actorId: 'usr_1', tenantId: 'tenant_A', roles: ['Pharmacist'] };
+  const noList = { actorId: 'usr_1', tenantId: 'tenant_A', roles: ['Pharmacist'], tenantBranchIds: ['a1', 'a2'] };
   bad(createIsolationContext(noList), 'branch-required');
   bad(createIsolationContext({ ...noList, activeBranchId: 'a1' }), 'activeBranch-not-assigned');
   const one = createIsolationContext({ ...noList, assignedBranchIds: ['a1'] });
@@ -181,7 +181,7 @@ await t('repository: no mass update or delete, and no way to run raw SQL', async
   bad(await r.delete('invoices', {}), 'where-required');
   bad(await r.update('invoices', { id: 'inv_a1_1' }, {}), 'patch-empty');
   for (const m of ['query', 'execute', 'raw', 'sql', 'run', 'exec']) assert.equal(r[m], undefined, m);
-  assert.deepEqual(Object.keys(r).sort(), ['delete', 'getById', 'insert', 'select', 'update']);
+  assert.deepEqual(Object.keys(r).sort(), ['delete', 'describe', 'getById', 'insert', 'select', 'update']);
   assert.equal(raw('select count(*) c from invoices')[0].c, 3);
 });
 
@@ -190,13 +190,13 @@ await t('every generated statement carries the tenant predicate (lint helper)', 
   const r = pharmacist(); await r.select('invoices'); await r.getById('invoices', 'x'); await r.update('invoices', { id: 'x' }, { status: 'A' }); await r.delete('invoices', { id: 'x' }); await r.insert('invoices', { id: 'zz' });
   await owner().select('invoices'); await owner().select('branches');
   assert.ok(log.length >= 7);
-  for (const e of log.filter(x => !/^insert/i.test(x.sql))) assert.ok(isTenantScoped(e.sql), e.sql);
+  for (const e of log.filter(x => !/^insert/i.test(x.sql))) assert.ok(looksTenantScoped(e.sql), e.sql);
   for (const e of log.filter(x => /^insert/i.test(x.sql))) assert.ok(/tenant_id/.test(e.sql) && e.params.includes('tenant_A'), e.sql);
   const pharmacistReads = log.slice(0, 4); // select, getById, update, delete by the single-branch pharmacist
   for (const e of pharmacistReads) assert.ok(/branch_id = \?/.test(e.sql) && e.params.includes('a1'), `branch predicate present: ${e.sql}`);
-  assert.equal(isTenantScoped('select * from invoices'), false);
-  assert.equal(isTenantScoped("select * from invoices where tenant_id = 'x'"), false, 'literals are not parameters');
-  assert.equal(isTenantScoped('select * from invoices where tenant_id = ?'), true);
+  assert.equal(looksTenantScoped('select * from invoices'), false);
+  assert.equal(looksTenantScoped("select * from invoices where tenant_id = 'x'"), false, 'literals are not parameters');
+  assert.equal(looksTenantScoped('select * from invoices where tenant_id = ?'), true);
   db.exec("delete from invoices where id='zz'");
 });
 
@@ -216,7 +216,7 @@ await t('transfer between branches: both branches must belong to the tenant, and
 });
 
 await t('cache and idempotency keys cannot collide across tenants, branches or kinds', () => {
-  const a = ctxOf(); const b = ctxOf({ tenantId: 'tenant_B', assignedBranchIds: ['b1'], activeBranchId: 'b1' });
+  const a = ctxOf(); const b = ctxOf({ tenantId: 'tenant_B', tenantBranchIds: ['b1'], assignedBranchIds: ['b1'], activeBranchId: 'b1' });
   const k1 = scopedKey(a, 'idem', 'same-client-key'); const k2 = scopedKey(b, 'idem', 'same-client-key');
   assert.notEqual(k1, k2); assert.equal(k1, 't:tenant_A:b:a1:idem:same-client-key');
   assert.notEqual(scopedKey(a, 'idem', 'x'), scopedKey(a, 'cache', 'x'));
@@ -225,6 +225,60 @@ await t('cache and idempotency keys cannot collide across tenants, branches or k
   assert.equal(scopedKey(ctxOf({ roles: ['Owner'], assignedBranchIds: [], activeBranchId: null }), 'cache', 'x'), 't:tenant_A:b:*:cache:x');
   for (const badKey of ['', null, undefined, 5, 'x'.repeat(300)]) assert.throws(() => scopedKey(a, 'idem', badKey), /key-invalid/);
   assert.throws(() => scopedKey(a, 'weird', 'x'), /kind-invalid/);
+});
+
+await t('review B1: an Owner cannot address another tenant\'s branch (the branch must belong to the verified tenant branch list)', async () => {
+  const ownerClaims = { roles: ['Owner'], assignedBranchIds: [], activeBranchId: null };
+  bad(createIsolationContext(claims({ ...ownerClaims, activeBranchId: 'b1' })), 'activeBranch-not-in-tenant');
+  bad(createIsolationContext(claims({ ...ownerClaims, assignedBranchIds: ['b1'] })), 'assignedBranch-not-in-tenant');
+  bad(createIsolationContext(claims({ roles: ['Pharmacist'], assignedBranchIds: ['b1'], activeBranchId: 'b1' })), 'assignedBranch-not-in-tenant');
+  bad(createIsolationContext(claims({ tenantBranchIds: undefined })), 'tenantBranchIds-invalid');
+  bad(createIsolationContext(claims({ tenantBranchIds: 'a1' })), 'tenantBranchIds-invalid');
+  bad(createIsolationContext(claims({ tenantBranchIds: ['a1', 'a1'] })), 'tenantBranchIds-invalid');
+  bad(createIsolationContext(claims({ tenantBranchIds: ['a:1'] })), 'tenantBranchIds-invalid');
+  const ownerCtx = ctxOf(ownerClaims);
+  assert.throws(() => createScopedRepository(ownerCtx, execute, schema, { branchId: 'b1' }), /branch-not-allowed/);
+  assert.equal(checkRequestScope(ownerCtx, { headers: { 'x-branch-id': 'b1' } }).code, 'SEC_BRANCH_FORBIDDEN');
+  assert.equal(checkRequestScope(ownerCtx, { headers: { 'x-branch-id': 'a2' } }).ok, true);
+  const before = raw('select count(*) c from invoices')[0].c;
+  assert.equal(raw("select count(*) c from invoices where tenant_id='tenant_A' and branch_id='b1'")[0].c, 0, 'no orphan rows pointing at tenant B');
+  assert.equal(raw('select count(*) c from invoices')[0].c, before);
+});
+
+await t('review B2: the request-scope scan fails closed when nesting is too deep, instead of ignoring what is below', () => {
+  const ctx = ctxOf();
+  const nest = (depth, leaf) => { let o = leaf; for (let i = 0; i < depth; i++) o = { x: o }; return o; };
+  for (const depth of [7, 8, 20, 50]) { const r = checkRequestScope(ctx, { body: nest(depth, { tenantId: 'tenant_B' }) }); assert.equal(r.ok, false, `depth ${depth}`); assert.equal(r.code, 'request-too-deep'); assert.equal(r.status, 400); }
+  for (const depth of [1, 3, 5]) assert.equal(checkRequestScope(ctx, { body: nest(depth, { tenantId: 'tenant_B' }) }).code, 'SEC_TENANT_MISMATCH', `depth ${depth} still detected`);
+  assert.equal(checkRequestScope(ctx, { body: nest(3, { tenantId: 'tenant_A' }) }).ok, true);
+  const arr = nest(0, []); let deepArr = arr; for (let i = 0; i < 30; i++) deepArr = [deepArr];
+  assert.equal(checkRequestScope(ctx, { query: deepArr }).code, 'request-too-deep');
+  const cyc = { a: {} }; cyc.a.b = cyc; assert.equal(checkRequestScope(ctx, { body: cyc }).code, 'request-too-deep', 'a cyclic object cannot hang the scan');
+});
+
+await t('review B3: the SQL lint helper is advisory and refuses the known bypasses (OR, comments, extra statements, UNION)', () => {
+  for (const sql of ["select * from items where name='x' OR tenant_id = ?", 'select * from items -- tenant_id = ?', 'select * from items /* tenant_id = ? */', 'select * from items where tenant_id = ?; delete from items', 'select * from items where tenant_id = ? union select * from other', 'SELECT * FROM items WHERE tenant_id = ? or 1=1', 'select * from items where tenant_id = ?\nOR 1 = 1'])
+    assert.equal(looksTenantScoped(sql), false, sql);
+  assert.equal(looksTenantScoped('SELECT id FROM items WHERE tenant_id = ? AND branch_id = ? AND status = ? ORDER BY id LIMIT ?'), true);
+  assert.equal(looksTenantScoped('DELETE FROM items WHERE tenant_id = ? AND id = ?'), true);
+  assert.equal(looksTenantScoped(null), false);
+});
+
+await t('review: a transfer needs the branches table to be tenant-only, and says so explicitly', async () => {
+  const wrong = { branches: { columns: ['id', 'name'], branchScoped: true }, invoices: schema.invoices };
+  const im = ctxOf({ roles: ['InventoryManager'], assignedBranchIds: ['a1', 'a2'], activeBranchId: 'a1' });
+  const repo = createScopedRepository(im, execute, wrong);
+  bad(await validateTransfer(im, repo, 'a1', 'a2'), 'branches-table-must-be-tenant-only');
+  assert.deepEqual(createScopedRepository(im, execute, schema).describe('branches'), { columns: ['id', 'name'], branchScoped: false });
+  assert.equal(createScopedRepository(im, execute, schema).describe('nope'), null);
+  assert.equal((await validateTransfer(im, createScopedRepository(im, execute, schema), 'a1', 'a2')).ok, true);
+});
+
+await t('review: a client key whose encoded form is long is refused (KV keys are limited to 512 bytes)', () => {
+  const a = ctxOf();
+  assert.throws(() => scopedKey(a, 'idem', '\u00e9'.repeat(256)), /key-invalid/);
+  assert.ok(scopedKey(a, 'idem', 'x'.repeat(256)).length <= 512);
+  assert.ok(scopedKey(a, 'idem', '\u00e9'.repeat(40)).length <= 512);
 });
 
 await t('schema definitions are validated: names must be plain identifiers, scope columns are reserved', () => {

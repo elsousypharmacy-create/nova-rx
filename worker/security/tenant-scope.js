@@ -24,30 +24,38 @@ export function createIsolationContext(claims) {
   if (!validId(claims.tenantId)) return fail('tenantId-invalid');
   const roles = claims.roles;
   if (!Array.isArray(roles) || roles.length === 0 || roles.length > ROLES.length || new Set(roles).size !== roles.length || roles.some(r => !ROLES.includes(r))) return fail('roles-invalid');
+  // The branches that belong to THIS tenant, taken from the verified session (SEC-01). Every branch a context can name
+  // must be in this list, Owner included: a tenant-wide role is wide inside its tenant, never across tenants.
+  const tenantBranches = claims.tenantBranchIds;
+  if (!Array.isArray(tenantBranches) || tenantBranches.length > 500 || tenantBranches.some(b => !validId(b)) || new Set(tenantBranches).size !== tenantBranches.length) return fail('tenantBranchIds-invalid');
   const assigned = claims.assignedBranchIds === undefined ? [] : claims.assignedBranchIds;
   if (!Array.isArray(assigned) || assigned.length > 100 || assigned.some(b => !validId(b))) return fail('assignedBranchIds-invalid');
+  if (assigned.some(b => !tenantBranches.includes(b))) return fail('assignedBranch-not-in-tenant');
   const isTenantWide = roles.includes('Owner');
   let active = claims.activeBranchId === undefined ? null : claims.activeBranchId;
   if (active !== null && !validId(active)) return fail('activeBranchId-invalid');
+  if (active !== null && !tenantBranches.includes(active)) return fail('activeBranch-not-in-tenant');
   if (!isTenantWide) {
     if (active === null && assigned.length === 1) active = assigned[0];
     if (active === null) return fail('branch-required');
     if (!assigned.includes(active)) return fail('activeBranch-not-assigned');
   }
-  const context = Object.freeze({ actorId: claims.actorId, tenantId: claims.tenantId, roles: Object.freeze([...roles]), assignedBranchIds: Object.freeze([...assigned]), activeBranchId: active, isTenantWide });
+  const context = Object.freeze({ actorId: claims.actorId, tenantId: claims.tenantId, roles: Object.freeze([...roles]), tenantBranchIds: Object.freeze([...tenantBranches]), assignedBranchIds: Object.freeze([...assigned]), activeBranchId: active, isTenantWide });
   CONTEXTS.add(context);
   return { ok: true, context };
 }
 
-const branchAllowed = (ctx, branchId) => ctx.isTenantWide || ctx.assignedBranchIds.includes(branchId);
+const branchAllowed = (ctx, branchId) => ctx.tenantBranchIds.includes(branchId) && (ctx.isTenantWide || ctx.assignedBranchIds.includes(branchId));
 
 // ---- request scope -------------------------------------------------------------------------------------------------
 const normKey = k => String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
 const TENANT_KEYS = new Set(['tenantid', 'xtenantid']);
 const BRANCH_KEYS = new Set(['branchid', 'xbranchid']);
 
+const MAX_SCAN_DEPTH = 6;
 function scan(value, found, depth = 0) {
-  if (value === null || typeof value !== 'object' || depth > 6) return;
+  if (value === null || typeof value !== 'object') return;
+  if (depth > MAX_SCAN_DEPTH) { found.deep = true; return; }   // never silently ignore what lies below the cap
   if (Array.isArray(value)) { for (const item of value) scan(item, found, depth + 1); return; }
   for (const key of Object.keys(value)) {
     const nk = normKey(key);
@@ -60,8 +68,9 @@ function scan(value, found, depth = 0) {
 // Any tenant or branch the CLIENT names (header, query, params, body, nested, any case) must match the verified context.
 export function checkRequestScope(ctx, request) {
   if (!CONTEXTS.has(ctx)) return fail('context-invalid', { status: 500 });
-  const found = { tenant: [], branch: [] };
+  const found = { tenant: [], branch: [], deep: false };
   if (request && typeof request === 'object') for (const part of ['headers', 'query', 'params', 'body']) scan(request[part], found);
+  if (found.deep) return fail('request-too-deep', { status: 400 });
   if (found.tenant.some(v => v !== ctx.tenantId)) return fail('SEC_TENANT_MISMATCH', { status: 403 });
   if (found.branch.some(v => !validId(v) || !branchAllowed(ctx, v) || v !== found.branch[0])) return fail('SEC_BRANCH_FORBIDDEN', { status: 403 });
   return { ok: true, tenantId: ctx.tenantId, branchId: found.branch.length ? found.branch[0] : ctx.activeBranchId };
@@ -122,6 +131,7 @@ export function createScopedRepository(ctx, execute, schema, options = {}) {
   const run = async (sql, params, kind, errorCode) => { try { return { ok: true, result: await execute(sql, params, kind) }; } catch { return fail(errorCode); } };
 
   const repo = {
+    describe(name) { const def = table(name); return def ? { columns: [...def.columns], branchScoped: def.branchScoped } : null; },
     async select(name, where = {}, opts = {}) {
       const def = table(name); if (!def) return fail('table-unknown');
       const c = conditions(def, where, false); if (!c.ok) return c;
@@ -162,8 +172,13 @@ export function createScopedRepository(ctx, execute, schema, options = {}) {
   return Object.freeze(repo);
 }
 
-// Lint helper: a statement on an operational table must filter on tenant_id with a parameter, never a literal.
-export const isTenantScoped = sql => /\btenant_id\s*=\s*\?/i.test(String(sql));
+// ADVISORY heuristic only (a regex cannot prove isolation): a statement must filter on tenant_id with a parameter and contain no
+// OR, comments, UNION or extra statements. The real barrier is the repository above, which never lets a caller write SQL.
+export const looksTenantScoped = sql => {
+  const text = String(sql ?? '');
+  if (/--|\/\*|\*\/|;\s*\S|\bor\b|\bunion\b/i.test(text)) return false;
+  return /\btenant_id\s*=\s*\?/i.test(text);
+};
 
 // ---- inter-branch transfer -----------------------------------------------------------------------------------------
 // Both branches must exist INSIDE the caller's tenant (the repository filters by tenant). `repo` needs a tenant-only `branches` table.
@@ -172,7 +187,10 @@ export async function validateTransfer(ctx, repo, sourceBranchId, destinationBra
   if (!ctx.roles.includes('Owner') && !ctx.roles.includes('InventoryManager')) return fail('SEC_ROLE_FORBIDDEN');
   if (!validId(sourceBranchId) || !validId(destinationBranchId)) return fail('branch-invalid');
   if (sourceBranchId === destinationBranchId) return fail('transfer-same-branch');
+  if (!ctx.tenantBranchIds.includes(sourceBranchId) || !ctx.tenantBranchIds.includes(destinationBranchId)) return fail('SEC_CROSS_TENANT_TRANSFER_DENIED');
   if (!branchAllowed(ctx, sourceBranchId)) return fail('SEC_BRANCH_FORBIDDEN');
+  const info = typeof repo.describe === 'function' ? repo.describe('branches') : null;
+  if (!info || info.branchScoped) return fail('branches-table-must-be-tenant-only'); // a branch-scoped lookup would give a wrong, misleading answer
   for (const id of [sourceBranchId, destinationBranchId]) {
     const r = await repo.getById('branches', id);
     if (!r.ok) return fail('SEC_CROSS_TENANT_TRANSFER_DENIED');
@@ -185,5 +203,7 @@ export function scopedKey(ctx, kind, clientKey) {
   if (!CONTEXTS.has(ctx)) throw new Error('context-invalid');
   if (!KINDS.has(kind)) throw new Error('kind-invalid');
   if (typeof clientKey !== 'string' || clientKey.length === 0 || clientKey.length > 256) throw new Error('key-invalid');
-  return `t:${ctx.tenantId}:b:${ctx.activeBranchId ?? '*'}:${kind}:${encodeURIComponent(clientKey)}`;
+  const encoded = encodeURIComponent(clientKey);
+  if (encoded.length > 256) throw new Error('key-invalid');   // keeps the whole key well under the 512 byte KV limit
+  return `t:${ctx.tenantId}:b:${ctx.activeBranchId ?? '*'}:${kind}:${encoded}`;
 }

@@ -1,7 +1,7 @@
 # SEC-03: Tenant and branch isolation
 
 **Status: PROPOSED** (the first draft said "APPROVED SPECIFICATION"; nobody approved it). Task SEC-03. Depends on FND-03, SEC-01, SEC-02.
-Implemented as a pure module, **not wired**: `worker/security/tenant-scope.js`, tests `tests/unit/security-tenant-scope.check.mjs` (18 cases on a real in-memory SQLite with two tenants; 19 safeguard mutations each caught).
+Implemented as a pure module, **not wired**: `worker/security/tenant-scope.js`, tests `tests/unit/security-tenant-scope.check.mjs` (23 cases on a real in-memory SQLite with two tenants; the safeguard mutations are each caught).
 Revised by Claude 1 after Claude 2's security-gate findings (Issue #87, comment 6786485245). The first draft stays in the history of branch `gemini/sec-03-04-05-foundation`.
 
 ## 1. Reality check
