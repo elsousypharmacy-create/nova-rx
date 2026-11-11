@@ -796,3 +796,6 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint 2026-11-11 — Claude 1, CAT-02 review fixes (PR #137) and CAT-01 bounds (PR #136)
 - Claude 2 blocking items on #137 fixed test-first: strict decimal parsing (no hex/exponent; Arabic digits accepted) and exact-range bounds (`out-of-range` instead of precision loss). Also `rounded-to-zero` warning. 16 + 9 cases; 9 mutations of the new safeguards each caught.
 - #136 re-review leftovers fixed: price 0..1e9, integer pack size up to 1e6 (`032f180`).
+## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
+- Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
+- Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
