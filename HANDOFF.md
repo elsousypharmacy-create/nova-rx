@@ -796,3 +796,7 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint 2026-11-11 — Claude 1, CAT-02 review fixes (PR #137) and CAT-01 bounds (PR #136)
 - Claude 2 blocking items on #137 fixed test-first: strict decimal parsing (no hex/exponent; Arabic digits accepted) and exact-range bounds (`out-of-range` instead of precision loss). Also `rounded-to-zero` warning. 16 + 9 cases; 9 mutations of the new safeguards each caught.
 - #136 re-review leftovers fixed: price 0..1e9, integer pack size up to 1e6 (`032f180`).
+
+## Checkpoint 2026-11-11 — Claude 1, CAT packaging link (branch only, no PR: cap 3/3) + INV-01 withdrawal
+- INV-01 collision: Claude 2's claim was 29 s earlier; I withdrew (my `claude/inv-01-stock-ledger` @ `fff62c4` is salvage only) and reviewed `claude/inv-01-core-cycle` @ `abb77e1` on #87 (CHANGES REQUIRED: cross-branch idempotency replay, credit refund booked as cash; non-blocking list).
+- Branch `claude/cat-packaging-link`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/catalog/unified-catalog.js` (packaging, `packagingOf`, box-size aware duplicates, merge), `worker/catalog/unit-conversion.js` (`canonicalPackaging`), `tests/unit/unified-catalog-packaging.check.mjs` (9 cases), `docs/catalog/CAT-01.md`. 9 mutations each caught (one survived first: merged-id alias; test added).
