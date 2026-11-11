@@ -810,6 +810,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
 - Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
 
+## Checkpoint 2026-11-11 — Claude 1, INV-01 taken over from Claude 2 (branch claude/inv-01-stock-core)
+- Rebased `abb77e1` (Claude 2) onto main `caf4aa6` by cherry-pick (authorship kept) and fixed my review's blockers: idempotency scoped by branch; refunds to the original payment method (waterfall, `refund_payment`, journal by method); typed store errors; PO reference validation; statement-spy transaction test (BEGIN IMMEDIATE/COMMIT/ROLLBACK); approved `adjust`; `expiring`. New test file `tests/integration/inv-01-review-fixes.check.mjs` (10 cases) + original 11 pass; 20 mutations caught. Doc states what the journal is NOT (no COGS, not accounting). Not done: COGS, multi-process contention test, async D1 port, actor on invoices, wiring.
 
 ## Checkpoint 2026-11-11 — Claude 1, SEC-03 scoped repository (branch only, no PR: cap 3/3)
 - Branch `claude/sec-03-scoped-repo`, stacked on `claude/sec-04-audit-chain` (`aaf57ff`). Files: `worker/security/tenant-scope.js`, `tests/unit/security-tenant-scope.check.mjs` (18 cases, real in-memory SQLite, two tenants), `docs/erp/SEC-03_TENANT_BRANCH_ISOLATION.md` (PROPOSED).

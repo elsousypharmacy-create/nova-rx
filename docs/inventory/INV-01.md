@@ -1,0 +1,39 @@
+# INV-01 — stock ledger + the CAT→POS→INV→BUY cycle (code, PROPOSED, not accepted)
+
+Roadmap INV-01 (ledger), with the glue that makes it the integration spine for CAT-01/02, POS-02 (atomic invoice), POS-04 (returns, core only), BUY-05 (receiving, core only). Issue #87. **Pure, isolated, not wired to the Worker or UI. No storage product is chosen.**
+
+## What exists
+- `worker/inventory/stock-core.js`: `createStockCore(db)` over a tiny **sync** SQLite-style store (`exec`, `prepare().run/get/all`; tested with `node:sqlite`). Append-only `stock_movement` (UPDATE/DELETE refused by trigger), `stock_balance` with `CHECK(on_hand >= 0)`, batches with expiry, per-tenant+branch scope on every call (`scope-invalid` otherwise), integer cents and whole base units.
+  `receiveGoods` (optionally against a purchase order: partial delivery tracked, over-receipt and foreign products refused, lot expiry cannot change), `sell` (FEFO, expired stock not sellable, payments must equal the total, one transaction), `returnItems` (back to the same batches, refund exact to the cent over any number of partial returns), `setPolicy` / `shortages` (need = max − sellable stock), `registerPurchaseOrder` / `poStatus`, `getInvoice`, `reconcile` (the invariants). Every write takes an idempotency key (namespaced per kind, scoped per tenant): the same key and payload returns the stored result, a different payload is refused.
+- `worker/inventory/glue.js`: `buildSaleLines` (real CAT-01 lookup + CAT-02 conversion and exact price allocation → sale lines), `planReplenishment` (shortage → whole purchase packs, rounded up), `poLinesFromDraft` (approved `po-draft.js` draft → PO lines in base units).
+- `tests/integration/core-cycle.check.mjs` (11 cases): the full cycle in one run on the real committed catalog export (4378 rows) with fixture packaging, mock supplier offers (no supplier call), plus isolation, crash injection, replay, tamper detection.
+
+## Run
+`node --no-warnings tests/integration/core-cycle.check.mjs` and `node --no-warnings tests/unit/procurement-po-draft.check.mjs`. CI: `.github/workflows/core-cycle.yml` (runs on a PR).
+Safeguards were mutation-checked (28 deliberate breakages; the survivors of the first pass got tests; one remaining mutant is an unreachable defensive branch).
+
+## What is proven vs not
+Proven on isolated fixtures: the logic, the invariants and the idempotency/atomicity/isolation rules above.
+**Not done / not claimed:**
+1. Not wired to any route, UI or Worker; the POS screen still sells demo data.
+2. Production storage (D1 vs Postgres, FND-02) is an owner decision. The core's store interface is synchronous; D1 is asynchronous, so a D1 adapter needs an async port of the same SQL (follow-up, no behaviour change intended).
+3. Tenant/branch comes from the `scope` argument. In production it must come from a verified session through the SEC-03 wrapper, which is blocked on review findings; SEC-01 sessions do not exist in the running Worker (one shared PIN).
+4. Packaging (pack/strip/tablet) is a fixture: the real export has only `units`, and the CAT-01 product has no `packaging` field yet (CAT follow-up). Where the packaging data comes from is open.
+5. No audit events yet (SEC-04 module exists but is not hooked in), no reservations/holds (INV-03), no stock counts (INV-04; single approved adjustments exist, see below), no transfers/recalls (INV-05), no tax (CAT-03), no credit-sale ledger (CRM-02), no void/cancel (POS-04 rest), no sale hold/draft (POS-03), no device/printing.
+6. Shortage → supplier flow uses the existing `buildDrafts` with mock offers only. No real cart write, order or checkout, and none is possible from this code.
+
+## Review fixes (Claude 1's review of `abb77e1`, now on `main`-based branch `claude/inv-01-stock-core`)
+Tests: `tests/integration/inv-01-review-fixes.check.mjs` (10 cases, written first) next to the original 11. 20 mutations of the new safeguards: all caught (two survived first and got tests).
+- **Idempotency is scoped by tenant, branch and kind.** The branch is part of the request fingerprint: the same key and request from another branch is `idempotency-conflict`, never a silent replay (it used to return the other branch's result and sell nothing).
+- **Refunds go back to the original payment methods**, in the order the payments were taken, never more than each one paid (`refund_payment`, trigger `refund exceeds payment`). Journal: debit `sales`, credit `cash` / `card` / `receivable` according to the original method. `returnItems` reports `refundedTo`. `reconcile` checks refunds paid out = refunds owed and no payment over-refunded. This is a waterfall policy (first payment first); a proportional split was rejected because it can over-refund one method across several partial returns.
+- **Typed store errors:** duplicate invoice number (`invoice-number-exists`, numbers are unique **per tenant**, not per branch), `po-exists`, `po-line-duplicate`, `return-exceeds-sold`, `refund-exceeds-payment`, `insufficient-stock`, `constraint-violation`, `store-error`; no SQL text leaks. References may not contain `..`.
+- **Transaction discipline is tested** with a statement spy: every write is `BEGIN IMMEDIATE ... COMMIT`, and a failure ends in `ROLLBACK`. A real **multi-process contention test is NOT done** (one thread cannot interleave two open transactions); the guarantee rests on SQLite's writer lock and needs a D1/Postgres-specific proof when storage is chosen.
+- **`adjust(scope, {key, productId, lot, delta, reason, approvedBy, actor})`** (INV-04 start): reason of at least 5 characters, a **different** named approver (also a schema `CHECK`), never below zero, only on a lot that exists in the tenant **and** is held by this branch, idempotent, recorded in `stock_adjustment`; expired stock leaves through an approved write-off. `approvedBy` is a name, not an authenticated identity, until SEC-01/02 exist.
+- **`expiring(scope, days)`**: lots with stock expiring within `days`, soonest first, scoped to the caller's tenant and branch.
+
+## What the journal is NOT (read before using it for anything financial)
+`journal_entry` / `journal_line` are a demonstration of balanced double entries, **not accounting**: a sale debits the payment accounts and credits `sales`; a receipt debits `inventory` and credits `payables`; a refund reverses `sales` against the original payment account. Not modelled: **cost of goods sold and relief of the `inventory` account on sale (the `inventory` account only ever grows)**, tax, discounts, payment fees, change given, cash drawer, credit settlement, rounding between sales, period close. COGS needs an exact cost per base unit, and a box cost that is not a whole number of cents per tablet has no clean answer yet (a finer cost unit or lot-total costing is a CAT-03/FIN decision). Do not feed this journal to any report.
+
+## Still open after the fixes
+No actor on invoices, movements and receipts (only adjustments carry actor and approver); zero-priced lines cannot be sold (a payment must be > 0 and match the total); `reconcile` does not tie movements to invoice lines and receipts, nor stock value to the journal; `registerPurchaseOrder` is not idempotent and is not tied to an approved draft in code; `branch` comes from the `scope` argument, not from a verified session; no async (D1) port.
+
