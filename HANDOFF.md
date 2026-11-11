@@ -784,3 +784,7 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Closed as superseded per manager decision: #134 (-> #136) and #135 (-> #137). Open implementation PRs: #136 CAT-01, #137 CAT-02, SEC-04 (this branch).
 - NOT DONE / NOT TESTED: no wiring into the Worker, no storage, no key created or changed, no live behavior. Open owner decisions in the doc (key, retention, storage/single writer, IP).
 - Next: SEC-03 scoped-repository wrapper (pure) after review slots free; catalog `packaging` link; CAT-05 benchmark.
+
+## Checkpoint 2026-11-11 — Claude 1, SEC-04 review fixes (PR #138)
+- Claude 2's 4 blocking items fixed test-first: B1 substring key redaction (Claude 2's 16 names + more), B2 no NFC inside the hash (normalise once at build, refuse key collisions), B3 server-clock-only timestamp, B4 requestId required. Also: `expectedSeq` required, `expectedHead` on verify, depth cap, Map/undefined handling, IPv4-mapped IP, more scrubber shapes. 31 cases; 17 mutations of the new safeguards each caught (including the 2 that survived the first review).
+- Still NOT done: wiring, persistence, single-writer store, key management, metadata allowlist (documented limits).
