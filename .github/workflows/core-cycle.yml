@@ -1,0 +1,31 @@
+name: Core cycle integration
+
+on:
+  pull_request:
+    paths:
+      - 'worker/inventory/**'
+      - 'worker/catalog/**'
+      - 'worker/procurement/po-draft.js'
+      - 'tests/integration/**'
+      - 'data/emergency-stock.json'
+      - '.github/workflows/core-cycle.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: CAT -> POS -> INV -> BUY cycle on isolated in-memory fixtures (no network, no secrets, no live data)
+        run: |
+          set -euo pipefail
+          node --version
+          node --no-warnings tests/integration/core-cycle.check.mjs
+          node --no-warnings tests/unit/procurement-po-draft.check.mjs
