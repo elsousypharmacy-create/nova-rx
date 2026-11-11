@@ -788,3 +788,12 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 ## Checkpoint 2026-11-11 — Claude 1, SEC-04 review fixes (PR #138)
 - Claude 2's 4 blocking items fixed test-first: B1 substring key redaction (Claude 2's 16 names + more), B2 no NFC inside the hash (normalise once at build, refuse key collisions), B3 server-clock-only timestamp, B4 requestId required. Also: `expectedSeq` required, `expectedHead` on verify, depth cap, Map/undefined handling, IPv4-mapped IP, more scrubber shapes. 31 cases; 17 mutations of the new safeguards each caught (including the 2 that survived the first review).
 - Still NOT done: wiring, persistence, single-writer store, key management, metadata allowlist (documented limits).
+## Checkpoint 2026-11-11 — Claude 1, CAT-01 (claim on Issue #87)
+- Branch `claude/cat-01-catalog`, stacked on Gemini A's PR #134 head `8717484`. Files: `worker/catalog/unified-catalog.js`, `tests/unit/unified-catalog{,-duplicates,-realdata}.check.mjs`, `.github/workflows/catalog-unit.yml`, `docs/catalog/CAT-01.md`.
+- PR #134 audit: its own test failed (`assert.ok(item.id)` got `''`) while the PR said PASS; no CI ran it; one barcode only; no ingredient/strength/form; no duplicate review; silent defaults (price 0, packSize 1).
+- Now: new tests written first (red on #134's code), module rewritten, 3 check files green locally (11 + 4 cases, real export 4378 loaded / 0 rejected / 9 duplicate groups).
+- NOT TESTED: CI run of the new workflow (pending), the live STOCK LIVE sheet, any UI use. Not merged, not deployed. Next: Claude 2 review.
+
+## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
+- Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
+- Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
