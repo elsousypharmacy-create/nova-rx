@@ -139,4 +139,13 @@ t('rejected rows cannot be edited from outside', () => {
   assert.equal(c.rejected.length, 1);
 });
 
+t('sane bounds: huge prices and non-integer or huge pack sizes are rejected (re-review finding)', () => {
+  const price = v => normalizeProductRecord({ id: '1', name: 'x', price: v });
+  for (const bad of [1e21, 1e9 + 1, '1000000000.01', '99999999999999999999']) assert.ok(price(bad).errors.includes('price-invalid'), String(bad));
+  assert.equal(price(1e9).ok, true);
+  const pack = v => normalizeProductRecord({ id: '1', name: 'x', packSize: v });
+  for (const bad of [2.5, '2.5', 1e6 + 1, 1e21]) assert.ok(pack(bad).errors.includes('packSize-invalid'), String(bad));
+  assert.equal(pack(1e6).ok, true); assert.equal(pack('24').product.packSize, 24);
+});
+
 console.log(`PASS unified-catalog core checks (CAT-01): ${n} cases`);
