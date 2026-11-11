@@ -1,0 +1,42 @@
+name: UX contrast ratchet
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'purchases.html'
+      - 'purchases.css'
+      - 'emergency-sales.html'
+      - 'sticker-studio.html'
+      - 'supplier-compare.html'
+      - 'tests/ux/**'
+      - '.github/workflows/ux-unit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contrast:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright (library only, same version as the POS smoke test)
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Serve the static app locally (no backend, no network)
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/nova-http.log 2>&1 &
+          sleep 1
+      - name: Measure contrast, touch targets and tiny text; fail only on regression
+        run: node tests/ux/contrast-audit.mjs --check --json ux-contrast.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ux-contrast-report
+          path: ux-contrast.json

@@ -1,0 +1,6 @@
+{
+ "_note": "Ratchet, not a goal: these are the numbers measured on main at 2026-11-11. They may only go DOWN. Fix a finding, then lower the number.",
+ "maxFailingGroups": 3,
+ "maxFailingTexts": 3,
+ "maxSmallTargetsUnique": 12
+}
