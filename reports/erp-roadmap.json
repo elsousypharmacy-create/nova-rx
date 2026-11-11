@@ -84,17 +84,6 @@
           ],
           "verifiedAt": null,
           "verification": null,
-          "assignment": {
-            "agent": "Kimi",
-            "state": "for_review",
-            "order": 1,
-            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/103",
-            "dependsOn": [],
-            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل",
-            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42761851699",
-            "reviewResult": "changes_requested",
-            "prUrl": "https://github.com/elsousypharmacy-create/nova-rx/pull/108"
-          },
           "note": "Kimi سلّم المسودة على675f28c؛ Draft108 مفتوح. تحتاج تصحيح تعريفGoodsReceipt وحسابات المثال وتحديث وصف تكامل المشتريات. Workflow أخفق عندإنشاءPRفقط؛ لم نعد تشغيلKimi."
         },
         {
@@ -119,16 +108,6 @@
           ],
           "verifiedAt": null,
           "verification": null,
-          "assignment": {
-            "agent": "Kimi",
-            "state": "queued",
-            "order": 2,
-            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/104",
-            "dependsOn": [
-              "FND-03"
-            ],
-            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
-          },
           "note": "مسودة وثائق فقط"
         },
         {
@@ -154,16 +133,6 @@
           ],
           "verifiedAt": null,
           "verification": null,
-          "assignment": {
-            "agent": "Kimi",
-            "state": "for_review",
-            "order": 3,
-            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/105",
-            "dependsOn": [],
-            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل",
-            "runUrl": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/42762500180",
-            "prUrl": "https://github.com/elsousypharmacy-create/nova-rx/pull/109"
-          },
           "note": "Kimi سلّم مسودة بيئات العمل على7f3b99a. تعطل إنشاءPR فقط، وفتحناه من الفرع المحفوظ دون إعادة التشغيل. تحتاج مراجعة دقة الجرد وحدود ما نُفذ؛ لا قبول نهائي."
         }
       ]
@@ -201,17 +170,6 @@
           ],
           "verifiedAt": null,
           "verification": null,
-          "assignment": {
-            "agent": "Kimi",
-            "state": "queued",
-            "order": 4,
-            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/106",
-            "dependsOn": [
-              "FND-03",
-              "FND-04"
-            ],
-            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
-          },
           "note": "تصميم فقط؛ مفيش تسجيل دخول فردي شغال"
         },
         {
@@ -236,17 +194,6 @@
           ],
           "verifiedAt": null,
           "verification": null,
-          "assignment": {
-            "agent": "Kimi",
-            "state": "queued",
-            "order": 5,
-            "issueUrl": "https://github.com/elsousypharmacy-create/nova-rx/issues/107",
-            "dependsOn": [
-              "FND-03",
-              "SEC-01"
-            ],
-            "scope": "مسودة تصميم مستقلة؛ التسليم للمراجعة قبل التنفيذ والتكامل"
-          },
           "note": "تصميم فقط؛ الصلاحيات مش بتتفحص في السيرفر بعد"
         },
         {
