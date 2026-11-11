@@ -784,6 +784,18 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Now: new tests written first (red on #134's code), module rewritten, 3 check files green locally (11 + 4 cases, real export 4378 loaded / 0 rejected / 9 duplicate groups).
 - NOT TESTED: CI run of the new workflow (pending), the live STOCK LIVE sheet, any UI use. Not merged, not deployed. Next: Claude 2 review.
 
+## Checkpoint 2026-11-11 — Claude 1, CAT-02 (audit of PR #135 + fix branch)
+- Branch `claude/cat-02-unit-conversion`, stacked on `claude/cat-01-catalog` (so the shared `catalog-unit.yml` runs both) and merged with Gemini A's #135 head `86f76cf`. Files: `worker/catalog/unit-conversion.js`, `tests/unit/unit-conversion{,-price}.check.mjs`, `docs/catalog/CAT-02.md`, workflow globs.
+- #135 audit (probed, not guessed): unknown unit `bottle` x2 -> 2; no packaging: 1 box -> 1, 1 carton -> 1; qty -5 -> -150; qty 'abc' -> 0; line price with qty 0 -> 20 (treated as 1); bad price -> 0; `tabletsPerStrip: 0` silently became 1; 7 separate strip lines of a 100 EGP box summed to 99.9999; fractional tablets accepted; its check ran in no workflow.
+- Fix: 14 + 7 test cases (written first, red on #135's code), 5 safeguard mutations each killed. NOT TESTED: CI run of the branch, any use in purchasing/POS, linking packaging to catalog products.
+- No PR opened for this branch: #134, #135, #136 already fill the 3-PR cap. Needs the manager to close/supersede #134 or #135, then I open the Draft PR.
+## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
+- Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
+- Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
+
+## Checkpoint 2026-11-11 — Claude 1, CAT-02 review fixes (PR #137) and CAT-01 bounds (PR #136)
+- Claude 2 blocking items on #137 fixed test-first: strict decimal parsing (no hex/exponent; Arabic digits accepted) and exact-range bounds (`out-of-range` instead of precision loss). Also `rounded-to-zero` warning. 16 + 9 cases; 9 mutations of the new safeguards each caught.
+- #136 re-review leftovers fixed: price 0..1e9, integer pack size up to 1e6 (`032f180`).
 ## Checkpoint 2026-11-11 — Claude 1, CAT-01 review fixes (PR #136)
 - Claude 2 review (3 blocking): whitespace/hex/exponent price -> now strict decimal, blank = null; strength/form test added (that mutation is now caught); `mergeLog`/`rejected` are read-only views. Also: merge log records discarded values, import-style inactive flags, Arabic-digit id search. Tests 15 + 7 + real-data; 8 mutations of the new safeguards each caught.
 - Docs: `docs/catalog/CAT-01.md` follow-up section (limits: JS-number price, `reviewedBy` is a name not an approval, one bad barcode rejects a product, substring search = CAT-05).
