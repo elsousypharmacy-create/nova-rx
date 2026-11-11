@@ -108,6 +108,31 @@ await t('a hostile product name (<img onerror>) is inert: shown as text in the l
   await ctx.close();
 });
 
+await t('scanning a hostile-named item by barcode or by code never runs its markup (toast path)', async () => {
+  const evil = '<img src=x onerror="window.__pwned=(window.__pwned||0)+1">';
+  const filler = Array.from({ length: 60 }, (_, i) => ({ code: String(900000 + i), namear: 'صنف تجريبي ' + i, price: 10 + i }));
+  const body = JSON.stringify({ exportedAt: '2026-11-11T00:00:00Z', items: [{ code: '777002', gtin: '6221000000002', namear: evil, price: 5.5 }, { code: '777003', gtin: '12345', namear: evil + 'B', price: 6.5 }, ...filler] });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG', hasTouch: true });
+  await ctx.route('**/*', r => { const u = r.request().url(); return u.startsWith(new URL(BASE).origin) || u.startsWith('data:') ? r.continue() : r.abort(); });
+  const page = await ctx.newPage(); await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body }));
+  await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
+  await page.goto(BASE, { waitUntil: 'load' }); await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE');
+  for (const q of ['6221000000002', '777002']) {
+    await page.locator('#mainSearchInput').fill(q); await page.locator('#mainSearchInput').press('Enter'); await page.waitForTimeout(350);
+    assert.equal(await page.evaluate(() => window.__pwned), undefined, 'onerror ran after scanning ' + q);
+    assert.ok((await page.locator('.toast').innerText()).includes('<img src=x'), 'the toast shows the tag as text for ' + q);
+  }
+  // Customer mode (F3) has two more scan paths with their own toasts: typing-speed match (handleSearchInput) and Enter.
+  for (const q of ['6221000000002', '12345']) {
+    await page.keyboard.press('F3'); await page.waitForTimeout(100);
+    await page.locator('#mainSearchInput').fill(q); await page.waitForTimeout(350);
+    if (await page.evaluate(() => document.querySelector('#mainSearchInput').value) !== '') { await page.locator('#mainSearchInput').press('Enter'); await page.waitForTimeout(350); }
+    assert.equal(await page.evaluate(() => window.__pwned), undefined, 'onerror ran after customer-mode scan ' + q);
+    assert.ok((await page.locator('.toast').innerText()).includes('<img src=x'), 'customer-mode toast shows the tag as text for ' + q);
+  }
+  await ctx.close();
+});
+
 await t('currency is the Egyptian pound everywhere on the sale screen (ج.م in Arabic, EGP in English), never Saudi riyals', async () => {
   const ar = await real.page.evaluate(() => document.body.innerText);
   assert.ok(/ج\.م/.test(ar), 'Arabic UI shows ج.م'); assert.ok(!/ر\.س|SAR/.test(ar), 'no Saudi riyal text: ' + (ar.match(/.{12}(ر\.س|SAR).{4}/) || [''])[0]);
