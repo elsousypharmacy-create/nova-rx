@@ -1210,13 +1210,34 @@
     .receipt-slip {
       background: #f1f3f5;
       color: #000;
-      padding: 20px;
+      padding: 16px;
       border-radius: 4px;
-      font-family: var(--font-mono);
-      font-size: 11px;
+      font-family: Cairo, var(--font-sans, sans-serif);
+      font-size: 12px;
       line-height: 1.5;
-      max-height: 380px;
+      max-height: 400px;
       overflow-y: auto;
+      margin: 0 auto;
+    }
+    .receipt-slip[data-width="58mm"] { width: 58mm; max-width: 100%; padding: 10px 8px; }
+    .receipt-slip[data-width="80mm"] { width: 80mm; max-width: 100%; padding: 14px 12px; }
+    .nova-receipt-toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .nova-receipt-widths { display: inline-flex; gap: 6px; }
+    .nova-receipt-width-btn, .nova-printer-toggle { min-height: 44px; min-width: 44px; padding: 6px 12px; font-size: 12px; border-radius: 8px; background: #222a33; border: 1px solid #3a4652; color: #d9e2e9; cursor: pointer; }
+    .nova-receipt-width-btn.active { background: #1a3444; color: #f1f3f5; border-color: #6dbde0; font-weight: 700; }
+    .nova-printer-toggle[data-connected="false"] { background: #29181c; color: #efa2a8; border-color: #56323a; }
+    .nova-receipt-alert { background: #29181c; color: #fecaca; border: 1px solid #56323a; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .nova-receipt-copy { background: #fef3c7; color: #78350f; border: 1px dashed #b45309; padding: 4px 8px; text-align: center; font-weight: 800; font-size: 12px; margin-bottom: 8px; border-radius: 4px; }
+    .nova-receipt-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 12px; }
+    .nova-receipt-table th, .nova-receipt-table td { padding: 3px 2px; border-bottom: 1px dashed #cbd5e1; color: #000; text-align: right; }
+    .nova-receipt-barcode { text-align: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #94a3b8; }
+    .nova-receipt-barcode svg { display: block; margin: 0 auto 2px; max-width: 100%; height: 40px; }
+    @media print {
+      body > *:not(#receiptModal) { display: none !important; }
+      #receiptModal { position: static !important; background: #fff !important; display: block !important; padding: 0 !important; }
+      #receiptModal .modal-card { max-width: none !important; border: 0 !important; box-shadow: none !important; background: #fff !important; color: #000 !important; }
+      #receiptModal .modal-header, #receiptModal .modal-footer, .nova-receipt-toolbar, .nova-receipt-alert { display: none !important; }
+      .receipt-slip { max-height: none !important; overflow: visible !important; background: #fff !important; padding: 0 !important; }
     }
   
 
@@ -2212,18 +2233,31 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
   <!-- RECEIPT SLIP MODAL -->
   <div id="receiptModal" class="modal-backdrop">
-    <div class="modal-card" style="max-width: 440px;">
+    <div class="modal-card" style="max-width: 480px;">
       <div class="modal-header">
         <h3>Transaction Receipt / إيصال الدفع</h3>
         <button id="btnCloseReceipt" class="btn-icon-del" style="color:#cbd5e1;">✕</button>
       </div>
       <div class="modal-body" style="padding:12px;">
-        <div id="receiptSlipContent" class="receipt-slip">
+        <div class="nova-receipt-toolbar">
+          <div class="nova-receipt-widths" role="group" aria-label="Paper width">
+            <button type="button" id="btnReceiptWidth80" class="nova-receipt-width-btn active" data-receipt-width="80mm">80mm</button>
+            <button type="button" id="btnReceiptWidth58" class="nova-receipt-width-btn" data-receipt-width="58mm">58mm</button>
+          </div>
+          <button type="button" id="btnPrinterStatus" class="nova-printer-toggle" data-connected="true">Printer Ready</button>
+        </div>
+        <div id="receiptPrinterAlert" class="nova-receipt-alert" role="alert" hidden>
+          <span id="receiptPrinterAlertMsg">Printer Disconnected</span>
+          <button type="button" id="btnReconnectPrinter" class="btn btn-secondary" style="min-height:44px;">Reconnect &amp; Retry</button>
+        </div>
+        <div id="receiptSlipContent" class="receipt-slip" data-width="80mm">
           <!-- Dynamically generated receipt text -->
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="flex-wrap:wrap; gap:8px;">
         <button id="btnPrintReceiptBtn" class="btn btn-secondary">Print</button>
+        <button id="btnReprintReceipt" class="btn btn-secondary">Reprint Copy</button>
+        <button id="btnExportReceiptPdf" class="btn btn-secondary">Download PDF</button>
         <button id="btnReceiptNewSale" class="btn btn-primary">Start New Sale (F2)</button>
       </div>
     </div>
@@ -3948,47 +3982,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const now = new Date();
         const dateStr = now.toLocaleDateString("en-GB") + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        // Generate Printable Receipt Content
-        let slip = `========================================
-            NOVA Rx PHARMACY POS
-           Branch #01 - Sulaimaniyah
-========================================
-Invoice: ${invNumber}
-Date:    ${dateStr}
-Cashier: Station 01 (Gemini Flash)
-Customer: ${state.attachedCustomer ? state.attachedCustomer.name : 'Walk-in Customer'}
-Phone:    ${state.attachedCustomer ? state.attachedCustomer.phone : 'N/A'}
-----------------------------------------
-ITEM                QTY   PRICE    TOTAL
-----------------------------------------
-`;
-
-        state.invoiceLines.forEach(l => {
-          const tot = (l.price * l.qty) - l.discount;
-          const shortName = l.name.substring(0, 18).padEnd(18, " ");
-          slip += `${shortName}  ${String(l.qty).padStart(2, " ")}  ${l.price.toFixed(2).padStart(6, " ")}  ${tot.toFixed(2).padStart(7, " ")}
-`;
-        });
-
-        slip += `----------------------------------------
-Subtotal:                    ${subtotal.toFixed(2).padStart(8, " ")} EGP
-Discount:                   -${actualDiscount.toFixed(2).padStart(8, " ")} EGP
-VAT (15% Included):          ${vatIncluded.toFixed(2).padStart(8, " ")} EGP
-----------------------------------------
-NET TOTAL PAYABLE:           ${grandTotal.toFixed(2).padStart(8, " ")} EGP
-Payment: ${tp.payment.toUpperCase()} (${tp.tenders.map(t => t.method + ' ' + t.amount.toFixed(2)).join(', ')})
-Received (cash): ${cashRec.toFixed(2)} EGP
-Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
-========================================
-    Thank you for choosing NOVA Rx!
-   Please retain this slip for returns.
-========================================`;
-
-        // U1: keep a local record of every completed sale (this device only; not a server ledger).
-        const savedOk = window.novaSales.add({
+        const saleRecord = {
           id: saleKey,
           number: String(invNumber), at: now.toISOString(),
           customer: state.attachedCustomer ? state.attachedCustomer.name : '',
+          phone: state.attachedCustomer ? state.attachedCustomer.phone : '',
           payment: tp.payment, status: 'final', tenders: tp.tenders, credit: tp.credit, collected: tp.collected, customerId: state.attachedCustomer ? state.attachedCustomer.id : undefined,
           ...(tp.cardAmount > 0 ? { cardAuth: window.novaPay.cardAuth(saleKey).id } : {}),
           lines: state.invoiceLines.map(l => {
@@ -4002,16 +4000,17 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
           }),
           subtotal, discount: actualDiscount, vat: vatIncluded, total: grandTotal, received: cashRec, change: tp.change,
           source: window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' ? 'STOCK LIVE' : 'DEMO'
-        });
+        };
+        // U1: keep a local record of every completed sale (this device only; not a server ledger).
+        const savedOk = window.novaSales.add(saleRecord);
         if (!savedOk) { // atomic: nothing is cleared; a retry reuses the same card authorisation and invoice key, so the customer is never charged twice
           showToast("تعذر حفظ الفاتورة على هذا الجهاز — أعد المحاولة، لن يتم خصم البطاقة مرة أخرى.", "error");
           return;
         }
         window.novaPay.captureCard(saleKey); window.novaStock.release(saleKey); state.invoiceKey = null;
         try{window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:String(invNumber),customer:state.attachedCustomer?.name||'عميل نقدي',items:state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}}))}catch(e){}
-        elements.receiptSlipContent.textContent = slip;
         closeCheckout();
-        elements.receiptModal.classList.add("active");
+        window.novaReceipt.open(saleRecord, { copy: false, fromCheckout: true });
 
         // Clear invoice and reset for next transaction
         state.invoiceLines = [];
@@ -4040,7 +4039,240 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         showToast("New sale ready. Scan barcode or search medicine.");
       }
 
-      // Local-only held invoices; not synchronized across devices.
+      // POS-05 (this device only): Arabic PDF receipt, 58mm/80mm thermal layouts with SVG barcode, printer disconnect/reconnect handling, reprint with copy mark, and mock Bluetooth/HID barcode scanner.
+      window.novaReceipt = (function () {
+        const WK = 'nova-rx-receipt-width-v1', PK = 'nova-rx-printer-connected-v1', RK = 'nova-rx-reprints-v1';
+        let currentSale = null, currentCopy = false, currentCopyNo = 0, fromCheckout = false, pendingJob = null;
+        const CODE39 = { '0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw','5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw','C':'wnwnnwnnn','D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn','G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn','K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww','O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww','R':'wnnnnnwwn','S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw','W':'wwwnnnnnn','X':'nwnnwnnnw','Y':'wwnnwnnnn','Z':'nwwnwnnnn','-':'nwnnnnwnw','.':'wwnnnnwnn',' ':'nwwnnnwnn','*':'nwnnwnwnn' };
+        function barcodeSvg(val) {
+          const clean = String(val || '000000').toUpperCase().replace(/[^0-9A-Z\-. ]/g, '') || '000000';
+          const full = '*' + clean + '*';
+          let x = 4; const bars = [];
+          for (let i = 0; i < full.length; i++) {
+            const p = CODE39[full[i]] || CODE39['0'];
+            for (let j = 0; j < 9; j++) {
+              const w = p[j] === 'w' ? 3 : 1;
+              if (j % 2 === 0) bars.push(`<rect x="${x}" y="2" width="${w}" height="34" fill="#000"/>`);
+              x += w;
+            }
+            x += 1;
+          }
+          return `<svg class="receipt-barcode-svg" data-barcode-value="${escH(clean)}" viewBox="0 0 ${x + 4} 38" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Barcode ${escH(clean)}">${bars.join('')}</svg><div dir="ltr" style="font-family:monospace;font-size:12px;letter-spacing:2px;color:#000">${escH(clean)}</div>`;
+        }
+        function getWidth() { try { return localStorage.getItem(WK) === '58mm' ? '58mm' : '80mm'; } catch (_) { return '80mm'; } }
+        function setWidth(w) {
+          const v = w === '58mm' ? '58mm' : '80mm';
+          try { localStorage.setItem(WK, v); } catch (_) {}
+          if (elements.receiptSlipContent) elements.receiptSlipContent.setAttribute('data-width', v);
+          document.querySelectorAll('[data-receipt-width]').forEach(b => b.classList.toggle('active', b.getAttribute('data-receipt-width') === v));
+          if (currentSale) render();
+          return v;
+        }
+        function isPrinterConnected() { try { return localStorage.getItem(PK) !== '0'; } catch (_) { return true; } }
+        function setPrinterConnected(flag) {
+          const ok = !!flag;
+          try { localStorage.setItem(PK, ok ? '1' : '0'); } catch (_) {}
+          const btn = document.getElementById('btnPrinterStatus'), al = document.getElementById('receiptPrinterAlert');
+          if (btn) {
+            btn.setAttribute('data-connected', String(ok));
+            const en = localStorage.getItem('nova-rx-language') === 'en';
+            btn.textContent = ok ? (en ? 'Printer Ready' : 'الطابعة متصلة') : (en ? 'Printer Offline' : 'الطابعة غير متصلة');
+          }
+          if (ok && al) al.hidden = true;
+          return ok;
+        }
+        function reprintsMap() { try { const o = JSON.parse(localStorage.getItem(RK) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (_) { return {}; } }
+        function bumpReprint(num) {
+          const m = reprintsMap(), n = (Number(m[num]) || 0) + 1;
+          m[num] = n;
+          try { localStorage.setItem(RK, JSON.stringify(m)); } catch (_) {}
+          return n;
+        }
+        function reprintCount(num) { return Number(reprintsMap()[num]) || 0; }
+        function payLabel(m) { return ({ cash: 'نقدي (Cash)', card: 'بطاقة (Card)', credit: 'آجل (Credit)', mixed: 'مشترك (Mixed)' })[m] || String(m || 'نقدي'); }
+        function render() {
+          if (!currentSale || !elements.receiptSlipContent) return '';
+          const s = currentSale, w = getWidth(), dt = new Date(s.at || Date.now());
+          const dateStr = dt.toLocaleDateString('en-GB') + ' ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const copyBanner = currentCopy ? `<div class="nova-receipt-copy" data-receipt-copy="true">نسخة مكررة — COPY${currentCopyNo > 1 ? ' #' + currentCopyNo : ''}</div>` : '';
+          const rowsHtml = (s.lines || []).map(l => {
+            const tot = ((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0);
+            return `<tr><td>${escH(l.name)}</td><td dir="ltr">${Number(l.qty) || 0}</td><td dir="ltr">${(Number(l.price) || 0).toFixed(2)}</td><td dir="ltr">${tot.toFixed(2)}</td></tr>`;
+          }).join('');
+          const tendersTxt = Array.isArray(s.tenders) && s.tenders.length ? s.tenders.map(t => `${t.method} ${(Number(t.amount) || 0).toFixed(2)}`).join(' + ') : '';
+          const html = `<div dir="rtl" lang="ar" class="nova-receipt-doc" data-receipt-number="${escH(s.number)}" data-is-copy="${currentCopy ? 'true' : 'false'}" style="color:#000">
+            ${copyBanner}
+            <div style="text-align:center;border-bottom:1px dashed #94a3b8;padding-bottom:6px;margin-bottom:6px">
+              <div style="font-weight:800;font-size:14px">صيدلية السوسي — NOVA Rx</div>
+              <div style="font-size:12px">إيصال بيع ضريبي مبسط (${w})</div>
+            </div>
+            <div style="font-size:12px;margin-bottom:6px">
+              <div><strong>رقم الفاتورة:</strong> <span dir="ltr">${escH(s.number)}</span></div>
+              <div><strong>التاريخ:</strong> <span dir="ltr">${escH(dateStr)}</span></div>
+              <div><strong>العميل:</strong> ${escH(s.customer || 'عميل نقدي')}</div>
+              ${s.phone ? `<div><strong>الهاتف:</strong> <span dir="ltr">${escH(s.phone)}</span></div>` : ''}
+            </div>
+            <table class="nova-receipt-table">
+              <thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+            <div style="font-size:12px;border-top:1px dashed #94a3b8;padding-top:6px">
+              <div style="display:flex;justify-content:space-between"><span>المجموع الفرعي:</span><span dir="ltr">${(Number(s.subtotal) || 0).toFixed(2)} ج.م</span></div>
+              <div style="display:flex;justify-content:space-between"><span>الخصم:</span><span dir="ltr">-${(Number(s.discount) || 0).toFixed(2)} ج.م</span></div>
+              <div style="display:flex;justify-content:space-between"><span>ضريبة القيمة المضافة (15%):</span><span dir="ltr">${(Number(s.vat) || 0).toFixed(2)} ج.م</span></div>
+              <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13px;margin-top:2px"><span>الإجمالي المستحق:</span><span dir="ltr">${(Number(s.total) || 0).toFixed(2)} ج.م</span></div>
+              <div style="display:flex;justify-content:space-between"><span>طريقة الدفع:</span><span>${escH(payLabel(s.payment))}${tendersTxt ? ' (' + escH(tendersTxt) + ')' : ''}</span></div>
+              <div style="display:flex;justify-content:space-between"><span>المدفوع نقدًا:</span><span dir="ltr">${(Number(s.received) || 0).toFixed(2)} ج.م</span></div>
+              <div style="display:flex;justify-content:space-between"><span>الباقي:</span><span dir="ltr">${(Number(s.change) || 0).toFixed(2)} ج.م</span></div>
+            </div>
+            <div class="nova-receipt-barcode">${barcodeSvg(s.number)}</div>
+          </div>`;
+          elements.receiptSlipContent.setAttribute('data-width', w);
+          elements.receiptSlipContent.innerHTML = html;
+          return html;
+        }
+        function buildPdfBytes(sale, opts) {
+          const s = sale || currentSale || { number: 'S-000000', total: 0, lines: [] };
+          const isCopy = !!(opts && opts.copy !== undefined ? opts.copy : currentCopy);
+          const copyNo = (opts && opts.copyNo) || currentCopyNo || 1;
+          const enc = new TextEncoder();
+          const u16Hex = str => '<FEFF' + Array.from(String(str || '')).map(ch => ch.charCodeAt(0).toString(16).padStart(4, '0').toUpperCase()).join('') + '>';
+          const ascii = str => '(' + String(str || '').replace(/[()\\]/g, '\\$&').replace(/[^\x20-\x7E]/g, '?') + ')';
+          const lines = [
+            isCopy ? `نسخة مكررة — COPY #${copyNo}` : 'نسخة أصلية — ORIGINAL',
+            'صيدلية السوسي — NOVA Rx Pharmacy',
+            `رقم الفاتورة / Invoice: ${s.number}`,
+            `التاريخ / Date: ${s.at || new Date().toISOString()}`,
+            `العميل / Customer: ${s.customer || 'عميل نقدي'}`,
+            `طريقة الدفع / Payment: ${s.payment || 'cash'}`,
+            ...(s.lines || []).map((l, i) => `${i + 1}. ${l.name} x${l.qty} @ ${(Number(l.price) || 0).toFixed(2)} = ${(((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0)).toFixed(2)} ج.م`),
+            `المجموع الفرعي / Subtotal: ${(Number(s.subtotal) || 0).toFixed(2)} ج.م`,
+            `الخصم / Discount: -${(Number(s.discount) || 0).toFixed(2)} ج.م`,
+            `الضريبة / VAT (15%): ${(Number(s.vat) || 0).toFixed(2)} ج.م`,
+            `الإجمالي النهائي / NET TOTAL: ${(Number(s.total) || 0).toFixed(2)} ج.م`,
+            `الباركود / Barcode: *${s.number}*`
+          ];
+          let y = 780;
+          const ops = ['BT', '/F1 11 Tf'];
+          lines.forEach(ln => {
+            ops.push(`1 0 0 1 40 ${y} Tm ${ascii(ln)} Tj`);
+            ops.push(`1 0 0 1 320 ${y} Tm ${u16Hex(ln)} Tj`);
+            y -= 20;
+          });
+          ops.push('ET');
+          const stream = ops.join('\n') + '\n';
+          const streamLen = enc.encode(stream).length;
+          const objs = [
+            `1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Lang (ar-EG) >>\nendobj\n`,
+            `2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`,
+            `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`,
+            `4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n`,
+            `5 0 obj\n<< /Length ${streamLen} >>\nstream\n${stream}endstream\nendobj\n`
+          ];
+          let pdf = '%PDF-1.4\n';
+          const offsets = [0];
+          objs.forEach(o => { offsets.push(enc.encode(pdf).length); pdf += o; });
+          const xrefPos = enc.encode(pdf).length;
+          pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+          for (let i = 1; i <= objs.length; i++) pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+          pdf += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R /Info << /Title ${u16Hex('إيصال فاتورة ' + s.number + (isCopy ? ' نسخة' : ''))} >> >>\nstartxref\n${xrefPos}\n%%EOF\n`;
+          return { bytes: enc.encode(pdf), text: pdf, lines, filename: `receipt-${s.number}${isCopy ? '-copy' : ''}.pdf` };
+        }
+        function exportPdf(sale, opts) {
+          const out = buildPdfBytes(sale, opts);
+          const blob = new Blob([out.bytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = out.filename;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          return out;
+        }
+        function open(sale, opts = {}) {
+          currentSale = sale;
+          fromCheckout = !!opts.fromCheckout;
+          currentCopy = !!opts.copy;
+          currentCopyNo = currentCopy ? (opts.copyNo || bumpReprint(sale.number)) : 0;
+          setWidth(getWidth());
+          setPrinterConnected(isPrinterConnected());
+          const al = document.getElementById('receiptPrinterAlert');
+          if (al) al.hidden = isPrinterConnected();
+          render();
+          elements.receiptModal.classList.add('active');
+          return { sale: currentSale, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
+        }
+        function printNow(opts = {}) {
+          if (opts.copy && currentSale && !currentCopy) {
+            currentCopy = true;
+            currentCopyNo = bumpReprint(currentSale.number);
+            render();
+          } else if (opts.copy && currentSale && currentCopy && opts.bump !== false) {
+            currentCopyNo = bumpReprint(currentSale.number);
+            render();
+          }
+          if (!isPrinterConnected()) {
+            pendingJob = { sale: currentSale, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
+            const al = document.getElementById('receiptPrinterAlert'), msg = document.getElementById('receiptPrinterAlertMsg');
+            const en = localStorage.getItem('nova-rx-language') === 'en';
+            if (msg) msg.textContent = en ? 'Printer disconnected — check power/cable and retry' : 'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة';
+            if (al) al.hidden = false;
+            showToast(en ? 'Printer disconnected. Receipt saved for retry.' : 'انقطع اتصال الطابعة — الإيصال محفوظ لإعادة الطباعة.', 'error');
+            return { ok: false, error: 'printer-disconnected', queued: pendingJob };
+          }
+          const al = document.getElementById('receiptPrinterAlert');
+          if (al) al.hidden = true;
+          pendingJob = null;
+          try { window.print(); } catch (_) {}
+          return { ok: true, saleNumber: currentSale && currentSale.number, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
+        }
+        function reconnectAndRetry() {
+          setPrinterConnected(true);
+          return printNow({ copy: currentCopy, bump: false });
+        }
+        function reopenSale(saleOrId, opts = {}) {
+          const s = typeof saleOrId === 'object' && saleOrId ? saleOrId : window.novaSales.list().find(x => x.id === saleOrId || x.number === saleOrId);
+          if (!s) return { ok: false, error: 'not-found' };
+          return { ok: true, ...open(s, { copy: opts.copy !== false, fromCheckout: false }) };
+        }
+        return {
+          open, reopenSale, render, getWidth, setWidth,
+          isPrinterConnected, setPrinterConnected,
+          print: () => printNow({ copy: false }),
+          reprint: () => printNow({ copy: true }),
+          reconnectAndRetry, reprintCount,
+          buildPdf: buildPdfBytes, exportPdf, barcodeSvg,
+          current: () => currentSale ? { sale: currentSale, copy: currentCopy, copyNo: currentCopyNo, width: getWidth(), fromCheckout } : null
+        };
+      })();
+
+      // POS-05 mock Bluetooth / HID barcode scanner: simulates wireless burst scans or direct scan events from any focus state on tablet/desktop.
+      window.novaScanner = (function () {
+        let connected = true, deviceName = 'NOVA-BT-Scanner';
+        function scan(code) {
+          const raw = String(code || '').trim();
+          if (!connected) {
+            showToast(localStorage.getItem('nova-rx-language') === 'en' ? 'Bluetooth scanner disconnected.' : 'قارئ الباركود البلوتوث غير متصل.', 'error');
+            return { ok: false, error: 'scanner-disconnected' };
+          }
+          if (!raw) return { ok: false, error: 'empty' };
+          const prod = findExactBarcodeProduct(raw);
+          if (!prod) {
+            showToast((localStorage.getItem('nova-rx-language') === 'en' ? 'No product for barcode: ' : 'لا يوجد صنف بهذا الباركود: ') + escH(raw), 'error');
+            return { ok: false, error: 'not-found', barcode: raw };
+          }
+          if (state.mode !== 'PRODUCT') setSearchMode('PRODUCT');
+          addProductToInvoice(prod);
+          elements.mainSearchInput.value = '';
+          closeSuggestions();
+          return { ok: true, product: { id: prod.id, name: prod.name, barcode: prod.barcode, price: prod.price }, lines: state.invoiceLines.length };
+        }
+        return {
+          scan,
+          isConnected: () => connected,
+          setConnected: flag => { connected = !!flag; return connected; },
+          device: () => ({ name: deviceName, connected })
+        };
+      })();
       const HELD_KEY = 'nova-rx-held-invoices-v1';
       const SALE_SEQ_KEY = 'nova-rx-sale-sequence-v1';
       let saleSequence = Number(localStorage.getItem(SALE_SEQ_KEY)) || 0;
@@ -4344,15 +4576,32 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
 
         // Receipt Modal Events
         elements.btnCloseReceipt.addEventListener("click", () => {
+          const cur = window.novaReceipt && window.novaReceipt.current();
           elements.receiptModal.classList.remove("active");
-          startNewSale();
+          if (!cur || cur.fromCheckout) startNewSale();
         });
         elements.btnReceiptNewSale.addEventListener("click", () => {
+          const cur = window.novaReceipt && window.novaReceipt.current();
           elements.receiptModal.classList.remove("active");
-          startNewSale();
+          if (!cur || cur.fromCheckout) startNewSale();
         });
         elements.btnPrintReceiptBtn.addEventListener("click", () => {
-          window.print();
+          window.novaReceipt.print();
+        });
+        document.getElementById("btnReprintReceipt").addEventListener("click", () => {
+          window.novaReceipt.reprint();
+        });
+        document.getElementById("btnExportReceiptPdf").addEventListener("click", () => {
+          window.novaReceipt.exportPdf();
+        });
+        document.querySelectorAll("[data-receipt-width]").forEach(btn => {
+          btn.addEventListener("click", () => window.novaReceipt.setWidth(btn.getAttribute("data-receipt-width")));
+        });
+        document.getElementById("btnPrinterStatus").addEventListener("click", () => {
+          window.novaReceipt.setPrinterConnected(!window.novaReceipt.isPrinterConnected());
+        });
+        document.getElementById("btnReconnectPrinter").addEventListener("click", () => {
+          window.novaReceipt.reconnectAndRetry();
         });
 
         // Global Keyboard Shortcuts
@@ -4472,7 +4721,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
  const sl=filtered(saved,['id','customer','date','items']);
  const backupBar='<div class="nova-panel" style="padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="novaSalesExport" class="nova-return-btn" style="min-height:44px">'+tr('تصدير نسخة احتياطية (JSON)','Export backup (JSON)')+'</button><button type="button" id="novaSalesImport" class="nova-return-btn" style="min-height:44px">'+tr('استيراد نسخة احتياطية','Import backup')+'</button><input type="file" id="novaSalesImportFile" accept="application/json,.json" hidden><span id="novaBackupMsg" role="status" style="font-size:13px;color:#9eacb9"></span></div>';
  const savedBlock=saved.length?'<div class="nova-kpis">'+kpi('فواتير محفوظة',saved.length)+kpi('إجمالي المبيعات',money(saved.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(saved.reduce((s,i)=>s+i.total,0)/saved.length))+'</div>'
-  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+(i.cx?' <b>'+tr('ملغاة','Cancelled')+'</b>':'')+'</td><td>'+esc(i.items)+'</td><td><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
+  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+(i.cx?' <b>'+tr('ملغاة','Cancelled')+'</b>':'')+'</td><td>'+esc(i.items)+'</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="nova-return-btn" data-reprint="'+esc(i.sid)+'">'+tr('إعادة طباعة نسخة','Reprint Copy')+'</button><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا</div></div>';
  const list=filtered(inv,['id','customer','date','branch']);
  content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+backupBar+savedBlock
@@ -4507,6 +4756,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
   const r=window.novaSales.applyBackup(p);
   if(!r.ok){bm.textContent=r.error==='too-many'?tr('سيتجاوز الحد الأقصى (1000) — لم يتغير شيء','Would exceed the 1000 limit — nothing changed'):tr('تعذر الحفظ على هذا الجهاز — لم يتغير شيء','Could not save on this device — nothing changed');return}
   render(page,filter);const m2=document.getElementById('novaBackupMsg');if(m2)m2.textContent=tr('تمت الإضافة: '+p.newSales.length+' فاتورة، '+p.newReturns.length+' مرتجع','Imported: '+p.newSales.length+' sales, '+p.newReturns.length+' returns')}}
+ view.querySelectorAll('[data-reprint]').forEach(b=>b.onclick=()=>{if(window.novaReceipt)window.novaReceipt.reopenSale(b.dataset.reprint,{copy:true})});
  view.querySelectorAll('[data-return]').forEach(b=>b.onclick=()=>{
   const sale=(window.novaSales.list()).find(x=>x.id===b.dataset.return);if(!sale)return;
   const done=window.novaSales.returnedQty(sale.id);
@@ -4655,8 +4905,9 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
   'Navigate autocomplete suggestion dropdown':'التنقل في قائمة الاقتراحات','(on selected item)':'(على الصنف المحدد)',
   'Adds product or attaches customer':'يضيف المنتج أو يربط العميل','Clear current invoice line items':'مسح أصناف الفاتورة الحالية',
   'Open Checkout / Payment dialog':'فتح نافذة الدفع','Dismiss dropdowns and close open modals':'إغلاق القوائم والنوافذ المفتوحة','Got it (Esc)':'تمام (Esc)',
-  'More actions':'المزيد من الإجراءات','Clear Line Items (F4)':'مسح الأصناف (F4)','Close':'إغلاق','Switch between medicine and customer search':'التبديل بين البحث عن دواء وعميل','Switch search mode':'تبديل وضع البحث','Language':'اللغة'};
- for(const [k,v] of Object.entries(arExtra))if(!(k in enToAr))enToAr[k]=v;
+  'More actions':'المزيد من الإجراءات','Clear Line Items (F4)':'مسح الأصناف (F4)','Close':'إغلاق','Switch between medicine and customer search':'التبديل بين البحث عن دواء وعميل','Switch search mode':'تبديل وضع البحث','Language':'اللغة',
+  'Print':'طباعة','Reprint Copy':'إعادة طباعة نسخة','Download PDF':'تحميل PDF','Printer Ready':'الطابعة متصلة','Printer Offline':'الطابعة غير متصلة','Printer Disconnected':'الطابعة غير متصلة','Reconnect & Retry':'إعادة التوصيل والمحاولة','Paper width':'مقاس الورق','Printer disconnected — check power/cable and retry':'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة'};
+ for(const [k,v] of Object.entries(arExtra)){if(!(k in enToAr))enToAr[k]=v;if(!(v in toEn))toEn[v]=k;}
  /* Exact mixed-language markup strings: [English, Arabic] */
  const mixedText={
   'Complete Sale & Payment / إنهاء الفاتورة':['Complete Sale & Payment','إتمام البيع والدفع'],
@@ -4688,7 +4939,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
  function uiText(node){
   const parent=node.parentElement;
   if(!parent)return false;
-  if(parent.closest('script,style,option,.nova-data-table tbody,.cust-name,.cust-phone,.sugg-primary,.sugg-sub,.past-item-row,.past-inv-card,.offer-item,.invoice-table tbody'))return false;
+  if(parent.closest('script,style,option,.nova-data-table tbody,.cust-name,.cust-phone,.sugg-primary,.sugg-sub,.past-item-row,.past-inv-card,.offer-item,.invoice-table tbody,#receiptSlipContent'))return false;
   return true;
  }
  let busy=false;
@@ -4757,7 +5008,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
 .customer-sidebar .customer-empty-sub,#cashDetailsBox span,.nova-demo-label,.pharmacy-banner-copy span,.nova-held-count,.btn-checkout kbd,.quick-cash-btn,.customer-empty-sub,.item-generic,#cashDetailsBox label,.modal-body label,.nova-kpi small,.nova-data-table th,.discount-title span,.input-grp span,.nova-sale-number,#btnHeldInvoices span,.col-idx,.col-item,.col-price,.col-qty,.col-disc,.col-total{font-size:12px!important}
 /* UX batch 3: 44px touch targets on touch screens (tablet); mouse layouts keep their density */
 @media (pointer:coarse){
-.nova-tab,.nova-new-sale,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.search-mode-tag,.nova-refresh-icon,.qty-btn,.qty-input,.quick-cash-btn,.nova-checkout-customer,.btn-loyalty,#btnCancelCheckout,#btnConfirmPayment,#btnPrintReceiptBtn,#btnReceiptNewSale,#btnDismissHelp,#inputPercentDiscount,#inputFixedDiscount,#inputCashReceived{min-height:44px!important}
+.nova-tab,.nova-new-sale,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.search-mode-tag,.nova-refresh-icon,.qty-btn,.qty-input,.quick-cash-btn,.nova-checkout-customer,.btn-loyalty,#btnCancelCheckout,#btnConfirmPayment,#btnPrintReceiptBtn,#btnReprintReceipt,#btnExportReceiptPdf,#btnReconnectPrinter,#btnReceiptWidth80,#btnReceiptWidth58,#btnPrinterStatus,#btnReceiptNewSale,#btnDismissHelp,#inputPercentDiscount,#inputFixedDiscount,#inputCashReceived{min-height:44px!important}
 .nova-customer-action,.nova-more-action,.nova-refresh-icon,.qty-btn,.btn-icon-del{min-width:44px!important}
 .btn-icon-del{min-height:44px!important;display:inline-flex;align-items:center;justify-content:center}
 .nova-sale-actions>.btn,.nova-sale-actions .nova-more-wrap>.btn{height:44px!important;min-height:44px!important}
