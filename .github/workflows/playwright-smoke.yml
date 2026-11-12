@@ -45,6 +45,8 @@ jobs:
         run: node tests/ui-real-catalog.mjs
       - name: UI sales ledger (U1)
         run: node tests/ui-sales-ledger.mjs
+      - name: UI returns (U2)
+        run: node tests/ui-returns.mjs
       - name: Write machine-readable result
         if: always()
         run: |
