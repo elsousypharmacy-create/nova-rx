@@ -1,0 +1,32 @@
+name: Stock count unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'stock-count.js'
+      - 'stock-ledger.js'
+      - 'tests/unit/stock-count.check.mjs'
+      - '.github/workflows/stock-count-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'stock-count.js'
+      - 'stock-ledger.js'
+      - 'tests/unit/stock-count.check.mjs'
+      - '.github/workflows/stock-count-unit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run stock count checks (no dependencies, no network)
+        run: node --no-warnings tests/unit/stock-count.check.mjs
