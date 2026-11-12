@@ -867,3 +867,6 @@ Branch `claude/inv-supplier-return`. `worker/inventory/stock-core.js`: `lotsOf`,
 
 ## Checkpoint 2026-11-12 — Claude 1: BUY glue over the stock core (not wired)
 Merged on the owner's instruction «متستناش المراجعة نصلح بعدين» (no independent review yet; review debt recorded on #87): #153 follow-up #156, #155, #157. Branch `claude/buy-glue-match`: `matchInvoiceForPo`, `matchCreditNoteForReturn` in `worker/inventory/glue.js`, `tests/integration/buy-glue-match.check.mjs` (7 cases, 9 mutations caught), `core-cycle.yml` path filter and run line, doc section.
+
+## Checkpoint 2026-11-12 — Claude 1: U1-1 CAT-05 typo-tolerant search in the sale screen
+Branch `claude/u1-1-sale-catalog`. `index.html`: after the real price list loads, `./worker/catalog/catalog-search.js` is imported dynamically and its index is layered over the simple search (CAT-05 results first, then simple matches, capped at 40); any failure (module not served, as on today's live Worker, which does not serve `/worker/catalog/*`) leaves the simple search untouched. `tests/ui-real-catalog.mjs` +1 case (typo 'panadool' finds Panadol with the index, finds nothing without it; no page errors). DEPLOY NOTE: to take effect live, the Worker must serve `/worker/catalog/{catalog-search,unified-catalog,unit-conversion}.js`; not done, owner-gated deploy at the end.

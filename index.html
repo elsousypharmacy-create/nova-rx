@@ -2382,11 +2382,32 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         .replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي")
         .replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
       const productKey = p => p._k || (p._k = foldKey(p.name + " " + p.generic));
-      const searchProducts = q => {
+      // Simple folded token match (always available); CAT-05 (typo tolerance, exact barcode) is layered on top once its module loads.
+      const searchSimple = q => {
         const tokens = foldKey(q).split(" ").filter(Boolean);
         if (!tokens.length) return [];
         return DEMO_PRODUCTS.filter(p => p.barcode.includes(q) || tokens.every(t => productKey(p).includes(t)));
       };
+      let novaSearchIndex = null;
+      const searchProducts = q => {
+        const simple = searchSimple(q);
+        if (!novaSearchIndex || /^\d{1,7}$/.test(String(q).trim())) return simple;
+        try {
+          const byId = new Map(DEMO_PRODUCTS.map(p => [p.id, p])), seen = new Set(), out = [];
+          for (const r of novaSearchIndex.search(q, { limit: 40 })) { const p = byId.get(r.product.id); if (p && !seen.has(p.id)) { seen.add(p.id); out.push(p); } }
+          for (const p of simple) if (!seen.has(p.id)) { seen.add(p.id); out.push(p); }
+          return out;
+        } catch (e) { return simple; }
+      };
+      function loadSearchIndex() {
+        // Optional: the module is served only where the catalog files are deployed; any failure leaves the simple search in place.
+        if (location.protocol === "file:" || !window.novaCatalog || window.novaCatalog.source !== "STOCK LIVE") return;
+        import("./worker/catalog/catalog-search.js").then(m => {
+          const idx = m.createSearchIndex(DEMO_PRODUCTS.map(p => ({ id: p.id, nameAr: p.name, nameEn: "", barcodes: p.barcode ? [p.barcode] : [], activeIngredient: p.generic || "", form: p.form || "", category: p.category || "", price: p.price, packSize: 1, active: true })));
+          novaSearchIndex = idx; window.novaSearchIndexSize = idx.size;
+        }).catch(() => {});
+      }
+      window.addEventListener("nova-catalog", loadSearchIndex);
       window.novaFold = foldKey;
       window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
       function loadRealPrices() {

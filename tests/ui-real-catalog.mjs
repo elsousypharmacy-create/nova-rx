@@ -133,6 +133,29 @@ await t('scanning a hostile-named item by barcode or by code never runs its mark
   await ctx.close();
 });
 
+await t('CAT-05 search is layered on top: typo-tolerant search works once the module loads, and a failed module load changes nothing', async () => {
+  const gav = rows.find(r => /panadol/i.test(r.nameen || ''));
+  const withIdx = await open({ stock: 'ok' });
+  await withIdx.page.waitForFunction(() => window.novaSearchIndexSize > 0, null, { timeout: 8000 });
+  await search(withIdx.page, 'panadool'); const typo = await suggestions(withIdx.page).count();
+  assert.ok(typo > 0, 'typo query finds results with the index');
+  const txt = await withIdx.page.locator('#suggestionsBox').innerText(); assert.ok(/panadol/i.test(txt), 'and they are Panadol items');
+  await search(withIdx.page, 'جافيسكون'); assert.ok(await suggestions(withIdx.page).count() > 0, 'plain queries still work');
+  assert.equal(withIdx.errors.length, 0, withIdx.errors.join('|'));
+  // module blocked (as on a deployment that does not serve it): simple search stays, no errors
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG', hasTouch: true });
+  await ctx.route('**/*', r => { const u = r.request().url(); return u.startsWith(new URL(BASE).origin) || u.startsWith('data:') ? r.continue() : r.abort(); });
+  const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
+  await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+  await page.route('**/worker/catalog/**', r => r.fulfill({ status: 404, body: 'x' }));
+  await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
+  await page.goto(BASE, { waitUntil: 'load' }); await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE'); await page.waitForTimeout(600);
+  assert.equal(await page.evaluate(() => window.novaSearchIndexSize || 0), 0, 'no index without the module');
+  await search(page, 'panadool'); assert.equal(await suggestions(page).count(), 0, 'simple search has no typo tolerance');
+  await search(page, 'جافيسكون'); assert.ok(await suggestions(page).count() > 0);
+  assert.equal(errors.length, 0, errors.join('|')); await ctx.close();
+});
+
 await t('currency is the Egyptian pound everywhere on the sale screen (ج.م in Arabic, EGP in English), never Saudi riyals', async () => {
   const ar = await real.page.evaluate(() => document.body.innerText);
   assert.ok(/ج\.م/.test(ar), 'Arabic UI shows ج.م'); assert.ok(!/ر\.س|SAR/.test(ar), 'no Saudi riyal text: ' + (ar.match(/.{12}(ر\.س|SAR).{4}/) || [''])[0]);
