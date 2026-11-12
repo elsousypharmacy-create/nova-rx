@@ -46,8 +46,9 @@
     }
     if (!A().hasAccounts()) h += '<p style="font-size:12px">' + tr('لا توجد حسابات: أول حساب يُنشأ يصبح المالك.', 'No accounts yet: the first one created becomes the owner.') + '</p>';
     if (!A().hasAccounts() || (cur && (cur.role === 'owner' || cur.role === 'manager'))) {
-      h += '<details><summary>' + tr('إضافة حساب', 'Add account') + '</summary><div style="display:grid;gap:6px;max-width:300px;margin-top:6px"><input id="novaNewName" placeholder="' + tr('الاسم', 'Name') + '" maxlength="60" ' + field + '><input id="novaNewPw" type="password" placeholder="' + tr('كلمة المرور (6+)', 'Password (6+)') + '" ' + field + '><select id="novaNewRole" ' + field + '>' + A().ROLES.map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select><button type="button" id="novaNewOk" class="nova-page-btn">' + tr('إنشاء', 'Create') + '</button></div></details>';
+      h += '<details><summary>' + tr('إضافة حساب', 'Add account') + '</summary><div style="display:grid;gap:6px;max-width:300px;margin-top:6px"><input id="novaNewName" placeholder="' + tr('الاسم', 'Name') + '" maxlength="60" ' + field + '><input id="novaNewPw" type="password" placeholder="' + tr('كلمة المرور (6+)', 'Password (6+)') + '" ' + field + '><select id="novaNewRole" ' + field + '>' + A().ROLES.filter(function (r) { return !cur || cur.role === 'owner' || (r !== 'owner' && r !== 'manager'); }).map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select><button type="button" id="novaNewOk" class="nova-page-btn">' + tr('إنشاء', 'Create') + '</button></div></details>';
     }
+    h += permsHtml();
     host.innerHTML = h;
     var m = function (t) { host.querySelector('#novaAuthMsg').textContent = t; }, done = function (p) { return p.then(mount, function (e) { m(msg(e)); }); }, $ = function (s) { return host.querySelector(s); };
     if ($('#novaAuthIn')) $('#novaAuthIn').onclick = function () { done(A().signIn($('#novaAuthName').value, $('#novaAuthPw').value)); };
@@ -60,5 +61,19 @@
     };
   }
 
-  window.novaAuthUI = { mount: mount, reauth: reauth, guard: guard };
+  /* Permissions matrix card (read-only view) + the denied-actions log. */
+  function permsHtml() {
+    var P = window.NovaPerms; if (!P) return '';
+    var h = '<h4>' + tr('مصفوفة الصلاحيات', 'Permissions matrix') + '</h4><div style="overflow:auto"><table id="novaPermMatrix" style="border-collapse:collapse;font-size:12px"><thead><tr><th></th>' + P.ROLES.map(function (r) { return '<th style="padding:2px 6px">' + r + '</th>'; }).join('') + '</tr></thead><tbody>';
+    P.ACTIONS.forEach(function (a) { h += '<tr><td style="padding:2px 6px">' + esc(a) + '</td>' + P.ROLES.map(function (r) { return '<td style="text-align:center">' + (P.MATRIX[r].indexOf(a) >= 0 ? '✓' : '–') + '</td>'; }).join('') + '</tr>'; });
+    h += '</tbody></table></div>';
+    var d = window.novaPerms ? window.novaPerms.denied().slice(-10).reverse() : [];
+    h += '<h4>' + tr('محاولات مرفوضة', 'Denied actions') + '</h4><ul id="novaPermDenied">' + (d.length ? d.map(function (x) { return '<li>' + esc(x.at.slice(0, 19)) + ' · ' + esc(x.account || '-') + ' (' + esc(x.role || '-') + ') · ' + esc(x.action) + ' · ' + esc(x.why) + '</li>'; }).join('') : '<li>' + tr('لا شيء', 'None') + '</li>') + '</ul>';
+    return h;
+  }
+  function deny() { window.alert(tr('ليس لديك صلاحية لهذا الإجراء', 'Your role is not allowed to do this')); }
+  /* True if the signed-in role may do `action`; otherwise logs the denial, tells the user and returns false. */
+  function allow(action) { if (window.novaPerms && !window.novaPerms.require(action)) { deny(); return false; } return true; }
+
+  window.novaAuthUI = { allow: allow, mount: mount, reauth: reauth, guard: guard };
 })();

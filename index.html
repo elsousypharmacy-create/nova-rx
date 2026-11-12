@@ -4497,9 +4497,9 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
  if(window.novaAuthUI)window.novaAuthUI.mount();
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
 
- const bx=document.getElementById('novaSalesExport');if(bx)bx.onclick=()=>{const run=()=>{const blob=new Blob([window.novaSales.exportBackup()],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-rx-sales-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};if(window.novaAuthUI)window.novaAuthUI.guard(run);else run()};
+ const bx=document.getElementById('novaSalesExport');if(bx)bx.onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('data.export'))return;const run=()=>{const blob=new Blob([window.novaSales.exportBackup()],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-rx-sales-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};if(window.novaAuthUI)window.novaAuthUI.guard(run);else run()};
  const bi=document.getElementById('novaSalesImport'),bf=document.getElementById('novaSalesImportFile'),bm=document.getElementById('novaBackupMsg');
- if(bi&&bf){bi.onclick=()=>{const go=()=>bf.click();if(window.novaAuthUI)window.novaAuthUI.guard(go);else go()};bf.onchange=async()=>{const f=bf.files&&bf.files[0];if(!f)return;const txt=await f.text();bf.value='';
+ if(bi&&bf){bi.onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('data.import'))return;const go=()=>bf.click();if(window.novaAuthUI)window.novaAuthUI.guard(go);else go()};bf.onchange=async()=>{const f=bf.files&&bf.files[0];if(!f)return;const txt=await f.text();bf.value='';
   const p=window.novaSales.parseBackup(txt);
   if(!p.ok){bm.textContent=p.error==='not-json'?tr('الملف ليس JSON صالحًا — لم يتغير شيء','Not valid JSON — nothing changed'):p.error==='wrong-format'?tr('الملف ليس نسخة احتياطية من NOVA Rx — لم يتغير شيء','Not a NOVA Rx sales backup — nothing changed'):tr('الملف يحتوي بيانات غير صالحة — لم يتغير شيء','The file contains invalid data — nothing changed');return}
   if(!p.newSales.length&&!p.newReturns.length){bm.textContent=tr('كل ما في الملف موجود بالفعل على هذا الجهاز — لم يتغير شيء','Everything in the file is already on this device — nothing changed');return}
@@ -4523,10 +4523,10 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
   const upd=()=>{const q=window.novaSales.quoteReturn(sale,qtys());box.querySelector('#novaRetAmount').textContent=q.ok?'مبلغ الإرجاع: '+money(q.amount):''};
   box.addEventListener('input',upd);
   box.querySelector('#novaRetCancel').onclick=()=>ov.remove();
-  box.querySelector('#novaCxOk').onclick=()=>{const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
+  box.querySelector('#novaCxOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب الإلغاء',permission:'ليس لديك صلاحية إلغاء الفاتورة (مدير أو مالك فقط)',approval:'اكتب اسمك واسم المعتمد','self-approval':'المعتمد لازم يكون شخصًا آخر','already-cancelled':'الفاتورة ملغاة بالفعل',empty:'لا توجد كميات متاحة للإلغاء','too-many':'لا توجد كميات متاحة للإلغاء',storage:'تعذر حفظ الإلغاء على هذا الجهاز'}[res.error]||'تعذر تنفيذ الإلغاء';return}
    ov.remove();render(page,filter)};
-  box.querySelector('#novaRetOk').onclick=()=>{const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
+  box.querySelector('#novaRetOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
    ov.remove();render(page,filter)};
   box.querySelector('input:not([disabled])')?.focus();
@@ -5427,6 +5427,6 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 }
 </style>
 
-<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="auth-local.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
 </html>
 
