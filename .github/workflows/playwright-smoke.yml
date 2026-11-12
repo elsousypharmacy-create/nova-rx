@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'auth-*.js'
       - 'tests/**'
       - 'playwright.config.cjs'
       - '.github/workflows/playwright-smoke.yml'
   pull_request:
     paths:
       - 'index.html'
+      - 'auth-*.js'
       - 'tests/**'
       - 'playwright.config.cjs'
       - '.github/workflows/playwright-smoke.yml'
@@ -64,6 +66,10 @@ jobs:
       - name: INV-05 branch transfers and lot recall (N33)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-inv05-transfers-recall.mjs
+      - name: SEC-01 accounts and sessions (N45)
+        run: |
+          node tests/unit/auth-local.check.mjs
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-sec01-accounts.mjs
       - name: POS-04 returns and cancellation (N37)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-pos04-returns-cancel.mjs
