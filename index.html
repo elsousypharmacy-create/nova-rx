@@ -3141,6 +3141,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         elements.historySearchInput.value = "";
         persistActiveInvoice();
         showToast("Customer detached. Operating in Walk-in mode.");
+        if (!elements.checkoutModal.classList.contains("active") && !elements.receiptModal.classList.contains("active")) {
+          elements.mainSearchInput.focus();
+        }
       }
 
       function renderPastInvoices(invoices, filterText = "") {
@@ -3285,7 +3288,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       function clearInvoice() {
-        if (state.invoiceLines.length === 0) return;
+        if (state.invoiceLines.length === 0) {
+          elements.mainSearchInput.focus();
+          return;
+        }
         state.invoiceLines = [];
         state.percentDiscount = 0;
         state.fixedDiscount = 0;
@@ -3293,6 +3299,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         elements.inputFixedDiscount.value = "";
         renderInvoice();
         showToast("Invoice cleared.");
+        elements.mainSearchInput.focus();
       }
 
       function renderInvoice() {
@@ -3460,7 +3467,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         updateChangeDue(grandTotal, grandTotal);
 
         elements.checkoutModal.classList.add("active");
-        setTimeout(() => elements.inputCashReceived.focus(), 100);
+        elements.inputCashReceived.focus();
+        elements.inputCashReceived.select?.();
       }
 
       function closeCheckout() {
@@ -4024,12 +4032,14 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         state.customerGateSkipped = true;
         state.customerGatePending = false;
         renderInvoice();
+        elements.btnReceiptNewSale.focus();
         showToast("Payment confirmed & Invoice completed!");
       }
 
       function startNewSale() {
         clearInvoice();
         document.getElementById("novaLabelsPanel")?.classList.remove("open");
+        elements.receiptModal.classList.remove("active");
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
@@ -4315,7 +4325,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         startNewSale(); heldPanel.hidden = true; showToast('Invoice held on this device.');
       }
       document.getElementById('btnHeldInvoices').addEventListener('click', () => { heldPanel.hidden = !heldPanel.hidden; renderHeldInvoices(); });
-      document.getElementById('closeHeldInvoices').addEventListener('click', () => {heldPanel.hidden = true});
+      document.getElementById('closeHeldInvoices').addEventListener('click', () => { heldPanel.hidden = true; elements.mainSearchInput.focus(); });
       document.getElementById('holdCurrentInvoice').addEventListener('click', holdCurrentInvoice);
       heldList.addEventListener('click', e => {
         const resume = e.target.closest('[data-held-resume]'); const del = e.target.closest('[data-held-delete]');
@@ -4351,6 +4361,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         elements.mainSearchInput.addEventListener("keydown", handleSearchKeyDown);
 
         // Click on Autocomplete Suggestion
+        elements.suggestionsBox.addEventListener("mousedown", e => {
+          if (e.target.closest(".suggestion-item")) e.preventDefault();
+        });
         elements.suggestionsBox.addEventListener("click", e => {
           const item = e.target.closest(".suggestion-item");
           if (!item) return;
@@ -4365,6 +4378,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             addProductToInvoice(selected);
             elements.mainSearchInput.value = "";
             closeSuggestions();
+            elements.mainSearchInput.focus();
           }
         });
 
@@ -4386,10 +4400,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           elements.helpModal.classList.add("active");
         });
 
-        elements.btnCloseHelp.addEventListener("click", () => elements.helpModal.classList.remove("active"));
-        elements.btnDismissHelp.addEventListener("click", () => elements.helpModal.classList.remove("active"));
+        elements.btnCloseHelp.addEventListener("click", () => { elements.helpModal.classList.remove("active"); elements.mainSearchInput.focus(); });
+        elements.btnDismissHelp.addEventListener("click", () => { elements.helpModal.classList.remove("active"); elements.mainSearchInput.focus(); });
 
         // Table Delegations (Qty and Delete)
+        elements.invoiceTableBody.addEventListener("mousedown", e => {
+          if (e.target.closest("button")) e.preventDefault();
+        });
         elements.invoiceTableBody.addEventListener("click", e => {
           const btn = e.target.closest("button");
           if (!btn) return;
@@ -4405,15 +4422,39 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           } else if (act === "del") {
             removeLine(prodId);
           }
+          elements.mainSearchInput.focus();
+        });
+
+        elements.invoiceTableBody.addEventListener("focusin", e => {
+          if (e.target.classList.contains("qty-input")) e.target.select?.();
+        });
+
+        elements.invoiceTableBody.addEventListener("keydown", e => {
+          if (e.target.classList.contains("qty-input")) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              updateLineQty(e.target.getAttribute("data-id"), e.target.value);
+              elements.mainSearchInput.focus();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              renderInvoice();
+              elements.mainSearchInput.focus();
+            }
+          } else if (e.target.classList.contains("unit-select") && e.key === "Escape") {
+            e.preventDefault();
+            elements.mainSearchInput.focus();
+          }
         });
 
         elements.invoiceTableBody.addEventListener("change", e => {
           if (e.target.classList.contains("qty-input")) {
             const prodId = e.target.getAttribute("data-id");
             updateLineQty(prodId, e.target.value);
+            if (!document.activeElement || document.activeElement === document.body) elements.mainSearchInput.focus();
           } else if (e.target.classList.contains("unit-select")) {
             const prodId = e.target.getAttribute("data-id");
             updateLineUnit(prodId, e.target.value);
+            if (!document.activeElement || document.activeElement === document.body) elements.mainSearchInput.focus();
           }
         });
 
@@ -4427,6 +4468,14 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           state.fixedDiscount = parseFloat(elements.inputFixedDiscount.value) || 0;
           persistActiveInvoice();
           recalculateFinancials();
+        });
+        [elements.inputPercentDiscount, elements.inputFixedDiscount].forEach(inp => {
+          inp.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === "Escape") {
+              e.preventDefault();
+              elements.mainSearchInput.focus();
+            }
+          });
         });
 
         // Customer Sidebar Actions
@@ -4467,6 +4516,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           if (product) {
             addProductToInvoice(product);
             showToast(`Re-added from history at current price: ${product.price.toFixed(2)} EGP`);
+            elements.mainSearchInput.focus();
           }
         });
 
@@ -4558,10 +4608,14 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             document.getElementById("cashDetailsBox").style.display = state.checkoutPaymentMethod === "cash" || state.checkoutPaymentMethod === "split" ? "block" : "none";
             document.getElementById("splitDetailsBox").style.display = state.checkoutPaymentMethod === "split" ? "block" : "none";
             refreshChange();
+            if (state.checkoutPaymentMethod === "cash") elements.inputCashReceived.focus();
+            else if (state.checkoutPaymentMethod === "split") document.getElementById("inputCardAmount").focus();
+            else elements.btnConfirmPayment.focus();
           });
         });
 
         document.querySelectorAll(".quick-cash-btn").forEach(btn => {
+          btn.addEventListener("mousedown", e => e.preventDefault());
           btn.addEventListener("click", () => {
             const val = btn.getAttribute("data-val");
             const { grandTotal } = recalculateFinancials();
@@ -4571,6 +4625,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             }
             elements.inputCashReceived.value = amount.toFixed(2);
             updateChangeDue(amount, grandTotal);
+            elements.inputCashReceived.focus();
           });
         });
 
@@ -4622,6 +4677,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             } else {
               openCheckout();
             }
+          } else if (e.key === "Enter" && elements.checkoutModal.classList.contains("active")) {
+            if (e.target && (e.target.id === "btnCancelCheckout" || e.target.id === "btnCloseCheckout" || e.target.id === "checkoutAddCustomer")) return;
+            e.preventDefault();
+            confirmPayment();
           } else if (e.key === "Escape") {
             if (elements.checkoutModal.classList.contains("active")) {
               closeCheckout();
@@ -4630,16 +4689,30 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               startNewSale();
             } else if (elements.helpModal.classList.contains("active")) {
               elements.helpModal.classList.remove("active");
+              elements.mainSearchInput.focus();
             } else {
               closeSuggestions();
+              elements.mainSearchInput.focus();
             }
           }
         });
 
-        // Close dropdown when clicking outside
+        // Close dropdown when clicking outside & keep search focused when clicking non-interactive workspace areas
         document.addEventListener("click", e => {
           if (!elements.suggestionsBox.contains(e.target) && e.target !== elements.mainSearchInput) {
             closeSuggestions();
+          }
+          if ((!document.body.dataset.activePage || document.body.dataset.activePage === "sale")
+              && !elements.checkoutModal.classList.contains("active")
+              && !elements.receiptModal.classList.contains("active")
+              && !elements.helpModal.classList.contains("active")
+              && document.getElementById("customerCheckoutGate")?.hidden !== false
+              && heldPanel.hidden
+              && !document.getElementById("novaLabelsPanel")?.classList.contains("open")
+              && e.target.closest(".pos-root")
+              && !e.target.closest("input,select,textarea,button,a,summary,details,[tabindex]")
+              && !window.getSelection()?.toString()) {
+            elements.mainSearchInput.focus();
           }
         });
       }
