@@ -59,6 +59,9 @@ jobs:
       - name: Catalog duplicate detection (N21)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-catalog-duplicates.mjs
+      - name: CAT-02 units and conversion (N19)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-cat02-units.mjs
       - name: Write machine-readable result
         if: always()
         run: |

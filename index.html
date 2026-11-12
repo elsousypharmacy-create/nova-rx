@@ -2247,16 +2247,16 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       // --- DEMO DATA REPOSITORY ---
       const DEMO_PRODUCTS = [
-        { id: "PRD001", barcode: "6281001234567", name: "كونكور 5 مجم (Concor 5mg)", generic: "Bisoprolol Fumarate", form: "30 Tabs", price: 38.50, stock: 45, category: "Chronic" },
-        { id: "PRD002", barcode: "6281001234568", name: "بانادول إكسترا (Panadol Extra)", generic: "Paracetamol 500mg + Caffeine 65mg", form: "24 Caplets", price: 12.00, stock: 120, category: "Analgesic" },
-        { id: "PRD003", barcode: "6281001234569", name: "أوجمنتين 1 جم (Augmentin 1g)", generic: "Amoxicillin / Clavulanic Acid", form: "14 Tabs", price: 64.50, stock: 28, category: "Antibiotic" },
-        { id: "PRD004", barcode: "6281001234570", name: "جلوكوفاج 500 مجم (Glucophage 500mg)", generic: "Metformin HCl", form: "50 Tabs", price: 18.25, stock: 80, category: "Chronic" },
-        { id: "PRD005", barcode: "6281001234571", name: "ليبيتور 20 مجم (Lipitor 20mg)", generic: "Atorvastatin Calcium", form: "30 Tabs", price: 92.00, stock: 35, category: "Lipid" },
-        { id: "PRD006", barcode: "6281001234572", name: "نيكسيوم 40 مجم (Nexium 40mg)", generic: "Esomeprazole Magnesium", form: "28 Tabs", price: 85.50, stock: 40, category: "GI Care" },
-        { id: "PRD007", barcode: "6281001234573", name: "أوميبرازول 20 مجم (Omeprazole 20mg)", generic: "Omeprazole", form: "14 Caps", price: 22.00, stock: 60, category: "GI Care" },
-        { id: "PRD008", barcode: "6281001234574", name: "سولبادين فوار (Solpadeine Soluble)", generic: "Paracetamol + Codeine + Caffeine", form: "24 Tabs", price: 16.50, stock: 55, category: "Analgesic" },
-        { id: "PRD009", barcode: "6281001234575", name: "فيتامين د3 50,000 وحدة (Vitamin D3)", generic: "Cholecalciferol", form: "12 Caps", price: 45.00, stock: 90, category: "Vitamins" },
-        { id: "PRD010", barcode: "6281001234576", name: "سيتريزين 10 مجم (Cetirizine 10mg)", generic: "Cetirizine Dihydrochloride", form: "20 Tabs", price: 14.75, stock: 70, category: "Antihistamine" },
+        { id: "PRD001", barcode: "6281001234567", name: "كونكور 5 مجم (Concor 5mg)", generic: "Bisoprolol Fumarate", form: "30 Tabs", price: 38.50, stock: 45, category: "Chronic", packaging: { stripsPerBox: 3, unitsPerStrip: 10 } },
+        { id: "PRD002", barcode: "6281001234568", name: "بانادول إكسترا (Panadol Extra)", generic: "Paracetamol 500mg + Caffeine 65mg", form: "24 Caplets", price: 12.00, stock: 120, category: "Analgesic", packaging: { stripsPerBox: 2, unitsPerStrip: 12 } },
+        { id: "PRD003", barcode: "6281001234569", name: "أوجمنتين 1 جم (Augmentin 1g)", generic: "Amoxicillin / Clavulanic Acid", form: "14 Tabs", price: 64.50, stock: 28, category: "Antibiotic", packaging: { stripsPerBox: 2, unitsPerStrip: 7 } },
+        { id: "PRD004", barcode: "6281001234570", name: "جلوكوفاج 500 مجم (Glucophage 500mg)", generic: "Metformin HCl", form: "50 Tabs", price: 18.25, stock: 80, category: "Chronic", packaging: { stripsPerBox: 5, unitsPerStrip: 10 } },
+        { id: "PRD005", barcode: "6281001234571", name: "ليبيتور 20 مجم (Lipitor 20mg)", generic: "Atorvastatin Calcium", form: "30 Tabs", price: 92.00, stock: 35, category: "Lipid", packaging: { stripsPerBox: 3, unitsPerStrip: 10 } },
+        { id: "PRD006", barcode: "6281001234572", name: "نيكسيوم 40 مجم (Nexium 40mg)", generic: "Esomeprazole Magnesium", form: "28 Tabs", price: 85.50, stock: 40, category: "GI Care", packaging: { stripsPerBox: 4, unitsPerStrip: 7 } },
+        { id: "PRD007", barcode: "6281001234573", name: "أوميبرازول 20 مجم (Omeprazole 20mg)", generic: "Omeprazole", form: "14 Caps", price: 22.00, stock: 60, category: "GI Care", packaging: { stripsPerBox: 2, unitsPerStrip: 7 } },
+        { id: "PRD008", barcode: "6281001234574", name: "سولبادين فوار (Solpadeine Soluble)", generic: "Paracetamol + Codeine + Caffeine", form: "24 Tabs", price: 16.50, stock: 55, category: "Analgesic", packaging: { stripsPerBox: 2, unitsPerStrip: 12 } },
+        { id: "PRD009", barcode: "6281001234575", name: "فيتامين د3 50,000 وحدة (Vitamin D3)", generic: "Cholecalciferol", form: "12 Caps", price: 45.00, stock: 90, category: "Vitamins", packaging: { stripsPerBox: 2, unitsPerStrip: 6 } },
+        { id: "PRD010", barcode: "6281001234576", name: "سيتريزين 10 مجم (Cetirizine 10mg)", generic: "Cetirizine Dihydrochloride", form: "20 Tabs", price: 14.75, stock: 70, category: "Antihistamine", packaging: { stripsPerBox: 2, unitsPerStrip: 10 } },
         { id: "PRD011", barcode: "6281001234577", name: "فولتارين جل 50 جم (Voltaren Emulgel)", generic: "Diclofenac Diethylamine", form: "50g Tube", price: 26.00, stock: 32, category: "Topical" },
         { id: "PRD012", barcode: "6281001234578", name: "بخاخ أوتريفين 0.1% (Otrivin Nasal)", generic: "Xylometazoline HCl", form: "10ml Spray", price: 11.50, stock: 50, category: "ENT" }
       ];
@@ -2412,6 +2412,72 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (box && bc) parts.push("الكرتونة " + bc + " علبة");
         return parts.join(" • ");
       };
+      // CAT-02 (this device only): per-item unit conversions (box/strip/tablet). Selling in a smaller unit deducts the exact fraction from box stock; unknown or unavailable conversions are refused.
+      window.novaUnits = (function () {
+        const PK = "nova-rx-packaging-v1", clean = x => Math.round(x * 1e9) / 1e9;
+        const UNITS = { box: "box", pack: "box", "علبة": "box", strip: "strip", "شريط": "strip", tablet: "tablet", unit: "tablet", piece: "tablet", cap: "tablet", capsule: "tablet", "قرص": "tablet", "وحدة": "tablet", "حبة": "tablet", "كبسولة": "tablet" };
+        const LABELS = { box: { ar: "علبة", en: "Box" }, strip: { ar: "شريط", en: "Strip" }, tablet: { ar: "قرص", en: "Tablet" } };
+        const canonicalUnit = u => (typeof u === "string" ? UNITS[u.trim().toLowerCase()] || null : null);
+        const posInt = v => { const x = typeof v === "string" && /^\d+$/.test(v.trim()) ? Number(v.trim()) : v; return Number.isInteger(x) && x > 0 && x <= 100000 ? x : undefined; };
+        const validatePackaging = def => {
+          if (def === undefined || def === null) return { ok: true, packaging: null, perBox: { box: 1 } };
+          if (typeof def !== "object" || Array.isArray(def)) return { ok: false, error: "packaging-invalid" };
+          const rawUs = def.unitsPerStrip ?? def.tabletsPerStrip, rawSb = def.stripsPerBox, rawUb = def.unitsPerBox;
+          const us = posInt(rawUs), sb = posInt(rawSb), ub = posInt(rawUb);
+          for (const [r, v] of [[rawUs, us], [rawSb, sb], [rawUb, ub]]) if (r !== undefined && r !== null && v === undefined) return { ok: false, error: "packaging-invalid" };
+          if (us && sb && ub && us * sb !== ub) return { ok: false, error: "packaging-inconsistent" };
+          const perBox = { box: 1 };
+          if (sb) perBox.strip = sb;
+          const tabs = ub || (us && sb ? us * sb : undefined);
+          if (tabs) perBox.tablet = tabs;
+          const packaging = (us || sb || ub) ? { ...(sb ? { stripsPerBox: sb } : {}), ...(us ? { unitsPerStrip: us } : {}), ...(tabs ? { unitsPerBox: tabs } : {}) } : null;
+          return { ok: true, packaging, perBox };
+        };
+        const readStore = () => { try { const o = JSON.parse(localStorage.getItem(PK) || "{}"); return o && typeof o === "object" && !Array.isArray(o) ? o : {}; } catch (_) { return {}; } };
+        const findProd = item => {
+          if (!item) return null;
+          if (typeof item === "object") return DEMO_PRODUCTS.find(p => p.id === item.productId || p.id === item.id || (item.barcode && p.barcode === item.barcode)) || item;
+          const k = String(item); return DEMO_PRODUCTS.find(p => p.id === k || p.barcode === k || p.name === k) || null;
+        };
+        const getPackaging = item => {
+          const store = readStore(), p = findProd(item);
+          const keys = [typeof item === "string" ? item : null, item && item.productId, item && item.id, item && item.barcode, p && p.id, p && p.barcode].filter(Boolean);
+          for (const k of keys) if (store[k] !== undefined) return store[k];
+          return (item && item.packaging) || (p && p.packaging) || null;
+        };
+        const setPackaging = (item, def) => {
+          const v = validatePackaging(def); if (!v.ok) return v;
+          const p = findProd(item), key = typeof item === "string" ? item : (p && (p.barcode || p.id)) || (item && (item.barcode || item.productId || item.id));
+          if (!key) return { ok: false, error: "item-unknown" };
+          const store = readStore();
+          if (v.packaging) store[key] = v.packaging; else delete store[key];
+          if (p) { if (v.packaging) { store[p.id] = v.packaging; store[p.barcode] = v.packaging; } p.packaging = v.packaging; p.pack = v.packaging && window.novaPackagingLabel ? window.novaPackagingLabel(v.packaging) : ""; }
+          try { localStorage.setItem(PK, JSON.stringify(store)); } catch (_) { return { ok: false, error: "storage" }; }
+          return { ok: true, packaging: v.packaging, perBox: v.perBox };
+        };
+        const availableUnits = item => {
+          const v = validatePackaging(getPackaging(item));
+          if (!v.ok) return ["box"];
+          return ["box", ...(v.perBox.strip ? ["strip"] : []), ...(v.perBox.tablet ? ["tablet"] : [])];
+        };
+        const convert = (item, qty, unit = "box") => {
+          const canon = canonicalUnit(unit);
+          if (!canon) return { ok: false, error: "unit-unknown" };
+          const q = typeof qty === "number" ? qty : (typeof qty === "string" && /^\d+$/.test(qty.trim()) ? Number(qty.trim()) : NaN);
+          if (!Number.isSafeInteger(q) || q <= 0) return { ok: false, error: "quantity-invalid" };
+          const v = validatePackaging(getPackaging(item));
+          if (!v.ok) return v;
+          const factor = v.perBox[canon];
+          if (!factor) return { ok: false, error: "unit-unavailable" };
+          const p = findProd(item), boxPrice = Number((item && item.boxPrice !== undefined ? item.boxPrice : (p && p.price !== undefined ? p.price : item && item.price)) ?? 0);
+          const cents = Math.round(boxPrice * 100);
+          const unitPrice = Math.floor((2 * cents + factor) / (2 * factor)) / 100;
+          const lineTotal = Math.floor((2 * cents * q + factor) / (2 * factor)) / 100;
+          return { ok: true, unit: canon, qty: q, perBox: factor, stockFraction: clean(q / factor), unitPrice, lineTotal };
+        };
+        const label = (u, lang) => { const c = canonicalUnit(u) || "box"; const l = lang || (localStorage.getItem("nova-rx-language") === "en" ? "en" : "ar"); return LABELS[c][l]; };
+        return { canonicalUnit, validatePackaging, getPackaging, setPackaging, availableUnits, convert, label };
+      })();
       window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
       function loadRealPrices() {
         if (location.protocol === "file:") return;
@@ -2428,7 +2494,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             const price = Number(r.price);
             if ((!code && !gtin) || !(nameAr || nameEn) || !Number.isFinite(price) || price <= 0 || seen.has(code || gtin)) continue;
             seen.add(code || gtin);
-            const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
+            const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, packaging: pk ? r.packaging : null, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
           }
           if (out.length < 50) return; // an almost empty file is not a catalog: keep the demo data
           DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
@@ -2873,8 +2939,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       // --- INVOICE LINE ITEMS & RECALCULATION ---
-      function addProductToInvoice(product) {
-        const existingLine = state.invoiceLines.find(line => line.productId === product.id);
+      function addProductToInvoice(product, unit = "box") {
+        const conv = window.novaUnits.convert(product, 1, unit);
+        if (!conv.ok) {
+          showToast("تحويل الوحدة غير متاح لهذا الصنف", "error");
+          return conv;
+        }
+        const existingLine = state.invoiceLines.find(line => line.productId === product.id && (line.unit || "box") === conv.unit);
         if (existingLine) {
           existingLine.qty += 1;
         } else {
@@ -2884,14 +2955,39 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             generic: product.generic,
             barcode: product.barcode,
             form: product.form,
-            price: product.price, // Always current demo price
+            unit: conv.unit,
+            unitFactor: conv.perBox,
+            boxPrice: product.price,
+            price: conv.unitPrice, // Unit price for the selected sale unit
             qty: 1,
             discount: 0
           });
         }
+        if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
         renderInvoice();
         showToast(`Added to invoice: ${escH(product.name)}`);
+        return conv;
       }
+
+      function updateLineUnit(productId, newUnit) {
+        const line = state.invoiceLines.find(l => l.productId === productId);
+        if (!line) return { ok: false, error: "line-not-found" };
+        const prod = DEMO_PRODUCTS.find(p => p.id === productId || p.barcode === line.barcode) || line;
+        const conv = window.novaUnits.convert(prod, line.qty, newUnit);
+        if (!conv.ok) {
+          renderInvoice();
+          showToast("تحويل الوحدة غير متاح لهذا الصنف", "error");
+          return conv;
+        }
+        line.unit = conv.unit;
+        line.unitFactor = conv.perBox;
+        if (line.boxPrice === undefined && prod.price !== undefined) line.boxPrice = prod.price;
+        line.price = conv.unitPrice;
+        if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
+        renderInvoice();
+        return conv;
+      }
+      window.novaUnits.setLineUnit = updateLineUnit;
 
       function updateLineQty(productId, newQty) {
         const line = state.invoiceLines.find(l => l.productId === productId);
@@ -2913,6 +3009,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           removeLine(productId);
         } else {
           line.qty = q;
+          if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
           renderInvoice();
         }
       }
@@ -2946,6 +3043,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
           elements.invoiceTableBody.innerHTML = state.invoiceLines.map((line, idx) => {
             const lineTotal = Math.max(0, (line.price * line.qty) - line.discount);
+            const prod = DEMO_PRODUCTS.find(p => p.id === line.productId || p.barcode === line.barcode) || line;
+            const units = window.novaUnits.availableUnits(prod);
+            const curUnit = line.unit || "box";
             return `
               <tr data-id="${line.productId}">
                 <td class="col-idx">${idx + 1}</td>
@@ -2960,6 +3060,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
                     <button class="qty-btn" data-act="dec" data-id="${line.productId}">−</button>
                     <input type="text" class="qty-input" data-id="${line.productId}" value="${line.qty}">
                     <button class="qty-btn" data-act="inc" data-id="${line.productId}">+</button>
+                    <select class="unit-select" data-id="${line.productId}" style="min-height:44px;background:#0f172a;color:#f8fafc;border:1px solid #334155;border-radius:6px;padding:0 6px;font-size:12px;">
+                      ${units.map(u => `<option value="${u}" ${curUnit === u ? "selected" : ""}>${window.novaUnits.label(u)}</option>`).join("")}
+                    </select>
                   </div>
                 </td>
                 <td class="col-disc" style="color:var(--text-dim);">${line.discount.toFixed(2)}</td>
@@ -3053,7 +3156,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (!state.checkoutReserved) { // INV-03: hold the units for 2 minutes before the payment window opens
           const key = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
           window.novaStock.withLock(() => window.novaStock.reserve(key, state.invoiceLines)).then(r => {
-            if (!r.ok) { showToast(r.error ? "تعذر حجز المخزون" : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
+            if (!r.ok) { showToast(r.error === "storage" ? "تعذر حجز المخزون" : r.error ? "تحويل الوحدة غير متاح: " + (r.name || "") : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
             state.checkoutReserved = true; openCheckout();
           });
           return;
@@ -3160,24 +3263,66 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         };
       })();
 
-      // INV-03 (this device only): the last unit cannot sell twice. Tracked only for products with a numeric stock (demo list);
-      // STOCK LIVE price rows have stock null = untracked. Holds expire; all check+write steps run under a cross-tab Web Lock.
+      // INV-03 + CAT-02 (this device only): the last unit cannot sell twice, and selling in a smaller unit (strip/tablet)
+      // deducts the exact fraction from box stock; unknown or unavailable conversions are refused.
       window.novaStock = (function () {
-        const HK = 'nova-rx-holds-v1', TTL = 120000, keyOf = l => String(l.barcode || l.name || '');
+        const HK = 'nova-rx-holds-v1', TTL = 120000, EPS = 1e-7, clean = x => Math.round(x * 1e9) / 1e9, keyOf = l => String(l.barcode || l.name || '');
         const holds = () => { try { const a = JSON.parse(localStorage.getItem(HK) || '[]'); const t = Date.now(); return Array.isArray(a) ? a.filter(h => h && h.exp > t) : []; } catch (_) { return []; } };
-        const limit = key => { const p = DEMO_PRODUCTS.find(x => (x.barcode || x.name) === key); return p && Number.isFinite(p.stock) ? p.stock : null; };
-        const sold = key => { let n = 0; window.novaSales.list().forEach(s => { const rq = window.novaSales.returnedQty(s.id); s.lines.forEach((l, i) => { if (keyOf(l) === key) n += l.qty - (rq[i] || 0); }); }); return n; };
-        const need = lines => { const m = new Map(); lines.forEach(l => m.set(keyOf(l), (m.get(keyOf(l)) || 0) + (Number(l.qty) || 0))); return m; };
-        const avail = (key, owner, hs) => { const lim = limit(key); return lim === null ? Infinity : lim - sold(key) - hs.filter(h => h.key === key && h.owner !== owner).reduce((t, h) => t + h.qty, 0); };
-        const check = (owner, lines) => { const hs = holds(); for (const [key, q] of need(lines)) { const a = avail(key, owner, hs); if (q > a) return { ok: false, name: (lines.find(l => keyOf(l) === key) || {}).name, available: Math.max(0, a) }; } return { ok: true }; };
+        const findProd = key => DEMO_PRODUCTS.find(x => (x.barcode || x.name) === key || x.id === key);
+        const limit = key => { const p = findProd(key); return p && Number.isFinite(p.stock) ? p.stock : null; };
+        const lineBoxQty = (l, qOverride) => {
+          const q = qOverride !== undefined ? qOverride : (Number(l && l.qty) || 0);
+          if (q <= 0) return { ok: false, error: 'quantity-invalid' };
+          const u = (l && l.unit) || 'box';
+          if (u === 'box' && (!l.unitFactor || l.unitFactor === 1) && Number.isSafeInteger(q)) return { ok: true, value: clean(q) };
+          const p = findProd(keyOf(l)) || l;
+          const c = window.novaUnits.convert(p, q, u);
+          if (!c.ok) return c;
+          return { ok: true, value: c.stockFraction };
+        };
+        const sold = key => {
+          let n = 0;
+          window.novaSales.list().forEach(s => {
+            const rq = window.novaSales.returnedQty(s.id);
+            s.lines.forEach((l, i) => {
+              if (keyOf(l) !== key) return;
+              const net = (Number(l.qty) || 0) - (rq[i] || 0);
+              if (net <= 0) return;
+              const f = Number(l.unitFactor) > 0 ? Number(l.unitFactor) : 1;
+              n += f > 1 ? net / f : (lineBoxQty(l, net).value || net);
+            });
+          });
+          return clean(n);
+        };
+        const need = lines => {
+          const m = new Map();
+          for (const l of lines || []) {
+            const r = lineBoxQty(l);
+            if (!r.ok) return { ok: false, error: r.error, name: l && l.name };
+            const k = keyOf(l);
+            m.set(k, clean((m.get(k) || 0) + r.value));
+          }
+          return { ok: true, map: m };
+        };
+        const avail = (key, owner, hs) => { const lim = limit(key); return lim === null ? Infinity : clean(lim - sold(key) - hs.filter(h => h.key === key && h.owner !== owner).reduce((t, h) => t + h.qty, 0)); };
+        const check = (owner, lines) => {
+          const nd = need(lines); if (!nd.ok) return nd;
+          const hs = holds();
+          for (const [key, q] of nd.map) {
+            const a = avail(key, owner, hs);
+            if (q - a > EPS) return { ok: false, name: (lines.find(l => keyOf(l) === key) || {}).name, available: clean(Math.max(0, a)) };
+          }
+          return { ok: true };
+        };
         const save = a => { try { localStorage.setItem(HK, JSON.stringify(a)); return true; } catch (_) { return false; } };
         return {
           keyOf, available: (key, owner) => avail(key, owner, holds()), holds,
           check,
-          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short
+          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short or has an invalid unit
             const c = check(owner, lines); if (!c.ok) return c;
+            const nd = need(lines);
             const rest = holds().filter(h => h.owner !== owner), exp = Date.now() + (ttl || TTL);
-            for (const [key, qty] of need(lines)) if (limit(key) !== null) rest.push({ owner, key, qty, exp });
+            for (const [key, qty] of nd.map) if (limit(key) !== null) rest.push({ owner, key, qty, exp });
             return save(rest) ? { ok: true } : { ok: false, error: 'storage' };
           },
           release(owner) { const all = holds(); if (all.some(h => h.owner === owner)) save(all.filter(h => h.owner !== owner)); },
@@ -3205,7 +3350,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const saleKey = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
         if (!window.novaSales.list().some(x => x.id === saleKey)) { // a key already in the ledger is a duplicate commit: no second stock check, add() is a no-op
           const c = window.novaStock.check(saleKey, state.invoiceLines);
-          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast("المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
+          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast(c.error ? "تحويل الوحدة غير متاح: " + (c.name || "") : "المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
         }
         const invNumber = activeSaleNumber;
         const now = new Date();
@@ -3252,7 +3397,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           number: String(invNumber), at: now.toISOString(),
           customer: state.attachedCustomer ? state.attachedCustomer.name : '',
           payment: state.checkoutPaymentMethod,
-          lines: state.invoiceLines.map(l => ({ name: l.name, barcode: l.barcode || '', price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0 })),
+          lines: state.invoiceLines.map(l => ({ name: l.name, barcode: l.barcode || '', unit: l.unit || 'box', unitFactor: Number(l.unitFactor) || 1, price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0 })),
           subtotal, discount: actualDiscount, vat: vatIncluded, total: grandTotal, received: cashRec, change: Math.max(0, cashRec - grandTotal),
           source: window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' ? 'STOCK LIVE' : 'DEMO'
         });
@@ -3423,6 +3568,9 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           if (e.target.classList.contains("qty-input")) {
             const prodId = e.target.getAttribute("data-id");
             updateLineQty(prodId, e.target.value);
+          } else if (e.target.classList.contains("unit-select")) {
+            const prodId = e.target.getAttribute("data-id");
+            updateLineUnit(prodId, e.target.value);
           }
         });
 
