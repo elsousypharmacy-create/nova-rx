@@ -15,6 +15,8 @@ on:
       - 'worker/catalog/**'
       - 'tests/unit/unified-catalog*.check.mjs'
       - 'tests/unit/unit-conversion*.check.mjs'
+      - 'tests/unit/catalog-search*.check.mjs'
+      - '.github/workflows/catalog-unit.yml'
   workflow_dispatch:
 
 permissions:
