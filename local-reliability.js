@@ -14,21 +14,21 @@
   var SERVICE_META = {
     supplier: {
       id: 'supplier',
-      labelAr: 'الموردون (Supplier)',
-      labelEn: 'Supplier service',
+      labelAr: 'الموردون',
+      labelEn: 'Suppliers',
       fallbackAr: 'وضع الموردين المخفض: اتصال الموردين متوقف — يتم حفظ النواقص في قائمة التحضير المحلية واستخدام أسعار الكتالوج المسجلة بدون إرسال سلة حية.',
       fallbackEn: 'Supplier degraded mode: supplier mock is down — using local shortage prep list and cached catalog prices only.'
     },
     ai: {
       id: 'ai',
-      labelAr: 'الذكاء الاصطناعي (AI)',
+      labelAr: 'الذكاء الاصطناعي AI',
       labelEn: 'AI assistant',
       fallbackAr: 'وضع الذكاء الاصطناعي المخفض: خدمة Gemini متوقفة — الإدخال اليدوي للجرعات وفحص التداخلات الدوائية المحلي يعملان مع إلزامية مراجعة الصيدلي.',
       fallbackEn: 'AI degraded mode: AI mock is down — manual dosage entry and local clinical interaction checks remain active with pharmacist review.'
     },
     printer: {
       id: 'printer',
-      labelAr: 'الطابعة الحرارية (Printer)',
+      labelAr: 'الطابعة الحرارية',
       labelEn: 'Thermal printer',
       fallbackAr: 'وضع الطابعة المخفض: الطابعة غير متصلة — يُحفظ الإيصال في طابور الطباعة المحلي مع إتاحة تنزيل PDF عربي أو مشاركته رقميًا فورًا.',
       fallbackEn: 'Printer degraded mode: printer mock is down — receipts are queued locally with instant Arabic PDF export.'
@@ -38,38 +38,49 @@
   var ERROR_MESSAGES = {
     'supplier-down': ['خدمة الموردين في الوضع المخفض — تم التحول إلى قائمة التحضير المحلية وأسعار الكتالوج.', 'Supplier mock is down — switched to local shortage prep list and catalog prices.'],
     'ai-down': ['خدمة الذكاء الاصطناعي في الوضع المخفض — أدخل البيانات يدويًا واعتمد على الفحص الدوائي المحلي.', 'AI mock is down — use manual entry and local clinical checks.'],
-    'printer-down': ['الطابعة غير متصلة (وضع مخفض) — تم حفظ الإيصال لإعادة الطباعة ويمكنك تنزيل PDF الآن.', 'Printer is disconnected (degraded mode) — receipt queued locally; export PDF instead.'],
-    'printer-disconnected': ['الطابعة غير متصلة (وضع مخفض) — تم حفظ الإيصال لإعادة الطباعة ويمكنك تنزيل PDF الآن.', 'Printer is disconnected (degraded mode) — receipt queued locally; export PDF instead.'],
+    'printer-down': ['الطابعة غير متصلة في الوضع المخفض — تم حفظ الإيصال لإعادة الطباعة ويمكنك تنزيل PDF الآن.', 'Printer is disconnected (degraded mode) — receipt queued locally; export PDF instead.'],
+    'printer-disconnected': ['الطابعة غير متصلة في الوضع المخفض — تم حفظ الإيصال لإعادة الطباعة ويمكنك تنزيل PDF الآن.', 'Printer is disconnected (degraded mode) — receipt queued locally; export PDF instead.'],
     'storage-down': ['تعذر القراءة أو الكتابة في التخزين المحلي على هذا الجهاز — تحقق من المساحة المتاحة.', 'Local storage read/write failed on this device — check available space.'],
     'heavy-job-failed': ['تعذر إكمال المهمة الثقيلة في الطابور المحلي — يمكنك إعادة المحاولة.', 'Heavy local job failed — you can retry the job from the queue.']
   };
 
   var RUNBOOK = Object.freeze({
     id: 'OFF-05-RUNBOOK',
-    titleAr: 'دليل التعامل مع الأعطال والانقطاع (OFF-05)',
-    titleEn: 'Local Outage & Degraded Mode Runbook (OFF-05)',
+    titleAr: 'دليل التعامل مع الأعطال والانقطاع',
+    titleEn: 'Local Outage & Degraded Mode Runbook',
     owner: Object.freeze({
       name: 'د. أحمد السوسي',
-      roleAr: 'مالك الصيدلية والمدير المسؤول (Primary Incident Owner)',
+      nameEn: 'Dr. Ahmed Elsousy',
+      roleAr: 'مالك الصيدلية والمدير المسؤول',
       roleEn: 'Pharmacy Owner & Primary Incident Lead',
-      onDutyAr: 'الصيدلي المدير المناوب بالفرع (On-Duty Pharmacist)',
-      contactChannelAr: 'قناة طوارئ الصيدلية (واتساب الطوارئ + اتصال هاتفي مباشر بالحالات الحرجة P0)'
+      onDutyAr: 'الصيدلي المدير المناوب بالفرع',
+      onDutyEn: 'On-Duty Branch Pharmacist',
+      contactChannelAr: 'قناة طوارئ الصيدلية عبر واتساب الطوارئ واتصال هاتفي مباشر بالحالات الحرجة'
     }),
     alertPath: Object.freeze([
       Object.freeze({
         step: 1,
-        stageAr: 'تنبيه فوري بالواجهة (UI Banner & Toast)',
-        detailAr: 'إظهار شريط الوضع المخفض وتنبيه الخطأ متضمنًا معرف الطلب (requestId) وحالة الفحص الصحي (health) والبديل المحلي.'
+        stageAr: 'تنبيه فوري بالواجهة',
+        stageEn: 'Immediate UI Banner & Alert',
+        detailAr: 'إظهار شريط الوضع المخفض وتنبيه الخطأ متضمنًا معرف الطلب (requestId) وحالة الفحص الصحي (health) والبديل المحلي.',
+        detailUiAr: 'إظهار شريط الوضع المخفض وتنبيه الخطأ متضمنًا معرف الطلب وحالة الفحص الصحي والبديل المحلي.',
+        detailEn: 'Show degraded banner and error alert with requestId, health status, and active local fallback.'
       }),
       Object.freeze({
         step: 2,
-        stageAr: 'تسجيل تلقائي في سجل الأعطال المحلي (Local Error Log)',
-        detailAr: 'توثيق العطل في nova.reliability.errors مع requestId والمكوّن المتأثر ولقطة health والطابع الزمني.'
+        stageAr: 'تسجيل تلقائي في سجل الأعطال المحلي',
+        stageEn: 'Automatic Local Error Log',
+        detailAr: 'توثيق العطل في nova.reliability.errors مع requestId والمكوّن المتأثر ولقطة health والطابع الزمني.',
+        detailUiAr: 'توثيق العطل في سجل الجهاز المحلي مع معرف الطلب والمكوّن المتأثر ولقطة الفحص الصحي والطابع الزمني.',
+        detailEn: 'Record failure in nova.reliability.errors with requestId, component, health snapshot, and timestamp.'
       }),
       Object.freeze({
         step: 3,
         stageAr: 'تصعيد للمسؤول (د. أحمد السوسي)',
-        detailAr: 'اتصال هاتفي فوري + رسالة واتساب طوارئ تتضمن requestId خلال 5 دقائق للأعطال الحرجة (P0) وخلال 15 دقيقة لاستمرار الوضع المخفض (P1).'
+        stageEn: 'Escalate to Owner (Dr. Ahmed Elsousy)',
+        detailAr: 'اتصال هاتفي فوري + رسالة واتساب طوارئ تتضمن requestId خلال 5 دقائق للأعطال الحرجة (P0) وخلال 15 دقيقة لاستمرار الوضع المخفض (P1).',
+        detailUiAr: 'اتصال هاتفي فوري ورسالة واتساب طوارئ تتضمن معرف الطلب خلال 5 دقائق للأعطال الحرجة وخلال 15 دقيقة لاستمرار الوضع المخفض.',
+        detailEn: 'Immediate phone call + emergency WhatsApp with requestId within 5 min for critical (P0) or 15 min for prolonged degraded mode (P1).'
       })
     ]),
     degradedProcedures: Object.freeze({
@@ -269,10 +280,10 @@
       var degNamesAr = degList.map(function (d) { return d.labelAr; });
       var degNamesEn = degList.map(function (d) { return d.labelEn; });
       var summaryAr = overall === 'ok'
-        ? 'الفحص الصحي سليم (ok) — جميع الخدمات المحلية جاهزة.'
+        ? 'الفحص الصحي سليم — جميع الخدمات المحلية جاهزة.'
         : overall === 'down'
-          ? 'عطل حرج (down) — التخزين المحلي غير متاح، انتقل فورًا لوضع الطوارئ وأبلغ المسؤول.'
-          : 'النظام يعمل في الوضع المخفض (degraded): ' + (degNamesAr.length ? degNamesAr.join('، ') : 'طابور المهام الثقيلة') + '.';
+          ? 'عطل حرج — التخزين المحلي غير متاح، انتقل فورًا لوضع الطوارئ وأبلغ المسؤول.'
+          : 'النظام يعمل في الوضع المخفض: ' + (degNamesAr.length ? degNamesAr.join('، ') : 'طابور المهام الثقيلة') + '.';
       var summaryEn = overall === 'ok'
         ? 'Health check ok — all local services ready.'
         : overall === 'down'
@@ -710,8 +721,7 @@
   }
   function isEn() {
     try {
-      return (root.document && root.document.documentElement.lang === 'en') ||
-        (root.localStorage && root.localStorage.getItem('nova-rx-language') === 'en');
+      return !!(root.document && root.document.documentElement.lang === 'en');
     } catch (_) { return false; }
   }
   function tr(ar, en) { return isEn() ? en : ar; }
@@ -775,8 +785,9 @@
     }).join(' ');
     b.deg.innerHTML =
       '<div style="flex:1;min-width:240px">' +
-        '<strong style="color:#ffd97d">' + esc(tr('⚠ الوضع المخفض نشط (Degraded Mode)', '⚠ Degraded Mode Active')) + '</strong> · ' +
-        '<span data-health-badge="' + esc(h.status) + '">' + esc(tr('الحالة الصحية: ', 'Health: ') + h.status) + '</span> · ' +
+        '<strong style="color:#ffd97d">' + esc(tr('⚠ الوضع المخفض نشط', '⚠ Degraded Mode Active')) + '</strong> · ' +
+        '<span>' + esc(tr('الحالة الصحية:', 'Health:')) + '</span> ' +
+        '<strong data-health-badge="' + esc(h.status) + '" dir="ltr">' + esc(h.status) + '</strong> · ' +
         '<code dir="ltr" data-health-request-id="' + esc(h.requestId) + '" style="color:#9ed5f0">' + esc(h.requestId) + '</code>' +
         '<div style="margin-top:4px">' + itemsHtml + '</div>' +
       '</div>' +
@@ -807,10 +818,10 @@
     b.err.innerHTML =
       '<div style="flex:1;min-width:240px">' +
         '<strong>' + esc(tr(errRec.messageAr, errRec.messageEn)) + '</strong> ' +
-        '<span style="color:#f4b4ab">[' + esc(tr('معرف الطلب: ', 'Request ID: ')) +
+        '<span style="color:#f4b4ab">[' + esc(tr('معرف الطلب:', 'Request ID:')) + ' ' +
           '<code dir="ltr" id="novaLastErrorReqId">' + esc(errRec.requestId) + '</code> · ' +
-          esc(tr('الحالة الصحية: ', 'Health: ')) +
-          '<strong id="novaLastErrorHealth">' + esc(errRec.health.status) + '</strong>]</span>' +
+          esc(tr('الحالة الصحية:', 'Health:')) + ' ' +
+          '<strong dir="ltr" id="novaLastErrorHealth">' + esc(errRec.health.status) + '</strong>]</span>' +
       '</div>' +
       '<button type="button" id="novaDismissErrorBtn" style="min-height:38px;min-width:44px;padding:6px 12px;background:#33191d;color:#ffd2cc;border:1px solid #753038;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer">' +
         esc(tr('إغلاق', 'Dismiss')) +
@@ -848,7 +859,7 @@
 
     var svcRows = SERVICES.map(function (id) {
       var st = instance.getMockState(id);
-      var statusText = st.degraded ? tr('وضع مخفض (down)', 'degraded (down)') : tr('متصل (ok)', 'online (ok)');
+      var statusText = st.degraded ? tr('وضع مخفض', 'degraded (down)') : tr('متصل', 'online (ok)');
       var toggleLabel = st.degraded ? tr('إعادة تفعيل', 'Restore') : tr('محاكاة عطل', 'Simulate down');
       return '<div data-service-row="' + esc(id) + '" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #26303a;font-size:13px">' +
         '<div><strong>' + esc(tr(st.labelAr, st.labelEn)) + '</strong> · <span data-service-state="' + esc(id) + '" style="color:' + (st.degraded ? '#ffd97d' : '#69c6a8') + '">' + esc(statusText) + '</span>' +
@@ -858,10 +869,17 @@
       '</div>';
     }).join('');
 
+    var queueStatusLabel = function (st) {
+      if (!isEn()) {
+        return st === 'completed' ? 'مكتمل' : st === 'running' ? 'قيد التنفيذ' : st === 'failed' ? 'فشل' : 'في الطابور';
+      }
+      return st;
+    };
+
     var queueHtml = q.length
       ? q.slice(-5).map(function (j) {
           return '<li data-job-id="' + esc(j.id) + '" style="margin:4px 0;font-size:12px;color:#d6dee6">' +
-            '<strong>' + esc(j.label) + '</strong> · <span>' + esc(j.status) + '</span> · ' +
+            '<strong>' + esc(j.label) + '</strong> · <span>' + esc(queueStatusLabel(j.status)) + '</span> · ' +
             '<span>' + esc(j.progress.processed + '/' + j.progress.total) + '</span> · ' +
             '<code dir="ltr">' + esc(j.requestId) + '</code>' +
           '</li>';
@@ -871,15 +889,19 @@
     var errsHtml = errs.length
       ? errs.map(function (e) {
           return '<li data-error-item="' + esc(e.requestId) + '" style="margin:4px 0;font-size:12px;color:#ffb4a8">' +
-            '<code dir="ltr">' + esc(e.requestId) + '</code> · <strong>' + esc(e.code) + '</strong> · ' +
-            '<span>' + esc(tr('الصحة: ', 'health: ') + e.health.status) + '</span> — ' +
+            '<code dir="ltr">' + esc(e.requestId) + '</code> · <strong dir="ltr">' + esc(e.code) + '</strong> · ' +
+            '<span>' + esc(tr('الصحة:', 'health:')) + '</span> <span dir="ltr">' + esc(e.health.status) + '</span> — ' +
             esc(tr(e.messageAr, e.messageEn)) +
           '</li>';
         }).join('')
       : '<li style="font-size:12px;color:#9eacb9">' + esc(tr('لا توجد أخطاء مسجلة', 'No errors recorded')) + '</li>';
 
+    var alertPathText = isEn()
+      ? rb.alertPath.map(function (a) { return a.step + ') ' + a.stageEn + ': ' + a.detailEn; }).join(' | ')
+      : rb.alertPath.map(function (a) { return a.step + ') ' + a.stageAr + ': ' + a.detailUiAr; }).join(' | ');
+
     host.innerHTML =
-      '<h3>' + esc(tr('الاعتمادية والوضع المخفض ودليل الأعطال (OFF-05)', 'Local Reliability, Degraded Mode & Outage Runbook (OFF-05)')) + '</h3>' +
+      '<h3>' + esc(tr('الاعتمادية والوضع المخفض ودليل الأعطال', 'Local Reliability, Degraded Mode & Outage Runbook')) + '</h3>' +
       '<p id="novaHealthSummary" data-health-status="' + esc(h.status) + '" data-health-req="' + esc(h.requestId) + '" style="font-size:13px;color:#e7ebf0;margin:6px 0">' +
         '<strong>' + esc(tr('الفحص الصحي:', 'Health check:')) + '</strong> ' + esc(tr(h.summaryAr, h.summaryEn)) +
         ' · <code dir="ltr" id="novaHealthReqId">' + esc(h.requestId) + '</code>' +
@@ -887,18 +909,18 @@
       '<div style="margin:8px 0">' + svcRows + '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">' +
         '<button type="button" id="novaRunHealthBtn" style="' + btnStyle + '">' + esc(tr('فحص الصحة الآن', 'Run health check')) + '</button>' +
-        '<button type="button" id="novaEnqueueHeavyBtn" style="' + btnStyle + '">' + esc(tr('جدولة وتشغيل مهمة ثقيلة (فهرسة الكتالوج)', 'Queue & run heavy catalog reindex')) + '</button>' +
+        '<button type="button" id="novaEnqueueHeavyBtn" style="' + btnStyle + '">' + esc(tr('جدولة وتشغيل مهمة ثقيلة لفهرسة الكتالوج', 'Queue & run heavy catalog reindex')) + '</button>' +
         '<button type="button" id="novaTestErrorBtn" style="' + btnStyle + '">' + esc(tr('اختبار رسالة خطأ بمعرف طلب', 'Test error with requestId')) + '</button>' +
       '</div>' +
       '<h4 style="margin:10px 0 4px;font-size:13px;color:#e7ebf0">' + esc(tr('طابور الأعمال الثقيلة المحلي', 'Heavy Local Work Queue')) + ' (<span id="novaHeavyQueueCount">' + q.length + '</span>)</h4>' +
       '<ul id="novaHeavyQueueList" style="margin:4px 0 10px;padding-inline-start:18px">' + queueHtml + '</ul>' +
-      '<h4 style="margin:10px 0 4px;font-size:13px;color:#e7ebf0">' + esc(tr('سجل الأخطاء المحسوبة (مع requestId وحالة الصحة)', 'Structured Error Log (with requestId & health)')) + '</h4>' +
+      '<h4 style="margin:10px 0 4px;font-size:13px;color:#e7ebf0">' + esc(tr('سجل الأخطاء المحسوبة ومعرفات الطلبات وحالة الصحة', 'Structured Error Log (with requestId & health)')) + '</h4>' +
       '<ul id="novaReliabilityErrors" style="margin:4px 0 10px;padding-inline-start:18px">' + errsHtml + '</ul>' +
       '<div id="novaRunbookBox" style="margin-top:10px;padding:10px 12px;background:#0e1419;border:1px solid #303841;border-radius:8px;font-size:12px;color:#d6dee6">' +
-        '<strong style="font-size:13px;color:#e7ebf0">' + esc(rb.titleAr) + '</strong>' +
-        '<div style="margin-top:4px"><strong>المسؤول (Owner):</strong> <span id="novaRunbookOwner">' + esc(rb.owner.name + ' — ' + rb.owner.roleAr) + '</span> · المناوب: ' + esc(rb.owner.onDutyAr) + '</div>' +
-        '<div style="margin-top:4px"><strong>مسار الإنذار والتصعيد (Alert Path):</strong> <span id="novaRunbookAlertPath">' +
-          esc(rb.alertPath.map(function (a) { return a.step + ') ' + a.stageAr + ': ' + a.detailAr; }).join(' | ')) +
+        '<strong style="font-size:13px;color:#e7ebf0">' + esc(tr(rb.titleAr, rb.titleEn)) + '</strong>' +
+        '<div style="margin-top:4px"><strong>' + esc(tr('المسؤول:', 'Owner:')) + '</strong> <span id="novaRunbookOwner">' + esc(tr(rb.owner.name + ' — ' + rb.owner.roleAr, rb.owner.nameEn + ' — ' + rb.owner.roleEn)) + '</span> · ' + esc(tr('المناوب: ' + rb.owner.onDutyAr, 'On-duty: ' + rb.owner.onDutyEn)) + '</div>' +
+        '<div style="margin-top:4px"><strong>' + esc(tr('مسار الإنذار والتصعيد:', 'Alert & Escalation Path:')) + '</strong> <span id="novaRunbookAlertPath">' +
+          esc(alertPathText) +
         '</span></div>' +
       '</div>';
 
@@ -1056,6 +1078,14 @@
     hookServices();
     renderDegradedBanner();
     mountSettingsCard();
+    root.document.addEventListener('click', function (e) {
+      if (e.target && e.target.closest && e.target.closest('.nova-lang-btn')) {
+        setTimeout(function () {
+          renderDegradedBanner();
+          mountSettingsCard();
+        }, 0);
+      }
+    });
     var view = root.document.getElementById('novaPageView');
     if (view && typeof MutationObserver !== 'undefined' && !view.__reliabilityObserved) {
       view.__reliabilityObserved = true;

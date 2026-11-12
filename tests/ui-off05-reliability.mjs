@@ -63,11 +63,13 @@ try {
     const info = await page.evaluate(() => ({
       owner: document.getElementById('novaRunbookOwner')?.textContent || '',
       alertPath: document.getElementById('novaRunbookAlertPath')?.textContent || '',
+      runbookContract: window.novaReliability.getRunbook(),
       healthStatus: document.getElementById('novaHealthSummary')?.getAttribute('data-health-status'),
       healthReq: document.getElementById('novaHealthSummary')?.getAttribute('data-health-req')
     }));
     assert.ok(info.owner.includes('أحمد السوسي'), 'runbook UI must display owner');
-    assert.ok(info.alertPath.includes('requestId') && info.alertPath.includes('تصعيد للمسؤول'), 'runbook UI must display alert path');
+    assert.ok(info.alertPath.includes('معرف الطلب') && info.alertPath.includes('تصعيد للمسؤول'), 'runbook UI must display alert path');
+    assert.ok(info.runbookContract.alertPath[0].detailAr.includes('requestId'), 'runbook contract must reference requestId');
     assert.equal(info.healthStatus, 'ok');
     assert.match(info.healthReq, /^HLTH-/);
   });
