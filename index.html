@@ -2834,7 +2834,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           return `
             <div class="cust-purchase-row">
               <div class="cust-purchase-info">
-                <div class="cust-purchase-name" dir="auto">${item.name}</div>
+                <div class="cust-purchase-name" dir="auto">${escH(item.name)}</div>
                 <div class="cust-purchase-meta" dir="auto">
                   <span>آخر شراء: ${date}</span>
                   ${item.purchases > 1 ? `<span>${item.purchases} مرات</span>` : ""}
@@ -2842,7 +2842,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               </div>
               <div class="cust-purchase-side">
                 <span class="cust-purchase-price">${Number(price || 0).toFixed(2)} EGP</span>
-                <button class="btn-add-history" data-prod-id="${item.productId}" title="إضافة للفاتورة بالسعر الحالي" aria-label="إضافة ${item.name} للفاتورة">+</button>
+                <button class="btn-add-history" data-prod-id="${item.productId}" title="إضافة للفاتورة بالسعر الحالي" aria-label="إضافة ${escH(item.name)} للفاتورة">+</button>
               </div>
             </div>`;
         }).join("") || '<div class="cust-purchase-empty">مفيش منتجات مطابقة</div>';
