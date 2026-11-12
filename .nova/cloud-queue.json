@@ -9,16 +9,13 @@
    "brief": "Create a local chart of accounts with cost centers, branches, and periods, plus balanced opening balances that have a source and an approval. Use a base currency and dated conversion rules. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N60.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 1,
    "fix_attempts": 0,
    "pr": 200,
    "note": "implemented by run 43302947604; PR opened manually",
-   "ci_dispatched": {
-    "sha": "c7e1197aaeb8383fcda4bb90419e92bbd0114182",
-    "wf": [],
-    "at": "2026-11-12T20:51:45+00:00"
-   }
+   "merged_at": "2026-11-12T20:56:25+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/200"
   },
   {
    "id": "N62",
@@ -70,5 +67,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-12T20:51:45+00:00"
+ "updated": "2026-11-12T20:56:25+00:00"
 }
