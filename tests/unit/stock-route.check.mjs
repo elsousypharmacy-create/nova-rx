@@ -1,6 +1,6 @@
 // The module Worker artifact must serve the price list same-origin (GET/HEAD), prices only, no secrets.
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import assert from 'node:assert/strict';
-const art = process.argv[2] || 'worker/live/nova-rx-preview.ui-real-prices2.js';
+const art = process.argv[2] || 'worker/live/nova-rx-preview.ui-real-prices4.js';
 const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'nova-')), 'w.mjs'); fs.copyFileSync(art, tmp);
 const m = await import(tmp); const env = { NOVA_SECRETS_KV: {}, NOVA_PURCHASE_OPS: {} }, ctx = { waitUntil() {}, passThroughOnException() {} };
 const get = (u, method = 'GET') => m.default.fetch(new Request('https://x' + u, { method }), env, ctx);
