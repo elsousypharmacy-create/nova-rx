@@ -62,6 +62,9 @@ jobs:
       - name: CAT-02 units and conversion (N19)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-cat02-units.mjs
+      - name: CAT-05 instant search UI and 5000-item perf check (N17)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-cat05-instant-search.mjs
       - name: Write machine-readable result
         if: always()
         run: |
