@@ -56,6 +56,9 @@ jobs:
       - name: INV-03 reservation, last unit cannot sell twice (N24)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-inv03-reservation.mjs
+      - name: INV-02 lots and expiry, FEFO + block expired (N18)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-inv02-lots-expiry.mjs
       - name: Catalog duplicate detection (N21)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-catalog-duplicates.mjs
