@@ -24,11 +24,11 @@
    "brief": "Support shift open, float, drop, payout, cash count, close, and variance approval; reconcile cash / mock-card / bank locally. A closed shift must not be edited. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N62.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 1,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "slot": "A",
-   "dispatched_at": "2026-11-12T21:02:32+00:00",
+   "dispatched_at": "2026-11-12T21:31:30+00:00",
    "pr": 209,
    "ci_dispatched": {
     "sha": "202bf7e79d4343f298cf71dd088e143f9b2a57c5",
@@ -46,11 +46,20 @@
    "brief": "Keep local supplier accounts with payments, terms, and discounts, and expenses that need a document, category, and approval. Reconcile them with local purchasing and a mock bank register; no live bank or supplier API. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N63.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-12T21:29:31+00:00"
+   "dispatched_at": "2026-11-12T21:29:31+00:00",
+   "pr": 210,
+   "ci_dispatched": {
+    "sha": "85b5f410ede29fa3db207350efff4810b356fcc8",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-12T21:31:30+00:00"
+   }
   },
   {
    "id": "N64",
@@ -78,5 +87,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-12T21:29:31+00:00"
+ "updated": "2026-11-12T21:31:30+00:00"
 }
