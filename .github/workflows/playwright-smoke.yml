@@ -73,6 +73,9 @@ jobs:
       - name: POS-04 returns and cancellation (N37)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-pos04-returns-cancel.mjs
+      - name: POS-05 receipt PDF and printer/scanner (N38)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-pos05-receipt-scanner.mjs
       - name: Catalog duplicate detection (N21)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-catalog-duplicates.mjs
