@@ -861,3 +861,6 @@ Branch `claude/buy-05-invoice-match`. New: `worker/procurement/invoice-match.js`
 
 ## Checkpoint 2026-11-12 — Claude 1: BUY-05 supplier returns and credit-note match (pure, not wired)
 Branch `claude/buy-05-supplier-return`, stacked on `claude/buy-05-invoice-match` (PR #151). New: `worker/procurement/supplier-return.js`, `tests/unit/procurement-supplier-return.check.mjs`, doc section. No PR yet (3/3 implementation PRs open: #149, #150, #151). Not wired, no supplier call.
+
+## Checkpoint 2026-11-12 — Claude 1: INV supplier returns in the stock core (not wired)
+Branch `claude/inv-supplier-return`. `worker/inventory/stock-core.js`: `lotsOf`, `returnToSupplier`, supplier_return table/kind, reconcile check. `tests/integration/inv-supplier-return.check.mjs` (12 cases; 14 mutations caught after fixing two that targeted the wrong occurrence), `core-cycle.yml` runs it, `docs/inventory/INV-01.md` section. Not wired, no deploy.
