@@ -839,3 +839,16 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint 2026-11-11 — Claude 1: BUY-05 three-way invoice match (pure, not wired)
 Branch `claude/buy-05-invoice-match`. New: `worker/procurement/invoice-match.js`, `tests/unit/procurement-invoice-match.check.mjs` (12 cases; 11 mutations caught, 4 survived the first draft and got tests), `docs/procurement/BUY-05_INVOICE_MATCH.md`. Not wired, no deploy, no supplier call. Roadmap BUY-05 stays in progress (receiving UI, supplier returns, lot/cost checks, owner acceptance are open).
+## 2026-11-12 — Claude 2: UI deployed live, sales ledger (U1), price route
+- Live `nova-rx-preview` = ui-real-prices4 (sha256 7827b1743724ab1719f4c2b1712c2d0e2289ab19cb2e8977c77ba3a5c9e40a09), deploy run 43150450055, digest read back. Owner authorised the deploy and said to finish without coming back.
+- `/emergency/stock.json` was 404 on the purchases lineage → `tools/patch-worker-stock-route.mjs` + `tests/unit/stock-route.check.mjs`. Live now serves 4378 price rows (prices only).
+- U1: `window.novaSales` local ledger (this device), Invoices/Reports tabs, `tests/ui-sales-ledger.mjs` (8 cases, mutation-checked, in playwright-smoke).
+- Claude 1's #150 (scan-toast XSS) is included in the deployed build via merge; customer-history name also escaped. #150 itself still open: close it as superseded by this PR once merged.
+- Not done: real tablet test, stock levels, server-side invoice storage (frozen), VAT rate (owner policy).
+
+
+## 2026-11-12 — ChatGPT, owner-requested Aumet renewal repair
+- Evidence: Supplier sessions 43150870981 saved a search session; cart-read 43151099731 still cart-session-required. Normal renewal only captured cartRequestTemplate in diagnostic mode, so a missing/deleted contract could never recover.
+- Fix on branch: capture the browser-observed contract on every renewal, block every API mutation before login, verify cart GET and buyer identity before saving. One fallback catalogue query if the first product has no quantity control. No order/cart writes, no secrets changed, no Worker deploy required. Missing config/credentials no longer report success.
+- Validation: node tests/unit/procurement-session-renewal.check.mjs PASS (guard, contract, wrong account, HTTP failure/redirect, missing shape, normal-path wiring); node --check both CJS scripts PASS. Live branch run and independent review pending; scheduled default-branch behavior is unchanged until merged.
+- Live validation of code 98a0079: branch renewal 43152097001 (inspect_cart=false) SUCCESS with cart read verified; subsequent main/live Worker cart read 43152246211 PASS for Aumet and PharmaOverseas, no mutations. Aumet checkout blocked only by supplier minimum. Procurement unit + Playwright smoke CI PASS. PR #153 awaiting independent review/merge; recurrence fix is not yet scheduled on main.
