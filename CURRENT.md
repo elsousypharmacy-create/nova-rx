@@ -25,6 +25,7 @@ nova-rx: #148 currency ج.م/EGP (UI). Closed unmerged: #114, #91, #25, #20, #10
 pharmacy: #56 dashboard sprint draft; #51 and #28 drafts; #11, #10, #9 bot/Apps Script review-only (not re-checked today). Merging in pharmacy can publish a page: only for explicit owner requests.
 
 ## Known breakages and risks
+- Owner requested ChatGPT fix Aumet renewal (2026-11-12): normal refresh omitted cart contract; branch fix captures it with API writes blocked and verifies cart GET before ingest. Local regression PASS; live branch validation/review pending.
 - The draft «signature» of the shortages plan is an unkeyed hash: it detects accidents, it is NOT an authorization control (the failing test was fixed in #140). `tests/ux-batch1.mjs` and `tests/sale-sticker-modal.mjs` fail on main and no CI runs them.
 - Aumet checkout for the owner's cart is blocked by the supplier minimum (`order-minimum-not-met`), not a defect. Real cart writes and orders were never tested. A cart operation ending unknown locks that supplier's scope (fail-closed; design: docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md).
 - Unauthenticated scanSearch/scanLookup in Apps Script (security finding); one shared PIN, no per-user sessions; WhatsApp paused; real printer/tablet never tested.
@@ -39,3 +40,4 @@ Real supplier cart writes, orders or checkout; payments; secrets or credential c
 
 ## Update rule
 Whoever changes the state edits this file in the same reviewed PR (never straight to main). Keep it at 60 lines or fewer; move detail to HANDOFF.md and link it. No secrets, customer data or private chat text here.
+
