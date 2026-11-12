@@ -3103,6 +3103,34 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             amount = left === 0 ? remaining : Math.min(round2(amount), remaining);
             return { ok: true, lines, amount };
           },
+          // Backup: plain JSON of this device's sales and returns. Import validates everything first and only ADDS records whose id is not already here.
+          exportBackup() { return JSON.stringify({ format: 'nova-rx-sales-backup', version: 1, exportedAt: new Date().toISOString(), sales: read(), returns: this.returns() }, null, 2); },
+          parseBackup(text) {
+            let d; try { d = JSON.parse(text); } catch (_) { return { ok: false, error: 'not-json' }; }
+            if (!d || d.format !== 'nova-rx-sales-backup' || d.version !== 1 || !Array.isArray(d.sales) || !Array.isArray(d.returns)) return { ok: false, error: 'wrong-format' };
+            const num = v => typeof v === 'number' && Number.isFinite(v) && v >= 0, str = v => typeof v === 'string' && v.length > 0;
+            const goodSale = x => x && typeof x === 'object' && str(x.id) && str(x.number) && str(x.at) && !Number.isNaN(Date.parse(x.at)) && num(x.total) && Array.isArray(x.lines) && x.lines.length > 0
+              && x.lines.every(l => l && str(l.name) && num(l.price) && Number.isInteger(l.qty) && l.qty > 0 && (l.discount === undefined || num(l.discount)));
+            const goodRet = (r, sales) => r && typeof r === 'object' && str(r.id) && str(r.saleId) && num(r.amount) && str(r.at) && !Number.isNaN(Date.parse(r.at)) && Array.isArray(r.lines) && r.lines.length > 0
+              && r.lines.every(l => l && Number.isInteger(l.idx) && l.idx >= 0 && Number.isInteger(l.qty) && l.qty > 0) && sales.has(r.saleId);
+            const ids = new Set(d.sales.map(x => x && x.id));
+            if (ids.size !== d.sales.length) return { ok: false, error: 'invalid' };
+            if (!d.sales.every(goodSale)) return { ok: false, error: 'invalid' };
+            const known = new Set([...ids, ...read().map(x => x.id)]);
+            if (!d.returns.every(r => goodRet(r, known))) return { ok: false, error: 'invalid' };
+            const have = new Set(read().map(x => x.id)), haveR = new Set(this.returns().map(x => x.id));
+            const newSales = d.sales.filter(x => !have.has(x.id)), newReturns = d.returns.filter(r => !haveR.has(r.id));
+            return { ok: true, newSales, newReturns, skippedSales: d.sales.length - newSales.length, skippedReturns: d.returns.length - newReturns.length };
+          },
+          applyBackup(p) {
+            if (!p || !p.ok) return { ok: false, error: 'invalid' };
+            const sales = read().concat(p.newSales), rets = this.returns().concat(p.newReturns);
+            if (sales.length > MAX || rets.length > MAX) return { ok: false, error: 'too-many' };
+            sales.sort((x, y) => Date.parse(y.at) - Date.parse(x.at)); rets.sort((x, y) => Date.parse(y.at) - Date.parse(x.at));
+            const before = [localStorage.getItem(KEY), localStorage.getItem(RKEY)];
+            try { localStorage.setItem(KEY, JSON.stringify(sales)); localStorage.setItem(RKEY, JSON.stringify(rets)); return { ok: true }; }
+            catch (_) { try { before[0] === null ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, before[0]); before[1] === null ? localStorage.removeItem(RKEY) : localStorage.setItem(RKEY, before[1]); } catch (__) {} return { ok: false, error: 'storage' }; }
+          },
           addReturn(sale, qtyByIdx, reason) {
             const text = String(reason || '').trim();
             if (!text) return { ok: false, error: 'reason' };
@@ -3626,11 +3654,12 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  }else if(page==='invoices'){
  const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
+ const backupBar='<div class="nova-panel" style="padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="novaSalesExport" class="nova-return-btn" style="min-height:44px">'+tr('تصدير نسخة احتياطية (JSON)','Export backup (JSON)')+'</button><button type="button" id="novaSalesImport" class="nova-return-btn" style="min-height:44px">'+tr('استيراد نسخة احتياطية','Import backup')+'</button><input type="file" id="novaSalesImportFile" accept="application/json,.json" hidden><span id="novaBackupMsg" role="status" style="font-size:13px;color:#9eacb9"></span></div>';
  const savedBlock=saved.length?'<div class="nova-kpis">'+kpi('فواتير محفوظة',saved.length)+kpi('إجمالي المبيعات',money(saved.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(saved.reduce((s,i)=>s+i.total,0)/saved.length))+'</div>'
   +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+'</td><td>'+esc(i.items)+'</td><td><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا</div></div>';
  const list=filtered(inv,['id','customer','date','branch']);
- content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+savedBlock
+ content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+backupBar+savedBlock
   +'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
  +table(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+money(i.total)+'</td><td>'+esc((i.items||[]).length)+'</td></tr>'));
  }else if(page==='reports'){
@@ -3650,6 +3679,16 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  }
  view.innerHTML=content;
 
+ const bx=document.getElementById('novaSalesExport');if(bx)bx.onclick=()=>{const blob=new Blob([window.novaSales.exportBackup()],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-rx-sales-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+ const bi=document.getElementById('novaSalesImport'),bf=document.getElementById('novaSalesImportFile'),bm=document.getElementById('novaBackupMsg');
+ if(bi&&bf){bi.onclick=()=>bf.click();bf.onchange=async()=>{const f=bf.files&&bf.files[0];if(!f)return;const txt=await f.text();bf.value='';
+  const p=window.novaSales.parseBackup(txt);
+  if(!p.ok){bm.textContent=p.error==='not-json'?tr('الملف ليس JSON صالحًا — لم يتغير شيء','Not valid JSON — nothing changed'):p.error==='wrong-format'?tr('الملف ليس نسخة احتياطية من NOVA Rx — لم يتغير شيء','Not a NOVA Rx sales backup — nothing changed'):tr('الملف يحتوي بيانات غير صالحة — لم يتغير شيء','The file contains invalid data — nothing changed');return}
+  if(!p.newSales.length&&!p.newReturns.length){bm.textContent=tr('كل ما في الملف موجود بالفعل على هذا الجهاز — لم يتغير شيء','Everything in the file is already on this device — nothing changed');return}
+  if(!window.confirm(tr('سيتم إضافة '+p.newSales.length+' فاتورة و '+p.newReturns.length+' مرتجع. الموجود حاليًا لن يُستبدل ('+p.skippedSales+' فاتورة موجودة تم تخطيها). متابعة؟','Add '+p.newSales.length+' sales and '+p.newReturns.length+' returns? Existing records are never replaced ('+p.skippedSales+' sales already here are skipped). Continue?'))){bm.textContent=tr('تم الإلغاء — لم يتغير شيء','Cancelled — nothing changed');return}
+  const r=window.novaSales.applyBackup(p);
+  if(!r.ok){bm.textContent=r.error==='too-many'?tr('سيتجاوز الحد الأقصى (1000) — لم يتغير شيء','Would exceed the 1000 limit — nothing changed'):tr('تعذر الحفظ على هذا الجهاز — لم يتغير شيء','Could not save on this device — nothing changed');return}
+  render(page,filter);const m2=document.getElementById('novaBackupMsg');if(m2)m2.textContent=tr('تمت الإضافة: '+p.newSales.length+' فاتورة، '+p.newReturns.length+' مرتجع','Imported: '+p.newSales.length+' sales, '+p.newReturns.length+' returns')}}
  view.querySelectorAll('[data-return]').forEach(b=>b.onclick=()=>{
   const sale=(window.novaSales.list()).find(x=>x.id===b.dataset.return);if(!sale)return;
   const done=window.novaSales.returnedQty(sale.id);
