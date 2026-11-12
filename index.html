@@ -2880,6 +2880,20 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           });
         }
         renderInvoice();
+        const k = window.novaStock && window.novaStock.keyOf(product);
+        if (k && window.novaStock.hasLots(k)) {
+          const line = state.invoiceLines.find(l => l.productId === product.id);
+          const pick = line && window.novaStock.fefoPick(k, line.qty);
+          if (pick && !pick.ok && pick.reason === "expired") {
+            showToast("ممنوع بيع صنف منتهي الصلاحية: " + escH(product.name) + " — المتاح الصالح " + pick.available, "error");
+            return;
+          }
+          if (pick && pick.ok && pick.hasNearExpiry) {
+            const w = pick.nearExpiry[0];
+            showToast("تنبيه قرب انتهاء الصلاحية: " + escH(product.name) + " — تشغيلة " + escH(w.lot) + " (" + w.daysLeft + " يوم)");
+            return;
+          }
+        }
         showToast(`Added to invoice: ${escH(product.name)}`);
       }
 
@@ -2904,6 +2918,16 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         } else {
           line.qty = q;
           renderInvoice();
+          const k = window.novaStock && window.novaStock.keyOf(line);
+          if (k && window.novaStock.hasLots(k)) {
+            const pick = window.novaStock.fefoPick(k, line.qty);
+            if (!pick.ok && pick.reason === "expired") {
+              showToast("ممنوع بيع صنف منتهي الصلاحية: " + escH(line.name) + " — المتاح الصالح " + pick.available, "error");
+            } else if (pick.ok && pick.hasNearExpiry) {
+              const w = pick.nearExpiry[0];
+              showToast("تنبيه قرب انتهاء الصلاحية: " + escH(line.name) + " — تشغيلة " + escH(w.lot) + " (" + w.daysLeft + " يوم)");
+            }
+          }
         }
       }
 
@@ -2936,12 +2960,31 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
           elements.invoiceTableBody.innerHTML = state.invoiceLines.map((line, idx) => {
             const lineTotal = Math.max(0, (line.price * line.qty) - line.discount);
+            let lotHtml = "";
+            if (window.novaStock && window.novaStock.hasLots(window.novaStock.keyOf(line))) {
+              const pick = window.novaStock.fefoPick(window.novaStock.keyOf(line), line.qty);
+              if (pick.ok) {
+                line._lots = pick.picks; line.lot = pick.lot; line.expiry = pick.expiry;
+                const lotSummary = pick.picks.map(p => `${escH(p.lot)} (${escH(p.expiry)}${pick.picks.length > 1 ? " ×" + p.qty : ""})`).join("، ");
+                lotHtml = `<div class="item-lot" data-fefo-lot="${escH(pick.lot)}" data-fefo-expiry="${escH(pick.expiry)}" style="font-size:12px;color:#93c5fd;margin-top:2px">تشغيلة: ${lotSummary}</div>`;
+                if (pick.hasNearExpiry) {
+                  const w = pick.nearExpiry[0];
+                  lotHtml += `<div class="item-expiry-warn" role="status" data-near-expiry="${escH(w.lot)}" style="font-size:12px;color:#fde68a;background:#422006;border:1px solid #b45309;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px">تنبيه قرب انتهاء الصلاحية: ${escH(w.lot)} (${w.daysLeft} يوم)</div>`;
+                }
+              } else {
+                line._lots = []; line.lot = null; line.expiry = null;
+                if (pick.reason === "expired") {
+                  lotHtml = `<div class="item-expiry-blocked" role="alert" data-expired-blocked="true" style="font-size:12px;color:#fecaca;background:#450a0a;border:1px solid #dc2626;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px">منتهي الصلاحية — محظور البيع (المتاح الصالح: ${pick.available})</div>`;
+                }
+              }
+            }
             return `
               <tr data-id="${line.productId}">
                 <td class="col-idx">${idx + 1}</td>
                 <td class="col-item">
                   <div class="item-title" dir="auto">${escH(line.name)}</div>
                   <div class="item-generic">${escH(line.generic)}${line.generic && line.form ? " • " : ""}${escH(line.form)}</div>
+                  ${lotHtml}
                 </td>
                 <td class="col-barcode">${line.barcode}</td>
                 <td class="col-price">${line.price.toFixed(2)}</td>
@@ -3043,7 +3086,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (!state.checkoutReserved) { // INV-03: hold the units for 2 minutes before the payment window opens
           const key = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
           window.novaStock.withLock(() => window.novaStock.reserve(key, state.invoiceLines)).then(r => {
-            if (!r.ok) { showToast(r.error ? "تعذر حجز المخزون" : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
+            if (!r.ok) { showToast(r.error ? "تعذر حجز المخزون" : r.expired ? "ممنوع بيع صنف منتهي الصلاحية: " + r.name + " — المتاح الصالح " + r.available : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
             state.checkoutReserved = true; openCheckout();
           });
           return;
@@ -3150,24 +3193,170 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         };
       })();
 
-      // INV-03 (this device only): the last unit cannot sell twice. Tracked only for products with a numeric stock (demo list);
-      // STOCK LIVE price rows have stock null = untracked. Holds expire; all check+write steps run under a cross-tab Web Lock.
+      // INV-02 + INV-03 (this device only): lot/expiry tracking, FEFO picking, block expired by default, configurable near-expiry warning (default 90 days),
+      // and reservation holds so the last unit cannot sell twice. Untracked STOCK LIVE rows (stock null and no lots) remain unrestricted.
       window.novaStock = (function () {
-        const HK = 'nova-rx-holds-v1', TTL = 120000, keyOf = l => String(l.barcode || l.name || '');
+        const HK = 'nova-rx-holds-v1', LK = 'nova-rx-lots-v1', WK = 'nova-rx-near-expiry-days-v1', BK = 'nova-rx-block-expired-v1';
+        const TTL = 120000, DEFAULT_WARN_DAYS = 90;
+        const keyOf = l => typeof l === 'string' ? l : String((l && (l.key || l.barcode || l.name)) || '');
+        const validDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || '')) && !Number.isNaN(Date.parse(s + 'T00:00:00Z'));
+        const todayStr = now => {
+          if (typeof now === 'string' && validDate(now)) return now;
+          const d = now !== undefined ? new Date(now) : (window.novaStock && window.novaStock._now ? new Date(window.novaStock._now) : new Date());
+          return d.toISOString().slice(0, 10);
+        };
+        const daysUntil = (expiry, now) => Math.round((Date.parse(expiry + 'T00:00:00Z') - Date.parse(todayStr(now) + 'T00:00:00Z')) / 86400000);
+        const nearExpiryDays = () => {
+          try {
+            const v = localStorage.getItem(WK);
+            if (v === null || v === '') return DEFAULT_WARN_DAYS;
+            const n = Number(v);
+            return Number.isInteger(n) && n >= 0 && n <= 3650 ? n : DEFAULT_WARN_DAYS;
+          } catch (_) { return DEFAULT_WARN_DAYS; }
+        };
+        const setNearExpiryDays = days => {
+          const n = Number(days);
+          if (!Number.isInteger(n) || n < 0 || n > 3650) return { ok: false, error: 'invalid' };
+          try { localStorage.setItem(WK, String(n)); if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice(); return { ok: true, days: n }; }
+          catch (_) { return { ok: false, error: 'storage' }; }
+        };
+        const isBlockExpired = () => { try { return localStorage.getItem(BK) !== '0'; } catch (_) { return true; } };
+        const setBlockExpired = flag => {
+          try { localStorage.setItem(BK, flag ? '1' : '0'); if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice(); return { ok: true, blockExpired: !!flag }; }
+          catch (_) { return { ok: false, error: 'storage' }; }
+        };
+        const rawLots = () => {
+          try {
+            const a = JSON.parse(localStorage.getItem(LK) || '[]');
+            return Array.isArray(a) ? a.filter(x => x && typeof x.key === 'string' && x.key && typeof x.lot === 'string' && x.lot && validDate(x.expiry) && Number.isInteger(x.qty) && x.qty > 0) : [];
+          } catch (_) { return []; }
+        };
+        const saveLots = a => { try { localStorage.setItem(LK, JSON.stringify(a)); return true; } catch (_) { return false; } };
+        const hasLots = key => { const k = keyOf(key); return !!k && rawLots().some(x => x.key === k); };
+        const lots = (key, now) => {
+          const k = keyOf(key), warnDays = nearExpiryDays();
+          const map = new Map();
+          rawLots().filter(x => x.key === k).forEach(x => {
+            const id = x.lot + '\u0000' + x.expiry;
+            if (!map.has(id)) map.set(id, { key: k, lot: x.lot, expiry: x.expiry, receivedQty: 0, onHand: 0, cost: Number(x.cost) || 0, location: String(x.location || '') });
+            const e = map.get(id); e.receivedQty += x.qty; e.onHand += x.qty;
+          });
+          const list = [...map.values()].sort((a, b) => a.expiry.localeCompare(b.expiry) || a.lot.localeCompare(b.lot));
+          if (!list.length) return [];
+          [...window.novaSales.list()].reverse().forEach(s => {
+            const rq = window.novaSales.returnedQty(s.id);
+            s.lines.forEach((l, i) => {
+              if (keyOf(l) !== k) return;
+              let net = Math.max(0, (Number(l.qty) || 0) - (rq[i] || 0));
+              if (net <= 0) return;
+              if (Array.isArray(l.lots) && l.lots.length) {
+                for (const al of l.lots) {
+                  if (net <= 0) break;
+                  const m = list.find(x => x.lot === al.lot && (!al.expiry || x.expiry === al.expiry) && x.onHand > 0) || list.find(x => x.lot === al.lot && x.onHand > 0);
+                  if (m) { const d = Math.min(m.onHand, net, Number(al.qty) || net); m.onHand -= d; net -= d; }
+                }
+              }
+              if (net > 0) {
+                for (const x of list) { if (net <= 0) break; if (daysUntil(x.expiry, now) >= 0 && x.onHand > 0) { const d = Math.min(x.onHand, net); x.onHand -= d; net -= d; } }
+                for (const x of list) { if (net <= 0) break; if (x.onHand > 0) { const d = Math.min(x.onHand, net); x.onHand -= d; net -= d; } }
+              }
+            });
+          });
+          return list.map(x => {
+            const daysLeft = daysUntil(x.expiry, now), expired = daysLeft < 0;
+            return { ...x, daysLeft, expired, nearExpiry: !expired && daysLeft <= warnDays };
+          });
+        };
+        const fefoPick = (key, qty = 1, opts) => {
+          const k = keyOf(key), q = Number(qty);
+          const all = lots(k, opts && opts.now);
+          const allowExp = (opts && opts.allowExpired !== undefined) ? !!opts.allowExpired : !isBlockExpired();
+          const sellable = all.filter(l => l.onHand > 0 && (allowExp || !l.expired));
+          const expiredQty = all.filter(l => l.expired && l.onHand > 0).reduce((s, l) => s + l.onHand, 0);
+          const available = sellable.reduce((s, l) => s + l.onHand, 0);
+          if (!Number.isInteger(q) || q <= 0) return { ok: false, reason: 'invalid', expired: false, available, expiredQty, picks: [], nearExpiry: [], hasNearExpiry: false };
+          if (q > available) {
+            const reason = !allowExp && expiredQty > 0 ? 'expired' : 'insufficient';
+            return { ok: false, reason, expired: reason === 'expired', available, expiredQty, picks: [], nearExpiry: [], hasNearExpiry: false };
+          }
+          let rem = q; const picks = [];
+          for (const l of sellable) {
+            if (rem <= 0) break;
+            const take = Math.min(l.onHand, rem); rem -= take;
+            picks.push({ lot: l.lot, expiry: l.expiry, qty: take, daysLeft: l.daysLeft, nearExpiry: l.nearExpiry, expired: l.expired, cost: l.cost, location: l.location });
+          }
+          const nearExpiry = picks.filter(p => p.nearExpiry);
+          return { ok: true, picks, lot: picks[0].lot, expiry: picks[0].expiry, available, expiredQty, nearExpiry, hasNearExpiry: nearExpiry.length > 0 };
+        };
+        const addLot = entry => {
+          const key = keyOf(entry).trim(), lot = String(entry && (entry.lot || entry.lotNo || entry.batch) || '').trim();
+          const expiry = String(entry && (entry.expiry || entry.expiryDate || entry.exp) || '').trim(), qty = Number(entry && entry.qty);
+          if (!key || !lot || !validDate(expiry) || !Number.isInteger(qty) || qty <= 0) return { ok: false, error: 'invalid' };
+          const all = rawLots(), rec = { key, lot, expiry, qty, cost: Number(entry.cost) || 0, location: String(entry.location || '') };
+          const ex = all.find(x => x.key === key && x.lot === lot && x.expiry === expiry);
+          if (ex) { ex.qty += qty; if (entry.cost !== undefined) ex.cost = rec.cost; if (entry.location !== undefined) ex.location = rec.location; }
+          else all.push(rec);
+          if (!saveLots(all)) return { ok: false, error: 'storage' };
+          if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice();
+          return { ok: true, lot: ex || rec };
+        };
+        const setLots = (keyOrList, maybeList) => {
+          const isAll = Array.isArray(keyOrList);
+          const targetKey = isAll ? null : keyOf(keyOrList).trim();
+          const items = isAll ? keyOrList : (Array.isArray(maybeList) ? maybeList : []);
+          if (!isAll && !targetKey) return { ok: false, error: 'invalid' };
+          const normalized = [];
+          for (const it of items) {
+            const k = (targetKey || keyOf(it)).trim(), lot = String(it && (it.lot || it.lotNo || it.batch) || '').trim();
+            const expiry = String(it && (it.expiry || it.expiryDate || it.exp) || '').trim(), qty = Number(it && it.qty);
+            if (!k || !lot || !validDate(expiry) || !Number.isInteger(qty) || qty <= 0) return { ok: false, error: 'invalid' };
+            normalized.push({ key: k, lot, expiry, qty, cost: Number(it.cost) || 0, location: String(it.location || '') });
+          }
+          const next = isAll ? normalized : rawLots().filter(x => x.key !== targetKey).concat(normalized);
+          if (!saveLots(next)) return { ok: false, error: 'storage' };
+          if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice();
+          return { ok: true };
+        };
+        const clearLots = key => {
+          const ok = key ? saveLots(rawLots().filter(x => x.key !== keyOf(key))) : saveLots([]);
+          if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice();
+          return ok;
+        };
         const holds = () => { try { const a = JSON.parse(localStorage.getItem(HK) || '[]'); const t = Date.now(); return Array.isArray(a) ? a.filter(h => h && h.exp > t) : []; } catch (_) { return []; } };
         const limit = key => { const p = DEMO_PRODUCTS.find(x => (x.barcode || x.name) === key); return p && Number.isFinite(p.stock) ? p.stock : null; };
         const sold = key => { let n = 0; window.novaSales.list().forEach(s => { const rq = window.novaSales.returnedQty(s.id); s.lines.forEach((l, i) => { if (keyOf(l) === key) n += l.qty - (rq[i] || 0); }); }); return n; };
         const need = lines => { const m = new Map(); lines.forEach(l => m.set(keyOf(l), (m.get(keyOf(l)) || 0) + (Number(l.qty) || 0))); return m; };
-        const avail = (key, owner, hs) => { const lim = limit(key); return lim === null ? Infinity : lim - sold(key) - hs.filter(h => h.key === key && h.owner !== owner).reduce((t, h) => t + h.qty, 0); };
-        const check = (owner, lines) => { const hs = holds(); for (const [key, q] of need(lines)) { const a = avail(key, owner, hs); if (q > a) return { ok: false, name: (lines.find(l => keyOf(l) === key) || {}).name, available: Math.max(0, a) }; } return { ok: true }; };
+        const avail = (key, owner, hs) => {
+          const held = hs.filter(h => h.key === key && h.owner !== owner).reduce((t, h) => t + h.qty, 0);
+          if (hasLots(key)) {
+            const allowExp = !isBlockExpired();
+            const sellable = lots(key).filter(l => allowExp || !l.expired).reduce((s, l) => s + l.onHand, 0);
+            return sellable - held;
+          }
+          const lim = limit(key); return lim === null ? Infinity : lim - sold(key) - held;
+        };
+        const check = (owner, lines) => {
+          const hs = holds();
+          for (const [key, q] of need(lines)) {
+            const a = avail(key, owner, hs);
+            if (q > a) {
+              const expQty = hasLots(key) ? lots(key).filter(l => l.expired && l.onHand > 0).reduce((s, l) => s + l.onHand, 0) : 0;
+              const isExp = isBlockExpired() && expQty > 0;
+              return { ok: false, reason: isExp ? 'expired' : 'insufficient', expired: isExp, expiredQty: expQty, name: (lines.find(l => keyOf(l) === key) || {}).name, available: Math.max(0, a) };
+            }
+          }
+          return { ok: true };
+        };
         const save = a => { try { localStorage.setItem(HK, JSON.stringify(a)); return true; } catch (_) { return false; } };
         return {
-          keyOf, available: (key, owner) => avail(key, owner, holds()), holds,
+          keyOf, available: (key, owner) => avail(keyOf(key), owner, holds()), holds,
+          hasLots, lots, fefoPick, addLot, setLots, clearLots,
+          nearExpiryDays, setNearExpiryDays, isBlockExpired, setBlockExpired,
           check,
-          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short
+          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short or expired
             const c = check(owner, lines); if (!c.ok) return c;
             const rest = holds().filter(h => h.owner !== owner), exp = Date.now() + (ttl || TTL);
-            for (const [key, qty] of need(lines)) if (limit(key) !== null) rest.push({ owner, key, qty, exp });
+            for (const [key, qty] of need(lines)) if (hasLots(key) || limit(key) !== null) rest.push({ owner, key, qty, exp });
             return save(rest) ? { ok: true } : { ok: false, error: 'storage' };
           },
           release(owner) { const all = holds(); if (all.some(h => h.owner === owner)) save(all.filter(h => h.owner !== owner)); },
@@ -3195,7 +3384,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const saleKey = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
         if (!window.novaSales.list().some(x => x.id === saleKey)) { // a key already in the ledger is a duplicate commit: no second stock check, add() is a no-op
           const c = window.novaStock.check(saleKey, state.invoiceLines);
-          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast("المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
+          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast(c.expired ? "ممنوع بيع صنف منتهي الصلاحية: " + c.name + " — المتاح الصالح " + c.available : "المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
         }
         const invNumber = activeSaleNumber;
         const now = new Date();
@@ -3242,7 +3431,15 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           number: String(invNumber), at: now.toISOString(),
           customer: state.attachedCustomer ? state.attachedCustomer.name : '',
           payment: state.checkoutPaymentMethod,
-          lines: state.invoiceLines.map(l => ({ name: l.name, barcode: l.barcode || '', price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0 })),
+          lines: state.invoiceLines.map(l => {
+            const k = window.novaStock.keyOf(l);
+            const pick = window.novaStock.hasLots(k) ? window.novaStock.fefoPick(k, Number(l.qty) || 0) : null;
+            const lots = pick && pick.ok ? pick.picks.map(p => ({ lot: p.lot, expiry: p.expiry, qty: p.qty })) : undefined;
+            return {
+              name: l.name, barcode: l.barcode || '', price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0,
+              ...(lots && lots.length ? { lot: lots[0].lot, expiry: lots[0].expiry, lots } : {})
+            };
+          }),
           subtotal, discount: actualDiscount, vat: vatIncluded, total: grandTotal, received: cashRec, change: Math.max(0, cashRec - grandTotal),
           source: window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' ? 'STOCK LIVE' : 'DEMO'
         });
@@ -3718,9 +3915,10 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div>';
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div><div class="nova-setting-card"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px;font-size:14px"></div></div>';
  }
  view.innerHTML=content;
+ const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
 
  const bx=document.getElementById('novaSalesExport');if(bx)bx.onclick=()=>{const blob=new Blob([window.novaSales.exportBackup()],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-rx-sales-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
  const bi=document.getElementById('novaSalesImport'),bf=document.getElementById('novaSalesImportFile'),bm=document.getElementById('novaBackupMsg');
@@ -3855,7 +4053,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
   'دواء بدون اسم':'Unnamed medicine','مراجعة وطباعة':'Review and print','عدد النسخ':'Copies',
   'ابحث في المنتجات السابقة...':'Search past purchases...','البحث في المنتجات السابقة':'Search past purchases',
   '🔐 مفاتيح API والتكاملات':'🔐 API keys & integrations','⚙️ إدارة المفاتيح':'⚙️ Manage keys',
-  'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.'
+  'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.',
+  'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)'
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
  const arExtra={'CHECKOUT':'إتمام الدفع','NET TOTAL':'الإجمالي النهائي','F9 / Pay':'F9 / دفع','items)':'صنف)',
