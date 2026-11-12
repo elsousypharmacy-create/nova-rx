@@ -857,3 +857,7 @@ Branch `claude/buy-05-invoice-match`. New: `worker/procurement/invoice-match.js`
 - Fix on branch: capture the browser-observed contract on every renewal, block every API mutation before login, verify cart GET and buyer identity before saving. One fallback catalogue query if the first product has no quantity control. No order/cart writes, no secrets changed, no Worker deploy required. Missing config/credentials no longer report success.
 - Validation: node tests/unit/procurement-session-renewal.check.mjs PASS (guard, contract, wrong account, HTTP failure/redirect, missing shape, normal-path wiring); node --check both CJS scripts PASS. Live branch run and independent review pending; scheduled default-branch behavior is unchanged until merged.
 - Live validation of code 98a0079: branch renewal 43152097001 (inspect_cart=false) SUCCESS with cart read verified; subsequent main/live Worker cart read 43152246211 PASS for Aumet and PharmaOverseas, no mutations. Aumet checkout blocked only by supplier minimum. Procurement unit + Playwright smoke CI PASS. PR #153 awaiting independent review/merge; recurrence fix is not yet scheduled on main.
+
+
+## Checkpoint 2026-11-12 — Claude 1: BUY-05 supplier returns and credit-note match (pure, not wired)
+Branch `claude/buy-05-supplier-return`, stacked on `claude/buy-05-invoice-match` (PR #151). New: `worker/procurement/supplier-return.js`, `tests/unit/procurement-supplier-return.check.mjs`, doc section. No PR yet (3/3 implementation PRs open: #149, #150, #151). Not wired, no supplier call.
