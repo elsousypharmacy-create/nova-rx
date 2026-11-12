@@ -3552,7 +3552,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tabs=[...document.querySelectorAll('.nova-tab')];
  const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const money=n=>(Number(n)||0).toFixed(2)+' ج.م';
+ const money=n=>(Number(n)||0).toFixed(2)+(localStorage.getItem('nova-rx-language')==='en'?' EGP':' ج.م');
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
@@ -3641,6 +3641,16 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات':'Demo customer directory — real records require a database',
  'فواتير سابقة من بيانات العرض — ليست سجل مبيعات محفوظًا':'Sample invoices — not a persisted sales ledger',
  'مؤشرات توضيحية محسوبة من فواتير العملاء التجريبية فقط':'Illustrative metrics from demo customer invoices only',
+ 'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)':'This device\'s invoices first, then sample invoices (demo data)',
+ 'فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)':'Invoices saved on this device (not synced to other devices)',
+ 'لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا':'No saved invoices yet — complete a sale and it will appear here',
+ 'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض':'This device\'s sales first, then illustrative metrics from demo data',
+ 'لا توجد مبيعات محفوظة بعد — التقارير الحقيقية تظهر بعد أول عملية بيع':'No saved sales yet — real reports appear after the first sale',
+ 'الأكثر مبيعًا (من فواتير هذا الجهاز)':'Top sellers (from this device\'s invoices)',
+ 'بيانات العرض التجريبية':'Demo data',
+ 'تعذر حفظ الفاتورة على هذا الجهاز — صوّر الإيصال قبل المتابعة.':'Could not save the invoice on this device — photograph the receipt before continuing.',
+ 'فواتير محفوظة':'Saved Invoices','إجمالي المبيعات':'Total Sales','مبيعات اليوم':'Today\'s Sales','فواتير اليوم':'Today\'s Invoices','كل المبيعات المحفوظة':'All Saved Sales',
+ 'المشتريات':'Purchases','الدفع':'Payment','نقدي':'Cash','بطاقة':'Card','عميل نقدي':'Walk-in Customer',
  'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن':'Preview settings — no production permissions or sync',
  'Customer Search Mode':'وضع البحث عن عميل','Product / Barcode Scan Mode':'وضع البحث عن منتج أو باركود',
  'New Sale':'فاتورة جديدة','Clear Invoice':'مسح الفاتورة','Keyboard Shortcuts':'اختصارات الكيبورد','Held Invoices':'الفواتير المعلقة','Held':'معلقة','Hold Current Invoice':'تعليق الفاتورة الحالية','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
