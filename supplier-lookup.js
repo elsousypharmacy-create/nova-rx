@@ -187,11 +187,34 @@
     if (link) link.addEventListener('click', function () { openSuppliersScreen(); });
   }
 
+  var FORM_AR = { tab: 'أقراص', cap: 'كبسولات', sachet: 'أكياس', supp: 'لبوس', susp: 'معلق', syrup: 'شراب', drops: 'نقط', amp: 'أمبول', vial: 'فيال', cream: 'كريم', gel: 'جل', eff: 'فوار' };
+  var UNIT_AR = { tab: 'قرص', cap: 'كبسولة', sachet: 'كيس', supp: 'لبوسة', amp: 'أمبول', vial: 'فيال', ml: 'مل', drops: 'نقطة', bottle: 'زجاجة', strip: 'شريط' };
+  function extractOfferSpecs(o) {
+    o = o || {};
+    var name = String(o.productName || '');
+    var sm = name.match(/(\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?)\s*(mcg|mg|gm|g|iu|ml|%)/i);
+    var strength = o.strength ? String(o.strength) : (sm ? sm[1].replace(/\s+/g, '') + ' ' + sm[2].toLowerCase() : '');
+    var fm = name.match(/\b(tablets?|tabs?|capsules?|caps?|sachets?|supp|susp|syrup|syp|drops|amps?|vials?|cream|gel|eff)\b/i);
+    var fk = fm ? fm[1].toLowerCase().replace(/s$/, '').replace(/^tablet$/, 'tab').replace(/^capsule$/, 'cap').replace(/^syp$/, 'syrup') : '';
+    var form = o.form ? (FORM_AR[String(o.form).toLowerCase()] || String(o.form)) : (FORM_AR[fk] || '');
+    var masked = sm ? name.replace(sm[0], ' ') : name;
+    var pm = masked.match(/(\d+)\s*(tablets?|tabs?|capsules?|caps?|sachets?|supp|amps?|vials?|ml|drops|bottle|strip)\b/i);
+    var pk = pm ? pm[2].toLowerCase().replace(/s$/, '').replace(/^tablet$/, 'tab').replace(/^capsule$/, 'cap') : '';
+    var pack = o.packSize ? String(o.packSize) : (pm ? pm[1] + ' ' + (UNIT_AR[pk] || pk) : '');
+    var stamp = Date.parse(o.lastUpdated || '');
+    var date = isFinite(stamp) ? new Date(stamp).toISOString().slice(0, 10) : '';
+    return { strength: strength, form: form, packSize: pack, date: date };
+  }
+
   function rowHtml(row, showSeller, groupMode) {
     var meta = [];
     if (groupMode && showSeller && row.sellerName) meta.push('<span>' + esc(row.sellerName) + '</span>');
     if (!groupMode) meta.push('<span>' + esc(row.supplierName) + '</span>');
+    if (row.strength) meta.push('<span>' + esc(row.strength) + '</span>');
+    if (row.form) meta.push('<span>' + esc(row.form) + '</span>');
+    if (row.packSize) meta.push('<span>' + esc(row.packSize) + '</span>');
     if (row.unitPriceLabel) meta.push('<span>' + esc(row.unitPriceLabel) + '</span>');
+    if (row.date) meta.push('<span>' + esc(row.date) + '</span>');
     var tag = row.best ? '<span class="sp-tag t-best">' + tr('الأنسب') + '</span>'
       : row.eligible ? '<span class="sp-tag t-ok">' + esc(row.stockLabel) + '</span>'
       : '<span class="sp-tag t-off">' + esc(row.stockLabel) + '</span>';
@@ -227,13 +250,30 @@
     // Re-read the shared saved selection at render time too, including injected providers.
     var allowed=[];try{allowed=JSON.parse(localStorage.getItem('novaPurchasePrefsV1')||'{}').aumetSellers||[];}catch(e){}
     res=JSON.parse(JSON.stringify(res));
-    (res.results||[]).forEach(function(r){r.offers=(r.offers||[]).filter(function(row){var o=row.offer||row;return o.supplierId!=='aumet'||allowed.map(String).indexOf(String(o.sellerId))!==-1;});r.best=null;});
+    var specsByKey = {};
+    (res.results||[]).forEach(function(r){
+      r.offers=(r.offers||[]).filter(function(row){
+        var o=row.offer||row;
+        var k=String(o.supplierId||'')+'::'+String(o.sellerId==null?'':o.sellerId)+'::'+String(o.productName||'');
+        specsByKey[k]=extractOfferSpecs(o);
+        return o.supplierId!=='aumet'||allowed.map(String).indexOf(String(o.sellerId))!==-1;
+      });
+      r.best=null;
+    });
     var model = modelApi.buildLookupModel(res, { requestedQty: 1 });
+    function enrichGroups(gs) {
+      (gs || []).forEach(function (g) {
+        (g.rows || []).forEach(function (row) { Object.assign(row, specsByKey[row.key] || extractOfferSpecs(row)); });
+      });
+    }
+    enrichGroups(model.groups);
+    (model.altGroups || []).forEach(function (a) { enrichGroups(a.groups); });
     var rowsByKey = {};
     var html = groupsHtml(model.groups, rowsByKey);
     (res.suppliers || []).forEach(function (s) {
-      if (s && s.state === 'error') {
-        html += '<div class="sp-err">' + esc(s.name || s.id) + ': ' + esc(s.message || tr('تعذر الاتصال')) + '</div>';
+      if (s && (s.state === 'error' || s.state === 'expired')) {
+        var msg = s.state === 'expired' ? (s.message || tr('الجلسة انتهت، سجّل دخول المورد')) : (s.message || tr('تعذر الاتصال'));
+        html += '<div class="sp-err">' + esc(s.name || s.id) + ': ' + esc(msg) + '</div>';
       }
     });
     model.altGroups.forEach(function (alt, i) {
