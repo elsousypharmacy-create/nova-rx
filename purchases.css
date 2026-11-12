@@ -38,3 +38,4 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:10px;flex-wrap:nowrap;alig
 .primary{background:#2b6aa0;border-color:#5796c2}
 .source,td small,.cart small,.controls small{font-size:12px}
 #sourceState{font-size:12px}
+#poDialog label{display:flex;flex-direction:column;gap:6px;margin:8px 0}#poDialog textarea{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--text)}

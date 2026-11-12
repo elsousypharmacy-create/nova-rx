@@ -2,7 +2,7 @@ name: Purchasing page checks
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['purchases*', 'supplier-lookup.*', 'supplier-provider.js', 'worker/procurement/**', 'tests/*purchases*', 'tests/unit/purchases*', '.github/workflows/purchasing-checks.yml']
+    paths: ['purchase-orders.js', 'stock-ledger.js', 'purchases*', 'supplier-lookup.*', 'supplier-provider.js', 'worker/procurement/**', 'tests/*purchases*', 'tests/unit/purchases*', '.github/workflows/purchasing-checks.yml']
 permissions:
   contents: read
 jobs:
@@ -21,7 +21,9 @@ jobs:
       - run: node tests/unit/supplier-transactions.check.mjs
       - run: node tests/unit/supplier-platform.check.mjs
       - run: node tests/unit/purchases.check.mjs
+      - run: node tests/unit/purchases-shortages.check.mjs
       - run: node tests/unit/purchases-speed.check.mjs
+      - run: node tests/unit/purchases-prep.check.mjs
       - run: node tests/unit/purchases-seller-scope.check.mjs
       - run: npm install --no-save --no-package-lock playwright@1.58.2
       - run: node node_modules/playwright/cli.js install --with-deps chromium
@@ -30,6 +32,8 @@ jobs:
       - run: node tests/supplier-orders-browser.mjs
       - run: node tests/purchases-seller-search-browser.mjs
       - run: node tests/purchases-ux-browser.mjs
+      - run: node tests/unit/purchase-orders.check.mjs
+      - run: node tests/purchases-po-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

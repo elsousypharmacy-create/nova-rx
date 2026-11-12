@@ -422,6 +422,14 @@
       font-family: var(--font-mono);
     }
 
+    mark.sugg-hl {
+      background: rgba(56, 189, 248, 0.22);
+      color: #7dd3fc;
+      padding: 0 2px;
+      border-radius: 2px;
+      font-weight: inherit;
+    }
+
     /* Invoice Workspace: High Density Table */
     .table-container {
       flex: 1;
@@ -2247,16 +2255,16 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       // --- DEMO DATA REPOSITORY ---
       const DEMO_PRODUCTS = [
-        { id: "PRD001", barcode: "6281001234567", name: "كونكور 5 مجم (Concor 5mg)", generic: "Bisoprolol Fumarate", form: "30 Tabs", price: 38.50, stock: 45, category: "Chronic" },
-        { id: "PRD002", barcode: "6281001234568", name: "بانادول إكسترا (Panadol Extra)", generic: "Paracetamol 500mg + Caffeine 65mg", form: "24 Caplets", price: 12.00, stock: 120, category: "Analgesic" },
-        { id: "PRD003", barcode: "6281001234569", name: "أوجمنتين 1 جم (Augmentin 1g)", generic: "Amoxicillin / Clavulanic Acid", form: "14 Tabs", price: 64.50, stock: 28, category: "Antibiotic" },
-        { id: "PRD004", barcode: "6281001234570", name: "جلوكوفاج 500 مجم (Glucophage 500mg)", generic: "Metformin HCl", form: "50 Tabs", price: 18.25, stock: 80, category: "Chronic" },
-        { id: "PRD005", barcode: "6281001234571", name: "ليبيتور 20 مجم (Lipitor 20mg)", generic: "Atorvastatin Calcium", form: "30 Tabs", price: 92.00, stock: 35, category: "Lipid" },
-        { id: "PRD006", barcode: "6281001234572", name: "نيكسيوم 40 مجم (Nexium 40mg)", generic: "Esomeprazole Magnesium", form: "28 Tabs", price: 85.50, stock: 40, category: "GI Care" },
-        { id: "PRD007", barcode: "6281001234573", name: "أوميبرازول 20 مجم (Omeprazole 20mg)", generic: "Omeprazole", form: "14 Caps", price: 22.00, stock: 60, category: "GI Care" },
-        { id: "PRD008", barcode: "6281001234574", name: "سولبادين فوار (Solpadeine Soluble)", generic: "Paracetamol + Codeine + Caffeine", form: "24 Tabs", price: 16.50, stock: 55, category: "Analgesic" },
-        { id: "PRD009", barcode: "6281001234575", name: "فيتامين د3 50,000 وحدة (Vitamin D3)", generic: "Cholecalciferol", form: "12 Caps", price: 45.00, stock: 90, category: "Vitamins" },
-        { id: "PRD010", barcode: "6281001234576", name: "سيتريزين 10 مجم (Cetirizine 10mg)", generic: "Cetirizine Dihydrochloride", form: "20 Tabs", price: 14.75, stock: 70, category: "Antihistamine" },
+        { id: "PRD001", barcode: "6281001234567", name: "كونكور 5 مجم (Concor 5mg)", generic: "Bisoprolol Fumarate", form: "30 Tabs", price: 38.50, stock: 45, category: "Chronic", packaging: { stripsPerBox: 3, unitsPerStrip: 10 } },
+        { id: "PRD002", barcode: "6281001234568", name: "بانادول إكسترا (Panadol Extra)", generic: "Paracetamol 500mg + Caffeine 65mg", form: "24 Caplets", price: 12.00, stock: 120, category: "Analgesic", packaging: { stripsPerBox: 2, unitsPerStrip: 12 } },
+        { id: "PRD003", barcode: "6281001234569", name: "أوجمنتين 1 جم (Augmentin 1g)", generic: "Amoxicillin / Clavulanic Acid", form: "14 Tabs", price: 64.50, stock: 28, category: "Antibiotic", packaging: { stripsPerBox: 2, unitsPerStrip: 7 } },
+        { id: "PRD004", barcode: "6281001234570", name: "جلوكوفاج 500 مجم (Glucophage 500mg)", generic: "Metformin HCl", form: "50 Tabs", price: 18.25, stock: 80, category: "Chronic", packaging: { stripsPerBox: 5, unitsPerStrip: 10 } },
+        { id: "PRD005", barcode: "6281001234571", name: "ليبيتور 20 مجم (Lipitor 20mg)", generic: "Atorvastatin Calcium", form: "30 Tabs", price: 92.00, stock: 35, category: "Lipid", packaging: { stripsPerBox: 3, unitsPerStrip: 10 } },
+        { id: "PRD006", barcode: "6281001234572", name: "نيكسيوم 40 مجم (Nexium 40mg)", generic: "Esomeprazole Magnesium", form: "28 Tabs", price: 85.50, stock: 40, category: "GI Care", packaging: { stripsPerBox: 4, unitsPerStrip: 7 } },
+        { id: "PRD007", barcode: "6281001234573", name: "أوميبرازول 20 مجم (Omeprazole 20mg)", generic: "Omeprazole", form: "14 Caps", price: 22.00, stock: 60, category: "GI Care", packaging: { stripsPerBox: 2, unitsPerStrip: 7 } },
+        { id: "PRD008", barcode: "6281001234574", name: "سولبادين فوار (Solpadeine Soluble)", generic: "Paracetamol + Codeine + Caffeine", form: "24 Tabs", price: 16.50, stock: 55, category: "Analgesic", packaging: { stripsPerBox: 2, unitsPerStrip: 12 } },
+        { id: "PRD009", barcode: "6281001234575", name: "فيتامين د3 50,000 وحدة (Vitamin D3)", generic: "Cholecalciferol", form: "12 Caps", price: 45.00, stock: 90, category: "Vitamins", packaging: { stripsPerBox: 2, unitsPerStrip: 6 } },
+        { id: "PRD010", barcode: "6281001234576", name: "سيتريزين 10 مجم (Cetirizine 10mg)", generic: "Cetirizine Dihydrochloride", form: "20 Tabs", price: 14.75, stock: 70, category: "Antihistamine", packaging: { stripsPerBox: 2, unitsPerStrip: 10 } },
         { id: "PRD011", barcode: "6281001234577", name: "فولتارين جل 50 جم (Voltaren Emulgel)", generic: "Diclofenac Diethylamine", form: "50g Tube", price: 26.00, stock: 32, category: "Topical" },
         { id: "PRD012", barcode: "6281001234578", name: "بخاخ أوتريفين 0.1% (Otrivin Nasal)", generic: "Xylometazoline HCl", form: "10ml Spray", price: 11.50, stock: 50, category: "ENT" }
       ];
@@ -2375,19 +2383,208 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       // --- REAL PRICE LIST (read-only STOCK LIVE snapshot, prices only) ---
       // Same-origin `/emergency/stock.json`. If it is missing (file://, offline, 404, bad data) the 12 demo products stay.
       const escH = s => String(s ?? "").replace(/[&<>"'`]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "`": "&#96;" }[c]));
-      const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
-      const foldKey = s => String(s ?? "").toLowerCase()
-        .replace(/[٠-٩]/g, d => String(AR_DIGITS.indexOf(d)))
-        .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
+      const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩", FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+      const normDigits = s => String(s ?? "").replace(/[٠-٩۰-۹]/g, d => { const i = AR_DIGITS.indexOf(d); return String(i >= 0 ? i : FA_DIGITS.indexOf(d)); });
+      const foldKey = s => normDigits(s).toLowerCase()
+        .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
         .replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي")
+        .replace(/ؤ/g, "و").replace(/ئ/g, "ي").replace(/ء/g, "")
         .replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
-      const productKey = p => p._k || (p._k = foldKey(p.name + " " + p.generic));
-      const searchProducts = q => {
-        const tokens = foldKey(q).split(" ").filter(Boolean);
-        if (!tokens.length) return [];
-        return DEMO_PRODUCTS.filter(p => p.barcode.includes(q) || tokens.every(t => productKey(p).includes(t)));
+      const splitToks = s => foldKey(s).replace(/(\p{L})(\p{N})/gu, "$1 $2").replace(/(\p{N})(\p{L})/gu, "$1 $2").split(" ").filter(Boolean);
+      const NUM_RE = /^\d+$/;
+      const normCode = s => normDigits(s).replace(/[\s-]+/g, "");
+      const STRENGTH_RE = /(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?\s*(?:mg|g|mcg|ug|ml|iu|%|مجم|مج|ملجم|جم|جرام|مكج|مل|وحدة|وحده))(?![\p{L}])/iu;
+      const PACK_RE = /(\d+\s*(?:tab(?:let)?s?|cap(?:let|sule)?s?|amp(?:oule)?s?|sachets?|strips?|vials?|bottles?|drops?|spra?y|tube|قرص|أقراص|اقراص|حبة|حبه|كبسولة|كبسوله|امبول|أمبول|شريط|كيس|عبوة|علبة|علبه|وحدة|وحده))(?![\p{L}])/iu;
+      const extractStrength = p => {
+        if (!p) return "";
+        if (p.strength) return String(p.strength);
+        const m = String(p.name || p.nameAr || p.nameEn || "").match(STRENGTH_RE) || String(p.generic || p.activeIngredient || "").match(STRENGTH_RE);
+        return m ? m[1].trim() : "";
+      };
+      const extractPack = p => {
+        if (!p) return "";
+        if (p.pack) return String(p.pack);
+        if (p.form) return String(p.form);
+        if (p.packaging && window.novaPackagingLabel) { const lbl = window.novaPackagingLabel(p.packaging); if (lbl) return lbl; }
+        if (Number.isInteger(p.packSize) && p.packSize > 1) return p.packSize + " Tabs";
+        const m = String(p.name || p.nameAr || p.nameEn || "").match(PACK_RE);
+        return m ? m[1].trim() : "";
+      };
+      // Optimal string alignment distance (insert, delete, replace, adjacent swap), bounded by max.
+      const editDist = (a, b, max) => {
+        if (Math.abs(a.length - b.length) > max) return max + 1;
+        let prev2 = null, prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+        for (let i = 1; i <= a.length; i++) {
+          const cur = [i]; let rowMin = i;
+          for (let j = 1; j <= b.length; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+            if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+            cur[j] = v; if (v < rowMin) rowMin = v;
+          }
+          if (rowMin > max) return max + 1;
+          prev2 = prev; prev = cur;
+        }
+        return prev[b.length];
+      };
+      // CAT-05 instant search index: Arabic folding, Latin names, 1-2 edit typos, whole-number strength/pack, exact barcode.
+      const createCatalogIndex = list => {
+        const products = Array.isArray(list) ? list : [];
+        const postings = new Map(), barcodes = new Map(), codes = new Map(), byLength = new Map(), meta = [], bList = [];
+        products.forEach((p, i) => {
+          if (!p.name && (p.nameAr || p.nameEn)) p.name = p.nameAr && p.nameEn ? p.nameAr + " (" + p.nameEn + ")" : (p.nameAr || p.nameEn);
+          if (!p.barcode && (p.gtin || (p.barcodes && p.barcodes[0]) || p.code)) p.barcode = String(p.gtin || (p.barcodes && p.barcodes[0]) || p.code);
+          const str = extractStrength(p), pk = extractPack(p);
+          const text = [p.name, p.nameAr, p.nameEn, p.generic, p.activeIngredient, str, pk, p.category].filter(Boolean).join(" ");
+          const toks = new Set(splitToks(text));
+          const strengthNums = new Set(splitToks(str).filter(t => NUM_RE.test(t)));
+          const packNums = new Set(splitToks(pk).filter(t => NUM_RE.test(t)));
+          for (const n of strengthNums) toks.add(n);
+          for (const n of packNums) toks.add(n);
+          for (const t of toks) { let a = postings.get(t); if (!a) { a = []; postings.set(t, a); } a.push(i); }
+          for (const rawB of [p.barcode, p.gtin, ...(Array.isArray(p.barcodes) ? p.barcodes : [])].filter(Boolean)) {
+            const nb = normCode(rawB);
+            if (nb) { if (!barcodes.has(nb)) barcodes.set(nb, i); bList.push([nb, i]); }
+          }
+          const cid = normCode(p.id || p.code || "").toLowerCase();
+          if (cid && !codes.has(cid)) codes.set(cid, i);
+          meta.push({ str, pk, strengthNums, packNums, fName: foldKey([p.name, p.nameAr, p.nameEn].filter(Boolean).join(" ")), active: p.active !== false });
+        });
+        const sorted = [...postings.keys()].sort();
+        for (const t of sorted) if (!NUM_RE.test(t)) { let a = byLength.get(t.length); if (!a) { a = []; byLength.set(t.length, a); } a.push(t); }
+        const lowerBound = t => { let lo = 0, hi = sorted.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (sorted[mid] < t) lo = mid + 1; else hi = mid; } return lo; };
+        const matchWord = (t, singleWord) => {
+          const best = new Map(), give = (tok, sc) => { for (const i of postings.get(tok)) if (!(best.get(i) >= sc)) best.set(i, sc); };
+          if (postings.has(t)) give(t, 10);
+          if (NUM_RE.test(t)) {
+            if (singleWord && t.length >= 3 && t.length <= 7) for (const [nb, i] of bList) if (nb.includes(t) && !(best.get(i) >= 2)) best.set(i, 2);
+            return best;
+          }
+          const minPref = singleWord ? 1 : 2;
+          if (t.length >= minPref) {
+            const sc = t.length >= 3 ? 7 : 4;
+            for (let k = lowerBound(t); k < sorted.length && sorted[k].startsWith(t); k++) if (sorted[k] !== t && !NUM_RE.test(sorted[k])) give(sorted[k], sc);
+          }
+          if (best.size === 0 && t.length >= 4) {
+            const maxScan = t.length >= 7 ? 2 : 1;
+            for (let len = t.length - maxScan; len <= t.length + maxScan; len++) {
+              const maxd = (t.length >= 8 || (t.length >= 7 && len >= 9)) ? 2 : 1;
+              for (const tok of byLength.get(len) || []) { const d = editDist(t, tok, maxd); if (d <= maxd) give(tok, 4 - d); }
+            }
+          }
+          return best;
+        };
+        const search = (query, limit = 40) => {
+          if (typeof query !== "string") return [];
+          const q = query.slice(0, 200).trim();
+          if (!q) return [];
+          const nq = normCode(q);
+          if (nq.length >= 5 && (barcodes.has(nq) || codes.has(nq.toLowerCase()))) {
+            const out = [], seen = new Set();
+            if (barcodes.has(nq)) { const i = barcodes.get(nq); seen.add(i); out.push(products[i]); }
+            if (codes.has(nq.toLowerCase())) { const i = codes.get(nq.toLowerCase()); if (!seen.has(i)) out.push(products[i]); }
+            return out.slice(0, limit);
+          }
+          if (/^\d{8,14}$/.test(nq)) return [];
+          const words = [...new Set(splitToks(q))].slice(0, 8);
+          if (!words.length) return [];
+          let scores = null;
+          for (const w of words) {
+            const m = matchWord(w, words.length === 1);
+            if (!m.size) return [];
+            if (scores === null) { scores = new Map(m); continue; }
+            const next = new Map();
+            for (const [i, s] of scores) if (m.has(i)) next.set(i, s + m.get(i));
+            scores = next;
+            if (!scores.size) return [];
+          }
+          const phrase = words.join(" "), ranked = [];
+          for (const [i, base] of scores) {
+            const m = meta[i]; let sc = base;
+            if (m.fName.includes(phrase)) sc += 6;
+            if (m.fName.startsWith(phrase)) sc += 3;
+            for (const w of words) if (NUM_RE.test(w)) { if (m.strengthNums.has(w)) sc += 3; if (m.packNums.has(w)) sc += 2; }
+            if (!m.active) sc -= 1000;
+            ranked.push({ p: products[i], sc, i });
+          }
+          ranked.sort((a, b) => b.sc - a.sc || a.i - b.i);
+          return ranked.slice(0, limit).map(x => x.p);
+        };
+        return { search, products, len: products.length, first: products[0], last: products[products.length - 1] };
+      };
+      let activeSearchIdx = null;
+      const getSearchIndex = () => {
+        const list = (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) ? window.NOVA_DEMO.products : DEMO_PRODUCTS;
+        if (!activeSearchIdx || activeSearchIdx.products !== list || activeSearchIdx.len !== list.length || activeSearchIdx.first !== list[0] || activeSearchIdx.last !== list[list.length - 1]) {
+          activeSearchIdx = createCatalogIndex(list);
+        }
+        return activeSearchIdx;
+      };
+      window.addEventListener("nova-catalog", () => { activeSearchIdx = null; });
+      const searchProducts = (q, limit = 40) => getSearchIndex().search(q, limit);
+      const findExactBarcodeProduct = q => {
+        const raw = String(q ?? "").trim(), nq = normCode(raw);
+        if (!raw) return null;
+        const list = (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) ? window.NOVA_DEMO.products : DEMO_PRODUCTS;
+        return list.find(p => p.barcode === raw || (nq && (normCode(p.barcode) === nq || (p.gtin && normCode(p.gtin) === nq) || (Array.isArray(p.barcodes) && p.barcodes.some(b => normCode(b) === nq))))) || null;
+      };
+      const UNIT_ALIAS = { mg: "مجم", مجم: "mg", مج: "mg", ملجم: "mg", g: "جم", جم: "g", جرام: "g", ml: "مل", مل: "ml", tab: "قرص", tabs: "قرص", قرص: "tabs", اقراص: "tabs", حبه: "tabs" };
+      const highlightText = (text, query) => {
+        const str = String(text ?? "");
+        const qWords = splitToks(query);
+        const nq = normCode(query);
+        if (!str || (!qWords.length && !nq)) return escH(str);
+        return str.split(/([\p{L}\p{N}]+)/gu).map(part => {
+          if (!part || !/[\p{L}\p{N}]/u.test(part)) return escH(part);
+          const pToks = splitToks(part), pCode = normCode(part);
+          const hit = (nq.length >= 4 && pCode.length >= 4 && pCode.includes(nq)) || pToks.some(pt => qWords.some(qt => {
+            if (pt === qt || UNIT_ALIAS[pt] === qt) return true;
+            if (NUM_RE.test(qt) || NUM_RE.test(pt)) return false;
+            if (qt.length >= 2 && pt.startsWith(qt)) return true;
+            if (qt.length >= 4 && pt.length >= 3) { const md = (qt.length >= 8 || (qt.length >= 7 && pt.length >= 9)) ? 2 : 1; return editDist(qt, pt, md) <= md; }
+            return false;
+          }));
+          return hit ? `<mark class="sugg-hl">${escH(part)}</mark>` : escH(part);
+        }).join("");
+      };
+      window.novaSearch = {
+        search: searchProducts,
+        createIndex: createCatalogIndex,
+        highlight: highlightText,
+        extractStrength,
+        extractPack,
+        rebuild: () => { activeSearchIdx = null; return getSearchIndex(); },
+        benchmark: (count = 5000) => {
+          const arBase = ["بانادول", "أوجمنتين", "كونكور", "جافيسكون", "أوميبرازول", "زيرتك", "فولتارين", "ليبيتور", "جلوكوفاج", "أسبرين", "إيبوبروفين", "سيتريزين"];
+          const enBase = ["Panadol", "Augmentin", "Concor", "Gaviscon", "Omeprazole", "Zyrtec", "Voltaren", "Lipitor", "Glucophage", "Aspirin", "Ibuprofen", "Cetirizine"];
+          const strengths = ["5 مجم", "10 مجم", "20 مجم", "40 مجم", "100 مجم", "250 مجم", "500 مجم", "1000 مجم"];
+          const packs = ["10 أقراص", "14 كبسولة", "20 قرص", "24 قرص", "30 قرص", "50 قرص"];
+          const mock = Array.from({ length: count }, (_, i) => {
+            const ar = arBase[i % arBase.length], en = enBase[i % enBase.length], st = strengths[i % strengths.length], pk = packs[i % packs.length];
+            const bc = String(6221000000000 + i);
+            return { id: "M" + (10000 + i), barcode: bc, name: `${ar} ${i} ${st} (${en} ${st})`, strength: st, pack: pk, form: pk, generic: en + " Active", price: 15 + (i % 90) };
+          });
+          const t0 = performance.now(), idx = createCatalogIndex(mock), buildMs = performance.now() - t0;
+          const queries = Array.from({ length: 200 }, (_, k) => [
+            "اوجمنتين 500", "بانادول 24", "panadool 500", "concor 10", "أسبيرين", "كبسوله 14", String(6221000000000 + (k * 17) % count), "gavsicon 250"
+          ][k % 8]);
+          queries.slice(0, 16).forEach(q => idx.search(q, 40));
+          const times = queries.map(q => { const a = performance.now(); idx.search(q, 40); return performance.now() - a; }).sort((a, b) => a - b);
+          const p50Ms = times[Math.floor(times.length * 0.5)], p95Ms = times[Math.floor(times.length * 0.95)], maxMs = times[times.length - 1];
+          return { catalogSize: idx.len, queries: queries.length, buildMs, p50Ms, p95Ms, maxMs, pass: p95Ms <= 150 };
+        }
       };
       window.novaFold = foldKey;
+      // CAT-01 (this device only): flag likely duplicates for pharmacist review. Same non-empty barcode, or same normalized name (strength glued to its unit) + same pack text. Read-only: never merges or edits anything.
+      window.novaDuplicates = list => {
+        const nk = p => foldKey(p.name).replace(/(\d) (mg|mcg|g|ml|iu|gm)\b/g, "$1$2");
+        const by = (kind, keyOf) => {
+          const m = new Map();
+          for (const p of list || []) { const k = keyOf(p); if (!k) continue; (m.get(k) || m.set(k, []).get(k)).push(p); }
+          return [...m].filter(e => e[1].length > 1).map(e => ({ reason: kind, key: e[0], items: e[1] }));
+        };
+        return by("barcode", p => String(p.barcode == null ? "" : p.barcode).replace(/\s/g, "")).concat(by("name", p => { const n = nk(p); return n ? n + "|" + foldKey(p.pack || "") : ""; }));
+      };
       // Read-only packaging text from the catalog packaging link (same field names/rules as worker/catalog/unit-conversion.js). Invalid or missing -> "" (shown as a dash), never a guess.
       window.novaPackagingLabel = def => {
         if (!def || typeof def !== "object") return "";
@@ -2402,6 +2599,72 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (box && bc) parts.push("الكرتونة " + bc + " علبة");
         return parts.join(" • ");
       };
+      // CAT-02 (this device only): per-item unit conversions (box/strip/tablet). Selling in a smaller unit deducts the exact fraction from box stock; unknown or unavailable conversions are refused.
+      window.novaUnits = (function () {
+        const PK = "nova-rx-packaging-v1", clean = x => Math.round(x * 1e9) / 1e9;
+        const UNITS = { box: "box", pack: "box", "علبة": "box", strip: "strip", "شريط": "strip", tablet: "tablet", unit: "tablet", piece: "tablet", cap: "tablet", capsule: "tablet", "قرص": "tablet", "وحدة": "tablet", "حبة": "tablet", "كبسولة": "tablet" };
+        const LABELS = { box: { ar: "علبة", en: "Box" }, strip: { ar: "شريط", en: "Strip" }, tablet: { ar: "قرص", en: "Tablet" } };
+        const canonicalUnit = u => (typeof u === "string" ? UNITS[u.trim().toLowerCase()] || null : null);
+        const posInt = v => { const x = typeof v === "string" && /^\d+$/.test(v.trim()) ? Number(v.trim()) : v; return Number.isInteger(x) && x > 0 && x <= 100000 ? x : undefined; };
+        const validatePackaging = def => {
+          if (def === undefined || def === null) return { ok: true, packaging: null, perBox: { box: 1 } };
+          if (typeof def !== "object" || Array.isArray(def)) return { ok: false, error: "packaging-invalid" };
+          const rawUs = def.unitsPerStrip ?? def.tabletsPerStrip, rawSb = def.stripsPerBox, rawUb = def.unitsPerBox;
+          const us = posInt(rawUs), sb = posInt(rawSb), ub = posInt(rawUb);
+          for (const [r, v] of [[rawUs, us], [rawSb, sb], [rawUb, ub]]) if (r !== undefined && r !== null && v === undefined) return { ok: false, error: "packaging-invalid" };
+          if (us && sb && ub && us * sb !== ub) return { ok: false, error: "packaging-inconsistent" };
+          const perBox = { box: 1 };
+          if (sb) perBox.strip = sb;
+          const tabs = ub || (us && sb ? us * sb : undefined);
+          if (tabs) perBox.tablet = tabs;
+          const packaging = (us || sb || ub) ? { ...(sb ? { stripsPerBox: sb } : {}), ...(us ? { unitsPerStrip: us } : {}), ...(tabs ? { unitsPerBox: tabs } : {}) } : null;
+          return { ok: true, packaging, perBox };
+        };
+        const readStore = () => { try { const o = JSON.parse(localStorage.getItem(PK) || "{}"); return o && typeof o === "object" && !Array.isArray(o) ? o : {}; } catch (_) { return {}; } };
+        const findProd = item => {
+          if (!item) return null;
+          if (typeof item === "object") return DEMO_PRODUCTS.find(p => p.id === item.productId || p.id === item.id || (item.barcode && p.barcode === item.barcode)) || item;
+          const k = String(item); return DEMO_PRODUCTS.find(p => p.id === k || p.barcode === k || p.name === k) || null;
+        };
+        const getPackaging = item => {
+          const store = readStore(), p = findProd(item);
+          const keys = [typeof item === "string" ? item : null, item && item.productId, item && item.id, item && item.barcode, p && p.id, p && p.barcode].filter(Boolean);
+          for (const k of keys) if (store[k] !== undefined) return store[k];
+          return (item && item.packaging) || (p && p.packaging) || null;
+        };
+        const setPackaging = (item, def) => {
+          const v = validatePackaging(def); if (!v.ok) return v;
+          const p = findProd(item), key = typeof item === "string" ? item : (p && (p.barcode || p.id)) || (item && (item.barcode || item.productId || item.id));
+          if (!key) return { ok: false, error: "item-unknown" };
+          const store = readStore();
+          if (v.packaging) store[key] = v.packaging; else delete store[key];
+          if (p) { if (v.packaging) { store[p.id] = v.packaging; store[p.barcode] = v.packaging; } p.packaging = v.packaging; p.pack = v.packaging && window.novaPackagingLabel ? window.novaPackagingLabel(v.packaging) : ""; }
+          try { localStorage.setItem(PK, JSON.stringify(store)); } catch (_) { return { ok: false, error: "storage" }; }
+          return { ok: true, packaging: v.packaging, perBox: v.perBox };
+        };
+        const availableUnits = item => {
+          const v = validatePackaging(getPackaging(item));
+          if (!v.ok) return ["box"];
+          return ["box", ...(v.perBox.strip ? ["strip"] : []), ...(v.perBox.tablet ? ["tablet"] : [])];
+        };
+        const convert = (item, qty, unit = "box") => {
+          const canon = canonicalUnit(unit);
+          if (!canon) return { ok: false, error: "unit-unknown" };
+          const q = typeof qty === "number" ? qty : (typeof qty === "string" && /^\d+$/.test(qty.trim()) ? Number(qty.trim()) : NaN);
+          if (!Number.isSafeInteger(q) || q <= 0) return { ok: false, error: "quantity-invalid" };
+          const v = validatePackaging(getPackaging(item));
+          if (!v.ok) return v;
+          const factor = v.perBox[canon];
+          if (!factor) return { ok: false, error: "unit-unavailable" };
+          const p = findProd(item), boxPrice = Number((item && item.boxPrice !== undefined ? item.boxPrice : (p && p.price !== undefined ? p.price : item && item.price)) ?? 0);
+          const cents = Math.round(boxPrice * 100);
+          const unitPrice = Math.floor((2 * cents + factor) / (2 * factor)) / 100;
+          const lineTotal = Math.floor((2 * cents * q + factor) / (2 * factor)) / 100;
+          return { ok: true, unit: canon, qty: q, perBox: factor, stockFraction: clean(q / factor), unitPrice, lineTotal };
+        };
+        const label = (u, lang) => { const c = canonicalUnit(u) || "box"; const l = lang || (localStorage.getItem("nova-rx-language") === "en" ? "en" : "ar"); return LABELS[c][l]; };
+        return { canonicalUnit, validatePackaging, getPackaging, setPackaging, availableUnits, convert, label };
+      })();
       window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
       function loadRealPrices() {
         if (location.protocol === "file:") return;
@@ -2418,7 +2681,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             const price = Number(r.price);
             if ((!code && !gtin) || !(nameAr || nameEn) || !Number.isFinite(price) || price <= 0 || seen.has(code || gtin)) continue;
             seen.add(code || gtin);
-            const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
+            const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, packaging: pk ? r.packaging : null, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
           }
           if (out.length < 50) return; // an almost empty file is not a catalog: keep the demo data
           DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
@@ -2599,8 +2862,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         state.searchQuery = query;
 
         // Check if user is typing or scanning a product barcode directly in Customer Mode
-        if (state.mode === "CUSTOMER" && query.length >= 6) {
-          const matchedByBarcode = DEMO_PRODUCTS.find(p => p.barcode === query);
+        if (state.mode === "CUSTOMER" && query.length >= 5) {
+          const matchedByBarcode = findExactBarcodeProduct(query);
           if (matchedByBarcode) {
             // Immediate match on valid product barcode! Add and switch mode.
             addProductToInvoice(matchedByBarcode);
@@ -2660,25 +2923,34 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (matches.length === 0) {
           elements.suggestionsBox.innerHTML = `
             <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
-              No products found matching "${state.searchQuery}".
+              No products found matching "${escH(state.searchQuery)}".
             </div>
           `;
           elements.suggestionsBox.classList.add("open");
           return;
         }
 
-        elements.suggestionsBox.innerHTML = matches.map((prod, idx) => `
+        const q = state.searchQuery;
+        elements.suggestionsBox.innerHTML = matches.map((prod, idx) => {
+          const str = extractStrength(prod), pk = extractPack(prod), gen = prod.generic || prod.activeIngredient || "";
+          const sub = [
+            gen ? `<span class="sugg-generic">${highlightText(gen, q)}</span>` : "",
+            str ? `<span class="sugg-strength" data-hl="strength">${highlightText(str, q)}</span>` : "",
+            pk && pk !== str ? `<span class="sugg-pack" data-hl="pack">${highlightText(pk, q)}</span>` : ""
+          ].filter(Boolean).join(" • ");
+          return `
           <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
             <div>
-              <div class="sugg-primary" dir="auto">${escH(prod.name)}</div>
-              <div class="sugg-sub">${escH(prod.generic)}${prod.generic && prod.form ? " • " : ""}${escH(prod.form)}</div>
+              <div class="sugg-primary" dir="auto" data-hl="name">${highlightText(prod.name, q)}</div>
+              <div class="sugg-sub">${sub}</div>
             </div>
             <div class="sugg-meta">
-              <div class="sugg-price">${prod.price.toFixed(2)} EGP</div>
-              <span class="sugg-tag">${escH(prod.barcode)}</span>
+              <div class="sugg-price">${Number(prod.price || 0).toFixed(2)} EGP</div>
+              <span class="sugg-tag" data-hl="barcode">${highlightText(prod.barcode, q)}</span>
             </div>
           </div>
-        `).join("");
+        `;
+        }).join("");
         elements.suggestionsBox.classList.add("open");
       }
 
@@ -2717,7 +2989,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
           // In Customer Mode with query: check exact barcode first (Requirement D)
           if (state.mode === "CUSTOMER") {
-            const barcodeMatch = DEMO_PRODUCTS.find(p => p.barcode === query);
+            const barcodeMatch = findExactBarcodeProduct(query);
             if (barcodeMatch) {
               addProductToInvoice(barcodeMatch);
               setSearchMode("PRODUCT");
@@ -2738,7 +3010,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
           // In Product Mode with query: check exact barcode match first
           if (state.mode === "PRODUCT") {
-            const exactBarcode = DEMO_PRODUCTS.find(p => p.barcode === query);
+            const exactBarcode = findExactBarcodeProduct(query);
             if (exactBarcode) {
               addProductToInvoice(exactBarcode);
               elements.mainSearchInput.value = "";
@@ -2863,8 +3135,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       // --- INVOICE LINE ITEMS & RECALCULATION ---
-      function addProductToInvoice(product) {
-        const existingLine = state.invoiceLines.find(line => line.productId === product.id);
+      function addProductToInvoice(product, unit = "box") {
+        const conv = window.novaUnits.convert(product, 1, unit);
+        if (!conv.ok) {
+          showToast("تحويل الوحدة غير متاح لهذا الصنف", "error");
+          return conv;
+        }
+        const existingLine = state.invoiceLines.find(line => line.productId === product.id && (line.unit || "box") === conv.unit);
         if (existingLine) {
           existingLine.qty += 1;
         } else {
@@ -2874,28 +3151,53 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             generic: product.generic,
             barcode: product.barcode,
             form: product.form,
-            price: product.price, // Always current demo price
+            unit: conv.unit,
+            unitFactor: conv.perBox,
+            boxPrice: product.price,
+            price: conv.unitPrice, // Unit price for the selected sale unit
             qty: 1,
             discount: 0
           });
         }
+        if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
         renderInvoice();
         const k = window.novaStock && window.novaStock.keyOf(product);
         if (k && window.novaStock.hasLots(k)) {
           const line = state.invoiceLines.find(l => l.productId === product.id);
-          const pick = line && window.novaStock.fefoPick(k, line.qty);
+          const pick = line && window.novaStock.fefoPick(k, window.novaStock.boxQty(line));
           if (pick && !pick.ok && pick.reason === "expired") {
             showToast("ممنوع بيع صنف منتهي الصلاحية: " + escH(product.name) + " — المتاح الصالح " + pick.available, "error");
-            return;
+            return conv;
           }
           if (pick && pick.ok && pick.hasNearExpiry) {
             const w = pick.nearExpiry[0];
             showToast("تنبيه قرب انتهاء الصلاحية: " + escH(product.name) + " — تشغيلة " + escH(w.lot) + " (" + w.daysLeft + " يوم)");
-            return;
+            return conv;
           }
         }
         showToast(`Added to invoice: ${escH(product.name)}`);
+        return conv;
       }
+
+      function updateLineUnit(productId, newUnit) {
+        const line = state.invoiceLines.find(l => l.productId === productId);
+        if (!line) return { ok: false, error: "line-not-found" };
+        const prod = DEMO_PRODUCTS.find(p => p.id === productId || p.barcode === line.barcode) || line;
+        const conv = window.novaUnits.convert(prod, line.qty, newUnit);
+        if (!conv.ok) {
+          renderInvoice();
+          showToast("تحويل الوحدة غير متاح لهذا الصنف", "error");
+          return conv;
+        }
+        line.unit = conv.unit;
+        line.unitFactor = conv.perBox;
+        if (line.boxPrice === undefined && prod.price !== undefined) line.boxPrice = prod.price;
+        line.price = conv.unitPrice;
+        if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
+        renderInvoice();
+        return conv;
+      }
+      window.novaUnits.setLineUnit = updateLineUnit;
 
       function updateLineQty(productId, newQty) {
         const line = state.invoiceLines.find(l => l.productId === productId);
@@ -2917,10 +3219,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           removeLine(productId);
         } else {
           line.qty = q;
+          if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
           renderInvoice();
           const k = window.novaStock && window.novaStock.keyOf(line);
           if (k && window.novaStock.hasLots(k)) {
-            const pick = window.novaStock.fefoPick(k, line.qty);
+            const pick = window.novaStock.fefoPick(k, window.novaStock.boxQty(line));
             if (!pick.ok && pick.reason === "expired") {
               showToast("ممنوع بيع صنف منتهي الصلاحية: " + escH(line.name) + " — المتاح الصالح " + pick.available, "error");
             } else if (pick.ok && pick.hasNearExpiry) {
@@ -2962,7 +3265,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             const lineTotal = Math.max(0, (line.price * line.qty) - line.discount);
             let lotHtml = "";
             if (window.novaStock && window.novaStock.hasLots(window.novaStock.keyOf(line))) {
-              const pick = window.novaStock.fefoPick(window.novaStock.keyOf(line), line.qty);
+              const pick = window.novaStock.fefoPick(window.novaStock.keyOf(line), window.novaStock.boxQty(line));
               if (pick.ok) {
                 line._lots = pick.picks; line.lot = pick.lot; line.expiry = pick.expiry;
                 const lotSummary = pick.picks.map(p => `${escH(p.lot)} (${escH(p.expiry)}${pick.picks.length > 1 ? " ×" + p.qty : ""})`).join("، ");
@@ -2978,6 +3281,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
                 }
               }
             }
+            const prod = DEMO_PRODUCTS.find(p => p.id === line.productId || p.barcode === line.barcode) || line;
+            const units = window.novaUnits.availableUnits(prod);
+            const curUnit = line.unit || "box";
             return `
               <tr data-id="${line.productId}">
                 <td class="col-idx">${idx + 1}</td>
@@ -2993,6 +3299,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
                     <button class="qty-btn" data-act="dec" data-id="${line.productId}">−</button>
                     <input type="text" class="qty-input" data-id="${line.productId}" value="${line.qty}">
                     <button class="qty-btn" data-act="inc" data-id="${line.productId}">+</button>
+                    <select class="unit-select" data-id="${line.productId}" style="min-height:44px;background:#0f172a;color:#f8fafc;border:1px solid #334155;border-radius:6px;padding:0 6px;font-size:12px;">
+                      ${units.map(u => `<option value="${u}" ${curUnit === u ? "selected" : ""}>${window.novaUnits.label(u)}</option>`).join("")}
+                    </select>
                   </div>
                 </td>
                 <td class="col-disc" style="color:var(--text-dim);">${line.discount.toFixed(2)}</td>
@@ -3086,7 +3395,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (!state.checkoutReserved) { // INV-03: hold the units for 2 minutes before the payment window opens
           const key = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
           window.novaStock.withLock(() => window.novaStock.reserve(key, state.invoiceLines)).then(r => {
-            if (!r.ok) { showToast(r.error ? "تعذر حجز المخزون" : r.expired ? "ممنوع بيع صنف منتهي الصلاحية: " + r.name + " — المتاح الصالح " + r.available : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
+            if (!r.ok) { showToast(r.error === "storage" ? "تعذر حجز المخزون" : r.expired ? "ممنوع بيع صنف منتهي الصلاحية: " + r.name + " — المتاح الصالح " + r.available : r.error ? "تحويل الوحدة غير متاح: " + (r.name || "") : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
             state.checkoutReserved = true; openCheckout();
           });
           return;
@@ -3193,10 +3502,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         };
       })();
 
-      // INV-02 + INV-03 (this device only): lot/expiry tracking, FEFO picking, block expired by default, configurable near-expiry warning (default 90 days),
-      // and reservation holds so the last unit cannot sell twice. Untracked STOCK LIVE rows (stock null and no lots) remain unrestricted.
+      // INV-02 + INV-03 + CAT-02 (this device only): lot/expiry tracking, FEFO picking, block expired by default, configurable near-expiry warning (default 90 days),
+      // reservation holds so the last unit cannot sell twice, and unit conversion (strip/tablet deduct a fraction of a box). Untracked rows stay unrestricted.
       window.novaStock = (function () {
-        const HK = 'nova-rx-holds-v1', LK = 'nova-rx-lots-v1', WK = 'nova-rx-near-expiry-days-v1', BK = 'nova-rx-block-expired-v1';
+        const HK = 'nova-rx-holds-v1', EPS = 1e-7, clean = x => Math.round(x * 1e9) / 1e9, LK = 'nova-rx-lots-v1', WK = 'nova-rx-near-expiry-days-v1', BK = 'nova-rx-block-expired-v1';
         const TTL = 120000, DEFAULT_WARN_DAYS = 90;
         const keyOf = l => typeof l === 'string' ? l : String((l && (l.key || l.barcode || l.name)) || '');
         const validDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || '')) && !Number.isNaN(Date.parse(s + 'T00:00:00Z'));
@@ -3247,7 +3556,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             const rq = window.novaSales.returnedQty(s.id);
             s.lines.forEach((l, i) => {
               if (keyOf(l) !== k) return;
-              let net = Math.max(0, (Number(l.qty) || 0) - (rq[i] || 0));
+              const nq = Math.max(0, (Number(l.qty) || 0) - (rq[i] || 0)), uf = Number(l.unitFactor) > 0 ? Number(l.unitFactor) : 1;
+              let net = clean(uf > 1 ? nq / uf : nq); // box units
               if (net <= 0) return;
               if (Array.isArray(l.lots) && l.lots.length) {
                 for (const al of l.lots) {
@@ -3274,7 +3584,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           const sellable = all.filter(l => l.onHand > 0 && (allowExp || !l.expired));
           const expiredQty = all.filter(l => l.expired && l.onHand > 0).reduce((s, l) => s + l.onHand, 0);
           const available = sellable.reduce((s, l) => s + l.onHand, 0);
-          if (!Number.isInteger(q) || q <= 0) return { ok: false, reason: 'invalid', expired: false, available, expiredQty, picks: [], nearExpiry: [], hasNearExpiry: false };
+          if (!Number.isFinite(q) || q <= 0) return { ok: false, reason: 'invalid', expired: false, available, expiredQty, picks: [], nearExpiry: [], hasNearExpiry: false };
           if (q > available) {
             const reason = !allowExp && expiredQty > 0 ? 'expired' : 'insufficient';
             return { ok: false, reason, expired: reason === 'expired', available, expiredQty, picks: [], nearExpiry: [], hasNearExpiry: false };
@@ -3282,7 +3592,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           let rem = q; const picks = [];
           for (const l of sellable) {
             if (rem <= 0) break;
-            const take = Math.min(l.onHand, rem); rem -= take;
+            const take = clean(Math.min(l.onHand, rem)); rem = clean(rem - take);
             picks.push({ lot: l.lot, expiry: l.expiry, qty: take, daysLeft: l.daysLeft, nearExpiry: l.nearExpiry, expired: l.expired, cost: l.cost, location: l.location });
           }
           const nearExpiry = picks.filter(p => p.nearExpiry);
@@ -3323,26 +3633,59 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           return ok;
         };
         const holds = () => { try { const a = JSON.parse(localStorage.getItem(HK) || '[]'); const t = Date.now(); return Array.isArray(a) ? a.filter(h => h && h.exp > t) : []; } catch (_) { return []; } };
-        const limit = key => { const p = DEMO_PRODUCTS.find(x => (x.barcode || x.name) === key); return p && Number.isFinite(p.stock) ? p.stock : null; };
-        const sold = key => { let n = 0; window.novaSales.list().forEach(s => { const rq = window.novaSales.returnedQty(s.id); s.lines.forEach((l, i) => { if (keyOf(l) === key) n += l.qty - (rq[i] || 0); }); }); return n; };
-        const need = lines => { const m = new Map(); lines.forEach(l => m.set(keyOf(l), (m.get(keyOf(l)) || 0) + (Number(l.qty) || 0))); return m; };
+        const findProd = key => DEMO_PRODUCTS.find(x => (x.barcode || x.name) === key || x.id === key);
+        const limit = key => { const p = findProd(key); return p && Number.isFinite(p.stock) ? p.stock : null; };
+        const lineBoxQty = (l, qOverride) => {
+          const q = qOverride !== undefined ? qOverride : (Number(l && l.qty) || 0);
+          if (q <= 0) return { ok: false, error: 'quantity-invalid' };
+          const u = (l && l.unit) || 'box';
+          if (u === 'box' && (!l.unitFactor || l.unitFactor === 1) && Number.isSafeInteger(q)) return { ok: true, value: clean(q) };
+          const p = findProd(keyOf(l)) || l;
+          const c = window.novaUnits.convert(p, q, u);
+          if (!c.ok) return c;
+          return { ok: true, value: c.stockFraction };
+        };
+        const sold = key => {
+          let n = 0;
+          window.novaSales.list().forEach(s => {
+            const rq = window.novaSales.returnedQty(s.id);
+            s.lines.forEach((l, i) => {
+              if (keyOf(l) !== key) return;
+              const net = (Number(l.qty) || 0) - (rq[i] || 0);
+              if (net <= 0) return;
+              const f = Number(l.unitFactor) > 0 ? Number(l.unitFactor) : 1;
+              n += f > 1 ? net / f : (lineBoxQty(l, net).value || net);
+            });
+          });
+          return clean(n);
+        };
+        const need = lines => {
+          const m = new Map();
+          for (const l of lines || []) {
+            const r = lineBoxQty(l);
+            if (!r.ok) return { ok: false, error: r.error, name: l && l.name };
+            const k = keyOf(l);
+            m.set(k, clean((m.get(k) || 0) + r.value));
+          }
+          return { ok: true, map: m };
+        };
         const avail = (key, owner, hs) => {
           const held = hs.filter(h => h.key === key && h.owner !== owner).reduce((t, h) => t + h.qty, 0);
           if (hasLots(key)) {
             const allowExp = !isBlockExpired();
-            const sellable = lots(key).filter(l => allowExp || !l.expired).reduce((s, l) => s + l.onHand, 0);
-            return sellable - held;
+            return clean(lots(key).filter(l => allowExp || !l.expired).reduce((s, l) => s + l.onHand, 0) - held);
           }
-          const lim = limit(key); return lim === null ? Infinity : lim - sold(key) - held;
+          const lim = limit(key); return lim === null ? Infinity : clean(lim - sold(key) - held);
         };
         const check = (owner, lines) => {
+          const nd = need(lines); if (!nd.ok) return nd;
           const hs = holds();
-          for (const [key, q] of need(lines)) {
+          for (const [key, q] of nd.map) {
             const a = avail(key, owner, hs);
-            if (q > a) {
+            if (q - a > EPS) {
               const expQty = hasLots(key) ? lots(key).filter(l => l.expired && l.onHand > 0).reduce((s, l) => s + l.onHand, 0) : 0;
               const isExp = isBlockExpired() && expQty > 0;
-              return { ok: false, reason: isExp ? 'expired' : 'insufficient', expired: isExp, expiredQty: expQty, name: (lines.find(l => keyOf(l) === key) || {}).name, available: Math.max(0, a) };
+              return { ok: false, reason: isExp ? 'expired' : 'insufficient', expired: isExp, expiredQty: expQty, name: (lines.find(l => keyOf(l) === key) || {}).name, available: clean(Math.max(0, a)) };
             }
           }
           return { ok: true };
@@ -3350,13 +3693,15 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const save = a => { try { localStorage.setItem(HK, JSON.stringify(a)); return true; } catch (_) { return false; } };
         return {
           keyOf, available: (key, owner) => avail(keyOf(key), owner, holds()), holds,
+          boxQty: l => { const r = lineBoxQty(l); return r.ok ? r.value : 0; },
           hasLots, lots, fefoPick, addLot, setLots, clearLots,
           nearExpiryDays, setNearExpiryDays, isBlockExpired, setBlockExpired,
           check,
-          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short or expired
+          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short or has an invalid unit
             const c = check(owner, lines); if (!c.ok) return c;
+            const nd = need(lines);
             const rest = holds().filter(h => h.owner !== owner), exp = Date.now() + (ttl || TTL);
-            for (const [key, qty] of need(lines)) if (hasLots(key) || limit(key) !== null) rest.push({ owner, key, qty, exp });
+            for (const [key, qty] of nd.map) if (limit(key) !== null) rest.push({ owner, key, qty, exp });
             return save(rest) ? { ok: true } : { ok: false, error: 'storage' };
           },
           release(owner) { const all = holds(); if (all.some(h => h.owner === owner)) save(all.filter(h => h.owner !== owner)); },
@@ -3384,7 +3729,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const saleKey = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
         if (!window.novaSales.list().some(x => x.id === saleKey)) { // a key already in the ledger is a duplicate commit: no second stock check, add() is a no-op
           const c = window.novaStock.check(saleKey, state.invoiceLines);
-          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast(c.expired ? "ممنوع بيع صنف منتهي الصلاحية: " + c.name + " — المتاح الصالح " + c.available : "المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
+          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast(c.expired ? "ممنوع بيع صنف منتهي الصلاحية: " + c.name + " — المتاح الصالح " + c.available : c.error ? "تحويل الوحدة غير متاح: " + (c.name || "") : "المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
         }
         const invNumber = activeSaleNumber;
         const now = new Date();
@@ -3433,10 +3778,10 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           payment: state.checkoutPaymentMethod,
           lines: state.invoiceLines.map(l => {
             const k = window.novaStock.keyOf(l);
-            const pick = window.novaStock.hasLots(k) ? window.novaStock.fefoPick(k, Number(l.qty) || 0) : null;
+            const pick = window.novaStock.hasLots(k) ? window.novaStock.fefoPick(k, window.novaStock.boxQty(l)) : null;
             const lots = pick && pick.ok ? pick.picks.map(p => ({ lot: p.lot, expiry: p.expiry, qty: p.qty })) : undefined;
             return {
-              name: l.name, barcode: l.barcode || '', price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0,
+              name: l.name, barcode: l.barcode || '', unit: l.unit || 'box', unitFactor: Number(l.unitFactor) || 1, price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0,
               ...(lots && lots.length ? { lot: lots[0].lot, expiry: lots[0].expiry, lots } : {})
             };
           }),
@@ -3610,6 +3955,9 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           if (e.target.classList.contains("qty-input")) {
             const prodId = e.target.getAttribute("data-id");
             updateLineQty(prodId, e.target.value);
+          } else if (e.target.classList.contains("unit-select")) {
+            const prodId = e.target.getAttribute("data-id");
+            updateLineUnit(prodId, e.target.value);
           }
         });
 
@@ -3881,11 +4229,13 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tokens=fold(filter).split(' ').filter(Boolean);
  const list=real?(tokens.length?products.filter(p=>String(p.barcode).includes(filter.trim())||tokens.every(t=>fold(p.name).includes(t))):products):filtered(products,['name','barcode','generic','category']);
  const shown=real?list.slice(0,300):list;
+ const dups=window.novaDuplicates?window.novaDuplicates(products):[];
+ const dupBlock=dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+' — الأسعار فقط، الرصيد غير متاح في هذه القائمة':'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi('الرصيد','غير متاح')+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
  :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
- +table(['الصنف','الباركود','السعر','العبوة','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td data-pack>'+(p.pack?esc(p.pack):'—')+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ +dupBlock+table(['الصنف','الباركود','السعر','العبوة','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td data-pack>'+(p.pack?esc(p.pack):'—')+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
