@@ -42,12 +42,19 @@ b.discount = 9999; assert.equal(E.totals(b).total, 0, 'discount capped at subtot
 b.discount = 5;
 
 // invoice: needs staff, immutable snapshot, unique id/ref
-assert.throws(() => E.createInvoice({ basket: b, staff: '' }), /staff-required/);
-assert.throws(() => E.createInvoice({ basket: E.emptyBasket(), staff: 'x' }), /empty-basket/);
-const inv = E.createInvoice({ basket: b, staff: 'منى', now: now });
-const inv2 = E.createInvoice({ basket: b, staff: 'منى', now: now });
+assert.throws(() => E.createInvoice({ basket: b, staff: '', deviceId: 'D' }), /staff-required/);
+assert.throws(() => E.createInvoice({ basket: E.emptyBasket(), staff: 'x', deviceId: 'D' }), /empty-basket/);
+const inv = E.createInvoice({ deviceId: 'DEV-TEST0001', basket: b, staff: 'منى', now: now });
+const inv2 = E.createInvoice({ deviceId: 'DEV-TEST0001', basket: b, staff: 'منى', now: now });
 assert.notEqual(inv.id, inv2.id); assert.match(inv.id, /^[0-9a-f-]{36}$/); assert.match(inv.ref, /^EMG-261109-[0-9A-F]{5}$/);
 assert.ok(inv.label.includes('لم تُرحّل للنظام'));
+// OFF-02: device id, unit, emergency warning, no central-collection claim
+assert.throws(() => E.createInvoice({ basket: b, staff: 'علي' }), /device-required/);
+const st = mem(), dev = E.getDeviceId(st); assert.match(dev, /^DEV-[0-9A-F]{8}$/); assert.equal(E.getDeviceId(st), dev, 'device id is stable');
+const oi = E.createInvoice({ basket: b, staff: 'علي', deviceId: dev, now: 1 });
+assert.equal(oi.deviceId, dev); assert.equal(oi.centralCollection, false); assert.equal(oi.emergencyMode, true);
+assert.ok(oi.warning.includes('وضع الطوارئ') && oi.warning.includes('لم يتم تحصيلها مركزيًا'));
+assert.equal(oi.lines[0].unit, 'علبة'); assert.match(oi.id, /^[0-9a-f-]{36}$/);
 b.lines[0].unitPrice = 999;                                   // later price edits must not touch the invoice
 assert.equal(inv.lines[0].unitPrice, 12.5); assert.ok(Object.isFrozen(inv.lines));
 assert.equal(inv.total, 72);
@@ -66,7 +73,7 @@ assert.equal(JSON.stringify(ex).includes('password'), false);
 
 // conflicts
 const cur = JSON.parse(JSON.stringify(p.items)); cur[0].price = 15; cur[1].stock = 0;
-const cf = E.detectConflicts(E.createInvoice({ basket: (() => { const x = E.emptyBasket(); E.addLine(x, p.items[0], 1); E.addLine(x, p.items[1], 2); return x; })(), staff: 's' }), cur);
+const cf = E.detectConflicts(E.createInvoice({ deviceId: 'DEV-TEST0001', basket: (() => { const x = E.emptyBasket(); E.addLine(x, p.items[0], 1); E.addLine(x, p.items[1], 2); return x; })(), staff: 's' }), cur);
 assert.deepEqual(cf.map(c => c.type).sort(), ['price-changed', 'stock-low']);
 assert.equal(E.detectConflicts(inv, []).every(c => c.type === 'missing'), true);
 
