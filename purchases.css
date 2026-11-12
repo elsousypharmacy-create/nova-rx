@@ -39,3 +39,13 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:10px;flex-wrap:nowrap;alig
 .source,td small,.cart small,.controls small{font-size:12px}
 #sourceState{font-size:12px}
 #poDialog label{display:flex;flex-direction:column;gap:6px;margin:8px 0}#poDialog textarea{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--text)}
+.panel-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mode-segment button,#loadMock{min-height:36px;padding:6px 12px;font-size:12px}
+.segment button[aria-pressed=true]{background:#2b6aa0;border-color:#5796c2;color:#eef2f6}
+.split-comparison{background:#131a23;border:1px solid var(--line);border-radius:9px;padding:12px;margin-bottom:12px;font-size:12px}
+.split-comparison p{margin:4px 0;color:var(--text)}
+.split-qty-wrap{display:inline-flex;align-items:center;gap:8px;margin-top:8px;margin-inline-end:8px;font-size:12px}
+.split-editor-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.offer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.offer-actions button{margin-top:0}
+@media(max-width:800px){.panel-tools{width:100%}.panel-tools input{flex:1;min-width:120px}}

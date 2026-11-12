@@ -36,6 +36,7 @@ jobs:
       - run: node tests/purchases-compare-browser.mjs
       - run: node tests/unit/purchase-orders.check.mjs
       - run: node tests/purchases-po-browser.mjs
+      - run: node tests/ui-buy03-supplier-split.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

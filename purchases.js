@@ -1,15 +1,18 @@
-import { readDays, buildNeeds, distribute, filterOffers, offerKey, groupCart, numberOrNull, createOfferSearch, expiredSessionMessage } from './purchases-core.js';
+import { readDays, buildNeeds, distribute, filterOffers, offerKey, groupCart, numberOrNull, createOfferSearch, expiredSessionMessage, compareSplitModes, applyManualSplit, createMockPurchasingScenario } from './purchases-core.js';
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = n => Number.isFinite(n) ? new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n) : '—';
 const PREF='novaPurchasePrefsV1', DRAFT='novaPurchaseDraftV1';
-let prefs={days:21,level:'ideal',suppliers:['aumet','pharmaoverseas'],aumetSellers:[]};
+let prefs={days:21,level:'ideal',mode:'auto',suppliers:['aumet','pharmaoverseas'],aumetSellers:[],excludedSuppliers:[],excludedSellers:[]};
 try{const p=JSON.parse(localStorage.getItem(PREF)||'null');if(p&&typeof p==='object')prefs={...prefs,...p};}catch{}
+prefs.mode=prefs.mode==='manual'?'manual':'auto';
 prefs.suppliers=Array.isArray(prefs.suppliers)?prefs.suppliers.filter(x=>['aumet','pharmaoverseas'].includes(x)):[];
 prefs.aumetSellers=Array.isArray(prefs.aumetSellers)?prefs.aumetSellers.map(String):[];
+prefs.excludedSuppliers=Array.isArray(prefs.excludedSuppliers)?prefs.excludedSuppliers.filter(x=>['aumet','pharmaoverseas'].includes(x)):[];
+prefs.excludedSellers=Array.isArray(prefs.excludedSellers)?prefs.excludedSellers.map(String):[];
 const LIMITS='novaPurchaseLimitsV1';let limits={};try{const l=JSON.parse(localStorage.getItem(LIMITS)||'null');if(l&&typeof l==='object')limits=l;}catch{}
-let rawItems=[],items=[],sellers=[],offersByItem=new Map(),dashboardPin='',busy=false,generation=0,lastText='',pendingSellerIds=new Set();
-let cartPlans=[],sentLines=new Set(),pendingStockLoad=false,readBackLog=[];
+let rawItems=[],items=[],sellers=[],offersByItem=new Map(),dashboardPin='',busy=false,generation=0,lastText='',pendingSellerIds=new Set(),pendingExcludedSellers=new Set();
+let cartPlans=[],sentLines=new Set(),pendingStockLoad=false,readBackLog=[],mockScenario=null;
 const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
 let offerCacheHits=0;
 const offerSearch=createOfferSearch({request:async(query,opts)=>{const r=await provider().search(query,opts);return {rows:(r.results||[]).flatMap(x=>x.offers||[]),suppliers:r.suppliers||[],complete:opts.supplierIds.length>0&&opts.supplierIds.every(id=>(r.suppliers||[]).some(s=>s.id===id&&s.state==='ok'))};}});
@@ -24,9 +27,13 @@ function scopeView(){
  chip.dataset.state=(!parts.length||(a&&!n))?'warn':'ok';
  chip.title=a&&!n?'أوميت لن يُبحث فيه قبل اختيار المخازن':'نطاق البحث الحالي، اضغط للتعديل';
 }
-function persist(){scopeView();try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
-function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;delete i.offerState;delete i.expiredMessage;});render();}
-function setBusy(value){busy=value;['load','distribute','days','minimum','ideal','openSettings'].forEach(id=>$(id).disabled=value);}
+function modeView(){
+ if($('modeAuto'))$('modeAuto').setAttribute('aria-pressed',String(prefs.mode==='auto'));
+ if($('modeManual'))$('modeManual').setAttribute('aria-pressed',String(prefs.mode==='manual'));
+}
+function persist(){scopeView();modeView();try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch{status('تعذر حفظ الاختيارات على الجهاز',true);}}
+function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;delete i.offerState;delete i.expiredMessage;delete i.manualSplit;delete i.splitExplanation;});render();}
+function setBusy(value){busy=value;['load','distribute','days','minimum','ideal','openSettings','modeAuto','modeManual','loadMock'].forEach(id=>{if($(id))$(id).disabled=value;});}
 function levelView(){['minimum','ideal'].forEach(id=>$(id).setAttribute('aria-pressed',String(id===prefs.level)));}
 function rebuild(){try{prefs.days=readDays($('days').value);$('days').value=prefs.days;items=buildNeeds(rawItems,{...prefs,limits});offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
 function visibleItems(){const q=$('search').value.trim().toLocaleLowerCase();return items.filter(i=>!q||`${i.name} ${i.nameEn||''} ${i.code||''}`.toLocaleLowerCase().includes(q));}
@@ -49,7 +56,8 @@ function render(){
  $('rows').innerHTML=view.length?view.map(i=>{
   const allocation=i.allocations?.[0],found=allocation?.offer;
   const warning=i.issue||(i.unallocated>0&&i.allocations?.length?'كمية متبقية بلا عرض':'');
-  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small>${i.suggested&&!i.selected?'<small class="suggested">كمية مقترحة: تحتاج تأكيد الصيدلي</small>':''}</td><td>${fmt(numberOrNull(i.stock))}${i.mergedLines>1?`<small title="تم دمج الأسطر المكررة">مدموج ${fmt(i.mergedLines)} أسطر</small>`:''}</td><td>${fmt(i.target)}</td><td class="rate">${fmt(i.dailyRate)}/يوم<small>${i.leadTimeDays===null||i.leadTimeDays===undefined?'مدة التوريد غير معلومة':'توريد '+fmt(i.leadTimeDays)+' يوم'}</small></td><td class="limits"><input class="qty" type="text" inputmode="numeric" data-action="min" aria-label="الحد الأدنى ${esc(i.name)}" value="${esc(i.minLimit??'')}" ${busy?'disabled':''}> <input class="qty" type="text" inputmode="numeric" data-action="max" aria-label="الحد الأقصى ${esc(i.name)}" value="${esc(i.maxLimit??'')}" ${busy?'disabled':''}></td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td>${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small><small class="offer-specs">${esc([allocation.strength,allocation.form,allocation.packSize,allocation.quantity!=null?`متاح ${fmt(allocation.quantity)}`:null,allocation.date].filter(Boolean).join(' · '))}</small>${i.allocations.length>1?`<small>مقسم على ${fmt(i.allocations.length)} عروض</small>`:''}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}${i.searchComplete===false?'<small class="warning partial-note">بعض الموردين لم يرد؛ النتيجة ناقصة</small>':''}`:offerNote(i)}${i.expiredMessage?`<small class="warning expired-session">${esc(i.expiredMessage)}</small>`:''}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action" data-action="offers" ${busy?'disabled':''}>العروض</button></td></tr>`;
+  const splitDetail=i.allocations?.length>1?`<small class="split-note" data-split-explanation="${esc(i.splitExplanation||'')}" title="${esc(i.splitExplanation||'')}">مقسم على ${fmt(i.allocations.length)} عروض (${i.allocations.map(a=>`${esc(a.offer.sellerName||supplierName(a.offer.supplierId))}: ${fmt(a.qty)}`).join(' + ')})</small>`:i.manualSplit?`<small class="split-note" data-split-explanation="${esc(i.splitExplanation||'')}" title="${esc(i.splitExplanation||'')}">توزيع يدوي (${fmt(allocation?.qty)} علبة)</small>`:'';
+  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small>${i.suggested&&!i.selected?'<small class="suggested">كمية مقترحة: تحتاج تأكيد الصيدلي</small>':''}</td><td>${fmt(numberOrNull(i.stock))}${i.mergedLines>1?`<small title="تم دمج الأسطر المكررة">مدموج ${fmt(i.mergedLines)} أسطر</small>`:''}</td><td>${fmt(i.target)}</td><td class="rate">${fmt(i.dailyRate)}/يوم<small>${i.leadTimeDays===null||i.leadTimeDays===undefined?'مدة التوريد غير معلومة':'توريد '+fmt(i.leadTimeDays)+' يوم'}</small></td><td class="limits"><input class="qty" type="text" inputmode="numeric" data-action="min" aria-label="الحد الأدنى ${esc(i.name)}" value="${esc(i.minLimit??'')}" ${busy?'disabled':''}> <input class="qty" type="text" inputmode="numeric" data-action="max" aria-label="الحد الأقصى ${esc(i.name)}" value="${esc(i.maxLimit??'')}" ${busy?'disabled':''}></td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td title="${esc(i.splitExplanation||'')}">${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small><small class="offer-specs">${esc([allocation.strength,allocation.form,allocation.packSize,allocation.quantity!=null?`متاح ${fmt(allocation.quantity)}`:null,allocation.date].filter(Boolean).join(' · '))}</small>${splitDetail}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}${i.searchComplete===false?'<small class="warning partial-note">بعض الموردين لم يرد؛ النتيجة ناقصة</small>':''}`:offerNote(i)}${i.expiredMessage?`<small class="warning expired-session">${esc(i.expiredMessage)}</small>`:''}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action" data-action="offers" ${busy?'disabled':''}>العروض</button></td></tr>`;
  }).join(''):'<tr><td colspan="9" class="empty">'+(rawItems.length?'لا توجد نواقص مطابقة للاختيار الحالي.':'حدّث النواقص لقراءة مخزون الصيدلية.')+'</td></tr>';
  $('selectAll').disabled=busy;
  $('selectAll').checked=view.length>0&&view.every(i=>i.selected||i.issue);
@@ -59,12 +67,12 @@ function render(){
  $('review').disabled=!groups.length||busy;
 }
 function supplierName(id){return id==='aumet'?'أوميت':id==='pharmaoverseas'?'فارما أوفرسيز':id;}
-function groupHtml(g){return `<section class="group"><h3>${esc(supplierName(g.supplierId))}</h3>${g.sellerName?`<small>${esc(g.sellerName)}</small>`:''}<ul>${g.lines.map(l=>`<li><span>${esc(l.name)}</span><b>${fmt(l.qty)} علبة</b><small>${l.cartState==='verified'?'✓ في سلة المورد':'تجهيز محلي'}</small></li>`).join('')}</ul><b>${fmt(g.total)} ج.م</b></section>`;}
+function groupHtml(g){return `<section class="group"><h3>${esc(supplierName(g.supplierId))}</h3>${g.sellerName?`<small>${esc(g.sellerName)}</small>`:''}<ul>${g.lines.map(l=>`<li><span>${esc(l.name)}</span><b>${fmt(l.qty)} علبة</b><small>${l.cartState==='verified'?'✓ في سلة المورد':'تجهيز محلي'}</small></li>`).join('')}</ul>${g.shipping>0?`<small>شحن: ${fmt(g.shipping)} ج.م</small>`:''}${g.belowMinimumOrder?`<small class="warning">أقل من الحد الأدنى للطلب (${fmt(g.minimumOrderValue)} ج.م)</small>`:''}<b>${fmt(g.total)} ج.م</b></section>`;}
 function configValid(){if(!prefs.suppliers.length){status('اختَر موردًا واحدًا على الأقل من الإعدادات',true);return false;}if(prefs.suppliers.includes('aumet')&&!prefs.aumetSellers.length){status('حدّد مخازن أوميت المسموح بها أولًا',true);openSettings(false);return false;}return true;}
 async function loadStock(){
  if(busy)return;
  if(!dashboardPin){pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();$('sourceState').textContent='STOCK LIVE · محتاج رقم الداشبورد';status('اكتب رقم دخول الداشبورد في الخانة المفتوحة ثم احفظ؛ هيبدأ تحميل النواقص تلقائيًا.',true);return;}
- pendingStockLoad=false;
+ pendingStockLoad=false;mockScenario=null;
  try{prefs.days=readDays($('days').value);}catch(e){status(e.message,true);return;}
  setBusy(true);status('جارٍ قراءة النواقص من STOCK LIVE…');
  try{
@@ -77,6 +85,11 @@ async function loadStock(){
  finally{setBusy(false);render();}
 }
 async function searchOffers(item){
+ if(mockScenario){
+  const q=item.nameEn||item.name;
+  const rows=(mockScenario.offersByQuery[q]||[]).filter(r=>prefs.suppliers.includes((r.offer||r).supplierId));
+  item.searchComplete=true;item.expiredMessage='';offersByItem.set(item.key,rows);return rows;
+ }
  const result=await offerSearch.search(item.nameEn||item.name,{requestedQty:item.qty,supplierIds:prefs.suppliers});
  if(result.cached)offerCacheHits++;
  const rows=result.value.rows;item.searchComplete=result.value.complete===true;item.expiredMessage=expiredSessionMessage(result.value.suppliers);offersByItem.set(item.key,rows);return rows;
@@ -88,13 +101,13 @@ function showProgress(done,total,name=''){
 }
 async function allocateAll(){
  if(busy||!configValid())return;if(!items.some(i=>i.selected)){status('حدّد الأصناف المطلوبة أولًا',true);return;}
- const token=++generation;setBusy(true);items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;delete i.offerState;});render();
+ const token=++generation;setBusy(true);items.forEach(i=>{if(!i.manualSplit){i.allocations=[];i.unallocated=i.qty;delete i.offerState;}});render();
  const hitsBefore=offerCacheHits;
  let done=0,fail=0;const selected=items.filter(i=>i.selected&&!i.issue);$('stopDistribute').disabled=false;showProgress(0,selected.length);$('distributionProgress').hidden=false;
  try{for(const item of selected){
   status(`جارٍ مقارنة عروض الصنف ${fmt(done+1)} من ${fmt(selected.length)}…`);
   showProgress(done,selected.length,item.name);
-  try{item.offerState='searching';renderKeep();const rows=await searchOffers(item);if(token!==generation)return;Object.assign(item,distribute(item,rows,prefs));item.offerState=item.allocations?.length?'ok':(item.searchComplete?'none':'incomplete');}catch{fail++;item.offerState='error';item.allocations=[];item.unallocated=item.qty;}
+  try{item.offerState='searching';renderKeep();const rows=await searchOffers(item);if(token!==generation)return;if(!item.manualSplit)Object.assign(item,distribute(item,rows,prefs));item.offerState=item.allocations?.length?'ok':(item.searchComplete?'none':'incomplete');}catch{fail++;item.offerState='error';item.allocations=[];item.unallocated=item.qty;}
   done++;showProgress(done,selected.length,item.name);
   renderKeep();
  }
@@ -102,30 +115,126 @@ async function allocateAll(){
  status(`تم توزيع ${fmt(selected.length-remain)} صنف. ${fmt(remain)} يحتاج اختيارًا أو مراجعة${fail?`؛ تعذر البحث عن ${fmt(fail)} صنف`:''}. القائمة لم تُرسل إلى الموردين.${offerCacheHits>hitsBefore?` تم استخدام ${fmt(offerCacheHits-hitsBefore)} عروض محفوظة خلال آخر دقيقتين.`:''}`,remain>0);
  }finally{items.forEach(i=>{if(i.offerState==='searching')delete i.offerState;});setBusy(false);$('distributionProgress').hidden=true;render();}
 }
+async function loadMockData(){
+ if(busy)return;
+ mockScenario=createMockPurchasingScenario();
+ sellers=mockScenario.sellers.map(s=>({...s,id:String(s.id)}));
+ prefs={...prefs,...mockScenario.prefs,mode:prefs.mode||'auto'};
+ $('days').value=prefs.days;levelView();modeView();
+ rawItems=mockScenario.items;items=buildNeeds(rawItems,{...prefs,limits});
+ items.forEach(i=>{if(!i.issue)i.selected=true;});
+ offersByItem.clear();
+ persist();
+ $('sourceState').textContent='بيانات تجريبية محلية · بدون اتصال';$('sourceState').parentElement.classList.add('ready');
+ $('sourceTime').textContent='محاكاة محلية للمقارنة والتقسيم';
+ await allocateAll();
+}
+function renderOffersDialog(item,rows){
+ const mapped=filterOffers(item,rows,prefs);
+ const cmp=compareSplitModes(item,rows,prefs);
+ const allocByKey=new Map((item.allocations||[]).map(a=>[a.key,a.qty]));
+ const autoByKey=new Map((cmp.auto.allocations||[]).map(a=>[a.key,a.qty]));
+ const expBanner=item.expiredMessage?`<p class="warning expired-session" role="alert">${esc(item.expiredMessage)}</p>`:'';
+ const summaryHtml=mapped.length?`<div id="splitComparison" class="split-comparison"><p><strong>مقارنة التوزيع (${prefs.mode==='auto'?'وضع الاقتراح التلقائي':'الوضع اليدوي'}) — المطلوب ${fmt(item.qty)} علبة</strong></p><p id="autoSplitExplain">الاقتراح التلقائي: ${esc(cmp.auto.splitExplanation)}</p><p id="singleSplitExplain">أفضل مورد منفرد: ${esc(cmp.single.splitExplanation)}</p>${cmp.savings>0?`<p><span class="discount">التوفير بالتقسيم التلقائي: ${fmt(cmp.savings)} ج.م</span></p>`:''}${cmp.moreCoverage>0?`<p><span class="discount">التقسيم التلقائي يغطي ${fmt(cmp.moreCoverage)} علبة إضافية</span></p>`:''}<p id="currentSplitExplanation">التوزيع الحالي: ${esc(item.splitExplanation||cmp.auto.splitExplanation)}</p></div>`:'';
+ const cardsHtml=mapped.length?mapped.map((r,index)=>{
+  const key=offerKey(r.offer);
+  const currentQty=allocByKey.has(key)?allocByKey.get(key):(autoByKey.get(key)||0);
+  const shipLabel=r.shippingCost>0?`الشحن ${fmt(r.shippingCost)} ج.م${r.freeShippingThreshold?` (مجاني فوق ${fmt(r.freeShippingThreshold)} ج.م)`:''}`:'شحن مجاني';
+  const moqLabel=`الحد الأدنى ${fmt(r.moq)} علبة${r.minOrderValue?` (${fmt(r.minOrderValue)} ج.م)`:''}`;
+  const isExcludedSeller=r.offer.sellerId!=null&&prefs.excludedSellers.includes(String(r.offer.sellerId));
+  return `<section class="offer" data-offer-card="${index}"><b>${esc(r.offer.productName)}</b><p>${esc(supplierName(r.offer.supplierId))} · ${esc(r.offer.sellerName||'')}</p><p class="offer-specs">التركيز: ${esc(r.strength||'غير محدد')} · الشكل: ${esc(r.form||'غير محدد')} · العبوة: ${esc(r.packSize||'غير محددة')}</p><p class="offer-meta">التكلفة: ${fmt(r.price)} ج.م · خصم ${fmt(r.discount)}٪ · الكمية: ${r.offer.availableQuantity==null?'كمية التوفر غير محددة':`المتاح ${fmt(r.offer.availableQuantity)}`} · ${moqLabel} · ${shipLabel} · التاريخ: ${esc(r.date||'غير متاح')}</p>${r.reason?`<small class="warning">${esc(r.reason)}</small>`:''}<div class="offer-actions"><label class="split-qty-wrap">كمية التوزيع<input type="number" min="0" class="qty split-qty-input" data-split-input="${index}" aria-label="كمية التوزيع ${esc(r.offer.sellerName||supplierName(r.offer.supplierId))}" value="${esc(r.eligible?currentQty:0)}" ${r.eligible?'':'disabled'}></label><button data-offer="${index}" ${r.eligible?'':'disabled'}>اختيار هذا العرض</button>${r.offer.sellerId!=null?`<button type="button" class="secondary" data-exclude-seller="${esc(r.offer.sellerId)}">${isExcludedSeller?'إلغاء استبعاد المخزن':'استبعاد المخزن'}</button>`:''}</div></section>`;
+ }).join(''):'لا توجد عروض مطابقة حاليًا.';
+ const actionsHtml=mapped.some(r=>r.eligible)?`<div class="split-editor-actions"><button type="button" id="applySplitEdit" class="primary">حفظ التوزيع المعدل</button><button type="button" id="resetAutoSplit" class="secondary">إعادة الاقتراح التلقائي</button><p id="splitEditStatus" role="status"></p></div>`:'';
+ $('offerRows').innerHTML=expBanner+summaryHtml+cardsHtml+actionsHtml;
+ $('offerRows').querySelectorAll('[data-offer]').forEach(button=>button.onclick=()=>{const row=mapped[Number(button.dataset.offer)],offer=row.offer;const available=numberOrNull(offer.availableQuantity);const qty=Math.min(item.qty,available===null?item.qty:Math.floor(available));if(qty<=0||qty<(numberOrNull(offer.minimumOrderQuantity)||1)){status('الكمية أقل من الحد الأدنى لطلب المورد',true);return;}item.allocations=[{...row,key:offerKey(offer),qty,quantityUnconfirmed:available===null,cartState:'local-draft'}];item.unallocated=item.qty-qty;item.manualSplit=true;item.splitExplanation=`اختيار يدوي لعرض واحد: ${offer.sellerName||supplierName(offer.supplierId)} (${fmt(qty)} علبة × ${fmt(row.price)} ج.م)`;item.selected=true;$('offers').close();render();});
+ $('offerRows').querySelectorAll('[data-exclude-seller]').forEach(btn=>btn.onclick=()=>{
+  const sellerId=String(btn.dataset.excludeSeller);
+  if(prefs.excludedSellers.includes(sellerId)){
+   prefs.excludedSellers=prefs.excludedSellers.filter(id=>id!==sellerId);
+   if(!prefs.aumetSellers.includes(sellerId))prefs.aumetSellers.push(sellerId);
+  }else{
+   prefs.excludedSellers.push(sellerId);
+   prefs.aumetSellers=prefs.aumetSellers.filter(id=>id!==sellerId);
+  }
+  persist();
+  delete item.manualSplit;
+  Object.assign(item,distribute(item,rows,prefs));
+  renderOffersDialog(item,rows);
+  render();
+ });
+ if($('applySplitEdit'))$('applySplitEdit').onclick=()=>{
+  try{
+   const entries=mapped.map((r,idx)=>({key:offerKey(r.offer),qty:$('offerRows').querySelector(`[data-split-input="${idx}"]`)?.value??0}));
+   const applied=applyManualSplit(item,rows,entries,prefs);
+   Object.assign(item,applied);
+   item.selected=true;
+   status(applied.splitExplanation);
+   $('offers').close();render();
+  }catch(e){
+   if($('splitEditStatus')){$('splitEditStatus').textContent=e.message;$('splitEditStatus').classList.add('warning');}
+   status(e.message,true);
+  }
+ };
+ if($('resetAutoSplit'))$('resetAutoSplit').onclick=()=>{
+  delete item.manualSplit;
+  Object.assign(item,distribute(item,rows,{...prefs,mode:'auto'}));
+  status(item.splitExplanation);
+  $('offers').close();render();
+ };
+}
 async function openOffers(item){
  if(busy)return;let dirty=false;setBusy(true);$('offerTitle').textContent=item.name;$('offerRows').textContent='جارٍ البحث…';$('offers').showModal();
- try{const rows=await searchOffers(item);const mapped=filterOffers(item,rows,prefs);if(!item.allocations?.length){if(mapped.some(r=>r.eligible))delete item.offerState;else item.offerState=item.searchComplete?'none':'incomplete';dirty=true;}const expBanner=item.expiredMessage?`<p class="warning expired-session" role="alert">${esc(item.expiredMessage)}</p>`:'';$('offerRows').innerHTML=expBanner+(mapped.length?mapped.map((r,index)=>`<section class="offer"><b>${esc(r.offer.productName)}</b><p>${esc(supplierName(r.offer.supplierId))} · ${esc(r.offer.sellerName||'')}</p><p class="offer-specs">التركيز: ${esc(r.strength||'غير محدد')} · الشكل: ${esc(r.form||'غير محدد')} · العبوة: ${esc(r.packSize||'غير محددة')}</p><p class="offer-meta">التكلفة: ${fmt(r.price)} ج.م · خصم ${fmt(r.discount)}٪ · الكمية: ${r.offer.availableQuantity==null?'كمية التوفر غير محددة':`المتاح ${fmt(r.offer.availableQuantity)}`} · التاريخ: ${esc(r.date||'غير متاح')}</p>${r.reason?`<small class="warning">${esc(r.reason)}</small>`:''}<button data-offer="${index}" ${r.eligible?'':'disabled'}>اختيار هذا العرض</button></section>`).join(''):'لا توجد عروض مطابقة حاليًا.');
- $('offerRows').querySelectorAll('[data-offer]').forEach(button=>button.onclick=()=>{const row=mapped[Number(button.dataset.offer)],offer=row.offer;const available=numberOrNull(offer.availableQuantity);const qty=Math.min(item.qty,available===null?item.qty:Math.floor(available));if(qty<=0||qty<(numberOrNull(offer.minimumOrderQuantity)||1)){status('الكمية أقل من الحد الأدنى لطلب المورد',true);return;}item.allocations=[{...row,key:offerKey(offer),qty,quantityUnconfirmed:available===null,cartState:'local-draft'}];item.unallocated=item.qty-qty;item.selected=true;$('offers').close();render();});
+ try{const rows=await searchOffers(item);const mapped=filterOffers(item,rows,prefs);if(!item.allocations?.length){if(mapped.some(r=>r.eligible))delete item.offerState;else item.offerState=item.searchComplete?'none':'incomplete';dirty=true;}renderOffersDialog(item,rows);
  }catch{$('offerRows').textContent='تعذر قراءة عروض الموردين؛ لم تتغير الكميات.';if(!item.allocations?.length){item.offerState='error';dirty=true;}}finally{setBusy(false);if(dirty)renderKeep();}
 }
-function renderSellers(){const q=$('sellerSearch').value.trim().toLocaleLowerCase();$('sellers').innerHTML=sellers.length?sellers.filter(s=>s.name.toLocaleLowerCase().includes(q)).map(s=>`<label class="check"><input type="checkbox" data-seller="${esc(s.id)}" ${pendingSellerIds.has(String(s.id))?'checked':''} ${s.locked?'disabled':''}>${esc(s.name)}${s.locked?'<small>غير متاح لحسابك</small>':''}</label>`).join(''):'لم تُقرأ مخازن حسابك بعد. جدّد جلسة أوميت ثم اضغط تحديث.';}
+function updateExcludedSummary(){
+ if(!$('excludedSummary'))return;
+ const exSellers=pendingExcludedSellers.size;
+ $('excludedSummary').textContent=exSellers?`مستبعد محفوظ: ${fmt(exSellers)} مخزن`:'لا توجد مخازن مستبعدة محفوظة';
+}
+function renderSellers(){updateExcludedSummary();const q=$('sellerSearch').value.trim().toLocaleLowerCase();$('sellers').innerHTML=sellers.length?sellers.filter(s=>s.name.toLocaleLowerCase().includes(q)).map(s=>`<label class="check"><input type="checkbox" data-seller="${esc(s.id)}" ${pendingSellerIds.has(String(s.id))&&!pendingExcludedSellers.has(String(s.id))?'checked':''} ${s.locked?'disabled':''}>${esc(s.name)}${pendingExcludedSellers.has(String(s.id))?'<small class="warning">مستبعد</small>':''}${s.locked?'<small>غير متاح لحسابك</small>':''}</label>`).join(''):'لم تُقرأ مخازن حسابك بعد. جدّد جلسة أوميت ثم اضغط تحديث.';}
 async function refreshSellers(){
  $('refreshSellers').disabled=true;
- try{const r=await provider().listSellers();sellers=(r.sellers||[]).map(s=>({...s,id:String(s.id)}));renderSellers();if(!sellers.length)status('قائمة المخازن غير متاحة في جلسة أوميت الحالية؛ جدّد الجلسة ثم أعد القراءة',true);}
+ try{
+  if(mockScenario){sellers=mockScenario.sellers.map(s=>({...s,id:String(s.id)}));renderSellers();return;}
+  const r=await provider().listSellers();sellers=(r.sellers||[]).map(s=>({...s,id:String(s.id)}));renderSellers();if(!sellers.length)status('قائمة المخازن غير متاحة في جلسة أوميت الحالية؛ جدّد الجلسة ثم أعد القراءة',true);
+ }
  catch{status('تعذر قراءة مخازن أوميت؛ الاختيارات المحفوظة لم تتغير',true);}finally{$('refreshSellers').disabled=false;}
 }
-function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumetSellers);['aumet','pharmaoverseas'].forEach(id=>$('supplier-'+id).checked=prefs.suppliers.includes(id));$('dashboardPin').value=dashboardPin;renderSellers();$('settings').showModal();if(checkConnection)provider().listSuppliers().then(list=>{for(const s of list){const el=$(s.id==='aumet'?'aumetState':'pharmaState');el.textContent=s.state==='ok'?'متصل':'الجلسة تحتاج تجديد';}}).catch(()=>status('تعذر فحص اتصال الموردين',true));}
-$('days').value=prefs.days;levelView();
+function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumetSellers);pendingExcludedSellers=new Set(prefs.excludedSellers);['aumet','pharmaoverseas'].forEach(id=>$('supplier-'+id).checked=prefs.suppliers.includes(id)&&!prefs.excludedSuppliers.includes(id));$('dashboardPin').value=dashboardPin;renderSellers();$('settings').showModal();if(checkConnection&&!mockScenario)provider().listSuppliers().then(list=>{for(const s of list){const el=$(s.id==='aumet'?'aumetState':'pharmaState');el.textContent=s.state==='ok'?'متصل':'الجلسة تحتاج تجديد';}}).catch(()=>status('تعذر فحص اتصال الموردين',true));}
+function setMode(mode){
+ prefs.mode=mode==='manual'?'manual':'auto';
+ persist();
+ items.forEach(item=>{
+  if(offersByItem.has(item.key)&&item.selected&&!item.issue){
+   delete item.manualSplit;
+   Object.assign(item,distribute(item,offersByItem.get(item.key),prefs));
+  }
+ });
+ render();
+ status(prefs.mode==='auto'?'تم التفعيل: وضع الاقتراح التلقائي مع تقسيم الكمية حسب السعر والتوفر والحد الأدنى والشحن.':'تم التفعيل: الوضع اليدوي (مورد منفرد بدون تقسيم تلقائي؛ يمكنك تعديل التوزيع من «العروض»).');
+}
+$('days').value=prefs.days;levelView();modeView();
 $('days').addEventListener('change',rebuild);
 ['minimum','ideal'].forEach(level=>$(level).onclick=()=>{prefs.level=level;levelView();rebuild();});
+if($('modeAuto'))$('modeAuto').onclick=()=>setMode('auto');
+if($('modeManual'))$('modeManual').onclick=()=>setMode('manual');
+if($('loadMock'))$('loadMock').onclick=loadMockData;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('distributionProgress').hidden){e.preventDefault();$('stopDistribute').click();}});
 $('stopDistribute').onclick=()=>{generation++;$('stopDistribute').disabled=true;$('progressProduct').textContent='جارٍ إيقاف المقارنة…';status('تم إيقاف المقارنة؛ النتائج المكتملة محفوظة. جارٍ إنهاء البحث الحالي إن وُجد.');};
 $('load').onclick=loadStock;$('distribute').onclick=allocateAll;$('search').oninput=render;
 $('openSettings').onclick=()=>openSettings();$('refreshSellers').onclick=refreshSellers;$('sellerSearch').oninput=renderSellers;
-$('sellers').addEventListener('change',e=>{const id=e.target.dataset.seller;if(!id)return;if(e.target.checked)pendingSellerIds.add(id);else pendingSellerIds.delete(id);});
-$('saveSettings').onclick=()=>{prefs.aumetSellers=[...pendingSellerIds];prefs.suppliers=['aumet','pharmaoverseas'].filter(id=>$('supplier-'+id).checked);dashboardPin=$('dashboardPin').value.trim();$('dashboardPin').value='';persist();invalidate();$('settings').close();status('تم حفظ الموردين والمخازن؛ حدّث النواقص أو أعد التوزيع.');if(pendingStockLoad)loadStock();};
+$('sellers').addEventListener('change',e=>{const id=e.target.dataset.seller;if(!id)return;if(e.target.checked){pendingSellerIds.add(id);pendingExcludedSellers.delete(id);}else{pendingSellerIds.delete(id);pendingExcludedSellers.add(id);}updateExcludedSummary();});
+$('saveSettings').onclick=()=>{
+ for(const s of sellers){if(s.locked)continue;const id=String(s.id);if(pendingSellerIds.has(id))pendingExcludedSellers.delete(id);else pendingExcludedSellers.add(id);}
+ prefs.aumetSellers=[...pendingSellerIds];
+ prefs.excludedSellers=[...pendingExcludedSellers];
+ prefs.suppliers=['aumet','pharmaoverseas'].filter(id=>$('supplier-'+id).checked);
+ prefs.excludedSuppliers=['aumet','pharmaoverseas'].filter(id=>!$('supplier-'+id).checked);
+ dashboardPin=$('dashboardPin').value.trim();$('dashboardPin').value='';persist();invalidate();$('settings').close();status('تم حفظ الموردين والمخازن؛ حدّث النواقص أو أعد التوزيع.');if(pendingStockLoad)loadStock();
+};
 $('selectAll').onchange=()=>{visibleItems().forEach(i=>{if(!i.issue)i.selected=$('selectAll').checked;});render();};
-$('rows').addEventListener('change',event=>{const row=event.target.closest('[data-key]');if(!row)return;const item=items.find(i=>i.key===row.dataset.key);if(event.target.dataset.action==='supplier'){const row=filterOffers(item,offersByItem.get(item.key)||[],prefs).find(r=>r.eligible&&offerKey(r.offer)===event.target.value);if(row){Object.assign(item,distribute(item,[row.offer],prefs));render();}return;}if(event.target.dataset.action==='min'||event.target.dataset.action==='max'){const v=numberOrNull(event.target.value);if(v!==null&&(v<0||!Number.isInteger(v))){status('اكتب حدًا صحيحًا',true);render();return;}const f=event.target.dataset.action;limits[item.key]={...limits[item.key],[f]:v};try{localStorage.setItem(LIMITS,JSON.stringify(limits));}catch{status('تعذر حفظ الحدود على الجهاز',true);}rebuild();return;}if(event.target.dataset.action==='select'){item.selected=event.target.checked;render();}if(event.target.dataset.action==='qty'){try{item.qty=readDays(event.target.value);item.allocations=[];item.unallocated=item.qty;render();}catch{status('اكتب كمية صحيحة أكبر من صفر',true);event.target.value=item.qty;}}});
+$('rows').addEventListener('change',event=>{const row=event.target.closest('[data-key]');if(!row)return;const item=items.find(i=>i.key===row.dataset.key);if(event.target.dataset.action==='supplier'){const row=filterOffers(item,offersByItem.get(item.key)||[],prefs).find(r=>r.eligible&&offerKey(r.offer)===event.target.value);if(row){Object.assign(item,distribute(item,[row.offer],prefs));item.manualSplit=true;render();}return;}if(event.target.dataset.action==='min'||event.target.dataset.action==='max'){const v=numberOrNull(event.target.value);if(v!==null&&(v<0||!Number.isInteger(v))){status('اكتب حدًا صحيحًا',true);render();return;}const f=event.target.dataset.action;limits[item.key]={...limits[item.key],[f]:v};try{localStorage.setItem(LIMITS,JSON.stringify(limits));}catch{status('تعذر حفظ الحدود على الجهاز',true);}rebuild();return;}if(event.target.dataset.action==='select'){item.selected=event.target.checked;render();}if(event.target.dataset.action==='qty'){try{item.qty=readDays(event.target.value);item.allocations=[];item.unallocated=item.qty;delete item.manualSplit;delete item.splitExplanation;render();}catch{status('اكتب كمية صحيحة أكبر من صفر',true);event.target.value=item.qty;}}});
 $('rows').addEventListener('click',event=>{const button=event.target.closest('[data-action=offers]');if(button)openOffers(items.find(i=>i.key===button.closest('[data-key]').dataset.key));});
 $('closeOffers').onclick=()=>$('offers').close();$('closeReview').onclick=()=>$('reviewDialog').close();
 $('review').onclick=()=>{const groups=groupCart(items);$('reviewGroups').innerHTML=groups.map(groupHtml).join('');lastText=groups.map(g=>`${supplierName(g.supplierId)}${g.sellerName?' — '+g.sellerName:''}\n${g.lines.map(l=>`${l.name} × ${l.qty} — ${l.price} ج.م`).join('\n')}\nالإجمالي ${g.total} ج.م`).join('\n\n');$('savedState').textContent='';cartPlans=[];$('cartPlans').textContent='';$('cartStatus').textContent='';$('applyAumet').hidden=true;$('prepareAumet').disabled=!groups.length;$('reviewDialog').showModal();};
