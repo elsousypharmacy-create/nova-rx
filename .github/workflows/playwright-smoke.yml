@@ -89,6 +89,9 @@ jobs:
       - name: BUY-03 supplier selection and split (N28)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-buy03-supplier-split.mjs
+      - name: CAT-04 catalog CSV/XLSX import with dry-run and rollback (N32)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-cat04-import.mjs
       - name: Write machine-readable result
         if: always()
         run: |

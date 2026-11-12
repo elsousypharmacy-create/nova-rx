@@ -2675,7 +2675,335 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         const label = (u, lang) => { const c = canonicalUnit(u) || "box"; const l = lang || (localStorage.getItem("nova-rx-language") === "en" ? "en" : "ar"); return LABELS[c][l]; };
         return { canonicalUnit, validatePackaging, getPackaging, setPackaging, availableUnits, convert, label };
       })();
+      let baseCatalogProducts = DEMO_PRODUCTS.map(p => ({ ...p }));
       window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
+      // CAT-04 (this device only): local CSV/XLSX catalog import with column mapping, row-error preview, dry-run (no write until confirmed),
+      // stable sourceKey deduplication, STOCK LIVE preservation, and reversible committed imports (rollback).
+      window.novaCatalogImport = (function () {
+        const STORAGE_KEY = "nova-rx-catalog-imports-v1", MAX_PRICE = 1e9;
+        const cleanText = v => (v === null || v === undefined ? "" : String(v).replace(/\s+/g, " ").trim());
+        const normalizeSourceKey = raw => normDigits(cleanText(raw)).toLowerCase().replace(/[\u0000-\u001F\u007F]/g, "").trim();
+        const normalizeBarcodeVal = raw => {
+          const s = normDigits(cleanText(raw)).replace(/[\s-]+/g, "");
+          return /^\d{8,14}$/.test(s) ? s : "";
+        };
+        const parsePositivePrice = raw => {
+          if (typeof raw === "number") return Number.isFinite(raw) && raw > 0 && raw <= MAX_PRICE ? { ok: true, value: Math.round(raw * 100) / 100 } : { ok: false };
+          if (typeof raw !== "string") return { ok: false };
+          const s = normDigits(raw).replace(/\u066C/g, ",").replace(/\u066B/g, ".").trim();
+          if (!s || !(/^\d+(\.\d+)?$/.test(s) || /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s))) return { ok: false };
+          const n = Number(s.replace(/,/g, ""));
+          return Number.isFinite(n) && n > 0 && n <= MAX_PRICE ? { ok: true, value: Math.round(n * 100) / 100 } : { ok: false };
+        };
+        const detectDelim = line => {
+          const c = { ",": 0, ";": 0, "\t": 0 }; let q = false;
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') { if (q && line[i + 1] === '"') i++; else q = !q; }
+            else if (!q && ch in c) c[ch]++;
+          }
+          if (c["\t"] > c[","] && c["\t"] >= c[";"]) return "\t";
+          if (c[";"] > c[","]) return ";";
+          return ",";
+        };
+        const parseCsv = (rawText, fileName = "import.csv") => {
+          if (typeof rawText !== "string") return { ok: false, error: "invalid-csv" };
+          const text = rawText.replace(/^\uFEFF/, "");
+          if (!text.trim()) return { ok: false, error: "empty-file" };
+          const nl = text.search(/\r?\n/), firstLine = nl === -1 ? text : text.slice(0, nl), delim = detectDelim(firstLine);
+          const matrix = []; let row = [], cell = "", inQ = false;
+          for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (inQ) {
+              if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else inQ = false; }
+              else cell += ch;
+            } else if (ch === '"') inQ = true;
+            else if (ch === delim) { row.push(cell.trim()); cell = ""; }
+            else if (ch === "\r" || ch === "\n") {
+              if (ch === "\r" && text[i + 1] === "\n") i++;
+              row.push(cell.trim()); matrix.push(row); row = []; cell = "";
+            } else cell += ch;
+          }
+          if (inQ) return { ok: false, error: "unclosed-quote" };
+          if (cell.length > 0 || row.length > 0) { row.push(cell.trim()); matrix.push(row); }
+          const nonEmpty = matrix.map((values, i) => ({ rowNumber: i + 1, values })).filter(r => r.values.some(v => cleanText(v) !== ""));
+          if (nonEmpty.length < 2) return { ok: false, error: "empty-file" };
+          return { ok: true, format: "csv", fileName, headers: nonEmpty[0].values.map(cleanText), rows: nonEmpty.slice(1) };
+        };
+        const decodeXml = s => String(s ?? "").replace(/_x000D_/gi, "").replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d))).replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+        const colIdxOf = letters => { let idx = 0; for (let i = 0; i < letters.length; i++) idx = idx * 26 + (letters.charCodeAt(i) - 64); return idx - 1; };
+        const parseXlsx = async (inputBytes, fileName = "import.xlsx") => {
+          try {
+            const bytes = inputBytes instanceof ArrayBuffer ? new Uint8Array(inputBytes) : (inputBytes instanceof Uint8Array ? inputBytes : null);
+            if (!bytes || bytes.length < 22 || bytes[0] !== 0x50 || bytes[1] !== 0x4b || bytes[2] !== 0x03 || bytes[3] !== 0x04) return { ok: false, error: "invalid-xlsx" };
+            const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            let eocd = -1;
+            for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+            if (eocd < 0) return { ok: false, error: "invalid-xlsx" };
+            const cdCount = view.getUint16(eocd + 10, true), cdOffset = view.getUint32(eocd + 16, true), dec = new TextDecoder("utf-8"), entries = new Map();
+            let ptr = cdOffset;
+            for (let i = 0; i < cdCount && ptr + 46 <= bytes.length; i++) {
+              if (view.getUint32(ptr, true) !== 0x02014b50) return { ok: false, error: "invalid-xlsx" };
+              const method = view.getUint16(ptr + 10, true), compSize = view.getUint32(ptr + 20, true), nameLen = view.getUint16(ptr + 28, true), extraLen = view.getUint16(ptr + 30, true), commentLen = view.getUint16(ptr + 32, true), localOffset = view.getUint32(ptr + 42, true);
+              const name = dec.decode(bytes.subarray(ptr + 46, ptr + 46 + nameLen));
+              ptr += 46 + nameLen + extraLen + commentLen;
+              if (localOffset + 30 > bytes.length || view.getUint32(localOffset, true) !== 0x04034b50) return { ok: false, error: "invalid-xlsx" };
+              const dataStart = localOffset + 30 + view.getUint16(localOffset + 26, true) + view.getUint16(localOffset + 28, true);
+              if (dataStart + compSize > bytes.length) return { ok: false, error: "invalid-xlsx" };
+              entries.set(name, { method, slice: bytes.subarray(dataStart, dataStart + compSize) });
+            }
+            const readXml = async name => {
+              const e = entries.get(name); if (!e) return null;
+              if (e.method === 0) return dec.decode(e.slice);
+              if (e.method === 8) { const buf = await new Response(new Blob([e.slice]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer(); return dec.decode(new Uint8Array(buf)); }
+              throw new Error("unsupported-method");
+            };
+            const sharedStrings = [];
+            const sstXml = await readXml("xl/sharedStrings.xml");
+            if (sstXml) {
+              const siRe = /<si\b[^>]*>([\s\S]*?)<\/si>/g; let m;
+              while ((m = siRe.exec(sstXml)) !== null) {
+                const tRe = /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g; let tm, txt = "";
+                while ((tm = tRe.exec(m[1])) !== null) txt += decodeXml(tm[1]);
+                sharedStrings.push(txt);
+              }
+            }
+            const sheetKey = entries.has("xl/worksheets/sheet1.xml") ? "xl/worksheets/sheet1.xml" : ([...entries.keys()].find(k => /^xl\/worksheets\/sheet\d+\.xml$/i.test(k)) || "");
+            if (!sheetKey) return { ok: false, error: "invalid-xlsx" };
+            const sheetXml = await readXml(sheetKey);
+            if (!sheetXml) return { ok: false, error: "invalid-xlsx" };
+            const rawRows = [], rowRe = /<row\b([^>]*)>([\s\S]*?)<\/row>/g;
+            let rm, seq = 0;
+            while ((rm = rowRe.exec(sheetXml)) !== null) {
+              seq++;
+              const rAttr = rm[1].match(/\br="(\d+)"/), rowNumber = rAttr ? Number(rAttr[1]) : seq, cells = [], cellRe = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+              let cm, nextCol = 0;
+              while ((cm = cellRe.exec(rm[2])) !== null) {
+                const attrs = cm[1] || "", inner = cm[2] || "", refM = attrs.match(/\br="([A-Z]+)\d+"/);
+                const colIdx = refM ? colIdxOf(refM[1]) : nextCol; nextCol = colIdx + 1;
+                while (cells.length < colIdx) cells.push("");
+                const tM = attrs.match(/\bt="([^"]+)"/), cType = tM ? tM[1] : "";
+                let val = "";
+                if (cType === "inlineStr") {
+                  const tRe = /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g; let tm;
+                  while ((tm = tRe.exec(inner)) !== null) val += decodeXml(tm[1]);
+                } else {
+                  const vM = inner.match(/<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/), rawV = vM ? decodeXml(vM[1]) : "";
+                  val = cType === "s" ? (sharedStrings[Number(rawV)] ?? "") : rawV;
+                }
+                cells[colIdx] = String(val).trim();
+              }
+              if (cells.some(c => cleanText(c) !== "")) rawRows.push({ rowNumber, values: cells });
+            }
+            if (rawRows.length < 2) return { ok: false, error: "empty-file" };
+            const headers = rawRows[0].values.map(cleanText);
+            const rows = rawRows.slice(1).map(r => { const vals = [...r.values]; while (vals.length < headers.length) vals.push(""); return { rowNumber: r.rowNumber, values: vals }; });
+            return { ok: true, format: "xlsx", fileName, headers, rows };
+          } catch (_) { return { ok: false, error: "invalid-xlsx" }; }
+        };
+        const parseFile = async file => {
+          if (!file) return { ok: false, error: "empty-file" };
+          const name = String(file.name || "import.csv");
+          if (/\.xlsx$/i.test(name) || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+            const buf = await file.arrayBuffer();
+            return parseXlsx(buf, name);
+          }
+          const txt = await file.text();
+          return parseCsv(txt, name);
+        };
+        const buildXlsxBytes = matrix => {
+          const colLet = idx => { let n = idx + 1, s = ""; while (n > 0) { s = String.fromCharCode(65 + ((n - 1) % 26)) + s; n = Math.floor((n - 1) / 26); } return s; };
+          const xEsc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+          const rowsXml = (Array.isArray(matrix) ? matrix : []).map((row, rIdx) => `<row r="${rIdx + 1}">` + (Array.isArray(row) ? row : []).map((cell, cIdx) => typeof cell === "number" && Number.isFinite(cell) ? `<c r="${colLet(cIdx)}${rIdx + 1}"><v>${cell}</v></c>` : `<c r="${colLet(cIdx)}${rIdx + 1}" t="inlineStr"><is><t>${xEsc(cell)}</t></is></c>`).join("") + `</row>`).join("");
+          const files = [
+            ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>'],
+            ["xl/worksheets/sheet1.xml", `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rowsXml}</sheetData></worksheet>`]
+          ];
+          const crc32 = b => { let c = 0xffffffff; for (let i = 0; i < b.length; i++) { c ^= b[i]; for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1)); } return (c ^ 0xffffffff) >>> 0; };
+          const enc = new TextEncoder(), lParts = [], cParts = []; let off = 0;
+          for (const [fn, content] of files) {
+            const nb = enc.encode(fn), db = enc.encode(content), crc = crc32(db);
+            const lh = new Uint8Array(30 + nb.length + db.length), lv = new DataView(lh.buffer);
+            lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint32(14, crc, true); lv.setUint32(18, db.length, true); lv.setUint32(22, db.length, true); lv.setUint16(26, nb.length, true);
+            lh.set(nb, 30); lh.set(db, 30 + nb.length); lParts.push(lh);
+            const cd = new Uint8Array(46 + nb.length), cv = new DataView(cd.buffer);
+            cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint32(16, crc, true); cv.setUint32(20, db.length, true); cv.setUint32(24, db.length, true); cv.setUint16(28, nb.length, true); cv.setUint32(42, off, true);
+            cd.set(nb, 46); cParts.push(cd); off += lh.length;
+          }
+          const cdSz = cParts.reduce((s, p) => s + p.length, 0), eocd = new Uint8Array(22), ev = new DataView(eocd.buffer);
+          ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true); ev.setUint32(12, cdSz, true); ev.setUint32(16, off, true);
+          const out = new Uint8Array(off + cdSz + 22); let p = 0;
+          for (const x of lParts) { out.set(x, p); p += x.length; }
+          for (const x of cParts) { out.set(x, p); p += x.length; }
+          out.set(eocd, p); return out;
+        };
+        const ALIASES = {
+          sourceKey: ["sourcekey", "source_key", "source key", "code", "id", "item_code", "itemcode", "sku", "كود", "الكود", "كود الصنف", "رقم الصنف", "مفتاح المصدر", "معرف الصنف"],
+          name: ["name", "namear", "name_ar", "arabicname", "product", "title", "item", "الاسم", "الصنف", "اسم الصنف", "اسم الدواء", "الاسم العربي", "المنتج"],
+          nameEn: ["nameen", "name_en", "englishname", "english_name", "الاسم الانجليزي", "الاسم الإنجليزي", "اسم انجليزي"],
+          barcode: ["barcode", "gtin", "ean", "barcodes", "الباركود", "باركود", "الترقيم الدولي"],
+          price: ["price", "public_price", "retail_price", "unit_price", "السعر", "سعر البيع", "سعر الجمهور", "سعر الوحدة"],
+          pack: ["pack", "form", "unit", "العبوة", "الوحدة", "الشكل الصيدلي"],
+          stripsPerBox: ["stripsperbox", "strips_per_box", "strips", "شرائط بالعلبة", "عدد الشرائط"],
+          unitsPerStrip: ["unitsperstrip", "units_per_strip", "tabletsperstrip", "tablets_per_strip", "وحدات بالشريط", "أقراص بالشريط", "اقراص بالشريط"],
+          unitsPerBox: ["unitsperbox", "units_per_box", "packsize", "pack_size", "وحدات بالعلبة", "أقراص بالعلبة", "اقراص بالعلبة"],
+          generic: ["generic", "activeingredient", "active_ingredient", "المادة الفعالة", "الاسم العلمي"],
+          strength: ["strength", "concentration", "التركيز"],
+          category: ["category", "group", "التصنيف", "القسم"]
+        };
+        const guessColumnMapping = (headers = []) => {
+          const norm = h => cleanText(h).toLowerCase().replace(/[\s_-]+/g, " ").trim();
+          const map = { sourceKey: -1, name: -1, nameEn: -1, barcode: -1, price: -1, pack: -1, stripsPerBox: -1, unitsPerStrip: -1, unitsPerBox: -1, generic: -1, strength: -1, category: -1 };
+          const used = new Set();
+          for (const [f, list] of Object.entries(ALIASES)) {
+            const idx = headers.findIndex((h, i) => !used.has(i) && list.some(a => a === norm(h) || a.replace(/\s+/g, "") === norm(h).replace(/\s+/g, "")));
+            if (idx >= 0) { map[f] = idx; used.add(idx); }
+          }
+          if (map.sourceKey < 0 && map.barcode >= 0) map.sourceKey = map.barcode;
+          return map;
+        };
+        const loadBatches = () => { try { const a = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (_) { return []; } };
+        const saveBatches = b => { localStorage.setItem(STORAGE_KEY, JSON.stringify(b)); };
+        const collectKeys = items => {
+          const keys = new Map(), bcs = new Map();
+          for (const p of items || []) {
+            if (!p || typeof p !== "object") continue;
+            const id = String(p.id || p.code || p.sourceKey || "");
+            for (const c of [p.sourceKey, p.id, p.code]) { const k = normalizeSourceKey(c); if (k && !keys.has(k)) keys.set(k, id); }
+            for (const rb of [p.barcode, p.gtin]) {
+              const b = normalizeBarcodeVal(rb); if (b && !bcs.has(b)) bcs.set(b, id);
+              const bk = normalizeSourceKey(rb); if (bk && !keys.has(bk)) keys.set(bk, id);
+            }
+          }
+          return { keys, bcs };
+        };
+        const getImportedItems = () => {
+          const baseIdx = collectKeys(baseCatalogProducts), seenK = new Set(), seenB = new Set(), out = [];
+          for (const b of loadBatches()) {
+            for (const item of (b && Array.isArray(b.items) ? b.items : [])) {
+              const k = normalizeSourceKey(item.sourceKey || item.id), bc = normalizeBarcodeVal(item.barcode);
+              if (!k || baseIdx.keys.has(k) || (bc && baseIdx.bcs.has(bc)) || seenK.has(k) || (bc && seenB.has(bc))) continue;
+              seenK.add(k); if (bc) seenB.add(bc);
+              out.push({ ...item, imported: true, importBatchId: b.id });
+            }
+          }
+          return out;
+        };
+        const syncCatalog = () => {
+          const imported = getImportedItems();
+          DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...baseCatalogProducts.map(p => ({ ...p })), ...imported);
+          if (window.novaSearch && window.novaSearch.rebuild) window.novaSearch.rebuild();
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+        };
+        const cellAt = (vals, idx) => (Number.isInteger(idx) && idx >= 0 && idx < vals.length ? cleanText(vals[idx]) : "");
+        const dryRun = (parsedInput, customMapping = null) => {
+          const parsed = typeof parsedInput === "string" ? parseCsv(parsedInput) : parsedInput;
+          if (!parsed || !parsed.ok || !Array.isArray(parsed.headers) || !Array.isArray(parsed.rows)) return { ok: false, error: (parsed && parsed.error) || "invalid-input" };
+          const mapping = { ...guessColumnMapping(parsed.headers) };
+          if (customMapping && typeof customMapping === "object") {
+            for (const k of Object.keys(mapping)) if (customMapping[k] !== undefined && customMapping[k] !== null) mapping[k] = Number(customMapping[k]);
+          }
+          const baseIdx = collectKeys(baseCatalogProducts), impIdx = collectKeys(getImportedItems()), seenK = new Map(), seenB = new Map();
+          const toImport = [], rowErrors = [], duplicates = [];
+          for (const row of parsed.rows) {
+            const vals = Array.isArray(row.values) ? row.values : [];
+            const rawKey = cellAt(vals, mapping.sourceKey), normKey = normalizeSourceKey(rawKey);
+            const rawName = cellAt(vals, mapping.name), rawNameEn = cellAt(vals, mapping.nameEn);
+            const rawBarcode = cellAt(vals, mapping.barcode), rawPrice = cellAt(vals, mapping.price);
+            const rawPack = cellAt(vals, mapping.pack), rawSb = cellAt(vals, mapping.stripsPerBox), rawUs = cellAt(vals, mapping.unitsPerStrip), rawUb = cellAt(vals, mapping.unitsPerBox);
+            const rawGen = cellAt(vals, mapping.generic), rawStr = cellAt(vals, mapping.strength), rawCat = cellAt(vals, mapping.category);
+            const errors = [];
+            if (!normKey) errors.push("source-key-missing");
+            if (!rawName && !rawNameEn) errors.push("name-missing");
+            const pr = parsePositivePrice(rawPrice);
+            if (!pr.ok) errors.push("price-invalid");
+            let validBc = "";
+            if (rawBarcode) {
+              validBc = normalizeBarcodeVal(rawBarcode);
+              if (!validBc) errors.push("barcode-invalid");
+            }
+            let packaging = null;
+            if (rawSb || rawUs || rawUb) {
+              const pkDef = {};
+              if (rawSb) pkDef.stripsPerBox = rawSb;
+              if (rawUs) pkDef.unitsPerStrip = rawUs;
+              if (rawUb) pkDef.unitsPerBox = rawUb;
+              const v = window.novaUnits.validatePackaging(pkDef);
+              if (!v.ok) errors.push(v.error); else packaging = v.packaging;
+            }
+            const displayName = rawName && rawNameEn && rawName !== rawNameEn ? rawName + " (" + rawNameEn + ")" : (rawName || rawNameEn);
+            if (errors.length) {
+              rowErrors.push({ rowNumber: row.rowNumber, sourceKey: rawKey, name: displayName, errors });
+              continue;
+            }
+            if (baseIdx.keys.has(normKey) || (validBc && baseIdx.bcs.has(validBc))) {
+              duplicates.push({ rowNumber: row.rowNumber, sourceKey: normKey, name: displayName, reason: "existing-stock-live", existingId: baseIdx.keys.get(normKey) || baseIdx.bcs.get(validBc) });
+              continue;
+            }
+            if (impIdx.keys.has(normKey) || (validBc && impIdx.bcs.has(validBc))) {
+              duplicates.push({ rowNumber: row.rowNumber, sourceKey: normKey, name: displayName, reason: "existing-imported", existingId: impIdx.keys.get(normKey) || impIdx.bcs.get(validBc) });
+              continue;
+            }
+            if (seenK.has(normKey) || (validBc && seenB.has(validBc))) {
+              duplicates.push({ rowNumber: row.rowNumber, sourceKey: normKey, name: displayName, reason: "duplicate-in-file", firstRowNumber: seenK.get(normKey) || seenB.get(validBc) });
+              continue;
+            }
+            seenK.set(normKey, row.rowNumber);
+            if (validBc) seenB.set(validBc, row.rowNumber);
+            const cleanId = normDigits(rawKey).trim();
+            const pkLabel = packaging && window.novaPackagingLabel ? window.novaPackagingLabel(packaging) : "";
+            toImport.push({
+              id: cleanId, sourceKey: normKey, barcode: validBc || cleanId,
+              name: displayName, nameAr: rawName || "", nameEn: rawNameEn || "",
+              price: pr.value, pack: rawPack || pkLabel || "", packaging,
+              generic: rawGen || "", form: rawPack || "", strength: rawStr || "", category: rawCat || "",
+              stock: window.novaCatalog && window.novaCatalog.source === "STOCK LIVE" ? null : 0,
+              imported: true, rowNumber: row.rowNumber
+            });
+          }
+          return {
+            ok: true, dryRun: true, format: parsed.format || "csv", fileName: parsed.fileName || "",
+            headers: [...parsed.headers], mapping, totalRows: parsed.rows.length,
+            validCount: toImport.length, errorCount: rowErrors.length, duplicateCount: duplicates.length,
+            toImport, rowErrors, duplicates
+          };
+        };
+        const commit = (dryRunReport, { confirmed = true, fileName = "" } = {}) => {
+          if (!confirmed) return { ok: false, error: "confirmation-required" };
+          if (!dryRunReport || !dryRunReport.ok || !Array.isArray(dryRunReport.toImport)) return { ok: false, error: "invalid-dry-run" };
+          const baseIdx = collectKeys(baseCatalogProducts), impIdx = collectKeys(getImportedItems()), seenK = new Set(), seenB = new Set(), items = [];
+          for (const it of dryRunReport.toImport) {
+            const k = normalizeSourceKey(it.sourceKey || it.id), bc = normalizeBarcodeVal(it.barcode);
+            if (!k || baseIdx.keys.has(k) || (bc && baseIdx.bcs.has(bc)) || impIdx.keys.has(k) || (bc && impIdx.bcs.has(bc)) || seenK.has(k) || (bc && seenB.has(bc))) continue;
+            seenK.add(k); if (bc) seenB.add(bc);
+            items.push({ ...it });
+          }
+          if (!items.length) return { ok: false, error: "nothing-to-import" };
+          const batches = loadBatches(), batchId = "IMP-" + Date.now() + "-" + (batches.length + 1);
+          const batch = { id: batchId, fileName: fileName || dryRunReport.fileName || "import.csv", format: dryRunReport.format || "csv", committedAt: new Date().toISOString(), count: items.length, items: items.map(x => ({ ...x, importBatchId: batchId })) };
+          try { saveBatches([...batches, batch]); } catch (_) { return { ok: false, error: "storage" }; }
+          syncCatalog();
+          return { ok: true, batch, importedCount: items.length, totalCatalogCount: DEMO_PRODUCTS.length };
+        };
+        const rollback = (batchId = null) => {
+          const batches = loadBatches();
+          if (!batches.length) return { ok: false, error: "no-import-to-rollback" };
+          const idx = batchId ? batches.findIndex(b => b.id === batchId) : batches.length - 1;
+          if (idx < 0) return { ok: false, error: "no-import-to-rollback" };
+          const rolledBackBatch = batches[idx], next = batches.filter((_, i) => i !== idx);
+          try { saveBatches(next); } catch (_) { return { ok: false, error: "storage" }; }
+          syncCatalog();
+          return { ok: true, rolledBackBatch, removedCount: (rolledBackBatch.items || []).length, remainingBatches: next.length, totalCatalogCount: DEMO_PRODUCTS.length };
+        };
+        return {
+          parseCsv, parseXlsx, parseFile, buildXlsxBytes, guessColumnMapping, normalizeSourceKey,
+          dryRun, commit, rollback, syncCatalog,
+          history: () => loadBatches(),
+          getImportedItems,
+          getBaseCatalog: () => baseCatalogProducts.map(p => ({ ...p }))
+        };
+      })();
+      if (window.novaCatalogImport.history().length) window.novaCatalogImport.syncCatalog();
       function loadRealPrices() {
         if (location.protocol === "file:") return;
         fetch("/emergency/stock.json", { cache: "no-cache" }).then(r => (r.ok ? r.text() : null)).then(txt => {
@@ -2694,10 +3022,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, packaging: pk ? r.packaging : null, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
           }
           if (out.length < 50) return; // an almost empty file is not a catalog: keep the demo data
-          DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
+          baseCatalogProducts = out.map(p => ({ ...p }));
           const ts = Date.parse(j && j.exportedAt);
           window.novaCatalog = { source: "STOCK LIVE", exportedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null, count: out.length };
-          window.dispatchEvent(new CustomEvent("nova-catalog"));
+          window.novaCatalogImport.syncCatalog();
         }).catch(() => {});
       }
       loadRealPrices();
@@ -4444,6 +4772,10 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
+ let catImportOpen=false,catParsedSheet=null,catMapping=null,catDryRun=null,catStatusMsg='';
+ const errLabel=code=>({'source-key-missing':'مفتاح المصدر مفقود (source-key-missing)','name-missing':'اسم الصنف مفقود (name-missing)','price-invalid':'السعر غير صالح (price-invalid)','barcode-invalid':'الباركود غير صالح (barcode-invalid)','packaging-invalid':'بيانات العبوة غير صالحة (packaging-invalid)','packaging-inconsistent':'تحويل العبوة غير متسق (packaging-inconsistent)'}[code]||code);
+ const dupLabel=d=>d.reason==='existing-stock-live'?'موجود في STOCK LIVE — محفوظ دون تعديل (existing-stock-live)':d.reason==='existing-imported'?'مستورد مسبقًا بنفس مفتاح المصدر (existing-imported)':'مكرر داخل نفس الملف — صف '+d.firstRowNumber+' (duplicate-in-file)';
+ const mapFields=[['sourceKey','مفتاح المصدر / الكود'],['name','اسم الصنف'],['nameEn','الاسم الإنجليزي'],['barcode','الباركود'],['price','السعر'],['pack','العبوة'],['stripsPerBox','شرائط بالعلبة'],['unitsPerStrip','وحدات بالشريط'],['unitsPerBox','وحدات بالعلبة'],['generic','المادة الفعالة'],['strength','التركيز'],['category','التصنيف']];
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
  const inv=customers.flatMap(c=>(c.pastInvoices||[]).map(i=>({...i,customer:c.name}))).sort((a,b)=>b.date.localeCompare(a.date));
@@ -4457,8 +4789,18 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
  const shown=real?list.slice(0,300):list;
  const dups=window.novaDuplicates?window.novaDuplicates(products):[];
  const dupBlock=dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
+ const impHist=window.novaCatalogImport?window.novaCatalogImport.history():[],impItems=window.novaCatalogImport?window.novaCatalogImport.getImportedItems():[];
+ const showImpPanel=catImportOpen||!!catDryRun||!!catStatusMsg||impHist.length>0;
+ const mapBlock=(catParsedSheet&&catDryRun)?'<div id="novaCatalogMapping" style="margin:10px 0;padding:10px;background:#0e1419;border:1px solid #2a3139;border-radius:8px"><div style="font-weight:700;margin-bottom:8px">'+tr('مطابقة الأعمدة (Column Mapping)','Column Mapping')+' — <span dir="ltr">'+esc(catParsedSheet.fileName)+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px">'+mapFields.map(([fk,fl])=>'<label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#9eacb9"><span>'+fl+'</span><select data-map-field="'+fk+'" style="min-height:38px;background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:6px;padding:4px 8px"><option value="-1">— غير مربوط —</option>'+catParsedSheet.headers.map((h,ix)=>'<option value="'+ix+'"'+(catDryRun.mapping[fk]===ix?' selected':'')+'>'+esc(h||('عمود '+(ix+1)))+'</option>').join('')+'</select></label>').join('')+'</div></div>':'';
+ const drySummary=catDryRun?'<div id="novaCatalogDryRunSummary" style="margin:10px 0;padding:10px;background:#111922;border:1px solid #2f4b66;border-radius:8px"><div style="font-weight:700;color:#9fd3f0;margin-bottom:6px">معاينة تجريبية (Dry Run) — لم يتم حفظ أي تعديل بعد. مصدر STOCK LIVE محفوظ دون تعديل.</div><div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px"><span>إجمالي الصفوف: <strong data-import-stat="total">'+catDryRun.totalRows+'</strong></span><span>صالح للاستيراد: <strong data-import-stat="valid" style="color:#69c6a8">'+catDryRun.validCount+'</strong></span><span>مكرر (تم تخطيه بمفتاح المصدر): <strong data-import-stat="duplicates" style="color:#e3c27a">'+catDryRun.duplicateCount+'</strong></span><span>أخطاء صفوف: <strong data-import-stat="errors" style="color:#ffb4a8">'+catDryRun.errorCount+'</strong></span></div></div>':'';
+ const errTable=(catDryRun&&catDryRun.rowErrors.length)?'<div id="novaCatalogErrorPreview" style="margin:10px 0"><div style="font-weight:700;color:#ffb4a8;margin-bottom:4px">معاينة أخطاء الصفوف ('+catDryRun.rowErrors.length+')</div><div style="overflow:auto;max-height:220px"><table class="nova-data-table"><thead><tr><th>الصف</th><th>مفتاح المصدر</th><th>الصنف</th><th>الخطأ</th></tr></thead><tbody>'+catDryRun.rowErrors.map(e=>'<tr data-error-row="'+e.rowNumber+'"><td>صف '+e.rowNumber+'</td><td dir="ltr">'+esc(e.sourceKey||'—')+'</td><td>'+esc(e.name||'—')+'</td><td data-error-codes="'+esc(e.errors.join(','))+'">'+esc(e.errors.map(errLabel).join(' ، '))+'</td></tr>').join('')+'</tbody></table></div></div>':'';
+ const dupTable=(catDryRun&&catDryRun.duplicates.length)?'<div id="novaCatalogDuplicatePreview" style="margin:10px 0"><div style="font-weight:700;color:#e3c27a;margin-bottom:4px">صفوف مكررة تم منع تكرارها بمفتاح المصدر ('+catDryRun.duplicates.length+')</div><div style="overflow:auto;max-height:200px"><table class="nova-data-table"><thead><tr><th>الصف</th><th>مفتاح المصدر</th><th>الصنف</th><th>السبب</th></tr></thead><tbody>'+catDryRun.duplicates.map(d=>'<tr data-duplicate-row="'+d.rowNumber+'"><td>صف '+d.rowNumber+'</td><td dir="ltr">'+esc(d.sourceKey)+'</td><td>'+esc(d.name)+'</td><td data-duplicate-reason="'+esc(d.reason)+'">'+esc(dupLabel(d))+'</td></tr>').join('')+'</tbody></table></div></div>':'';
+ const validTable=(catDryRun&&catDryRun.toImport.length)?'<div id="novaCatalogValidPreview" style="margin:10px 0"><div style="font-weight:700;color:#69c6a8;margin-bottom:4px">الأصناف الجاهزة للاستيراد عند التأكيد ('+catDryRun.toImport.length+')</div><div style="overflow:auto;max-height:220px"><table class="nova-data-table"><thead><tr><th>الصف</th><th>مفتاح المصدر</th><th>الصنف</th><th>الباركود</th><th>السعر</th><th>العبوة</th></tr></thead><tbody>'+catDryRun.toImport.slice(0,100).map(p=>'<tr data-valid-row="'+p.rowNumber+'"><td>صف '+p.rowNumber+'</td><td dir="ltr">'+esc(p.id)+'</td><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td>'+esc(p.pack||'—')+'</td></tr>').join('')+'</tbody></table></div></div>':'';
+ const dryActions=catDryRun?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" id="novaCatalogCommitBtn" class="nova-inventory-action" style="min-height:44px" '+(catDryRun.validCount?'':'disabled')+'>✓ تأكيد واعتماد الاستيراد ('+catDryRun.validCount+')</button><button type="button" id="novaCatalogCancelBtn" class="nova-inventory-action secondary" style="min-height:44px">إلغاء المعاينة</button></div>':'';
+ const histBlock=impHist.length?'<div id="novaCatalogHistory" style="margin-top:10px;padding-top:10px;border-top:1px solid #2a3139"><div style="font-weight:700;margin-bottom:6px">الاستيرادات المعتمدة على هذا الجهاز (قابلة للتراجع): '+impItems.length+' صنف</div>'+impHist.slice().reverse().map(b=>'<div data-import-batch="'+esc(b.id)+'" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #222830"><span style="font-size:13px"><strong dir="ltr">'+esc(b.fileName)+'</strong> — '+b.count+' صنف</span><button type="button" data-rollback-batch="'+esc(b.id)+'" class="nova-return-btn" style="min-height:44px">↩ تراجع عن هذا الاستيراد</button></div>').join('')+'</div>':'';
+ const impPanel='<section id="novaCatalogImportPanel" class="nova-panel" style="padding:14px 18px;margin-bottom:14px"'+(showImpPanel?'':' hidden')+'><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-weight:700">استيراد أصناف محلي (CSV / XLSX) — معاينة وفحص قبل الحفظ</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="novaCatalogPickFile" class="nova-inventory-action secondary" style="min-height:44px">اختر ملف CSV أو XLSX</button>'+(impHist.length?'<button type="button" id="novaCatalogRollbackBtn" class="nova-return-btn" style="min-height:44px">↩ تراجع عن آخر استيراد</button>':'')+'</div></div><div id="novaCatalogImportStatus" role="status" style="margin-top:6px;font-size:13px;color:#9fd3f0">'+esc(catStatusMsg)+'</div>'+mapBlock+drySummary+errTable+dupTable+validTable+dryActions+histBlock+'</section>';
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
- content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+' — الأسعار فقط، الرصيد غير متاح في هذه القائمة':'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
+ content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+' — الأسعار فقط، الرصيد غير متاح في هذه القائمة':'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button><button type="button" id="novaCatalogImportBtn" class="nova-inventory-action secondary" style="min-height:44px">📥 استيراد أصناف (CSV/XLSX)</button><input type="file" id="novaCatalogImportFile" accept=".csv,.xlsx,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></div>'+impPanel
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi('الرصيد','غير متاح')+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
  :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
  +dupBlock+table(['الصنف','الباركود','السعر','العبوة','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td data-pack>'+(p.pack?esc(p.pack):'—')+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
@@ -4533,6 +4875,50 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
  });
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
+ const impBtn=document.getElementById('novaCatalogImportBtn'),impPick=document.getElementById('novaCatalogPickFile'),impFile=document.getElementById('novaCatalogImportFile');
+ if(impBtn)impBtn.onclick=()=>{catImportOpen=!catImportOpen;render(page,filter)};
+ if(impPick&&impFile)impPick.onclick=()=>impFile.click();
+ if(impFile)impFile.onchange=async()=>{
+  const f=impFile.files&&impFile.files[0];if(!f)return;
+  catImportOpen=true;
+  const parsed=await window.novaCatalogImport.parseFile(f);
+  impFile.value='';
+  if(!parsed.ok){catParsedSheet=null;catMapping=null;catDryRun=null;catStatusMsg=parsed.error==='empty-file'?'الملف فارغ أو لا يحتوي على صفوف بيانات — لم يتغير شيء':parsed.error==='invalid-xlsx'?'ملف XLSX غير صالح — لم يتغير شيء':'تعذر قراءة الملف — لم يتغير شيء';render(page,filter);return}
+  catParsedSheet=parsed;catMapping=window.novaCatalogImport.guessColumnMapping(parsed.headers);
+  catDryRun=window.novaCatalogImport.dryRun(catParsedSheet,catMapping);
+  catStatusMsg='تمت المعاينة التجريبية (Dry Run): '+catDryRun.validCount+' صالح، '+catDryRun.duplicateCount+' مكرر، '+catDryRun.errorCount+' خطأ — لم يتم الحفظ بعد.';
+  render(page,filter);
+ };
+ view.querySelectorAll('[data-map-field]').forEach(sel=>{sel.onchange=()=>{
+  if(!catParsedSheet)return;
+  catMapping={...(catMapping||window.novaCatalogImport.guessColumnMapping(catParsedSheet.headers)),[sel.dataset.mapField]:Number(sel.value)};
+  catDryRun=window.novaCatalogImport.dryRun(catParsedSheet,catMapping);
+  catStatusMsg='تم تحديث مطابقة الأعمدة والمعاينة (Dry Run): '+catDryRun.validCount+' صالح، '+catDryRun.duplicateCount+' مكرر، '+catDryRun.errorCount+' خطأ — لم يتم الحفظ بعد.';
+  render(page,filter);
+ }});
+ const commitBtn=document.getElementById('novaCatalogCommitBtn');
+ if(commitBtn)commitBtn.onclick=()=>{
+  if(!catDryRun||!catDryRun.validCount)return;
+  const fn=catParsedSheet?catParsedSheet.fileName:'import.csv';
+  const toCommit=catDryRun;
+  catParsedSheet=null;catMapping=null;catDryRun=null;
+  const res=window.novaCatalogImport.commit(toCommit,{confirmed:true,fileName:fn});
+  catStatusMsg=res.ok?'تم اعتماد واستيراد '+res.importedCount+' صنف محليًا (مصدر STOCK LIVE محفوظ دون تعديل).':'تعذر حفظ الاستيراد — لم يتغير شيء.';
+  render(page,filter);
+ };
+ const cancelBtn=document.getElementById('novaCatalogCancelBtn');
+ if(cancelBtn)cancelBtn.onclick=()=>{catParsedSheet=null;catMapping=null;catDryRun=null;catStatusMsg='تم إلغاء المعاينة — لم يتغير شيء.';render(page,filter)};
+ const rbBtn=document.getElementById('novaCatalogRollbackBtn');
+ if(rbBtn)rbBtn.onclick=()=>{
+  const res=window.novaCatalogImport.rollback();
+  catStatusMsg=res.ok?'تم التراجع عن استيراد '+res.removedCount+' صنف واستعادة الحالة السابقة.':'لا يوجد استيراد للتراجع عنه.';
+  render(page,filter);
+ };
+ view.querySelectorAll('[data-rollback-batch]').forEach(b=>{b.onclick=()=>{
+  const res=window.novaCatalogImport.rollback(b.dataset.rollbackBatch);
+  catStatusMsg=res.ok?'تم التراجع عن استيراد '+res.removedCount+' صنف واستعادة الحالة السابقة.':'تعذر التراجع عن الاستيراد.';
+  render(page,filter);
+ }});
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }

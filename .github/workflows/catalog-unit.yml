@@ -7,6 +7,7 @@ on:
       - 'tests/unit/unified-catalog*.check.mjs'
       - 'tests/unit/unit-conversion*.check.mjs'
       - 'tests/unit/catalog-search*.check.mjs'
+      - 'tests/unit/catalog-import*.check.mjs'
       - 'data/emergency-stock.json'
       - '.github/workflows/catalog-unit.yml'
   push:
@@ -16,6 +17,7 @@ on:
       - 'tests/unit/unified-catalog*.check.mjs'
       - 'tests/unit/unit-conversion*.check.mjs'
       - 'tests/unit/catalog-search*.check.mjs'
+      - 'tests/unit/catalog-import*.check.mjs'
       - '.github/workflows/catalog-unit.yml'
   workflow_dispatch:
 
@@ -34,5 +36,5 @@ jobs:
       - name: Run catalog checks (no dependencies, no network, read-only)
         run: |
           set -euo pipefail
-          files=(tests/unit/unified-catalog*.check.mjs tests/unit/unit-conversion*.check.mjs tests/unit/catalog-search*.check.mjs)
+          files=(tests/unit/unified-catalog*.check.mjs tests/unit/unit-conversion*.check.mjs tests/unit/catalog-search*.check.mjs tests/unit/catalog-import*.check.mjs)
           for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done
