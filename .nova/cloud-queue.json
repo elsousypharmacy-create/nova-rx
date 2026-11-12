@@ -13,7 +13,12 @@
    "attempts": 1,
    "fix_attempts": 0,
    "pr": 200,
-   "note": "implemented by run 43302947604; PR opened manually"
+   "note": "implemented by run 43302947604; PR opened manually",
+   "ci_dispatched": {
+    "sha": "c7e1197aaeb8383fcda4bb90419e92bbd0114182",
+    "wf": [],
+    "at": "2026-11-12T20:51:45+00:00"
+   }
   },
   {
    "id": "N62",
@@ -22,9 +27,11 @@
    "brief": "Support shift open, float, drop, payout, cash count, close, and variance approval; reconcile cash / mock-card / bank locally. A closed shift must not be edited. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N62.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-12T20:51:45+00:00"
   },
   {
    "id": "N63",
@@ -62,5 +69,6 @@
    "attempts": 0,
    "fix_attempts": 0
   }
- ]
+ ],
+ "updated": "2026-11-12T20:51:45+00:00"
 }
