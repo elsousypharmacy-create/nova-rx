@@ -3054,6 +3054,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       // Local sales ledger (this device only). Newest first, capped; failures are reported, never silent.
       window.novaSales = (function () {
         const KEY = 'nova-rx-sales-v1', MAX = 1000;
+        const RKEY = 'nova-rx-returns-v1', round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
         const read = () => { try { const a = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(a) ? a.filter(x => x && Array.isArray(x.lines)) : []; } catch (_) { return []; } };
         return {
           list: read,
@@ -3065,6 +3066,35 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               localStorage.setItem(KEY, JSON.stringify(all.slice(0, MAX)));
               return true;
             } catch (_) { return false; }
+          },
+          // Returns (refunds). Stored apart from the sale; the sale is never edited. Refund goes back to the original payment method.
+          returns() { try { const a = JSON.parse(localStorage.getItem(RKEY) || '[]'); return Array.isArray(a) ? a.filter(x => x && x.saleId && Array.isArray(x.lines)) : []; } catch (_) { return []; } },
+          returnedQty(saleId) { const m = {}; this.returns().filter(r => r.saleId === saleId).forEach(r => r.lines.forEach(l => { m[l.idx] = (m[l.idx] || 0) + l.qty; })); return m; },
+          returnedAmount(saleId) { return round2(this.returns().filter(r => r.saleId === saleId).reduce((t, r) => t + (Number(r.amount) || 0), 0)); },
+          quoteReturn(sale, qtyByIdx) {
+            const done = this.returnedQty(sale.id);
+            const net = sale.lines.map(l => (l.price * l.qty) - (l.discount || 0));
+            const sumNet = net.reduce((x, y) => x + y, 0) || 1, ratio = sale.total / sumNet;
+            const lines = []; let amount = 0, any = 0;
+            for (const [k, v] of Object.entries(qtyByIdx || {})) {
+              const i = Number(k), q = Number(v); if (!q) continue;
+              const l = sale.lines[i];
+              if (!l || !Number.isInteger(q) || q < 0) return { ok: false, error: 'invalid' };
+              if (q + (done[i] || 0) > l.qty) return { ok: false, error: 'too-many' };
+              lines.push({ idx: i, name: l.name, qty: q }); amount += net[i] / l.qty * q * ratio; any += q;
+            }
+            if (!any) return { ok: false, error: 'empty' };
+            const remaining = round2(sale.total - this.returnedAmount(sale.id));
+            const left = sale.lines.reduce((t, l, i) => t + l.qty - (done[i] || 0) - (Number(qtyByIdx[i]) || 0), 0);
+            amount = left === 0 ? remaining : Math.min(round2(amount), remaining);
+            return { ok: true, lines, amount };
+          },
+          addReturn(sale, qtyByIdx, reason) {
+            const text = String(reason || '').trim();
+            if (!text) return { ok: false, error: 'reason' };
+            const q = this.quoteReturn(sale, qtyByIdx); if (!q.ok) return q;
+            const r = { id: (crypto.randomUUID ? crypto.randomUUID() : 'R' + Date.now() + Math.random().toString(36).slice(2, 8)), saleId: sale.id, number: sale.number, at: new Date().toISOString(), reason: text.slice(0, 200), lines: q.lines, amount: q.amount, method: sale.payment };
+            try { const all = this.returns(); all.unshift(r); localStorage.setItem(RKEY, JSON.stringify(all.slice(0, 1000))); return { ok: true, ret: r }; } catch (_) { return { ok: false, error: 'storage' }; }
           }
         };
       })();
@@ -3552,6 +3582,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tabs=[...document.querySelectorAll('.nova-tab')];
  const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const tr=(ar,en)=>localStorage.getItem('nova-rx-language')==='en'?en:ar;
  const money=n=>(Number(n)||0).toFixed(2)+(localStorage.getItem('nova-rx-language')==='en'?' EGP':' ج.م');
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
@@ -3579,10 +3610,10 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
  +table(['الاسم','الهاتف','المستوى','الزيارات','النقاط'],rows(list,c=>'<tr><td>'+esc(c.name)+'</td><td dir="ltr">'+esc(c.phone)+'</td><td>'+esc(c.tier)+'</td><td>'+esc(c.visits)+'</td><td>'+esc(c.points)+'</td></tr>'));
  }else if(page==='invoices'){
- const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||'عميل نقدي',total:x.total,pay:x.payment==='cash'?'نقدي':'بطاقة',items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
+ const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
  const savedBlock=saved.length?'<div class="nova-kpis">'+kpi('فواتير محفوظة',saved.length)+kpi('إجمالي المبيعات',money(saved.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(saved.reduce((s,i)=>s+i.total,0)/saved.length))+'</div>'
-  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>الأصناف</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+esc(i.items)+'</td></tr>')+'</tbody></table></div></div>'
+  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+'</td><td>'+esc(i.items)+'</td><td><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا</div></div>';
  const list=filtered(inv,['id','customer','date','branch']);
  content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+savedBlock
@@ -3591,9 +3622,9 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  }else if(page==='reports'){
  const sum=inv.reduce((s,i)=>s+i.total,0);
  const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDateString();const today=sv.filter(x=>new Date(x.at).toDateString()===day);
- const tot=a=>a.reduce((s,x)=>s+(Number(x.total)||0),0);const by={};sv.forEach(x=>x.lines.forEach(l=>{by[l.name]=(by[l.name]||0)+l.qty}));
+ const tot=a=>a.reduce((s,x)=>s+(Number(x.total)||0),0);const rets=window.novaSales?window.novaSales.returns():[];const retTotal=rets.reduce((s,r)=>s+(Number(r.amount)||0),0),retToday=rets.filter(r=>new Date(r.at).toDateString()===day).reduce((s,r)=>s+(Number(r.amount)||0),0);const by={};sv.forEach(x=>{const rq=window.novaSales.returnedQty(x.id);x.lines.forEach((l,ix)=>{by[l.name]=(by[l.name]||0)+l.qty-(rq[ix]||0)})});
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5);
- const realBlock=sv.length?'<div class="nova-kpis">'+kpi('مبيعات اليوم',money(tot(today)))+kpi('فواتير اليوم',today.length)+kpi('كل المبيعات المحفوظة',money(tot(sv)))+kpi('متوسط الفاتورة',money(tot(sv)/sv.length))+'</div>'
+ const realBlock=sv.length?'<div class="nova-kpis">'+kpi('مبيعات اليوم',money(tot(today)))+kpi('مرتجعات اليوم',money(retToday))+kpi('صافي اليوم',money(tot(today)-retToday))+kpi('فواتير اليوم',today.length)+kpi('كل المبيعات المحفوظة',money(tot(sv)))+kpi('إجمالي المرتجعات',money(retTotal))+kpi('صافي المبيعات',money(tot(sv)-retTotal))+kpi('متوسط الفاتورة',money(tot(sv)/sv.length))+'</div>'
   +'<div class="nova-panel"><div class="nova-panel-title">الأكثر مبيعًا (من فواتير هذا الجهاز)</div>'+rows(top,t=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(t[0])+'</span><strong>'+esc(t[1])+'</strong></div>')+'</div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد مبيعات محفوظة بعد — التقارير الحقيقية تظهر بعد أول عملية بيع</div></div>';
  content=head(title,'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض')+realBlock+'<h2 style="margin:18px 0 8px;font-size:15px;color:#9eacb9">بيانات العرض التجريبية</h2>'
@@ -3604,6 +3635,27 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div></div>';
  }
  view.innerHTML=content;
+
+ view.querySelectorAll('[data-return]').forEach(b=>b.onclick=()=>{
+  const sale=(window.novaSales.list()).find(x=>x.id===b.dataset.return);if(!sale)return;
+  const done=window.novaSales.returnedQty(sale.id);
+  const ov=document.createElement('div');ov.className='nova-return-overlay';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const box=document.createElement('div');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.style.cssText='background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:16px';
+  box.innerHTML='<h3 style="margin:0 0 6px">'+tr('مرتجع / إلغاء — فاتورة ','Return / Void — Invoice ')+esc(sale.number)+'</h3><p style="margin:0 0 10px;color:#9eacb9;font-size:13px">اختر الكمية المرتجعة لكل صنف. المبلغ يرجع بنفس طريقة الدفع الأصلية ('+(sale.payment==='cash'?tr('نقدي','cash'):tr('بطاقة','card'))+').</p>'
+   +sale.lines.map((l,i)=>{const left=l.qty-(done[i]||0);return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(l.name)+' <small style="color:#9eacb9">('+tr('متاح للإرجاع ','can return ')+left+')</small></span><input type="number" min="0" max="'+left+'" step="1" value="0" data-ret-idx="'+i+'" '+(left?'':'disabled')+' style="width:80px;padding:6px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px"></div>'}).join('')
+   +'<label style="display:block;margin:10px 0 4px;font-size:13px">سبب المرتجع (مطلوب)</label><input type="text" id="novaRetReason" maxlength="200" style="width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px">'
+   +'<div id="novaRetAmount" style="margin:10px 0;font-weight:700"></div><div id="novaRetMsg" role="alert" style="color:#ffb4a8;min-height:18px;font-size:13px"></div>'
+   +'<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" id="novaRetCancel" class="nova-return-btn">إغلاق</button><button type="button" id="novaRetOk" class="nova-return-btn" style="font-weight:700">تأكيد المرتجع</button></div>';
+  ov.appendChild(box);document.body.appendChild(ov);
+  const qtys=()=>{const o={};box.querySelectorAll('[data-ret-idx]').forEach(i=>{o[i.dataset.retIdx]=Number(i.value)||0});return o};
+  const upd=()=>{const q=window.novaSales.quoteReturn(sale,qtys());box.querySelector('#novaRetAmount').textContent=q.ok?'مبلغ الإرجاع: '+money(q.amount):''};
+  box.addEventListener('input',upd);
+  box.querySelector('#novaRetCancel').onclick=()=>ov.remove();
+  box.querySelector('#novaRetOk').onclick=()=>{const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
+   if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
+   ov.remove();render(page,filter)};
+  box.querySelector('input:not([disabled])')?.focus();
+ });
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
  const input=document.getElementById('novaFilter');
@@ -3650,7 +3702,8 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'بيانات العرض التجريبية':'Demo data',
  'تعذر حفظ الفاتورة على هذا الجهاز — صوّر الإيصال قبل المتابعة.':'Could not save the invoice on this device — photograph the receipt before continuing.',
  'فواتير محفوظة':'Saved Invoices','إجمالي المبيعات':'Total Sales','مبيعات اليوم':'Today\'s Sales','فواتير اليوم':'Today\'s Invoices','كل المبيعات المحفوظة':'All Saved Sales',
- 'المشتريات':'Purchases','الدفع':'Payment','نقدي':'Cash','بطاقة':'Card','عميل نقدي':'Walk-in Customer',
+ 'المشتريات':'Purchases','المرتجع':'Returned','إجراء':'Action','مرتجع / إلغاء':'Return / Void','إغلاق':'Close','تأكيد المرتجع':'Confirm return','مرتجعات اليوم':'Today\'s Returns','صافي اليوم':'Net Today','إجمالي المرتجعات':'Total Returns','صافي المبيعات':'Net Sales',
+ 'اختر الكمية المرتجعة لكل صنف. المبلغ يرجع بنفس طريقة الدفع الأصلية':'Choose the returned quantity for each item. The refund goes back through the original payment method','سبب المرتجع (مطلوب)':'Return reason (required)','مبلغ الإرجاع:':'Refund amount:','اكتب سبب المرتجع':'Enter a return reason','اختر كمية واحدة على الأقل':'Pick at least one unit','الكمية أكبر من المتاح للإرجاع':'Quantity exceeds what can be returned','تعذر حفظ المرتجع على هذا الجهاز':'Could not save the return on this device','الدفع':'Payment','نقدي':'Cash','بطاقة':'Card','عميل نقدي':'Walk-in Customer',
  'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن':'Preview settings — no production permissions or sync',
  'Customer Search Mode':'وضع البحث عن عميل','Product / Barcode Scan Mode':'وضع البحث عن منتج أو باركود',
  'New Sale':'فاتورة جديدة','Clear Invoice':'مسح الفاتورة','Keyboard Shortcuts':'اختصارات الكيبورد','Held Invoices':'الفواتير المعلقة','Held':'معلقة','Hold Current Invoice':'تعليق الفاتورة الحالية','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
