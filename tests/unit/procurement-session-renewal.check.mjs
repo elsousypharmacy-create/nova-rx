@@ -22,4 +22,8 @@ const fs=await import('node:fs');const src=fs.readFileSync(new URL('../../tools/
 assert.ok(src.indexOf('await guardAumetApi(ctx)')<src.indexOf("phase = 'open-login-page'"));
 assert.ok(src.indexOf('await captureAumetCart(page, capturedCart)')<src.indexOf("if (process.env.INSPECT_CART === 'true')",src.indexOf('async function aumet')));
 assert.ok(src.indexOf('await verifyAumetCart(')<src.indexOf("await send('aumet'"));
+// Hardening: the Aumet context blocks service workers (they bypass the route guard); a 401 with the right buyer id must still fail.
+const aumetStart = src.indexOf('async function aumet');
+assert.ok(/newContext\(\{[^}]*serviceWorkers: 'block'/.test(src.slice(aumetStart, src.indexOf("phase = 'prepare'", aumetStart))), 'Aumet context blocks service workers');
+await assert.rejects(() => verifyAumetCart({ get: async () => ({ status: () => 401, json: async () => ({ data: { buyer: { id: 456 }, sellers: [] } }) }) }, template, 'fake', ''), /cart-read-verification-failed/);
 console.log('PASS: renewal blocks writes, captures cart on normal refresh, rejects missing/wrong-account/expired cart before success');

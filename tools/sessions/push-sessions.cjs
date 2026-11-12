@@ -98,7 +98,8 @@ async function pharmaoverseas(browser) {
 async function aumet(browser) {
   const { AUMET_USERNAME, AUMET_PASSWORD } = process.env;
   if (!AUMET_USERNAME || !AUMET_PASSWORD) return { id: 'aumet', result: 'skipped (no secrets)' };
-  const ctx = await browser.newContext({ locale: 'en-US' });
+  // serviceWorkers blocked: ctx.route (the write guard) does not see requests made by a service worker.
+  const ctx = await browser.newContext({ locale: 'en-US', serviceWorkers: 'block' });
   const page = await ctx.newPage();
   let phase = 'prepare';
   try {
