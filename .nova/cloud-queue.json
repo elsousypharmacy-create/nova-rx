@@ -1,0 +1,66 @@
+{
+ "version": 1,
+ "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed.",
+ "tasks": [
+  {
+   "id": "N60",
+   "phase": 8,
+   "title": "FIN-01 chart of accounts and opening balances",
+   "brief": "Create a local chart of accounts with cost centers, branches, and periods, plus balanced opening balances that have a source and an approval. Use a base currency and dated conversion rules. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N60.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pr_open",
+   "attempts": 1,
+   "fix_attempts": 0,
+   "pr": 200,
+   "note": "implemented by run 43302947604; PR opened manually"
+  },
+  {
+   "id": "N62",
+   "phase": 8,
+   "title": "FIN-03 cash drawer and shifts",
+   "brief": "Support shift open, float, drop, payout, cash count, close, and variance approval; reconcile cash / mock-card / bank locally. A closed shift must not be edited. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N62.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N63",
+   "phase": 8,
+   "title": "FIN-04 supplier accounts and expenses",
+   "brief": "Keep local supplier accounts with payments, terms, and discounts, and expenses that need a document, category, and approval. Reconcile them with local purchasing and a mock bank register; no live bank or supplier API. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N63.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N64",
+   "phase": 8,
+   "title": "FIN-05 financial reports and period close",
+   "brief": "Produce a local trial balance, P&L, balance sheet, and cash-flow view, with margins after returns and COGS. Period close locks the period; reopen requires permission. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N64.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N62",
+    "N63"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N69",
+   "phase": 9,
+   "title": "BI-01 indicator dictionary",
+   "brief": "Publish a local dictionary for gross, net, discount, return, cost, margin, and visits, and use the same source and rules in POS, the dashboard, and exports. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N69.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  }
+ ]
+}
