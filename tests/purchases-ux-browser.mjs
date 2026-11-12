@@ -49,6 +49,7 @@ try {
   assert((await page.locator('#rows').innerText()).includes('اختَر عرضًا أو وزّع تلقائيًا'));
 
   // Distribution: a row being searched is visibly "searching", then none / error / found are distinct.
+  await page.locator('#selectAll').check();
   await page.locator('#distribute').click();
   await page.locator('.offer-state[data-state=searching]').first().waitFor({ timeout: 5000 });
   await page.waitForFunction(() => !document.getElementById('distribute').disabled, { timeout: 30000 });

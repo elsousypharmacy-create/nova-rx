@@ -21,6 +21,7 @@ jobs:
       - run: node tests/unit/supplier-transactions.check.mjs
       - run: node tests/unit/supplier-platform.check.mjs
       - run: node tests/unit/purchases.check.mjs
+      - run: node tests/unit/purchases-shortages.check.mjs
       - run: node tests/unit/purchases-speed.check.mjs
       - run: node tests/unit/purchases-seller-scope.check.mjs
       - run: npm install --no-save --no-package-lock playwright@1.58.2
