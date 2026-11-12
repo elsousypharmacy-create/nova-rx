@@ -839,6 +839,11 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint 2026-11-11 — Claude 1: BUY-05 three-way invoice match (pure, not wired)
 Branch `claude/buy-05-invoice-match`. New: `worker/procurement/invoice-match.js`, `tests/unit/procurement-invoice-match.check.mjs` (12 cases; 11 mutations caught, 4 survived the first draft and got tests), `docs/procurement/BUY-05_INVOICE_MATCH.md`. Not wired, no deploy, no supplier call. Roadmap BUY-05 stays in progress (receiving UI, supplier returns, lot/cost checks, owner acceptance are open).
+## Checkpoint 2026-11-11 — Claude 1, CAT-05 instant search (branch only, no PR: cap 3/3)
+- Branch `claude/cat-05-search`, stacked on `claude/cat-packaging-link` (`7a159b8`). Files: `worker/catalog/catalog-search.js`, `tests/unit/catalog-search.check.mjs` (21 cases incl. real export and latency), `docs/catalog/CAT-05.md`, `catalog-unit.yml` glob.
+- Real export: build ~150 ms, 300 queries p95 ~3-5 ms (target 150 ms). API p95 NOT TESTED.
+- Mutations: the first round showed 15 survivors, most were test gaps; added 7 tests; one of my new tests failed even on the correct code (label ordering), so that round's "killed" results were invalid and redone: 10 of 10 killed on a passing baseline.
+- 2026-11-11 (later): clean branch `claude/cat-05-search-v2` = main `ad632e3` + exactly the change of `38beafc` (identity over the three new files = 0 lines; passes WITHOUT the packaging PR #145: it only reads `product.packaging` if present); PR opens when a slot frees.
 ## 2026-11-12 — Claude 2: UI deployed live, sales ledger (U1), price route
 - Live `nova-rx-preview` = ui-real-prices4 (sha256 7827b1743724ab1719f4c2b1712c2d0e2289ab19cb2e8977c77ba3a5c9e40a09), deploy run 43150450055, digest read back. Owner authorised the deploy and said to finish without coming back.
 - `/emergency/stock.json` was 404 on the purchases lineage → `tools/patch-worker-stock-route.mjs` + `tests/unit/stock-route.check.mjs`. Live now serves 4378 price rows (prices only).
