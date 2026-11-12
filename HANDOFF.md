@@ -839,3 +839,6 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 
 ## Checkpoint 2026-11-11 — Claude 1: BUY-05 three-way invoice match (pure, not wired)
 Branch `claude/buy-05-invoice-match`. New: `worker/procurement/invoice-match.js`, `tests/unit/procurement-invoice-match.check.mjs` (12 cases; 11 mutations caught, 4 survived the first draft and got tests), `docs/procurement/BUY-05_INVOICE_MATCH.md`. Not wired, no deploy, no supplier call. Roadmap BUY-05 stays in progress (receiving UI, supplier returns, lot/cost checks, owner acceptance are open).
+
+## Checkpoint 2026-11-12 — Claude 1: BUY-05 supplier returns and credit-note match (pure, not wired)
+Branch `claude/buy-05-supplier-return`, stacked on `claude/buy-05-invoice-match` (PR #151). New: `worker/procurement/supplier-return.js`, `tests/unit/procurement-supplier-return.check.mjs`, doc section. No PR yet (3/3 implementation PRs open: #149, #150, #151). Not wired, no supplier call.
