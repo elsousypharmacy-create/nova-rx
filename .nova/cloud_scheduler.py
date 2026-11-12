@@ -207,16 +207,21 @@ def main():
             continue
         bad = [w for w in need if latest[w]["conclusion"] not in ("success", "skipped", "neutral")]
         if not bad:
-            info = json.loads(sh("gh", "pr", "view", str(p["number"]), "-R", REPO, "--json", "mergeable"))
-            if info.get("mergeable") == "MERGEABLE":
-                act("gh", "pr", "merge", str(p["number"]), "-R", REPO, "--squash", "--delete-branch", "--match-head-commit", sha)
+            for _ in range(8):  # GitHub computes mergeability lazily after main moves
+                info = json.loads(sh("gh", "pr", "view", str(p["number"]), "-R", REPO, "--json", "mergeable"))
+                if info.get("mergeable") != "UNKNOWN":
+                    break
+                time.sleep(5)
+            if info.get("mergeable") in ("MERGEABLE", "UNKNOWN"):
+                try:
+                    act("gh", "pr", "merge", str(p["number"]), "-R", REPO, "--squash", "--delete-branch", "--match-head-commit", sha)
+                except RuntimeError as ex:
+                    log(f"{tid}: merge not possible yet: {ex}"); continue
                 noop = files and all(f.startswith(".nova/noop/") for f in files)
                 t.update(status="done_noop" if noop else "done", merged_at=iso(), pr_url=p["html_url"])
                 t.pop("ci_dispatched", None)
                 log(f"{tid}: merged PR #{p['number']} ({t['status']})")
                 continue
-            if info.get("mergeable") == "UNKNOWN":
-                log(f"{tid}: mergeability pending"); continue
             why = "the PR has merge conflicts with main: merge origin/main into the branch and resolve them"
         else:
             why = "these CI workflows failed: " + ", ".join(f"{w} ({latest[w]['html_url']})" for w in bad)
