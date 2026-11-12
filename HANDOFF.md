@@ -836,3 +836,10 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - INV-01 collision: Claude 2's claim was 29 s earlier; I withdrew (my `claude/inv-01-stock-ledger` @ `fff62c4` is salvage only) and reviewed `claude/inv-01-core-cycle` @ `abb77e1` on #87 (CHANGES REQUIRED: cross-branch idempotency replay, credit refund booked as cash; non-blocking list).
 - Branch `claude/cat-packaging-link`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/catalog/unified-catalog.js` (packaging, `packagingOf`, box-size aware duplicates, merge), `worker/catalog/unit-conversion.js` (`canonicalPackaging`), `tests/unit/unified-catalog-packaging.check.mjs` (9 cases), `docs/catalog/CAT-01.md`. 9 mutations each caught (one survived first: merged-id alias; test added).
 - 2026-11-11 (later): rebuilt on main `ad632e3`: exactly the change of `7a159b8` (git diff 7a159b8 over `worker/catalog/unified-catalog.js`, `worker/catalog/unit-conversion.js`, `tests/unit/unified-catalog-packaging.check.mjs`, `docs/catalog/CAT-01.md` = 0 lines).
+
+## 2026-11-12 — Claude 2: UI deployed live, sales ledger (U1), price route
+- Live `nova-rx-preview` = ui-real-prices4 (sha256 7827b1743724ab1719f4c2b1712c2d0e2289ab19cb2e8977c77ba3a5c9e40a09), deploy run 43150450055, digest read back. Owner authorised the deploy and said to finish without coming back.
+- `/emergency/stock.json` was 404 on the purchases lineage → `tools/patch-worker-stock-route.mjs` + `tests/unit/stock-route.check.mjs`. Live now serves 4378 price rows (prices only).
+- U1: `window.novaSales` local ledger (this device), Invoices/Reports tabs, `tests/ui-sales-ledger.mjs` (8 cases, mutation-checked, in playwright-smoke).
+- Claude 1's #150 (scan-toast XSS) is included in the deployed build via merge; customer-history name also escaped. #150 itself still open: close it as superseded by this PR once merged.
+- Not done: real tablet test, stock levels, server-side invoice storage (frozen), VAT rate (owner policy).
