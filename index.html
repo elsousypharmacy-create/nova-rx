@@ -2591,7 +2591,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             // Immediate match on valid product barcode! Add and switch mode.
             addProductToInvoice(matchedByBarcode);
             setSearchMode("PRODUCT");
-            showToast(`Scanned product added: ${matchedByBarcode.name}`);
+            showToast(`Scanned product added: ${escH(matchedByBarcode.name)}`);
             return;
           }
         }
@@ -2707,7 +2707,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             if (barcodeMatch) {
               addProductToInvoice(barcodeMatch);
               setSearchMode("PRODUCT");
-              showToast(`Barcode match added: ${barcodeMatch.name}`);
+              showToast(`Barcode match added: ${escH(barcodeMatch.name)}`);
               return;
             }
           }
@@ -2729,7 +2729,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               addProductToInvoice(exactBarcode);
               elements.mainSearchInput.value = "";
               closeSuggestions();
-              showToast(`Product added: ${exactBarcode.name}`);
+              showToast(`Product added: ${escH(exactBarcode.name)}`);
               return;
             }
           }
