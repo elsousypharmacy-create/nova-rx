@@ -4,6 +4,8 @@
 //   approved PO draft                   ->  purchase order lines in base units for goods receipt
 // Pure, no I/O. Packaging comes from `packagingOf(productId)` (CAT-02 shape); the catalog product has no packaging field yet.
 import { toBaseUnits, fromBaseUnits, allocateLinePrices, normalizePackaging } from '../catalog/unit-conversion.js';
+import { matchInvoice } from '../procurement/invoice-match.js';
+import { matchCreditNote } from '../procurement/supplier-return.js';
 
 const ok = value => ({ ok: true, ...value });
 const fail = (error, detail) => ({ ok: false, error, detail });
@@ -57,6 +59,23 @@ export function poLinesFromDraft(draft, nameToProductId, packagingOf, { purchase
     lines.set(productId, (lines.get(productId) ?? 0) + base.value);
   }
   return ok({ lines: [...lines].map(([productId, orderedBase]) => ({ productId, orderedBase })) });
+}
+
+// supplier invoice vs the PO and what THIS branch's core really received against it (not what anyone claims arrived).
+// prices = { productId: lineTotalCents } for the whole ordered quantity (optional; without it only quantities and totals are checked).
+export function matchInvoiceForPo(core, scope, { poRef, prices = null, invoice, knownInvoiceNumbers = [], tolerance } = {}) {
+  const status = core.poStatus(scope, poRef);
+  if (!status) return fail('po-not-found');
+  const po = { poRef: status.poRef, lines: status.lines.map(l => ({ productId: l.productId, orderedBase: l.orderedBase, ...(prices && Number.isSafeInteger(prices[l.productId]) ? { lineTotalCents: prices[l.productId] } : {}) })) };
+  const receipts = status.lines.filter(l => l.receivedBase > 0).map(l => ({ productId: l.productId, qtyBase: l.receivedBase }));
+  return matchInvoice({ po, receipts, invoice, knownInvoiceNumbers, tolerance });
+}
+
+// supplier credit note vs the credit the core itself computed for a return (the core's cumulative figure is authoritative).
+export function matchCreditNoteForReturn(returnResult, note, { knownCreditNotes = [], tolerance } = {}) {
+  if (!returnResult || typeof returnResult.returnKey !== 'string' || !('creditCents' in returnResult) || !(returnResult.creditCents === null || Number.isSafeInteger(returnResult.creditCents))) return fail('return-result-invalid');
+  const plan = { ok: true, expectedCreditCents: returnResult.creditCents, lines: [], supplierRef: returnResult.supplierRef };
+  return matchCreditNote({ plan, note, knownCreditNotes, tolerance });
 }
 
 export { fromBaseUnits };

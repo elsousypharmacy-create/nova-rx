@@ -6,6 +6,8 @@ on:
       - 'worker/inventory/**'
       - 'worker/catalog/**'
       - 'worker/procurement/po-draft.js'
+      - 'worker/procurement/invoice-match.js'
+      - 'worker/procurement/supplier-return.js'
       - 'tests/integration/**'
       - 'data/emergency-stock.json'
       - '.github/workflows/core-cycle.yml'
@@ -30,4 +32,5 @@ jobs:
           node --no-warnings tests/integration/core-cycle.check.mjs
           node --no-warnings tests/integration/inv-01-review-fixes.check.mjs
           node --no-warnings tests/integration/inv-supplier-return.check.mjs
+          node --no-warnings tests/integration/buy-glue-match.check.mjs
           node --no-warnings tests/unit/procurement-po-draft.check.mjs
