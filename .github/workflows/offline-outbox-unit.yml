@@ -4,13 +4,19 @@ on:
   pull_request:
     paths:
       - 'offline-outbox.js'
+      - 'local-reliability.js'
+      - 'docs/OUTAGE_RUNBOOK.md'
       - 'tests/unit/offline-outbox.check.mjs'
+      - 'tests/unit/local-reliability.check.mjs'
       - '.github/workflows/offline-outbox-unit.yml'
   push:
     branches: [main]
     paths:
       - 'offline-outbox.js'
+      - 'local-reliability.js'
+      - 'docs/OUTAGE_RUNBOOK.md'
       - 'tests/unit/offline-outbox.check.mjs'
+      - 'tests/unit/local-reliability.check.mjs'
       - '.github/workflows/offline-outbox-unit.yml'
   workflow_dispatch:
 
@@ -27,4 +33,6 @@ jobs:
         with:
           node-version: '22'
       - name: Run offline outbox checks (no dependencies, no network)
-        run: node --no-warnings tests/unit/offline-outbox.check.mjs
+        run: |
+          node --no-warnings tests/unit/offline-outbox.check.mjs
+          node --no-warnings tests/unit/local-reliability.check.mjs
