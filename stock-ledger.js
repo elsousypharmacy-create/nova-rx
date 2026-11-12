@@ -26,15 +26,24 @@
         if (typeof m.ref !== 'string' || !m.ref) fail('missing-ref');
         if (!isInt(m.qty) || m.qty === 0) fail('bad-qty');
         if (m.kind !== 'adjustment' && m.qty < 0) fail('bad-qty');
+        var lot = m.lot == null ? null : String(m.lot);
+        if (m.kind === 'receive' && m.lot != null) {   // N29: receiving may carry lot / expiry / unit cost
+          if (!lot) fail('bad-lot');
+          if (typeof m.expiry !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(m.expiry) || isNaN(Date.parse(m.expiry))) fail('bad-expiry');
+          if (typeof m.cost !== 'number' || !isFinite(m.cost) || m.cost < 0) fail('bad-cost');
+        } else if (m.lot != null || m.expiry != null || m.cost != null) fail('lot-only-on-receive');
         var a = load();
-        for (var i = 0; i < a.length; i++) if (a[i].kind === m.kind && a[i].ref === m.ref && a[i].code === m.code) fail('duplicate-movement');
+        for (var i = 0; i < a.length; i++) if (a[i].kind === m.kind && a[i].ref === m.ref && a[i].code === m.code && (a[i].lot || null) === lot) fail('duplicate-movement');
         var delta = m.kind === 'adjustment' ? m.qty : KINDS[m.kind] * m.qty;
         var rec = { seq: a.length + 1, at: now(), kind: m.kind, code: m.code, qty: m.qty, delta: delta, ref: m.ref };
+        if (lot) { rec.lot = lot; rec.expiry = m.expiry; rec.cost = m.cost; }
         a.push(rec);
         storage.setItem(key, JSON.stringify(a));
         return copy(rec);
       },
       movements: function (code) { return load().filter(function (r) { return !code || r.code === code; }); },
+      /* receipts that carry a lot: [{code, lot, expiry, cost, qty, ref, seq}] (received quantity, not remaining) */
+      lots: function (code) { return load().filter(function (r) { return r.lot && (!code || r.code === code); }); },
       onHand: function (code) { return load().reduce(function (s, r) { return r.code === code ? s + r.delta : s; }, 0); },
       balances: function () {
         var out = {};
