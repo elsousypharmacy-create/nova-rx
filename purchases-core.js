@@ -1,4 +1,18 @@
-import { normalizeDigits, matchOffersToItem } from './worker/procurement/normalize.js';
+import { normalizeDigits, matchOffersToItem, parseProductName } from './worker/procurement/normalize.js';
+
+const FORM_LABELS = {
+  tab: 'أقراص', tablet: 'أقراص', tablets: 'أقراص',
+  cap: 'كبسولات', capsule: 'كبسولات', capsules: 'كبسولات',
+  sachet: 'أكياس', sachets: 'أكياس',
+  supp: 'لبوس', susp: 'معلق', syrup: 'شراب', drops: 'نقط',
+  amp: 'أمبول', vial: 'فيال', cream: 'كريم', gel: 'جل', eff: 'فوار',
+};
+const PACK_UNITS = {
+  tab: 'قرص', cap: 'كبسولة', sachet: 'كيس', supp: 'لبوسة',
+  amp: 'أمبول', vial: 'فيال', ml: 'مل', drops: 'نقطة',
+  bottle: 'زجاجة', strip: 'شريط',
+};
+const SUPPLIER_NAMES = { aumet: 'أوميت', pharmaoverseas: 'فارما أوفرسيز' };
 
 export function readDays(value) {
   const text = normalizeDigits(String(value ?? '')).trim();
@@ -61,11 +75,47 @@ export function offerPrice(o) {
   const publicPrice = numberOrNull(o.publicPrice);
   return { price, discount: price !== null && publicPrice > 0 && price >= 0 && price <= publicPrice ? Math.round((1 - price / publicPrice) * 10000) / 100 : null };
 }
+export function describeOffer(offer = {}) {
+  const parsed = parseProductName(offer.productName || '');
+  const strength = typeof offer.strength === 'string' && offer.strength.trim()
+    ? normalizeDigits(offer.strength.trim())
+    : offer.strength && typeof offer.strength === 'object' && offer.strength.value != null
+      ? `${offer.strength.value} ${offer.strength.unit || ''}`.trim()
+      : parsed.strength ? `${parsed.strength.value} ${parsed.strength.unit}` : null;
+  const rawForm = typeof offer.form === 'string' && offer.form.trim()
+    ? offer.form.trim().toLowerCase()
+    : (parsed.form && parsed.form !== 'other' ? parsed.form : parsed.pack?.unit);
+  const form = rawForm && rawForm !== 'other' ? (FORM_LABELS[rawForm] || String(offer.form || rawForm).trim()) : null;
+  let packSize = null;
+  if (offer.packSize !== null && offer.packSize !== undefined && String(offer.packSize).trim() !== '') {
+    const rawPack = normalizeDigits(String(offer.packSize).trim());
+    const n = numberOrNull(rawPack);
+    const u = parsed.pack?.unit ? (PACK_UNITS[parsed.pack.unit] || parsed.pack.unit) : 'وحدة';
+    packSize = n !== null && /^\d+(?:\.\d+)?$/.test(rawPack) ? `${n} ${u}` : rawPack;
+  } else if (parsed.pack?.count) {
+    const u = PACK_UNITS[parsed.pack.unit] || parsed.pack.unit || 'وحدة';
+    packSize = `${parsed.pack.count} ${u}`;
+  }
+  const quantity = numberOrNull(offer.availableQuantity);
+  const { price: cost } = offerPrice(offer);
+  const stamp = Date.parse(offer.lastUpdated || '');
+  const date = Number.isFinite(stamp) ? new Date(stamp).toISOString().slice(0, 10) : null;
+  return { strength, form, packSize, pack: packSize, quantity, cost, date };
+}
+export function expiredSessionMessage(suppliers = []) {
+  const expired = (Array.isArray(suppliers) ? suppliers : []).filter(s =>
+    s && (s.state === 'expired' || /الجلسة|انتهت|منتهية|expired|auth/i.test(String(s.message || s.error || '')))
+  );
+  if (!expired.length) return '';
+  const names = expired.map(s => s.name && /[\u0600-\u06FF]/.test(s.name) ? s.name : (SUPPLIER_NAMES[s.id] || s.name || s.id)).join('، ');
+  return `الجلسة منتهية عند ${names} — جدّد جلسة المورد لإكمال المقارنة`;
+}
 export function filterOffers(item, rows, settings, now = Date.now()) {
   const known = new Set(matchOffersToItem({ name: item.nameEn || item.name }, rows.map(r => r.offer || r)).filter(r => r.score === 1 && !r.needsReview).map(r => offerKey(r.offer)));
   return rows.map(row => {
     const offer = row.offer || row;
     const pricing = offerPrice(offer);
+    const details = describeOffer(offer);
     const exactBarcode = item.gtin && offer.barcode && String(item.gtin) === String(offer.barcode);
     const selectedSupplier = settings.suppliers.includes(offer.supplierId);
     const selectedSeller = offer.supplierId !== 'aumet' || (offer.sellerId != null && settings.aumetSellers.includes(String(offer.sellerId)));
@@ -73,7 +123,7 @@ export function filterOffers(item, rows, settings, now = Date.now()) {
     const fresh = Number.isFinite(stamp) && now - stamp <= 6 * 3600000 && stamp <= now + 60000;
     const match = exactBarcode || known.has(offerKey(offer));
     const eligible = selectedSupplier && selectedSeller && match && fresh && offer.currency === 'EGP' && pricing.price !== null && pricing.price >= 0 && pricing.discount !== null && ['in_stock', 'low'].includes(offer.stockStatus) && (numberOrNull(offer.availableQuantity) === null || offer.availableQuantity > 0);
-    return { offer, ...pricing, eligible, reason: !selectedSupplier ? 'المورد مستبعد' : !selectedSeller ? 'المخزن غير محدد' : !match ? 'راجع مطابقة الصنف والعبوة' : !fresh ? 'العرض قديم أو بلا تاريخ' : pricing.discount === null ? 'الخصم غير مؤكد' : !['in_stock', 'low'].includes(offer.stockStatus) ? 'التوفر غير مؤكد' : '' };
+    return { offer, ...pricing, ...details, eligible, reason: !selectedSupplier ? 'المورد مستبعد' : !selectedSeller ? 'المخزن غير محدد' : !match ? 'راجع مطابقة الصنف والعبوة' : !fresh ? 'العرض قديم أو بلا تاريخ' : pricing.discount === null ? 'الخصم غير مؤكد' : !['in_stock', 'low'].includes(offer.stockStatus) ? 'التوفر غير مؤكد' : '' };
   });
 }
 export function distribute(item, rows, settings, now = Date.now()) {

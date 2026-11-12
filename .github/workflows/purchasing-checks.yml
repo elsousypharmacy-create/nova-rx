@@ -24,6 +24,7 @@ jobs:
       - run: node tests/unit/purchases-shortages.check.mjs
       - run: node tests/unit/purchases-speed.check.mjs
       - run: node tests/unit/purchases-prep.check.mjs
+      - run: node tests/unit/purchases-compare.check.mjs
       - run: node tests/unit/purchases-seller-scope.check.mjs
       - run: npm install --no-save --no-package-lock playwright@1.58.2
       - run: node node_modules/playwright/cli.js install --with-deps chromium
@@ -32,6 +33,7 @@ jobs:
       - run: node tests/supplier-orders-browser.mjs
       - run: node tests/purchases-seller-search-browser.mjs
       - run: node tests/purchases-ux-browser.mjs
+      - run: node tests/purchases-compare-browser.mjs
       - run: node tests/unit/purchase-orders.check.mjs
       - run: node tests/purchases-po-browser.mjs
       - uses: actions/upload-artifact@v4
