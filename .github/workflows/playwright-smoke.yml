@@ -47,6 +47,8 @@ jobs:
         run: node tests/ui-sales-ledger.mjs
       - name: UI returns (U2)
         run: node tests/ui-returns.mjs
+      - name: UI products packaging (N05)
+        run: node tests/ui-products-packaging.mjs
       - name: Write machine-readable result
         if: always()
         run: |
