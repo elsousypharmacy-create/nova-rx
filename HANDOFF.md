@@ -864,3 +864,6 @@ Branch `claude/buy-05-supplier-return`, stacked on `claude/buy-05-invoice-match`
 
 ## Checkpoint 2026-11-12 — Claude 1: INV supplier returns in the stock core (not wired)
 Branch `claude/inv-supplier-return`. `worker/inventory/stock-core.js`: `lotsOf`, `returnToSupplier`, supplier_return table/kind, reconcile check. `tests/integration/inv-supplier-return.check.mjs` (12 cases; 14 mutations caught after fixing two that targeted the wrong occurrence), `core-cycle.yml` runs it, `docs/inventory/INV-01.md` section. Not wired, no deploy.
+
+## Checkpoint 2026-11-12 — Claude 1: BUY glue over the stock core (not wired)
+Merged on the owner's instruction «متستناش المراجعة نصلح بعدين» (no independent review yet; review debt recorded on #87): #153 follow-up #156, #155, #157. Branch `claude/buy-glue-match`: `matchInvoiceForPo`, `matchCreditNoteForReturn` in `worker/inventory/glue.js`, `tests/integration/buy-glue-match.check.mjs` (7 cases, 9 mutations caught), `core-cycle.yml` path filter and run line, doc section.
