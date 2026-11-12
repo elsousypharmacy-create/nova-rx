@@ -9,7 +9,7 @@ prefs.suppliers=Array.isArray(prefs.suppliers)?prefs.suppliers.filter(x=>['aumet
 prefs.aumetSellers=Array.isArray(prefs.aumetSellers)?prefs.aumetSellers.map(String):[];
 const LIMITS='novaPurchaseLimitsV1';let limits={};try{const l=JSON.parse(localStorage.getItem(LIMITS)||'null');if(l&&typeof l==='object')limits=l;}catch{}
 let rawItems=[],items=[],sellers=[],offersByItem=new Map(),dashboardPin='',busy=false,generation=0,lastText='',pendingSellerIds=new Set();
-let cartPlans=[],sentLines=new Set(),pendingStockLoad=false;
+let cartPlans=[],sentLines=new Set(),pendingStockLoad=false,readBackLog=[];
 const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
 let offerCacheHits=0;
 const offerSearch=createOfferSearch({request:async(query,opts)=>{const r=await provider().search(query,opts);return {rows:(r.results||[]).flatMap(x=>x.offers||[]),complete:opts.supplierIds.length>0&&opts.supplierIds.every(id=>(r.suppliers||[]).some(s=>s.id===id&&s.state==='ok'))};}});
@@ -148,8 +148,8 @@ $('prepareAumet').onclick=async()=>{
 };
 $('applyAumet').onclick=async()=>{
  if(busy||!cartPlans.length)return;cartBusy(true);let verified=0;
- try{for(const p of cartPlans){if(sentLines.has(lineIdentity(p.line)))continue;$('cartStatus').textContent=`جارٍ إضافة ومراجعة ${p.line.name}…`;const r=await provider().applyPreparedSupplierCart(p.line.offer.supplierId,cartLine(p.line),p);if(!r.ok||r.state!=='verified')throw new Error(r.error);sentLines.add(lineIdentity(p.line));const item=items.find(i=>i.key===p.line.itemKey);if(item)for(const a of item.allocations||[])if(a.key===p.line.key)a.cartState='verified';verified++;}
- render();$('reviewGroups').innerHTML=groupCart(items).map(groupHtml).join('');$('cartStatus').textContent=`تم التحقق من إضافة ${fmt(verified)} صنف إلى سلة حسابك عند الموردين. لم يتم تأكيد أي طلب شراء.`;cartPlans=[];$('applyAumet').hidden=true;
+ try{for(const p of cartPlans){if(sentLines.has(lineIdentity(p.line)))continue;$('cartStatus').textContent=`جارٍ إضافة ومراجعة ${p.line.name}…`;const r=await provider().applyPreparedSupplierCart(p.line.offer.supplierId,cartLine(p.line),p);if(!r.ok||r.state!=='verified')throw new Error(r.error);sentLines.add(lineIdentity(p.line));readBackLog.push(`قراءة السلة: ${p.line.offer.supplierProductId} × ${fmt(p.target)} ✓ ${p.line.name}`);const item=items.find(i=>i.key===p.line.itemKey);if(item)for(const a of item.allocations||[])if(a.key===p.line.key)a.cartState='verified';verified++;}
+ render();$('reviewGroups').innerHTML=groupCart(items).map(groupHtml).join('');$('cartStatus').textContent=`تم التحقق من إضافة ${fmt(verified)} صنف إلى سلة حسابك عند الموردين. لم يتم تأكيد أي طلب شراء.`;$('cartPlans').innerHTML=readBackLog.map(t=>`<p>${esc(t)}</p>`).join('');readBackLog=[];cartPlans=[];$('applyAumet').hidden=true;
  }catch(e){$('cartStatus').textContent=`تم التحقق من ${fmt(verified)} صنف. ${cartMessage(e.message)}`;/* Keep signed plans for read-back retry; never calculate a new additive target. */}
  finally{cartBusy(false);}
 };
