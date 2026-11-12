@@ -92,7 +92,7 @@ jobs:
             - If you touch UI, preserve Black Edition Arabic RTL UX.
             - Run the tests the brief names, or the nearest existing unit tests for the files you change, and record exact results.
           claude_args: |
-            --model claude-sonnet-5
+            --model sonnet
             --max-turns 40
             --allowedTools Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash(git:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(gh:*)
 
