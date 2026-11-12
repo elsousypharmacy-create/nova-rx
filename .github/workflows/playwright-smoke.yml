@@ -49,6 +49,9 @@ jobs:
         run: node tests/ui-sales-ledger.mjs
       - name: POS-02 atomic invoice and payment (N35)
         run: node tests/ui-pos02-payment.mjs
+      - name: POS-03 customer and parked invoices (N36)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-pos03-customer-drafts.mjs
       - name: UI returns (U2)
         run: node tests/ui-returns.mjs
       - name: UI products packaging (N05, runs once the test is on the branch)

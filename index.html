@@ -1930,6 +1930,20 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div class="brand-section">
           <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" width="30" height="30" loading="eager" decoding="async"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي</span></div></div>
           <span class="task-badge">TASK-001</span>
+          <div id="posSessionBar" class="pos-session-bar" style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;">
+            <span id="posBranchBadge" class="status-pill" data-branch-id="BR-01" style="background:#172534;color:#93c5fd;border:1px solid #2b4c6b;font-size:12px;padding:4px 8px;">فرع السليمانية (#01)</span>
+            <select id="posBranchSelect" aria-label="الفرع" title="الفرع" style="min-height:32px;background:#101820;color:#e2e8f0;border:1px solid #334155;border-radius:7px;padding:0 6px;font-size:12px;">
+              <option value="BR-01">فرع السليمانية (#01)</option>
+              <option value="BR-02">فرع العليا (#02)</option>
+              <option value="BR-03">فرع الروضة (#03)</option>
+            </select>
+            <span id="posCashierBadge" class="status-pill" data-cashier-id="cashier-1" style="background:#162b24;color:#86efac;border:1px solid #285444;font-size:12px;padding:4px 8px;">د. أحمد السوسي</span>
+            <select id="posCashierSelect" aria-label="الكاشير" title="الكاشير" style="min-height:32px;background:#101820;color:#e2e8f0;border:1px solid #334155;border-radius:7px;padding:0 6px;font-size:12px;">
+              <option value="cashier-1">د. أحمد السوسي</option>
+              <option value="cashier-2">د. سارة المنصور</option>
+              <option value="cashier-3">د. محمد الشهري</option>
+            </select>
+          </div>
           <div id="modePill" class="status-pill customer-mode">
             <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
             <span id="modePillText">Customer Search Mode</span>
@@ -2124,15 +2138,31 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
   <div id="customerCheckoutGate" class="nova-customer-gate" hidden role="dialog" aria-modal="true" aria-labelledby="customerGateTitle">
     <div class="nova-customer-gate-card" dir="rtl">
-      <h3 id="customerGateTitle">رقم العميل قبل الدفع</h3>
-      <p>سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
+        <h3 id="customerGateTitle" style="margin:0;">رقم العميل قبل الدفع</h3>
+        <select id="gatePolicySelect" aria-label="سياسة رقم العميل" title="سياسة رقم العميل" style="background:#101820;color:#cbd5e1;border:1px solid #3c4a57;border-radius:6px;padding:4px 6px;font-size:12px;">
+          <option value="optional">تخطي تلقائي (سريع)</option>
+          <option value="prompt">سؤال مع إتاحة التخطي</option>
+          <option value="reason-required">التخطي يتطلب سببًا</option>
+          <option value="required">رقم الهاتف إلزامي</option>
+        </select>
+      </div>
+      <p id="customerGatePolicyDesc">سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.</p>
       <form id="gateCustomerForm" autocomplete="off">
         <input id="gatePhone" type="tel" inputmode="tel" dir="ltr" placeholder="رقم موبايل العميل" aria-label="رقم موبايل العميل" required />
         <div id="gateNewCustomerFields" hidden><input id="gateCustomerName" type="text" dir="auto" placeholder="اسم العميل (اختياري)" aria-label="اسم العميل الجديد" maxlength="100" /></div>
         <div id="gateCustomerResult" aria-live="polite"></div>
         <button type="submit" id="gateFindCustomer" class="nova-gate-primary">متابعة بالرقم</button>
       </form>
-      <button type="button" id="gateSkipCustomer" class="nova-gate-secondary">تخطي · عميل نقدي</button>
+      <div id="gateSkipReasonWrap" hidden style="margin-top:8px;">
+        <select id="gateSkipReason" aria-label="سبب تخطي رقم العميل" title="سبب تخطي رقم العميل" style="width:100%;box-sizing:border-box;background:#101820;color:#e2e8f0;border:1px solid #465462;border-radius:8px;padding:9px;font-size:13px;">
+          <option value="">اختر سبب التخطي...</option>
+          <option value="walk-in-declined">عميل عابر رفض إعطاء الرقم</option>
+          <option value="urgent">حالة مستعجلة</option>
+          <option value="no-phone">لا يحمل هاتفًا</option>
+        </select>
+      </div>
+      <button type="button" id="gateSkipCustomer" data-skip-customer class="nova-gate-secondary">تخطي · عميل نقدي</button>
       <button type="button" id="gateCancelCustomer" class="nova-gate-cancel">رجوع للفاتورة</button>
     </div>
   </div>
@@ -2706,6 +2736,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
         attachedCustomer: null,
         customerGateSkipped: true,
+        customerSkipReason: "",
         customerGatePending: false,
         invoiceLines: [],
         percentDiscount: 0,
@@ -2714,34 +2745,154 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         selectedIndex: -1,
         suggestions: [],
         checkoutPaymentMethod: "cash",
-        cashReceived: 0
+        cashReceived: 0,
+        connectionState: navigator.onLine === false ? "offline" : "online"
       };
 
-      // Recover an unfinished invoice after an accidental reload (browser-local only).
+      // POS-03: Local session (cashier & branch), customer phone policy, and per-user isolated drafts (browser-local only).
+      const SESSION_KEY = 'nova-rx-pos-session-v1';
+      const POLICY_KEY = 'nova-rx-customer-policy-v1';
+      const USER_DRAFTS_KEY = 'nova-rx-user-drafts-v1';
       const ACTIVE_INVOICE_KEY = 'nova-rx-active-invoice-v1';
-      let restoredCustomerId = null;
+      const POS_CASHIERS = [
+        { id: 'cashier-1', nameAr: 'د. أحمد السوسي', nameEn: 'Dr. Ahmed Elsousy' },
+        { id: 'cashier-2', nameAr: 'د. سارة المنصور', nameEn: 'Dr. Sara Al-Mansoor' },
+        { id: 'cashier-3', nameAr: 'د. محمد الشهري', nameEn: 'Dr. Mohammed Al-Shehri' }
+      ];
+      const POS_BRANCHES = [
+        { id: 'BR-01', nameAr: 'فرع السليمانية (#01)', nameEn: 'Sulaimaniyah Branch (#01)' },
+        { id: 'BR-02', nameAr: 'فرع العليا (#02)', nameEn: 'Olaya Branch (#02)' },
+        { id: 'BR-03', nameAr: 'فرع الروضة (#03)', nameEn: 'Rawdah Branch (#03)' }
+      ];
+      function normalizePolicy(p) {
+        const v = String(p || '').trim().toLowerCase();
+        if (v === 'prompt' || v === 'skip-allowed') return 'prompt';
+        if (v === 'reason-required' || v === 'skip-with-reason') return 'reason-required';
+        if (v === 'required' || v === 'no-skip') return 'required';
+        return 'optional';
+      }
+      function getCustomerPolicy() {
+        try { return normalizePolicy(localStorage.getItem(POLICY_KEY)); } catch (_) { return 'optional'; }
+      }
+      function defaultGateSkippedForPolicy() {
+        return getCustomerPolicy() === 'optional';
+      }
+      let currentSession = {
+        cashierId: POS_CASHIERS[0].id,
+        cashierName: POS_CASHIERS[0].nameAr,
+        cashierNameEn: POS_CASHIERS[0].nameEn,
+        branchId: POS_BRANCHES[0].id,
+        branchName: POS_BRANCHES[0].nameAr,
+        branchNameEn: POS_BRANCHES[0].nameEn
+      };
       try {
-        const draft = JSON.parse(localStorage.getItem(ACTIVE_INVOICE_KEY) || 'null');
+        const savedSess = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+        if (savedSess && typeof savedSess === 'object') {
+          const cMatch = POS_CASHIERS.find(c => c.id === savedSess.cashierId);
+          const bMatch = POS_BRANCHES.find(b => b.id === savedSess.branchId);
+          if (savedSess.cashierId) {
+            currentSession.cashierId = String(savedSess.cashierId);
+            currentSession.cashierName = String(savedSess.cashierName || (cMatch ? cMatch.nameAr : savedSess.cashierId));
+            currentSession.cashierNameEn = String(savedSess.cashierNameEn || (cMatch ? cMatch.nameEn : currentSession.cashierName));
+          }
+          if (savedSess.branchId) {
+            currentSession.branchId = String(savedSess.branchId);
+            currentSession.branchName = String(savedSess.branchName || (bMatch ? bMatch.nameAr : savedSess.branchId));
+            currentSession.branchNameEn = String(savedSess.branchNameEn || (bMatch ? bMatch.nameEn : currentSession.branchName));
+          }
+        }
+      } catch (_) {}
+      state.customerGateSkipped = defaultGateSkippedForPolicy();
+
+      function readUserDraftsMap() {
+        try {
+          const m = JSON.parse(localStorage.getItem(USER_DRAFTS_KEY) || '{}');
+          return m && typeof m === 'object' && !Array.isArray(m) ? m : {};
+        } catch (_) { return {}; }
+      }
+      function sanitizeDraftLines(lines) {
+        if (!Array.isArray(lines)) return [];
+        return lines.filter(l =>
+          l && typeof l.productId === 'string' && typeof l.name === 'string' &&
+          Number.isFinite(l.price) && l.price >= 0 &&
+          Number.isSafeInteger(l.qty) && l.qty >= 1 && l.qty <= 999 &&
+          Number.isFinite(l.discount) && l.discount >= 0
+        ).slice(0, 500);
+      }
+      function readDraftForUser(cashierId) {
+        const uid = String(cashierId || currentSession.cashierId);
+        const map = readUserDraftsMap();
+        if (map[uid] && typeof map[uid] === 'object') return map[uid];
+        try {
+          const legacy = JSON.parse(localStorage.getItem(ACTIVE_INVOICE_KEY) || 'null');
+          if (legacy && typeof legacy === 'object') {
+            if (!legacy.cashierId || String(legacy.cashierId) === uid) return legacy;
+            // Migrate another user's draft into their isolated slot so it is never mixed or lost.
+            map[String(legacy.cashierId)] = legacy;
+            localStorage.setItem(USER_DRAFTS_KEY, JSON.stringify(map));
+          }
+        } catch (_) {}
+        return null;
+      }
+
+      let restoredCustomerId = null;
+      let restoredCustomerSnapshot = null;
+      let restoredSaleNumber = null;
+      try {
+        const draft = readDraftForUser(currentSession.cashierId);
         if (draft && Array.isArray(draft.lines)) {
-          state.invoiceLines = draft.lines.filter(l =>
-            l && typeof l.productId === 'string' && typeof l.name === 'string' &&
-            Number.isFinite(l.price) && l.price >= 0 &&
-            Number.isSafeInteger(l.qty) && l.qty >= 1 && l.qty <= 999 &&
-            Number.isFinite(l.discount) && l.discount >= 0
-          ).slice(0, 500);
+          state.invoiceLines = sanitizeDraftLines(draft.lines);
           state.percentDiscount = Number.isFinite(draft.percentDiscount) ? draft.percentDiscount : 0;
           state.fixedDiscount = Number.isFinite(draft.fixedDiscount) ? draft.fixedDiscount : 0;
           restoredCustomerId = draft.customerId != null ? String(draft.customerId) : null;
+          restoredCustomerSnapshot = draft.customer && typeof draft.customer === 'object' ? draft.customer : null;
+          restoredSaleNumber = typeof draft.saleNumber === 'string' && draft.saleNumber ? draft.saleNumber : null;
+          if (typeof draft.customerSkipReason === 'string') state.customerSkipReason = draft.customerSkipReason;
+          if (typeof draft.customerGateSkipped === 'boolean') {
+            const pol = getCustomerPolicy();
+            state.customerGateSkipped = pol === 'required' ? false : (pol === 'reason-required' && !state.customerSkipReason ? false : draft.customerGateSkipped);
+          }
         }
       } catch (_) {}
       function persistActiveInvoice() {
         try {
-          if (!state.invoiceLines.length && !state.attachedCustomer) localStorage.removeItem(ACTIVE_INVOICE_KEY);
-          else localStorage.setItem(ACTIVE_INVOICE_KEY, JSON.stringify({
-            lines: state.invoiceLines, percentDiscount: state.percentDiscount,
-            fixedDiscount: state.fixedDiscount,
-            customerId: state.attachedCustomer ? state.attachedCustomer.id : null
-          }));
+          const uid = currentSession.cashierId;
+          const map = readUserDraftsMap();
+          const hasContent = state.invoiceLines.length > 0 || !!state.attachedCustomer || !!state.customerSkipReason;
+          if (!hasContent) {
+            delete map[uid];
+            localStorage.setItem(USER_DRAFTS_KEY, JSON.stringify(map));
+            const curActive = JSON.parse(localStorage.getItem(ACTIVE_INVOICE_KEY) || 'null');
+            if (!curActive || !curActive.cashierId || curActive.cashierId === uid) localStorage.removeItem(ACTIVE_INVOICE_KEY);
+          } else {
+            const payload = {
+              cashierId: uid,
+              cashierName: currentSession.cashierName,
+              branchId: currentSession.branchId,
+              branchName: currentSession.branchName,
+              saleNumber: typeof activeSaleNumber === 'string' ? activeSaleNumber : null,
+              lines: state.invoiceLines,
+              percentDiscount: state.percentDiscount,
+              fixedDiscount: state.fixedDiscount,
+              customerId: state.attachedCustomer ? state.attachedCustomer.id : null,
+              customer: state.attachedCustomer ? {
+                id: state.attachedCustomer.id,
+                name: state.attachedCustomer.name,
+                phone: state.attachedCustomer.phone,
+                tier: state.attachedCustomer.tier || 'جديد',
+                visits: Number(state.attachedCustomer.visits) || 0,
+                points: Number(state.attachedCustomer.points) || 0,
+                pastInvoices: Array.isArray(state.attachedCustomer.pastInvoices) ? state.attachedCustomer.pastInvoices : []
+              } : null,
+              customerGateSkipped: state.customerGateSkipped,
+              customerSkipReason: state.customerSkipReason || '',
+              connectionState: state.connectionState || 'online',
+              updatedAt: new Date().toISOString()
+            };
+            map[uid] = payload;
+            localStorage.setItem(USER_DRAFTS_KEY, JSON.stringify(map));
+            localStorage.setItem(ACTIVE_INVOICE_KEY, JSON.stringify(payload));
+          }
         } catch (_) { /* Browser storage may be unavailable; keep checkout usable. */ }
       }
 
@@ -3100,7 +3251,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       function detachCustomer() {
         state.attachedCustomer = null;
-        state.customerGateSkipped = true;
+        state.customerGateSkipped = defaultGateSkippedForPolicy();
+        state.customerSkipReason = "";
         elements.customerEmptyBox.style.display = "flex";
         elements.customerSelectedBox.style.display = "none";
         elements.sidebarCustBadge.style.display = "none";
@@ -3385,6 +3537,29 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       // --- CHECKOUT & MODAL WORKFLOW ---
+      function syncCustomerGateUI() {
+        const pol = getCustomerPolicy();
+        const sel = document.getElementById("gatePolicySelect");
+        if (sel && sel.value !== pol) sel.value = pol;
+        const reasonWrap = document.getElementById("gateSkipReasonWrap");
+        if (reasonWrap) reasonWrap.hidden = pol !== "reason-required";
+        const skipBtn = document.getElementById("gateSkipCustomer");
+        if (skipBtn) {
+          skipBtn.hidden = pol === "required";
+          skipBtn.disabled = false;
+          skipBtn.setAttribute("aria-disabled", String(pol === "required"));
+          skipBtn.style.opacity = pol === "required" ? "0.5" : "1";
+        }
+        const desc = document.getElementById("customerGatePolicyDesc");
+        if (desc) {
+          const msg = pol === "required"
+            ? "رقم هاتف العميل إلزامي حسب السياسة قبل إتمام الدفع."
+            : pol === "reason-required"
+              ? "سجّل رقم العميل، أو اختر سبب التخطي حسب السياسة."
+              : "سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.";
+          if (desc.textContent !== msg) desc.replaceChildren(document.createTextNode(msg));
+        }
+      }
       function openCheckout() {
         const { grandTotal, totalQty } = recalculateFinancials();
         if (totalQty === 0) {
@@ -3392,11 +3567,19 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           return;
         }
 
+        const pol = getCustomerPolicy();
+        if (!state.attachedCustomer) {
+          if (pol === "required") state.customerGateSkipped = false;
+          else if (pol === "reason-required" && state.customerGateSkipped && !state.customerSkipReason) state.customerGateSkipped = false;
+        }
         if (!state.attachedCustomer && !state.customerGateSkipped) {
+          syncCustomerGateUI();
           document.getElementById("customerCheckoutGate").hidden = false;
           document.getElementById("gatePhone").value = "";
           document.getElementById("gateNewCustomerFields").hidden = true;
           document.getElementById("gateCustomerName").value = "";
+          const sr = document.getElementById("gateSkipReason");
+          if (sr) sr.value = state.customerSkipReason || "";
           document.getElementById("gateFindCustomer").textContent = "متابعة بالرقم";
           document.getElementById("gateCustomerResult").textContent = "";
           setTimeout(() => document.getElementById("gatePhone").focus(), 0);
@@ -4022,8 +4205,9 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
-        state.customerGateSkipped = true;
+        state.customerGateSkipped = defaultGateSkippedForPolicy();
         state.customerGatePending = false;
+        state.customerSkipReason = "";
         renderInvoice();
         showToast("Payment confirmed & Invoice completed!");
       }
@@ -4034,8 +4218,9 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
-        state.customerGateSkipped = true;
+        state.customerGateSkipped = defaultGateSkippedForPolicy();
         state.customerGatePending = false;
+        state.customerSkipReason = "";
         setSearchMode("PRODUCT");
         showToast("New sale ready. Scan barcode or search medicine.");
       }
@@ -4055,7 +4240,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         } while (window.novaPay.numberTaken(n) || heldTaken(n));
         return n;
       }
-      let activeSaleNumber = nextSaleNumber();
+      let activeSaleNumber = restoredSaleNumber || nextSaleNumber();
       function renderSaleNumber() {
         const el = document.getElementById('activeSaleNumber');
         if (el) el.textContent = activeSaleNumber;
@@ -4067,18 +4252,22 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
       const heldList = document.getElementById('heldInvoiceList');
       const heldCount = document.getElementById('heldInvoiceCount');
       const heldEscape = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      function getHeldInvoicesForActiveUser() {
+        return heldInvoices.filter(x => !x.cashierId || x.cashierId === currentSession.cashierId);
+      }
       function saveHeldInvoices(next) {
         try { localStorage.setItem(HELD_KEY, JSON.stringify(next)); heldInvoices = next; renderHeldInvoices(); return true; }
         catch (_) { showToast('Unable to save held invoices on this device.', 'error'); return false; }
       }
       function renderHeldInvoices() {
-        heldCount.textContent = heldInvoices.length;
-        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">No held invoices</div>';
+        const userHeld = getHeldInvoicesForActiveUser();
+        heldCount.textContent = userHeld.length;
+        heldList.innerHTML = userHeld.length ? userHeld.map(x => `<div class="nova-held-row" data-held-cashier="${heldEscape(x.cashierId || currentSession.cashierId)}" data-held-branch="${heldEscape(x.branchId || currentSession.branchId)}"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(x.branchName || currentSession.branchName)} · ${heldEscape(x.cashierName || currentSession.cashierName)} · ${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">No held invoices</div>';
       }
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
         if (heldInvoices.length >= 50) { showToast('Held invoice limit reached (50).', 'error'); return; }
-        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), saleNumber:activeSaleNumber, created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount, customerGateSkipped:state.customerGateSkipped};
+        const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), saleNumber:activeSaleNumber, created: new Date().toISOString(), cashierId: currentSession.cashierId, cashierName: currentSession.cashierName, branchId: currentSession.branchId, branchName: currentSession.branchName, customerName: state.attachedCustomer?.name || '', customerPhone: state.attachedCustomer?.phone || '', customerId: state.attachedCustomer?.id ?? null, customer: state.attachedCustomer ? JSON.parse(JSON.stringify(state.attachedCustomer)) : null, customerSkipReason: state.customerSkipReason || '', lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount, customerGateSkipped:state.customerGateSkipped};
         if (!saveHeldInvoices([record, ...heldInvoices])) return;
         startNewSale(); heldPanel.hidden = true; showToast('Invoice held on this device.');
       }
@@ -4090,6 +4279,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         if (!resume && !del) return;
         const id = (resume || del).getAttribute(resume ? 'data-held-resume' : 'data-held-delete');
         const record = heldInvoices.find(x => x.id === id); if (!record) return;
+        if (record.cashierId && record.cashierId !== currentSession.cashierId) { showToast('Cannot access another cashier\'s held invoice.', 'error'); return; }
         if (del) { if (confirm('Delete this held invoice?')) { window.novaPay.cancel(record, 'parked-deleted'); saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); } return; }
         if (state.invoiceLines.length && !confirm('Replace the current invoice? Unsaved items will be lost.')) return;
         // Keep held record until the active invoice is restored successfully.
@@ -4098,11 +4288,16 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         state.invoiceLines = JSON.parse(JSON.stringify(record.lines));
         state.percentDiscount = Number(record.percentDiscount) || 0;
         state.fixedDiscount = Number(record.fixedDiscount) || 0;
-        state.customerGateSkipped = true;
+        state.customerSkipReason = String(record.customerSkipReason || '');
+        state.customerGateSkipped = typeof record.customerGateSkipped === 'boolean' ? record.customerGateSkipped : true;
         state.customerGatePending = false;
         elements.inputPercentDiscount.value = state.percentDiscount || '';
         elements.inputFixedDiscount.value = state.fixedDiscount || '';
-        const customer = record.customerId != null ? DEMO_CUSTOMERS.find(c => String(c.id) === String(record.customerId)) : null;
+        let customer = record.customerId != null ? DEMO_CUSTOMERS.find(c => String(c.id) === String(record.customerId)) : null;
+        if (!customer && record.customer && record.customer.id) {
+          customer = record.customer;
+          if (!DEMO_CUSTOMERS.some(c => String(c.id) === String(customer.id))) DEMO_CUSTOMERS.push(customer);
+        }
         if (customer) attachCustomer(customer); else detachCustomer();
         setSearchMode('PRODUCT'); renderInvoice();
         saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); heldPanel.hidden = true;
@@ -4240,19 +4435,48 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
 
         // Checkout & Modal Events
         elements.btnCheckout.addEventListener("click", openCheckout);
+        document.getElementById("gatePolicySelect")?.addEventListener("change", e => {
+          setCustomerPolicy(e.target.value);
+        });
+        document.getElementById("gateSkipReason")?.addEventListener("change", () => {
+          const result = document.getElementById("gateCustomerResult");
+          if (result && !result.classList.contains("nova-customer-found")) result.textContent = "";
+        });
         document.getElementById("gateSkipCustomer").addEventListener("click", () => {
+          const policy = getCustomerPolicy();
+          const result = document.getElementById("gateCustomerResult");
+          if (policy === "required") {
+            result.classList.remove("nova-customer-found");
+            result.textContent = "رقم هاتف العميل إلزامي حسب السياسة — لا يمكن التخطي.";
+            document.getElementById("gatePhone")?.focus();
+            return;
+          }
+          if (policy === "reason-required") {
+            const reasonEl = document.getElementById("gateSkipReason");
+            const reason = String(reasonEl?.value || "").trim();
+            if (!reason) {
+              result.classList.remove("nova-customer-found");
+              result.textContent = "اختر سبب تخطي رقم العميل حسب السياسة.";
+              reasonEl?.focus();
+              return;
+            }
+            state.customerSkipReason = reason;
+          } else {
+            state.customerSkipReason = "";
+          }
           state.customerGateSkipped = true;
           state.customerGatePending = false;
+          persistActiveInvoice();
           document.getElementById("customerCheckoutGate").hidden = true;
           openCheckout();
         });
         document.getElementById("gatePhone").addEventListener("keydown", e => {
-          // Walk-in customer in one key: Enter on an empty number skips the customer step.
+          // Walk-in customer in one key: Enter on an empty number skips the customer step (subject to policy).
           if (e.key === "Enter" && !e.target.value.trim()) { e.preventDefault(); document.getElementById("gateSkipCustomer").click(); }
         });
         document.getElementById("gatePhone").addEventListener("input", () => {
-          const phone = document.getElementById("gatePhone").value.replace(/[^0-9]/g, "");
-          const customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
+          const phone = normDigits(document.getElementById("gatePhone").value).replace(/[^0-9]/g, "");
+          const customer = DEMO_CUSTOMERS.find(c => normDigits(c.phone || "").replace(/[^0-9]/g, "") === phone);
           const result = document.getElementById("gateCustomerResult");
           document.getElementById("gateNewCustomerFields").hidden = true;
           document.getElementById("gateCustomerName").value = "";
@@ -4269,13 +4493,13 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         document.getElementById("gateCustomerForm").addEventListener("submit", e => {
           e.preventDefault();
           const raw = document.getElementById("gatePhone").value;
-          const phone = raw.replace(/[^0-9]/g, "");
+          const phone = normDigits(raw).replace(/[^0-9]/g, "");
           const result = document.getElementById("gateCustomerResult");
           if (phone.length < 9 || phone.length > 15) {
             result.textContent = "راجع رقم الموبايل (من 9 إلى 15 رقم).";
             return;
           }
-          let customer = DEMO_CUSTOMERS.find(c => String(c.phone || "").replace(/[^0-9]/g, "") === phone);
+          let customer = DEMO_CUSTOMERS.find(c => normDigits(c.phone || "").replace(/[^0-9]/g, "") === phone);
           if (!customer) {
             const nameField = document.getElementById("gateCustomerName");
             const fields = document.getElementById("gateNewCustomerFields");
@@ -4293,6 +4517,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
             if (!saveDemoCustomers()) { DEMO_CUSTOMERS.pop(); return; }
             showToast("تم تسجيل العميل على هذا المتصفح.");
           }
+          state.customerSkipReason = "";
           attachCustomer(customer);
           state.customerGatePending = false;
           result.textContent = "";
@@ -4302,7 +4527,7 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
         });
         document.getElementById("gateCancelCustomer").addEventListener("click", () => {
           state.customerGatePending = false;
-          state.customerGateSkipped = true;
+          state.customerGateSkipped = defaultGateSkippedForPolicy();
           document.getElementById("customerCheckoutGate").hidden = true;
           elements.mainSearchInput.focus();
         });
@@ -4402,12 +4627,206 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
       // from them), then the attached customer, all before the first render.
       elements.inputPercentDiscount.value = state.percentDiscount ? String(state.percentDiscount) : "";
       elements.inputFixedDiscount.value = state.fixedDiscount ? String(state.fixedDiscount) : "";
-      if (restoredCustomerId) {
-        const restoredCustomer = DEMO_CUSTOMERS.find(c => String(c.id) === restoredCustomerId);
+      if (restoredCustomerId || restoredCustomerSnapshot) {
+        let restoredCustomer = restoredCustomerId ? DEMO_CUSTOMERS.find(c => String(c.id) === restoredCustomerId) : null;
+        if (!restoredCustomer && restoredCustomerSnapshot && restoredCustomerSnapshot.id) {
+          restoredCustomer = restoredCustomerSnapshot;
+          if (!DEMO_CUSTOMERS.some(c => String(c.id) === String(restoredCustomer.id))) DEMO_CUSTOMERS.push(restoredCustomer);
+        }
         if (restoredCustomer) attachCustomer(restoredCustomer);
       }
+
+      function renderSessionBar() {
+        const bSelect = document.getElementById("posBranchSelect");
+        const cSelect = document.getElementById("posCashierSelect");
+        const bBadge = document.getElementById("posBranchBadge");
+        const cBadge = document.getElementById("posCashierBadge");
+        if (bBadge) {
+          bBadge.replaceChildren(document.createTextNode(currentSession.branchName));
+          bBadge.setAttribute("data-branch-id", currentSession.branchId);
+        }
+        if (cBadge) {
+          cBadge.replaceChildren(document.createTextNode(currentSession.cashierName));
+          cBadge.setAttribute("data-cashier-id", currentSession.cashierId);
+        }
+        if (bSelect && bSelect.value !== currentSession.branchId) bSelect.value = currentSession.branchId;
+        if (cSelect && cSelect.value !== currentSession.cashierId) cSelect.value = currentSession.cashierId;
+      }
+
+      function loadDraftForActiveUser() {
+        const draft = readDraftForUser(currentSession.cashierId);
+        const rawLines = draft ? (Array.isArray(draft.lines) ? draft.lines : (Array.isArray(draft.invoiceLines) ? draft.invoiceLines : [])) : [];
+        state.invoiceLines = sanitizeDraftLines(rawLines).map(line => ({ ...line }));
+        state.percentDiscount = draft ? Math.min(100, Math.max(0, Number(draft.percentDiscount) || 0)) : 0;
+        state.fixedDiscount = draft ? Math.max(0, Number(draft.fixedDiscount) || 0) : 0;
+        state.customerSkipReason = draft && typeof draft.customerSkipReason === "string" ? draft.customerSkipReason : "";
+        state.customerGateSkipped = draft && typeof draft.customerGateSkipped === "boolean"
+          ? draft.customerGateSkipped
+          : defaultGateSkippedForPolicy();
+        state.customerGatePending = false;
+        if (draft && typeof draft.saleNumber === "string" && draft.saleNumber.trim()) {
+          activeSaleNumber = draft.saleNumber.trim();
+        } else {
+          activeSaleNumber = nextSaleNumber();
+        }
+        renderSaleNumber();
+        elements.inputPercentDiscount.value = state.percentDiscount ? String(state.percentDiscount) : "";
+        elements.inputFixedDiscount.value = state.fixedDiscount ? String(state.fixedDiscount) : "";
+        let cust = null;
+        const cid = draft ? (draft.customerId ?? draft.attachedCustomerId) : null;
+        if (cid != null) {
+          cust = DEMO_CUSTOMERS.find(c => String(c.id) === String(cid)) || null;
+        }
+        const cSnap = draft ? (draft.customer || draft.attachedCustomer) : null;
+        if (!cust && cSnap && cSnap.id) {
+          cust = cSnap;
+          if (!DEMO_CUSTOMERS.some(c => String(c.id) === String(cust.id))) DEMO_CUSTOMERS.push(cust);
+        }
+        if (cust) {
+          attachCustomer(cust);
+        } else {
+          state.attachedCustomer = null;
+          elements.customerEmptyBox.style.display = "flex";
+          elements.customerSelectedBox.style.display = "none";
+          elements.sidebarCustBadge.style.display = "none";
+          elements.historySearchInput.value = "";
+        }
+        renderInvoice();
+        renderHeldInvoices();
+      }
+
+      function switchSession(nextPartial) {
+        // Save current user's active draft before switching
+        persistActiveInvoice();
+        const prevCashierId = currentSession.cashierId;
+        const nextCashierId = nextPartial && nextPartial.cashierId ? String(nextPartial.cashierId) : currentSession.cashierId;
+        const rawBranchId = nextPartial && nextPartial.branchId ? String(nextPartial.branchId) : currentSession.branchId;
+        const nextBranchId = rawBranchId.replace(/^branch-/i, 'BR-');
+        const cObj = POS_CASHIERS.find(c => c.id === nextCashierId);
+        const bObj = POS_BRANCHES.find(b => b.id === nextBranchId);
+        currentSession = {
+          cashierId: nextCashierId,
+          cashierName: (nextPartial && nextPartial.cashierName) ? String(nextPartial.cashierName) : (cObj ? cObj.nameAr : nextCashierId),
+          cashierNameEn: (nextPartial && nextPartial.cashierNameEn) ? String(nextPartial.cashierNameEn) : (cObj ? cObj.nameEn : nextCashierId),
+          branchId: nextBranchId,
+          branchName: (nextPartial && nextPartial.branchName) ? String(nextPartial.branchName) : (bObj ? bObj.nameAr : nextBranchId),
+          branchNameEn: (nextPartial && nextPartial.branchNameEn) ? String(nextPartial.branchNameEn) : (bObj ? bObj.nameEn : nextBranchId)
+        };
+        try { localStorage.setItem(SESSION_KEY, JSON.stringify(currentSession)); } catch (_) {}
+        renderSessionBar();
+        if (prevCashierId !== currentSession.cashierId) {
+          document.getElementById("customerCheckoutGate").hidden = true;
+          closeCheckout();
+          loadDraftForActiveUser();
+        } else {
+          persistActiveInvoice();
+          renderHeldInvoices();
+        }
+        return { ...currentSession };
+      }
+
+      function setCustomerPolicy(nextPolicy) {
+        const p = String(nextPolicy || "").trim();
+        let norm = "optional";
+        if (p === "required" || p === "no-skip") norm = "required";
+        else if (p === "reason-required" || p === "skip-with-reason") norm = "reason-required";
+        else if (p === "prompt" || p === "skip-allowed") norm = "prompt";
+        else if (p === "optional") norm = "optional";
+        try { localStorage.setItem(POLICY_KEY, norm); } catch (_) {}
+        if (!state.attachedCustomer) {
+          if (norm === "required" || (norm === "reason-required" && !state.customerSkipReason)) {
+            state.customerGateSkipped = false;
+          } else if (norm === "prompt" && !state.customerSkipReason) {
+            state.customerGateSkipped = false;
+          } else if (norm === "optional") {
+            state.customerGateSkipped = true;
+          }
+        }
+        syncCustomerGateUI();
+        return norm;
+      }
+
+      document.getElementById("posBranchSelect")?.addEventListener("change", e => {
+        switchSession({ branchId: e.target.value });
+      });
+      document.getElementById("posCashierSelect")?.addEventListener("change", e => {
+        switchSession({ cashierId: e.target.value });
+      });
+
+      window.addEventListener("nova:invoice-completed", e => {
+        const snap = { ...currentSession };
+        const skipReason = state.customerSkipReason || "";
+        const custPhone = state.attachedCustomer?.phone || "";
+        queueMicrotask(() => {
+          if (elements.receiptSlipContent && elements.receiptSlipContent.textContent) {
+            elements.receiptSlipContent.textContent = elements.receiptSlipContent.textContent
+              .replace(/Branch #01 - Sulaimaniyah|Branch:\s*[^\n]+/, `Branch: ${snap.branchName} (${snap.branchId})`)
+              .replace(/Cashier:\s*[^\n]+/, `Cashier: ${snap.cashierName} (${snap.cashierId})`);
+          }
+          try {
+            const raw = JSON.parse(localStorage.getItem("nova-rx-sales-v1") || "[]");
+            if (Array.isArray(raw) && raw.length > 0 && raw[0]) {
+              raw[0].cashierId = snap.cashierId;
+              raw[0].cashierName = snap.cashierName;
+              raw[0].branchId = snap.branchId;
+              raw[0].branchName = snap.branchName;
+              raw[0].customerPhone = custPhone;
+              raw[0].customerSkipReason = skipReason;
+              localStorage.setItem("nova-rx-sales-v1", JSON.stringify(raw));
+            }
+          } catch (_) {}
+        });
+      });
+
+      window.addEventListener("offline", () => {
+        state.connectionState = "offline";
+        persistActiveInvoice();
+      });
+      window.addEventListener("online", () => {
+        state.connectionState = "online";
+        if (!state.invoiceLines.length) {
+          const saved = readDraftForUser(currentSession.cashierId);
+          const savedLines = saved ? (Array.isArray(saved.lines) ? saved.lines : saved.invoiceLines) : null;
+          if (Array.isArray(savedLines) && savedLines.length) {
+            loadDraftForActiveUser();
+          }
+        } else {
+          persistActiveInvoice();
+        }
+      });
+      window.addEventListener("beforeunload", () => persistActiveInvoice());
+      window.addEventListener("pagehide", () => persistActiveInvoice());
+
+      renderSessionBar();
+      syncCustomerGateUI();
       renderInvoice();
       setSearchMode("PRODUCT");
+
+      window.novaPosSession = {
+        get: () => ({ ...currentSession }),
+        setCashier: (cashierId, cashierName) => switchSession({ cashierId, cashierName }),
+        setBranch: (branchId, branchName) => switchSession({ branchId, branchName }),
+        setSession: (session) => switchSession(session),
+        listCashiers: () => POS_CASHIERS.map(c => ({ ...c })),
+        listBranches: () => POS_BRANCHES.map(b => ({ ...b }))
+      };
+      window.novaPos03 = {
+        getSession: () => ({ ...currentSession }),
+        setCashier: (cashierId, cashierName) => switchSession({ cashierId, cashierName }),
+        setBranch: (branchId, branchName) => switchSession({ branchId, branchName }),
+        setSession: (session) => switchSession(session),
+        getCustomerPolicy,
+        setCustomerPolicy,
+        getActiveDraft: () => readDraftForUser(currentSession.cashierId),
+        getDraftForUser: (cashierId) => readDraftForUser(cashierId),
+        getAllUserDrafts: () => readUserDraftsMap(),
+        getHeldInvoicesForActiveUser: () => getHeldInvoicesForActiveUser(),
+        getAllHeldInvoices: () => heldInvoices.slice(),
+        holdCurrentInvoice,
+        restoreDraft: () => { loadDraftForActiveUser(); return readDraftForUser(currentSession.cashierId); },
+        simulateDisconnect: () => { persistActiveInvoice(); window.dispatchEvent(new Event("offline")); return readDraftForUser(currentSession.cashierId); },
+        simulateReconnect: () => { window.dispatchEvent(new Event("online")); return readDraftForUser(currentSession.cashierId); }
+      };
 
     })();
   </script>
@@ -4635,7 +5054,13 @@ Change Due:                  ${tp.change.toFixed(2).padStart(8, " ")} EGP
   'ابحث في المنتجات السابقة...':'Search past purchases...','البحث في المنتجات السابقة':'Search past purchases',
   '🔐 مفاتيح API والتكاملات':'🔐 API keys & integrations','⚙️ إدارة المفاتيح':'⚙️ Manage keys',
   'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.',
-  'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)'
+  'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)',
+  'الفرع':'Branch','الكاشير':'Cashier','تغيير الفرع':'Switch branch','تغيير الكاشير':'Switch cashier',
+  'فرع السليمانية (#01)':'Sulaymaniyah Branch (#01)','فرع العليا (#02)':'Olaya Branch (#02)','فرع الروضة (#03)':'Rawdah Branch (#03)',
+  'د. سارة المنصور':'Dr. Sara Al-Mansour','د. محمد الشهري':'Dr. Mohammed Al-Shehri',
+  'سياسة رقم العميل':'Customer phone policy','سبب تخطي رقم العميل':'Skip reason',
+  'سجّل رقم العميل أو اختر سبب التخطي للمتابعة.':'Enter the customer number or choose a skip reason to continue.',
+  'رقم هاتف العميل إلزامي حسب سياسة الفرع (لا يمكن التخطي).':'Customer phone number is required by branch policy (cannot skip).'
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
  const arExtra={'CHECKOUT':'إتمام الدفع','NET TOTAL':'الإجمالي النهائي','F9 / Pay':'F9 / دفع','items)':'صنف)',
