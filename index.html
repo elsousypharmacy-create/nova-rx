@@ -3492,11 +3492,45 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             try { localStorage.setItem(KEY, JSON.stringify(sales)); localStorage.setItem(RKEY, JSON.stringify(rets)); return { ok: true }; }
             catch (_) { try { before[0] === null ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, before[0]); before[1] === null ? localStorage.removeItem(RKEY) : localStorage.setItem(RKEY, before[1]); } catch (__) {} return { ok: false, error: 'storage' }; }
           },
-          addReturn(sale, qtyByIdx, reason) {
+          // Lot + cost reversal for a quote: the returned units are the tail of what the sale took, so they go back to the lots listed last (same rule the lot view uses). Cost = lot cost x box units.
+          reversal(sale, lines) {
+            const done = this.returnedQty(sale.id), c9 = x => Math.round(x * 1e9) / 1e9; let cost = 0; const lots = [];
+            lines.forEach(rl => {
+              const l = sale.lines[rl.idx]; if (!l || !Array.isArray(l.lots) || !l.lots.length) return;
+              const uf = Number(l.unitFactor) > 0 ? Number(l.unitFactor) : 1, from = c9((l.qty - (done[rl.idx] || 0) - rl.qty) / uf), to = c9((l.qty - (done[rl.idx] || 0)) / uf);
+              let pos = 0;
+              l.lots.forEach(al => {
+                const a = pos, b = c9(pos + (Number(al.qty) || 0)); pos = b;
+                const q = c9(Math.min(b, to) - Math.max(a, from)); if (q <= 0) return;
+                lots.push({ idx: rl.idx, lot: al.lot, expiry: al.expiry, qty: q }); cost += q * (Number(al.cost) || 0);
+              });
+            });
+            return { lots, cost: round2(cost) };
+          },
+          isCancelled(saleId) { return this.returns().some(r => r.saleId === saleId && r.kind === 'cancel'); },
+          // Cancellation = return of everything still returnable, never an edit. Needs a reason, a role allowed to cancel, and a second named person approving (local names only; there is no login yet).
+          CANCEL_ROLES: ['manager', 'owner'],
+          cancelSale(sale, o) {
+            o = o || {};
+            const reason = String(o.reason || '').trim(), by = String(o.by || '').trim(), approver = String(o.approvedBy || '').trim();
+            if (!reason) return { ok: false, error: 'reason' };
+            if (!this.CANCEL_ROLES.includes(o.role)) return { ok: false, error: 'permission' };
+            if (!by || !approver) return { ok: false, error: 'approval' };
+            if (by.toLowerCase() === approver.toLowerCase()) return { ok: false, error: 'self-approval' };
+            if (this.isCancelled(sale.id)) return { ok: false, error: 'already-cancelled' };
+            const done = this.returnedQty(sale.id), rest = {};
+            sale.lines.forEach((l, i) => { const left = l.qty - (done[i] || 0); if (left > 0) rest[i] = left; });
+            return this.addReturn(sale, rest, reason, { kind: 'cancel', by, role: o.role, approvedBy: approver });
+          },
+          addReturn(sale, qtyByIdx, reason, extra) {
             const text = String(reason || '').trim();
             if (!text) return { ok: false, error: 'reason' };
+            if (this.isCancelled(sale.id)) return { ok: false, error: 'already-cancelled' };
             const q = this.quoteReturn(sale, qtyByIdx); if (!q.ok) return q;
-            const r = { id: (crypto.randomUUID ? crypto.randomUUID() : 'R' + Date.now() + Math.random().toString(36).slice(2, 8)), saleId: sale.id, number: sale.number, at: new Date().toISOString(), reason: text.slice(0, 200), lines: q.lines, amount: q.amount, method: sale.payment };
+            const rv = this.reversal(sale, q.lines), id = (crypto.randomUUID ? crypto.randomUUID() : 'R' + Date.now() + Math.random().toString(36).slice(2, 8));
+            // Tender reversal: same method as the sale. Card refunds are MOCKED (no gateway): reference only. Cash leaves the drawer.
+            const tender = { method: sale.payment, amount: q.amount, direction: 'refund', mock: sale.payment === 'card', ref: sale.payment === 'card' ? 'MOCK-' + id.slice(0, 8).toUpperCase() : null };
+            const r = { id, saleId: sale.id, number: sale.number, at: new Date().toISOString(), kind: 'return', ...(extra || {}), reason: text.slice(0, 200), lines: q.lines, amount: q.amount, method: sale.payment, tender, lotsRestored: rv.lots, costReversed: rv.cost };
             try { const all = this.returns(); all.unshift(r); localStorage.setItem(RKEY, JSON.stringify(all.slice(0, 1000))); return { ok: true, ret: r }; } catch (_) { return { ok: false, error: 'storage' }; }
           }
         };
@@ -3880,7 +3914,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           lines: state.invoiceLines.map(l => {
             const k = window.novaStock.keyOf(l);
             const pick = window.novaStock.hasLots(k) ? window.novaStock.fefoPick(k, window.novaStock.boxQty(l)) : null;
-            const lots = pick && pick.ok ? pick.picks.map(p => ({ lot: p.lot, expiry: p.expiry, qty: p.qty })) : undefined;
+            const lots = pick && pick.ok ? pick.picks.map(p => ({ lot: p.lot, expiry: p.expiry, qty: p.qty, cost: Number(p.cost) || 0 })) : undefined;
             return {
               name: l.name, barcode: l.barcode || '', unit: l.unit || 'box', unitFactor: Number(l.unitFactor) || 1, price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0,
               ...(lots && lots.length ? { lot: lots[0].lot, expiry: lots[0].expiry, lots } : {})
@@ -4343,11 +4377,11 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
  +table(['الاسم','الهاتف','المستوى','الزيارات','النقاط'],rows(list,c=>'<tr><td>'+esc(c.name)+'</td><td dir="ltr">'+esc(c.phone)+'</td><td>'+esc(c.tier)+'</td><td>'+esc(c.visits)+'</td><td>'+esc(c.points)+'</td></tr>'));
  }else if(page==='invoices'){
- const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
+ const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
  const backupBar='<div class="nova-panel" style="padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="novaSalesExport" class="nova-return-btn" style="min-height:44px">'+tr('تصدير نسخة احتياطية (JSON)','Export backup (JSON)')+'</button><button type="button" id="novaSalesImport" class="nova-return-btn" style="min-height:44px">'+tr('استيراد نسخة احتياطية','Import backup')+'</button><input type="file" id="novaSalesImportFile" accept="application/json,.json" hidden><span id="novaBackupMsg" role="status" style="font-size:13px;color:#9eacb9"></span></div>';
  const savedBlock=saved.length?'<div class="nova-kpis">'+kpi('فواتير محفوظة',saved.length)+kpi('إجمالي المبيعات',money(saved.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(saved.reduce((s,i)=>s+i.total,0)/saved.length))+'</div>'
-  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+'</td><td>'+esc(i.items)+'</td><td><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
+  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+(i.cx?' <b>'+tr('ملغاة','Cancelled')+'</b>':'')+'</td><td>'+esc(i.items)+'</td><td><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا</div></div>';
  const list=filtered(inv,['id','customer','date','branch']);
  content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+backupBar+savedBlock
@@ -4390,12 +4424,16 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
    +sale.lines.map((l,i)=>{const left=l.qty-(done[i]||0);return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(l.name)+' <small style="color:#9eacb9">('+tr('متاح للإرجاع ','can return ')+left+')</small></span><input type="number" min="0" max="'+left+'" step="1" value="0" data-ret-idx="'+i+'" '+(left?'':'disabled')+' style="width:80px;padding:6px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px"></div>'}).join('')
    +'<label style="display:block;margin:10px 0 4px;font-size:13px">سبب المرتجع (مطلوب)</label><input type="text" id="novaRetReason" maxlength="200" style="width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px">'
    +'<div id="novaRetAmount" style="margin:10px 0;font-weight:700"></div><div id="novaRetMsg" role="alert" style="color:#ffb4a8;min-height:18px;font-size:13px"></div>'
+   +'<details id="novaCancelBox" style="margin:6px 0"><summary>'+tr('إلغاء الفاتورة بالكامل (يحتاج صلاحية واعتماد)','Cancel the whole invoice (needs permission and approval)')+'</summary><div style="display:grid;gap:6px;margin-top:6px"><input id="novaCxBy" placeholder="'+tr('اسم المنفذ','Your name')+'" maxlength="60"><select id="novaCxRole"><option value="cashier">'+tr('كاشير','Cashier')+'</option><option value="pharmacist">'+tr('صيدلي','Pharmacist')+'</option><option value="manager">'+tr('مدير','Manager')+'</option><option value="owner">'+tr('المالك','Owner')+'</option></select><input id="novaCxApprover" placeholder="'+tr('اسم المعتمد (شخص آخر)','Approver name (another person)')+'" maxlength="60"><button type="button" id="novaCxOk" class="nova-return-btn" style="font-weight:700">'+tr('تأكيد الإلغاء','Confirm cancellation')+'</button></div></details>'
    +'<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" id="novaRetCancel" class="nova-return-btn">إغلاق</button><button type="button" id="novaRetOk" class="nova-return-btn" style="font-weight:700">تأكيد المرتجع</button></div>';
   ov.appendChild(box);document.body.appendChild(ov);
   const qtys=()=>{const o={};box.querySelectorAll('[data-ret-idx]').forEach(i=>{o[i.dataset.retIdx]=Number(i.value)||0});return o};
   const upd=()=>{const q=window.novaSales.quoteReturn(sale,qtys());box.querySelector('#novaRetAmount').textContent=q.ok?'مبلغ الإرجاع: '+money(q.amount):''};
   box.addEventListener('input',upd);
   box.querySelector('#novaRetCancel').onclick=()=>ov.remove();
+  box.querySelector('#novaCxOk').onclick=()=>{const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
+   if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب الإلغاء',permission:'ليس لديك صلاحية إلغاء الفاتورة (مدير أو مالك فقط)',approval:'اكتب اسمك واسم المعتمد','self-approval':'المعتمد لازم يكون شخصًا آخر','already-cancelled':'الفاتورة ملغاة بالفعل',empty:'لا توجد كميات متاحة للإلغاء','too-many':'لا توجد كميات متاحة للإلغاء',storage:'تعذر حفظ الإلغاء على هذا الجهاز'}[res.error]||'تعذر تنفيذ الإلغاء';return}
+   ov.remove();render(page,filter)};
   box.querySelector('#novaRetOk').onclick=()=>{const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
    ov.remove();render(page,filter)};
