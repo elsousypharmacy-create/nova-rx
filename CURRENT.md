@@ -7,7 +7,7 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 
 ## Priorities (owner direction, newest first)
 1. **UI first (owner, 2026-11-11): finish the interface and its trial, THEN the hidden parts (backend, database).** Real price list in the app (#146), currency ج.م (#147), then the sale screen with local invoice saving (U1), Invoices/Reports from saved invoices. Backend/database work is frozen until the UI trial. Truth today: accepted 0 of 85; merged code is pure modules, nothing is wired to a screen except what the UI PRs add.
-2. Next: #148 currency (UI), then U1 (sale screen with local invoice saving), Invoices/Reports from saved invoices; backend branches wait. Deploying the UI batch to the live preview Worker is one owner approval at the end.
+2. Done and LIVE on nova-rx-preview (owner "انشر" / "خلصه"): real price list served same-origin, ج.م, sales saved on this device, Invoices/Reports from them. Next: remaining UI trial fixes; backend stays frozen until the owner says the UI trial is finished.
 3. P0 pharmacy#59 (blank mobile dashboard): fixed by pharmacy PR #60 (f79ecee); NOT live-verified (sandbox cannot reach github.io); close it only after the owner confirms on his phone.
 
 ## Who is on what
@@ -17,7 +17,7 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 - Reviewer independence is weaker (same model family): exact-SHA reviews, re-run tests, mutation checks, owner-only gates.
 
 ## Merged to main and DEPLOYED: Worker nova-rx-preview (deploy-worker.yml, workflow_dispatch only; every deploy: CI, dry run, real run, code digest read back)
-LIVE (as recorded 2026-11-10, not re-verified today) = purchases15, sha256 08ceb32af224b076492b5d70f35960e828b7081b40d8ac97e9b83faadd6ce866, modified 2026-11-10T13:21:42Z. Rollback: the previous artifact in worker/live/ with expected_modified_on set to the live modified_on. Recipe and the id lesson are in the skill.
+LIVE (deployed 2026-11-12 by run 43150450055, code digest read back = artifact) = ui-real-prices4, sha256 7827b1743724ab1719f4c2b1712c2d0e2289ab19cb2e8977c77ba3a5c9e40a09 (purchases15 lineage + /emergency/stock.json + U1 sales ledger + #150 XSS fix). Rollback: purchases15 (sha256 08ceb32a...6ce866) via deploy-worker.yml; expected_modified_on = the live modified_on. Verified live 2026-11-12: 4378 items, search finds جافيسكون, ledger test passes; NOT tested on a real tablet.
 Merged since, NOT deployed, NOT wired: CAT-01 catalog (#136), CAT-02 conversion (#137), SEC-04 audit-log core (#138), SEC-03 tenant scope (#141), INV-01 stock core (#142), catalog packaging link (#145), shortages-adapter test fix (#140), restored supplier-orders test (#144), UX-01 audit + purchases contrast (#143), real price list in the app (#146; merged without Claude 1's review on the owner's explicit instruction of 2026-11-11, review still welcome). Read-only live checks: workflows "Supplier live check" and "Supplier cart read check". No deploy happens without the owner's approval.
 
 ## Open PRs
