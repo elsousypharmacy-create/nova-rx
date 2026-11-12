@@ -59,6 +59,9 @@ jobs:
       - name: INV-02 lots and expiry, FEFO + block expired (N18)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-inv02-lots-expiry.mjs
+      - name: INV-05 branch transfers and lot recall (N33)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-inv05-transfers-recall.mjs
       - name: Catalog duplicate detection (N21)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-catalog-duplicates.mjs
