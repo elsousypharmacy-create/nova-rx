@@ -82,12 +82,22 @@
    "brief": "Publish a local dictionary for gross, net, discount, return, cost, margin, and visits, and use the same source and rules in POS, the dashboard, and exports. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N69.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-12T21:33:47+00:00"
+   "dispatched_at": "2026-11-12T21:33:47+00:00",
+   "pr": 211,
+   "ci_dispatched": {
+    "sha": "d285851c432a6712d25ad577df06415537a9a1a1",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-12T21:35:15+00:00"
+   }
   }
  ],
- "updated": "2026-11-12T21:33:47+00:00"
+ "updated": "2026-11-12T21:35:15+00:00"
 }
