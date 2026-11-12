@@ -130,8 +130,8 @@ await t('selling across multiple lots deducts in FEFO order and records lot allo
 
   assert.equal(after.sale.lines[0].lot, 'LOT-NEAR');
   assert.deepEqual(after.sale.lines[0].lots, [
-    { lot: 'LOT-NEAR', expiry: NEAR_DATE, qty: 2 },
-    { lot: 'LOT-FAR', expiry: FAR_DATE, qty: 1 }
+    { lot: 'LOT-NEAR', expiry: NEAR_DATE, qty: 2, cost: 22 },
+    { lot: 'LOT-FAR', expiry: FAR_DATE, qty: 1, cost: 25 }
   ]);
   assert.deepEqual(after.lots, [
     { lot: 'LOT-EXP', onHand: 5 },
