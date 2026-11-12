@@ -20,6 +20,12 @@ const VIEWPORTS=[
 const FIELDS={dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل'};
 const toastText=async page=>{await sleep(250);return page.$eval('#novaLabelsPanel',el=>[...el.querySelectorAll('.nlx-toast')].map(t=>t.textContent).join(' | '))};
 
+// A real print closes the sticker window 400ms later (by design); bring it back with its state.
+async function reopenAfterPrint(page){
+  await page.waitForFunction(()=>!document.getElementById('novaLabelsPanel').classList.contains('open'),null,{timeout:3000});
+  await page.$eval('#novaAiLaunch',b=>b.click());await sleep(300);
+}
+
 async function openModal(page){
   await page.goto('http://127.0.0.1:8766/index.html#sale',{waitUntil:'domcontentloaded'});
   await sleep(900);
@@ -118,6 +124,7 @@ async function runFlow(page,vp,errors){
   check(`${L}: no popup window used`,(await page.evaluate(()=>window.__opens))===0);
   check(`${L}: the print tap approved the review`,await page.$eval('#nlPharmacistApproval',e=>e.checked));
   check(`${L}: print frame holds one label per medicine`,await page.evaluate(()=>document.getElementById('nlPrintFrame').contentDocument.querySelectorAll('.label').length===2));
+  await reopenAfterPrint(page);
   check(`${L}: editing a medicine revokes the approval`,await (async()=>{await ensureEditing(page,'#nlMedicineList .med-card:nth-child(1)');await page.fill('#nlMedicineList .med-card:nth-child(1) [data-field="dose"]','نصف قرص');await page.dispatchEvent('#nlMedicineList .med-card:nth-child(1) [data-field="dose"]','input');await closeEditing(page);return page.$eval('#nlPharmacistApproval',e=>!e.checked)})());
 
   // Long text: shrinks when it can, refuses when it cannot (never prints clipped text)
@@ -130,6 +137,7 @@ async function runFlow(page,vp,errors){
   await page.waitForFunction(()=>window.__printEvents.length>0,null,{timeout:6000}).catch(async e=>{console.log('DEBUG ai',await page.evaluate(()=>window.__ai),await page.evaluate(()=>document.querySelector('#nlPrintAll').className+'|'+!!document.getElementById('nlPrintFrame')),'toast:',await toastText(page),'| why:',await page.$eval('#nlBarWhy',x=>x.textContent));throw e});
   const shrunk=await page.evaluate(()=>{const i=document.getElementById('nlPrintFrame').contentDocument.querySelector('.instruction');return parseFloat(i.style.fontSize||'7')});
   check(`${L}: long text is shrunk, not refused`,shrunk<7&&shrunk>=4.8);
+  await reopenAfterPrint(page);
 
   await fillCard(page,1,'Panadol Extra',{instructions:long(10)});
   await page.evaluate(()=>{window.__printEvents=[]});
@@ -146,6 +154,7 @@ async function runFlow(page,vp,errors){
   await page.click('#nlPrintAll');
   await page.waitForFunction(()=>window.__printEvents.length>0,null,{timeout:6000});
   check(`${L}: a bigger size prints the long text`,true);
+  await reopenAfterPrint(page);
   check(`${L}: size summary in the bar follows the choice`,(await page.$eval('#nlSizeBrief',e=>e.textContent)).includes('100'));
   await page.selectOption('#nlPreset','50x30');
 

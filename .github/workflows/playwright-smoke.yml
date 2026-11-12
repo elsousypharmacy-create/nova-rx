@@ -47,6 +47,12 @@ jobs:
         run: node tests/ui-sales-ledger.mjs
       - name: UI returns (U2)
         run: node tests/ui-returns.mjs
+      - name: UI products packaging (N05, runs once the test is on the branch)
+        run: |
+          if [ -f tests/ui-products-packaging.mjs ]; then node tests/ui-products-packaging.mjs; else echo "tests/ui-products-packaging.mjs not present yet, skipped"; fi
+      - name: Sale sticker modal (N01)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/sale-sticker-modal.mjs
       - name: Write machine-readable result
         if: always()
         run: |

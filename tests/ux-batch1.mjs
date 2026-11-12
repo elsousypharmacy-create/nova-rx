@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 
-const candidates = [process.env.CHROME_PATH, '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'].filter(Boolean);
+const candidates = [process.env.CHROME_PATH, chromium.executablePath(), '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'].filter(Boolean);
 const executablePath = candidates.find(existsSync);
 assert(executablePath, 'Set CHROME_PATH to an installed Chromium browser');
 const PORT = 8768, URL_ = `http://127.0.0.1:${PORT}/index.html#sale`;
