@@ -25,10 +25,10 @@
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
    "status": "running",
-   "attempts": 0,
+   "attempts": 1,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-12T20:51:45+00:00"
+   "dispatched_at": "2026-11-12T21:02:32+00:00"
   },
   {
    "id": "N63",
@@ -67,5 +67,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-12T20:56:25+00:00"
+ "updated": "2026-11-12T21:02:32+00:00"
 }
