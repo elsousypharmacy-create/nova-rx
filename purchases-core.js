@@ -10,28 +10,48 @@ export function numberOrNull(value) {
   const n = Number(normalizeDigits(String(value)).replace(/,/g, ''));
   return Number.isFinite(n) ? n : null;
 }
-export function buildNeeds(items, { days, level = 'ideal' }) {
+// Duplicate lines (same id + unit) are merged into one: stock and daily sales add up
+// (separate lots/branches), min/max/lead time keep the larger value.
+export function mergeDuplicateLines(items) {
+  const byKey = new Map();
+  for (const item of items || []) {
+    const id = String(item.id || item.code || '').trim();
+    if (!id) continue;
+    const key = `${id}::${item.unit || 'pack'}`;
+    const prev = byKey.get(key);
+    if (!prev) { byKey.set(key, { ...item, key, mergedLines: 1 }); continue; }
+    const add = f => { const a = numberOrNull(prev[f]), b = numberOrNull(item[f]); prev[f] = a === null ? b : b === null ? a : a + b; };
+    const max = f => { const a = numberOrNull(prev[f]), b = numberOrNull(item[f]); prev[f] = a === null ? b : b === null ? a : Math.max(a, b); };
+    ['stock', 'dailySales'].forEach(add);
+    ['minStock', 'idealStock', 'leadTimeDays', 'observedDays'].forEach(max);
+    prev.mergedLines += 1;
+  }
+  return [...byKey.values()];
+}
+// limits: { [key]: { min, max } } pharmacist overrides per item (local only).
+// Every suggested quantity starts unselected: the pharmacist must confirm it.
+export function buildNeeds(items, { days, level = 'ideal', limits = {} }) {
   days = readDays(days);
   if (!['minimum', 'ideal'].includes(level)) throw new Error('مستوى مخزون غير صحيح');
-  const seen = new Set();
-  return (items || []).flatMap(item => {
-    const id = String(item.id || item.code || '').trim();
-    const key = `${id}::${item.unit || 'pack'}`;
-    if (!id || seen.has(key)) return [];
-    seen.add(key);
+  return mergeDuplicateLines(items).flatMap(item => {
+    const key = item.key;
+    const own = limits[key] || {};
     const stock = numberOrNull(item.stock);
-    const minimum = numberOrNull(item.minStock), ideal = numberOrNull(item.idealStock);
-    const savedTarget = level === 'minimum' ? minimum : ideal;
+    const minimum = numberOrNull(own.min) ?? numberOrNull(item.minStock), maximum = numberOrNull(own.max) ?? numberOrNull(item.idealStock);
+    const common = { dailyRate: numberOrNull(item.dailySales), leadTimeDays: numberOrNull(item.leadTimeDays), maxLimit: maximum, minLimit: minimum };
+    const savedTarget = level === 'minimum' ? minimum : maximum;
     const daily = numberOrNull(item.dailySales);
     const observation = numberOrNull(item.observedDays);
     const coverage = daily !== null && daily >= 0 && observation > 0 ? Math.ceil(daily * days - 1e-9) : null;
-    const target = savedTarget === null && coverage === null ? null : Math.max(savedTarget ?? 0, coverage ?? 0);
-    if (stock === null || target === null) return [{ ...item, key, qty: 0, target, selected: false, issue: stock === null ? 'الرصيد غير معلوم' : 'مستوى المخزون ومعدل البيع غير متاحين' }];
+    let target = savedTarget === null && coverage === null ? null : Math.max(savedTarget ?? 0, coverage ?? 0);
+    const cap = numberOrNull(own.max); // only the pharmacist's own max is a hard cap
+    if (target !== null && cap !== null) target = Math.min(target, cap);
+    if (stock === null || target === null) return [{ ...item, ...common, key, qty: 0, target, selected: false, issue: stock === null ? 'الرصيد غير معلوم' : 'مستوى المخزون ومعدل البيع غير متاحين' }];
     const qty = Math.max(0, Math.ceil(target - stock - 1e-9));
     if (qty === 0) return [];
     // Minimum mode means only items currently below their saved minimum (or zero).
     if (level === 'minimum' && !(stock <= 0 || (minimum !== null && stock < minimum))) return [];
-    return [{ ...item, key, target, qty, selected: true, coverage, basis: coverage === null ? 'مستوى المخزون المسجل؛ بيانات التغطية غير متاحة' : `الأكبر من المستوى المسجل وتغطية ${days} يوم`, allocations: [], unallocated: qty }];
+    return [{ ...item, ...common, key, target, qty, selected: false, suggested: true, coverage, basis: coverage === null ? 'مستوى المخزون المسجل؛ بيانات التغطية غير متاحة' : `الأكبر من المستوى المسجل وتغطية ${days} يوم`, allocations: [], unallocated: qty }];
   });
 }
 export function offerKey(o) { return [o.supplierId, o.sellerId ?? '', o.supplierProductId].map(String).join('::'); }
