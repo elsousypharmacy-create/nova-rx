@@ -2388,6 +2388,20 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         return DEMO_PRODUCTS.filter(p => p.barcode.includes(q) || tokens.every(t => productKey(p).includes(t)));
       };
       window.novaFold = foldKey;
+      // Read-only packaging text from the catalog packaging link (same field names/rules as worker/catalog/unit-conversion.js). Invalid or missing -> "" (shown as a dash), never a guess.
+      window.novaPackagingLabel = def => {
+        if (!def || typeof def !== "object") return "";
+        const n = v => { const x = typeof v === "string" && v.trim() !== "" ? Number(v) : v; return Number.isInteger(x) && x > 0 && x <= 100000 ? x : undefined; };
+        const us = n(def.unitsPerStrip ?? def.tabletsPerStrip), sb = n(def.stripsPerBox), ub = n(def.unitsPerBox), bc = n(def.boxesPerCarton ?? def.packsPerCarton);
+        for (const [raw, v] of [[def.unitsPerStrip ?? def.tabletsPerStrip, us], [def.stripsPerBox, sb], [def.unitsPerBox, ub], [def.boxesPerCarton ?? def.packsPerCarton, bc]]) if (raw !== undefined && raw !== null && v === undefined) return "";
+        if (us && sb && ub && us * sb !== ub) return "";
+        const box = ub || (us && sb ? us * sb : undefined), parts = [];
+        if (box) parts.push("العلبة " + box + " وحدة");
+        if (us) parts.push("الشريط " + us + " وحدة");
+        if (sb) parts.push(sb + " شريط/علبة");
+        if (box && bc) parts.push("الكرتونة " + bc + " علبة");
+        return parts.join(" • ");
+      };
       window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
       function loadRealPrices() {
         if (location.protocol === "file:") return;
@@ -2404,7 +2418,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             const price = Number(r.price);
             if ((!code && !gtin) || !(nameAr || nameEn) || !Number.isFinite(price) || price <= 0 || seen.has(code || gtin)) continue;
             seen.add(code || gtin);
-            out.push({ id: code || gtin, barcode: gtin || code, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
+            const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
           }
           if (out.length < 50) return; // an almost empty file is not a catalog: keep the demo data
           DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
@@ -3603,7 +3617,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+' — الأسعار فقط، الرصيد غير متاح في هذه القائمة':'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi('الرصيد','غير متاح')+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
  :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
- +table(['الصنف','الباركود','السعر','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ +table(['الصنف','الباركود','السعر','العبوة','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td data-pack>'+(p.pack?esc(p.pack):'—')+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
@@ -3677,7 +3691,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  'صيدلية السوسي':'Elsousy Pharmacy','د. أحمد السوسي':'Dr. Ahmed Elsousy','نظام نقاط البيع':'Point of Sale',
  'البيع':'Sales','الفواتير':'Invoices','المنتجات':'Products','العملاء':'Customers','التقارير':'Reports','الإعدادات':'Settings','نسخة تجريبية':'Demo',
  'المنتجات والمخزون':'Products & Inventory','الاسم':'Name','الهاتف':'Phone','المستوى':'Tier','الزيارات':'Visits','النقاط':'Points',
- 'الصنف':'Product','الباركود':'Barcode','السعر':'Price','الرصيد':'Stock','التصنيف':'Category',
+ 'الصنف':'Product','الباركود':'Barcode','السعر':'Price','الرصيد':'Stock','العبوة':'Packaging','التصنيف':'Category',
  'رقم الفاتورة':'Invoice No.','التاريخ':'Date','العميل':'Customer','القيمة':'Amount','الأصناف':'Items',
  'عدد الأصناف':'Products','إجمالي الوحدات':'Total Units','مخزون منخفض (أقل من 30)':'Low Stock (under 30)',
  'قيمة المخزون بسعر البيع':'Retail Stock Value','إجمالي الزيارات':'Total Visits','نقاط الولاء':'Loyalty Points','العملاء النشطون':'Active Customers',
