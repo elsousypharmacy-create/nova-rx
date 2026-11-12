@@ -47,6 +47,8 @@ jobs:
         run: node tests/ui-sales-ledger.mjs
       - name: UI returns (U2)
         run: node tests/ui-returns.mjs
+      - name: UI sales backup export/import (N10)
+        run: node tests/ui-sales-backup.mjs
       - name: Write machine-readable result
         if: always()
         run: |
