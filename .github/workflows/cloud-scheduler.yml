@@ -1,0 +1,78 @@
+# Cloud queue scheduler for Claude tasks (.nova/cloud-queue.json).
+# Opens PRs for cloud/* branches, dispatches their CI, squash-merges on green,
+# sends red PRs back to agent-task in fix mode (max 2), and starts the next
+# pending task when a Claude slot is free. Uses only GITHUB_TOKEN.
+# Never deploys, never edits other workflows, never prints secrets.
+name: Cloud scheduler
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  workflow_run:
+    types: [completed]
+    workflows:
+      - "Cloud agent task (Claude Sonnet)"
+      - "Secret scan"
+      - "Playwright POS smoke"
+      - "Catalog unit checks"
+      - "Clinical warnings unit checks"
+      - "Core cycle integration"
+      - "Credit ledger unit checks"
+      - "Journal ledger unit checks"
+      - "Offline outbox unit checks"
+      - "Pricing unit checks"
+      - "Procurement unit checks"
+      - "Purchase orders unit checks"
+      - "Purchasing page checks"
+      - "Security unit checks"
+      - "Stock count unit checks"
+      - "Stock ledger unit checks"
+      - "UX contrast ratchet"
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+
+concurrency:
+  group: cloud-scheduler
+  cancel-in-progress: false
+
+jobs:
+  schedule:
+    # Skip (no runner, no minutes) for CI runs that are not on cloud/* branches.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      startsWith(github.event.workflow_run.head_branch, 'cloud/') ||
+      github.event.workflow_run.path == '.github/workflows/agent-task.yml'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Run scheduler
+        id: sched
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAS_B: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_B != '' }}
+        run: python3 .nova/cloud_scheduler.py
+      - name: Commit queue state
+        if: steps.sched.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp .nova/cloud-queue.json /tmp/q.json
+          git add .nova/cloud-queue.json
+          git commit -q -m "chore(cloud-queue): update state [skip ci]"
+          for i in 1 2 3 4; do
+            if git push -q origin HEAD:main; then exit 0; fi
+            git fetch -q origin main && git reset -q --hard origin/main
+            cp /tmp/q.json .nova/cloud-queue.json && git add .nova/cloud-queue.json
+            git commit -q -m "chore(cloud-queue): update state [skip ci]" || exit 0
+            sleep 3
+          done
+          echo "::error::could not push queue state"; exit 1

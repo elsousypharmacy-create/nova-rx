@@ -1,10 +1,12 @@
-# Manual one-task trial: run Claude Code (Sonnet only) on a GitHub-hosted
-# runner so work continues when the local box sleeps.
+# Run one Claude Code (Sonnet only) task on a GitHub-hosted runner so work
+# continues when the local box sleeps. Started by cloud-scheduler.yml (or by
+# hand). Slot A uses CLAUDE_CODE_OAUTH_TOKEN_A (fallback CLAUDE_CODE_OAUTH_TOKEN),
+# slot B uses CLAUDE_CODE_OAUTH_TOKEN_B. The scheduler opens/merges the PR.
 # Auth: Claude Pro/Max subscription via CLAUDE_CODE_OAUTH_TOKEN
 # (from `claude setup-token`). Do not use a billed Anthropic API key.
-# This workflow does nothing until someone starts it with workflow_dispatch
-# and the secret is set. It never deploys and never merges.
+# It never deploys and never merges.
 name: Cloud agent task (Claude Sonnet)
+run-name: cloud ${{ inputs.task_id }} ${{ inputs.mode }} ${{ inputs.slot }}
 
 on:
   workflow_dispatch:
@@ -17,14 +19,27 @@ on:
         description: "Task brief and acceptance criteria"
         required: true
         type: string
+      mode:
+        description: "new = implement the task; fix = fix CI/conflicts on the existing branch"
+        required: false
+        default: new
+        type: choice
+        options: [new, fix]
+      slot:
+        description: "Claude account slot (A or B)"
+        required: false
+        default: A
+        type: choice
+        options: [A, B]
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: write
 
 concurrency:
-  group: cloud-agent-task
+  group: cloud-agent-task-${{ inputs.slot }}
   cancel-in-progress: false
 
 jobs:
@@ -36,11 +51,13 @@ jobs:
         env:
           TASK_ID: ${{ inputs.task_id }}
           BRIEF: ${{ inputs.brief }}
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          SLOT: ${{ inputs.slot }}
+          TOK_A: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_A || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          TOK_B: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_B }}
         run: |
           set -euo pipefail
-          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
-            echo "::error::Set repository secret CLAUDE_CODE_OAUTH_TOKEN from \`claude setup-token\` (Claude Pro/Max). Do not use a billed Anthropic API key."
+          if { [ "$SLOT" = "B" ] && [ -z "$TOK_B" ]; } || { [ "$SLOT" != "B" ] && [ -z "$TOK_A" ]; }; then
+            echo "::error::Missing Claude OAuth token secret for slot $SLOT (from \`claude setup-token\`, Claude Pro/Max). Do not use a billed Anthropic API key."
             exit 1
           fi
           echo "$TASK_ID" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' || {
@@ -54,10 +71,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Create isolated branch
+      - name: Prepare task branch
         id: branch
         env:
           TASK_ID: ${{ inputs.task_id }}
+          MODE: ${{ inputs.mode }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -65,31 +83,35 @@ jobs:
           git fetch origin main
           BRANCH="cloud/${TASK_ID}"
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            echo "::error::Branch $BRANCH already exists on origin. Pick a new task_id or delete the old branch first."
-            exit 1
+            git fetch origin "$BRANCH"
+            git switch -c "$BRANCH" "origin/$BRANCH"
+          elif [ "$MODE" = "fix" ]; then
+            echo "::error::fix mode needs existing branch $BRANCH"; exit 1
+          else
+            git switch -c "$BRANCH" origin/main
           fi
-          git switch -c "$BRANCH" origin/main
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Implement with Claude Sonnet
         uses: anthropics/claude-code-action@v1
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_code_oauth_token: ${{ inputs.slot == 'B' && secrets.CLAUDE_CODE_OAUTH_TOKEN_B || secrets.CLAUDE_CODE_OAUTH_TOKEN_A || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           base_branch: main
           show_full_output: true
           prompt: |
             You are implementing one NOVA Rx task on branch ${{ steps.branch.outputs.branch }}.
 
-            Task id: ${{ inputs.task_id }}
+            Task id: ${{ inputs.task_id }} (mode: ${{ inputs.mode }})
             Brief:
             ${{ inputs.brief }}
 
             Rules:
             - Do exactly this brief's scope. Do not start other tasks.
-            - Stay on branch ${{ steps.branch.outputs.branch }}. Commit and push there. Open a pull request into main titled "[${{ inputs.task_id }}] <short summary>" whose body lists changed files, tests run and exact results, and remaining work. Never claim untested success.
+            - Stay on branch ${{ steps.branch.outputs.branch }}. Commit and push there (git push origin HEAD). Do NOT open a pull request: the cloud scheduler opens it, runs CI and merges on green. Put changed files, exact test commands and results, and remaining work in your final commit message. Never claim untested success.
+            - If the branch already has commits (retry or fix mode), continue from them; in fix mode fix only what the brief says failed.
             - The model is already pinned to Sonnet. Do not switch to Opus or any other model.
-            - Do not edit .github/workflows, secrets, env files, or node_modules. Do not deploy. Do not merge. Do not call paid APIs or supplier live sites. Do not print secrets.
+            - Do not edit .nova/cloud-queue.json or .github/workflows, secrets, env files, or node_modules. Do not deploy. Do not merge. Do not call paid APIs or supplier live sites. Do not print secrets.
             - If you touch UI, preserve Black Edition Arabic RTL UX.
             - Run the tests the brief names, or the nearest existing unit tests for the files you change, and record exact results.
           claude_args: |
@@ -97,37 +119,14 @@ jobs:
             --max-turns 40
             --allowedTools Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash
 
-      - name: Open draft PR if Claude did not
+      - name: Push leftover commits and wake the scheduler
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ steps.branch.outputs.branch }}
-          TASK_ID: ${{ inputs.task_id }}
         run: |
-          set -euo pipefail
-          [ -n "${BRANCH:-}" ] || exit 0
-          git fetch origin "$BRANCH" || true
-          if git rev-parse --verify "$BRANCH" >/dev/null 2>&1; then
-            if [ -n "$(git log origin/main.."$BRANCH" --oneline 2>/dev/null || true)" ]; then
-              git push -u origin "$BRANCH" || true
-            fi
+          set -uo pipefail
+          if [ -n "${BRANCH:-}" ] && [ -n "$(git log origin/main..HEAD --oneline 2>/dev/null)" ]; then
+            git push origin "HEAD:$BRANCH" || echo "::warning::push failed"
           fi
-          if ! git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            echo "Branch $BRANCH was not pushed; skipping PR."
-            exit 0
-          fi
-          AHEAD=$(git rev-list --count origin/main..origin/"$BRANCH" || echo 0)
-          if [ "$AHEAD" = "0" ]; then
-            echo "No commits on $BRANCH ahead of main; skipping PR."
-            exit 0
-          fi
-          EXISTING=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq 'length')
-          if [ "$EXISTING" != "0" ]; then
-            gh pr list --head "$BRANCH" --base main --state open --json url --jq '.[0].url'
-            exit 0
-          fi
-          if ! gh pr create --draft --base main --head "$BRANCH" \
-            --title "[${TASK_ID}] cloud agent task" \
-            --body "Implements ${TASK_ID} via GitHub Actions (Claude Sonnet). Review before merge. Do not auto-deploy."; then
-            echo "::warning::Commits are on $BRANCH but PR creation failed. Open a draft PR manually."
-          fi
+          gh workflow run cloud-scheduler.yml --ref main || echo "::warning::could not dispatch cloud-scheduler"
