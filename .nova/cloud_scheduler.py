@@ -132,13 +132,18 @@ def main():
     before = json.dumps(q, sort_keys=True)
 
     runs = (api(f"repos/{REPO}/actions/workflows/{AGENT_WF}/runs?per_page=50") or {}).get("workflow_runs", [])[:50]
-    active = {}  # task id -> slot for queued/in-progress agent runs
+    active, seen = {}, {}  # task id -> slot for queued/in-progress agent runs; newest run start per task
     for r in runs:
         m = re.match(r"cloud (\S+) (new|fix) ([AB])$", r.get("display_title") or r.get("name") or "")
-        if m and r["status"] != "completed":
+        if not m:
+            continue
+        seen[m.group(1)] = max(seen.get(m.group(1), ""), r.get("created_at", ""))
+        if r["status"] != "completed":
             active[m.group(1)] = m.group(3)
     for t in items:  # just-dispatched runs may not be listed yet
-        if t["status"] in ("running", "fixing") and t["id"] not in active and age(t.get("dispatched_at", "")) < GRACE:
+        d = t.get("dispatched_at", "")
+        if t["status"] in ("running", "fixing") and t["id"] not in active and age(d) < GRACE \
+                and not (seen.get(t["id"]) and age(seen[t["id"]]) <= age(d) + 60):
             active[t["id"]] = t.get("slot", "A")
     log(f"slots={SLOTS} active={active}")
 

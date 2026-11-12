@@ -46,7 +46,7 @@ jobs:
     if: >-
       github.event_name != 'workflow_run' ||
       startsWith(github.event.workflow_run.head_branch, 'cloud/') ||
-      github.event.workflow_run.path == '.github/workflows/agent-task.yml'
+      github.event.workflow_run.name == 'Cloud agent task (Claude Sonnet)'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
