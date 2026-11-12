@@ -837,6 +837,11 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Branch `claude/cat-packaging-link`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/catalog/unified-catalog.js` (packaging, `packagingOf`, box-size aware duplicates, merge), `worker/catalog/unit-conversion.js` (`canonicalPackaging`), `tests/unit/unified-catalog-packaging.check.mjs` (9 cases), `docs/catalog/CAT-01.md`. 9 mutations each caught (one survived first: merged-id alias; test added).
 - 2026-11-11 (later): rebuilt on main `ad632e3`: exactly the change of `7a159b8` (git diff 7a159b8 over `worker/catalog/unified-catalog.js`, `worker/catalog/unit-conversion.js`, `tests/unit/unified-catalog-packaging.check.mjs`, `docs/catalog/CAT-01.md` = 0 lines).
 
+## Checkpoint 2026-11-11 — Claude 1, CAT-05 instant search (branch only, no PR: cap 3/3)
+- Branch `claude/cat-05-search`, stacked on `claude/cat-packaging-link` (`7a159b8`). Files: `worker/catalog/catalog-search.js`, `tests/unit/catalog-search.check.mjs` (21 cases incl. real export and latency), `docs/catalog/CAT-05.md`, `catalog-unit.yml` glob.
+- Real export: build ~150 ms, 300 queries p95 ~3-5 ms (target 150 ms). API p95 NOT TESTED.
+- Mutations: the first round showed 15 survivors, most were test gaps; added 7 tests; one of my new tests failed even on the correct code (label ordering), so that round's "killed" results were invalid and redone: 10 of 10 killed on a passing baseline.
+- 2026-11-11 (later): clean branch `claude/cat-05-search-v2` = main `ad632e3` + exactly the change of `38beafc` (identity over the three new files = 0 lines; passes WITHOUT the packaging PR #145: it only reads `product.packaging` if present); PR opens when a slot frees.
 ## 2026-11-12 — Claude 2: UI deployed live, sales ledger (U1), price route
 - Live `nova-rx-preview` = ui-real-prices4 (sha256 7827b1743724ab1719f4c2b1712c2d0e2289ab19cb2e8977c77ba3a5c9e40a09), deploy run 43150450055, digest read back. Owner authorised the deploy and said to finish without coming back.
 - `/emergency/stock.json` was 404 on the purchases lineage → `tools/patch-worker-stock-route.mjs` + `tests/unit/stock-route.check.mjs`. Live now serves 4378 price rows (prices only).
