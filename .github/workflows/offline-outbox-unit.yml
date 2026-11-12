@@ -1,0 +1,30 @@
+name: Offline outbox unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'offline-outbox.js'
+      - 'tests/unit/offline-outbox.check.mjs'
+      - '.github/workflows/offline-outbox-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'offline-outbox.js'
+      - 'tests/unit/offline-outbox.check.mjs'
+      - '.github/workflows/offline-outbox-unit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run offline outbox checks (no dependencies, no network)
+        run: node --no-warnings tests/unit/offline-outbox.check.mjs
