@@ -3,6 +3,7 @@
 // Never prints tokens, cookies or passwords. Skips a supplier whose secrets are missing.
 // Env: NOVA_WORKER_URL, NOVA_INGEST_SECRET, PO_USERNAME/PO_PASSWORD, AUMET_USERNAME/AUMET_PASSWORD
 const { chromium } = require('playwright');
+const { guardAumetApi, captureAumetCart, verifyAumetCart } = require('./aumet-renewal.cjs');
 
 const WORKER = (process.env.NOVA_WORKER_URL || '').replace(/\/+$/, '');
 const INGEST = process.env.NOVA_INGEST_SECRET || '';
@@ -104,6 +105,7 @@ async function aumet(browser) {
     let observedProductUrl = null;
     let sellers = [];
     let capturedCartRequest = null;
+    const capturedCart = await guardAumetApi(ctx);
     let sellersTask = Promise.resolve();
     let auth = null;
     let xsrf = null;
@@ -169,49 +171,42 @@ async function aumet(browser) {
       console.log('aumet login diagnostics: ' + JSON.stringify(diagnostics));
       return { id: 'aumet', result: 'login failed (see safe diagnostics)' };
     }
+    let searchQuery = 'Panadol';
     phase = 'inspect-search';
     await page.goto('https://marketplace.aumet.com/pharmacy/product/search', { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
     await page.waitForTimeout(8000);
     for (const input of await page.$$('input')) {
       const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
       if (!eligible) continue;
-      await input.fill('Panadol');
+      await input.fill(searchQuery);
       await page.waitForTimeout(2000);
       await input.press('Enter');
       await page.waitForTimeout(3000);
       break;
     }
+    phase = 'capture-cart-context';
+    capturedCartRequest = await captureAumetCart(page, capturedCart);
+    // A product absent from this account cannot expose its quantity control.
+    // One alternate observed catalogue query; never retry a supplier mutation.
+    if (!capturedCartRequest) {
+      searchQuery = 'Augmentin';
+      for (const input of await page.$$('input')) {
+        const eligible = await input.evaluate(e => e.offsetParent && !e.closest('[class*="cky"],[id*="cky"]') && /search|بحث|ابحث/i.test(e.placeholder || ''));
+        if (!eligible) continue;
+        await input.fill(searchQuery);
+        await page.waitForTimeout(2000);
+        await input.press('Enter');
+        await page.waitForTimeout(3000);
+        break;
+      }
+      capturedCartRequest = await captureAumetCart(page, capturedCart);
+    }
+    phase = 'verify-cart-session';
+    await verifyAumetCart(ctx.request, capturedCartRequest, auth, xsrf);
     if (process.env.INSPECT_CART === 'true') {
       await inspectStatic(page,ctx.request,'aumet','marketplace.aumet.com');
       const fs = require('node:fs');
       const urls = await page.$$eval('script[src]', nodes => nodes.map(n => n.src));
-      // Intercept and abort every write to cart/order APIs before touching quantity controls.
-      // This discovers the client request without adding/removing any account cart item.
-      await page.route('**/api/**', async route => {
-        const request = route.request(), path = new URL(request.url()).pathname;
-        if (request.method() !== 'GET' && /\/(?:cart|order)(?:\/|$)/.test(path)) {
-          if (path.includes('/cart/')) {
-            let body = null;
-            try { body = request.postDataJSON(); } catch {}
-            capturedCartRequest = { method: request.method(), path, body };
-          }
-          return route.abort();
-        }
-        return route.continue();
-      });
-      const reject = page.locator('.cky-btn-reject:visible');
-      if (await reject.count()) await reject.first().click();
-      const quantityButton = page.locator('button.dialerQuantity.show-details:visible');
-      if (await quantityButton.count()) {
-        await quantityButton.first().click();
-        await page.waitForTimeout(600);
-        const numeric = page.locator('input[type="number"]:visible');
-        if (!capturedCartRequest && await numeric.count()) {
-          await numeric.first().fill('1');
-          await numeric.first().press('Tab');
-          await page.waitForTimeout(1500);
-        }
-      }
       if(capturedCartRequest){
         const cartPath=capturedCartRequest.path.replace(/\/items$/,'/items');
         const response=await ctx.request.get('https://marketplace.aumet.com'+cartPath,{headers:{Authorization:auth||'','X-XSRF-TOKEN':xsrf||''}});
@@ -238,12 +233,12 @@ async function aumet(browser) {
     const cookie = (await ctx.cookies('https://marketplace.aumet.com')).map((c) => `${c.name}=${c.value}`).join('; ');
     const searchParams = observedProductUrl ? Object.fromEntries(new URL(observedProductUrl).searchParams) : {};
     const task = searchParams.task || '';
-    const searchTaskTemplate = task.includes('Panadol') ? task.replaceAll('Panadol', '__NOVA_QUERY__') : null;
+    const searchTaskTemplate = task.includes(searchQuery) ? task.replaceAll(searchQuery, '__NOVA_QUERY__') : null;
     if (!searchTaskTemplate) return { id: 'aumet', result: 'error: query template not captured' };
     delete searchParams.task;
     await sellersTask;
     const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate, sellers, cartRequestTemplate: capturedCartRequest }, Date.now() + 10 * 3600 * 1000);
-    return { id: 'aumet', result: code === 200 ? 'session saved' : `worker answered ${code}` };
+    return { id: 'aumet', result: code === 200 ? 'session saved (cart read verified; no cart writes)' : `worker answered ${code}` };
   } catch (error) {
     return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : /context.*destroyed/i.test(error.message) ? 'navigation interrupted inspection' : /net::/i.test(error.message) ? 'navigation network error' : 'operation failed'})` };
   } finally {
@@ -252,7 +247,7 @@ async function aumet(browser) {
 }
 
 (async () => {
-  if (!WORKER || !INGEST) { console.log('Not configured yet: set repo secrets NOVA_WORKER_URL and NOVA_INGEST_SECRET. Nothing was done.'); process.exit(0); }
+  if (!WORKER || !INGEST) { console.log('Session refresh not configured; no session saved.'); process.exit(1); }
   const browser = await chromium.launch();
   for (const [id, fn] of [['pharmaoverseas', pharmaoverseas], ['aumet', aumet]]) {
     if (only !== 'all' && only !== id) continue;
@@ -260,6 +255,7 @@ async function aumet(browser) {
   }
   await browser.close();
   for (const r of report) console.log(`${r.id}: ${r.result}`);
-  if (report.some((r) => /error|failed|worker answered|stopped/.test(r.result))) process.exitCode = 1;
+  if (report.some((r) => /error|failed|worker answered|stopped|skipped/.test(r.result))) process.exitCode = 1;
 })();
+
 
