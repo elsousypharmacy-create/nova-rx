@@ -2388,6 +2388,16 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         return DEMO_PRODUCTS.filter(p => p.barcode.includes(q) || tokens.every(t => productKey(p).includes(t)));
       };
       window.novaFold = foldKey;
+      // CAT-01 (this device only): flag likely duplicates for pharmacist review. Same non-empty barcode, or same normalized name (strength glued to its unit) + same pack text. Read-only: never merges or edits anything.
+      window.novaDuplicates = list => {
+        const nk = p => foldKey(p.name).replace(/(\d) (mg|mcg|g|ml|iu|gm)\b/g, "$1$2");
+        const by = (kind, keyOf) => {
+          const m = new Map();
+          for (const p of list || []) { const k = keyOf(p); if (!k) continue; (m.get(k) || m.set(k, []).get(k)).push(p); }
+          return [...m].filter(e => e[1].length > 1).map(e => ({ reason: kind, key: e[0], items: e[1] }));
+        };
+        return by("barcode", p => String(p.barcode == null ? "" : p.barcode).replace(/\s/g, "")).concat(by("name", p => { const n = nk(p); return n ? n + "|" + foldKey(p.pack || "") : ""; }));
+      };
       // Read-only packaging text from the catalog packaging link (same field names/rules as worker/catalog/unit-conversion.js). Invalid or missing -> "" (shown as a dash), never a guess.
       window.novaPackagingLabel = def => {
         if (!def || typeof def !== "object") return "";
@@ -3684,11 +3694,13 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
  const tokens=fold(filter).split(' ').filter(Boolean);
  const list=real?(tokens.length?products.filter(p=>String(p.barcode).includes(filter.trim())||tokens.every(t=>fold(p.name).includes(t))):products):filtered(products,['name','barcode','generic','category']);
  const shown=real?list.slice(0,300):list;
+ const dups=window.novaDuplicates?window.novaDuplicates(products):[];
+ const dupBlock=dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+' — الأسعار فقط، الرصيد غير متاح في هذه القائمة':'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi('الرصيد','غير متاح')+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
  :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
- +table(['الصنف','الباركود','السعر','العبوة','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td data-pack>'+(p.pack?esc(p.pack):'—')+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ +dupBlock+table(['الصنف','الباركود','السعر','العبوة','الرصيد','التصنيف'],rows(shown,p=>'<tr><td>'+esc(p.name)+'</td><td dir="ltr">'+esc(p.barcode)+'</td><td>'+money(p.price)+'</td><td data-pack>'+(p.pack?esc(p.pack):'—')+'</td><td>'+(real?'—':esc(p.stock))+'</td><td>'+(real?'—':esc(p.category))+'</td></tr>')).replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
