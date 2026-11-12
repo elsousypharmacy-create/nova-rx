@@ -7,6 +7,9 @@
   var TEMP_LABEL = 'فاتورة مؤقتة — لم تُرحّل للنظام';
   var EMERGENCY_WARNING = 'وضع الطوارئ: فاتورة مؤقتة محفوظة على هذا الجهاز فقط. لم يتم تحصيلها مركزيًا ولا تُحتسب في النظام قبل المزامنة.';
   var DEVICE_KEY = 'novaEmergencyDeviceId', DEFAULT_UNIT = 'علبة';
+  var SNAP_KEY = 'novaEmergencySnapshot', DEFAULT_SOURCE = 'STOCK LIVE';
+  var MAX_SNAPSHOT_BYTES = 4 * 1024 * 1024; // 4 MB localStorage cap
+  var MAX_SNAPSHOT_ITEMS = 20000;
   var STALE_MS = 6 * 3600 * 1000;      // older than 6 h: stale warning
   var OLD_MS = 24 * 3600 * 1000;       // older than 24 h: strong warning
 
@@ -39,16 +42,22 @@
     out.push(cur); return out;
   }
 
-  /* Accepts JSON (array or {items, exportedAt}) or CSV with headers code,namear,nameen,price,stock,units. */
+  /* Accepts JSON (array or {items, exportedAt, source}) or CSV with headers code,namear,nameen,price,stock,units. */
   function parseSnapshot(text, opts) {
     opts = opts || {};
-    var raw, exportedAt = opts.exportedAt || null, t = String(text || '').replace(/^﻿/, '').trim();
+    var maxBytes = opts.maxBytes || MAX_SNAPSHOT_BYTES, maxItems = opts.maxItems || MAX_SNAPSHOT_ITEMS;
+    var rawText = String(text || '');
+    if (rawText.length > maxBytes) return { ok: false, code: 'snapshot-too-large', error: 'حجم الملف يتجاوز الحد المسموح للتخزين المحلي' };
+    var raw, exportedAt = opts.exportedAt || null, fileSource = null, t = rawText.replace(/^﻿/, '').trim();
     if (!t) return { ok: false, error: 'الملف فاضي' };
     try {
       if (t[0] === '[' || t[0] === '{') {
         var j = JSON.parse(t);
         raw = Array.isArray(j) ? j : j.items;
-        if (!Array.isArray(j) && j.exportedAt) exportedAt = j.exportedAt;
+        if (!Array.isArray(j) && j) {
+          if (j.exportedAt && !exportedAt) exportedAt = j.exportedAt;
+          if (j.source) fileSource = String(j.source).trim();
+        }
       } else {
         var lines = t.split(/\r?\n/).filter(function (l) { return l.trim(); });
         var hdr = splitCsvLine(lines[0]).map(function (h) { return h.trim().toLowerCase(); });
@@ -60,6 +69,7 @@
       }
     } catch (e) { return { ok: false, error: 'تعذر قراءة الملف' }; }
     if (!Array.isArray(raw)) return { ok: false, error: 'شكل الملف غير مدعوم' };
+    if (raw.length > maxItems) return { ok: false, code: 'too-many-items', error: 'عدد الأصناف يتجاوز الحد المسموح (' + maxItems + ' صنف)' };
     var items = [], skipped = 0;
     raw.forEach(function (r) {
       var code = String(r.code == null ? '' : r.code).replace(/[^\d]/g, '');
@@ -77,17 +87,83 @@
     if (!items.length) return { ok: false, error: 'لا توجد أصناف صالحة (لازم code و namear و price)' };
     if (!items.some(function (i) { return i.price != null; })) return { ok: false, error: 'الملف لا يحتوي أسعارًا (عمود price)' };
     var ts = exportedAt ? Date.parse(exportedAt) : NaN;
-    return { ok: true, items: items, skipped: skipped, exportedAt: isFinite(ts) ? new Date(ts).toISOString() : null };
+    var source = String(opts.source || fileSource || DEFAULT_SOURCE).trim() || DEFAULT_SOURCE;
+    return { ok: true, items: items, skipped: skipped, source: source, exportedAt: isFinite(ts) ? new Date(ts).toISOString() : null };
   }
 
   function freshness(sourceTs, now) {
     now = now == null ? Date.now() : now;
     var t = sourceTs ? Date.parse(sourceTs) : NaN;
-    if (!isFinite(t)) return { level: 'unknown', ageMs: null, label: 'وقت تحديث الأسعار غير معروف — راجع الأسعار قبل البيع' };
+    if (!isFinite(t)) return { level: 'unknown', stale: true, ageMs: null, label: 'وقت تحديث الأسعار غير معروف — راجع الأسعار قبل البيع' };
     var age = now - t, h = Math.floor(age / 3600000);
-    if (age >= OLD_MS) return { level: 'old', ageMs: age, label: 'أسعار قديمة (آخر تحديث من ' + Math.floor(age / 86400000 || 1) + ' يوم أو أكثر)' };
-    if (age >= STALE_MS) return { level: 'stale', ageMs: age, label: 'أسعار متأخرة (آخر تحديث من ' + h + ' ساعة)' };
-    return { level: 'ok', ageMs: age, label: 'آخر تحديث للأسعار قبل ' + (h < 1 ? 'أقل من ساعة' : h + ' ساعة') };
+    if (age >= OLD_MS) return { level: 'old', stale: true, ageMs: age, label: 'أسعار قديمة (آخر تحديث من ' + Math.floor(age / 86400000 || 1) + ' يوم أو أكثر)' };
+    if (age >= STALE_MS) return { level: 'stale', stale: true, ageMs: age, label: 'أسعار متأخرة (آخر تحديث من ' + h + ' ساعة)' };
+    return { level: 'ok', stale: false, ageMs: age, label: 'آخر تحديث للأسعار قبل ' + (h < 1 ? 'أقل من ساعة' : h + ' ساعة') };
+  }
+
+  /* Never present a stale stock balance as currently available. */
+  function stockDisplay(item, sourceTs, now) {
+    var ts = sourceTs && typeof sourceTs === 'object' ? sourceTs.exportedAt : sourceTs;
+    var f = freshness(ts, now);
+    if (!item || item.stock == null || !isFinite(Number(item.stock))) {
+      return { availableNow: false, stale: f.stale, stock: null, label: '' };
+    }
+    if (f.stale) {
+      return { availableNow: false, stale: true, stock: null, label: 'الرصيد غير متاح حاليًا (بيانات قديمة — راجع الرف)' };
+    }
+    var n = Number(item.stock);
+    return { availableNow: false, stale: false, stock: n, label: 'رصيد اللقطة وقت التصدير (غير مؤكد حاليًا): ' + n };
+  }
+
+  /* Persist and load a dated, source-stamped price snapshot with size limits. */
+  function saveSnapshot(storage, parsed, opts) {
+    opts = opts || {};
+    var key = opts.key || SNAP_KEY;
+    var maxBytes = opts.maxBytes || MAX_SNAPSHOT_BYTES, maxItems = opts.maxItems || MAX_SNAPSHOT_ITEMS;
+    var now = opts.now == null ? Date.now() : opts.now;
+    if (!parsed || !Array.isArray(parsed.items) || !parsed.items.length) {
+      return { ok: false, code: 'empty-snapshot', error: 'لا توجد أصناف للحفظ' };
+    }
+    if (parsed.items.length > maxItems) {
+      return { ok: false, code: 'too-many-items', error: 'عدد الأصناف يتجاوز الحد المسموح (' + maxItems + ' صنف)' };
+    }
+    var source = String(opts.source || parsed.source || DEFAULT_SOURCE).trim() || DEFAULT_SOURCE;
+    var ts = parsed.exportedAt ? Date.parse(parsed.exportedAt) : NaN;
+    var exportedAt = isFinite(ts) ? new Date(ts).toISOString() : null;
+    var savedAt = new Date(now).toISOString();
+    var slim = parsed.items.map(function (i) {
+      return { code: i.code, gtin: i.gtin, name: i.name, nameEn: i.nameEn || '', price: i.price, stock: i.stock, units: i.units || 1 };
+    });
+    var record = { source: source, exportedAt: exportedAt, savedAt: savedAt, importedAt: savedAt, items: slim };
+    var raw = JSON.stringify(record);
+    if (raw.length > maxBytes) {
+      return { ok: false, code: 'snapshot-too-large', error: 'حجم اللقطة يتجاوز الحد المسموح للتخزين المحلي' };
+    }
+    try {
+      storage.setItem(key, raw);
+    } catch (e) {
+      return { ok: false, code: 'storage-error', error: 'تعذر حفظ اللقطة على هذا الجهاز' };
+    }
+    var hydrated = slim.map(function (i) {
+      var copy = { code: i.code, gtin: i.gtin, name: i.name, nameEn: i.nameEn, price: i.price, stock: i.stock, units: i.units };
+      copy.key = keyOf(copy.name + ' ' + copy.nameEn);
+      return copy;
+    });
+    return { ok: true, bytes: raw.length, snapshot: { source: source, exportedAt: exportedAt, savedAt: savedAt, importedAt: savedAt, items: hydrated } };
+  }
+
+  function loadSnapshot(storage, key) {
+    key = key || SNAP_KEY;
+    try {
+      var s = JSON.parse(storage.getItem(key) || 'null');
+      if (!s || !Array.isArray(s.items) || !s.items.length) return null;
+      s.items.forEach(function (i) { i.key = keyOf(i.name + ' ' + (i.nameEn || '')); });
+      s.source = String(s.source || DEFAULT_SOURCE).trim() || DEFAULT_SOURCE;
+      s.exportedAt = s.exportedAt || null;
+      s.savedAt = s.savedAt || s.importedAt || null;
+      s.importedAt = s.importedAt || s.savedAt || null;
+      return s;
+    } catch (e) { return null; }
   }
 
   function searchItems(items, query, limit) {
@@ -188,7 +264,7 @@
       id: id, ref: readableRef(id, now), kind: 'temporary-invoice', label: TEMP_LABEL,
       emergencyMode: true, warning: EMERGENCY_WARNING, deviceId: deviceId, centralCollection: false,
       createdAt: new Date(now).toISOString(), createdBy: staff,
-      priceSource: { type: 'snapshot', exportedAt: opts.sourceExportedAt || null },
+      priceSource: { type: 'snapshot', source: String(opts.source || DEFAULT_SOURCE).trim() || DEFAULT_SOURCE, exportedAt: opts.sourceExportedAt || null },
       customer: opts.customer ? String(opts.customer).trim() : '',
       lines: b.lines.map(function (l) { return Object.freeze({ code: l.code, name: l.name, qty: l.qty, unit: l.unit || DEFAULT_UNIT, unitPrice: l.unitPrice, lineTotal: round2(l.unitPrice * l.qty) }); }),
       subtotal: t.subtotal, discount: t.discount,
@@ -298,8 +374,10 @@
     return pages;
   }
 
-  var api = { STATUS: STATUS, TEMP_LABEL: TEMP_LABEL, EMERGENCY_WARNING: EMERGENCY_WARNING, getDeviceId: getDeviceId, STALE_MS: STALE_MS, OLD_MS: OLD_MS, round2: round2, normalizeAr: normalizeAr, keyOf: keyOf,
-    parseSnapshot: parseSnapshot, freshness: freshness, searchItems: searchItems, emptyBasket: emptyBasket, addLine: addLine,
+  var api = { STATUS: STATUS, TEMP_LABEL: TEMP_LABEL, EMERGENCY_WARNING: EMERGENCY_WARNING, SNAP_KEY: SNAP_KEY, DEFAULT_SOURCE: DEFAULT_SOURCE,
+    MAX_SNAPSHOT_BYTES: MAX_SNAPSHOT_BYTES, MAX_SNAPSHOT_ITEMS: MAX_SNAPSHOT_ITEMS, getDeviceId: getDeviceId, STALE_MS: STALE_MS, OLD_MS: OLD_MS, round2: round2, normalizeAr: normalizeAr, keyOf: keyOf,
+    parseSnapshot: parseSnapshot, freshness: freshness, stockDisplay: stockDisplay, saveSnapshot: saveSnapshot, loadSnapshot: loadSnapshot,
+    searchItems: searchItems, emptyBasket: emptyBasket, addLine: addLine,
     setQty: setQty, removeLine: removeLine, totals: totals, discountProblem: discountProblem, uuid4: uuid4, createInvoice: createInvoice,
     createQueue: createQueue, detectConflicts: detectConflicts, saveDraft: saveDraft, loadDraft: loadDraft, clearDraft: clearDraft,
     buildPdf: buildPdf, paginate: paginate };

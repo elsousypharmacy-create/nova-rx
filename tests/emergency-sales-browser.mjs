@@ -20,11 +20,11 @@ ok('no snapshot -> explicit warning, data tab open', /لا توجد أسعار/.
 await page.setInputFiles('#file', CSV);
 await page.waitForSelector('#dataMsg:has-text("تم تحميل 4")');
 await page.click('#nSell');
-ok('unknown export time -> warning, never claims fresh', /غير معروف/.test(await page.textContent('#srcBanner')) && /ليس لحظي/.test(await page.textContent('#srcBanner')) && (await page.getAttribute('#srcBanner','class')).includes('unknown'));
+ok('unknown export time -> warning, source stamp, never claims fresh', /غير معروف/.test(await page.textContent('#srcBanner')) && /المصدر: STOCK LIVE/.test(await page.textContent('#srcBanner')) && /ليس لحظي/.test(await page.textContent('#srcBanner')) && (await page.getAttribute('#srcBanner','class')).includes('unknown'));
 await page.fill('#who', 'اختبار');
 await page.fill('#q', 'بانادول');
 await page.waitForSelector('[data-add]');
-ok('search shows price', /12\.50/.test(await page.textContent('#results')));
+ok('search shows price and never presents stale stock balance as available', /12\.50/.test(await page.textContent('#results')) && /الرصيد غير متاح حاليًا/.test(await page.textContent('#results')) && !/متاح حاليًا:\s*\d/.test(await page.textContent('#results')));
 await page.click('[data-add="0"]');
 await page.fill('#q', 'اوجمنتين'); await page.click('[data-add="0"]');
 ok('total = 77.00', /77\.00/.test(await page.textContent('#tTot')));

@@ -115,19 +115,19 @@ function money(n){ return (Number(n)||0).toFixed(2); }
 
 /* ---- snapshot ---- */
 function loadSnap(){
-  try{ var s=JSON.parse(store.getItem(SNAP_KEY)||'null'); if(s&&Array.isArray(s.items)){ s.items.forEach(function(i){ i.key=E.keyOf(i.name+' '+(i.nameEn||'')); }); snap=s; } }catch(e){ snap=null; }
+  snap=E.loadSnapshot(store,SNAP_KEY);
 }
 function saveSnap(parsed){
-  snap={items:parsed.items,exportedAt:parsed.exportedAt,importedAt:new Date().toISOString()};
-  var slim=parsed.items.map(function(i){return {code:i.code,gtin:i.gtin,name:i.name,nameEn:i.nameEn,price:i.price,stock:i.stock,units:i.units}});
-  try{ store.setItem(SNAP_KEY,JSON.stringify({items:slim,exportedAt:snap.exportedAt,importedAt:snap.importedAt})); return true; }catch(e){ return false; }
+  var res=E.saveSnapshot(store,parsed,{key:SNAP_KEY});
+  if(res.ok){ snap=res.snapshot; return res; }
+  return res;
 }
 function renderBanner(){
   var b=$('srcBanner');
   if(!snap){ b.className='banner none'; b.textContent='لا توجد أسعار محمّلة على هذا الجهاز. افتح تبويب «الأسعار» وحمّل ملف STOCK LIVE.'; return; }
   var f=E.freshness(snap.exportedAt);
   b.className='banner '+f.level;
-  b.textContent=f.label+' · '+snap.items.length+' صنف'+(snap.exportedAt?' · '+new Date(snap.exportedAt).toLocaleString('ar-EG'):'')+' · نسخة محفوظة (قد تختلف عن النظام الآن). الرصيد تقريبي وليس لحظي.';
+  b.textContent=f.label+' · المصدر: '+(snap.source||'STOCK LIVE')+' · '+snap.items.length+' صنف'+(snap.exportedAt?' · '+new Date(snap.exportedAt).toLocaleString('ar-EG'):'')+' · نسخة محفوظة (قد تختلف عن النظام الآن). الرصيد تقريبي وليس لحظي.';
 }
 function warn(t){ var w=$('warnBanner'); if(t){ w.textContent=t; w.classList.remove('hide'); } else w.classList.add('hide'); }
 
@@ -138,7 +138,7 @@ function renderResults(){
   lastHits=E.searchItems(snap.items,q,25);
   if(q.trim().length>=2 && !lastHits.length){ box.innerHTML='<p style="color:var(--dim)">لا توجد نتائج</p>'; return; }
   box.innerHTML=lastHits.map(function(it,i){
-    var st=it.stock==null?'':'الرصيد (تقريبي): '+it.stock;
+    var sd=E.stockDisplay(it,snap.exportedAt), st=sd.label;
     return '<div class="res"><div><div class="nm">'+esc(it.name)+'</div><div class="meta mono">'+esc(it.code||it.gtin)+(st?' · '+esc(st):'')+'</div></div>'
       +(it.price==null?'<span class="meta">لا يوجد سعر</span>':'<div style="text-align:left"><div class="price mono">'+money(it.price)+'</div><button data-add="'+i+'" aria-label="أضف '+esc(it.name)+'">أضف</button></div>')+'</div>';
   }).join('');
@@ -246,7 +246,7 @@ function download(blob,name){ var a=document.createElement('a'); a.href=URL.crea
 
 $('bMake').addEventListener('click',function(){
   readFields(); var msg=$('msg'); msg.textContent='';
-  var inv; try{ inv=E.createInvoice({basket:basket,staff:$('who').value,customer:$('cust').value,deviceId:E.getDeviceId(store),sourceExportedAt:snap&&snap.exportedAt}); }
+  var inv; try{ inv=E.createInvoice({basket:basket,staff:$('who').value,customer:$('cust').value,deviceId:E.getDeviceId(store),source:snap&&snap.source,sourceExportedAt:snap&&snap.exportedAt}); }
   catch(e){ var m={'staff-required':'اكتب اسم الموظف أولًا','empty-basket':'السلة فاضية'}; msg.textContent=m[e.message]||e.message; return; }
   if(!queue.add(inv)){ msg.textContent='الفاتورة موجودة بالفعل'; return; }   // saved BEFORE the PDF so a failure never loses it
   basket=E.emptyBasket(); $('disc').value=''; $('discBy').value=''; $('cust').value=''; E.clearDraft(store); renderBasket(); renderQueue();
@@ -275,11 +275,15 @@ $('bExport').addEventListener('click',function(){ download(new Blob([queue.expor
 /* ---- data import ---- */
 $('file').addEventListener('change',function(){
   var f=this.files[0]; if(!f) return;
+  if(f.size && f.size > E.MAX_SNAPSHOT_BYTES){ $('dataMsg').textContent='حجم الملف يتجاوز الحد المسموح للتخزين المحلي'; return; }
   f.text().then(function(t){
     var ev=$('exp').value, p=E.parseSnapshot(t,{exportedAt:ev?new Date(ev).toISOString():null});
     if(!p.ok){ $('dataMsg').textContent=p.error; return; }
-    var saved=saveSnap(p); renderBanner(); renderResults();
-    $('dataMsg').textContent='تم تحميل '+p.items.length+' صنف'+(p.skipped?' (تجاهلنا '+p.skipped+' صف ناقص)':'')+(saved?'':' — تعذر حفظها على الجهاز، ستضيع عند إغلاق الصفحة')+'. '+(p.exportedAt?'':' وقت التصدير غير معروف — يظهر تحذير في كل شاشة.');
+    var res=saveSnap(p), saved=res.ok;
+    if(!saved && res.code!=='storage-error'){ $('dataMsg').textContent=res.error; return; }
+    if(!saved){ snap={source:p.source||'STOCK LIVE',items:p.items,exportedAt:p.exportedAt,savedAt:new Date().toISOString()}; }
+    renderBanner(); renderResults();
+    $('dataMsg').textContent='تم تحميل '+p.items.length+' صنف (المصدر: '+(p.source||'STOCK LIVE')+')'+(p.skipped?' (تجاهلنا '+p.skipped+' صف ناقص)':'')+(saved?'':' — تعذر حفظها على الجهاز، ستضيع عند إغلاق الصفحة')+'. '+(p.exportedAt?'':' وقت التصدير غير معروف — يظهر تحذير في كل شاشة.');
   });
 });
 

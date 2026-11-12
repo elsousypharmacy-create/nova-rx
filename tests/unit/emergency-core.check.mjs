@@ -5,21 +5,56 @@ const E = createRequire(import.meta.url)('../../emergency-core.js');
 const mem = () => { const m = {}; return { getItem: k => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: k => { delete m[k]; } }; };
 const csv = fs.readFileSync(new URL('../fixtures/emergency/snapshot-sample.csv', import.meta.url), 'utf8');
 
-// snapshot parsing
+// snapshot parsing + OFF-01 source stamp & size limits
 const p = E.parseSnapshot(csv, { exportedAt: '2026-11-09T08:00:00Z' });
 assert.ok(p.ok); assert.equal(p.items.length, 4);
+assert.equal(p.source, 'STOCK LIVE', 'default source stamp');
+assert.equal(p.exportedAt, '2026-11-09T08:00:00.000Z');
 assert.equal(p.items[2].price, null, 'zero price is not a price');
 assert.equal(E.parseSnapshot('').ok, false);
 assert.equal(E.parseSnapshot('code,namear\n1,2').ok, false);
 assert.equal(E.parseSnapshot('{bad').ok, false);
-assert.ok(E.parseSnapshot(JSON.stringify({ exportedAt: '2026-01-01T00:00:00Z', items: [{ code: '5', namear: 'س', price: '1,200.5' }] })).items[0].price === 1200.5);
+const pj = E.parseSnapshot(JSON.stringify({ source: 'STOCK LIVE · فرع 1', exportedAt: '2026-01-01T00:00:00Z', items: [{ code: '5', namear: 'س', price: '1,200.5', stock: 9 }] }));
+assert.equal(pj.items[0].price, 1200.5);
+assert.equal(pj.source, 'STOCK LIVE · فرع 1', 'JSON source stamp preserved');
+assert.equal(E.parseSnapshot(csv, { maxBytes: 20 }).code, 'snapshot-too-large', 'byte size limit enforced on parse');
+assert.equal(E.parseSnapshot(csv, { maxItems: 2 }).code, 'too-many-items', 'item count limit enforced on parse');
 
-// freshness (never claims real-time)
+// OFF-01 local snapshot persistence with date, source stamp, and size limits
+const snapStore = mem();
+const saved = E.saveSnapshot(snapStore, p, { source: 'STOCK LIVE', now: Date.parse('2026-11-09T08:05:00Z') });
+assert.equal(saved.ok, true);
+const loaded = E.loadSnapshot(snapStore);
+assert.ok(loaded);
+assert.equal(loaded.source, 'STOCK LIVE');
+assert.equal(loaded.exportedAt, '2026-11-09T08:00:00.000Z');
+assert.equal(loaded.savedAt, '2026-11-09T08:05:00.000Z');
+assert.equal(loaded.items.length, 4);
+assert.equal(E.searchItems(loaded.items, 'بانادول').length, 1, 'hydrated snapshot items remain searchable');
+assert.equal(E.saveSnapshot(snapStore, p, { maxItems: 2 }).code, 'too-many-items');
+assert.equal(E.saveSnapshot(snapStore, p, { maxBytes: 50 }).code, 'snapshot-too-large');
+assert.equal(E.loadSnapshot(snapStore).items.length, 4, 'rejected oversized snapshot does not overwrite existing stored snapshot');
+
+// freshness (never claims real-time) + OFF-01 stale stock balance guard
 const now = Date.parse('2026-11-09T09:00:00Z');
-assert.equal(E.freshness('2026-11-09T08:00:00Z', now).level, 'ok');
-assert.equal(E.freshness('2026-11-09T01:00:00Z', now).level, 'stale');
-assert.equal(E.freshness('2026-11-07T01:00:00Z', now).level, 'old');
-assert.equal(E.freshness(null, now).level, 'unknown');
+assert.deepEqual({ level: E.freshness('2026-11-09T08:00:00Z', now).level, stale: E.freshness('2026-11-09T08:00:00Z', now).stale }, { level: 'ok', stale: false });
+assert.deepEqual({ level: E.freshness('2026-11-09T01:00:00Z', now).level, stale: E.freshness('2026-11-09T01:00:00Z', now).stale }, { level: 'stale', stale: true });
+assert.deepEqual({ level: E.freshness('2026-11-07T01:00:00Z', now).level, stale: E.freshness('2026-11-07T01:00:00Z', now).stale }, { level: 'old', stale: true });
+assert.deepEqual({ level: E.freshness(null, now).level, stale: E.freshness(null, now).stale }, { level: 'unknown', stale: true });
+
+// OFF-01: never present a stale stock balance as currently available
+const itemWithStock = { code: '10000001', name: 'بانادول', price: 12.5, stock: 14 };
+const freshStock = E.stockDisplay(itemWithStock, '2026-11-09T08:00:00Z', now);
+assert.equal(freshStock.availableNow, false, 'snapshot stock is never claimed as currently available');
+assert.equal(freshStock.stale, false);
+assert.ok(freshStock.label.includes('غير مؤكد حاليًا') && !freshStock.label.includes('متاح حاليًا'));
+for (const staleTs of ['2026-11-09T01:00:00Z', '2026-11-07T01:00:00Z', null]) {
+  const sd = E.stockDisplay(itemWithStock, staleTs, now);
+  assert.equal(sd.availableNow, false);
+  assert.equal(sd.stale, true);
+  assert.equal(sd.stock, null, 'stale stock number withheld');
+  assert.ok(sd.label.includes('غير متاح حاليًا') && !sd.label.includes('14'), 'stale stock balance is never shown as available');
+}
 
 // search: name (Arabic normalisation), barcode/code, no-price item still found
 assert.equal(E.searchItems(p.items, 'بانادول').length, 1);
