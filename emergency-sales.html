@@ -79,7 +79,7 @@ nav button.on{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)
 
   <section id="vQueue" class="hide">
     <div class="card"><strong>الفواتير المؤقتة</strong>
-      <div class="banner stale" style="margin-top:8px">هذه الفواتير محفوظة على هذا الجهاز فقط وقد تضيع لو اتمسح المتصفح. صدّرها بعد الانتهاء. لا يتم ترحيل أي شيء للنظام تلقائيًا.</div>
+      <div class="banner stale" style="margin-top:8px">وضع الطوارئ: الفواتير هنا مؤقتة ولم تُحصَّل مركزيًا قبل المزامنة. هذه الفواتير محفوظة على هذا الجهاز فقط وقد تضيع لو اتمسح المتصفح. صدّرها بعد الانتهاء. لا يتم ترحيل أي شيء للنظام تلقائيًا.</div>
       <div id="queue"></div>
       <div class="row" style="margin-top:10px"><button id="bExport" class="ghost">تصدير للمراجعة (JSON)</button></div>
     </div>
@@ -199,7 +199,9 @@ function drawPage(inv,rows,idx,count,startNo){
     x.textAlign='right'; x.fillStyle='#111'; x.font='17px '+FONT;
     x.fillText('رقم مرجعي: '+inv.ref,R,174); x.fillText('التاريخ: '+new Date(inv.createdAt).toLocaleString('ar-EG'),R,200);
     x.fillText('الموظف: '+inv.createdBy+(inv.customer?'   ·   العميل: '+inv.customer:''),R,226);
-    y=244;
+    x.fillText('الجهاز: '+inv.deviceId,R,250);
+    x.fillStyle='#8a1c10'; x.font='bold 15px '+FONT; x.fillText(inv.warning,R,274); x.fillStyle='#111'; x.font='17px '+FONT;
+    y=292;
   } else { x.font='bold 18px '+FONT; x.fillText(inv.ref+' — تابع',R,50); y=70; }
   // table header
   var cNo=R, cName=R-40, cQty=270, cPrice=190, cTot=L+90;
@@ -211,7 +213,7 @@ function drawPage(inv,rows,idx,count,startNo){
     x.fillText(String(startNo+i),cNo,y+40);
     var ls=wrap(x,l.name,cName-cQty-60,2), off=ls.length>1?28:40;
     ls.forEach(function(t,k){ x.fillText(t,cName,y+off+k*22-(ls.length>1?6:0)); });
-    x.textAlign='center'; x.fillText(String(l.qty),cQty,y+40); x.fillText(l.unitPrice.toFixed(2),cPrice,y+40); x.fillText(l.lineTotal.toFixed(2),cTot,y+40);
+    x.textAlign='center'; x.fillText(l.qty+' '+(l.unit||'علبة'),cQty,y+40); x.fillText(l.unitPrice.toFixed(2),cPrice,y+40); x.fillText(l.lineTotal.toFixed(2),cTot,y+40);
     x.strokeStyle='#ccd5dc'; x.beginPath(); x.moveTo(L,y+ROW-2); x.lineTo(PW-40,y+ROW-2); x.stroke(); y+=ROW;
   });
   if(idx===count-1){
@@ -230,7 +232,7 @@ function makePdf(inv){
   return Promise.all([document.fonts.load('17px Cairo'),document.fonts.load('bold 17px Cairo')]).catch(function(){}).then(function(){ return makePdf2(inv); });
 }
 function makePdf2(inv){
-  var groups=E.paginate(inv.lines,9,10), no=1;
+  var groups=E.paginate(inv.lines,8,10), no=1;
   return Promise.all(groups.map(function(g,i){ var c=drawPage(inv,g,i,groups.length,no); no+=g.length; return canvasJpeg(c).then(function(j){ return {jpeg:j,w:c.width,h:c.height,pdfW:595,pdfH:842}; }); })).then(E.buildPdf);
 }
 function deliver(inv,bytes){
@@ -244,11 +246,11 @@ function download(blob,name){ var a=document.createElement('a'); a.href=URL.crea
 
 $('bMake').addEventListener('click',function(){
   readFields(); var msg=$('msg'); msg.textContent='';
-  var inv; try{ inv=E.createInvoice({basket:basket,staff:$('who').value,customer:$('cust').value,sourceExportedAt:snap&&snap.exportedAt}); }
+  var inv; try{ inv=E.createInvoice({basket:basket,staff:$('who').value,customer:$('cust').value,deviceId:E.getDeviceId(store),sourceExportedAt:snap&&snap.exportedAt}); }
   catch(e){ var m={'staff-required':'اكتب اسم الموظف أولًا','empty-basket':'السلة فاضية'}; msg.textContent=m[e.message]||e.message; return; }
   if(!queue.add(inv)){ msg.textContent='الفاتورة موجودة بالفعل'; return; }   // saved BEFORE the PDF so a failure never loses it
   basket=E.emptyBasket(); $('disc').value=''; $('discBy').value=''; $('cust').value=''; E.clearDraft(store); renderBasket(); renderQueue();
-  msg.textContent='تم حفظ الفاتورة المؤقتة '+inv.ref+' (في انتظار الترحيل). جاري تجهيز الـPDF…';
+  msg.textContent='⚠ وضع الطوارئ: تم حفظ الفاتورة المؤقتة '+inv.ref+' على هذا الجهاز فقط — لم تُحصَّل مركزيًا قبل المزامنة. جاري تجهيز الـPDF…';
   makePdf(inv).then(function(b){ return deliver(inv,b); }).then(function(r){
     msg.textContent={shared:'تمت المشاركة. ',cancelled:'اتلغت المشاركة — الفاتورة محفوظة وتقدر تنزّلها من تبويب الفواتير. ',downloaded:'تم تنزيل الـPDF. '}[r]+inv.ref;
   }).catch(function(){ msg.textContent='تم حفظ الفاتورة لكن تعذر إنشاء الـPDF — أعد المحاولة من تبويب الفواتير.'; });

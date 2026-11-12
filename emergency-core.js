@@ -5,6 +5,8 @@
 
   var STATUS = { PENDING: 'pending', SYNCED: 'synced', REVIEW: 'needs-review' };
   var TEMP_LABEL = 'فاتورة مؤقتة — لم تُرحّل للنظام';
+  var EMERGENCY_WARNING = 'وضع الطوارئ: فاتورة مؤقتة محفوظة على هذا الجهاز فقط. لم يتم تحصيلها مركزيًا ولا تُحتسب في النظام قبل المزامنة.';
+  var DEVICE_KEY = 'novaEmergencyDeviceId', DEFAULT_UNIT = 'علبة';
   var STALE_MS = 6 * 3600 * 1000;      // older than 6 h: stale warning
   var OLD_MS = 24 * 3600 * 1000;       // older than 24 h: strong warning
 
@@ -122,7 +124,7 @@
     if (!(qty >= 1)) qty = 1;
     var k = item.code || item.gtin, ex = basket.lines.filter(function (l) { return l.code === k; })[0];
     if (ex) ex.qty = Math.min(999, ex.qty + qty);
-    else basket.lines.push({ code: k, name: item.name, unitPrice: item.price, qty: Math.min(999, qty) });
+    else basket.lines.push({ code: k, name: item.name, unitPrice: item.price, unit: DEFAULT_UNIT, qty: Math.min(999, qty) });
     return basket;
   }
   function setQty(basket, code, qty) {
@@ -166,18 +168,29 @@
     return 'EMG-' + ymd + '-' + id.replace(/-/g, '').slice(0, 5).toUpperCase();
   }
 
+  /* Stable per-device id, created once and kept in local storage (in-memory fallback if storage fails). */
+  function getDeviceId(storage, rand) {
+    var id = null;
+    try { id = storage.getItem(DEVICE_KEY); } catch (e) {}
+    if (!id) { id = 'DEV-' + uuid4(rand).slice(0, 8).toUpperCase(); try { storage.setItem(DEVICE_KEY, id); } catch (e) {} }
+    return id;
+  }
+
   function createInvoice(opts) {
     var b = opts.basket, staff = String(opts.staff || '').trim(), now = opts.now == null ? Date.now() : opts.now;
     if (!staff) throw new Error('staff-required');
+    var deviceId = String(opts.deviceId || '').trim();
+    if (!deviceId) throw new Error('device-required');
     if (!b.lines.length) throw new Error('empty-basket');
     var dp = discountProblem(b); if (dp) throw new Error(dp);
     var t = totals(b), id = opts.id || uuid4();
     var inv = {
       id: id, ref: readableRef(id, now), kind: 'temporary-invoice', label: TEMP_LABEL,
+      emergencyMode: true, warning: EMERGENCY_WARNING, deviceId: deviceId, centralCollection: false,
       createdAt: new Date(now).toISOString(), createdBy: staff,
       priceSource: { type: 'snapshot', exportedAt: opts.sourceExportedAt || null },
       customer: opts.customer ? String(opts.customer).trim() : '',
-      lines: b.lines.map(function (l) { return Object.freeze({ code: l.code, name: l.name, qty: l.qty, unitPrice: l.unitPrice, lineTotal: round2(l.unitPrice * l.qty) }); }),
+      lines: b.lines.map(function (l) { return Object.freeze({ code: l.code, name: l.name, qty: l.qty, unit: l.unit || DEFAULT_UNIT, unitPrice: l.unitPrice, lineTotal: round2(l.unitPrice * l.qty) }); }),
       subtotal: t.subtotal, discount: t.discount,
       discountBy: t.discount ? String(b.discountBy).trim() : '', discountReason: t.discount ? String(b.discountReason || '').trim() : '',
       total: t.total, status: STATUS.PENDING, audit: [{ at: new Date(now).toISOString(), by: staff, action: 'created' }]
@@ -285,7 +298,7 @@
     return pages;
   }
 
-  var api = { STATUS: STATUS, TEMP_LABEL: TEMP_LABEL, STALE_MS: STALE_MS, OLD_MS: OLD_MS, round2: round2, normalizeAr: normalizeAr, keyOf: keyOf,
+  var api = { STATUS: STATUS, TEMP_LABEL: TEMP_LABEL, EMERGENCY_WARNING: EMERGENCY_WARNING, getDeviceId: getDeviceId, STALE_MS: STALE_MS, OLD_MS: OLD_MS, round2: round2, normalizeAr: normalizeAr, keyOf: keyOf,
     parseSnapshot: parseSnapshot, freshness: freshness, searchItems: searchItems, emptyBasket: emptyBasket, addLine: addLine,
     setQty: setQty, removeLine: removeLine, totals: totals, discountProblem: discountProblem, uuid4: uuid4, createInvoice: createInvoice,
     createQueue: createQueue, detectConflicts: detectConflicts, saveDraft: saveDraft, loadDraft: loadDraft, clearDraft: clearDraft,
