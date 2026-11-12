@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  var ROLES = ['cashier', 'pharmacist', 'manager', 'owner'];
+  var ROLES = ['cashier', 'pharmacist', 'store', 'accountant', 'delivery', 'manager', 'owner'];
   var SESSION_MS = 8 * 3600 * 1000, REAUTH_MS = 5 * 60 * 1000, MIN_PW = 6;
 
   function fail(code) { var e = new Error(code); e.code = code; throw e; }
@@ -59,6 +59,7 @@
           var me = this.current(); if (!me || (me.role !== 'owner' && me.role !== 'manager')) fail('permission');
         } else role = 'owner';
         if (ROLES.indexOf(role) < 0) fail('bad-role');
+        if (!first && this.current().role !== 'owner' && (role === 'owner' || role === 'manager')) fail('permission'); /* no escalation: only an owner grants owner/manager */
         if (findByName(name)) fail('duplicate-name');
         var salt = rid(c);
         return hash(salt, pw).then(function (h) {

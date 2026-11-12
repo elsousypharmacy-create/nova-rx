@@ -70,6 +70,10 @@ jobs:
         run: |
           node tests/unit/auth-local.check.mjs
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-sec01-accounts.mjs
+      - name: SEC-02 permissions matrix (N46)
+        run: |
+          node tests/unit/auth-permissions.check.mjs
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-sec02-permissions.mjs
       - name: POS-04 returns and cancellation (N37)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-pos04-returns-cancel.mjs
