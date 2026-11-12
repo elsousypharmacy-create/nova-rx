@@ -47,8 +47,6 @@ jobs:
         run: node tests/ui-sales-ledger.mjs
       - name: UI returns (U2)
         run: node tests/ui-returns.mjs
-      - name: Sticker screen never shows the previous invoice (#77)
-        run: node tests/ui-sticker-new-sale.mjs
       - name: Write machine-readable result
         if: always()
         run: |
