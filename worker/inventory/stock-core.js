@@ -7,7 +7,7 @@
 export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS batch(id INTEGER PRIMARY KEY, tenant_id TEXT NOT NULL, product_id TEXT NOT NULL, lot TEXT NOT NULL, expiry TEXT NOT NULL, UNIQUE(tenant_id, product_id, lot));
 CREATE TABLE IF NOT EXISTS stock_balance(tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), on_hand INTEGER NOT NULL CHECK(on_hand >= 0), PRIMARY KEY(tenant_id, branch_id, batch_id));
-CREATE TABLE IF NOT EXISTS stock_movement(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty_delta INTEGER NOT NULL CHECK(qty_delta <> 0), kind TEXT NOT NULL CHECK(kind IN ('receive','sale','return','adjust')), ref_type TEXT NOT NULL, ref_id TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS stock_movement(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty_delta INTEGER NOT NULL CHECK(qty_delta <> 0), kind TEXT NOT NULL CHECK(kind IN ('receive','sale','return','adjust','supplier_return')), ref_type TEXT NOT NULL, ref_id TEXT NOT NULL);
 CREATE TRIGGER IF NOT EXISTS stock_movement_no_update BEFORE UPDATE ON stock_movement BEGIN SELECT RAISE(ABORT,'stock_movement is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS stock_movement_no_delete BEFORE DELETE ON stock_movement BEGIN SELECT RAISE(ABORT,'stock_movement is append-only'); END;
 CREATE TABLE IF NOT EXISTS stock_policy(tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, product_id TEXT NOT NULL, min_base INTEGER NOT NULL CHECK(min_base >= 0), max_base INTEGER NOT NULL CHECK(max_base >= min_base), PRIMARY KEY(tenant_id, branch_id, product_id));
@@ -23,6 +23,7 @@ CREATE TRIGGER IF NOT EXISTS refund_not_above_payment BEFORE INSERT ON refund_pa
   SELECT RAISE(ABORT,'refund exceeds payment') WHERE (SELECT COALESCE(SUM(amount_cents),0) FROM refund_payment WHERE payment_id = NEW.payment_id) + NEW.amount_cents > (SELECT amount_cents FROM payment WHERE id = NEW.payment_id);
 END;
 CREATE TABLE IF NOT EXISTS stock_adjustment(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), delta INTEGER NOT NULL CHECK(delta <> 0), reason TEXT NOT NULL, approved_by TEXT NOT NULL, actor TEXT NOT NULL, adjust_key TEXT NOT NULL, CHECK(approved_by <> actor));
+CREATE TABLE IF NOT EXISTS supplier_return(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty INTEGER NOT NULL CHECK(qty > 0), reason TEXT NOT NULL, supplier_ref TEXT NOT NULL, return_key TEXT NOT NULL, actor TEXT NOT NULL, approved_by TEXT NOT NULL, credit_cents INTEGER CHECK(credit_cents IS NULL OR credit_cents >= 0), CHECK(approved_by <> actor));
 CREATE TABLE IF NOT EXISTS purchase_order(tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, po_ref TEXT NOT NULL, PRIMARY KEY(tenant_id, po_ref));
 CREATE TABLE IF NOT EXISTS po_line(tenant_id TEXT NOT NULL, po_ref TEXT NOT NULL, product_id TEXT NOT NULL, ordered_base INTEGER NOT NULL CHECK(ordered_base > 0), PRIMARY KEY(tenant_id, po_ref, product_id));
 CREATE TABLE IF NOT EXISTS receipt_line(id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id TEXT NOT NULL, branch_id TEXT NOT NULL, po_ref TEXT NOT NULL, receipt_key TEXT NOT NULL, product_id TEXT NOT NULL, batch_id INTEGER NOT NULL REFERENCES batch(id), qty INTEGER NOT NULL CHECK(qty > 0), cost_cents INTEGER NOT NULL CHECK(cost_cents >= 0));
@@ -292,6 +293,58 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
       return { productId: String(productId), lot, delta, onHand: bal.onHand + delta };
     });
   }
+  // Lots of a product at this branch with what was received, returned to suppliers and is on hand; lineCostCents = total receipt cost
+  // of the lot at this branch (null when it was never costed). Input for a supplier-return plan; always scoped.
+  function lotsOf(scope, productId) {
+    const s = scopeOf(scope);
+    if (!ID.test(String(productId))) return [];
+    return q(`SELECT b.lot AS lot, b.expiry AS expiry, COALESCE(sb.on_hand,0) AS onHandBase,
+      COALESCE((SELECT SUM(qty) FROM receipt_line r WHERE r.tenant_id=b.tenant_id AND r.branch_id=? AND r.batch_id=b.id),0) AS receivedBase,
+      COALESCE((SELECT SUM(qty) FROM supplier_return x WHERE x.tenant_id=b.tenant_id AND x.branch_id=? AND x.batch_id=b.id),0) AS returnedBase,
+      COALESCE((SELECT SUM(cost_cents) FROM receipt_line r WHERE r.tenant_id=b.tenant_id AND r.branch_id=? AND r.batch_id=b.id),0) AS cost
+      FROM batch b JOIN stock_balance sb ON sb.batch_id=b.id AND sb.tenant_id=b.tenant_id AND sb.branch_id=? WHERE b.tenant_id=? AND b.product_id=? ORDER BY b.expiry, b.id`,
+      s.b, s.b, s.b, s.b, s.t, String(productId)).map(r => ({ productId: String(productId), lot: r.lot, expiry: r.expiry, receivedBase: r.receivedBase, returnedBase: r.returnedBase, onHandBase: r.onHandBase, lineCostCents: r.cost > 0 ? r.cost : null }));
+  }
+  // Return received stock to a supplier. Credit expected = pro-rated receipt cost, computed here (never taken from the caller) and
+  // cumulative per lot, so partial returns can never credit more than the lot cost. Journal: debit payables, credit inventory.
+  async function returnToSupplier(scope, { key, supplierRef, reason, lines, actor, approvedBy } = {}) {
+    const s = scopeOf(scope);
+    if (!ID.test(String(supplierRef ?? ''))) bad('supplier-invalid');
+    if (typeof reason !== 'string' || reason.trim().length < 5) bad('reason-required');
+    if (typeof actor !== 'string' || !ID.test(actor)) bad('actor-invalid');
+    if (typeof approvedBy !== 'string' || !ID.test(approvedBy) || approvedBy === actor) bad('approver-required');
+    if (!Array.isArray(lines) || lines.length === 0 || lines.length > 200) bad('return-invalid');
+    const want = new Map();
+    for (const l of lines) {
+      if (!l || !ID.test(String(l.productId)) || !validRef(String(l.lot ?? ''))) bad('return-invalid');
+      if (!posInt(l.qtyBase, MAX_QTY)) bad('quantity-invalid', l);
+      const k = `${l.productId}\u0000${l.lot}`; want.set(k, (want.get(k) ?? 0) + l.qtyBase);
+    }
+    const norm = [...want].map(([k, qtyBase]) => { const [productId, lot] = k.split('\u0000'); return { productId, lot, qtyBase }; });
+    const { fp } = await prepare(key, { branch: s.b, supplierRef, reason: reason.trim(), actor, approvedBy, norm });
+    return atomic(s, 'supplier_return', key, fp, () => {
+      let credit = 0, anyCost = false, returned = 0;
+      for (const l of norm) {
+        const b = one('SELECT id FROM batch WHERE tenant_id=? AND product_id=? AND lot=?', s.t, l.productId, l.lot);
+        const bal = b && one('SELECT on_hand AS onHand FROM stock_balance WHERE tenant_id=? AND branch_id=? AND batch_id=?', s.t, s.b, b.id);
+        if (!b || !bal) bad('lot-unknown', { productId: l.productId, lot: l.lot });
+        const got = one('SELECT COALESCE(SUM(qty),0) AS q, COALESCE(SUM(cost_cents),0) AS c FROM receipt_line WHERE tenant_id=? AND branch_id=? AND batch_id=?', s.t, s.b, b.id);
+        const before = one('SELECT COALESCE(SUM(qty),0) AS q FROM supplier_return WHERE tenant_id=? AND branch_id=? AND batch_id=?', s.t, s.b, b.id).q;
+        let creditCents = null;
+        if (got.c > 0) {
+          if (before + l.qtyBase > got.q) bad('return-exceeds-received', { productId: l.productId, lot: l.lot });
+          const cum = n => Number((BigInt(got.c) * BigInt(n) * 2n + BigInt(got.q)) / (BigInt(got.q) * 2n));
+          creditCents = cum(before + l.qtyBase) - cum(before); credit += creditCents; anyCost = true;
+        }
+        if (bal.onHand < l.qtyBase) bad('insufficient-stock', { productId: l.productId, lot: l.lot, onHand: bal.onHand });
+        move(s, b.id, -l.qtyBase, 'supplier_return', 'supplier_return', key);   // fails with insufficient-stock below zero
+        run('INSERT INTO supplier_return(tenant_id, branch_id, batch_id, qty, reason, supplier_ref, return_key, actor, approved_by, credit_cents) VALUES(?,?,?,?,?,?,?,?,?,?)', s.t, s.b, b.id, l.qtyBase, reason.trim(), String(supplierRef), key, actor, approvedBy, creditCents);
+        returned += l.qtyBase;
+      }
+      if (credit > 0) journal(s, 'supplier_return', key, [['payables', credit]], [['inventory', credit]]);
+      return { returnKey: key, supplierRef: String(supplierRef), lines: norm.length, returnedBase: returned, creditCents: anyCost ? credit : null };
+    });
+  }
   // lots with stock that expire within `days` (not yet expired), soonest first; scoped to the caller's tenant and branch
   function expiring(scope, days) {
     const s = scopeOf(scope);
@@ -316,8 +369,12 @@ export function createStockCore(db, { now = () => new Date() } = {}) {
     for (const r of q('SELECT pl.po_ref AS po, pl.product_id AS p, pl.ordered_base AS o, COALESCE((SELECT SUM(qty) FROM receipt_line r WHERE r.tenant_id=pl.tenant_id AND r.po_ref=pl.po_ref AND r.product_id=pl.product_id),0) AS got FROM po_line pl WHERE pl.tenant_id=?', s.t)) if (r.got > r.o) v.push(`po ${r.po}/${r.p}: received ${r.got} > ordered ${r.o}`);
     for (const r of q('SELECT p.id, p.amount_cents AS amount, COALESCE(SUM(rp.amount_cents),0) AS refunded FROM payment p JOIN invoice i ON i.id = p.invoice_id LEFT JOIN refund_payment rp ON rp.payment_id = p.id WHERE i.tenant_id=? GROUP BY p.id', s.t)) if (r.refunded > r.amount) v.push(`payment ${r.id}: refunded ${r.refunded} > paid ${r.amount}`);
     for (const r of q('SELECT i.number AS number, COALESCE((SELECT SUM(rp.amount_cents) FROM refund_payment rp JOIN payment p ON p.id = rp.payment_id WHERE p.invoice_id = i.id),0) AS paidOut, COALESCE((SELECT SUM(rl.refund_cents) FROM return_line rl JOIN invoice_line il ON il.id = rl.invoice_line_id WHERE il.invoice_id = i.id),0) AS owed FROM invoice i WHERE i.tenant_id=?', s.t)) if (r.paidOut !== r.owed) v.push(`invoice ${r.number}: refunds paid out ${r.paidOut} != refunds owed ${r.owed}`);
+    for (const r of q("SELECT x.batch_id AS b, x.branch_id AS br, SUM(x.qty) AS ret, COALESCE((SELECT SUM(qty) FROM receipt_line r WHERE r.tenant_id=x.tenant_id AND r.branch_id=x.branch_id AND r.batch_id=x.batch_id),0) AS got, COALESCE((SELECT -SUM(qty_delta) FROM stock_movement m WHERE m.tenant_id=x.tenant_id AND m.branch_id=x.branch_id AND m.batch_id=x.batch_id AND m.kind='supplier_return'),0) AS mv FROM supplier_return x WHERE x.tenant_id=? GROUP BY x.batch_id, x.branch_id", s.t)) {
+      if (r.ret > r.got) v.push(`batch ${r.b}/${r.br}: returned to suppliers ${r.ret} > received ${r.got}`);
+      if (r.ret !== r.mv) v.push(`batch ${r.b}/${r.br}: supplier returns ${r.ret} != movements ${r.mv}`);
+    }
     return v;
   }
 
-  return Object.freeze({ install, adjust, expiring, setPolicy, stockOf, shortages, getInvoice, registerPurchaseOrder, poStatus, receiveGoods, sell, returnItems, reconcile });
+  return Object.freeze({ install, adjust, expiring, setPolicy, stockOf, shortages, getInvoice, registerPurchaseOrder, poStatus, receiveGoods, sell, returnItems, lotsOf, returnToSupplier, reconcile });
 }
