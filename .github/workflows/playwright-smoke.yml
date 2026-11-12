@@ -68,6 +68,9 @@ jobs:
       - name: CAT-05 instant search UI and 5000-item perf check (N17)
         run: |
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-cat05-instant-search.mjs
+      - name: BUY-03 supplier selection and split (N28)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" node tests/ui-buy03-supplier-split.mjs
       - name: Write machine-readable result
         if: always()
         run: |
