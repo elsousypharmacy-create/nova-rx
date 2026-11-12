@@ -837,6 +837,8 @@ Tablet showed age 6 after reload = Chrome restoring old form values. Added autoc
 - Branch `claude/cat-packaging-link`, stacked on `claude/cat-02-unit-conversion` (`b49e29b`). Files: `worker/catalog/unified-catalog.js` (packaging, `packagingOf`, box-size aware duplicates, merge), `worker/catalog/unit-conversion.js` (`canonicalPackaging`), `tests/unit/unified-catalog-packaging.check.mjs` (9 cases), `docs/catalog/CAT-01.md`. 9 mutations each caught (one survived first: merged-id alias; test added).
 - 2026-11-11 (later): rebuilt on main `ad632e3`: exactly the change of `7a159b8` (git diff 7a159b8 over `worker/catalog/unified-catalog.js`, `worker/catalog/unit-conversion.js`, `tests/unit/unified-catalog-packaging.check.mjs`, `docs/catalog/CAT-01.md` = 0 lines).
 
+## Checkpoint 2026-11-11 — Claude 1: BUY-05 three-way invoice match (pure, not wired)
+Branch `claude/buy-05-invoice-match`. New: `worker/procurement/invoice-match.js`, `tests/unit/procurement-invoice-match.check.mjs` (12 cases; 11 mutations caught, 4 survived the first draft and got tests), `docs/procurement/BUY-05_INVOICE_MATCH.md`. Not wired, no deploy, no supplier call. Roadmap BUY-05 stays in progress (receiving UI, supplier returns, lot/cost checks, owner acceptance are open).
 ## Checkpoint 2026-11-11 — Claude 1, CAT-05 instant search (branch only, no PR: cap 3/3)
 - Branch `claude/cat-05-search`, stacked on `claude/cat-packaging-link` (`7a159b8`). Files: `worker/catalog/catalog-search.js`, `tests/unit/catalog-search.check.mjs` (21 cases incl. real export and latency), `docs/catalog/CAT-05.md`, `catalog-unit.yml` glob.
 - Real export: build ~150 ms, 300 queries p95 ~3-5 ms (target 150 ms). API p95 NOT TESTED.
