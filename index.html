@@ -3040,6 +3040,14 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           setTimeout(() => document.getElementById("gatePhone").focus(), 0);
           return;
         }
+        if (!state.checkoutReserved) { // INV-03: hold the units for 2 minutes before the payment window opens
+          const key = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
+          window.novaStock.withLock(() => window.novaStock.reserve(key, state.invoiceLines)).then(r => {
+            if (!r.ok) { showToast(r.error ? "تعذر حجز المخزون" : "المخزون لا يكفي: " + r.name + " — المتاح " + r.available, "error"); return; }
+            state.checkoutReserved = true; openCheckout();
+          });
+          return;
+        }
         document.getElementById("customerCheckoutGate").hidden = true;
         elements.modalAmountDue.textContent = formatMoney(grandTotal);
         document.getElementById("checkoutAddCustomer").hidden = !!state.attachedCustomer;
@@ -3056,6 +3064,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       function closeCheckout() {
+        if (state.checkoutReserved) { state.checkoutReserved = false; if (state.invoiceKey) window.novaStock.release(state.invoiceKey); }
         elements.checkoutModal.classList.remove("active");
         elements.mainSearchInput.focus();
       }
@@ -3141,7 +3150,35 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         };
       })();
 
-      function confirmPayment() {
+      // INV-03 (this device only): the last unit cannot sell twice. Tracked only for products with a numeric stock (demo list);
+      // STOCK LIVE price rows have stock null = untracked. Holds expire; all check+write steps run under a cross-tab Web Lock.
+      window.novaStock = (function () {
+        const HK = 'nova-rx-holds-v1', TTL = 120000, keyOf = l => String(l.barcode || l.name || '');
+        const holds = () => { try { const a = JSON.parse(localStorage.getItem(HK) || '[]'); const t = Date.now(); return Array.isArray(a) ? a.filter(h => h && h.exp > t) : []; } catch (_) { return []; } };
+        const limit = key => { const p = DEMO_PRODUCTS.find(x => (x.barcode || x.name) === key); return p && Number.isFinite(p.stock) ? p.stock : null; };
+        const sold = key => { let n = 0; window.novaSales.list().forEach(s => { const rq = window.novaSales.returnedQty(s.id); s.lines.forEach((l, i) => { if (keyOf(l) === key) n += l.qty - (rq[i] || 0); }); }); return n; };
+        const need = lines => { const m = new Map(); lines.forEach(l => m.set(keyOf(l), (m.get(keyOf(l)) || 0) + (Number(l.qty) || 0))); return m; };
+        const avail = (key, owner, hs) => { const lim = limit(key); return lim === null ? Infinity : lim - sold(key) - hs.filter(h => h.key === key && h.owner !== owner).reduce((t, h) => t + h.qty, 0); };
+        const check = (owner, lines) => { const hs = holds(); for (const [key, q] of need(lines)) { const a = avail(key, owner, hs); if (q > a) return { ok: false, name: (lines.find(l => keyOf(l) === key) || {}).name, available: Math.max(0, a) }; } return { ok: true }; };
+        const save = a => { try { localStorage.setItem(HK, JSON.stringify(a)); return true; } catch (_) { return false; } };
+        return {
+          keyOf, available: (key, owner) => avail(key, owner, holds()), holds,
+          check,
+          reserve(owner, lines, ttl) { // replaces this owner's holds; fails (writes nothing) if any line is short
+            const c = check(owner, lines); if (!c.ok) return c;
+            const rest = holds().filter(h => h.owner !== owner), exp = Date.now() + (ttl || TTL);
+            for (const [key, qty] of need(lines)) if (limit(key) !== null) rest.push({ owner, key, qty, exp });
+            return save(rest) ? { ok: true } : { ok: false, error: 'storage' };
+          },
+          release(owner) { const all = holds(); if (all.some(h => h.owner === owner)) save(all.filter(h => h.owner !== owner)); },
+          withLock(fn) { return navigator.locks && navigator.locks.request ? navigator.locks.request('nova-rx-stock', () => fn()) : Promise.resolve().then(fn); },
+          newKey: () => (crypto.randomUUID ? crypto.randomUUID() : 'S' + Date.now() + Math.random().toString(36).slice(2, 8))
+        };
+      })();
+
+      function confirmPayment() { window.novaStock.withLock(confirmPaymentCore); }
+
+      function confirmPaymentCore() {
         if (!state.attachedCustomer && !state.customerGateSkipped) { closeCheckout(); openCheckout(); return; }
         const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
         const cashInput = elements.inputCashReceived.value.trim();
@@ -3155,6 +3192,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         }
         const cashRec = Number.isFinite(parsedCash) && parsedCash >= 0 ? parsedCash : grandTotal;
 
+        const saleKey = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
+        if (!window.novaSales.list().some(x => x.id === saleKey)) { // a key already in the ledger is a duplicate commit: no second stock check, add() is a no-op
+          const c = window.novaStock.check(saleKey, state.invoiceLines);
+          if (!c.ok) { window.novaStock.release(saleKey); closeCheckout(); renderInvoice(); showToast("المخزون لا يكفي: " + c.name + " — المتاح " + c.available, "error"); return; }
+        }
         const invNumber = activeSaleNumber;
         const now = new Date();
         const dateStr = now.toLocaleDateString("en-GB") + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -3196,7 +3238,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
 
         // U1: keep a local record of every completed sale (this device only; not a server ledger).
         const savedOk = window.novaSales.add({
-          id: (crypto.randomUUID ? crypto.randomUUID() : 'S' + Date.now() + Math.random().toString(36).slice(2, 8)),
+          id: saleKey,
           number: String(invNumber), at: now.toISOString(),
           customer: state.attachedCustomer ? state.attachedCustomer.name : '',
           payment: state.checkoutPaymentMethod,
@@ -3204,6 +3246,7 @@ Change Due:                  ${Math.max(0, cashRec - grandTotal).toFixed(2).padS
           subtotal, discount: actualDiscount, vat: vatIncluded, total: grandTotal, received: cashRec, change: Math.max(0, cashRec - grandTotal),
           source: window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' ? 'STOCK LIVE' : 'DEMO'
         });
+        if (savedOk) { window.novaStock.release(saleKey); state.invoiceKey = null; }
         if (!savedOk) showToast("تعذر حفظ الفاتورة على هذا الجهاز — صوّر الإيصال قبل المتابعة.", "error");
         try{window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:String(invNumber),customer:state.attachedCustomer?.name||'عميل نقدي',items:state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}}))}catch(e){}
         elements.receiptSlipContent.textContent = slip;
