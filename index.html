@@ -1974,7 +1974,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="More actions" title="More actions" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
             <div id="novaSaleMoreMenu" class="nova-more-menu" hidden>
               <button id="btnClearInvoice" class="nova-more-item nova-more-danger" type="button" title="Clear Line Items (F4)">Clear Invoice</button>
-              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="View Keyboard Shortcuts">Keyboard Shortcuts</button>
+              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="اختصارات الكيبورد (F1)">Keyboard Shortcuts</button>
             </div>
           </div>
         </div>
@@ -2050,11 +2050,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           <div class="discount-inputs">
             <div class="input-grp">
               <span>%</span>
-              <input type="number" id="inputPercentDiscount" min="0" max="100" step="1" placeholder="0">
+              <input type="number" id="inputPercentDiscount" title="خصم بالنسبة (F6)" min="0" max="100" step="1" placeholder="0">
             </div>
             <div class="input-grp">
               <span>EGP</span>
-              <input type="number" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
+              <input type="number" id="inputFixedDiscount" title="خصم بمبلغ (F7)" min="0" step="0.5" placeholder="0.00">
             </div>
           </div>
           <div id="discountHint" class="discount-hint" role="status" aria-live="polite" hidden></div>
@@ -2183,13 +2183,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div>
           <label style="font-size:12px; font-weight:600; color:#94a3b8; display:block; margin-bottom:6px;">Payment Method</label>
           <div class="pay-methods-grid">
-            <button class="pay-method-btn active" data-method="cash">
+            <button class="pay-method-btn active" data-method="cash" title="نقدي (F12 / C)">
               <span>Cash / نقدي</span>
             </button>
-            <button class="pay-method-btn" data-method="card">
+            <button class="pay-method-btn" data-method="card" title="بطاقة (F10)">
               <span>Mada / بطاقة</span>
             </button>
-            <button class="pay-method-btn" data-method="credit">
+            <button class="pay-method-btn" data-method="credit" title="آجل (F11)">
               <span>Credit / آجل</span>
             </button>
             <button class="pay-method-btn" data-method="split">
@@ -2289,6 +2289,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F3</strong></td><td style="color:#38bdf8;">Add Loyalty / Switch customer search without resetting items</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F4</strong></td><td style="color:#38bdf8;">Clear current invoice line items</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F9</strong></td><td style="color:#38bdf8;">Open Checkout / Payment dialog</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F1</strong></td><td style="color:#38bdf8;">فتح هذه المساعدة</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (بحث فارغ)</td><td style="color:#38bdf8;">فتح الدفع عند وجود أصناف؛ Enter في الإيصال يبدأ فاتورة جديدة</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>*3</strong> أو <strong>3*</strong></td><td style="color:#38bdf8;">اكتب قبل/بعد الاسم لتحديد الكمية (مثال: بنادول*3)</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F6 / F7</strong></td><td style="color:#38bdf8;">خصم بالنسبة % / خصم بمبلغ ثابت</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F10 / F11 / F12</strong></td><td style="color:#38bdf8;">داخل الدفع: بطاقة / آجل / نقدي (C أيضاً للنقدي)، ثم Enter للتأكيد</td></tr>
           <tr><td style="padding:6px 0;"><strong>Esc</strong></td><td style="color:#38bdf8;">Dismiss dropdowns and close open modals</td></tr>
         </table>
       </div>
@@ -2910,8 +2915,26 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       // --- SEARCH & AUTOCOMPLETE ENGINE ---
+      // UX17: "*3 name" or "name*3" sets the quantity of the added line.
+      function parseQtyQuery(raw) {
+        // prefix: "*3 name" / "3*name"; suffix: "name*3" / "name* 3"
+        let m = /^\s*(?:\*\s*(\d{1,3})|(\d{1,3})\s*\*)\s*(\S.*)$/.exec(raw);
+        if (m) return { text: m[3].trim(), qty: Math.max(1, parseInt(m[1] || m[2], 10)) };
+        m = /^(.*\S)\s*\*\s*(\d{1,3})\s*$/.exec(raw);
+        if (m) return { text: m[1].trim(), qty: Math.max(1, parseInt(m[2], 10)) };
+        return { text: raw.trim(), qty: 1 };
+      }
+      function addProductWithQty(product, qty) {
+        addProductToInvoice(product);
+        if (qty > 1) {
+          const line = state.invoiceLines.find(l => l.productId === product.id && (l.unit || "box") === "box");
+          if (line) { line.qty += qty - 1; renderInvoice(); }
+        }
+      }
+
       function handleSearchInput(e) {
-        const query = e.target.value.trim();
+        const raw = e.target.value;
+        const query = state.mode === "PRODUCT" ? parseQtyQuery(raw).text : raw.trim();
         state.searchQuery = query;
 
         // Check if user is typing or scanning a product barcode directly in Customer Mode
@@ -3016,7 +3039,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       // --- KEYBOARD NAVIGATION FOR SEARCH INPUT ---
       function handleSearchKeyDown(e) {
-        const query = elements.mainSearchInput.value.trim();
+        const rawValue = elements.mainSearchInput.value;
+        const parsedQ = state.mode === "PRODUCT" ? parseQtyQuery(rawValue) : { text: rawValue.trim(), qty: 1 };
+        const query = parsedQ.text;
+        const qtyN = parsedQ.qty;
 
         if (e.key === "ArrowDown") {
           e.preventDefault();
@@ -3061,11 +3087,17 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             return;
           }
 
+          // UX17: Enter on an empty search box with invoice lines opens checkout
+          if (state.mode === "PRODUCT" && query === "" && state.invoiceLines.length > 0) {
+            openCheckout();
+            return;
+          }
+
           // In Product Mode with query: check exact barcode match first
           if (state.mode === "PRODUCT") {
             const exactBarcode = findExactBarcodeProduct(query);
             if (exactBarcode) {
-              addProductToInvoice(exactBarcode);
+              addProductWithQty(exactBarcode, qtyN);
               elements.mainSearchInput.value = "";
               closeSuggestions();
               showToast(`Product added: ${escH(exactBarcode.name)}`);
@@ -3074,13 +3106,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           }
 
           // Otherwise select from active dropdown if present
-          if (state.suggestions.length > 0 && state.selectedIndex >= 0) {
-            const selected = state.suggestions[state.selectedIndex];
+          if (state.suggestions.length > 0) {
+            const selected = state.suggestions[state.selectedIndex >= 0 ? state.selectedIndex : 0];
             if (state.mode === "CUSTOMER") {
               attachCustomer(selected);
               setSearchMode("PRODUCT");
             } else {
-              addProductToInvoice(selected);
+              addProductWithQty(selected, qtyN);
               elements.mainSearchInput.value = "";
               closeSuggestions();
             }
@@ -4670,6 +4702,31 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
         // Global Keyboard Shortcuts
         window.addEventListener("keydown", e => {
+          const checkoutOpen = elements.checkoutModal.classList.contains("active");
+          const payKey = { F10: "card", F11: "credit", F12: "cash" }[e.key] || ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !e.altKey && e.target && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) ? "cash" : null);
+          if (checkoutOpen && payKey) {
+            e.preventDefault();
+            const b = document.querySelector('.pay-method-btn[data-method="' + payKey + '"]');
+            if (b) b.click();
+            return;
+          }
+          if (e.key === "F1") {
+            e.preventDefault();
+            elements.helpModal.classList.add("active");
+            return;
+          }
+          if (e.key === "F6" || e.key === "F7") {
+            e.preventDefault();
+            const inp = e.key === "F6" ? elements.inputPercentDiscount : elements.inputFixedDiscount;
+            inp.focus(); inp.select();
+            return;
+          }
+          if (e.key === "Enter" && elements.receiptModal.classList.contains("active")
+              && !(e.target && e.target.closest && e.target.closest("#receiptModal button, #receiptModal a, #receiptModal input"))) {
+            e.preventDefault();
+            startNewSale();
+            return;
+          }
           if (e.key === "F2") {
             e.preventDefault();
             startNewSale();
