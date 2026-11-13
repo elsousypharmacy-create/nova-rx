@@ -904,7 +904,7 @@
    "brief": "In index.html (.nova-nav, .nova-tab rules near lines 1385-1466) and purchases.html/purchases.css nav if present: make the tab strip horizontally scrollable with an edge fade (overflow-x:auto, scrollbar hidden, mask-image) and scroll the active tab into view (scrollIntoView({inline:'center'})) when a tab is activated, on ≤780px. Add tests/ux/mobile-nav.check.mjs asserting the CSS + scrollIntoView call exist. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-nav.check.mjs passes; manual Playwright at 390x844 shows every tab reachable by scroll; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
@@ -912,15 +912,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-13T12:16:18+00:00",
    "pr": 259,
-   "ci_dispatched": {
-    "sha": "4ac6eb92d8f36acc34065f7c2008d8a7e47aeb8f",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T12:17:31+00:00"
-   }
+   "merged_at": "2026-11-13T12:21:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/259"
   },
   {
    "id": "UX1",
@@ -953,11 +946,21 @@
    "brief": "backend/migrations/0003_sales_finance.sql: customers, sales, sale_items, payments, sale_returns(+items), suppliers, purchase_orders(+items), receipts, cashier_sessions, journal_entries/lines, audit_logs (append-only trigger), idempotency_keys unique per tenant. Tests: returns cannot exceed sold qty (constraint or service check documented), audit_logs cannot be updated/deleted.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T12:18:50+00:00"
+   "dispatched_at": "2026-11-13T12:18:50+00:00",
+   "pr": 261,
+   "ci_dispatched": {
+    "sha": "39b85510324fb2bbaa7c84139a40c8fc25bd393c",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T12:21:20+00:00"
+   }
   },
   {
    "id": "N94",
@@ -966,9 +969,11 @@
    "brief": "docs/backend/openapi.yaml for v1 (health, auth, sync, sales, stock). backend/src/http/idempotency.js (Idempotency-Key required on writes, replay returns stored response), pagination (cursor, max 200), request timeouts helper. Tests tests/unit/backend-http.check.mjs.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:21:20+00:00"
   },
   {
    "id": "N95",
@@ -1678,5 +1683,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T12:18:50+00:00"
+ "updated": "2026-11-13T12:21:20+00:00"
 }
