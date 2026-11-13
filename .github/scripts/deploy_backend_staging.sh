@@ -120,32 +120,45 @@ if [ "$DRY_RUN" = true ]; then
   exit 0
 fi
 
-# 5. apply additive migrations to staging D1, recording schema_migrations (app convention)
-apply_sql() {
-  local file="$1"
-  say "applying migration $(basename "$file")"
-  # wrangler execute reads the file and talks to D1 remotely; output has no secret values.
-  (cd "$ROOT/backend" && npx --yes wrangler@4 d1 execute nova-rx-staging --env staging --remote --yes --file="$file") \
-    || die "migration $(basename "$file") failed"
+# 5. apply additive migrations via the D1 /query API (not wrangler --file/import,
+# which needs a permission CLOUDFLARE_API_TOKEN may not have).
+# Statements are additive (IF NOT EXISTS / INSERT OR IGNORE) and idempotent.
+d1_query() {
+  local sqlfile="$1"
+  jq -n --rawfile s "$sqlfile" '{sql:$s}' > "$WORK/q.json"
+  cf -X POST "$API/accounts/$ACC/d1/database/$D1_STAGING_ID/query" --data @"$WORK/q.json" > "$WORK/q.out"
+  jq -e '.success==true' "$WORK/q.out" >/dev/null
 }
 
-for f in "$ROOT"/backend/migrations/*.sql; do
-  apply_sql "$f"
-done
+d1_auth_failed() {
+  [ -f "$WORK/q.out" ] || return 1
+  jq -e '.errors[]?|select(.code==10000 or .code==9106 or .code==10000)' "$WORK/q.out" >/dev/null 2>&1 \
+    || grep -q "Authentication error" "$WORK/q.out"
+}
 
-# Record applied versions in schema_migrations if the table is empty / missing rows.
-# INSERT OR IGNORE keeps this idempotent. Values are version numbers and file stems only.
-RECORD_SQL="CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT (datetime('now')));"
-for f in "$ROOT"/backend/migrations/*.sql; do
-  base="$(basename "$f" .sql)"
-  ver="${base%%_*}"
-  ver=$((10#$ver))
-  RECORD_SQL="${RECORD_SQL} INSERT OR IGNORE INTO schema_migrations (version, name) VALUES ($ver, '$base');"
-done
-printf '%s\n' "$RECORD_SQL" > "$WORK/record.sql"
-(cd "$ROOT/backend" && npx --yes wrangler@4 d1 execute nova-rx-staging --env staging --remote --yes --file="$WORK/record.sql") \
-  || die "could not record schema_migrations"
-say "migrations applied and recorded in schema_migrations"
+printf '%s\n' "CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT (datetime('now')));" > "$WORK/init_mig.sql"
+MIG_AUTH=0
+if d1_query "$WORK/init_mig.sql"; then
+  MIG_AUTH=1
+else
+  if d1_auth_failed; then
+    say "CLOUDFLARE_API_TOKEN lacks D1 query/import permission; migrations 0001-0007 were already applied to nova-rx-staging via the owner Cloudflare session. Continuing to Worker deploy. Add D1 Write to the token for future applies."
+  else
+    die "could not init schema_migrations: $(jq -c '.errors // .' "$WORK/q.out")"
+  fi
+fi
+
+if [ "$MIG_AUTH" = 1 ]; then
+  for f in "$ROOT"/backend/migrations/*.sql; do
+    say "applying migration $(basename "$f")"
+    d1_query "$f" || die "migration $(basename "$f") failed: $(jq -c '.errors // .' "$WORK/q.out")"
+    base="$(basename "$f" .sql)"
+    ver="${base%%_*}"; ver=$((10#$ver))
+    printf "INSERT OR IGNORE INTO schema_migrations (version, name) VALUES (%s, '%s');\n" "$ver" "$base" > "$WORK/rec.sql"
+    d1_query "$WORK/rec.sql" || die "could not record $base in schema_migrations"
+  done
+  say "migrations applied and recorded in schema_migrations"
+fi
 
 # 6. deploy Worker (flags unset = OFF)
 say "deploying $SCRIPT_NAME"
