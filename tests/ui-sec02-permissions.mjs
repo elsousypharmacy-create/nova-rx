@@ -26,7 +26,7 @@ const mkAccounts = () => page.evaluate(async () => {
   novaAuth.signOut();
 });
 await t('matrix card lists seven roles in Settings', async () => {
-  await openTab('settings'); await page.waitForSelector('#novaPermMatrix');
+  await openTab('settings'); await page.waitForSelector('#novaPermMatrix', { state: 'attached' });
   assert.equal(await page.locator('#novaPermMatrix thead th').count(), 8);
 });
 await t('cashier export is blocked, no download, and the denial is logged and shown', async () => {
