@@ -831,7 +831,7 @@
    "brief": "In index.html (products render near the string 'الرصيد غير متاح في هذه القائمة') hide the empty الرصيد/العبوة/التصنيف columns when every row is empty, or show a muted 'غير متوفر من المصدر' label with a title tooltip; also change the 'الرصيد: غير متاح' KPI to a clearer Arabic message. No backend/data change. Add tests/ux/products-empty-columns.check.mjs (jsdom-free: extract the render function or assert the string/rule exists). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/products-empty-columns.check.mjs passes; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-phase10.json",
@@ -839,13 +839,13 @@
    "dispatched_at": "2026-11-13T16:24:18+00:00",
    "pr": 255,
    "ci_dispatched": {
-    "sha": "a7faa26d5210e434a526af3c51923f31385183ad",
+    "sha": "82ca2479cd85aed0af932d9cb4c748cab41a2138",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T10:52:15+00:00"
+    "at": "2026-11-13T16:25:20+00:00"
    },
    "note": "Failed after 2 fixes: Playwright UI products packaging (N05) on run 43412464981 — tests/ui-products-packaging.mjs expected a dash for inconsistent/missing packaging, got «غير متوفر» on row 2. PR #255 left open. Not retried so backend can proceed."
   },
@@ -1321,20 +1321,20 @@
     "N104",
     "N105"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "slot": "A",
    "dispatched_at": "2026-11-13T16:24:18+00:00",
    "pr": 277,
    "ci_dispatched": {
-    "sha": "0efe0056a1488d4cff7cc2ce22e00caa12b11b0a",
+    "sha": "2949e89a07d3c2bb267c4acb7df57488ecdced86",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T14:38:32+00:00"
+    "at": "2026-11-13T16:25:20+00:00"
    }
   },
   {
@@ -1769,5 +1769,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T16:24:18+00:00"
+ "updated": "2026-11-13T16:25:20+00:00"
 }
