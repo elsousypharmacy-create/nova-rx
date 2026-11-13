@@ -1,6 +1,8 @@
 // NOVA Rx backend Worker skeleton (N90). No external calls; flag-gated by the client.
 import { VERSION } from './version.js';
-import { registerAuthRoutes } from './auth/auth.js';
+import { registerAuthRoutes, authenticate, requireReauth } from './auth/auth.js';
+import { normalizeRole } from './auth/permissions.js';
+import { hardeningEnabled, applySecurityHeaders, checkCsrf, rateLimit, limitFor, clientId, registerExportRoute, safeLog } from './security/hardening.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -47,8 +49,14 @@ route('GET', '/api/v1/version', (ctx) => ({
 }));
 
 registerAuthRoutes(route, { json, errorResponse });
+registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
 export async function handle(request, env = {}) {
+  const res = await handleInner(request, env);
+  return hardeningEnabled(env) ? applySecurityHeaders(res) : res;
+}
+
+async function handleInner(request, env) {
   const requestId = newRequestId();
   const cors = corsHeaders(request, env);
   try {
@@ -56,6 +64,15 @@ export async function handle(request, env = {}) {
     const method = request.method.toUpperCase();
     if (method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...cors, 'X-Request-Id': requestId } });
     const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : url.pathname;
+    if (hardeningEnabled(env)) {
+      const bad = checkCsrf(request, env);
+      if (bad) return errorResponse(bad.code, bad.message_ar, bad.status, requestId, cors);
+      if (env.KV) {
+        const [name, cfg] = limitFor(method, path);
+        const rl = await rateLimit(env.KV, name + ':' + clientId(request), cfg);
+        if (!rl.ok) return errorResponse('RATE_LIMITED', 'طلبات كثيرة. حاول مرة أخرى لاحقاً.', 429, requestId, { ...cors, 'Retry-After': String(rl.retryAfter) });
+      }
+    }
     const h = routes.get(method + ' ' + path);
     if (!h) {
       const known = [...routes.keys()].some((k) => k.split(' ')[1] === path);
@@ -71,6 +88,7 @@ export async function handle(request, env = {}) {
     }
     return json(out, 200, { 'X-Request-Id': requestId, ...cors });
   } catch (e) {
+    if (hardeningEnabled(env)) safeLog({ requestId, error: String(e && e.message) });
     return errorResponse('INTERNAL_ERROR', 'حدث خطأ داخلي. حاول مرة أخرى لاحقاً.', 500, requestId, cors);
   }
 }
