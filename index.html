@@ -1992,6 +1992,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  .suggestion-item{position:relative;z-index:1}
 }
 </style>
+<style id="ux34-tap-targets">
+/* UX34: >=44px hit areas on sale toolbar (tablet 768-1366 and mobile); toolbar stays one row via gap/padding trims */
+.nova-sale-actions #btnNewSale,.nova-sale-actions #holdCurrentInvoice,.nova-sale-actions #btnHeldInvoices,.nova-sale-actions #btnAddLoyalty,.nova-sale-actions #btnSaleMore,#btnRefreshApp{min-height:44px!important;min-width:44px!important;box-sizing:border-box}
+#searchModeTag{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+#inputPercentDiscount,#inputFixedDiscount{min-height:44px;box-sizing:border-box}
+@media(min-width:769px) and (max-width:1100px){.nova-sale-actions{gap:3px!important}.nova-sale-actions .btn{padding-inline:8px!important}}
+</style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
