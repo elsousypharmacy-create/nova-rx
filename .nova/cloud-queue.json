@@ -2188,7 +2188,7 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2196,13 +2196,13 @@
    "dispatched_at": "2026-11-13T21:32:19+00:00",
    "pr": 316,
    "ci_dispatched": {
-    "sha": "798843342bb0c19251d1ca08728fc53bc421b712",
+    "sha": "3fdf3bc1fd3c0bf64addfb94f9c2022d591d22ac",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T21:27:26+00:00"
+    "at": "2026-11-13T21:33:37+00:00"
    }
   },
   {
@@ -2253,10 +2253,12 @@
    "brief": "Files: index.html (#checkoutModal markup/CSS/JS), tests/ux/checkout-polish.mjs (new). Fix: methods grid 4 columns on desktop and 2x2 on mobile (no orphan row), rename «مشترك» → «مختلط»، when آجل is chosen with a walk-in customer show an inline red hint «اختر عميلاً لإتمام البيع الآجل» + focus «إضافة رقم العميل» and disable confirm (instead of rejecting after Enter with a toast), after F10/F11/F12 move focus to #btnConfirmPayment (cash: back to #inputCashReceived), logical Tab order (methods → amount → confirm → cancel). Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/checkout-polish.mjs asserts all .pay-method-btn share one row at 1366 and two rows of two at 390, F11 with walk-in disables #btnConfirmPayment and shows the hint, activeElement.id after F10 is btnConfirmPayment, Tab order sequence; keyboard barcode sale stays 0 clicks and <=4 keys; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T21:33:37+00:00"
   },
   {
    "id": "UX31",
@@ -2379,5 +2381,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:32:19+00:00"
+ "updated": "2026-11-13T21:33:37+00:00"
 }
