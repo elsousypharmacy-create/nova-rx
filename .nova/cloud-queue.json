@@ -2280,22 +2280,15 @@
    "brief": "Files: index.html (reports screen, novaPrintDay), tests/ux/reports-breakdown.mjs (new). Add rows نقدي / بطاقة / آجل (and مرتجعات) for the selected period (اليوم/7 أيام/الشهر) and include them in the printed end-of-day report with the expected cash in drawer; wrap «بيانات العرض التجريبية» in a collapsed <details> labelled «بيانات تجريبية (للعرض فقط)». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/reports-breakdown.mjs makes 1 cash, 1 card, 1 credit sale and asserts breakdown values sum to صافي المبيعات, the demo block is collapsed by default (0 visible demo numbers), the print view contains the three method rows; journey tab+period <=2 clicks (assert).",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:52:22+00:00",
    "pr": 321,
-   "ci_dispatched": {
-    "sha": "032848205c867fc11e299cc5882a81577133ea60",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T21:54:18+00:00"
-   }
+   "merged_at": "2026-11-13T21:59:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/321"
   },
   {
    "id": "UX29",
@@ -2421,5 +2414,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:57:57+00:00"
+ "updated": "2026-11-13T21:59:23+00:00"
 }
