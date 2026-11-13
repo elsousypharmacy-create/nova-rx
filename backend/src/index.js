@@ -1,5 +1,6 @@
 // NOVA Rx backend Worker skeleton (N90). No external calls; flag-gated by the client.
 import { VERSION } from './version.js';
+import { registerAuthRoutes } from './auth/auth.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -45,6 +46,8 @@ route('GET', '/api/v1/version', (ctx) => ({
   env: String((ctx.env && ctx.env.NOVA_ENV) || 'dev'), requestId: ctx.requestId,
 }));
 
+registerAuthRoutes(route, { json, errorResponse });
+
 export async function handle(request, env = {}) {
   const requestId = newRequestId();
   const cors = corsHeaders(request, env);
@@ -61,6 +64,11 @@ export async function handle(request, env = {}) {
         : errorResponse('NOT_FOUND', 'المسار غير موجود.', 404, requestId, cors);
     }
     const out = await h({ request, env, url, requestId });
+    if (out instanceof Response) {
+      const r = new Response(out.body, out);
+      for (const [k, v] of Object.entries(cors)) r.headers.set(k, v);
+      return r;
+    }
     return json(out, 200, { 'X-Request-Id': requestId, ...cors });
   } catch (e) {
     return errorResponse('INTERNAL_ERROR', 'حدث خطأ داخلي. حاول مرة أخرى لاحقاً.', 500, requestId, cors);
