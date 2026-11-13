@@ -15,3 +15,4 @@ NEEDS-OWNER: NOVA_API_PIN is the one-time owner bootstrap password (NOVA_AUTH fl
 NEEDS-OWNER: NOVA_STATUS_TOKEN (bearer secret for GET /api/v1/status; set as Worker secret by owner; NOVA_OBSERVABILITY flag stays OFF)
 NEEDS-OWNER: D1 Time Travel bookmark + encrypted GitHub artifact backups are the operational path (docs/ops/backup-restore.md). Do not enable R2 or set NOVA_BACKUP=1. If CLOUDFLARE_API_TOKEN lacks Account · D1 · Read (export / time-travel info) or Edit (restore / future migration apply), the owner adds that permission to the existing token — do not roll the token.
 NEEDS-OWNER: NOVA_INGEST_SECRET must be set before NOVA_INTEGRATION=1 (flag stays OFF); integration keys are created by the owner via createApiKey (N111)
+NEEDS-OWNER: PHARMACY_BACKEND_URL + PHARMACY_BRIDGE_TOKEN (legacy Sheets/Apps Script backend URL and read-only bridge token, Worker secrets set by owner; NOVA_BRIDGE flag stays OFF)

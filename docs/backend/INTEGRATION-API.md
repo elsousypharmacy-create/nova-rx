@@ -4,7 +4,7 @@ Flag `NOVA_INTEGRATION=1` (default OFF: routes return 404 `INTEGRATION_DISABLED`
 Signing secret: Worker binding `NOVA_INGEST_SECRET` (name only; value set by the owner).
 
 ## API keys
-Created server-side by `createApiKey` (migration `0009_integration_api.sql`); only the SHA-256 hash is stored, plaintext shown once.
+Created server-side by `createApiKey` (migration `0011_integration_api.sql`); only the SHA-256 hash is stored, plaintext shown once.
 Scopes: `products:read`, `sales:read`, `inventory:read`, `webhooks:receive`. Send `X-Api-Key: nvk_...` (or Bearer).
 Sandbox tenant `sandbox`: `createSandboxKey` issues keys bound to it, never to real tenant data.
 
