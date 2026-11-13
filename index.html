@@ -4113,6 +4113,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           showToast("تعذر حفظ الفاتورة على هذا الجهاز — أعد المحاولة، لن يتم خصم البطاقة مرة أخرى.", "error");
           return;
         }
+        try { if (tp.credit > 0 && saleRecord.customerId && window.NovaCredit) window.NovaCredit.createCreditLedger(localStorage, 'nova.credit').charge({ id: saleKey, customerId: String(saleRecord.customerId), amount: Math.round(tp.credit * 100) / 100, override: true }); } catch (e) { console.warn('credit ledger', e && e.code); }
         window.novaPay.captureCard(saleKey); window.novaStock.release(saleKey); state.invoiceKey = null;
         try{window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:String(invNumber),customer:state.attachedCustomer?.name||'عميل نقدي',items:state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}}))}catch(e){}
         closeCheckout();
@@ -4877,6 +4878,21 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
+
+ const ledger=()=>window.NovaCredit?window.NovaCredit.createCreditLedger(localStorage,'nova.credit'):null;
+ const debtOf=id=>{try{const l=ledger();return l?l.balance(String(id)):0}catch(e){return 0}};
+ function openPayDebt(id){
+  const bal=debtOf(id);if(!(bal>0))return;const c=data().customers.find(x=>String(x.id)===String(id));
+  const ov=document.createElement('div');ov.id='novaPayDebt';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.dir='rtl';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Cairo,sans-serif';
+  ov.innerHTML='<div style="background:#14181d;border:1px solid #2a3139;border-radius:12px;padding:20px;min-width:300px;color:#e8eef3"><h2 style="margin:0 0 12px;font-size:18px">سداد مديونية — '+esc(c?c.name:id)+'</h2><label style="display:block;margin-bottom:6px">المبلغ</label><input id="novaPayAmt" type="number" min="0.01" step="0.01" value="'+bal+'" style="width:100%;min-height:44px;padding:0 10px;background:#0b0e11;color:inherit;border:1px solid #2a3139;border-radius:8px;box-sizing:border-box"><label style="display:block;margin:10px 0 6px">طريقة الدفع</label><select id="novaPayMethod" style="width:100%;min-height:44px;background:#0b0e11;color:inherit;border:1px solid #2a3139;border-radius:8px"><option value="cash" selected>نقدي</option><option value="card">بطاقة</option></select><div id="novaPayErr" role="alert" style="color:#ff5d5d;min-height:20px;margin-top:6px"></div><div style="display:flex;gap:8px;margin-top:8px"><button type="button" id="novaPayOk" class="nova-return-btn" style="min-height:44px;flex:1">تأكيد السداد</button></div></div>';
+  document.body.appendChild(ov);const amt=ov.querySelector('#novaPayAmt');amt.focus();amt.select();
+  const close=()=>{ov.remove();document.removeEventListener('keydown',key,true)};
+  const ok=()=>{try{const v=Number(amt.value);const r=ledger().collect({id:'pay-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),customerId:String(id),amount:v,method:ov.querySelector('#novaPayMethod').value});close();if(typeof window.novaToast==='function')window.novaToast('تم سداد '+money(r.amount)+' — المتبقي '+money(r.balanceAfter));else{const t=document.getElementById('toastContainer');if(t){t.innerHTML='<div class="toast" role="status"><span dir="auto">تم سداد '+money(r.amount)+' — المتبقي '+money(r.balanceAfter)+'</span></div>';setTimeout(()=>t.replaceChildren(),3000)}}const f=document.getElementById('novaFilter');render('customers',f?f.value:'');}catch(e){ov.querySelector('#novaPayErr').textContent=e.code==='exceeds-balance'?'المبلغ أكبر من المديونية':'مبلغ غير صحيح'}};
+  function key(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}else if(e.key==='Enter'){e.preventDefault();e.stopPropagation();ok()}}
+  document.addEventListener('keydown',key,true);ov.querySelector('#novaPayOk').addEventListener('click',ok);
+ }
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pay-debt]');if(b)openPayDebt(b.getAttribute('data-pay-debt'))});
  let novaLowOnly=false;
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
@@ -4906,7 +4922,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
- +table(['الاسم','الهاتف','المستوى','الزيارات','النقاط'],rows(list,c=>'<tr><td>'+esc(c.name)+'</td><td dir="ltr">'+esc(c.phone)+'</td><td>'+esc(c.tier)+'</td><td>'+esc(c.visits)+'</td><td>'+esc(c.points)+'</td></tr>'));
+ +table(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td>'+esc(c.name)+'</td><td dir="ltr">'+esc(c.phone)+'</td><td>'+esc(c.tier)+'</td><td>'+esc(c.visits)+'</td><td>'+esc(c.points)+'</td><td data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+'</td></tr>'}));
  }else if(page==='invoices'){
  const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
@@ -5012,7 +5028,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const arToEn={
  'صيدلية السوسي':'Elsousy Pharmacy','د. أحمد السوسي':'Dr. Ahmed Elsousy','نظام نقاط البيع':'Point of Sale',
  'البيع':'Sales','الفواتير':'Invoices','المنتجات':'Products','العملاء':'Customers','التقارير':'Reports','الإعدادات':'Settings','نسخة تجريبية':'Demo',
- 'المنتجات والمخزون':'Products & Inventory','الاسم':'Name','الهاتف':'Phone','المستوى':'Tier','الزيارات':'Visits','النقاط':'Points',
+ 'المنتجات والمخزون':'Products & Inventory','الاسم':'Name','الهاتف':'Phone','المستوى':'Tier','الزيارات':'Visits','النقاط':'Points','المديونية':'Balance Due','سداد':'Pay','المبلغ':'Amount','طريقة الدفع':'Payment method','نقدي':'Cash','بطاقة':'Card','تأكيد السداد':'Confirm payment',
  'الصنف':'Product','الباركود':'Barcode','السعر':'Price','الرصيد':'Stock','العبوة':'Packaging','التصنيف':'Category',
  'رقم الفاتورة':'Invoice No.','التاريخ':'Date','العميل':'Customer','القيمة':'Amount','الأصناف':'Items',
  'عدد الأصناف':'Products','إجمالي الوحدات':'Total Units','مخزون منخفض (أقل من 30)':'Low Stock (under 30)',
@@ -5913,6 +5929,6 @@ input,select,textarea{min-height:44px}
 .nova-inventory-action,.nova-return-btn,.nova-page-btn,.nova-page-view button,.nova-page-view select,.nova-page-view input:not([type=checkbox]):not([type=radio]),#novaAuthName,#novaAuthPw,#novaAuthIn,#novaNewName,#novaNewPw,#novaNewRole,#novaNewOk,#novaNearExpiryDays{min-height:44px!important}
 </style>
 
-<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="bi-dictionary.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
 </html>
 
