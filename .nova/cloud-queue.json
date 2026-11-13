@@ -819,12 +819,12 @@
    "brief": "In index.html (products render near the string 'الرصيد غير متاح في هذه القائمة') hide the empty الرصيد/العبوة/التصنيف columns when every row is empty, or show a muted 'غير متوفر من المصدر' label with a title tooltip; also change the 'الرصيد: غير متاح' KPI to a clearer Arabic message. No backend/data change. Add tests/ux/products-empty-columns.check.mjs (jsdom-free: extract the render function or assert the string/rule exists). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/products-empty-columns.check.mjs passes; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:46:53+00:00",
+   "dispatched_at": "2026-11-13T10:50:57+00:00",
    "pr": 255,
    "ci_dispatched": {
     "sha": "a16e285d7fdf28fef77f1d57a73e0f316f77b36b",
@@ -892,12 +892,22 @@
    "brief": "index.html registers '/sw.js?v=3' which returns 404 on the live Worker (27 console errors in audit). Guard registration in index.html: fetch(sw url,{method:'HEAD'}) first and register only if ok, with a silent .catch. Do not add routes to the backend. Add tests/ux/sw-register-guard.check.mjs asserting the guard code is present and registration is not unconditional. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/sw-register-guard.check.mjs passes; no regression in node tests/unit/ux-tokens.check.mjs.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:49:40+00:00"
+   "dispatched_at": "2026-11-13T10:49:40+00:00",
+   "pr": 258,
+   "ci_dispatched": {
+    "sha": "722ece135d77c599bb80f7fd66abce24515cf65f",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T10:50:57+00:00"
+   }
   },
   {
    "id": "UX2",
@@ -1653,5 +1663,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T10:49:40+00:00"
+ "updated": "2026-11-13T10:50:57+00:00"
 }
