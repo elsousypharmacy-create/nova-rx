@@ -27,7 +27,7 @@ for (const id of ['novaNewRole', 'novaNewOk'])
 if (!/--nova-btn-radius/.test(html) || !/\.nova-page-btn\{[^}]*var\(--nova-btn-radius/.test(html)) fails.push('button radius token not used by .btn/.nova-page-btn');
 // UX28: leftover English strings in the display layer (data/search keep English)
 const pur = fs.readFileSync(new URL('../../purchases.html', import.meta.url), 'utf8') + fs.readFileSync(new URL('../../purchases.js', import.meta.url), 'utf8');
-for (const [bad, why] of [['>No held invoices<', 'held empty state'], ['"Enter: Add Item"', 'search hint']]) if (html.includes(bad)) fails.push('English label left: ' + why);
+for (const [bad, why] of [['>No held invoices<', 'held empty state'], ['textContent = "Enter: Add Item"', 'search hint']]) if (html.includes(bad)) fails.push('English label left: ' + why);
 if (!html.includes('لا توجد فواتير معلقة')) fails.push('held empty state not Arabic');
 if (!html.includes('Enter: إضافة')) fails.push('search hint not Arabic');
 if (/STOCK LIVE/.test(pur)) fails.push('purchases still shows STOCK LIVE');
