@@ -1316,20 +1316,20 @@
     "N104",
     "N105"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "slot": "A",
    "dispatched_at": "2026-11-13T14:37:13+00:00",
    "pr": 277,
    "ci_dispatched": {
-    "sha": "d01a4000f700f536249fd870d1d3a644ac9bb2d6",
+    "sha": "0efe0056a1488d4cff7cc2ce22e00caa12b11b0a",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T14:31:45+00:00"
+    "at": "2026-11-13T14:38:32+00:00"
    }
   },
   {
@@ -1764,5 +1764,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T14:37:13+00:00"
+ "updated": "2026-11-13T14:38:32+00:00"
 }
