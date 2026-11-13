@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { pilotEnabled, pilotInfo, validateDefect, PILOT_CONFIG } from '../../backend/src/pilot.js';
+assert.equal(pilotEnabled({}), false);
+assert.equal(pilotEnabled(undefined), false);
+assert.equal(pilotEnabled({ NOVA_PILOT_MODE: '0' }), false);
+assert.equal(pilotEnabled({ NOVA_PILOT_MODE: '1' }), true);
+assert.deepEqual(pilotInfo({}), { enabled: false });
+assert.equal(pilotInfo({ NOVA_PILOT_MODE: '1' }).branch_ar, PILOT_CONFIG.branch_ar);
+assert.equal(validateDefect({ severity: 'major', shift: 'morning', title: 'x' }).ok, true);
+const r = validateDefect({ severity: 'zzz', shift: 'morning', title: 'x' }, 'rid1');
+assert.equal(r.code, 'PILOT_BAD_SEVERITY'); assert.equal(r.requestId, 'rid1'); assert.ok(r.message_ar);
+assert.equal(validateDefect(null).code, 'PILOT_BAD_DEFECT');
+assert.equal(validateDefect({ severity: 'minor', shift: 'x', title: 'a' }).code, 'PILOT_BAD_SHIFT');
+assert.equal(validateDefect({ severity: 'minor', shift: 'night', title: ' ' }).code, 'PILOT_BAD_TITLE');
+console.log('backend-pilot: OK');
