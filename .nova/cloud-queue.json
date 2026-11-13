@@ -2321,7 +2321,7 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2329,14 +2329,14 @@
    "dispatched_at": "2026-11-13T22:05:03+00:00",
    "pr": 323,
    "ci_dispatched": {
-    "sha": "cd89ca6a20332a01ed50d1c6eee844331b48c1be",
+    "sha": "f2f2ed2a310a8f5ca9e2394c96f6ad99f3579882",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T22:02:25+00:00"
+    "at": "2026-11-13T22:06:20+00:00"
    }
   },
   {
@@ -2346,22 +2346,15 @@
    "brief": "Files: index.html (CSS for .nova-return-overlay, debt dialog #novaPayAmt, buttons novaSalesExport/novaSalesImport/novaPrintDay/#novaRetAll, reason chips), tests/ux/dialog-style.mjs (new). Today the confirm buttons are grey rgb(107,107,107) with no border and the dialogs have no ✕. Fix: reuse .btn .btn-primary/.btn-secondary tokens (ux-tokens.js), add ✕ close + Esc + backdrop click, primary action visible and focus-ringed, chips as outlined pills. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/dialog-style.mjs asserts computed background of «تأكيد السداد» and «تأكيد المرتجع» is NOT rgb(107, 107, 107) and equals the primary button colour, ✕ present and Esc closes both dialogs, export/import/print buttons share btn classes; contrast >=4.5:1; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:57:57+00:00",
    "pr": 324,
-   "ci_dispatched": {
-    "sha": "e8e5ccb636d7f04338bb5aed0e7e3fbf8d85deb2",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T22:00:49+00:00"
-   }
+   "merged_at": "2026-11-13T22:06:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/324"
   },
   {
    "id": "UX26",
@@ -2370,10 +2363,12 @@
    "brief": "Files: index.html (receipt template, one date/number formatter), tests/ux/receipt-format.mjs (new). Fix: payment label from a map {cash:'نقدي',card:'بطاقة',credit:'آجل'} (no «(Credit) (credit 12.00)»), hide the discount row when 0, one DD/MM/YYYY HH:mm formatter with Latin digits used by receipt, invoices list and reports, Arabic plural helper («صنف واحد» / «صنفان» / «3 أصناف») for the subtotal line. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-format.mjs asserts receipt text contains no Latin 'credit'/'Credit', no «-0.00», dates match /\\d{2}\\/\\d{2}\\/\\d{4}/ with Latin digits in receipt and invoices table, subtotal text for 1/2/3 lines is «صنف واحد»/«صنفان»/«3 أصناف»; unit tests for the plural/date helpers.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T22:06:20+00:00"
   },
   {
    "id": "UX25",
@@ -2424,5 +2419,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:05:03+00:00"
+ "updated": "2026-11-13T22:06:20+00:00"
 }
