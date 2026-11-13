@@ -132,8 +132,9 @@ d1_query() {
 
 d1_auth_failed() {
   [ -f "$WORK/q.out" ] || return 1
-  jq -e '.errors[]?|select(.code==10000 or .code==9106 or .code==10000)' "$WORK/q.out" >/dev/null 2>&1 \
-    || grep -q "Authentication error" "$WORK/q.out"
+  # 10000 auth, 9106 / 7403 account not authorized for D1 (Workers-only token).
+  jq -e '.errors[]?|select(.code==10000 or .code==9106 or .code==7403)' "$WORK/q.out" >/dev/null 2>&1 \
+    || grep -Eq "Authentication error|not authorized to access this service" "$WORK/q.out"
 }
 
 printf '%s\n' "CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT (datetime('now')));" > "$WORK/init_mig.sql"
