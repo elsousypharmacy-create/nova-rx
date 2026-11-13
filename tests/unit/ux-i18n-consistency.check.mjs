@@ -27,7 +27,8 @@ for (const id of ['novaNewRole', 'novaNewOk'])
 if (!/--nova-btn-radius/.test(html) || !/\.nova-page-btn\{[^}]*var\(--nova-btn-radius/.test(html)) fails.push('button radius token not used by .btn/.nova-page-btn');
 // UX28: leftover English strings (display layer)
 const must = [['No held invoices', 'لا توجد فواتير معلقة'], ['Enter: Add Item', 'Enter: إضافة']];
-for (const [en] of must) if (html.includes(en)) fails.push('leftover English string: ' + en);
+// English is allowed only as the explicit en-language branch of a ternary
+for (const [en] of must) if (html.includes(en) && !new RegExp("===\\s*'en'\\)\\s*\\?\\s*['\"]" + en).test(html)) fails.push('leftover English string outside en branch: ' + en);
 if (!html.includes('لا توجد فواتير معلقة') || !html.includes('Enter: إضافة')) fails.push('missing Arabic held/hint text');
 if (!/Topical:'موضعي'/.test(html) || !/ENT:'أنف وأذن وحنجرة'/.test(html)) fails.push('Topical/ENT not translated');
 if (/'\+'—<\/span>'/.test(html)) fails.push('pack fallback still em dash');

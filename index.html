@@ -3003,7 +3003,7 @@ window.NovaFmt=(function(){
           const productPh = "Scan barcode or type medicine name...";
           elements.mainSearchInput.placeholder = productPh;
           elements.mainSearchInput.dataset.novaOriginalplaceholder = productPh;
-          elements.searchHintText.textContent = "Enter: إضافة";
+          elements.searchHintText.textContent = (localStorage.getItem('nova-rx-language')==='en') ? "Enter: Add Item" : "Enter: إضافة";
         }
         closeSuggestions();
         elements.mainSearchInput.value = "";
@@ -4501,7 +4501,7 @@ window.NovaFmt=(function(){
       }
       function renderHeldInvoices() {
         heldCount.textContent = heldInvoices.length;
-        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">لا توجد فواتير معلقة</div>';
+        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">'+((localStorage.getItem('nova-rx-language')==='en') ? 'No held invoices' : 'لا توجد فواتير معلقة')+'</div>';
       }
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
