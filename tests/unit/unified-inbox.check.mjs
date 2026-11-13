@@ -41,3 +41,21 @@ t('render is RTL, shows status and escapes content', () => {
   assert.ok(!html.includes('<b>x</b>')); assert.match(html, /&lt;b&gt;/);
 });
 console.log(n + ' passed');
+
+// N115: remote read only when the flag is on; errors keep local state
+{
+  const calls = [];
+  const mk = (on, fetchImpl) => I.create(mem(), { enabled: () => on, baseUrl: () => 'https://api.test/', getToken: () => 'tok', fetch: (u, o) => { calls.push([u, o]); return fetchImpl(); } });
+  const off = mk(false, () => { throw new Error('must not fetch'); });
+  off.open('c1', 'x', 1);
+  assert.deepEqual(await off.pullRemote(), { skipped: true }); assert.equal(calls.length, 0);
+  assert.deepEqual(await I.create(mem()).pullRemote(), { skipped: true });
+  const ok = mk(true, async () => ({ ok: true, json: async () => ({ conversations: [{ id: 's1', customer: 'س', messages: [], mode: 'human', updatedAt: 5 }] }) }));
+  assert.deepEqual(await ok.pullRemote(), { skipped: false, count: 1 });
+  assert.equal(calls[0][0], 'https://api.test/api/v1/inbox/conversations'); assert.equal(calls[0][1].headers.Authorization, 'Bearer tok');
+  assert.equal(ok.list()[0].id, 's1');
+  const fail = mk(true, async () => { throw new Error('net'); });
+  fail.open('c9', 'y', 1);
+  assert.ok((await fail.pullRemote()).error); assert.equal(fail.list()[0].id, 'c9');
+  console.log('ok remote pull flag-gated, falls back local');
+}

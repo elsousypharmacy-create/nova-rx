@@ -1391,18 +1391,18 @@
    ],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 1,
-   "slot": "A",
-   "dispatched_at": "2026-11-13T16:40:13+00:00",
+   "fix_attempts": 2,
+   "slot": "B",
+   "dispatched_at": "2026-11-13T16:47:10+00:00",
    "pr": 282,
    "ci_dispatched": {
-    "sha": "11100c389ebb30964670d4fc1e748dd758293f09",
+    "sha": "e019ec93b1576751cb401fdfb6529285806c1c42",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:42:18+00:00"
+    "at": "2026-11-13T16:48:38+00:00"
    }
   },
   {
@@ -1440,18 +1440,18 @@
    ],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 1,
-   "slot": "A",
-   "dispatched_at": "2026-11-13T16:42:18+00:00",
+   "fix_attempts": 2,
+   "slot": "B",
+   "dispatched_at": "2026-11-13T16:48:38+00:00",
    "pr": 284,
    "ci_dispatched": {
-    "sha": "e4f6efd4c5ecaab4614089265cedf96e8e539e55",
+    "sha": "72957d88fc8315801beb018e96d7b3bc93cc1b62",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:43:45+00:00"
+    "at": "2026-11-13T16:50:11+00:00"
    }
   },
   {
@@ -1466,20 +1466,20 @@
     "N108",
     "N109"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "slot": "A",
-   "dispatched_at": "2026-11-13T16:43:45+00:00",
+   "dispatched_at": "2026-11-13T16:50:11+00:00",
    "pr": 285,
    "ci_dispatched": {
-    "sha": "3566736f0653bf81f7bf1a4484e3a1d5c5c02d8f",
+    "sha": "d5486fca9488550883f87ff1ba2e0d9dd1eacebf",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:38:37+00:00"
+    "at": "2026-11-13T16:51:43+00:00"
    }
   },
   {
@@ -1494,21 +1494,14 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "B",
    "dispatched_at": "2026-11-13T16:37:01+00:00",
    "pr": 286,
-   "ci_dispatched": {
-    "sha": "28431938daa41d0f3ea53f15529e68039d273c41",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T16:40:13+00:00"
-   }
+   "merged_at": "2026-11-13T16:45:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/286"
   },
   {
    "id": "N116",
@@ -1522,21 +1515,14 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T16:38:37+00:00",
    "pr": 287,
-   "ci_dispatched": {
-    "sha": "0acbaf19c98f946af97c5b6dfaba04a1ab01cc3a",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T16:40:13+00:00"
-   }
+   "merged_at": "2026-11-13T16:45:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/287"
   },
   {
    "id": "N117",
@@ -1552,18 +1538,18 @@
    ],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
-   "slot": "B",
-   "dispatched_at": "2026-11-13T16:40:13+00:00",
+   "fix_attempts": 1,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T16:48:38+00:00",
    "pr": 288,
    "ci_dispatched": {
-    "sha": "ee549620896ed5d9cf1788796af2a0a124723a03",
+    "sha": "bedb68061eb0729c56e28b68abb84e624ef338d3",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:43:45+00:00"
+    "at": "2026-11-13T16:50:11+00:00"
    }
   },
   {
@@ -1578,11 +1564,21 @@
     "N108",
     "N109"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
-   "slot": "B",
-   "dispatched_at": "2026-11-13T16:43:45+00:00"
+   "fix_attempts": 1,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T16:51:43+00:00",
+   "pr": 289,
+   "ci_dispatched": {
+    "sha": "69fdd42c4777729b819cd257ccfd24c348c8993a",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T16:47:10+00:00"
+   }
   },
   {
    "id": "N119",
@@ -1596,9 +1592,21 @@
     "N108",
     "N109"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T16:45:20+00:00",
+   "pr": 290,
+   "ci_dispatched": {
+    "sha": "c7a39ab95bc2ef04028e6ffa2c3b10d748a1c328",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T16:48:38+00:00"
+   }
   },
   {
    "id": "N120",
@@ -1612,9 +1620,11 @@
     "N108",
     "N109"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "B",
+   "dispatched_at": "2026-11-13T16:50:11+00:00"
   },
   {
    "id": "GATE-15",
@@ -1856,5 +1866,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T16:43:45+00:00"
+ "updated": "2026-11-13T16:51:43+00:00"
 }
