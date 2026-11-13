@@ -2314,12 +2314,12 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:12:59+00:00",
+   "dispatched_at": "2026-11-13T22:23:34+00:00",
    "pr": 323,
    "ci_dispatched": {
     "sha": "0a583d387d2b19d2c561261dabbf8c06fb988f76",
@@ -2390,12 +2390,22 @@
    "brief": "Files: index.html (invoices table, customers table, @media (max-width:640px) CSS), tests/ux/mobile-tables.mjs (new). At 390x844 the columns القيمة/المرتجع/إجراء and المديونية + زر «سداد» are off-screen and the action buttons are 38px wide. Fix: card layout per row on <=640px (name, date, value, debt as label/value pairs) with «مرتجع / إعادة طباعة / سداد» as >=44x44 buttons inside the card; no horizontal scroll; desktop table unchanged. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/mobile-tables.mjs at 390x844 asserts documentElement.scrollWidth<=innerWidth, the «سداد» and «مرتجع» buttons are visible in viewport after one scroll, all their boxes >=44x44, and the debt journey is <=3 clicks (العملاء، سداد، تأكيد); desktop 1366 layout assertions unchanged.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:17:05+00:00"
+   "dispatched_at": "2026-11-13T22:17:05+00:00",
+   "pr": 327,
+   "ci_dispatched": {
+    "sha": "349fe03e8c58a0bd5179c74926f4146dc6aea24f",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:23:34+00:00"
+   }
   },
   {
    "id": "UX23",
@@ -2422,5 +2432,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:20:59+00:00"
+ "updated": "2026-11-13T22:23:34+00:00"
 }
