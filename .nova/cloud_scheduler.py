@@ -9,6 +9,11 @@ Deterministic: no AI calls, never deploys, never prints secrets.
    agent-task in fix mode (max 2), then marks the task failed.
 4. Starts the next pending task when a Claude slot is free.
 State lives in .nova/cloud-queue.json on main.
+
+The workflow loops this script while cloud PRs are waiting on CI. When a
+pass leaves any task in pr_open, write 'true' to SCHEDULER_STAY_FILE
+(/tmp/cloud-scheduler-stay by default) so the job keeps polling. Otherwise
+write 'false' and the job exits; an in-progress agent run wakes it.
 """
 import json, os, re, subprocess, sys, time, datetime
 
@@ -255,13 +260,23 @@ def main():
         act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={t['id']}", "-f", "mode=new", "-f", f"slot={free[0]}", "-f", f"brief={brief[:20000]}")
         t.update(status="running", slot=free[0], dispatched_at=iso()); active[t["id"]] = free[0]
 
-    if json.dumps(q, sort_keys=True) != before and not DRY:
+    changed = json.dumps(q, sort_keys=True) != before
+    if changed and not DRY:
         q["updated"] = iso()
         json.dump(q, open(QF, "w"), ensure_ascii=False, indent=1); open(QF, "a").write("\n")
         log("queue changed")
-        if os.environ.get("GITHUB_OUTPUT"):
-            open(os.environ["GITHUB_OUTPUT"], "a").write("changed=true\n")
+    stay = any(t["status"] == "pr_open" for t in items)
+    stay_path = os.environ.get("SCHEDULER_STAY_FILE", "/tmp/cloud-scheduler-stay")
+    try:
+        open(stay_path, "w").write("true" if stay else "false")
+    except OSError as ex:
+        log(f"warn: could not write stay file: {ex}")
+    if os.environ.get("GITHUB_OUTPUT"):
+        open(os.environ["GITHUB_OUTPUT"], "a").write(
+            f"changed={'true' if changed and not DRY else 'false'}\nstay={'true' if stay else 'false'}\n"
+        )
     log("summary: " + ", ".join(f"{t['id']}={t['status']}" for t in items))
+    log(f"stay={stay}")
 
 
 if __name__ == "__main__":

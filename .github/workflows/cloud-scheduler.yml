@@ -3,6 +3,18 @@
 # sends red PRs back to agent-task in fix mode (max 2), and starts the next
 # pending task when a Claude slot is free. Uses only GITHUB_TOKEN.
 # Never deploys, never edits other workflows, never prints secrets.
+#
+# Chaining: GitHub suppresses workflow_run (and pull_request/push CI) for
+# events caused by GITHUB_TOKEN. This workflow therefore never wakes from
+# the agent-task or branch CI that it itself dispatched — only from
+# workflow_dispatch (allowed), the hourly cron (unreliable), or a
+# workflow_run of a non-token workflow (e.g. a human PR). Agent-task does
+# dispatch this workflow when it finishes, but that is too early: the
+# scheduler opens the PR, starts CI, and would otherwise exit before CI
+# goes green. This job polls while cloud PRs are waiting on CI (up to
+# ~5h50m), merges and starts the next task, then re-dispatches itself
+# before the job timeout if work remains. When the only remaining work is
+# an in-progress agent run, it exits and relies on that run's dispatch.
 name: Cloud scheduler
 
 on:
@@ -48,31 +60,60 @@ jobs:
       startsWith(github.event.workflow_run.head_branch, 'cloud/') ||
       github.event.workflow_run.name == 'Cloud agent task (Claude Sonnet)'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
       - name: Run scheduler
-        id: sched
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HAS_B: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_B != '' }}
-        run: python3 .nova/cloud_scheduler.py
-      - name: Commit queue state
-        if: steps.sched.outputs.changed == 'true'
+          SCHEDULER_STAY_FILE: /tmp/cloud-scheduler-stay
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          cp .nova/cloud-queue.json /tmp/q.json
-          git add .nova/cloud-queue.json
-          git commit -q -m "chore(cloud-queue): update state [skip ci]"
-          for i in 1 2 3 4; do
-            if git push -q origin HEAD:main; then exit 0; fi
-            git fetch -q origin main && git reset -q --hard origin/main
-            cp /tmp/q.json .nova/cloud-queue.json && git add .nova/cloud-queue.json
-            git commit -q -m "chore(cloud-queue): update state [skip ci]" || exit 0
-            sleep 3
+
+          commit_queue() {
+            cp .nova/cloud-queue.json /tmp/q.json
+            git add .nova/cloud-queue.json
+            git commit -q -m "chore(cloud-queue): update state [skip ci]"
+            for i in 1 2 3 4; do
+              if git push -q origin HEAD:main; then return 0; fi
+              git fetch -q origin main && git reset -q --hard origin/main
+              cp /tmp/q.json .nova/cloud-queue.json && git add .nova/cloud-queue.json
+              git commit -q -m "chore(cloud-queue): update state [skip ci]" || return 0
+              sleep 3
+            done
+            echo "::error::could not push queue state"
+            exit 1
+          }
+
+          # 5h50m; leave a margin before the 355m job timeout to self-dispatch
+          deadline=$((SECONDS + 350 * 60))
+          while true; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            rm -f "$SCHEDULER_STAY_FILE"
+            python3 .nova/cloud_scheduler.py
+            if ! git diff --quiet -- .nova/cloud-queue.json; then
+              commit_queue
+            fi
+            stay=false
+            if [ -f "$SCHEDULER_STAY_FILE" ]; then
+              stay=$(tr -d '[:space:]' < "$SCHEDULER_STAY_FILE")
+            fi
+            if [ "$stay" != "true" ]; then
+              echo "scheduler idle or waiting on an agent wake; exiting"
+              exit 0
+            fi
+            remaining=$((deadline - SECONDS))
+            if [ "$remaining" -lt 90 ]; then
+              echo "approaching job timeout; re-dispatching Cloud scheduler"
+              gh workflow run cloud-scheduler.yml --ref main
+              exit 0
+            fi
+            echo "work remains (CI in flight); polling again in 60s (${remaining}s until handoff)"
+            sleep 60
           done
-          echo "::error::could not push queue state"; exit 1

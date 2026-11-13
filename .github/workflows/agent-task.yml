@@ -130,4 +130,11 @@ jobs:
           if [ -n "${BRANCH:-}" ] && [ -n "$(git log origin/main..HEAD --oneline 2>/dev/null)" ]; then
             git push origin "HEAD:$BRANCH" || echo "::warning::push failed"
           fi
-          gh workflow run cloud-scheduler.yml --ref main || echo "::warning::could not dispatch cloud-scheduler"
+          ok=0
+          for i in 1 2 3 4 5; do
+            if gh workflow run cloud-scheduler.yml --ref main; then ok=1; break; fi
+            sleep $((i * 2))
+          done
+          if [ "$ok" != 1 ]; then
+            echo "::warning::could not dispatch cloud-scheduler after retries"
+          fi
