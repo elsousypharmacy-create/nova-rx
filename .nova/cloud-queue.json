@@ -1613,9 +1613,20 @@
     "N119",
     "N120"
    ],
-   "status": "owner_gate",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "deploy": {
+    "sha": "fb18360472ab2f17f6e6d3063654ff729ad577ba",
+    "version_id": "49471559-62d8-444b-9b99-9fbdee2bf0d1",
+    "previous_version_id": "342ee76f-959f-4d86-a3b4-4c4f6fff6e30",
+    "bookmark": "00000004-00000002-00005122-8c386215c8134bc35600e8a007fc9682",
+    "migrated": true,
+    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43471878439",
+    "at": "2026-11-13T17:21:24Z",
+    "job": "success"
+   },
+   "deployed_at": "2026-11-13T17:21:24Z"
   },
   {
    "id": "N121",
@@ -1834,5 +1845,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T17:16:01+00:00"
+ "updated": "2026-11-13T17:21:31+00:00"
 }
