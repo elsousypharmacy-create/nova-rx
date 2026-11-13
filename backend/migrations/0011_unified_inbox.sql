@@ -1,4 +1,4 @@
--- 0010: MSG-02 unified inbox server (N115). Additive only.
+-- 0011: MSG-02 unified inbox server (N115). Additive only.
 CREATE TABLE IF NOT EXISTS inbox_conversations (
   tenant_id TEXT NOT NULL,
   id TEXT NOT NULL,
