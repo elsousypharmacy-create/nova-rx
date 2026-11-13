@@ -2188,12 +2188,12 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:32:19+00:00",
+   "dispatched_at": "2026-11-13T22:15:47+00:00",
    "pr": 316,
    "ci_dispatched": {
     "sha": "3fdf3bc1fd3c0bf64addfb94f9c2022d591d22ac",
@@ -2356,7 +2356,7 @@
    "brief": "Files: index.html (receipt template, one date/number formatter), tests/ux/receipt-format.mjs (new). Fix: payment label from a map {cash:'نقدي',card:'بطاقة',credit:'آجل'} (no «(Credit) (credit 12.00)»), hide the discount row when 0, one DD/MM/YYYY HH:mm formatter with Latin digits used by receipt, invoices list and reports, Arabic plural helper («صنف واحد» / «صنفان» / «3 أصناف») for the subtotal line. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-format.mjs asserts receipt text contains no Latin 'credit'/'Credit', no «-0.00», dates match /\\d{2}\\/\\d{2}\\/\\d{4}/ with Latin digits in receipt and invoices table, subtotal text for 1/2/3 lines is «صنف واحد»/«صنفان»/«3 أصناف»; unit tests for the plural/date helpers.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
@@ -2364,13 +2364,13 @@
    "dispatched_at": "2026-11-13T22:14:22+00:00",
    "pr": 325,
    "ci_dispatched": {
-    "sha": "27dffa11dfc03f02dc8ee3771f2fa614b37bb2e6",
+    "sha": "a98fcbaf2f7d98e963b0502319ea14c11e67d205",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T22:09:02+00:00"
+    "at": "2026-11-13T22:15:47+00:00"
    }
   },
   {
@@ -2434,5 +2434,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:14:22+00:00"
+ "updated": "2026-11-13T22:15:47+00:00"
 }
