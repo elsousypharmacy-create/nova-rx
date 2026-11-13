@@ -939,21 +939,14 @@
    "brief": "backend/migrations/0003_sales_finance.sql: customers, sales, sale_items, payments, sale_returns(+items), suppliers, purchase_orders(+items), receipts, cashier_sessions, journal_entries/lines, audit_logs (append-only trigger), idempotency_keys unique per tenant. Tests: returns cannot exceed sold qty (constraint or service check documented), audit_logs cannot be updated/deleted.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T12:18:50+00:00",
    "pr": 261,
-   "ci_dispatched": {
-    "sha": "39b85510324fb2bbaa7c84139a40c8fc25bd393c",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T12:21:20+00:00"
-   }
+   "merged_at": "2026-11-13T12:25:41+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/261"
   },
   {
    "id": "N94",
@@ -985,11 +978,21 @@
    "brief": "backend/src/version.js exposing build sha/version; docs/backend/ENVIRONMENTS.md (dev/staging/production separation, numbered migrations, deploy + rollback record); tools/backend/check-migrations.mjs that lints numbering gaps and destructive SQL; tools/backend/stale-artifact-guard.mjs refusing a deploy whose version is older than the recorded live one. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T12:24:21+00:00"
+   "dispatched_at": "2026-11-13T12:24:21+00:00",
+   "pr": 263,
+   "ci_dispatched": {
+    "sha": "b77f1e4b60db39ecbec888c027dde00f34370f4c",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T12:25:41+00:00"
+   }
   },
   {
    "id": "N96",
@@ -1688,5 +1691,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T12:24:21+00:00"
+ "updated": "2026-11-13T12:25:41+00:00"
 }
