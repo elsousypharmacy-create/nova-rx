@@ -844,24 +844,16 @@
    "brief": "In index.html CSS (nova-tab at ≤780px uses 11px, table th 10-11px, small/badges ~11px) and sticker-studio.html (badges «ناقص: …» 11px) and purchases.css (#status 11px): set a floor of 12px for UI text (not the printed sticker preview). Add tests/ux/min-font.check.mjs that scans those CSS files for font-size values <12px outside the sticker preview selectors and fails on any. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/min-font.check.mjs passes; node tests/ux/contrast-audit.mjs and node tests/unit/ux-tokens.check.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T13:51:09+00:00",
    "pr": 256,
-   "ci_dispatched": {
-    "sha": "d00c0fa2d06ece5194eb1d6fa06a2e884285c843",
-    "wf": [
-     "playwright-smoke.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T13:52:24+00:00"
-   },
-   "note": "Second fix run 43412993917 never started (GitHub Actions billing/spending limit). Rolled fix_attempts back to 1 so CI can be re-dispatched; not a code failure."
+   "note": "Second fix run 43412993917 never started (GitHub Actions billing/spending limit). Rolled fix_attempts back to 1 so CI can be re-dispatched; not a code failure.",
+   "merged_at": "2026-11-13T13:56:48+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/256"
   },
   {
    "id": "UX4",
@@ -1734,5 +1726,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T13:52:24+00:00"
+ "updated": "2026-11-13T13:56:48+00:00"
 }
