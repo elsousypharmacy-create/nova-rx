@@ -2314,12 +2314,12 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:05:03+00:00",
+   "dispatched_at": "2026-11-13T22:12:59+00:00",
    "pr": 323,
    "ci_dispatched": {
     "sha": "f2f2ed2a310a8f5ca9e2394c96f6ad99f3579882",
@@ -2380,12 +2380,22 @@
    "brief": "Files: index.html (toast container CSS/JS, toast messages for add-item), tests/ux/toast-position.mjs (new). On mobile the toast covers the top nav tabs; on desktop it sits over the checkout footer next to «إلغاء (Esc)». Fix: bottom-center toast above the sticky pay bar (mobile) / above modal footers via z-index and offset, role=status aria-live=polite, max 1 line with ellipsis for product names (e.g. «أُضيف: أوجمنتين 1 جم»), keep ~2.5s. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/toast-position.mjs at 390x844 and 1366x768 asserts the toast bounding box does not intersect .nova-tab buttons, #btnConfirmPayment, #btnCancelCheckout; text length <=40 chars; aria-live present; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:09:02+00:00"
+   "dispatched_at": "2026-11-13T22:09:02+00:00",
+   "pr": 326,
+   "ci_dispatched": {
+    "sha": "ec2de68b4069c5b95008b13237b25d3f58803402",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:12:59+00:00"
+   }
   },
   {
    "id": "UX24",
@@ -2424,5 +2434,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:11:49+00:00"
+ "updated": "2026-11-13T22:12:59+00:00"
 }
