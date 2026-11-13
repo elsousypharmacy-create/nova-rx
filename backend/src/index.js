@@ -6,6 +6,7 @@ import { hardeningEnabled, applySecurityHeaders, checkCsrf, rateLimit, limitFor,
 import { registerSyncRoutes } from './sync.js';
 import { registerSyncPullRoutes } from './sync-pull.js';
 import { registerImportRoutes } from './import.js';
+import { registerBalanceMigrationRoutes } from './balance-migration.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
 import { registerDeployRoutes } from './deploys.js';
 import { scheduledBackup } from './backup.js';
@@ -58,6 +59,7 @@ registerStatusRoute(route, { json, errorResponse });
 registerAuthRoutes(route, { json, errorResponse });
 registerSyncRoutes(route, { json, errorResponse });
 registerImportRoutes(route, { json, errorResponse });
+registerBalanceMigrationRoutes(route, { json, errorResponse });
 registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
