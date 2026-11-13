@@ -753,10 +753,10 @@
    "acceptance": "Report .nova/qa/ux-report-phase10.md with prioritized Arabic findings and screenshots for both viewports for every reachable screen; console errors listed; .nova/inbox/ux-phase10.json valid JSON with UX follow-ups for every high/medium finding; no live writes, no real patient data. The scheduler opens the PR and merges it on green CI.",
    "after": [],
    "status": "running",
-   "attempts": 0,
+   "attempts": 1,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T08:53:28+00:00"
+   "dispatched_at": "2026-11-13T09:22:06+00:00"
   },
   {
    "id": "N91",
@@ -1510,5 +1510,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T08:59:18+00:00"
+ "updated": "2026-11-13T09:22:06+00:00"
 }
