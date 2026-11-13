@@ -37,11 +37,16 @@ assert.equal(r.status, 204);
 
 assert.notEqual(newRequestId(), newRequestId());
 
-// wrangler template: placeholders only, bindings + envs present
+// wrangler: staging may have real D1/KV ids after GATE-11; dev and production stay placeholders. R2 binding remains on the template (dev/production) until the account enables R2.
 const t = readFileSync(new URL('../../backend/wrangler.toml', import.meta.url), 'utf8');
 assert.match(t, /name = "nova-rx-api"/);
 for (const k of ['binding = "DB"', 'binding = "KV"', 'binding = "R2"', '[env.staging]', '[env.production]']) assert.ok(t.includes(k), k);
-assert.ok(!/database_id = "(?!PLACEHOLDER)/.test(t));
+assert.match(t, /database_name = "nova-rx-dev"\s*\ndatabase_id = "PLACEHOLDER_D1_DEV_ID"/);
+assert.match(t, /database_name = "nova-rx-production"\s*\ndatabase_id = "PLACEHOLDER_D1_PRODUCTION_ID"/);
+assert.match(t, /database_name = "nova-rx-staging"\s*\ndatabase_id = "[0-9a-f-]{36}"/);
+assert.match(t, /id = "PLACEHOLDER_KV_DEV_ID"/);
+assert.match(t, /id = "PLACEHOLDER_KV_PRODUCTION_ID"/);
+assert.doesNotMatch(t, /PLACEHOLDER_D1_STAGING_ID|PLACEHOLDER_KV_STAGING_ID/);
 
 // feature flag defaults OFF: app code must not reference the new backend
 const app = readFileSync(new URL('../../backend/README.md', import.meta.url), 'utf8');
