@@ -93,9 +93,9 @@
    "after": [],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "slot": "A",
-   "dispatched_at": "2026-11-13T05:06:40+00:00",
+   "dispatched_at": "2026-11-13T05:07:55+00:00",
    "pr": 214,
    "ci_dispatched": {
     "sha": "7074c543ea81a290e85125dee47e26fe4184df30",
@@ -556,5 +556,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T05:06:40+00:00"
+ "updated": "2026-11-13T05:07:55+00:00"
 }
