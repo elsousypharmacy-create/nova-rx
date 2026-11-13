@@ -1672,11 +1672,11 @@
     "N119",
     "N120"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "slot": "A",
-   "dispatched_at": "2026-11-13T17:31:37+00:00",
+   "dispatched_at": "2026-11-13T17:38:10+00:00",
    "pr": 293,
    "ci_dispatched": {
     "sha": "5cbfd76e5df30ffd01e661c716219c8c870c2330",
@@ -1885,5 +1885,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T17:36:39+00:00"
+ "updated": "2026-11-13T17:38:10+00:00"
 }
