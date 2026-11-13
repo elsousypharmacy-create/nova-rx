@@ -6,5 +6,5 @@ ok(h.includes("tr('غير متوفر من مصدر الأسعار','Not availabl
 ok(!h.includes('الرصيد غير متاح في هذه القائمة'),'old subtitle removed');
 ok(h.includes("tr('غير متوفر من المصدر','Not available from the source')"),'muted tooltip label');
 ok(h.includes("if(!real){cols.push(['الرصيد'"),'stock/category columns hidden for real data');
-ok(h.includes('shown.some(p=>p.pack)'),'pack column hidden when all empty');
+ok(h.includes('shown.some(p=>packOf(p))'),'pack column hidden when all empty');
 console.log('products-empty-columns: PASS');

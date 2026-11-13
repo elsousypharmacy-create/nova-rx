@@ -1,0 +1,47 @@
+// UX12: low-stock KPI toggles a stock<30 filter. Local static server, non-GET aborted.
+import { chromium } from 'playwright';
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.svg': 'image/svg+xml', '.json': 'application/json' };
+const server = http.createServer((req, res) => {
+  let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  if (p === '/') p = '/index.html';
+  const f = path.resolve(ROOT, '.' + p);
+  if (!f.startsWith(ROOT + path.sep) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404).end('nf'); return; }
+  res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream', 'cache-control': 'no-store' });
+  fs.createReadStream(f).pipe(res);
+});
+await new Promise(r => server.listen(0, '127.0.0.1', r));
+const BASE = `http://127.0.0.1:${server.address().port}`;
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
+const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, locale: 'ar-EG' });
+await ctx.route('**/*', r => { const m = r.request().method(); const u = r.request().url(); if ((m !== 'GET' && m !== 'HEAD') || !(u.startsWith(BASE) || u.startsWith('data:') || u.startsWith('blob:'))) return r.abort(); return r.continue(); });
+const page = await ctx.newPage();
+await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
+await page.goto(BASE + '/index.html', { waitUntil: 'load' });
+await page.waitForSelector('#mainSearchInput');
+await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
+await page.waitForSelector('#novaLowKpi');
+const rows = () => page.locator('#novaRows tr').count();
+let fail = 0;
+const check = (ok, msg) => { console.log((ok ? 'PASS ' : 'FAIL ') + msg); if (!ok) fail++; };
+const total = await rows();
+check(total > 1, `initial rows = ${total}`);
+check(await page.locator('#novaLowKpi').evaluate(e => e.tagName) === 'BUTTON', 'KPI is a button');
+await page.click('#novaLowKpi');
+const low = await rows();
+check(low > 0 && low < total, `after click rows = ${low} (< total)`);
+check(await page.locator('#novaLowKpi').getAttribute('aria-pressed') === 'true', 'aria-pressed=true');
+check(await page.locator('#novaLowKpi .nova-chip').count() === 1, 'show-all chip visible');
+check(await page.locator('#novaRows .nova-low-badge').count() === low, 'every row has low badge');
+check(await page.locator('#novaRows tr:not(:has(.nova-low-badge))').count() === 0, 'no non-low rows');
+const txt = await page.locator('#novaRows').innerText();
+check(!/Chronic|Analgesic|Antibiotic|Lipid|GI Care/.test(txt), 'no English category labels');
+await page.click('#novaLowKpi');
+check(await rows() === total, 'second click restores all rows');
+check(await page.locator('#novaLowKpi').getAttribute('aria-pressed') === 'false', 'aria-pressed=false');
+await browser.close(); server.close();
+process.exit(fail ? 1 : 0);
