@@ -2314,7 +2314,7 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
@@ -2322,14 +2322,14 @@
    "dispatched_at": "2026-11-13T22:12:59+00:00",
    "pr": 323,
    "ci_dispatched": {
-    "sha": "f2f2ed2a310a8f5ca9e2394c96f6ad99f3579882",
+    "sha": "0a583d387d2b19d2c561261dabbf8c06fb988f76",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T22:06:20+00:00"
+    "at": "2026-11-13T22:14:22+00:00"
    }
   },
   {
@@ -2356,12 +2356,12 @@
    "brief": "Files: index.html (receipt template, one date/number formatter), tests/ux/receipt-format.mjs (new). Fix: payment label from a map {cash:'نقدي',card:'بطاقة',credit:'آجل'} (no «(Credit) (credit 12.00)»), hide the discount row when 0, one DD/MM/YYYY HH:mm formatter with Latin digits used by receipt, invoices list and reports, Arabic plural helper («صنف واحد» / «صنفان» / «3 أصناف») for the subtotal line. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-format.mjs asserts receipt text contains no Latin 'credit'/'Credit', no «-0.00», dates match /\\d{2}\\/\\d{2}\\/\\d{4}/ with Latin digits in receipt and invoices table, subtotal text for 1/2/3 lines is «صنف واحد»/«صنفان»/«3 أصناف»; unit tests for the plural/date helpers.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:06:20+00:00",
+   "dispatched_at": "2026-11-13T22:14:22+00:00",
    "pr": 325,
    "ci_dispatched": {
     "sha": "27dffa11dfc03f02dc8ee3771f2fa614b37bb2e6",
@@ -2434,5 +2434,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:12:59+00:00"
+ "updated": "2026-11-13T22:14:22+00:00"
 }
