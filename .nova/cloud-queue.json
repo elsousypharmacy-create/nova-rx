@@ -1243,11 +1243,21 @@
     "N104",
     "N105"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T14:27:49+00:00"
+   "dispatched_at": "2026-11-13T14:27:49+00:00",
+   "pr": 275,
+   "ci_dispatched": {
+    "sha": "0626eeef7b353426bfccc8d0cd8960fdba745d5e",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T14:30:19+00:00"
+   }
   },
   {
    "id": "N107",
@@ -1310,9 +1320,11 @@
     "N104",
     "N105"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T14:30:19+00:00"
   },
   {
    "id": "GATE-14",
@@ -1746,5 +1758,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T14:29:04+00:00"
+ "updated": "2026-11-13T14:30:19+00:00"
 }
