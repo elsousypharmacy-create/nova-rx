@@ -2246,22 +2246,15 @@
    "brief": "Files: index.html (#checkoutModal markup/CSS/JS), tests/ux/checkout-polish.mjs (new). Fix: methods grid 4 columns on desktop and 2x2 on mobile (no orphan row), rename «مشترك» → «مختلط»، when آجل is chosen with a walk-in customer show an inline red hint «اختر عميلاً لإتمام البيع الآجل» + focus «إضافة رقم العميل» and disable confirm (instead of rejecting after Enter with a toast), after F10/F11/F12 move focus to #btnConfirmPayment (cash: back to #inputCashReceived), logical Tab order (methods → amount → confirm → cancel). Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/checkout-polish.mjs asserts all .pay-method-btn share one row at 1366 and two rows of two at 390, F11 with walk-in disables #btnConfirmPayment and shows the hint, activeElement.id after F10 is btnConfirmPayment, Tab order sequence; keyboard barcode sale stays 0 clicks and <=4 keys; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:47:22+00:00",
    "pr": 319,
-   "ci_dispatched": {
-    "sha": "507099af5c14c5285b54831ccb3ec3c947179498",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T21:48:39+00:00"
-   }
+   "merged_at": "2026-11-13T21:52:22+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/319"
   },
   {
    "id": "UX31",
@@ -2270,22 +2263,15 @@
    "brief": "Files: index.html (header, logo <img>), icon.svg or a local logo asset, sw.js (precache the logo only if needed), tests/ux/offline-indicator.mjs (new). Add a small header chip «بدون اتصال — الفواتير تُحفظ على هذا الجهاز» driven by online/offline events; replace the remote https://…github.io/pharmacy/logo-mark.png with a local file and an onerror fallback so no broken-image icon/alt text ever shows. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/offline-indicator.mjs uses context.setOffline(true/false) and asserts chip visible/hidden accordingly, 0 images with naturalWidth==0 while all non-BASE requests are aborted, offline reload still renders the sale screen.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:46:01+00:00",
    "pr": 320,
-   "ci_dispatched": {
-    "sha": "5705bfc92913bcd210d81180e92aa6dbd01a641c",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T21:47:22+00:00"
-   }
+   "merged_at": "2026-11-13T21:52:22+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/320"
   },
   {
    "id": "UX30",
@@ -2294,22 +2280,15 @@
    "brief": "Files: index.html (reports screen, novaPrintDay), tests/ux/reports-breakdown.mjs (new). Add rows نقدي / بطاقة / آجل (and مرتجعات) for the selected period (اليوم/7 أيام/الشهر) and include them in the printed end-of-day report with the expected cash in drawer; wrap «بيانات العرض التجريبية» in a collapsed <details> labelled «بيانات تجريبية (للعرض فقط)». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/reports-breakdown.mjs makes 1 cash, 1 card, 1 credit sale and asserts breakdown values sum to صافي المبيعات, the demo block is collapsed by default (0 visible demo numbers), the print view contains the three method rows; journey tab+period <=2 clicks (assert).",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:48:39+00:00",
+   "dispatched_at": "2026-11-13T21:52:22+00:00",
    "pr": 321,
-   "ci_dispatched": {
-    "sha": "05c6d2423d7866e0fe42fd4dafba9d9a5d0b93aa",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T21:49:55+00:00"
-   }
+   "merged_at": "2026-11-13T21:59:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/321"
   },
   {
    "id": "UX29",
@@ -2318,12 +2297,22 @@
    "brief": "Files: index.html (VAT constant/label in totals, receipt and printed day report), pricing-core.js only if it already holds the rate (otherwise leave), settings section in index.html, tests/unit/vat-rate.check.mjs (new). The UI shows «15% متضمنة» (Saudi rate); Egypt standard VAT is 14% and most medicines are exempt/special. OWNER DECISION: do NOT change the default value in this task; add a single setting (stored in localStorage, default = current 15) read by sale totals, receipt and reports, labelled in Settings with a note «راجع المحاسب»; list the proposed 14% in the PR description for the owner. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/vat-rate.check.mjs asserts: default behaviour identical to today (same totals for a fixed cart), changing the setting to 14 changes totals, receipt label and day report consistently, tax-included math rounds to 2 decimals; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:49:55+00:00"
+   "dispatched_at": "2026-11-13T22:02:25+00:00",
+   "pr": 322,
+   "ci_dispatched": {
+    "sha": "9c035ae51ace05b3acd00fd6ad8360c7f9613005",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T21:55:33+00:00"
+   }
   },
   {
    "id": "UX28",
@@ -2332,10 +2321,23 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "fix_attempts": 1,
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T22:00:49+00:00",
+   "pr": 323,
+   "ci_dispatched": {
+    "sha": "cd89ca6a20332a01ed50d1c6eee844331b48c1be",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:02:25+00:00"
+   }
   },
   {
    "id": "UX27",
@@ -2344,10 +2346,22 @@
    "brief": "Files: index.html (CSS for .nova-return-overlay, debt dialog #novaPayAmt, buttons novaSalesExport/novaSalesImport/novaPrintDay/#novaRetAll, reason chips), tests/ux/dialog-style.mjs (new). Today the confirm buttons are grey rgb(107,107,107) with no border and the dialogs have no ✕. Fix: reuse .btn .btn-primary/.btn-secondary tokens (ux-tokens.js), add ✕ close + Esc + backdrop click, primary action visible and focus-ringed, chips as outlined pills. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/dialog-style.mjs asserts computed background of «تأكيد السداد» and «تأكيد المرتجع» is NOT rgb(107, 107, 107) and equals the primary button colour, ✕ present and Esc closes both dialogs, export/import/print buttons share btn classes; contrast >=4.5:1; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T21:57:57+00:00",
+   "pr": 324,
+   "ci_dispatched": {
+    "sha": "e8e5ccb636d7f04338bb5aed0e7e3fbf8d85deb2",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:00:49+00:00"
+   }
   },
   {
    "id": "UX26",
@@ -2410,5 +2424,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:49:55+00:00"
+ "updated": "2026-11-13T22:02:25+00:00"
 }

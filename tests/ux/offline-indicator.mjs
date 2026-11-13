@@ -1,0 +1,37 @@
+// UX31: offline chip + self-hosted logo.
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/';
+const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.meta.url), 'utf8');
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ar-EG', serviceWorkers: 'allow' });
+const origin = new URL(BASE).origin;
+await ctx.route('**/*', r => { const u = r.request().url(); return u.startsWith(origin) || u.startsWith('data:') ? r.continue() : r.abort(); });
+const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
+await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+await page.goto(BASE, { waitUntil: 'load' });
+const chip = page.locator('#offlineChip');
+assert.equal(await chip.isVisible(), false, 'chip hidden while online');
+await ctx.setOffline(true);
+await page.waitForFunction(() => !document.getElementById('offlineChip').hidden, null, { timeout: 3000 });
+assert.ok(await chip.isVisible(), 'chip visible offline');
+assert.match(await chip.textContent(), /بدون اتصال/);
+await ctx.setOffline(false);
+await page.waitForFunction(() => document.getElementById('offlineChip').hidden, null, { timeout: 3000 });
+assert.equal(await chip.isVisible(), false, 'chip hidden after reconnect');
+await page.waitForTimeout(1800);
+const broken = await page.evaluate(() => [...document.images].filter(i => i.naturalWidth === 0 && getComputedStyle(i).display !== 'none').map(i => i.src.slice(0, 80)));
+assert.deepEqual(broken, [], 'no broken visible images');
+const remote = await page.evaluate(() => [...document.images].filter(i => /^https?:/.test(i.getAttribute('src') || '')).length);
+assert.equal(remote, 0, 'no remote images in DOM');
+// offline reload still renders sale screen
+await page.evaluate(() => navigator.serviceWorker && navigator.serviceWorker.ready).catch(() => {});
+await ctx.setOffline(true);
+await page.reload({ waitUntil: 'domcontentloaded' }).catch(e => { throw new Error('offline reload failed: ' + e.message); });
+await page.locator('#mainSearchInput').waitFor({ timeout: 8000 });
+assert.ok(await chip.isVisible(), 'chip visible after offline reload');
+assert.deepEqual(await page.evaluate(() => [...document.images].filter(i => i.complete && i.naturalWidth === 0 && getComputedStyle(i).display !== 'none').length), 0);
+assert.deepEqual(errors, [], 'no page errors');
+await browser.close();
+console.log('ok offline-indicator');
