@@ -4874,8 +4874,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
- window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
- switchPage(location.hash.slice(1)||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
+ const hashPage=()=>location.hash.slice(1).split('&')[0];
+ const wantReceive=()=>/[#&]receive=1(&|$)/.test(location.hash);
+ const openReceive=(n=0)=>{const b=document.getElementById('novaInventoryPurchase'),pn=document.getElementById('novaAiPanel');if(b&&pn)pn.classList.add('open');else if(n<50)setTimeout(()=>openReceive(n+1),100)};
+ window.addEventListener('hashchange',()=>{const r=wantReceive();switchPage(hashPage()||'sale');if(r)openReceive()});
+ const initReceive=wantReceive();
+ switchPage(hashPage()||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
+ if(initReceive)openReceive();
 })();
 </script>
 

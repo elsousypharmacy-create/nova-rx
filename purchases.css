@@ -49,3 +49,8 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:10px;flex-wrap:nowrap;alig
 .offer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .offer-actions button{margin-top:0}
 @media(max-width:800px){.panel-tools{width:100%}.panel-tools input{flex:1;min-width:120px}}
+
+/* UX19 */
+#receiveInvoice{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 14px;text-decoration:none;border-radius:8px;cursor:pointer;font-family:inherit}
+.select-all-label{display:inline-flex;align-items:center;justify-content:center}
+@media(max-width:800px){thead{display:block}thead tr{display:flex;border-bottom:1px solid var(--line)}thead th:not(:first-child){display:none}thead th:first-child{width:auto;padding:0 12px}.select-all-label{min-width:44px;min-height:44px}}
