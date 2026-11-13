@@ -75,7 +75,7 @@ await t('typing part of a barcode lists that product (partial barcode search)', 
 await t('Products tab: real list, honest labels (prices only, no stock), capped rows, search, re-renders when data arrives', async () => {
   await real.page.locator('.nova-tab[data-page="products"]').click(); await real.page.waitForTimeout(400);
   const txt = await real.page.locator('#novaPageView').innerText();
-  assert.ok(txt.includes('STOCK LIVE') && txt.includes('غير متوفر'), 'says prices only, stock unavailable');
+  assert.ok(txt.includes('المخزون الحي') && txt.includes('غير متوفر'), 'says prices only, stock unavailable');
   const stockKpi = await real.page.locator('.nova-kpi', { hasText: 'الرصيد' }).first().innerText();
   assert.ok(stockKpi.includes('غير متوفر'), 'the stock KPI says unavailable, not a number: ' + stockKpi.replace(/\n/g, ' '));
   const cells = await real.page.locator('#novaRows tr:first-child td').allInnerTexts();
