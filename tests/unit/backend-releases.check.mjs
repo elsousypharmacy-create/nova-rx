@@ -6,7 +6,7 @@ import * as R from '../../backend/src/releases.js';
 import { sha256Hex } from '../../backend/src/auth/auth.js';
 
 const sql = new DatabaseSync(':memory:');
-for (const f of readdirSync('backend/migrations').filter((x) => /^00(01|18)_/.test(x)).sort()) sql.exec(readFileSync('backend/migrations/' + f, 'utf8'));
+for (const f of readdirSync('backend/migrations').filter((x) => /^00(01|19)_/.test(x)).sort()) sql.exec(readFileSync('backend/migrations/' + f, 'utf8'));
 const mk = (q) => ({ args: [], bind(...a) { this.args = a; return this; },
   run: async function () { return sql.prepare(q).run(...this.args); },
   first: async function () { return sql.prepare(q).get(...this.args) ?? null; },

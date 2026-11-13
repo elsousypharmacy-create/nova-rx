@@ -12,6 +12,7 @@ import { observabilityEnabled, registerStatusRoute, countError, logEvent } from 
 import { registerIntegrationRoutes } from './integration.js';
 import { registerOnboardingRoutes } from './onboarding.js';
 import { registerReleasesRoutes } from './releases.js';
+import { registerMeteringRoutes } from './metering.js';
 import { registerInboxRoutes } from './inbox.js';
 import { registerCameraRoutes } from './cameras.js';
 import { registerDeliveryRoutes } from './delivery.js';
@@ -75,6 +76,7 @@ registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerIntegrationRoutes(route, { json, errorResponse });
 registerOnboardingRoutes(route, { json, errorResponse });
 registerReleasesRoutes(route, { json, errorResponse });
+registerMeteringRoutes(route, { json, errorResponse });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerWhatsAppRoutes(route, { json, errorResponse });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
