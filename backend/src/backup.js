@@ -1,4 +1,5 @@
-// N106: scheduled backup of all tables to R2 (JSON snapshot + manifest). Flag NOVA_BACKUP, default OFF.
+// N106: R2 snapshot adapter (JSON snapshot + manifest). Flag NOVA_BACKUP, default OFF. R2 is NOT provisioned (no card);
+// without an R2 binding this is a no-op. Operational backups: D1 Time Travel + scripts/d1-backup.sh (docs/ops/backup-restore.md).
 export const BACKUP_PREFIX = 'backups/';
 const PAGE = 500;
 const DEFAULT_RETENTION_DAYS = 14;

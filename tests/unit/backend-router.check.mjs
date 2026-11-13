@@ -37,10 +37,13 @@ assert.equal(r.status, 204);
 
 assert.notEqual(newRequestId(), newRequestId());
 
-// wrangler: staging may have real D1/KV ids after GATE-11; dev and production stay placeholders. R2 binding remains on the template (dev/production) until the account enables R2.
+// wrangler: staging may have real D1/KV ids after GATE-11; dev and production stay placeholders.
+// R2 is not bound (billing card required; owner declined). Backups use D1 Time Travel + encrypted artifacts.
 const t = readFileSync(new URL('../../backend/wrangler.toml', import.meta.url), 'utf8');
 assert.match(t, /name = "nova-rx-api"/);
-for (const k of ['binding = "DB"', 'binding = "KV"', 'binding = "R2"', '[env.staging]', '[env.production]']) assert.ok(t.includes(k), k);
+for (const k of ['binding = "DB"', 'binding = "KV"', '[env.staging]', '[env.production]']) assert.ok(t.includes(k), k);
+assert.doesNotMatch(t, /binding = "R2"/);
+assert.doesNotMatch(t, /^\[\[(?:env\.\w+\.)?r2_buckets\]\]/m);
 assert.match(t, /database_name = "nova-rx-dev"\s*\ndatabase_id = "PLACEHOLDER_D1_DEV_ID"/);
 assert.match(t, /database_name = "nova-rx-production"\s*\ndatabase_id = "PLACEHOLDER_D1_PRODUCTION_ID"/);
 assert.match(t, /database_name = "nova-rx-staging"\s*\ndatabase_id = "[0-9a-f-]{36}"/);
