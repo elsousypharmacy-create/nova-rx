@@ -1961,6 +1961,34 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
   <link rel="stylesheet" href="supplier-lookup.css">
+<style id="ux10-mobile-sale">
+/* UX10: mobile sale layout (toast/FAB/totals/table) */
+@media (max-width:600px){
+ .toast-container{top:calc(8px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%);max-width:92vw;pointer-events:none;z-index:9000}
+ .toast{max-width:92vw;padding:6px 12px;font-size:12px}
+ body[data-active-page="sale"] #novaAiLaunch,body:not([data-active-page]) #novaAiLaunch{display:none!important}
+ .kbd-hint,.btn-checkout kbd{display:none!important}
+ .totals-breakdown{margin-bottom:0!important}
+ .totals-breakdown .tot-row{flex-wrap:wrap;gap:2px 8px;min-width:0}
+ .totals-breakdown .tot-row>span{min-width:0;overflow-wrap:anywhere}
+ .invoice-table{min-width:0!important;width:100%;display:block}
+ .invoice-table thead{display:none}
+ .invoice-table tbody{display:block}
+ .invoice-table tbody tr{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;padding:8px;border-bottom:1px solid #22272d;max-width:100%;box-sizing:border-box}
+ .invoice-table tbody td{display:block;padding:0!important;border:0!important;min-width:0;box-sizing:border-box}
+ .invoice-table td.col-idx,.invoice-table td.col-barcode{display:none!important}
+ .invoice-table td.col-item{order:1;flex:1 1 calc(100% - 60px);min-width:0;overflow-wrap:anywhere}
+ .invoice-table td.col-act{order:2;flex:0 0 auto}
+ .invoice-table td.col-price{order:3;flex:0 0 auto}
+ .invoice-table td.col-qty{order:4;flex:1 1 auto;min-width:0}
+ .invoice-table td.col-disc{display:block!important;order:5;flex:0 0 auto;font-size:11px}
+ .invoice-table td.col-total{order:6;flex:0 0 auto;font-weight:700}
+ .invoice-table tbody tr::after{content:none}
+ .invoice-table .qty-control{flex-wrap:wrap;max-width:100%}
+ .suggestions-dropdown{z-index:60}
+ .suggestion-item{position:relative;z-index:1}
+}
+</style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
@@ -2103,7 +2131,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div class="checkout-action-box">
           <button id="btnCheckout" class="btn-checkout" disabled>
             <span>CHECKOUT</span>
-            <kbd>F9 / Pay</kbd>
+            <kbd class="kbd-hint">F9 / Pay</kbd>
           </button>
         </div>
       </footer>
@@ -2898,7 +2926,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           toast.style.opacity = "0";
           toast.style.transform = "translateY(-10px)";
           setTimeout(() => toast.remove(), 300);
-        }, type === 'error' ? 4500 : 2200);
+        }, window.matchMedia && matchMedia('(max-width:600px)').matches ? 2500 : (type === 'error' ? 4500 : 2200));
       }
 
       function formatMoney(val) {
@@ -4949,7 +4977,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  const hashPage=()=>location.hash.slice(1).split('&')[0];
