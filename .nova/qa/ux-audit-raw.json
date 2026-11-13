@@ -1,0 +1,1077 @@
+{
+ "base": "https://nova-rx-preview.elsousypharmacy.workers.dev",
+ "date": "2026-11-13T09:46:37.619Z",
+ "screens": [
+  {
+   "viewport": "desktop",
+   "screen": "sale",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [
+    "GET https://nova-rx-preview.elsousypharmacy.workers.dev/emergency/stock.json net::ERR_ABORTED"
+   ],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 94,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 11,
+   "smallFont": 1,
+   "smallSamples": [
+    {
+     "d": "th.col-barcode",
+     "t": "الباركود",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 7,
+    "total": 78,
+    "samples": []
+   },
+   "interactive": 45,
+   "tapTargetsUnder44": 34,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-sale.png",
+   "buttons": {
+    "visible": 14,
+    "clicked": 8,
+    "skipped": 6,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "invoices",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 103,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 12,
+   "smallFont": 0,
+   "smallSamples": [],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 11,
+    "total": 77,
+    "samples": []
+   },
+   "interactive": 37,
+   "tapTargetsUnder44": 25,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-invoices.png",
+   "buttons": {
+    "visible": 10,
+    "clicked": 4,
+    "skipped": 6,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "products",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 997,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 11.6667,
+   "smallFont": 2,
+   "smallSamples": [
+    {
+     "d": "small",
+     "t": "نفس الاسم والعبوة",
+     "fs": 11.6667
+    },
+    {
+     "d": "small",
+     "t": "نفس الاسم والعبوة",
+     "fs": 11.6667
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 306,
+    "total": 674,
+    "samples": []
+   },
+   "interactive": 37,
+   "tapTargetsUnder44": 25,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-products.png",
+   "buttons": {
+    "visible": 10,
+    "clicked": 2,
+    "skipped": 6,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "customers",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 98,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 12,
+   "smallFont": 0,
+   "smallSamples": [],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 9,
+    "total": 66,
+    "samples": []
+   },
+   "interactive": 35,
+   "tapTargetsUnder44": 25,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-customers.png",
+   "buttons": {
+    "visible": 8,
+    "clicked": 2,
+    "skipped": 6,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "reports",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 84,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 12,
+   "smallFont": 0,
+   "smallSamples": [],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 9,
+    "total": 69,
+    "samples": []
+   },
+   "interactive": 34,
+   "tapTargetsUnder44": 25,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-reports.png",
+   "buttons": {
+    "visible": 8,
+    "clicked": 2,
+    "skipped": 6,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "settings",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [
+    "GET https://nova-rx-preview.elsousypharmacy.workers.dev/emergency/stock.json net::ERR_ABORTED"
+   ],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 94,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 12,
+   "smallFont": 0,
+   "smallSamples": [],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 10,
+    "total": 78,
+    "samples": []
+   },
+   "interactive": 42,
+   "tapTargetsUnder44": 32,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-settings.png",
+   "buttons": {
+    "visible": 12,
+    "clicked": 4,
+    "skipped": 8,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "sale-flow",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "saleFlow": {
+    "taps": 3,
+    "steps": [
+     "✔ نقر على حقل البحث",
+     "كتابة نص البحث (لا تُحسب كنقرة)",
+     "✔ اختيار أول نتيجة",
+     "✔ إتمام الدفع (F9)",
+     "طريقة الدفع «نقدي» محددة افتراضياً — لا نقرة إضافية",
+     "الخطوة التالية: «تأكيد وطباعة الإيصال» — لم تُنفَّذ (كتابة على الخادم)"
+    ],
+    "tapsToConfirm": 4
+   },
+   "screenshot": ".nova/qa/ux-phase10/desktop-sale-flow.png"
+  },
+  {
+   "viewport": "desktop",
+   "screen": "purchases",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "المشتريات | NOVA Rx",
+   "textEls": 42,
+   "minContrast": 5.08,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 0,
+   "smallFont": 12,
+   "smallSamples": [
+    {
+     "d": "label",
+     "t": "مدة التغطية بالأيام",
+     "fs": 0
+    },
+    {
+     "d": "p#status",
+     "t": "اختَر إعدادات الموردين، ",
+     "fs": 11
+    },
+    {
+     "d": "small#count",
+     "t": "(0)",
+     "fs": 11
+    },
+    {
+     "d": "th",
+     "t": "الصنف",
+     "fs": 11
+    },
+    {
+     "d": "th",
+     "t": "الرصيد",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 1,
+    "mixed": 1,
+    "total": 39,
+    "samples": [
+     "left:span#sourceState:STOCK LIVE · اضغط تح"
+    ]
+   },
+   "interactive": 23,
+   "tapTargetsUnder44": 13,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-purchases.png",
+   "buttons": {
+    "visible": 11,
+    "clicked": 11,
+    "skipped": 0,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "whatsapp",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | واتساب",
+   "textEls": 8,
+   "minContrast": 5.72,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 12.5,
+   "smallFont": 0,
+   "smallSamples": [],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 2,
+    "total": 8,
+    "samples": []
+   },
+   "interactive": 2,
+   "tapTargetsUnder44": 2,
+   "overflowX": false,
+   "font": "Arial",
+   "bodyFs": "15px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-whatsapp.png",
+   "buttons": {
+    "visible": 0,
+    "clicked": 0,
+    "skipped": 0,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "desktop",
+   "screen": "stickers",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | استوديو استيكرات الأدوية",
+   "textEls": 61,
+   "minContrast": 5.82,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 7.73333,
+   "smallFont": 13,
+   "smallSamples": [
+    {
+     "d": "span",
+     "t": "لصاحبها ومديرها د. أحمد ",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: الجرعة",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: التكرار",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: المدة",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: التعليمات",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 1,
+    "total": 58,
+    "samples": []
+   },
+   "interactive": 23,
+   "tapTargetsUnder44": 10,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "15px",
+   "screenshot": ".nova/qa/ux-phase10/desktop-stickers.png",
+   "buttons": {
+    "visible": 13,
+    "clicked": 12,
+    "skipped": 1,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "sale",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 91,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 10,
+   "smallFont": 10,
+   "smallSamples": [
+    {
+     "d": "button.nova-tab",
+     "t": "البيع",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "الفواتير",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "المنتجات",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "العملاء",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "التقارير",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 7,
+    "total": 75,
+    "samples": []
+   },
+   "interactive": 45,
+   "tapTargetsUnder44": 1,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-sale.png",
+   "buttons": {
+    "visible": 10,
+    "clicked": 6,
+    "skipped": 4,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "invoices",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [
+    "GET https://nova-rx-preview.elsousypharmacy.workers.dev/emergency/stock.json net::ERR_ABORTED"
+   ],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 102,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 10,
+   "smallFont": 8,
+   "smallSamples": [
+    {
+     "d": "button.nova-tab",
+     "t": "البيع",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "الفواتير",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "المنتجات",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "العملاء",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "التقارير",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 11,
+    "total": 76,
+    "samples": []
+   },
+   "interactive": 37,
+   "tapTargetsUnder44": 1,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-invoices.png",
+   "buttons": {
+    "visible": 8,
+    "clicked": 4,
+    "skipped": 4,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "products",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 996,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 10,
+   "smallFont": 10,
+   "smallSamples": [
+    {
+     "d": "button.nova-tab",
+     "t": "البيع",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "الفواتير",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "المنتجات",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "العملاء",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "التقارير",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 306,
+    "total": 673,
+    "samples": []
+   },
+   "interactive": 37,
+   "tapTargetsUnder44": 1,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-products.png",
+   "buttons": {
+    "visible": 8,
+    "clicked": 2,
+    "skipped": 4,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "customers",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [
+    "GET https://nova-rx-preview.elsousypharmacy.workers.dev/emergency/stock.json net::ERR_ABORTED"
+   ],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 97,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 10,
+   "smallFont": 8,
+   "smallSamples": [
+    {
+     "d": "button.nova-tab",
+     "t": "البيع",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "الفواتير",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "المنتجات",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "العملاء",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "التقارير",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 9,
+    "total": 65,
+    "samples": []
+   },
+   "interactive": 35,
+   "tapTargetsUnder44": 1,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-customers.png",
+   "buttons": {
+    "visible": 6,
+    "clicked": 2,
+    "skipped": 4,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "reports",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 83,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 10,
+   "smallFont": 8,
+   "smallSamples": [
+    {
+     "d": "button.nova-tab",
+     "t": "البيع",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "الفواتير",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "المنتجات",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "العملاء",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "التقارير",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 9,
+    "total": 68,
+    "samples": []
+   },
+   "interactive": 34,
+   "tapTargetsUnder44": 1,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-reports.png",
+   "buttons": {
+    "visible": 6,
+    "clicked": 2,
+    "skipped": 4,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "settings",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script.",
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [
+    "GET https://nova-rx-preview.elsousypharmacy.workers.dev/emergency/stock.json net::ERR_ABORTED"
+   ],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | صيدلية السوسي",
+   "textEls": 93,
+   "minContrast": 5.04,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 10,
+   "smallFont": 8,
+   "smallSamples": [
+    {
+     "d": "button.nova-tab",
+     "t": "البيع",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "الفواتير",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "المنتجات",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "العملاء",
+     "fs": 11
+    },
+    {
+     "d": "button.nova-tab",
+     "t": "التقارير",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 10,
+    "total": 77,
+    "samples": []
+   },
+   "interactive": 42,
+   "tapTargetsUnder44": 4,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-settings.png",
+   "buttons": {
+    "visible": 9,
+    "clicked": 4,
+    "skipped": 5,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "sale-flow",
+   "consoleErrors": [
+    "A bad HTTP response code (404) was received when fetching the script."
+   ],
+   "pageErrors": [],
+   "failedRequests": [],
+   "saleFlow": {
+    "taps": 2,
+    "steps": [
+     "✘ نقر على حقل البحث — locator.click: Timeout 2000ms exceeded.",
+     "كتابة نص البحث (لا تُحسب كنقرة)",
+     "✔ اختيار أول نتيجة",
+     "✔ إتمام الدفع (F9)",
+     "طريقة الدفع «نقدي» محددة افتراضياً — لا نقرة إضافية",
+     "الخطوة التالية: «تأكيد وطباعة الإيصال» — لم تُنفَّذ (كتابة على الخادم)"
+    ],
+    "tapsToConfirm": 3
+   },
+   "screenshot": ".nova/qa/ux-phase10/mobile-sale-flow.png"
+  },
+  {
+   "viewport": "mobile",
+   "screen": "purchases",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "المشتريات | NOVA Rx",
+   "textEls": 34,
+   "minContrast": 5.08,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 0,
+   "smallFont": 4,
+   "smallSamples": [
+    {
+     "d": "label",
+     "t": "مدة التغطية بالأيام",
+     "fs": 0
+    },
+    {
+     "d": "p#status",
+     "t": "اختَر إعدادات الموردين، ",
+     "fs": 11
+    },
+    {
+     "d": "small#count",
+     "t": "(0)",
+     "fs": 11
+    },
+    {
+     "d": "footer#tableHint",
+     "t": "اختيار المخازن يحدد العر",
+     "fs": 11
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 1,
+    "mixed": 1,
+    "total": 31,
+    "samples": [
+     "left:span#sourceState:STOCK LIVE · اضغط تح"
+    ]
+   },
+   "interactive": 22,
+   "tapTargetsUnder44": 12,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, sans-serif",
+   "bodyFs": "14px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-purchases.png",
+   "buttons": {
+    "visible": 11,
+    "clicked": 11,
+    "skipped": 0,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "whatsapp",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | واتساب",
+   "textEls": 5,
+   "minContrast": 5.72,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 12.5,
+   "smallFont": 0,
+   "smallSamples": [],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 1,
+    "total": 5,
+    "samples": []
+   },
+   "interactive": 2,
+   "tapTargetsUnder44": 2,
+   "overflowX": false,
+   "font": "Arial",
+   "bodyFs": "15px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-whatsapp.png",
+   "buttons": {
+    "visible": 0,
+    "clicked": 0,
+    "skipped": 0,
+    "errors": []
+   }
+  },
+  {
+   "viewport": "mobile",
+   "screen": "stickers",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "html": {
+    "dir": "rtl",
+    "lang": "ar",
+    "bodyDir": "rtl"
+   },
+   "title": "NOVA Rx | استوديو استيكرات الأدوية",
+   "textEls": 52,
+   "minContrast": 5.82,
+   "contrastFails": 0,
+   "worstContrast": [],
+   "minFont": 7.73333,
+   "smallFont": 11,
+   "smallSamples": [
+    {
+     "d": "span",
+     "t": "ناقص: الجرعة",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: التكرار",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: المدة",
+     "fs": 11
+    },
+    {
+     "d": "span",
+     "t": "ناقص: التعليمات",
+     "fs": 11
+    },
+    {
+     "d": "strong",
+     "t": "صيدلية السوسي",
+     "fs": 9.33333
+    }
+   ],
+   "rtl": {
+    "arabicLtr": 0,
+    "leftAligned": 0,
+    "mixed": 1,
+    "total": 50,
+    "samples": []
+   },
+   "interactive": 23,
+   "tapTargetsUnder44": 2,
+   "overflowX": false,
+   "font": "Cairo, Tahoma, Arial, sans-serif",
+   "bodyFs": "15px",
+   "screenshot": ".nova/qa/ux-phase10/mobile-stickers.png",
+   "buttons": {
+    "visible": 11,
+    "clicked": 10,
+    "skipped": 1,
+    "errors": []
+   }
+  }
+ ],
+ "unreachable": [],
+ "blockedWrites": []
+}
