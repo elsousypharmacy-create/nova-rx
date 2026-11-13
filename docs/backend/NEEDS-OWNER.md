@@ -23,3 +23,4 @@ NEEDS-OWNER: messaging adapters must write msg:token_expires_at / msg:session_ex
 NEEDS-OWNER: WhatsApp/Telegram provider account + webhook secret (real delivery status source for the unified inbox; NOVA_INBOX flag stays OFF, status only from mock source)
 NEEDS-OWNER: Hik-Connect/camera report ingestion source (writes camera_reports/camera_source_status; this Worker is read-only; NOVA_CAMERAS flag stays OFF)
 NEEDS-OWNER: existing order-system endpoint/credentials for the delivery adapter (OPS-03 uses a mock adapter; NOVA_DELIVERY flag stays OFF)
+NEEDS-OWNER: none for N121 (NOVA_ONBOARDING flag stays OFF; owner approval needed before enabling tenant creation in production, and a real session-to-tenant mapping for multi-tenant auth)
