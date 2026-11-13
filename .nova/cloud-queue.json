@@ -1930,12 +1930,21 @@
     "UX17",
     "UX18"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T20:14:29+00:00"
+   "dispatched_at": "2026-11-13T20:14:29+00:00",
+   "pr": 314,
+   "ci_dispatched": {
+    "sha": "6670c621e44d0c5a84b3fb658842e545f2ecb5c6",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T20:17:14+00:00"
+   }
   },
   {
    "id": "UX19",
@@ -2125,5 +2134,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/311"
   }
  ],
- "updated": "2026-11-13T20:14:29+00:00"
+ "updated": "2026-11-13T20:17:14+00:00"
 }
