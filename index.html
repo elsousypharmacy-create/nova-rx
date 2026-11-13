@@ -1464,6 +1464,7 @@ html,body{min-width:0}
 .nova-tab{flex-shrink:0}
 .nova-page-view{min-width:0}
 .nova-kpi{min-width:0}
+button.nova-kpi-btn{font:inherit;cursor:pointer;text-align:inherit;color:inherit;min-height:44px}.nova-kpi-btn.active{border-color:#e5484d!important}.nova-chip{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;background:#3a1519;color:#ff8a8f;font-size:12px}.nova-low-badge{display:inline-block;min-width:28px;text-align:center;padding:1px 8px;border-radius:999px;background:#3a1519;color:#ff8a8f;font-weight:700}
 .nova-kpi strong{overflow-wrap:anywhere}
 @media(max-width:1150px){.nova-nav{gap:2px}.nova-tab{padding:7px 10px}.nova-demo-label{display:none}}
 @media(max-width:780px){.nova-nav{padding-inline:6px}.nova-tab{font-size:12px;padding:6px 8px}.nova-lang-switch{position:sticky;inset-inline-end:0;z-index:3;background:#1b2026}.nova-page-view{padding:12px}.nova-kpis{gap:8px}}
@@ -4818,6 +4819,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
+ let novaLowOnly=false;
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
  const inv=customers.flatMap(c=>(c.pastInvoices||[]).map(i=>({...i,customer:c.name}))).sort((a,b)=>b.date.localeCompare(a.date));
@@ -4828,16 +4830,19 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  const cat=window.novaCatalog||{},real=cat.source==='STOCK LIVE',fold=window.novaFold||(x=>String(x).toLowerCase());
  const tokens=fold(filter).split(' ').filter(Boolean);
  const list=real?(tokens.length?products.filter(p=>String(p.barcode).includes(filter.trim())||tokens.every(t=>fold(p.name).includes(t))):products):filtered(products,['name','barcode','generic','category']);
- const shown=real?list.slice(0,300):list;
+ const lowList=real?list:list.filter(p=>p.stock<30);const shown=real?list.slice(0,300):(novaLowOnly?lowList:list);
+ const catAr={Chronic:'مزمن',Analgesic:'مسكنات',Antibiotic:'مضاد حيوي',Lipid:'دهون','GI Care':'جهاز هضمي',Vitamins:'فيتامينات',Antihistamine:'مضاد هيستامين'};
+ const catLbl=c=>catAr[c]?tr(catAr[c],c):esc(c);
+ const packOf=p=>p.pack||(p.packaging&&p.packaging.stripsPerBox&&p.packaging.unitsPerStrip?p.packaging.stripsPerBox+' × '+p.packaging.unitsPerStrip:'');
  const dups=window.novaDuplicates?window.novaDuplicates(products):[];
  const dupBlock=dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi(tr('الرصيد','Stock'),tr('غير متوفر من مصدر الأسعار','Not available from price source'))+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
- :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
+ :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
  +dupBlock+(()=>{const cols=[['الصنف',p=>'<td>'+esc(p.name)+'</td>'],['الباركود',p=>'<td dir="ltr">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td>'+money(p.price)+'</td>']];
- if(!real||shown.some(p=>p.pack))cols.push(['العبوة',p=>'<td data-pack>'+(p.pack?esc(p.pack):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
- if(!real){cols.push(['الرصيد',p=>'<td>'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td>'+esc(p.category)+'</td>']);}
+ if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack>'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
+ if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td>'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td>'+catLbl(p.category)+'</td>']);}
  return table(cols.map(c=>c[0]),rows(shown,p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>'));})().replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
@@ -4916,6 +4921,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  });
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
+ const lowBtn=document.getElementById('novaLowKpi');if(lowBtn)lowBtn.onclick=()=>{novaLowOnly=!novaLowOnly;const f=document.getElementById('novaFilter');render(page,f?f.value:'');const b=document.getElementById('novaLowKpi');if(b)b.focus()};
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
