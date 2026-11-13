@@ -21,7 +21,7 @@ await t('no accounts yet: export downloads without a prompt', async () => {
   assert.match(d.suggestedFilename(), /^nova-rx-sales-/); assert.equal(await page.locator('#novaReauth').count(), 0);
 });
 await t('first account created in Settings becomes owner and can sign in', async () => {
-  await openTab('settings'); await page.locator('#novaAuthCard summary').click();
+  await openTab('settings'); await page.locator('#novaAuthCard summary').first().click();
   await page.fill('#novaNewName', 'Ahmed'); await page.fill('#novaNewPw', 'secret1'); await page.click('#novaNewOk');
   await page.waitForSelector('#novaAuthIn');
   await page.fill('#novaAuthName', 'Ahmed'); await page.fill('#novaAuthPw', 'wrong'); await page.click('#novaAuthIn');
