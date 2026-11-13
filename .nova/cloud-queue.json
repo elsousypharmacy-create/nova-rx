@@ -91,9 +91,9 @@
    "brief": "Extend the existing on-device export/import with a scheduled encrypted local backup and a periodic restore drill. Document a measured RPO≤15min and RTO≤60min, and gate owner download behind a permission/re-auth check. Do not redo N10 from scratch. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N43.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "failed",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T05:07:55+00:00",
    "pr": 214,
@@ -590,5 +590,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/221"
   }
  ],
- "updated": "2026-11-13T05:39:44+00:00"
+ "updated": "2026-11-13T05:41:00+00:00"
 }
