@@ -41,6 +41,34 @@ export CLOUDFLARE_ACCOUNT_ID="$ACC"
 # wrangler is noisy; never let it print env.
 export WRANGLER_SEND_METRICS=false
 
+# Record a D1 Time Travel bookmark (read-only). Used as the data-rollback target
+# before migrations. Missing D1 permission is reported, not fatal (same as migrate).
+BOOKMARK="unrecorded"
+record_time_travel_bookmark() {
+  local errf="$WORK/tt.err" outf="$WORK/tt.json"
+  : > "$errf"
+  if (cd "$ROOT/backend" && npx --yes wrangler@4 d1 time-travel info nova-rx-staging --json > "$outf" 2>"$errf"); then
+    BOOKMARK="$(jq -r '.bookmark // empty' "$outf")"
+    if [ -n "$BOOKMARK" ]; then
+      say "D1 Time Travel bookmark (pre-migrate): $BOOKMARK"
+      return 0
+    fi
+  fi
+  # Scrub possible signed URLs / tokens from wrangler stderr before printing.
+  if [ -s "$errf" ]; then
+    sed -E 's/https?:\/\/[^[:space:]]+/[redacted-url]/g;s/(Bearer|TOKEN|secret)[=: ]+[^[:space:]]+/\1=[redacted]/gi' "$errf" > "$WORK/tt.err.safe" || true
+  fi
+  if grep -Eq '7403|9106|"code":10000|not authorized|Authentication error' "$errf" 2>/dev/null; then
+    say "CLOUDFLARE_API_TOKEN lacks Account.D1:Read (needed for time-travel info / export). Data rollback bookmark was not recorded. Do not roll the token here."
+  else
+    say "could not record D1 Time Travel bookmark (non-fatal). Scrubbed wrangler output follows:"
+    [ -f "$WORK/tt.err.safe" ] && cat "$WORK/tt.err.safe" || true
+  fi
+  BOOKMARK="unrecorded"
+  return 0
+}
+
+
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
@@ -87,6 +115,9 @@ if [ "$HAD_PREVIOUS" = 1 ]; then
 fi
 say "rollback target: $ROLLBACK_TARGET"
 
+record_time_travel_bookmark
+say "data rollback bookmark: $BOOKMARK"
+
 rollback() {
   if [ "$UPLOADED" != 1 ]; then
     say "no upload happened; nothing to roll back"
@@ -116,7 +147,7 @@ rollback() {
 
 # 4. dry run stops before any mutation of the Worker (D1/KV already created earlier; no further creates here)
 if [ "$DRY_RUN" = true ]; then
-  say "DRY RUN ok: would apply additive migrations 0001-0007 to D1 nova-rx-staging, deploy $SCRIPT_NAME at $LIVE_URL, set Worker secrets NOVA_API_PIN and NOVA_INGEST_SECRET (names only), smoke /api/v1/health and /api/v1/version. Flags stay OFF. R2 binding omitted (dashboard enablement pending). rollback target: $ROLLBACK_TARGET"
+  say "DRY RUN ok: would apply additive migrations to D1 nova-rx-staging, deploy $SCRIPT_NAME at $LIVE_URL, set Worker secrets NOVA_API_PIN and NOVA_INGEST_SECRET (names only), smoke /api/v1/health and /api/v1/version. Flags stay OFF. R2 is not used. data rollback bookmark: $BOOKMARK. worker rollback target: $ROLLBACK_TARGET"
   exit 0
 fi
 
@@ -225,7 +256,8 @@ smoke() {
 smoke /api/v1/health '.ok==true and .status=="healthy"' || { rollback; exit 1; }
 smoke /api/v1/version '.ok==true and .name=="nova-rx-api" and .env=="staging"' || { rollback; exit 1; }
 say "DEPLOYED $SCRIPT_NAME version 0.1.0 sha=${BUILD_SHA:0:12} url=$LIVE_URL"
-say "rollback target: $ROLLBACK_TARGET"
+say "worker rollback target: $ROLLBACK_TARGET"
+say "data rollback bookmark: $BOOKMARK"
 say "frontend flag novaBackend.enabled left OFF; worker flags NOVA_AUTH/NOVA_SYNC/NOVA_IMPORT/NOVA_HARDENING left unset (OFF). R2 not bound."
 trap - ERR
 exit 0

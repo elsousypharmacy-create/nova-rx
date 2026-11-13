@@ -1,6 +1,6 @@
 # ADR-001 — Backend storage stack (FND-01/02)
 
-Status: proposed (docs only). Date: 2026-11-13. Owner approval for the *storage product* is owner-only (see NEEDS-OWNER.md); nothing here creates resources or deploys.
+Status: accepted with backup amendment (2026-11-13). Date: 2026-11-13. Owner approval for the *storage product* is owner-only (see NEEDS-OWNER.md); nothing here creates resources or deploys.
 
 ## Decision
 Cloudflare Workers (ES modules, no npm deps) with:
@@ -34,3 +34,9 @@ If limits bite, the fallback is the Workers Paid plan — a **spending decision,
 
 ## Rejected alternatives
 Durable Objects as primary store (harder reporting/SQL); external Postgres/Supabase (new paid account, off-platform secrets); KV-only (no transactions).
+
+## Amendment 2026-11-13 — backups without R2
+R2 will not be enabled: the Cloudflare dashboard requires a payment card, and the owner declined. The R2 row above is retained as the rejected-for-now object-store option, not as the backup plan.
+- **Backups:** D1 Time Travel (30-day point-in-time) plus a daily `wrangler d1 export` uploaded as an encrypted GitHub Actions artifact (30-day retention). See `docs/backend/BACKUP-RESTORE.md`.
+- **Before any staging/production migration:** record a Time Travel bookmark, then apply, then verify. Do not take an R2 export.
+- **Private files:** deferred or size-capped in D1 until a card-free object store exists. Do not add an R2 binding.

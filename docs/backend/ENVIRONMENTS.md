@@ -1,7 +1,7 @@
 # Environments and release record (FND-05)
 
 ## Separation
-| Env | Worker | D1 / KV / R2 | Purpose |
+| Env | Worker | D1 / KV | Purpose |
 |---|---|---|---|
 | dev | `nova-rx-api` (local `wrangler dev`) | `nova-rx-dev` | local work, no real data |
 | staging | `nova-rx-api-staging` | `nova-rx-staging` | pre-release verification |
@@ -24,3 +24,6 @@ Each environment has its own bindings in `backend/wrangler.toml` (placeholder id
 2. Migrations are additive, so the old Worker keeps working against the newer schema; no schema rollback.
 3. Record the rollback in `history` with reason.
 4. The client feature flag defaults OFF; turning it off returns the app to local mode instantly.
+
+## Backups
+R2 is not bound in any environment. Use D1 Time Travel (bookmark before migrate) and the daily encrypted GitHub artifact workflow. See `docs/backend/BACKUP-RESTORE.md`.

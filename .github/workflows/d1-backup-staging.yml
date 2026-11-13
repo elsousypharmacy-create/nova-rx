@@ -1,0 +1,55 @@
+# Daily encrypted export of D1 nova-rx-staging as a GitHub Actions artifact.
+# Plaintext SQL is never uploaded. Repo is public: treat artifacts as world-readable.
+# See docs/backend/BACKUP-RESTORE.md.
+# Does not deploy, does not run Time Travel restore, does not print secret values.
+name: D1 staging backup
+
+on:
+  schedule:
+    # 01:00 UTC = 04:00 Asia/Riyadh
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d1-backup-staging
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Check required secret names exist
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          NOVA_INGEST_SECRET: ${{ secrets.NOVA_INGEST_SECRET }}
+        run: |
+          set -euo pipefail
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::Add the CLOUDFLARE_API_TOKEN secret (Settings > Secrets and variables > Actions)."; exit 1; }
+          [ -n "$NOVA_INGEST_SECRET" ] || { echo "::error::Add the NOVA_INGEST_SECRET secret (used as the backup encryption passphrase; name only)."; exit 1; }
+      - name: Export, encrypt, and write metadata
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NOVA_INGEST_SECRET: ${{ secrets.NOVA_INGEST_SECRET }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: bash .github/scripts/d1_backup_staging.sh
+      - name: Upload encrypted artifact (30 days)
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-backup-staging
+          path: |
+            artifacts/d1-backup/*.sql.gz.enc
+            artifacts/d1-backup/metadata.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
