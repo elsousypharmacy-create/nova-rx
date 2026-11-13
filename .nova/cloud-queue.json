@@ -1991,12 +1991,12 @@
    "brief": "In index.html (handleSearchKeyDown ~line 3018 and the window keydown handler ~line 4672): (a) Enter with suggestions open and no arrow selection adds the first suggestion; (b) typing `*3` or `3*` before/after a query sets the quantity of the added line; (c) F6 focuses the % discount, F7 the fixed discount; (d) inside checkout: F10 selects card, F11 credit, F12/C cash (preventDefault; Enter confirms); (e) Enter on an empty search box when the invoice has lines opens checkout; (f) Enter on the receipt modal starts a new sale (same as F2); (g) F1 opens the help modal; update the help table and button hints in Arabic. Add tests/ux/sale-clicks.mjs (Playwright, local index.html) asserting the measured counts: barcode sale = typed barcode + at most 3 key presses and 0 clicks (Enter, Enter, Enter); name+qty+10% discount+card sale <= 5 interactions after typing; ui-pos01-sale-flow.mjs and ui-pos02-payment.mjs still pass. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/sale-clicks.mjs passes with barcode sale <= 3 key presses (was 5) and mouse/keyboard card sale with discount <= 5 interactions (was 8 clicks); node tests/ui-pos01-sale-flow.mjs and node tests/ui-pos02-payment.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro.json",
    "slot": "B",
-   "dispatched_at": "2026-11-13T18:33:53+00:00",
+   "dispatched_at": "2026-11-13T18:39:32+00:00",
    "pr": 304,
    "ci_dispatched": {
     "sha": "f067c01b44ded72ba860139e80e5febceff9b193",
@@ -2029,12 +2029,22 @@
    "brief": "In index.html customer sidebar renderer (.customer-sidebar, «مشتريات سابقة» collapsible) show for an attached customer: a short «أدوية مزمنة» line (derived from the customer's past items with category Chronic in demo/sale data), the last purchase date, and a one-tap «إعادة صرف آخر فاتورة» button that adds the previous invoice's lines to the cart (respecting stock checks). No new data storage beyond local sales. Add tests/ux/customer-refill.mjs (Playwright): attach demo customer, click «إعادة صرف» once and assert the cart holds the prior lines; total clicks from a fresh sale <= 3 (ربط عميل, اختيار, إعادة صرف). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/customer-refill.mjs passes with <= 3 clicks to refill a previous invoice; the sidebar shows chronic medicines for a chronic demo customer.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "B",
-   "dispatched_at": "2026-11-13T18:37:00+00:00"
+   "dispatched_at": "2026-11-13T18:37:00+00:00",
+   "pr": 305,
+   "ci_dispatched": {
+    "sha": "87ee42bf3a38888a47e94e49ba8023dd573f8625",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T18:39:32+00:00"
+   }
   },
   {
    "id": "UX14",
@@ -2109,5 +2119,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:37:00+00:00"
+ "updated": "2026-11-13T18:39:32+00:00"
 }
