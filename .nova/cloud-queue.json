@@ -754,9 +754,11 @@
    "brief": "UX audit of the LIVE Phase 10 app (read-only). Write tools/qa/ux-audit.mjs (Playwright, headless Chromium; install with `npm ci && npx playwright install --with-deps chromium` inside this runner) that opens https://nova-rx-preview.elsousypharmacy.workers.dev in two viewports — desktop 1366x768 and mobile 390x844 — and visits every screen: sale/POS, catalog/search, stickers, customers/prescriptions, inventory, reports, settings (find them from the nav; note any you cannot reach). For each screen: full-page screenshot to .nova/qa/ux-phase10/<viewport>-<screen>.png (keep PNGs small; max ~40 files), capture console errors/page errors/failed requests, check every visible button is clickable without error, measure taps needed for the main task (e.g. a sale), check Arabic RTL (dir=rtl, alignment, mixed text), font sizes, and colour contrast (compute WCAG ratio for main text/buttons). Use only fake test data; enter NO real patient data; do not submit anything that would write to the live server (no real sales/settings saves; local-only demo actions are fine). Write .nova/qa/ux-report-phase10.md in Arabic: summary, then a prioritized table (عالية/متوسطة/منخفضة) with columns الشاشة | المشكلة | الاقتراح | screenshot, plus the console-error list and tap counts. Then write .nova/inbox/ux-phase10.json = {\"tasks\":[...]} with one follow-up FIX task per high/medium finding (group tiny related ones; max 15), ids UX1, UX2, … each {id, phase:10, title, brief, acceptance, after:[]}: frontend only, small, each names the exact file(s) and the test to add/run (existing tests/unit or tests/ux), preserves Black Edition Arabic RTL, backend frozen, no deploys. Add as the LAST item a task (next UX id) that rebuilds the live Worker artifact from repo frontend like N88 did (worker/live/nova-rx-preview.ux-fixes1.js + its checks), with after = all the other UX ids; it must NOT deploy. The scheduler ingests that file automatically. Do not edit .nova/cloud-queue.json. Commit the script, screenshots, report and inbox file on this branch.",
    "acceptance": "Report .nova/qa/ux-report-phase10.md with prioritized Arabic findings and screenshots for both viewports for every reachable screen; console errors listed; .nova/inbox/ux-phase10.json valid JSON with UX follow-ups for every high/medium finding; no live writes, no real patient data. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T08:53:31+00:00"
   },
   {
    "id": "N91",
