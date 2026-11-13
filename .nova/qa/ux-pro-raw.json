@@ -1,0 +1,1057 @@
+{
+ "date": "2026-11-13T18:23:39.551Z",
+ "base": "local repo frontend",
+ "viewports": {
+  "desktop": {
+   "perf": {
+    "loadMs": 467,
+    "nav": {
+     "dcl": 419,
+     "load": 420,
+     "fcp": 152,
+     "transferKB": 423,
+     "htmlKB": 423
+    },
+    "screenSwitchMs": {
+     "sale": 4,
+     "invoices": 29,
+     "products": 36,
+     "customers": 27,
+     "reports": 32,
+     "settings": 53,
+     "sale_2": 29
+    },
+    "addItemStress": {
+     "max": 3,
+     "avg": 2,
+     "rows": 5
+    },
+    "cls": 0.0032,
+    "longTasks": [
+     70,
+     54,
+     59,
+     71,
+     70,
+     63,
+     67,
+     69,
+     50,
+     69
+    ],
+    "lcp": 48,
+    "slowEvents": [],
+    "inpApprox": 0
+   },
+   "pages": {
+    "sale": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 20,
+     "tapUnder44": 18,
+     "tapSamples": [
+      "البيع 41x37",
+      "الفواتير 56x37",
+      "المنتجات 65x37",
+      "العملاء 53x37",
+      "التقارير 57x37",
+      "novaPurchasesNav 74x37",
+      "الإعدادات 65x37",
+      "btnRefreshApp 43x24",
+      "btnNewSale 109x34",
+      "holdCurrentInvoice 71x34"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 70,
+     "buttonStyleVariants": 7,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "purchases": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "المشتريات | NOVA Rx",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 8,
+     "controls": 23,
+     "tapUnder44": 13,
+     "tapSamples": [
+      "NOVA Rx 108x41",
+      "البيع 55x41",
+      "الفواتير 73x41",
+      "المنتجات 80x41",
+      "العملاء 68x41",
+      "التقارير 72x41",
+      "المشتريات 91x41",
+      "الإعدادات 84x41",
+      "modeAuto 90x36",
+      "modeManual 75x36"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 0,
+     "buttonStyleVariants": 8,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "products": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 8,
+     "controls": 12,
+     "tapUnder44": 11,
+     "tapSamples": [
+      "البيع 41x37",
+      "الفواتير 56x37",
+      "المنتجات 65x37",
+      "العملاء 53x37",
+      "التقارير 57x37",
+      "novaPurchasesNav 74x37",
+      "الإعدادات 65x37",
+      "btnRefreshApp 43x24",
+      "novaInventoryPurchase 170x39",
+      "novaInventoryLabels 161x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 72,
+     "buttonStyleVariants": 4,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "customers": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 10,
+     "tapUnder44": 9,
+     "tapSamples": [
+      "البيع 41x37",
+      "الفواتير 56x37",
+      "المنتجات 65x37",
+      "العملاء 53x37",
+      "التقارير 57x37",
+      "novaPurchasesNav 74x37",
+      "الإعدادات 65x37",
+      "btnRefreshApp 43x24",
+      "novaAiLaunch 139x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 72,
+     "buttonStyleVariants": 3,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "reports": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 9,
+     "tapUnder44": 9,
+     "tapSamples": [
+      "البيع 41x37",
+      "الفواتير 56x37",
+      "المنتجات 65x37",
+      "العملاء 53x37",
+      "التقارير 57x37",
+      "novaPurchasesNav 74x37",
+      "الإعدادات 65x37",
+      "btnRefreshApp 43x24",
+      "novaAiLaunch 139x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 72,
+     "buttonStyleVariants": 3,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settings": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 21,
+     "tapUnder44": 21,
+     "tapSamples": [
+      "البيع 41x37",
+      "الفواتير 56x37",
+      "المنتجات 65x37",
+      "العملاء 53x37",
+      "التقارير 57x37",
+      "novaPurchasesNav 74x37",
+      "الإعدادات 65x37",
+      "btnRefreshApp 43x24",
+      "عربي 75x40",
+      "English 75x40"
+     ],
+     "unlabeled": [
+      "SELECT#novaNewRole",
+      "BUTTON#novaNewOk"
+     ],
+     "hiddenTabbable": 72,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settingsEn": {
+     "dir": "ltr",
+     "notes": "التبديل للإنجليزية"
+    },
+    "invoices": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 16,
+     "tapUnder44": 13,
+     "tapSamples": [
+      "البيع 41x37",
+      "الفواتير 56x37",
+      "المنتجات 65x37",
+      "العملاء 53x37",
+      "التقارير 57x37",
+      "novaPurchasesNav 74x37",
+      "الإعدادات 65x37",
+      "btnRefreshApp 43x24",
+      "إعادة طباعة نسخة 104x19",
+      "مرتجع / إلغاء 72x19"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 72,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    }
+   },
+   "journeys": {
+    "quick_sale_barcode_keyboard": {
+     "name": "quick_sale_barcode_keyboard",
+     "clicks": 0,
+     "keys": 4,
+     "typed": 13,
+     "steps": [
+      "type 13 chars",
+      "key Enter",
+      "key F9",
+      "key Enter",
+      "key F2"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "البحث يأخذ التركيز تلقائياً عند الفتح: true",
+      "الدفع النقدي: المبلغ المستلم مُعبّأ تلقائياً = 12.00"
+     ],
+     "ms": 1561,
+     "total": 4
+    },
+    "quick_sale_name_mouse_discount_card": {
+     "name": "quick_sale_name_mouse_discount_card",
+     "clicks": 8,
+     "keys": 0,
+     "typed": 10,
+     "steps": [
+      "focus #mainSearchInput",
+      "type 8 chars",
+      "click نتيجة البحث",
+      "click زيادة الكمية",
+      "focus #inputPercentDiscount",
+      "type 2 chars",
+      "click #btnCheckout",
+      "click بطاقة",
+      "click #btnConfirmPayment",
+      "click فاتورة جديدة"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "حقل الكمية في الصف: غير موجود",
+      "زر طباعة الإيصال: true — الطباعة نفسها لا تُحتسب (نافذة المتصفح)"
+     ],
+     "ms": 1960,
+     "total": 8
+    },
+    "return": {
+     "name": "return",
+     "clicks": 5,
+     "keys": 0,
+     "typed": 7,
+     "steps": [
+      "click تبويب الفواتير",
+      "click مرتجع",
+      "كمية المرتجع",
+      "سبب المرتجع (إلزامي)",
+      "click تأكيد المرتجع"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "البحث عن الفاتورة: حقل بحث موجود = true",
+      "لا يوجد \"إرجاع كل الأصناف\" بنقرة واحدة؛ السبب إلزامي بنص حر بلا أسباب جاهزة"
+     ],
+     "ms": 1102,
+     "total": 5
+    },
+    "purchase_receiving": {
+     "name": "purchase_receiving",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب المشتريات",
+      "click بيانات تجريبية",
+      "click مراجعة قائمة التجهيز"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "تحديد الأصناف: true",
+      "استلام فاتورة المشتريات (قراءة الفاتورة) في تبويب المنتجات: زر \"✦ قراءة فاتورة مشتريات\" — لا يوجد مسار استلام مرتبط بأمر الشراء من نفس الشاشة"
+     ],
+     "ms": 2283,
+     "total": 3
+    },
+    "stock_lookup_low_stock": {
+     "name": "stock_lookup_low_stock",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 4,
+     "steps": [
+      "click تبويب المنتجات",
+      "focus #novaFilter",
+      "type 4 chars",
+      "click بطاقة المخزون المنخفض"
+     ],
+     "deadEnds": [
+      "بطاقة \"مخزون منخفض\" للعرض فقط — لا تفتح قائمة الأصناف الناقصة",
+      "النقر على بطاقة المخزون المنخفض لا يفعل شيئاً"
+     ],
+     "notes": [
+      "صفوف بعد البحث: 10",
+      "فلتر \"مخزون منخفض\" قابل للنقر: false",
+      "بعد النقر على البطاقة: الصفوف 21 → 21"
+     ],
+     "ms": 1287,
+     "total": 3
+    },
+    "customer_debt_payment": {
+     "name": "customer_debt_payment",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب العملاء",
+      "click صف عميل"
+     ],
+     "deadEnds": [
+      "لا توجد شاشة لسداد دين عميل آجل ولا رصيد مدين ظاهر في قائمة العملاء (بيع الآجل متاح من الدفع لكن بلا مسار تحصيل)"
+     ],
+     "notes": [
+      "صف العميل يفتح تفاصيل: true",
+      "ملف credit-ledger.js موجود كمنطق لكن غير موصول بواجهة: true"
+     ],
+     "ms": 748,
+     "total": 2
+    },
+    "prescription_chronic_patient": {
+     "name": "prescription_chronic_patient",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 4,
+     "steps": [
+      "click ربط عميل (F3)",
+      "type 4 chars",
+      "click عميل"
+     ],
+     "deadEnds": [
+      "لا يظهر للعميل أدوية مزمنة/آخر صرف/حساسية ولا زر \"إعادة صرف الروشتة السابقة\" في شاشة البيع"
+     ],
+     "notes": [
+      "الشريط الجانبي للعميل: العميل د. طارق المنصور Dr. Tariq Al-Mansoor 0501234567 VIP Gold الزيارات 24 النقاط 480 مشتريات سابقة ⌄"
+     ],
+     "ms": 1170,
+     "total": 2
+    },
+    "daily_report": {
+     "name": "daily_report",
+     "clicks": 1,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب التقارير"
+     ],
+     "deadEnds": [
+      "لا يوجد اختيار فترة (اليوم/الأسبوع/الشهر) ولا طباعة تقرير نهاية اليوم/إغلاق الوردية من التقارير"
+     ],
+     "notes": [
+      "مبيعات اليوم/صافي اليوم ظاهرة: true — صافي: true",
+      "طباعة/تصدير تقرير اليوم: false",
+      "اختيار فترة/تاريخ: false"
+     ],
+     "ms": 613,
+     "total": 1
+    },
+    "settings": {
+     "name": "settings",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب الإعدادات",
+      "click English",
+      "click عربي"
+     ],
+     "deadEnds": [],
+     "notes": [],
+     "ms": 1133,
+     "total": 3
+    }
+   },
+   "keyboard": {
+    "autofocusSearch": true,
+    "fKeysDocumented": [
+     "F2",
+     "F3",
+     "F4",
+     "F9"
+    ],
+    "hasF1Help": false,
+    "tabStopsInsideClosedModals": 11,
+    "tabOrder": [
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     }
+    ],
+    "focusIndicatorMissing": 0,
+    "focusOnInvisible": 0
+   },
+   "errors": [
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "mobile": {
+   "perf": {
+    "loadMs": 449,
+    "nav": {
+     "dcl": 412,
+     "load": 414,
+     "fcp": 136,
+     "transferKB": 423,
+     "htmlKB": 423
+    },
+    "screenSwitchMs": {
+     "sale": 24,
+     "invoices": 32,
+     "products": 32,
+     "customers": 31,
+     "reports": 32,
+     "settings": 58,
+     "sale_2": 23
+    },
+    "addItemStress": {
+     "max": 3,
+     "avg": 1,
+     "rows": 5
+    },
+    "cls": 0.0493,
+    "longTasks": [
+     72,
+     51,
+     57,
+     64,
+     59,
+     57,
+     58,
+     56,
+     56,
+     58,
+     59,
+     58
+    ],
+    "lcp": 0,
+    "slowEvents": [],
+    "inpApprox": 0
+   },
+   "pages": {
+    "sale": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 8,
+     "controls": 20,
+     "tapUnder44": 1,
+     "tapSamples": [
+      "inputFixedDiscount 44x44"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 81,
+     "buttonStyleVariants": 6,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "purchases": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "المشتريات | NOVA Rx",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 22,
+     "tapUnder44": 12,
+     "tapSamples": [
+      "NOVA Rx 108x41",
+      "البيع 47x38",
+      "الفواتير 62x38",
+      "المنتجات 71x38",
+      "العملاء 59x38",
+      "التقارير 63x38",
+      "المشتريات 80x38",
+      "الإعدادات 71x38",
+      "modeAuto 172x36",
+      "modeManual 172x36"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 0,
+     "buttonStyleVariants": 8,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "products": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 9,
+     "controls": 12,
+     "tapUnder44": 2,
+     "tapSamples": [
+      "novaInventoryPurchase 170x39",
+      "novaInventoryLabels 161x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 83,
+     "buttonStyleVariants": 4,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "customers": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 10,
+     "tapUnder44": 0,
+     "tapSamples": [],
+     "unlabeled": [],
+     "hiddenTabbable": 83,
+     "buttonStyleVariants": 3,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "reports": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 9,
+     "tapUnder44": 0,
+     "tapSamples": [],
+     "unlabeled": [],
+     "hiddenTabbable": 83,
+     "buttonStyleVariants": 3,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settings": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 21,
+     "tapUnder44": 10,
+     "tapSamples": [
+      "⚙️ إدارة المفاتيح 123x38",
+      "novaAuthName 300x40",
+      "novaAuthPw 300x40",
+      "novaAuthIn 300x38",
+      "novaNewName 300x40",
+      "novaNewPw 300x40",
+      "novaNewRole 300x40",
+      "novaNewOk 300x38",
+      "novaNearExpiryDays 110x38",
+      "إدارة الموردين 109x38"
+     ],
+     "unlabeled": [
+      "SELECT#novaNewRole",
+      "BUTTON#novaNewOk"
+     ],
+     "hiddenTabbable": 83,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settingsEn": {
+     "dir": "ltr",
+     "notes": "التبديل للإنجليزية"
+    },
+    "invoices": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 16,
+     "tapUnder44": 4,
+     "tapSamples": [
+      "إعادة طباعة نسخة 37x49",
+      "مرتجع / إلغاء 37x34",
+      "إعادة طباعة نسخة 37x49",
+      "مرتجع / إلغاء 37x34"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 83,
+     "buttonStyleVariants": 6,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    }
+   },
+   "journeys": {
+    "quick_sale_barcode_keyboard": {
+     "name": "quick_sale_barcode_keyboard",
+     "clicks": 0,
+     "keys": 4,
+     "typed": 13,
+     "steps": [
+      "type 13 chars",
+      "key Enter",
+      "key F9",
+      "key Enter",
+      "key F2"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "البحث يأخذ التركيز تلقائياً عند الفتح: true",
+      "الدفع النقدي: المبلغ المستلم مُعبّأ تلقائياً = 12.00"
+     ],
+     "ms": 1155,
+     "total": 4
+    },
+    "quick_sale_name_mouse_discount_card": {
+     "name": "quick_sale_name_mouse_discount_card",
+     "clicks": 8,
+     "keys": 0,
+     "typed": 10,
+     "steps": [
+      "focus #mainSearchInput",
+      "type 8 chars",
+      "click نتيجة البحث",
+      "click زيادة الكمية",
+      "focus #inputPercentDiscount",
+      "type 2 chars",
+      "click #btnCheckout",
+      "click بطاقة",
+      "click #btnConfirmPayment",
+      "click فاتورة جديدة"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "حقل الكمية في الصف: غير موجود",
+      "زر طباعة الإيصال: true — الطباعة نفسها لا تُحتسب (نافذة المتصفح)"
+     ],
+     "ms": 1554,
+     "total": 8
+    },
+    "return": {
+     "name": "return",
+     "clicks": 5,
+     "keys": 0,
+     "typed": 7,
+     "steps": [
+      "click تبويب الفواتير",
+      "click مرتجع",
+      "كمية المرتجع",
+      "سبب المرتجع (إلزامي)",
+      "click تأكيد المرتجع"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "البحث عن الفاتورة: حقل بحث موجود = true",
+      "لا يوجد \"إرجاع كل الأصناف\" بنقرة واحدة؛ السبب إلزامي بنص حر بلا أسباب جاهزة"
+     ],
+     "ms": 938,
+     "total": 5
+    },
+    "purchase_receiving": {
+     "name": "purchase_receiving",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب المشتريات",
+      "click بيانات تجريبية",
+      "click مراجعة قائمة التجهيز"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "تحديد الأصناف: false",
+      "استلام فاتورة المشتريات (قراءة الفاتورة) في تبويب المنتجات: زر \"✦ قراءة فاتورة مشتريات\" — لا يوجد مسار استلام مرتبط بأمر الشراء من نفس الشاشة"
+     ],
+     "ms": 2241,
+     "total": 3
+    },
+    "stock_lookup_low_stock": {
+     "name": "stock_lookup_low_stock",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 4,
+     "steps": [
+      "click تبويب المنتجات",
+      "focus #novaFilter",
+      "type 4 chars",
+      "click بطاقة المخزون المنخفض"
+     ],
+     "deadEnds": [
+      "بطاقة \"مخزون منخفض\" للعرض فقط — لا تفتح قائمة الأصناف الناقصة",
+      "النقر على بطاقة المخزون المنخفض لا يفعل شيئاً"
+     ],
+     "notes": [
+      "صفوف بعد البحث: 10",
+      "فلتر \"مخزون منخفض\" قابل للنقر: false",
+      "بعد النقر على البطاقة: الصفوف 21 → 21"
+     ],
+     "ms": 1204,
+     "total": 3
+    },
+    "customer_debt_payment": {
+     "name": "customer_debt_payment",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب العملاء",
+      "click صف عميل"
+     ],
+     "deadEnds": [
+      "لا توجد شاشة لسداد دين عميل آجل ولا رصيد مدين ظاهر في قائمة العملاء (بيع الآجل متاح من الدفع لكن بلا مسار تحصيل)"
+     ],
+     "notes": [
+      "صف العميل يفتح تفاصيل: true",
+      "ملف credit-ledger.js موجود كمنطق لكن غير موصول بواجهة: true"
+     ],
+     "ms": 701,
+     "total": 2
+    },
+    "prescription_chronic_patient": {
+     "name": "prescription_chronic_patient",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 4,
+     "steps": [
+      "click ربط عميل (F3)",
+      "type 4 chars",
+      "click عميل"
+     ],
+     "deadEnds": [
+      "نتيجة العميل لا يمكن لمسها على الموبايل (مغطاة)",
+      "لا يظهر للعميل أدوية مزمنة/آخر صرف/حساسية ولا زر \"إعادة صرف الروشتة السابقة\" في شاشة البيع"
+     ],
+     "notes": [
+      "الشريط الجانبي للعميل: العميل د. طارق المنصور Dr. Tariq Al-Mansoor 0501234567 VIP Gold الزيارات 24 النقاط 480 مشتريات سابقة ⌄"
+     ],
+     "ms": 4102,
+     "total": 2
+    },
+    "daily_report": {
+     "name": "daily_report",
+     "clicks": 1,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب التقارير"
+     ],
+     "deadEnds": [
+      "لا يوجد اختيار فترة (اليوم/الأسبوع/الشهر) ولا طباعة تقرير نهاية اليوم/إغلاق الوردية من التقارير"
+     ],
+     "notes": [
+      "مبيعات اليوم/صافي اليوم ظاهرة: true — صافي: true",
+      "طباعة/تصدير تقرير اليوم: false",
+      "اختيار فترة/تاريخ: false"
+     ],
+     "ms": 627,
+     "total": 1
+    },
+    "settings": {
+     "name": "settings",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب الإعدادات",
+      "click English",
+      "click عربي"
+     ],
+     "deadEnds": [],
+     "notes": [],
+     "ms": 1143,
+     "total": 3
+    }
+   },
+   "keyboard": {
+    "autofocusSearch": true,
+    "fKeysDocumented": [
+     "F2",
+     "F3",
+     "F4",
+     "F9"
+    ],
+    "hasF1Help": false,
+    "tabStopsInsideClosedModals": 11,
+    "tabOrder": [
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     }
+    ],
+    "focusIndicatorMissing": 0,
+    "focusOnInvisible": 0
+   },
+   "errors": [
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ "blockedWrites": []
+}
