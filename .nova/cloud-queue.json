@@ -1466,20 +1466,20 @@
     "N108",
     "N109"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "slot": "A",
    "dispatched_at": "2026-11-13T16:43:45+00:00",
    "pr": 285,
    "ci_dispatched": {
-    "sha": "3566736f0653bf81f7bf1a4484e3a1d5c5c02d8f",
+    "sha": "3bcae7d545e498053b3cfc2d62482fdfe259e149",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:38:37+00:00"
+    "at": "2026-11-13T16:45:20+00:00"
    }
   },
   {
@@ -1494,21 +1494,14 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "B",
    "dispatched_at": "2026-11-13T16:37:01+00:00",
    "pr": 286,
-   "ci_dispatched": {
-    "sha": "28431938daa41d0f3ea53f15529e68039d273c41",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T16:40:13+00:00"
-   }
+   "merged_at": "2026-11-13T16:45:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/286"
   },
   {
    "id": "N116",
@@ -1522,21 +1515,14 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T16:38:37+00:00",
    "pr": 287,
-   "ci_dispatched": {
-    "sha": "0acbaf19c98f946af97c5b6dfaba04a1ab01cc3a",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T16:40:13+00:00"
-   }
+   "merged_at": "2026-11-13T16:45:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/287"
   },
   {
    "id": "N117",
@@ -1596,9 +1582,11 @@
     "N108",
     "N109"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T16:45:20+00:00"
   },
   {
    "id": "N120",
@@ -1856,5 +1844,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T16:43:45+00:00"
+ "updated": "2026-11-13T16:45:20+00:00"
 }
