@@ -1818,11 +1818,21 @@
     "N124",
     "N125"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T18:23:31+00:00"
+   "dispatched_at": "2026-11-13T18:23:31+00:00",
+   "pr": 297,
+   "ci_dispatched": {
+    "sha": "8574a4cb96ee929d4e1bfa42a71a0928ded3418b",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T18:25:24+00:00"
+   }
   },
   {
    "id": "N127",
@@ -1837,9 +1847,11 @@
     "N124",
     "N125"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T18:25:24+00:00"
   },
   {
    "id": "N128",
@@ -1892,5 +1904,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T18:24:38+00:00"
+ "updated": "2026-11-13T18:25:24+00:00"
 }
