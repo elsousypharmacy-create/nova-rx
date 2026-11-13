@@ -37,6 +37,6 @@ Durable Objects as primary store (harder reporting/SQL); external Postgres/Supab
 
 ## Amendment 2026-11-13 — backups without R2
 R2 will not be enabled: the Cloudflare dashboard requires a payment card, and the owner declined. The R2 row above is retained as the rejected-for-now object-store option, not as the backup plan.
-- **Backups:** D1 Time Travel (30-day point-in-time) plus a daily `wrangler d1 export` uploaded as an encrypted GitHub Actions artifact (30-day retention). See `docs/backend/BACKUP-RESTORE.md`.
+- **Backups:** D1 Time Travel (30-day point-in-time) plus a daily `wrangler d1 export` uploaded as an encrypted GitHub Actions artifact (30-day retention). See `docs/ops/backup-restore.md`.
 - **Before any staging/production migration:** record a Time Travel bookmark, then apply, then verify. Do not take an R2 export.
 - **Private files:** deferred or size-capped in D1 until a card-free object store exists. Do not add an R2 binding.

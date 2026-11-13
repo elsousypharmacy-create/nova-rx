@@ -26,4 +26,4 @@ Each environment has its own bindings in `backend/wrangler.toml` (placeholder id
 4. The client feature flag defaults OFF; turning it off returns the app to local mode instantly.
 
 ## Backups
-R2 is not bound in any environment. Use D1 Time Travel (bookmark before migrate) and the daily encrypted GitHub artifact workflow. See `docs/backend/BACKUP-RESTORE.md`.
+R2 is not bound in any environment. Use D1 Time Travel (bookmark before migrate) and the daily encrypted GitHub artifact workflow. See `docs/ops/backup-restore.md`.

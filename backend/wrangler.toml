@@ -2,7 +2,7 @@
 # until those environments are created. Do not deploy production without a later owner gate.
 # R2 is not used: enabling it requires a Cloudflare billing profile (payment card) and the
 # owner declined. Backups are D1 Time Travel + the daily encrypted GitHub artifact workflow
-# (docs/backend/BACKUP-RESTORE.md). Do not add r2_buckets bindings.
+# (docs/ops/backup-restore.md). Do not add r2_buckets bindings.
 account_id = "7140d9b8f71fb0854b43e50172a7146c"
 name = "nova-rx-api"
 main = "src/index.js"

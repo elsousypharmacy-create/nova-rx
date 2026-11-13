@@ -8,13 +8,16 @@ on:
       - 'backend/**'
       - 'backend-client.js'
       - 'tests/unit/backend-*.check.mjs'
+      - 'scripts/d1-*.sh'
       - '.github/workflows/backend-unit.yml'
+      - '.github/workflows/d1-backup.yml'
   push:
     branches: [main]
     paths:
       - 'backend/**'
       - 'backend-client.js'
       - 'tests/unit/backend-*.check.mjs'
+      - 'scripts/d1-*.sh'
   workflow_dispatch:
 
 permissions:

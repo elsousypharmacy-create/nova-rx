@@ -25,6 +25,6 @@ Rollback is the one case where deploying an older version is intended; the stale
 ## Data rollback (D1 Time Travel)
 Worker code rollback (above) does not undo a bad migration's data. Migrations are additive and are not rolled back with DROP/TRUNCATE/DELETE.
 - Before each migrate/deploy, record `wrangler d1 time-travel info <db> --json` (the staging deploy script does this).
-- Owner-approved in-place restore: `wrangler d1 time-travel restore <db> --bookmark=...` (staging first). This overwrites the database. See `docs/backend/BACKUP-RESTORE.md`.
+- Owner-approved in-place restore: `wrangler d1 time-travel restore <db> --bookmark=...` (staging first). This overwrites the database. See `docs/ops/backup-restore.md`.
 - Off-platform copy: decrypt the latest GitHub Actions artifact into a **new** database only, never in place.
 R2 is not used.
