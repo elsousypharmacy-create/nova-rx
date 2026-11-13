@@ -2321,7 +2321,7 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "failed",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2363,12 +2363,22 @@
    "brief": "Files: index.html (receipt template, one date/number formatter), tests/ux/receipt-format.mjs (new). Fix: payment label from a map {cash:'نقدي',card:'بطاقة',credit:'آجل'} (no «(Credit) (credit 12.00)»), hide the discount row when 0, one DD/MM/YYYY HH:mm formatter with Latin digits used by receipt, invoices list and reports, Arabic plural helper («صنف واحد» / «صنفان» / «3 أصناف») for the subtotal line. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-format.mjs asserts receipt text contains no Latin 'credit'/'Credit', no «-0.00», dates match /\\d{2}\\/\\d{2}\\/\\d{4}/ with Latin digits in receipt and invoices table, subtotal text for 1/2/3 lines is «صنف واحد»/«صنفان»/«3 أصناف»; unit tests for the plural/date helpers.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:06:20+00:00"
+   "dispatched_at": "2026-11-13T22:06:20+00:00",
+   "pr": 325,
+   "ci_dispatched": {
+    "sha": "27dffa11dfc03f02dc8ee3771f2fa614b37bb2e6",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:09:02+00:00"
+   }
   },
   {
    "id": "UX25",
@@ -2377,10 +2387,12 @@
    "brief": "Files: index.html (toast container CSS/JS, toast messages for add-item), tests/ux/toast-position.mjs (new). On mobile the toast covers the top nav tabs; on desktop it sits over the checkout footer next to «إلغاء (Esc)». Fix: bottom-center toast above the sticky pay bar (mobile) / above modal footers via z-index and offset, role=status aria-live=polite, max 1 line with ellipsis for product names (e.g. «أُضيف: أوجمنتين 1 جم»), keep ~2.5s. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/toast-position.mjs at 390x844 and 1366x768 asserts the toast bounding box does not intersect .nova-tab buttons, #btnConfirmPayment, #btnCancelCheckout; text length <=40 chars; aria-live present; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T22:09:02+00:00"
   },
   {
    "id": "UX24",
@@ -2419,5 +2431,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:06:20+00:00"
+ "updated": "2026-11-13T22:09:02+00:00"
 }
