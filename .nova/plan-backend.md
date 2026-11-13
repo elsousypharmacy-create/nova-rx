@@ -28,7 +28,7 @@ Rules for every task: free tier only, no paid APIs, no new secrets, mocks + disa
 - **GATE-13** (owner_gate) GATE-11 staging backend deploy: create D1/KV/R2 (free tier), apply migrations to staging, set Worker secrets from existing GitHub secret names, deploy nova-rx-api staging with backup + rollback, smoke /health, keep frontend flag OFF.
 
 ## Phase 14 — Backup, restore, rollback, monitoring (OPS)
-- **N106** Scheduled backup to R2 — Scheduled handler exporting all tenant tables to R2 as JSON snapshot + manifest with checksums and row counts; retention N days; mock R2 in tests.
+- **N106** Free D1 backups (Time Travel + encrypted export artifact; R2 unavailable) — Scheduled handler exporting all tenant tables to R2 as JSON snapshot + manifest with checksums and row counts; retention N days; mock R2 in tests.
 - **N107** Restore drill into a fresh database — Restore a snapshot into a NEW database only (never in place), verify counts + checksums, report. tools/backend/restore-drill.mjs runs it locally with node:sqlite. Tests.
 - **N108** Rollback + deploy record — docs/backend/ROLLBACK.md; deploy/version record table + endpoint; script to compute the previous good version; integrates stale-artifact guard. Tests.
 - **N109** Health, status + structured logs — GET /api/v1/status (db, kv, r2, queue depth, last backup age), structured JSON logs with redaction, error counters. Tests.
