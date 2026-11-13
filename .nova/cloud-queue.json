@@ -2042,22 +2042,15 @@
    "brief": "In index.html return dialog (code near data-return / novaRetOk / novaRetReason, ~lines 4845-4870): add a «إرجاع كل الأصناف» button that fills all remaining quantities, and reason chips (عيب/تالف، خطأ في الصرف، رجوع العميل، انتهاء صلاحية) that fill #novaRetReason with one tap (free text still allowed, reason stays mandatory); focus the first control on open; Enter on the reason confirms when valid. Add tests/ux/return-fast.mjs (Playwright): make a sale, open invoices, then return everything with <= 4 clicks total (فواتير, مرتجع, إرجاع الكل + سبب جاهز is 2, تأكيد) and assert the refund amount equals the invoice total and the existing ui-pos04-returns-cancel.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/return-fast.mjs passes with click count <= 5 including the tab (was 5 clicks + 7 typed chars); node tests/ui-pos04-returns-cancel.mjs unchanged result.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "B",
    "dispatched_at": "2026-11-13T18:42:21+00:00",
    "pr": 307,
-   "ci_dispatched": {
-    "sha": "6c60d13a79c31d0e7b103076e990d711f5685c90",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T18:45:15+00:00"
-   }
+   "merged_at": "2026-11-13T18:50:00+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/307"
   },
   {
    "id": "UX13",
@@ -2146,5 +2139,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:48:19+00:00"
+ "updated": "2026-11-13T18:50:00+00:00"
 }
