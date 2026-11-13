@@ -83,7 +83,462 @@
    "pr": 211,
    "merged_at": "2026-11-13T01:53:49+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/211"
+  },
+  {
+   "id": "N43",
+   "phase": 6,
+   "title": "OFF-04 scheduled encrypted backup and restore drill",
+   "brief": "Extend the existing on-device export/import with a scheduled encrypted local backup and a periodic restore drill. Document a measured RPO≤15min and RTO≤60min, and gate owner download behind a permission/re-auth check. Do not redo N10 from scratch. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N43.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N47",
+   "phase": 6,
+   "title": "SEC-04 local append-only audit log",
+   "brief": "Record an append-only on-device audit log with actor, time, before/after values, reason, and requestId. Financial log rows cannot be deleted; secrets and sensitive fields must be redacted. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N47.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N52",
+   "phase": 7,
+   "title": "CRM-04 prescriptions and follow-up",
+   "brief": "Attach private prescription files to a visit and its items, with opt-in reminder flags and a consent state, plus an access audit. No automatic therapy decisions or refill. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N52.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N43",
+    "N47"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N53",
+   "phase": 7,
+   "title": "CRM-05 customer service history",
+   "brief": "Search a customer's history without slowing the sale screen; support complaint and return handling. Report retention and average order without mixing a visit with an invoice. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N53.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N43",
+    "N47"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N54",
+   "phase": 7,
+   "title": "CLN-01 short patient file",
+   "brief": "Capture a short local patient file: age and weight with units, allergies, pregnancy/lactation, and required questions by case. Unknown must stay unknown; access and retention are limited on-device. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N54.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N43",
+    "N47"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N55",
+   "phase": 7,
+   "title": "CLN-02 local documented drug rules",
+   "brief": "Ship a local, versioned drug-rules set with source, edition, and date per substance/interaction, and keep provenance for reviewed corrections. Do not alter the original STOCK LIVE catalog; no paid licensed API. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N55.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N43",
+    "N47"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N57",
+   "phase": 7,
+   "title": "CLN-04 in-sale sticker sheet",
+   "brief": "Complete the in-sale 2×3 (6) sticker sheet with navigation, dimming of unselected cells, age in years, weight in kg, and remembered sizes. Support print-only or print-and-pay only after approval; do not regress phase 1 sticker tests. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N57.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N43",
+    "N47"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N58",
+   "phase": 7,
+   "title": "CLN-05 local/mock clinical assistant",
+   "brief": "Add a unified per-invoice assistant call with timeout, limited retry, a budget cap, output validation, and a local-rules fallback. Pharmacist approval is required before any patient instructions; mock the model, no paid AI. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N58.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N43",
+    "N47"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N65",
+   "phase": 8,
+   "title": "OPS-01 staff and attendance",
+   "brief": "Give each employee a stable local id, shifts, and clock-in/out with hours and variances in Africa/Cairo time. Review and correction need a policy; fingerprint hardware may be mocked. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N65.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N52",
+    "N53",
+    "N54",
+    "N55",
+    "N57",
+    "N58"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N66",
+   "phase": 8,
+   "title": "OPS-02 fair operational KPIs",
+   "brief": "Define local KPIs for sales, net, invoices, average, visits, new customers, and clocked time, each with an explicit source and denominator. No ambiguous auto-attribution or visual scoring without evidence. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N66.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N52",
+    "N53",
+    "N54",
+    "N55",
+    "N57",
+    "N58"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N67",
+   "phase": 8,
+   "title": "OPS-04 tasks and approvals",
+   "brief": "Add local tasks for discount, adjustment, shortage, and delay requests, each with an owner, due date, reason, and a clear approval path. The audit trail must block closing an incomplete task. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N67.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N52",
+    "N53",
+    "N54",
+    "N55",
+    "N57",
+    "N58"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N70",
+   "phase": 9,
+   "title": "BI-02 owner dashboard",
+   "brief": "Build a compact owner dashboard for today, month, team, stock, shortages, and alerts, marking data as available, stale, or unknown. Refresh must keep the current page and period; layout must work on a phone. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N70.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N71",
+   "phase": 9,
+   "title": "BI-03 inventory analysis",
+   "brief": "Add local ABC/FSN, dead stock, shortage, expiry, turnover, and days-of-cover views. Exclude incomplete days and promo demand from the baseline, and explain each recommendation. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N71.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N72",
+   "phase": 9,
+   "title": "BI-04 reports and export",
+   "brief": "Add filterable, paged, permission-aware reports with Arabic CSV/XLSX/PDF export. Heavy jobs can run in a local background worker, with data limits and a share-review step. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N72.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N73",
+   "phase": 9,
+   "title": "BI-05 alerts and project roadmap",
+   "brief": "Configurable alert thresholds must not repeat noisily. Render a roadmap from a published JSON file with evidence and dates, and keep a weighted acceptance percentage separate from a build percentage. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N73.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N74",
+   "phase": 9,
+   "title": "MSG-02 local unified inbox UI",
+   "brief": "Build a local unified inbox with conversation view, assignee, human handoff, and customer/order links, plus send/delivered/failed states from a mock source. State must survive refresh; do not send real WhatsApp messages. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N74.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N75",
+   "phase": 9,
+   "title": "MSG-03 messaging policy settings",
+   "brief": "Add local settings for opt-in, templates, country/channel messaging windows, and spend limits. Do not allow campaigns or automatic sends without an explicit permission, and do not call a real channel API. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N75.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N76",
+   "phase": 9,
+   "title": "MSG-04 prescription-to-order review UI",
+   "brief": "Support a local flow: private prescription image, mock extract, pharmacist review, item/alternative match, quote, and customer approval before reserve/pay. No real WhatsApp or paid AI. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N76.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N65",
+    "N66",
+    "N67"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N78",
+   "phase": 10,
+   "title": "UX-01 Arabic RTL design system",
+   "brief": "Apply Cairo, RTL, clear Arabic copy, WCAG AA contrast, and dark/light tokens, with shared components and messages and no decorative elements that block use. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N78.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N79",
+   "phase": 10,
+   "title": "UX-02 devices and accessibility",
+   "brief": "Fit Xiaomi Pad 5 landscape 1280×800, iPhone, and desktop without clipping or horizontal scroll. Touch targets ≥44px, visible keyboard focus, and basic screen-reader labels. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N79.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N80",
+   "phase": 10,
+   "title": "UX-03 performance budget",
+   "brief": "Meet local p95 interaction ≤100ms, search ≤500ms (local or mock), and invoice save ≤1s on the reference fixture, plus LCP≤2.5s on a documented device/network. Time spent in an external provider must be reported separately. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N80.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N81",
+   "phase": 10,
+   "title": "UX-04 load fixtures and measurement",
+   "brief": "Add a reference load fixture (up to 10 branches × 3 cashiers, 100k items, 1m movements as local data or a generator) and record warm/cold p50/p95 and error rate. Profile before choosing optimizations. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N81.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N82",
+   "phase": 10,
+   "title": "UX-05 learnability session kit",
+   "brief": "Provide a short training path so a new pharmacist can search, sell, return, and receive without help after ≤30 minutes, and document errors and step counts. Include a tablet-flow checklist for Ahmed's acceptance. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N82.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N83",
+   "phase": 10,
+   "title": "INT-04 local printers/scanners support",
+   "brief": "Publish a supported-device list and tests for barcode, printer, invoice, and sticker output. An optional local print/scan gateway may be mocked with a contract and permissions; a device failure must not double a sale. No paid cloud print. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N83.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N84",
+   "phase": 10,
+   "title": "QA-01 risk test matrix",
+   "brief": "Add a risk test matrix covering money, stock, permissions, concurrency, sync, returns, and unknown/zero cases, with fixtures that contain no private data. Tests must fail when those rules break. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N84.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N85",
+   "phase": 10,
+   "title": "QA-02 end-to-end flow tests",
+   "brief": "Automate a local import→purchase→receive→sale→return→collect→close flow with assertions on stock, journal, and payment. Test code must not be copied into production logic. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N85.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N86",
+   "phase": 10,
+   "title": "QA-04 release gate checks",
+   "brief": "Add a release-gate checklist and automated checks: no open P0/P1, and a tried local migration/rollback/restore drill, plus slots for SHA, CI run, viewport, printer, and owner approval. Green CI alone is not enough. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N86.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N87",
+   "phase": 10,
+   "title": "QA-05 manuals and short task videos",
+   "brief": "Write pharmacist, cashier, owner, operations, and support guides, plus short task videos or screen recordings for the main jobs. Note that tasks become verified only after the store owner accepts the results. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N87.md containing 'NOOP-FREEZE <reason>' instead.",
+   "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N70",
+    "N71",
+    "N72",
+    "N73",
+    "N74",
+    "N75",
+    "N76"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T03:57:24+00:00"
+ "updated": "2026-11-13T04:08:02+00:00"
 }
