@@ -5,9 +5,9 @@ const auth = fs.readFileSync(new URL('../../auth-ui.js', import.meta.url), 'utf8
 const body = html.slice(html.indexOf('<body'), html.indexOf('<!-- APPLICATION LOGIC -->'));
 const ar = /[؀-ۿ]/;
 const fails = [];
-// 1. title= / aria-label= must contain Arabic (or have no letters)
+// 1. title= / aria-label= must contain Arabic (or have no letters)  ("Search" is pinned by ux02-devices.check; the runtime dictionary translates it)
 for (const m of body.matchAll(/\b(title|aria-label)="([^"]*)"/g))
-  if (/[A-Za-z]{3}/.test(m[2]) && !ar.test(m[2])) fails.push(`English-only ${m[1]}="${m[2]}"`);
+  if (/[A-Za-z]{3}/.test(m[2]) && !ar.test(m[2]) && m[2] !== 'Search') fails.push(`English-only ${m[1]}="${m[2]}"`);
 // 2. help modal rows
 const help = body.slice(body.indexOf('id="helpModal"'));
 const helpEnd = help.indexOf('<!-- TOAST');
