@@ -2008,23 +2008,15 @@
    "brief": "In index.html (.nova-tab ~line 1385 min-height:37px, .nova-return-btn, products action buttons #novaInventoryPurchase/#novaInventoryLabels, settings inputs and buttons #novaAuthName/#novaAuthPw/#novaAuthIn/#novaNewName) and purchases.css (nav links 38-41px): raise to min-height:44px on touch widths (<=1050px) and 40px+ with 44px hit area on desktop via padding or ::after; keep the nav a single line (horizontal scroll from UX2). Add tests/ux/tap-targets.mjs (Playwright 390x844 and 1366x768): for sale, products, customers, reports, invoices, settings and /purchases assert 0 visible interactive controls under 44px height at 390px (ignore inline text links) and that the nav does not wrap. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/tap-targets.mjs passes (was 18/11/9/9/13/21 controls under 44px on desktop screens, 12 on purchases); node tests/ux/mobile-nav.check.mjs still passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T18:37:00+00:00",
    "pr": 306,
-   "ci_dispatched": {
-    "sha": "2b210fc00e7bada16e3fed9e7a76d20152ac3e0e",
-    "wf": [
-     "playwright-smoke.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T18:40:51+00:00"
-   }
+   "merged_at": "2026-11-13T18:45:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/306"
   },
   {
    "id": "UX15",
@@ -2057,12 +2049,22 @@
    "brief": "In index.html return dialog (code near data-return / novaRetOk / novaRetReason, ~lines 4845-4870): add a «إرجاع كل الأصناف» button that fills all remaining quantities, and reason chips (عيب/تالف، خطأ في الصرف، رجوع العميل، انتهاء صلاحية) that fill #novaRetReason with one tap (free text still allowed, reason stays mandatory); focus the first control on open; Enter on the reason confirms when valid. Add tests/ux/return-fast.mjs (Playwright): make a sale, open invoices, then return everything with <= 4 clicks total (فواتير, مرتجع, إرجاع الكل + سبب جاهز is 2, تأكيد) and assert the refund amount equals the invoice total and the existing ui-pos04-returns-cancel.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/return-fast.mjs passes with click count <= 5 including the tab (was 5 clicks + 7 typed chars); node tests/ui-pos04-returns-cancel.mjs unchanged result.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "B",
-   "dispatched_at": "2026-11-13T18:42:21+00:00"
+   "dispatched_at": "2026-11-13T18:42:21+00:00",
+   "pr": 307,
+   "ci_dispatched": {
+    "sha": "6c60d13a79c31d0e7b103076e990d711f5685c90",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T18:45:15+00:00"
+   }
   },
   {
    "id": "UX13",
@@ -2085,10 +2087,12 @@
    "brief": "In index.html products page renderer (search «مخزون منخفض» / novaFilter): make the low-stock KPI card a real <button> that filters the table to stock < 30 (toggle, aria-pressed, shows an active state and a «عرض الكل» chip); colour/badge the رصيد cell red for low stock; keep «بحث» focus; hide the empty «العبوة» column when every value is «—» or fill it from packaging (stripsPerBox x unitsPerStrip); show Arabic category labels (map Chronic->مزمن, Analgesic->مسكنات, Antibiotic->مضاد حيوي, Lipid->دهون, GI Care->جهاز هضمي) via the existing tr()/i18n helper. Add tests/ux/low-stock-filter.mjs (Playwright): one click on the KPI filters rows to only stock<30 (rows < 21) and the rows carry the badge; click again restores 21 rows. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/low-stock-filter.mjs passes: 1 click reaches the low-stock list (was: no way); no English category labels remain in the Arabic products table.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro.json"
+   "source": "inbox/ux-pro.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-13T18:45:15+00:00"
   },
   {
    "id": "UX11",
@@ -2127,5 +2131,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:43:59+00:00"
+ "updated": "2026-11-13T18:45:15+00:00"
 }
