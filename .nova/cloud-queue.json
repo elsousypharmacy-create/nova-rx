@@ -712,6 +712,779 @@
    "pr": 221,
    "merged_at": "2026-11-13T05:39:44+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/221"
+  },
+  {
+   "id": "N89",
+   "phase": 11,
+   "title": "FND-01/02 data map + storage ADR",
+   "brief": "Write docs/backend/ADR-001-storage.md: chosen stack Cloudflare Workers + D1 (SQL, transactions via batch) + KV (sessions/rate limits/flags) + R2 (backups, private files), free-tier limits and when they bite, migration+rollback approach. Write docs/backend/DATA-MAP.md mapping each local module (offline-outbox.js, stock-ledger.js, journal-ledger.js, credit-ledger.js, customer-directory.js, purchase-orders.js, auth-local.js, audit-local.js …) to its future table owner and read/write path. Create docs/backend/NEEDS-OWNER.md and docs/backend/SECRETS-MAP.md (secret NAMES only: CLOUDFLARE_API_TOKEN deploy, NOVA_API_PIN legacy owner bootstrap, NOVA_INGEST_SECRET signed ingest/webhooks, KIMI_MODEL_API_KEY optional AI (paid, flag off), AUMET_*/PO_* supplier connectors server-side only). Docs only.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N90",
+   "phase": 11,
+   "title": "Backend Worker skeleton + error envelope",
+   "brief": "Create backend/src/index.js (module Worker) with a tiny router, GET /api/v1/health and /api/v1/version, JSON error envelope {ok:false, code, message_ar, requestId}, CORS allow-list from env, request id generation. backend/wrangler.toml template named nova-rx-api with D1/KV/R2 binding NAMES and placeholder ids, envs dev/staging/production. backend/README.md. Test tests/unit/backend-router.check.mjs.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N91",
+   "phase": 11,
+   "title": "D1 migration runner + identity schema",
+   "brief": "backend/migrations/0001_identity.sql: tenants, branches, users, roles, user_roles, sessions (token_hash only), devices, schema_migrations. backend/src/db/migrate.js applies numbered migrations in order, idempotent, records applied versions. Test tests/unit/backend-migrations.check.mjs with node:sqlite: apply twice = no change, FK + unique constraints enforced.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N92",
+   "phase": 11,
+   "title": "Catalog + inventory schema",
+   "brief": "backend/migrations/0002_catalog_inventory.sql: products, product_barcodes, product_units, inventory_batches, inventory_movements (append-only ledger; trigger blocks UPDATE/DELETE), stock_counts, stock_transfers; every row tenant_id/branch_id, money as integer minor units. Extend migration test for invariants.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N93",
+   "phase": 11,
+   "title": "Sales, purchasing, finance + audit schema",
+   "brief": "backend/migrations/0003_sales_finance.sql: customers, sales, sale_items, payments, sale_returns(+items), suppliers, purchase_orders(+items), receipts, cashier_sessions, journal_entries/lines, audit_logs (append-only trigger), idempotency_keys unique per tenant. Tests: returns cannot exceed sold qty (constraint or service check documented), audit_logs cannot be updated/deleted.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N94",
+   "phase": 11,
+   "title": "FND-04 API contract + idempotency + pagination",
+   "brief": "docs/backend/openapi.yaml for v1 (health, auth, sync, sales, stock). backend/src/http/idempotency.js (Idempotency-Key required on writes, replay returns stored response), pagination (cursor, max 200), request timeouts helper. Tests tests/unit/backend-http.check.mjs.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N95",
+   "phase": 11,
+   "title": "FND-05 environments + release record",
+   "brief": "backend/src/version.js exposing build sha/version; docs/backend/ENVIRONMENTS.md (dev/staging/production separation, numbered migrations, deploy + rollback record); tools/backend/check-migrations.mjs that lints numbering gaps and destructive SQL; tools/backend/stale-artifact-guard.mjs refusing a deploy whose version is older than the recorded live one. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N96",
+   "phase": 12,
+   "title": "SEC-01 login + sessions",
+   "brief": "backend/src/auth: PBKDF2 (WebCrypto) password hashing, POST /api/v1/auth/login|logout|refresh, session token stored hashed (KV/D1), expiry + revoke + trusted devices, re-auth requirement for exports/sensitive changes. One-time owner bootstrap uses env binding NOVA_API_PIN (existing GitHub secret name) only while no owner user exists. Tests with mock KV.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N89",
+    "N90",
+    "N91",
+    "N92",
+    "N93",
+    "N94",
+    "N95"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N97",
+   "phase": 12,
+   "title": "SEC-02 server permission matrix",
+   "brief": "Port roles owner/manager/pharmacist/cashier/stock/accountant/delivery from auth-permissions.js into backend/src/auth/permissions.js; middleware checks every action server-side, blocks privilege escalation, logs denials. Tests per role.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N89",
+    "N90",
+    "N91",
+    "N92",
+    "N93",
+    "N94",
+    "N95"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N98",
+   "phase": 12,
+   "title": "SEC-03 tenant + branch isolation",
+   "brief": "tenantId/branchId only from the authenticated session; db helper that always scopes queries/exports/files by tenant (reuse ideas from worker/security/tenant-scope.js). Tests: cross-tenant read/write/export attempts fail with no data leak.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N89",
+    "N90",
+    "N91",
+    "N92",
+    "N93",
+    "N94",
+    "N95"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N99",
+   "phase": 12,
+   "title": "SEC-04 server audit log",
+   "brief": "backend/src/audit.js: append-only actor/time/before/after/reason/requestId with secret + phone redaction (reuse worker/security/audit-log.js rules); wired into auth + permission denials. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N89",
+    "N90",
+    "N91",
+    "N92",
+    "N93",
+    "N94",
+    "N95"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N100",
+   "phase": 12,
+   "title": "SEC-05 hardening",
+   "brief": "Security headers (CSP, HSTS, no-sniff), CSRF (same-origin + double-submit), KV token-bucket rate limits (mock KV in tests), log redaction, data export endpoint (owner, re-auth), retention policy doc docs/backend/RETENTION.md. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N89",
+    "N90",
+    "N91",
+    "N92",
+    "N93",
+    "N94",
+    "N95"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N101",
+   "phase": 13,
+   "title": "Sync push endpoint",
+   "brief": "POST /api/v1/sync/push accepting offline-outbox.js operations with idempotency, per-op result, conflict policy (ledgers append-only; master data last-writer-wins with version check) documented in docs/backend/SYNC.md. Tests with node:sqlite.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N96",
+    "N97",
+    "N98",
+    "N99",
+    "N100"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N102",
+   "phase": 13,
+   "title": "Sync pull change feed",
+   "brief": "GET /api/v1/sync/pull?cursor= per tenant/branch change feed, pagination, tombstones as soft flags (no hard delete). Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N96",
+    "N97",
+    "N98",
+    "N99",
+    "N100"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N103",
+   "phase": 13,
+   "title": "Transactional sales + stock writes",
+   "brief": "Sale, payment, return and stock movement services using D1 batch semantics (emulated in tests): all-or-nothing, returns ≤ sold, stock from ledger, completed financial records reversed not deleted. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N96",
+    "N97",
+    "N98",
+    "N99",
+    "N100"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N104",
+   "phase": 13,
+   "title": "Frontend backend-client behind flag",
+   "brief": "backend-client.js (root) + small settings hook: flag novaBackend.enabled default false and backend URL setting; when off zero fetches; when on pushes outbox and pulls feed, on any error stays local and queues. Must not change current UI when off. Test tests/unit/backend-client.check.mjs (mock fetch, verify zero calls when off).\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N96",
+    "N97",
+    "N98",
+    "N99",
+    "N100"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N105",
+   "phase": 13,
+   "title": "Local data export + dry-run import",
+   "brief": "Frontend tool to export local data to a versioned JSON bundle; POST /api/v1/import/dry-run returns a diff/reconciliation report and never writes; real import endpoint requires owner + explicit confirm flag and only inserts into an empty tenant. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N96",
+    "N97",
+    "N98",
+    "N99",
+    "N100"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "GATE-13",
+   "phase": 13,
+   "title": "GATE-11 staging backend deploy",
+   "brief": "GATE-11 staging backend deploy: create D1/KV/R2 (free tier), apply migrations to staging, set Worker secrets from existing GitHub secret names, deploy nova-rx-api staging with backup + rollback, smoke /health, keep frontend flag OFF.",
+   "acceptance": "Owner/Nova only; not run by cloud tasks.",
+   "after": [
+    "N101",
+    "N102",
+    "N103",
+    "N104",
+    "N105"
+   ],
+   "status": "owner_gate",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N106",
+   "phase": 14,
+   "title": "Scheduled backup to R2",
+   "brief": "Scheduled handler exporting all tenant tables to R2 as JSON snapshot + manifest with checksums and row counts; retention N days; mock R2 in tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N101",
+    "N102",
+    "N103",
+    "N104",
+    "N105"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N107",
+   "phase": 14,
+   "title": "Restore drill into a fresh database",
+   "brief": "Restore a snapshot into a NEW database only (never in place), verify counts + checksums, report. tools/backend/restore-drill.mjs runs it locally with node:sqlite. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N101",
+    "N102",
+    "N103",
+    "N104",
+    "N105"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N108",
+   "phase": 14,
+   "title": "Rollback + deploy record",
+   "brief": "docs/backend/ROLLBACK.md; deploy/version record table + endpoint; script to compute the previous good version; integrates stale-artifact guard. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N101",
+    "N102",
+    "N103",
+    "N104",
+    "N105"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N109",
+   "phase": 14,
+   "title": "Health, status + structured logs",
+   "brief": "GET /api/v1/status (db, kv, r2, queue depth, last backup age), structured JSON logs with redaction, error counters. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N101",
+    "N102",
+    "N103",
+    "N104",
+    "N105"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "GATE-14",
+   "phase": 14,
+   "title": "GATE-14 production backend deploy + first restore drill on staging, then enable novaBackend flag on one owner device only.",
+   "brief": "GATE-14 production backend deploy + first restore drill on staging, then enable novaBackend flag on one owner device only.",
+   "acceptance": "Owner/Nova only; not run by cloud tasks.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "owner_gate",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N110",
+   "phase": 15,
+   "title": "INT-01 bridge to current system",
+   "brief": "Read-only bridge adapter for the existing Sheets/Apps Script backend: id mapping table (migration additive), ownership per field, reconciliation report, flag OFF, mock adapter in tests. NEEDS-OWNER: Pharmacy Backend URL + bridge token (not in GitHub secrets). Do not modify the pharmacy repo.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N111",
+   "phase": 15,
+   "title": "INT-02 integration API + signed webhooks",
+   "brief": "Scoped API keys (stored hashed), outbound webhooks signed HMAC-SHA256 with env binding NOVA_INGEST_SECRET (existing secret name), timestamp + nonce replay protection, sandbox tenant + example connector doc. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N112",
+   "phase": 15,
+   "title": "INT-03 balance migration dry run",
+   "brief": "Opening balances import: sample → dry run → cutoff approval record; match items/units/stock/suppliers/credit; difference report and rollback plan; never overwrites. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N113",
+   "phase": 15,
+   "title": "INT-05 country adapters",
+   "brief": "Tax/currency/locale adapter interface; SA VAT 15% and EG adapters; e-invoice (ZATCA) adapter stub flag OFF. NEEDS-OWNER: ZATCA onboarding/CSID + legal review. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N114",
+   "phase": 15,
+   "title": "MSG-01 reliable webhook intake",
+   "brief": "WhatsApp Cloud API webhook receiver: GET verify, X-Hub-Signature-256 check, dedup by Meta message id, queue table + retry + dead-letter; mock in tests; flag OFF. NEEDS-OWNER: WA_TOKEN, WA_PHONE_ID, WA_APP_SECRET, WA_VERIFY_TOKEN (Meta number migration pending). Reuse integrations/whatsapp/secure-bridge.mjs ideas.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N115",
+   "phase": 15,
+   "title": "MSG-02 unified inbox server",
+   "brief": "Conversations, assignment, human handoff, link to customer/order, delivery status from source, state survives refresh; unified-inbox.js reads API only when flag on. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N116",
+   "phase": 15,
+   "title": "MSG-03 messaging policies",
+   "brief": "Opt-in, templates, 24h window per country/channel, spend limits, no automatic sending or campaigns without explicit approval; reuse msg-policy.js. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N117",
+   "phase": 15,
+   "title": "MSG-04 prescription to order",
+   "brief": "Private R2 upload, extraction adapter interface with mock (real Kimi via KIMI_MODEL_API_KEY or Gemini is PAID → flag OFF, NEEDS-OWNER approval), mandatory pharmacist review, item matching + approved alternatives, customer approval before reservation. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N118",
+   "phase": 15,
+   "title": "MSG-05 messaging monitoring",
+   "brief": "Alerts for expired token/session/webhook subscription, phone + token redaction, Arabic ops messages, safe kill switch for auto-replies. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N119",
+   "phase": 15,
+   "title": "OPS-03 delivery orders",
+   "brief": "Delivery states assign/pickup/deliver/collect, failure reasons, approved location change, audit; adapter to existing system mocked, flag OFF. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N120",
+   "phase": 15,
+   "title": "OPS-05 cameras as independent source",
+   "brief": "Read-only API for saved camera reports + source status + evidence coverage, special permission, no analysis calls, no fake quality score, no schedule changes. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N106",
+    "N107",
+    "N108",
+    "N109"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "GATE-15",
+   "phase": 15,
+   "title": "GATE-15 enable integrations",
+   "brief": "GATE-15 enable integrations: Ahmed provides missing keys (WhatsApp/Meta, bridge URL/token, ZATCA) and approves any paid AI; Nova sets Worker secrets and flips flags one by one.",
+   "acceptance": "Owner/Nova only; not run by cloud tasks.",
+   "after": [
+    "N110",
+    "N111",
+    "N112",
+    "N113",
+    "N114",
+    "N115",
+    "N116",
+    "N117",
+    "N118",
+    "N119",
+    "N120"
+   ],
+   "status": "owner_gate",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N121",
+   "phase": 16,
+   "title": "SAAS-01 tenant onboarding",
+   "brief": "Onboarding API: create tenant, branches, owner, roles, import step; isolated demo sandbox tenant with seed data; onboarding rollback = soft-disable (no delete). Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N110",
+    "N111",
+    "N112",
+    "N113",
+    "N114",
+    "N115",
+    "N116",
+    "N117",
+    "N118",
+    "N119",
+    "N120"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N122",
+   "phase": 16,
+   "title": "SAAS-02 plans + entitlements",
+   "brief": "Features/limits per tenant, entitlement checks, billing provider adapter mock flag OFF (NEEDS-OWNER: payment provider account), expiry → read-only mode, never delete data, export available. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N110",
+    "N111",
+    "N112",
+    "N113",
+    "N114",
+    "N115",
+    "N116",
+    "N117",
+    "N118",
+    "N119",
+    "N120"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N123",
+   "phase": 16,
+   "title": "SAAS-03 quotas + metering",
+   "brief": "Per-tenant usage counters (requests, storage, AI, jobs), quotas, hot-tenant isolation test, cost report endpoint. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N110",
+    "N111",
+    "N112",
+    "N113",
+    "N114",
+    "N115",
+    "N116",
+    "N117",
+    "N118",
+    "N119",
+    "N120"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N124",
+   "phase": 16,
+   "title": "SAAS-04 releases + per-tenant flags",
+   "brief": "Release notes + version endpoint, per-tenant feature flags with gradual rollout, opt-in diagnostics without sensitive data, incident runbook doc. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N110",
+    "N111",
+    "N112",
+    "N113",
+    "N114",
+    "N115",
+    "N116",
+    "N117",
+    "N118",
+    "N119",
+    "N120"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N125",
+   "phase": 16,
+   "title": "SAAS-05 sales readiness docs",
+   "brief": "docs/backend/legal/ drafts: terms, privacy, DPA (marked NEEDS legal review), supported countries/devices matrix, external pilot success metrics. Docs only.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N110",
+    "N111",
+    "N112",
+    "N113",
+    "N114",
+    "N115",
+    "N116",
+    "N117",
+    "N118",
+    "N119",
+    "N120"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "GATE-16",
+   "phase": 16,
+   "title": "GATE-16 SaaS go/no-go",
+   "brief": "GATE-16 SaaS go/no-go: legal review of terms/privacy/DPA and payment provider decision (owner).",
+   "acceptance": "Owner/Nova only; not run by cloud tasks.",
+   "after": [
+    "N121",
+    "N122",
+    "N123",
+    "N124",
+    "N125"
+   ],
+   "status": "owner_gate",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N126",
+   "phase": 17,
+   "title": "End-to-end backend suite",
+   "brief": "tests/unit/backend-e2e.check.mjs: bootstrap owner → login → sale → sync push/pull → backup → restore drill → verify, plus cross-tenant attack cases, all in node:sqlite.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N121",
+    "N122",
+    "N123",
+    "N124",
+    "N125"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N127",
+   "phase": 17,
+   "title": "Load + performance checks",
+   "brief": "Local simulated load script tools/backend/load-sim.mjs (no network) and perf budget doc for sync/sale endpoints; test asserts budget on emulated handler.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N121",
+    "N122",
+    "N123",
+    "N124",
+    "N125"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N128",
+   "phase": 17,
+   "title": "QA-03 store pilot kit",
+   "brief": "Pilot plan for فرع السوسي: shifts/devices checklist, defect log template, comparison metrics vs old system, pilot-mode flag; docs + tiny config module. Tests for the flag.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N121",
+    "N122",
+    "N123",
+    "N124",
+    "N125"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "N129",
+   "phase": 17,
+   "title": "Release gate for backend",
+   "brief": "Extend release-gate.js (or backend/src/release-gate.js) to require migration drill, restore drill, rollback evidence, zero open P0/P1 for backend releases. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [
+    "N121",
+    "N122",
+    "N123",
+    "N124",
+    "N125"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0
+  },
+  {
+   "id": "GATE-17",
+   "phase": 17,
+   "title": "GATE-17 live store pilot with Ahmed (QA-03) and final production enablement.",
+   "brief": "GATE-17 live store pilot with Ahmed (QA-03) and final production enablement.",
+   "acceptance": "Owner/Nova only; not run by cloud tasks.",
+   "after": [
+    "N126",
+    "N127",
+    "N128",
+    "N129"
+   ],
+   "status": "owner_gate",
+   "attempts": 0,
+   "fix_attempts": 0
   }
  ],
  "updated": "2026-11-13T07:46:12+00:00"

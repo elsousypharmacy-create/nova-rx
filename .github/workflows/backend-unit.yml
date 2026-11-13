@@ -1,0 +1,47 @@
+name: Backend unit checks
+
+# Phase 11+ backend (Cloudflare Worker API in backend/). No network, no deps,
+# no secrets, never deploys. node:sqlite stands in for D1 in tests.
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'backend-client.js'
+      - 'tests/unit/backend-*.check.mjs'
+      - '.github/workflows/backend-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'backend-client.js'
+      - 'tests/unit/backend-*.check.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run backend checks (no dependencies, no network)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(tests/unit/backend-*.check.mjs)
+          if [ ${#files[@]} -eq 0 ]; then echo "no backend checks yet"; exit 0; fi
+          for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done
+      - name: Guard migrations are additive only
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          bad=0
+          for f in backend/migrations/*.sql; do
+            if grep -EinH '\b(DROP[[:space:]]+(TABLE|COLUMN|INDEX|VIEW|TRIGGER)|TRUNCATE|DELETE[[:space:]]+FROM)\b' "$f"; then bad=1; fi
+          done
+          [ "$bad" = 0 ] || { echo "::error::destructive SQL in a migration (owner review required)"; exit 1; }
