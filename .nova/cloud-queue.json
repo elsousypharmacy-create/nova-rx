@@ -586,11 +586,20 @@
     "N75",
     "N76"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T07:32:46+00:00"
+   "dispatched_at": "2026-11-13T07:32:46+00:00",
+   "pr": 244,
+   "ci_dispatched": {
+    "sha": "bdcbb4d59b3c5b28f6594cff26fa87f883e8a74c",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T07:35:37+00:00"
+   }
   },
   {
    "id": "N84",
@@ -607,9 +616,11 @@
     "N75",
     "N76"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T07:35:37+00:00"
   },
   {
    "id": "N85",
@@ -703,5 +714,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/221"
   }
  ],
- "updated": "2026-11-13T07:34:16+00:00"
+ "updated": "2026-11-13T07:35:37+00:00"
 }
