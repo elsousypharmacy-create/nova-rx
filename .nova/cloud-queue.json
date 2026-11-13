@@ -2212,23 +2212,15 @@
    "brief": "Files: index.html (sale toolbar buttons #btnNewSale, #holdCurrentInvoice, #btnHeldInvoices, #btnAddLoyalty, #btnSaleMore, #searchModeTag, #inputPercentDiscount, #inputFixedDiscount, #btnRefreshApp), purchases.html/purchases.css (#selectAll hit area), tests/ux/tap-targets.mjs (already exists from UX16: extend it, keep existing assertions). Use min-height/min-width 44px (or padding hit areas) without breaking the single-row toolbar at 1366 and 768-wide tablet. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "extended tests/ux/tap-targets.mjs asserts every listed control has bounding box >=44x44 at 1024x768 and 390x844 (selectAll via its label), no toolbar wrap at 1024 width, and the sale keyboard journey is unchanged.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:22:39+00:00",
    "pr": 317,
-   "ci_dispatched": {
-    "sha": "53506bc6ce9de3ff11ac485604348d7c830cd83d",
-    "wf": [
-     "playwright-smoke.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T21:26:08+00:00"
-   }
+   "merged_at": "2026-11-13T21:30:55+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/317"
   },
   {
    "id": "UX33",
@@ -2377,5 +2369,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:27:26+00:00"
+ "updated": "2026-11-13T21:30:55+00:00"
 }
