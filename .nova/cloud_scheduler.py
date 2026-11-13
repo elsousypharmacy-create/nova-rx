@@ -131,10 +131,44 @@ def applicable(wfs, files):
     return out
 
 
+# ---------- follow-up inbox ----------
+# Cloud tasks may not edit the queue. A merged task can instead commit
+# .nova/inbox/*.json = {"tasks":[{id,title,brief,acceptance,phase?,after?}]}.
+# Only ids like UX12 / FIX3 are accepted; existing ids are never overwritten;
+# status is always forced to pending. New tasks go before the first pending
+# task so follow-ups run next.
+INBOX_ID = re.compile(r"^(UX|FIX)[0-9]{1,4}$")
+
+
+def ingest_followups(items, byid):
+    d = ".nova/inbox"
+    if not os.path.isdir(d):
+        return
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith(".json"):
+            continue
+        try:
+            data = json.load(open(os.path.join(d, fn)))
+        except Exception as ex:
+            log(f"warn: inbox {fn} unreadable: {ex}"); continue
+        for x in (data.get("tasks") or [])[:30]:
+            tid = str(x.get("id", ""))
+            if not INBOX_ID.match(tid) or tid in byid or not x.get("title") or not x.get("brief"):
+                continue
+            t = {"id": tid, "phase": x.get("phase", 10), "title": str(x["title"])[:200], "brief": str(x["brief"])[:6000],
+                 "acceptance": str(x.get("acceptance", ""))[:2000],
+                 "after": [a for a in (x.get("after") or []) if isinstance(a, str)][:10],
+                 "status": "pending", "attempts": 0, "fix_attempts": 0, "source": f"inbox/{fn}"}
+            pos = next((i for i, y in enumerate(items) if y.get("status") == "pending"), len(items))
+            items.insert(pos, t); byid[tid] = t
+            log(f"inbox: queued {tid} from {fn}")
+
+
 # ---------- main ----------
 def main():
     q = json.load(open(QF)); items = q["tasks"]; byid = {t["id"]: t for t in items}
     before = json.dumps(q, sort_keys=True)
+    ingest_followups(items, byid)
 
     runs = (api(f"repos/{REPO}/actions/workflows/{AGENT_WF}/runs?per_page=50") or {}).get("workflow_runs", [])[:50]
     active, seen = {}, {}  # task id -> slot for queued/in-progress agent runs; newest run start per task
