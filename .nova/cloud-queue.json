@@ -1135,20 +1135,20 @@
     "N99",
     "N100"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "slot": "A",
    "dispatched_at": "2026-11-13T13:11:32+00:00",
    "pr": 270,
    "ci_dispatched": {
-    "sha": "543919e564866e780bc9a25afd80b08993db20e8",
+    "sha": "8072a31cbc847893942eba2bbf59c604440e3b5e",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T12:53:44+00:00"
+    "at": "2026-11-13T13:12:49+00:00"
    }
   },
   {
@@ -1734,5 +1734,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T13:11:32+00:00"
+ "updated": "2026-11-13T13:12:49+00:00"
 }
