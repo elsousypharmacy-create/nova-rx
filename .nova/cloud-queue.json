@@ -1887,21 +1887,14 @@
     "N124",
     "N125"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T18:28:01+00:00",
    "pr": 301,
-   "ci_dispatched": {
-    "sha": "11214083899e39164c10d74eb1ccfa74a663f9e8",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T18:29:45+00:00"
-   }
+   "merged_at": "2026-11-13T18:35:26+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/301"
   },
   {
    "id": "GATE-17",
@@ -1949,12 +1942,23 @@
    "brief": "In purchases.html / purchases.js (next to #review and #openPo) add a primary «استلام فاتورة» button that deep-links to index.html#products and auto-opens the existing receiving panel (the handler of #novaInventoryPurchase in index.html ~line 4869) via a location.hash flag (#products&receive=1); on mobile show the #selectAll checkbox with a 44px label. No backend/API changes. Add tests/ux/purchases-receive-link.mjs (Playwright): from /purchases one click opens the receiving panel in the products page (total clicks <= 2 from the purchases screen) and tests/purchases-ux-browser.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/purchases-receive-link.mjs passes with 1 click from purchases to receiving (was 3+ with navigation); node tests/purchases-ux-browser.mjs unchanged result.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T18:29:45+00:00"
+   "dispatched_at": "2026-11-13T18:29:45+00:00",
+   "pr": 303,
+   "ci_dispatched": {
+    "sha": "018e5cdce5b9301439f3d3f591316fece03badd9",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T18:35:26+00:00"
+   }
   },
   {
    "id": "UX18",
@@ -1963,12 +1967,12 @@
    "brief": "In index.html: translate the keyboard-shortcuts table in #helpModal (English rows «Start New Sale…» etc.) and the English title= tooltips («New Sale (F2)», «Add / Switch Customer (F3)», «Clear Line Items (F4)») to Arabic via the existing tr()/i18n helper so they flip with the language switch; add aria-label to #novaNewRole and #novaNewOk; unify button radius/height tokens (use ux-tokens.js variables) so each page has at most 3 button variants (primary/secondary/danger). Add tests/unit/ux-i18n-consistency.check.mjs (node, static scan of index.html): no English-only title= or help rows in the Arabic default, every button/select has an accessible name, and button variants per page <= 3 via a Playwright count if a harness exists. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/unit/ux-i18n-consistency.check.mjs passes; node tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro.json",
-   "slot": "B",
-   "dispatched_at": "2026-11-13T18:29:45+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T18:35:26+00:00",
    "pr": 302,
    "ci_dispatched": {
     "sha": "edbb80f952a865adf6a63593225e51a8b1bee7ec",
@@ -2091,5 +2095,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:33:53+00:00"
+ "updated": "2026-11-13T18:35:26+00:00"
 }
