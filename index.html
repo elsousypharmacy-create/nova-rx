@@ -1557,6 +1557,7 @@ body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-dire
 .nova-settings-grid .nova-lang-btn{min-width:75px;min-height:40px;font-size:13px}
 @media(max-width:1100px) and (orientation:landscape){.header-actions .btn{padding:6px 7px;font-size:12px}.top-header{padding:0 8px}.nova-nav{height:38px;min-height:38px}}
 
+.offline-chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:#3a2a05;color:#ffd166;border:1px solid #8a6a1a;font-size:12px;font-weight:700}.offline-chip[hidden]{display:none}
 .elsousy-brand-mark{width:30px;height:30px;object-fit:contain;flex:none;border-radius:6px}
 .nova-refresh-icon{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;padding:0;border:1px solid #34434c;border-radius:7px;background:#1b252d;color:#7dd3fc;cursor:pointer;margin-inline-start:2px;flex:none}
 .nova-refresh-icon:hover,.nova-refresh-icon:focus-visible{background:#29404d;color:#fff;outline-offset:2px}
@@ -2014,7 +2015,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       <!-- Top App Bar -->
       <header class="top-header">
         <div class="brand-section">
-          <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="https://elsousypharmacy-create.github.io/pharmacy/logo-mark.png" alt="شعار صيدلية السوسي" width="30" height="30" loading="eager" decoding="async"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي</span></div></div>
+          <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="icon.svg" alt="" aria-hidden="true" width="30" height="30" loading="eager" decoding="async" onerror="this.style.display='none'"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي</span></div></div>
+          <span id="offlineChip" class="offline-chip" role="status" aria-live="polite" hidden></span>
           <span class="task-badge">TASK-001</span>
           <div id="modePill" class="status-pill customer-mode">
             <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
@@ -6017,7 +6019,7 @@ input,select,textarea{min-height:44px}
 /* UX33: nav strip edge hint is the UX2 mask; active tab is scrolled into view by script */
 </style>
 
-<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
