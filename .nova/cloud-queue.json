@@ -843,7 +843,7 @@
    "brief": "In index.html CSS (nova-tab at ≤780px uses 11px, table th 10-11px, small/badges ~11px) and sticker-studio.html (badges «ناقص: …» 11px) and purchases.css (#status 11px): set a floor of 12px for UI text (not the printed sticker preview). Add tests/ux/min-font.check.mjs that scans those CSS files for font-size values <12px outside the sticker preview selectors and fails on any. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/min-font.check.mjs passes; node tests/ux/contrast-audit.mjs and node tests/unit/ux-tokens.check.mjs still pass.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-phase10.json",
@@ -851,14 +851,14 @@
    "dispatched_at": "2026-11-13T10:52:15+00:00",
    "pr": 256,
    "ci_dispatched": {
-    "sha": "e6ad40343e858de1c67cfbe1339d1f0eb5e953d5",
+    "sha": "bae4a008ff0f5feb2562fe71900ebb7b503ca2d1",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T10:46:53+00:00"
+    "at": "2026-11-13T10:54:35+00:00"
    }
   },
   {
@@ -868,22 +868,15 @@
    "brief": "In index.html move/resize the floating labels button (text '✦ استيكرات الأدوية') so it does not cover table rows, totals or report rows: add bottom padding to .nova-page-view / sale totals equal to the button height, and shrink it to an icon-only round button on ≤600px (keep aria-label in Arabic). Add tests/ux/labels-fab.check.mjs asserting the padding rule and aria-label. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/labels-fab.check.mjs passes; at 390x844 the button does not intersect the 'الإجمالي النهائي' block (Playwright bounding-box check if harness available); contrast-audit passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T10:48:11+00:00",
    "pr": 257,
-   "ci_dispatched": {
-    "sha": "cdc8ce74cc20c09db7b9b50764fce4466bf09360",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T10:49:40+00:00"
-   }
+   "merged_at": "2026-11-13T10:54:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/257"
   },
   {
    "id": "UX3",
@@ -916,10 +909,12 @@
    "brief": "In index.html (.nova-nav, .nova-tab rules near lines 1385-1466) and purchases.html/purchases.css nav if present: make the tab strip horizontally scrollable with an edge fade (overflow-x:auto, scrollbar hidden, mask-image) and scroll the active tab into view (scrollIntoView({inline:'center'})) when a tab is activated, on ≤780px. Add tests/ux/mobile-nav.check.mjs asserting the CSS + scrollIntoView call exist. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-nav.check.mjs passes; manual Playwright at 390x844 shows every tab reachable by scroll; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T10:54:35+00:00"
   },
   {
    "id": "UX1",
@@ -1663,5 +1658,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T10:52:15+00:00"
+ "updated": "2026-11-13T10:54:35+00:00"
 }
