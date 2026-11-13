@@ -2897,6 +2897,9 @@ window.NovaFmt=(function(){
         catch (_) { showToast('تعذر حفظ العميل على هذا المتصفح.', 'error'); return false; }
       }
 
+      // UX28: display-layer helpers (data/search keep the English name and tier)
+      window.novaDisp = n => String(n == null ? '' : n).replace(/\s*\((?=[^)]*[A-Za-z])[^)\u0600-\u06FF]*\)/g, '').trim() || String(n == null ? '' : n);
+      window.novaTier = t => ({ 'VIP Gold': 'ذهبي', 'Silver Member': 'فضي', 'Bronze Member': 'برونزي' })[t] || t;
       // --- DOM ELEMENT REFERENCES ---
       const elements = {
         modePill: document.getElementById("modePill"),
@@ -3000,7 +3003,7 @@ window.NovaFmt=(function(){
           const productPh = "Scan barcode or type medicine name...";
           elements.mainSearchInput.placeholder = productPh;
           elements.mainSearchInput.dataset.novaOriginalplaceholder = productPh;
-          elements.searchHintText.textContent = "Enter: Add Item";
+          elements.searchHintText.textContent = "Enter: إضافة";
         }
         closeSuggestions();
         elements.mainSearchInput.value = "";
@@ -3078,7 +3081,7 @@ window.NovaFmt=(function(){
               <div class="sugg-sub">Phone: ${cust.phone} • Visits: ${cust.visits}</div>
             </div>
             <div class="sugg-meta">
-              <span class="sugg-tag" style="background:#4c1d95; color:#ddd6fe;">${cust.tier}</span>
+              <span class="sugg-tag" style="background:#4c1d95; color:#ddd6fe;">${window.novaTier(cust.tier)}</span>
               <div style="font-size:12px; color:#a78bfa; margin-top:2px;">${cust.points} Pts</div>
             </div>
           </div>
@@ -3252,7 +3255,7 @@ window.NovaFmt=(function(){
         englishLine.textContent = arabicName ? englishName : "";
         englishLine.hidden = !(arabicName && englishName);
         elements.custCardPhone.textContent = customer.phone;
-        elements.custCardTier.textContent = customer.tier;
+        elements.custCardTier.textContent = window.novaTier(customer.tier);
         elements.custCardVisits.textContent = customer.visits;
         elements.custCardPoints.textContent = customer.points;
 
@@ -3334,7 +3337,7 @@ window.NovaFmt=(function(){
           return `
             <div class="cust-purchase-row">
               <div class="cust-purchase-info">
-                <div class="cust-purchase-name" dir="auto">${escH(item.name)}</div>
+                <div class="cust-purchase-name" dir="auto">${escH(window.novaDisp(item.name))}</div>
                 <div class="cust-purchase-meta" dir="auto">
                   <span>آخر شراء: ${date}</span>
                   ${item.purchases > 1 ? `<span>${item.purchases} مرات</span>` : ""}
@@ -3506,7 +3509,7 @@ window.NovaFmt=(function(){
               <tr data-id="${line.productId}">
                 <td class="col-idx">${idx + 1}</td>
                 <td class="col-item">
-                  <div class="item-title" dir="auto">${escH(line.name)}</div>
+                  <div class="item-title" dir="auto">${escH(window.novaDisp(line.name))}</div>
                   <div class="item-generic">${escH(line.generic)}${line.generic && line.form ? " • " : ""}${escH(line.form)}</div>
                   ${lotHtml}
                 </td>
@@ -4295,7 +4298,7 @@ window.NovaFmt=(function(){
           const copyBanner = currentCopy ? `<div class="nova-receipt-copy" data-receipt-copy="true">نسخة مكررة — COPY${currentCopyNo > 1 ? ' #' + currentCopyNo : ''}</div>` : '';
           const rowsHtml = (s.lines || []).map(l => {
             const tot = ((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0);
-            return `<tr><td>${escH(l.name)}</td><td dir="ltr">${Number(l.qty) || 0}</td><td dir="ltr">${(Number(l.price) || 0).toFixed(2)}</td><td dir="ltr">${tot.toFixed(2)}</td></tr>`;
+            return `<tr><td>${escH(window.novaDisp(l.name))}</td><td dir="ltr">${Number(l.qty) || 0}</td><td dir="ltr">${(Number(l.price) || 0).toFixed(2)}</td><td dir="ltr">${tot.toFixed(2)}</td></tr>`;
           }).join('');
           const tendersTxt = Array.isArray(s.tenders) && s.tenders.length ? s.tenders.map(t => `${window.NovaFmt.payLabel(t.method)} ${(Number(t.amount) || 0).toFixed(2)}`).join(' + ') : '';
           const html = `<div dir="rtl" lang="ar" class="nova-receipt-doc" data-receipt-number="${escH(s.number)}" data-is-copy="${currentCopy ? 'true' : 'false'}" style="color:#000">
@@ -4498,7 +4501,7 @@ window.NovaFmt=(function(){
       }
       function renderHeldInvoices() {
         heldCount.textContent = heldInvoices.length;
-        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">No held invoices</div>';
+        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">لا توجد فواتير معلقة</div>';
       }
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
@@ -5019,24 +5022,24 @@ window.NovaFmt=(function(){
  const tokens=fold(filter).split(' ').filter(Boolean);
  const list=real?(tokens.length?products.filter(p=>String(p.barcode).includes(filter.trim())||tokens.every(t=>fold(p.name).includes(t))):products):filtered(products,['name','barcode','generic','category']);
  const lowList=real?list:list.filter(p=>p.stock<30);const shown=real?list.slice(0,300):(novaLowOnly?lowList:list);
- const catAr={Chronic:'مزمن',Analgesic:'مسكنات',Antibiotic:'مضاد حيوي',Lipid:'دهون','GI Care':'جهاز هضمي',Vitamins:'فيتامينات',Antihistamine:'مضاد هيستامين'};
+ const catAr={Chronic:'مزمن',Analgesic:'مسكنات',Antibiotic:'مضاد حيوي',Lipid:'دهون','GI Care':'جهاز هضمي',Vitamins:'فيتامينات',Antihistamine:'مضاد هيستامين',Topical:'موضعي',ENT:'أنف وأذن وحنجرة'};
  const catLbl=c=>catAr[c]?tr(catAr[c],c):esc(c);
  const packOf=p=>p.pack||(p.packaging&&p.packaging.stripsPerBox&&p.packaging.unitsPerStrip?p.packaging.stripsPerBox+' × '+p.packaging.unitsPerStrip:'');
  const dups=window.novaDuplicates?window.novaDuplicates(products):[];
  const dupBlock=dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
- content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
- +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi(tr('الرصيد','Stock'),tr('غير متوفر من مصدر الأسعار','Not available from price source'))+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
+ content=head(title,real?'أسعار حقيقية من المخزون الحي'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
+ +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi(tr('الرصيد','Stock'),tr('غير متوفر من مصدر الأسعار','Not available from price source'))+kpi('مصدر الأسعار','المخزون الحي')+'</div>'
  :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
- +dupBlock+(()=>{const cols=[['الصنف',p=>'<td>'+esc(p.name)+'</td>'],['الباركود',p=>'<td dir="ltr">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td>'+money(p.price)+'</td>']];
- if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack>'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
+ +dupBlock+(()=>{const cols=[['الصنف',p=>'<td>'+esc(window.novaDisp(p.name))+'</td>'],['الباركود',p=>'<td dir="ltr">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td>'+money(p.price)+'</td>']];
+ if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack>'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'غير محدد</span>')+'</td>']);
  if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td>'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td>'+catLbl(p.category)+'</td>']);}
- return table(cols.map(c=>c[0]),rows(shown,p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>'));})().replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ return table(cols.map(c=>c[0]),rows(shown,p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>'));})().replace(real?'البيانات التجريبية':'\u0000','أسعار المخزون الحي')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
- +cards(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td data-label="الاسم">'+esc(c.name)+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(c.tier)+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+'</td></tr>'}));
+ +cards(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td data-label="الاسم">'+esc(c.name)+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(window.novaTier(c.tier))+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+'</td></tr>'}));
  }else if(page==='invoices'){
  const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
