@@ -1942,7 +1942,7 @@
    "brief": "In purchases.html / purchases.js (next to #review and #openPo) add a primary «استلام فاتورة» button that deep-links to index.html#products and auto-opens the existing receiving panel (the handler of #novaInventoryPurchase in index.html ~line 4869) via a location.hash flag (#products&receive=1); on mobile show the #selectAll checkbox with a 44px label. No backend/API changes. Add tests/ux/purchases-receive-link.mjs (Playwright): from /purchases one click opens the receiving panel in the products page (total clicks <= 2 from the purchases screen) and tests/purchases-ux-browser.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/purchases-receive-link.mjs passes with 1 click from purchases to receiving (was 3+ with navigation); node tests/purchases-ux-browser.mjs unchanged result.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro.json",
@@ -1950,14 +1950,14 @@
    "dispatched_at": "2026-11-13T18:48:19+00:00",
    "pr": 303,
    "ci_dispatched": {
-    "sha": "3eeec87546a8da92fa25c9905032b9413f28cb29",
+    "sha": "9b166adbd65b6dd8f599fde0ddc880a802e3e53d",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T18:42:21+00:00"
+    "at": "2026-11-13T18:51:23+00:00"
    }
   },
   {
@@ -2121,10 +2121,12 @@
    "brief": "In index.html CSS at max-width:600px: (a) move/shorten #toast/.nova-toast to the top and auto-hide at 2.5s so it never covers #inputPercentDiscount; (b) move the ✦ #novaAiLaunch FAB off the sale footer (hide on the sale page at <=600px or dock it beside the topbar); (c) fix the overlap of the VAT label with the totals (.totals-breakdown .tot-row wrap); (d) make the invoice table fit 390px (stack the row: name+meta on line 1, price/qty/discount/total on line 2) so no column is clipped; (e) hide the <kbd>F9 / دفع</kbd> hint on touch widths; (f) ensure .suggestion-item customer results are tappable (not covered). Add tests/ux/mobile-sale-layout.mjs (Playwright 390x844): add an item, then assert bounding boxes of toast, FAB, #inputPercentDiscount, #displayGrandTotal and #btnCheckout do not intersect, no element in the invoice table is clipped past the viewport, and page.click on the customer suggestion succeeds. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/mobile-sale-layout.mjs passes at 390x844; existing node tests/ux/mobile-nav.check.mjs and tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro.json"
+   "source": "inbox/ux-pro.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T18:51:23+00:00"
   },
   {
    "id": "UX9",
@@ -2139,5 +2141,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:50:00+00:00"
+ "updated": "2026-11-13T18:51:23+00:00"
 }
