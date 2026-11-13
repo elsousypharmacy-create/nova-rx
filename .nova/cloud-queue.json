@@ -833,12 +833,22 @@
    "brief": "In index.html (products render near the string 'الرصيد غير متاح في هذه القائمة') hide the empty الرصيد/العبوة/التصنيف columns when every row is empty, or show a muted 'غير متوفر من المصدر' label with a title tooltip; also change the 'الرصيد: غير متاح' KPI to a clearer Arabic message. No backend/data change. Add tests/ux/products-empty-columns.check.mjs (jsdom-free: extract the render function or assert the string/rule exists). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/products-empty-columns.check.mjs passes; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:43:00+00:00"
+   "dispatched_at": "2026-11-13T10:43:00+00:00",
+   "pr": 255,
+   "ci_dispatched": {
+    "sha": "ac1cc6a40aea4ef7503b3c27218cc75791a99833",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T10:44:16+00:00"
+   }
   },
   {
    "id": "UX5",
@@ -847,10 +857,12 @@
    "brief": "In index.html CSS (nova-tab at ≤780px uses 11px, table th 10-11px, small/badges ~11px) and sticker-studio.html (badges «ناقص: …» 11px) and purchases.css (#status 11px): set a floor of 12px for UI text (not the printed sticker preview). Add tests/ux/min-font.check.mjs that scans those CSS files for font-size values <12px outside the sticker preview selectors and fails on any. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/min-font.check.mjs passes; node tests/ux/contrast-audit.mjs and node tests/unit/ux-tokens.check.mjs still pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T10:44:16+00:00"
   },
   {
    "id": "UX4",
@@ -1630,5 +1642,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T10:43:00+00:00"
+ "updated": "2026-11-13T10:44:16+00:00"
 }
