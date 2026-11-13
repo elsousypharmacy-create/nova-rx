@@ -2246,7 +2246,7 @@
    "brief": "Files: index.html (#checkoutModal markup/CSS/JS), tests/ux/checkout-polish.mjs (new). Fix: methods grid 4 columns on desktop and 2x2 on mobile (no orphan row), rename «مشترك» → «مختلط»، when آجل is chosen with a walk-in customer show an inline red hint «اختر عميلاً لإتمام البيع الآجل» + focus «إضافة رقم العميل» and disable confirm (instead of rejecting after Enter with a toast), after F10/F11/F12 move focus to #btnConfirmPayment (cash: back to #inputCashReceived), logical Tab order (methods → amount → confirm → cancel). Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/checkout-polish.mjs asserts all .pay-method-btn share one row at 1366 and two rows of two at 390, F11 with walk-in disables #btnConfirmPayment and shows the hint, activeElement.id after F10 is btnConfirmPayment, Tab order sequence; keyboard barcode sale stays 0 clicks and <=4 keys; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2254,13 +2254,13 @@
    "dispatched_at": "2026-11-13T21:47:22+00:00",
    "pr": 319,
    "ci_dispatched": {
-    "sha": "cd8df3bbfed2caa77c63bd2360d14536fa1290d3",
+    "sha": "507099af5c14c5285b54831ccb3ec3c947179498",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T21:42:29+00:00"
+    "at": "2026-11-13T21:48:39+00:00"
    }
   },
   {
@@ -2294,12 +2294,12 @@
    "brief": "Files: index.html (reports screen, novaPrintDay), tests/ux/reports-breakdown.mjs (new). Add rows نقدي / بطاقة / آجل (and مرتجعات) for the selected period (اليوم/7 أيام/الشهر) and include them in the printed end-of-day report with the expected cash in drawer; wrap «بيانات العرض التجريبية» in a collapsed <details> labelled «بيانات تجريبية (للعرض فقط)». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/reports-breakdown.mjs makes 1 cash, 1 card, 1 credit sale and asserts breakdown values sum to صافي المبيعات, the demo block is collapsed by default (0 visible demo numbers), the print view contains the three method rows; journey tab+period <=2 clicks (assert).",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:42:29+00:00",
+   "dispatched_at": "2026-11-13T21:48:39+00:00",
    "pr": 321,
    "ci_dispatched": {
     "sha": "536b5a31749dba56beeaaec60c7d8f3d50498c45",
@@ -2408,5 +2408,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:47:22+00:00"
+ "updated": "2026-11-13T21:48:39+00:00"
 }
