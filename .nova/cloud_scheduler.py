@@ -20,6 +20,11 @@ import json, os, re, subprocess, sys, time, datetime
 REPO = os.environ.get("GITHUB_REPOSITORY", "elsousypharmacy-create/nova-rx")
 QF = ".nova/cloud-queue.json"
 AGENT_WF, SELF_WF = "agent-task.yml", "cloud-scheduler.yml"
+DEPLOY_WF = "deploy-backend-staging.yml"
+# owner_gates the scheduler may auto-deploy (staging Worker only) once all `after` tasks are done.
+# GATE-17 (live pilot + production enablement) is deliberately absent: owner-only.
+AUTO_GATES = ("GATE-14", "GATE-15", "GATE-16")
+DEPLOY_STALE = 2700  # seconds; deploy job 25m + mark-gate 5m, plus margin
 SLOTS = ["A"] + (["B"] if os.environ.get("HAS_B") == "true" else [])
 MAX_FIX, MAX_ATTEMPTS, GRACE = 2, 2, 600
 DRY = "--dry-run" in sys.argv
@@ -216,6 +221,35 @@ def ingest_followups(items, byid):
             log(f"inbox: queued {tid} from {fn}")
 
 
+# ---------- auto gate deploys ----------
+def gate_deploys(items, byid):
+    """Dispatch the staging deploy for ready auto gates; reconcile stuck 'deploying' gates.
+    The deploy workflow itself writes done/failed (+ sha, version id) back to the queue."""
+    runs = None
+    for t in items:
+        if t["id"] not in AUTO_GATES:
+            continue
+        if t["status"] == "owner_gate" and all(byid.get(a, {}).get("status") in DONE for a in t.get("after", [])):
+            if any(x.get("status") == "deploying" for x in items):
+                log(f"{t['id']}: ready, waiting for another gate deploy"); continue
+            act("gh", "workflow", "run", DEPLOY_WF, "-R", REPO, "--ref", "main", "-f", "dry_run=false",
+                "-f", "confirm=DEPLOY nova-rx-api-staging", "-f", f"gate_id={t['id']}")
+            t.update(status="deploying", dispatched_at=iso())
+            log(f"{t['id']}: all after-tasks done -> dispatched {DEPLOY_WF}")
+        elif t["status"] == "deploying" and age(t.get("dispatched_at", "")) > DEPLOY_STALE:
+            if runs is None:
+                runs = (api(f"repos/{REPO}/actions/workflows/{DEPLOY_WF}/runs?per_page=20") or {}).get("workflow_runs", [])[:20]
+            mine = [r for r in runs if r.get("display_title") == f"gate {t['id']} deploy"
+                    and age(r.get("created_at", "")) <= age(t.get("dispatched_at", "")) + 60]
+            r = mine[0] if mine else None
+            if r and r.get("status") != "completed":
+                continue
+            ok = bool(r) and r.get("conclusion") == "success"
+            t["status"] = "done" if ok else "failed"
+            t.setdefault("deploy", {}).update(run_url=(r or {}).get("html_url"), reconciled=iso())
+            log(f"{t['id']}: reconciled deploy -> {t['status']}")
+
+
 # ---------- main ----------
 def main():
     q = json.load(open(QF)); items = q["tasks"]; byid = {t["id"]: t for t in items}
@@ -350,6 +384,8 @@ def main():
         brief = f"FIX MODE for PR #{p['number']} (attempt {t['fix_attempts']}/{MAX_FIX}): {why}. Inspect with `gh run view <id> --log-failed` if needed, fix on this branch, rerun the tests, commit and push.\n\nOriginal task: {t['title']}\n{t['brief']}"
         act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={tid}", "-f", "mode=fix", "-f", f"slot={slot}", "-f", f"brief={brief[:20000]}")
         t.update(status="fixing", slot=slot, dispatched_at=iso()); active[tid] = slot
+
+    gate_deploys(items, byid)
 
     # start next pending tasks
     for t in items:
