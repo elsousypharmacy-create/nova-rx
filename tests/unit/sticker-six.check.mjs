@@ -18,3 +18,7 @@ assert.ok(js,'inline script');
 fs.mkdirSync(new URL('../',import.meta.url),{recursive:true});
 fs.writeFileSync(new URL('../.sticker-studio-inline.js',import.meta.url),js);
 console.log('Sticker six static checks PASS');
+// CLN-04: in-sale sheet (index.html)
+const idx=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+for(const t of ['function patientVitals()',"'الوزن: '+w+' كجم'","'العمر: '+y+' سنة'",'sticker-unselected',"['ArrowLeft','ArrowRight','ArrowUp','ArrowDown']",'localStorage.setItem(SETTINGS_KEY','slice(stickerPage*6,stickerPage*6+6)']) assert.ok(idx.includes(t),'in-sale '+t);
+console.log('In-sale sticker sheet static checks PASS');
