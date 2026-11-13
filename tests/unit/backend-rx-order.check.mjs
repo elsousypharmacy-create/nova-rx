@@ -5,7 +5,7 @@ import * as R from '../../backend/src/rx-order.js';
 import { handle } from '../../backend/src/index.js';
 
 const sql = new DatabaseSync(':memory:');
-for (const f of ['0002_catalog_inventory.sql', '0014_rx_orders.sql']) sql.exec(readFileSync(new URL('../../backend/migrations/' + f, import.meta.url), 'utf8'));
+for (const f of ['0002_catalog_inventory.sql', '0015_rx_orders.sql']) sql.exec(readFileSync(new URL('../../backend/migrations/' + f, import.meta.url), 'utf8'));
 const db = { prepare: (q) => ({ bind: (...a) => ({
   run: async () => sql.prepare(q).run(...a),
   first: async () => sql.prepare(q).get(...a),
