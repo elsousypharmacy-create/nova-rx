@@ -1984,7 +1984,7 @@
    "brief": "In index.html (handleSearchKeyDown ~line 3018 and the window keydown handler ~line 4672): (a) Enter with suggestions open and no arrow selection adds the first suggestion; (b) typing `*3` or `3*` before/after a query sets the quantity of the added line; (c) F6 focuses the % discount, F7 the fixed discount; (d) inside checkout: F10 selects card, F11 credit, F12/C cash (preventDefault; Enter confirms); (e) Enter on an empty search box when the invoice has lines opens checkout; (f) Enter on the receipt modal starts a new sale (same as F2); (g) F1 opens the help modal; update the help table and button hints in Arabic. Add tests/ux/sale-clicks.mjs (Playwright, local index.html) asserting the measured counts: barcode sale = typed barcode + at most 3 key presses and 0 clicks (Enter, Enter, Enter); name+qty+10% discount+card sale <= 5 interactions after typing; ui-pos01-sale-flow.mjs and ui-pos02-payment.mjs still pass. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/sale-clicks.mjs passes with barcode sale <= 3 key presses (was 5) and mouse/keyboard card sale with discount <= 5 interactions (was 8 clicks); node tests/ui-pos01-sale-flow.mjs and node tests/ui-pos02-payment.mjs still pass.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro.json",
@@ -1992,13 +1992,13 @@
    "dispatched_at": "2026-11-13T18:42:21+00:00",
    "pr": 304,
    "ci_dispatched": {
-    "sha": "2d9c4cf2572800ad513e3b1d96da2a153149e740",
+    "sha": "25b2d2b8b000a0fac47772bc8ef615bc3aa1e8fc",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T18:40:51+00:00"
+    "at": "2026-11-13T18:43:59+00:00"
    }
   },
   {
@@ -2071,10 +2071,12 @@
    "brief": "In index.html reports page renderer (search «مبيعات اليوم» / «صافي اليوم»): add a segmented period control (اليوم / آخر 7 أيام / الشهر) defaulting to today that re-filters the local novaSales data, and a «طباعة تقرير نهاية اليوم» button that prints a clean A4/80mm-friendly summary (window.print with a print-only stylesheet: sales, returns, net, cash/card/credit split, invoice count). Add tests/ux/reports-period.mjs (Playwright): complete a local sale, open reports (1 click), assert today KPIs, switch to 7 days with 1 click and assert the totals update, and assert the print button exists with a @media print rule. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/reports-period.mjs passes; daily report reachable in 1 click and printable in 2 clicks.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro.json"
+   "source": "inbox/ux-pro.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T18:43:59+00:00"
   },
   {
    "id": "UX12",
@@ -2125,5 +2127,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:42:21+00:00"
+ "updated": "2026-11-13T18:43:59+00:00"
 }
