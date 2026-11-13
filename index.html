@@ -4785,7 +4785,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi(tr('الرصيد','Stock'),tr('غير متوفر من مصدر الأسعار','Not available from price source'))+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
  :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
  +dupBlock+(()=>{const cols=[['الصنف',p=>'<td>'+esc(p.name)+'</td>'],['الباركود',p=>'<td dir="ltr">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td>'+money(p.price)+'</td>']];
- if(!real||shown.some(p=>p.pack))cols.push(['العبوة',p=>'<td data-pack>'+(p.pack?esc(p.pack):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+tr('غير متوفر','N/A')+'</span>')+'</td>']);
+ if(!real||shown.some(p=>p.pack))cols.push(['العبوة',p=>'<td data-pack>'+(p.pack?esc(p.pack):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
  if(!real){cols.push(['الرصيد',p=>'<td>'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td>'+esc(p.category)+'</td>']);}
  return table(cols.map(c=>c[0]),rows(shown,p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>'));})().replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
