@@ -2331,10 +2331,10 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             <button type="button" id="btnReceiptWidth80" class="nova-receipt-width-btn active" data-receipt-width="80mm">80mm</button>
             <button type="button" id="btnReceiptWidth58" class="nova-receipt-width-btn" data-receipt-width="58mm">58mm</button>
           </div>
-          <button type="button" id="btnPrinterStatus" class="nova-printer-toggle" data-connected="true" data-printer-state="unknown">الطابعة غير معروفة</button>
+          <button type="button" id="btnPrinterStatus" class="nova-printer-toggle" data-connected="true" data-printer-state="unknown">Printer: browser print</button>
         </div>
         <div id="receiptPrinterAlert" class="nova-receipt-alert" role="alert" hidden>
-          <span id="receiptPrinterAlertMsg">تحقق من التوصيل أو البلوتوث ثم أعد المحاولة</span>
+          <span id="receiptPrinterAlertMsg">Check power/cable and retry</span>
           <button type="button" id="btnReconnectPrinter" class="btn btn-secondary" style="min-height:44px;">Reconnect &amp; Retry</button>
         </div>
         <div id="receiptSlipContent" class="receipt-slip" data-width="80mm">
@@ -5260,7 +5260,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   'Adds product or attaches customer':'يضيف المنتج أو يربط العميل','Clear current invoice line items':'مسح أصناف الفاتورة الحالية',
   'Open Checkout / Payment dialog':'فتح نافذة الدفع','Dismiss dropdowns and close open modals':'إغلاق القوائم والنوافذ المفتوحة','Got it (Esc)':'تمام (Esc)',
   'More actions':'المزيد من الإجراءات','Clear Line Items (F4)':'مسح الأصناف (F4)','Close':'إغلاق','Switch between medicine and customer search':'التبديل بين البحث عن دواء وعميل','Switch search mode':'تبديل وضع البحث','Language':'اللغة',
-  'Print':'طباعة','Reprint Copy':'إعادة طباعة نسخة','Download PDF':'تحميل PDF','Printer Ready':'الطابعة متصلة','Printer Offline':'الطابعة غير متصلة','Printer Disconnected':'الطابعة غير متصلة','Reconnect & Retry':'إعادة التوصيل والمحاولة','Paper width':'مقاس الورق','Printer disconnected — check power/cable and retry':'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة'};
+  'Print':'طباعة','Reprint Copy':'إعادة طباعة نسخة','Download PDF':'تحميل PDF','Printer Ready':'الطابعة متصلة','Printer Offline':'الطابعة غير متصلة','Printer: browser print':'الطابعة غير معروفة','Check power/cable and retry':'تحقق من التوصيل أو البلوتوث ثم أعد المحاولة','Printer Disconnected':'الطابعة غير متصلة','Reconnect & Retry':'إعادة التوصيل والمحاولة','Paper width':'مقاس الورق','Printer disconnected — check power/cable and retry':'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة'};
  for(const [k,v] of Object.entries(arExtra)){if(!(k in enToAr))enToAr[k]=v;if(!(v in toEn))toEn[v]=k;}
  /* Exact mixed-language markup strings: [English, Arabic] */
  const mixedText={
