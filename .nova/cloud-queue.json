@@ -2085,12 +2085,12 @@
    "brief": "Frontend only, local device data. In index.html customers page renderer (search for the customers view near the novaFilter/customers table, and the credit sale path that already records آجل in confirmPaymentCore) wire credit-ledger.js (createCreditLedger, already in repo; load it via the existing script mechanism if not yet inlined) to: add a «المديونية» column in the customers table (red when > 0), and a «سداد» button per customer with debt that opens a small RTL dialog with the amount prefilled to the full balance, cash/card choice (default cash) and one confirm button; Enter confirms, Esc closes; success toast and the balance updates. Do not add backend calls. Add tests/ux/customer-debt-payment.mjs (Playwright, local index.html): make a credit sale to a demo customer, open customers, assert the debt column, pay in full via the dialog and assert click count <= 4 (customers tab, سداد, confirm) and the balance becomes 0. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/customer-debt-payment.mjs passes with click count <= 4 (was: impossible); credit-ledger unit tests under tests/unit still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-pro.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T18:55:41+00:00",
+   "dispatched_at": "2026-11-13T19:03:46+00:00",
    "pr": 310,
    "ci_dispatched": {
     "sha": "f89830ce9bfe5ff8c41081acdd0acb5921feba06",
@@ -2137,5 +2137,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/311"
   }
  ],
- "updated": "2026-11-13T19:01:03+00:00"
+ "updated": "2026-11-13T19:03:46+00:00"
 }
