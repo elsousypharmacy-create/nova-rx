@@ -9,6 +9,7 @@ import { registerImportRoutes } from './import.js';
 import { registerBalanceMigrationRoutes } from './balance-migration.js';
 import { registerRxOrderRoutes } from './rx-order.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
+import { registerInboxRoutes } from './inbox.js';
 import { registerDeployRoutes } from './deploys.js';
 import { scheduledBackup } from './backup.js';
 
@@ -64,6 +65,7 @@ registerBalanceMigrationRoutes(route, { json, errorResponse });
 registerRxOrderRoutes(route, { json, errorResponse });
 registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
+registerInboxRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
 export async function handle(request, env = {}) {
