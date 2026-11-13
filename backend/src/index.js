@@ -9,8 +9,11 @@ import { registerImportRoutes } from './import.js';
 import { registerBalanceMigrationRoutes } from './balance-migration.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
 import { registerInboxRoutes } from './inbox.js';
+import { registerCameraRoutes } from './cameras.js';
+import { registerDeliveryRoutes } from './delivery.js';
 import { registerDeployRoutes } from './deploys.js';
 import { registerWhatsAppRoutes } from './whatsapp-intake.js';
+import { registerMsgMonitorRoutes } from './msg-monitor.js';
 import { scheduledBackup } from './backup.js';
 
 export function newRequestId() {
@@ -58,6 +61,7 @@ route('GET', '/api/v1/version', (ctx) => ({
 }));
 
 registerStatusRoute(route, { json, errorResponse });
+registerMsgMonitorRoutes(route, { json, errorResponse });
 registerAuthRoutes(route, { json, errorResponse });
 registerSyncRoutes(route, { json, errorResponse });
 registerImportRoutes(route, { json, errorResponse });
@@ -66,6 +70,8 @@ registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerWhatsAppRoutes(route, { json, errorResponse });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
+registerCameraRoutes(route, { errorResponse }, { authenticate });
+registerDeliveryRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
 export async function handle(request, env = {}) {

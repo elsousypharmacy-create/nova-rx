@@ -1,4 +1,4 @@
--- 0009: INT-01 legacy bridge id map (N110). Additive only. Maps legacy Sheets ids to NOVA ids.
+-- 0010: INT-01 legacy bridge id map (N110). Additive only. Maps legacy Sheets ids to NOVA ids.
 CREATE TABLE IF NOT EXISTS legacy_id_map (
   tenant_id TEXT NOT NULL,
   entity TEXT NOT NULL,
