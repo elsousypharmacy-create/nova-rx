@@ -16,3 +16,4 @@ NEEDS-OWNER: NOVA_STATUS_TOKEN (bearer secret for GET /api/v1/status; set as Wor
 NEEDS-OWNER: D1 Time Travel bookmark + encrypted GitHub artifact backups are the operational path (docs/ops/backup-restore.md). Do not enable R2 or set NOVA_BACKUP=1. If CLOUDFLARE_API_TOKEN lacks Account · D1 · Read (export / time-travel info) or Edit (restore / future migration apply), the owner adds that permission to the existing token — do not roll the token.
 NEEDS-OWNER: NOVA_INGEST_SECRET must be set before NOVA_INTEGRATION=1 (flag stays OFF); integration keys are created by the owner via createApiKey (N111)
 NEEDS-OWNER: PHARMACY_BACKEND_URL + PHARMACY_BRIDGE_TOKEN (legacy Sheets/Apps Script backend URL and read-only bridge token, Worker secrets set by owner; NOVA_BRIDGE flag stays OFF)
+NEEDS-OWNER: WhatsApp/Telegram provider account + webhook secret (real delivery status source for the unified inbox; NOVA_INBOX flag stays OFF, status only from mock source)

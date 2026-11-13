@@ -1391,18 +1391,18 @@
    ],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
-   "slot": "A",
-   "dispatched_at": "2026-11-13T16:40:13+00:00",
+   "fix_attempts": 2,
+   "slot": "B",
+   "dispatched_at": "2026-11-13T16:47:10+00:00",
    "pr": 282,
    "ci_dispatched": {
-    "sha": "22cccf62fe14308b9aba07e38f3afa93c6cc972b",
+    "sha": "11100c389ebb30964670d4fc1e748dd758293f09",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:34:22+00:00"
+    "at": "2026-11-13T16:42:18+00:00"
    }
   },
   {
@@ -1440,18 +1440,18 @@
    ],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
-   "slot": "B",
-   "dispatched_at": "2026-11-13T16:34:22+00:00",
+   "fix_attempts": 1,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T16:42:18+00:00",
    "pr": 284,
    "ci_dispatched": {
-    "sha": "4e079dae6478d963f6a992091f35fcc00f57d11d",
+    "sha": "e4f6efd4c5ecaab4614089265cedf96e8e539e55",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:37:01+00:00"
+    "at": "2026-11-13T16:43:45+00:00"
    }
   },
   {
@@ -1468,18 +1468,18 @@
    ],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "slot": "A",
-   "dispatched_at": "2026-11-13T16:35:41+00:00",
+   "dispatched_at": "2026-11-13T16:43:45+00:00",
    "pr": 285,
    "ci_dispatched": {
-    "sha": "3566736f0653bf81f7bf1a4484e3a1d5c5c02d8f",
+    "sha": "3bcae7d545e498053b3cfc2d62482fdfe259e149",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:38:37+00:00"
+    "at": "2026-11-13T16:45:20+00:00"
    }
   },
   {
@@ -1494,21 +1494,14 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "B",
    "dispatched_at": "2026-11-13T16:37:01+00:00",
    "pr": 286,
-   "ci_dispatched": {
-    "sha": "28431938daa41d0f3ea53f15529e68039d273c41",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T16:40:13+00:00"
-   }
+   "merged_at": "2026-11-13T16:45:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/286"
   },
   {
    "id": "N116",
@@ -1522,21 +1515,14 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T16:38:37+00:00",
    "pr": 287,
-   "ci_dispatched": {
-    "sha": "0acbaf19c98f946af97c5b6dfaba04a1ab01cc3a",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T16:40:13+00:00"
-   }
+   "merged_at": "2026-11-13T16:45:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/287"
   },
   {
    "id": "N117",
@@ -1550,11 +1536,21 @@
     "N108",
     "N109"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "B",
-   "dispatched_at": "2026-11-13T16:40:13+00:00"
+   "dispatched_at": "2026-11-13T16:40:13+00:00",
+   "pr": 288,
+   "ci_dispatched": {
+    "sha": "ee549620896ed5d9cf1788796af2a0a124723a03",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T16:43:45+00:00"
+   }
   },
   {
    "id": "N118",
@@ -1568,9 +1564,21 @@
     "N108",
     "N109"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "B",
+   "dispatched_at": "2026-11-13T16:43:45+00:00",
+   "pr": 289,
+   "ci_dispatched": {
+    "sha": "69fdd42c4777729b819cd257ccfd24c348c8993a",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T16:47:10+00:00"
+   }
   },
   {
    "id": "N119",
@@ -1584,9 +1592,11 @@
     "N108",
     "N109"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T16:45:20+00:00"
   },
   {
    "id": "N120",
@@ -1844,5 +1854,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T16:40:13+00:00"
+ "updated": "2026-11-13T16:47:10+00:00"
 }
