@@ -2188,9 +2188,9 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "failed",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:32:19+00:00",
@@ -2297,22 +2297,15 @@
    "brief": "Files: index.html (VAT constant/label in totals, receipt and printed day report), pricing-core.js only if it already holds the rate (otherwise leave), settings section in index.html, tests/unit/vat-rate.check.mjs (new). The UI shows «15% متضمنة» (Saudi rate); Egypt standard VAT is 14% and most medicines are exempt/special. OWNER DECISION: do NOT change the default value in this task; add a single setting (stored in localStorage, default = current 15) read by sale totals, receipt and reports, labelled in Settings with a note «راجع المحاسب»; list the proposed 14% in the PR description for the owner. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/vat-rate.check.mjs asserts: default behaviour identical to today (same totals for a fixed cart), changing the setting to 14 changes totals, receipt label and day report consistently, tax-included math rounds to 2 decimals; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T22:02:25+00:00",
    "pr": 322,
-   "ci_dispatched": {
-    "sha": "1f9c8b901492688b3b5def47f1626df33948303f",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T22:05:03+00:00"
-   }
+   "merged_at": "2026-11-13T22:10:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/322"
   },
   {
    "id": "UX28",
@@ -2323,20 +2316,20 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:05:03+00:00",
+   "dispatched_at": "2026-11-13T22:12:59+00:00",
    "pr": 323,
    "ci_dispatched": {
-    "sha": "f2f2ed2a310a8f5ca9e2394c96f6ad99f3579882",
+    "sha": "0a583d387d2b19d2c561261dabbf8c06fb988f76",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T22:06:20+00:00"
+    "at": "2026-11-13T22:14:22+00:00"
    }
   },
   {
@@ -2363,12 +2356,22 @@
    "brief": "Files: index.html (receipt template, one date/number formatter), tests/ux/receipt-format.mjs (new). Fix: payment label from a map {cash:'نقدي',card:'بطاقة',credit:'آجل'} (no «(Credit) (credit 12.00)»), hide the discount row when 0, one DD/MM/YYYY HH:mm formatter with Latin digits used by receipt, invoices list and reports, Arabic plural helper («صنف واحد» / «صنفان» / «3 أصناف») for the subtotal line. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-format.mjs asserts receipt text contains no Latin 'credit'/'Credit', no «-0.00», dates match /\\d{2}\\/\\d{2}\\/\\d{4}/ with Latin digits in receipt and invoices table, subtotal text for 1/2/3 lines is «صنف واحد»/«صنفان»/«3 أصناف»; unit tests for the plural/date helpers.",
    "after": [],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:06:20+00:00"
+   "dispatched_at": "2026-11-13T22:14:22+00:00",
+   "pr": 325,
+   "ci_dispatched": {
+    "sha": "27dffa11dfc03f02dc8ee3771f2fa614b37bb2e6",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:09:02+00:00"
+   }
   },
   {
    "id": "UX25",
@@ -2377,10 +2380,22 @@
    "brief": "Files: index.html (toast container CSS/JS, toast messages for add-item), tests/ux/toast-position.mjs (new). On mobile the toast covers the top nav tabs; on desktop it sits over the checkout footer next to «إلغاء (Esc)». Fix: bottom-center toast above the sticky pay bar (mobile) / above modal footers via z-index and offset, role=status aria-live=polite, max 1 line with ellipsis for product names (e.g. «أُضيف: أوجمنتين 1 جم»), keep ~2.5s. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/toast-position.mjs at 390x844 and 1366x768 asserts the toast bounding box does not intersect .nova-tab buttons, #btnConfirmPayment, #btnCancelCheckout; text length <=40 chars; aria-live present; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T22:09:02+00:00",
+   "pr": 326,
+   "ci_dispatched": {
+    "sha": "ec2de68b4069c5b95008b13237b25d3f58803402",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:12:59+00:00"
+   }
   },
   {
    "id": "UX24",
@@ -2419,5 +2434,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:06:20+00:00"
+ "updated": "2026-11-13T22:14:22+00:00"
 }
