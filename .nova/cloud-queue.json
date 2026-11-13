@@ -2188,7 +2188,7 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
@@ -2196,13 +2196,13 @@
    "dispatched_at": "2026-11-13T21:26:08+00:00",
    "pr": 316,
    "ci_dispatched": {
-    "sha": "e3f49ba14c22cfc1f79ebcd9b9a4add35268e9d1",
+    "sha": "798843342bb0c19251d1ca08728fc53bc421b712",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T21:22:39+00:00"
+    "at": "2026-11-13T21:27:26+00:00"
    }
   },
   {
@@ -2237,10 +2237,12 @@
    "brief": "Files: index.html (invoice table row template/CSS under max-width:640px, .nova-tab strip), tests/ux/mobile-cart.mjs (new). Fix: each cart line <=96px high (name + unit select + qty stepper + line total on 2 rows), qty stepper and unit select on one row, discount shown only if >0; tab strip scrolls the active tab into view and shows a fade/edge hint; keep sticky pay bar. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/mobile-cart.mjs at 390x844 adds 5 items and asserts >=4 line rows are visible above the pay bar, each row height <=96px, no horizontal overflow, the active tab fully visible in the strip, tap targets >=44px.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T21:27:26+00:00"
   },
   {
    "id": "UX32",
@@ -2375,5 +2377,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:26:08+00:00"
+ "updated": "2026-11-13T21:27:26+00:00"
 }
