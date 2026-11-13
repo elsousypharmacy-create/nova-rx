@@ -794,6 +794,18 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/254"
   },
   {
+   "id": "FIX-BKP1",
+   "phase": 14,
+   "title": "Free D1 backups (no R2): Time Travel bookmarks + encrypted daily export to GitHub artifact",
+   "brief": "R2 is NOT available (owner declined adding a card). N106 (done) built R2-based backups; replace them with a free path: (1) scripts/d1-backup.sh: runs `wrangler d1 export <db> --remote`, gzip + openssl AES-256 encrypt using a passphrase from env var BACKUP_PASSPHRASE (name only), writes manifest with sha256 + table row counts; (2) scripts/d1-bookmark.sh: records `wrangler d1 time-travel info <db>` bookmark to stdout/JSON for pre-deploy rollback; (3) docs/ops/backup-restore.md runbook: Time Travel restore (`wrangler d1 time-travel restore <db> --bookmark=...`), decrypt+import of an export, retention 30 days; (4) a proposed workflow at docs/ops/d1-backup.workflow.yml.example (daily cron, upload-artifact retention-days 30, encrypted only since repo is public) — do NOT put it in .github/workflows; Nova installs it at GATE-14. Remove any R2 binding/assumption from backend code and wrangler.toml for backups. Unit tests with mocked wrangler output (manifest/checksum, encryption round-trip, bookmark parsing).\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
+   "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
+   "after": [],
+   "status": "done",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "note": "Taken over by Nova executor (PR #278); not for cloud Claude."
+  },
+  {
    "id": "UX7",
    "phase": 10,
    "title": "Rebuild live Worker artifact worker/live/nova-rx-preview.ux-fixes1.js from repo frontend (NO deploy)",
@@ -1757,5 +1769,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T14:49:38+00:00"
+ "updated": "2026-11-13T15:03:11+00:00"
 }
