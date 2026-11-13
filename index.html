@@ -1943,7 +1943,8 @@ body *:not(svg):not(svg *){
 #nova-wa-nav{display:none!important}
 #novaAiLaunch{background:#203d4c!important;border:1px solid #47758b!important;color:#e3f5ff!important;box-shadow:0 6px 22px #0006!important}
 #novaAiLaunch:hover{background:#2b5165!important}
-.toast-container{top:auto!important;bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center}
+.toast-container{top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center;z-index:9000}
+.toast{max-width:min(380px,92vw)}.toast>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media(min-width:900px) and (orientation:landscape){
 html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width:none!important}
 html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}
@@ -1973,7 +1974,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 <style id="ux10-mobile-sale">
 /* UX10: mobile sale layout (toast/FAB/totals/table) */
 @media (max-width:600px){
- .toast-container{top:calc(8px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%);max-width:92vw;pointer-events:none;z-index:9000}
+ .toast-container{top:auto!important;bottom:calc(76px + env(safe-area-inset-bottom,0px))!important;left:50%!important;right:auto!important;transform:translateX(-50%);max-width:92vw;pointer-events:none;z-index:9000}
  .toast{max-width:92vw;padding:6px 12px;font-size:12px}
  body[data-active-page="sale"] #novaAiLaunch,body:not([data-active-page]) #novaAiLaunch{display:none!important}
  .kbd-hint,.btn-checkout kbd{display:none!important}
@@ -2934,12 +2935,14 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       };
 
       // --- HELPER / UTILITY FUNCTIONS ---
+      function addedPrefix() { return localStorage.getItem('nova-rx-language') === 'en' ? 'Added to invoice: ' : 'أُضيف: '; }
       function showToast(msg, type = "info") {
         // One message at a time: a new toast replaces the old one (they used to pile up over the totals).
         elements.toastContainer.replaceChildren();
         const toast = document.createElement("div");
         toast.className = "toast";
         toast.setAttribute("role", type === 'error' ? "alert" : "status");
+        toast.setAttribute("aria-live", type === 'error' ? "assertive" : "polite");
         toast.innerHTML = `
           <span style="color:${type === 'error' ? 'var(--accent-red)' : 'var(--accent-cyan-light)'}">●</span>
           <span dir="auto">${msg}</span>
@@ -3015,7 +3018,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             // Immediate match on valid product barcode! Add and switch mode.
             addProductToInvoice(matchedByBarcode);
             setSearchMode("PRODUCT");
-            showToast(`Scanned product added: ${escH(matchedByBarcode.name)}`);
+            showToast(addedPrefix() + escH(matchedByBarcode.name));
             return;
           }
         }
@@ -3142,7 +3145,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             if (barcodeMatch) {
               addProductToInvoice(barcodeMatch);
               setSearchMode("PRODUCT");
-              showToast(`Barcode match added: ${escH(barcodeMatch.name)}`);
+              showToast(addedPrefix() + escH(barcodeMatch.name));
               return;
             }
           }
@@ -3170,7 +3173,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               addProductWithQty(exactBarcode, lineQty);
               elements.mainSearchInput.value = "";
               closeSuggestions();
-              showToast(`Product added: ${escH(exactBarcode.name)}`);
+              showToast(addedPrefix() + escH(exactBarcode.name));
               return;
             }
           }
@@ -3367,7 +3370,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             return conv;
           }
         }
-        showToast(`Added to invoice: ${escH(product.name)}`);
+        showToast(addedPrefix() + escH(product.name));
         return conv;
       }
 
