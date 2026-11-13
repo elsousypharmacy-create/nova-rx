@@ -203,20 +203,27 @@ say "Worker secret names now on $SCRIPT_NAME:"
 cf "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME/settings" \
   | jq -c '[.result.bindings[]? | {name, type}]'
 
-# 8. smoke /health and /version
+# 8. smoke /health and /version (retry: the Worker can take a few seconds to serve traffic after upload)
 smoke() {
   local path="$1"
   local want="$2"
-  local out
-  out="$(curl -sS --max-time 30 -H "Accept: application/json" "$LIVE_URL$path")" || return 1
-  echo "$out" | jq -e "$want" >/dev/null || { echo "body: $out"; return 1; }
-  echo "$out"
+  local out err i
+  for i in 1 2 3 4 5 6 7 8; do
+    out="$(curl -sS --max-time 30 -H "Accept: application/json" "$LIVE_URL$path" || true)"
+    err="$(printf '%s' "$out" | jq -e "$want" >/dev/null 2>&1; echo $?)"
+    if [ "$err" = "0" ]; then
+      say "SMOKE ok: $path $out"
+      return 0
+    fi
+    say "smoke attempt $i for $path not ready yet (body: ${out:0:200})"
+    sleep 3
+  done
+  say "SMOKE FAILED: $path last body: ${out:0:500}"
+  return 1
 }
 
-HEALTH="$(smoke /api/v1/health '.ok==true and .status=="healthy"')" || { say "SMOKE FAILED: /api/v1/health"; rollback; exit 1; }
-VER="$(smoke /api/v1/version '.ok==true and .name=="nova-rx-api" and .env=="staging"')" || { say "SMOKE FAILED: /api/v1/version"; rollback; exit 1; }
-say "SMOKE ok: /api/v1/health $HEALTH"
-say "SMOKE ok: /api/v1/version $VER"
+smoke /api/v1/health '.ok==true and .status=="healthy"' || { rollback; exit 1; }
+smoke /api/v1/version '.ok==true and .name=="nova-rx-api" and .env=="staging"' || { rollback; exit 1; }
 say "DEPLOYED $SCRIPT_NAME version 0.1.0 sha=${BUILD_SHA:0:12} url=$LIVE_URL"
 say "rollback target: $ROLLBACK_TARGET"
 say "frontend flag novaBackend.enabled left OFF; worker flags NOVA_AUTH/NOVA_SYNC/NOVA_IMPORT/NOVA_HARDENING left unset (OFF). R2 not bound."

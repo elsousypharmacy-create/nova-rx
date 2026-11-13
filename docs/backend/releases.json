@@ -1,1 +1,28 @@
-{ "live": null, "history": [] }
+{
+  "live": {
+    "version": "0.1.0",
+    "sha": "4b2fe55a3cfffaff8f2fbb7924b144ebf78d5499",
+    "env": "staging",
+    "at": "2026-11-13T14:23:56Z",
+    "worker": "nova-rx-api-staging",
+    "url": "https://nova-rx-api-staging.elsousypharmacy.workers.dev",
+    "cf_version_id": "aca845b0-429e-4587-8b06-4e0762a3f22b",
+    "wrangler_version_id": "cab075ac-45a4-4edf-91c7-4a13cf1acffa",
+    "rollback_target": "none (first staging deploy; no prior Worker version)",
+    "note": "GATE-11/GATE-13 staging. Frontend novaBackend.enabled OFF. Worker flags NOVA_AUTH/NOVA_SYNC/NOVA_IMPORT/NOVA_HARDENING unset (OFF). R2 not bound: enable R2 in the Cloudflare dashboard then create bucket nova-rx-staging. CLOUDFLARE_API_TOKEN can deploy Workers but lacks D1 Write (error 7403); migrations 0001-0007 were applied to D1 6e128d17-749e-4e44-9dee-1bf125486f4b via the owner Cloudflare session."
+  },
+  "history": [
+    {
+      "version": "0.1.0",
+      "sha": "4b2fe55a3cfffaff8f2fbb7924b144ebf78d5499",
+      "env": "staging",
+      "at": "2026-11-13T14:23:56Z",
+      "worker": "nova-rx-api-staging",
+      "url": "https://nova-rx-api-staging.elsousypharmacy.workers.dev",
+      "cf_version_id": "aca845b0-429e-4587-8b06-4e0762a3f22b",
+      "wrangler_version_id": "cab075ac-45a4-4edf-91c7-4a13cf1acffa",
+      "rollback_target": "none (first staging deploy; no prior Worker version)",
+      "note": "GATE-11/GATE-13 staging. Frontend novaBackend.enabled OFF. Worker flags NOVA_AUTH/NOVA_SYNC/NOVA_IMPORT/NOVA_HARDENING unset (OFF). R2 not bound: enable R2 in the Cloudflare dashboard then create bucket nova-rx-staging. CLOUDFLARE_API_TOKEN can deploy Workers but lacks D1 Write (error 7403); migrations 0001-0007 were applied to D1 6e128d17-749e-4e44-9dee-1bf125486f4b via the owner Cloudflare session."
+    }
+  ]
+}
