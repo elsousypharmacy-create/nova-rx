@@ -196,15 +196,15 @@
    "id": "N57",
    "phase": 7,
    "title": "CLN-04 in-sale sticker sheet",
-   "brief": "Complete the in-sale 2×3 (6) sticker sheet with navigation, dimming of unselected cells, age in years, weight in kg, and remembered sizes. Support print-only or print-and-pay only after approval; do not regress phase 1 sticker tests. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N57.md containing 'NOOP-FREEZE <reason>' instead.",
+   "brief": "Complete the in-sale 2×3 (6) sticker sheet with navigation, dimming of unselected cells, age in years, weight in kg, and remembered sizes. Support print-only or print-and-pay only after approval; do not regress phase 1 sticker tests. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N57.md containing 'NOOP-FREEZE <reason>' instead. Previous attempt broke Playwright smoke 'Sale sticker modal (N01)' (waitForFunction timeout 6000ms). Keep the N01 modal selectors/flow and its smoke test passing; run the Playwright smoke locally before finishing.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [
     "N43",
     "N47"
    ],
-   "status": "failed",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T06:02:21+00:00",
    "pr": 226,
@@ -621,5 +621,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/221"
   }
  ],
- "updated": "2026-11-13T06:07:00+00:00"
+ "updated": "2026-11-13T06:42:38+00:00"
 }
