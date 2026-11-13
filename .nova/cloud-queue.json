@@ -91,11 +91,11 @@
    "brief": "Extend the existing on-device export/import with a scheduled encrypted local backup and a periodic restore drill. Document a measured RPO≤15min and RTO≤60min, and gate owner download behind a permission/re-auth check. Do not redo N10 from scratch. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N43.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "slot": "A",
-   "dispatched_at": "2026-11-13T04:09:21+00:00",
+   "dispatched_at": "2026-11-13T05:06:40+00:00",
    "pr": 214,
    "ci_dispatched": {
     "sha": "7074c543ea81a290e85125dee47e26fe4184df30",
@@ -113,20 +113,14 @@
    "brief": "Record an append-only on-device audit log with actor, time, before/after values, reason, and requestId. Financial log rows cannot be deleted; secrets and sensitive fields must be redacted. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N47.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T04:10:52+00:00",
    "pr": 216,
-   "ci_dispatched": {
-    "sha": "19589f30cf915cba150c2d2d2a3faab728e4ed05",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T04:12:16+00:00"
-   }
+   "merged_at": "2026-11-13T05:06:40+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/216"
   },
   {
    "id": "N52",
@@ -562,5 +556,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T04:12:16+00:00"
+ "updated": "2026-11-13T05:06:40+00:00"
 }
