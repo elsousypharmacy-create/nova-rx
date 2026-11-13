@@ -1309,7 +1309,7 @@
     "N104",
     "N105"
    ],
-   "status": "fixing",
+   "status": "failed",
    "attempts": 0,
    "fix_attempts": 2,
    "slot": "A",
@@ -1757,5 +1757,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T14:41:56+00:00"
+ "updated": "2026-11-13T14:43:07+00:00"
 }
