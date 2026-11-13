@@ -2188,7 +2188,7 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "failed",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2229,22 +2229,15 @@
    "brief": "Files: index.html (invoice table row template/CSS under max-width:640px, .nova-tab strip), tests/ux/mobile-cart.mjs (new). Fix: each cart line <=96px high (name + unit select + qty stepper + line total on 2 rows), qty stepper and unit select on one row, discount shown only if >0; tab strip scrolls the active tab into view and shows a fade/edge hint; keep sticky pay bar. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/mobile-cart.mjs at 390x844 adds 5 items and asserts >=4 line rows are visible above the pay bar, each row height <=96px, no horizontal overflow, the active tab fully visible in the strip, tap targets >=44px.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T21:27:26+00:00",
    "pr": 318,
-   "ci_dispatched": {
-    "sha": "fe9ebec08f0be2ce641f4dc5b321745fd5b9f5dd",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T21:32:19+00:00"
-   }
+   "merged_at": "2026-11-13T21:37:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/318"
   },
   {
    "id": "UX32",
@@ -2381,5 +2374,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:33:37+00:00"
+ "updated": "2026-11-13T21:37:05+00:00"
 }
