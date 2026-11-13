@@ -1976,21 +1976,21 @@
    "brief": "RETRY NOTE: previous PR #304 conflicted with main and was closed; start fresh from current main.\n\nIn index.html (handleSearchKeyDown ~line 3018 and the window keydown handler ~line 4672): (a) Enter with suggestions open and no arrow selection adds the first suggestion; (b) typing `*3` or `3*` before/after a query sets the quantity of the added line; (c) F6 focuses the % discount, F7 the fixed discount; (d) inside checkout: F10 selects card, F11 credit, F12/C cash (preventDefault; Enter confirms); (e) Enter on an empty search box when the invoice has lines opens checkout; (f) Enter on the receipt modal starts a new sale (same as F2); (g) F1 opens the help modal; update the help table and button hints in Arabic. Add tests/ux/sale-clicks.mjs (Playwright, local index.html) asserting the measured counts: barcode sale = typed barcode + at most 3 key presses and 0 clicks (Enter, Enter, Enter); name+qty+10% discount+card sale <= 5 interactions after typing; ui-pos01-sale-flow.mjs and ui-pos02-payment.mjs still pass. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/sale-clicks.mjs passes with barcode sale <= 3 key presses (was 5) and mouse/keyboard card sale with discount <= 5 interactions (was 8 clicks); node tests/ui-pos01-sale-flow.mjs and node tests/ui-pos02-payment.mjs still pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T19:59:48+00:00",
-   "pr": 304,
+   "pr": 313,
    "ci_dispatched": {
-    "sha": "25b2d2b8b000a0fac47772bc8ef615bc3aa1e8fc",
+    "sha": "584fcbad47729e31bd657ecf7ad0cd913b119d48",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T18:43:59+00:00"
+    "at": "2026-11-13T20:03:14+00:00"
    }
   },
   {
@@ -2137,5 +2137,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/311"
   }
  ],
- "updated": "2026-11-13T19:59:48+00:00"
+ "updated": "2026-11-13T20:03:14+00:00"
 }
