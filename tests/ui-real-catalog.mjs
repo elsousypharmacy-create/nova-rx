@@ -75,11 +75,11 @@ await t('typing part of a barcode lists that product (partial barcode search)', 
 await t('Products tab: real list, honest labels (prices only, no stock), capped rows, search, re-renders when data arrives', async () => {
   await real.page.locator('.nova-tab[data-page="products"]').click(); await real.page.waitForTimeout(400);
   const txt = await real.page.locator('#novaPageView').innerText();
-  assert.ok(txt.includes('STOCK LIVE') && txt.includes('غير متاح'), 'says prices only, stock unavailable');
+  assert.ok(txt.includes('STOCK LIVE') && txt.includes('غير متوفر'), 'says prices only, stock unavailable');
   const stockKpi = await real.page.locator('.nova-kpi', { hasText: 'الرصيد' }).first().innerText();
-  assert.ok(stockKpi.includes('غير متاح'), 'the stock KPI says unavailable, not a number: ' + stockKpi.replace(/\n/g, ' '));
+  assert.ok(stockKpi.includes('غير متوفر'), 'the stock KPI says unavailable, not a number: ' + stockKpi.replace(/\n/g, ' '));
   const cells = await real.page.locator('#novaRows tr:first-child td').allInnerTexts();
-  assert.equal(cells[3], '—', 'stock cell is a dash, not a made-up number'); assert.equal(cells[4], '—');
+  assert.ok(cells.length <= 4, 'empty stock/category columns are hidden, no made-up numbers: ' + cells.length);
   assert.ok(txt.includes(String(rows.length)), 'shows the item count');
   assert.ok(!txt.includes('البيانات التجريبية'), 'no demo label on real data');
   assert.ok(await real.page.locator('#novaRows tr').count() <= 300, 'rows are capped');
