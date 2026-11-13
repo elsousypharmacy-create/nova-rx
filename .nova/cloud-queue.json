@@ -580,12 +580,20 @@
    "after": [
     "CHAIN1"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T05:37:34+00:00"
+   "dispatched_at": "2026-11-13T05:37:34+00:00",
+   "pr": 221,
+   "ci_dispatched": {
+    "sha": "24dc7189d4d9e79896978c6d3911a173c3cefa39",
+    "wf": [
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T05:38:30+00:00"
+   }
   }
  ],
- "updated": "2026-11-13T05:37:34+00:00"
+ "updated": "2026-11-13T05:38:30+00:00"
 }
