@@ -100,6 +100,8 @@
       position: relative;
     }
 
+    .cust-refill-box{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid #2b3037;background:#171a1f;border-radius:10px;font-size:12px;color:#d9e0e9}
+    .cust-refill-box[hidden]{display:none}
     .customer-sidebar {
       flex: 0 0 28%;
       width: 28%;
@@ -2137,6 +2139,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               <div class="cust-stat-pill">النقاط <strong id="custCardPoints">0</strong></div>
             </div>
           </div>
+          <div id="custRefillBox" class="cust-refill-box" hidden>
+            <div class="cust-refill-line">أدوية مزمنة: <span id="custChronicList" dir="auto"></span></div>
+            <div class="cust-refill-line">آخر شراء: <span id="custLastPurchase" dir="ltr"></span></div>
+            <button type="button" id="btnRefillLast" class="btn btn-loyalty">إعادة صرف آخر فاتورة</button>
+          </div>
           <details class="cust-extra-details" id="custExtraDetails">
             <summary>مشتريات سابقة <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
             <div class="cust-extra-content">
@@ -3135,6 +3142,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         // Render Offers (subtle green accents)
         // Render Past Invoices
         renderPastInvoices(customer.pastInvoices);
+        renderRefillBox(customer);
         closeSuggestions();
         persistActiveInvoice();
         showToast(`Customer attached: ${customer.name}`);
@@ -3153,6 +3161,39 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (!elements.checkoutModal.classList.contains("active") && !elements.receiptModal.classList.contains("active")) {
           elements.mainSearchInput.focus();
         }
+      }
+
+      function latestInvoice(customer) {
+        return [...((customer && customer.pastInvoices) || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] || null;
+      }
+
+      function renderRefillBox(customer) {
+        const box = document.getElementById("custRefillBox");
+        const last = latestInvoice(customer);
+        box.hidden = !last;
+        if (!last) return;
+        const chronic = new Set();
+        (customer.pastInvoices || []).forEach(inv => (inv.items || []).forEach(it => {
+          const p = DEMO_PRODUCTS.find(x => x.id === it.productId);
+          if (p && p.category === "Chronic") chronic.add(p.name.replace(/\s*\(.*\)\s*$/, ""));
+        }));
+        document.getElementById("custChronicList").textContent = chronic.size ? [...chronic].join("، ") : "لا يوجد";
+        document.getElementById("custLastPurchase").textContent = String(last.date).slice(0, 10);
+      }
+
+      function refillLastInvoice() {
+        const last = latestInvoice(state.attachedCustomer);
+        if (!last) return;
+        let added = 0, skipped = [];
+        (last.items || []).forEach(it => {
+          const product = DEMO_PRODUCTS.find(p => p.id === it.productId);
+          const qty = Number(it.qty) || 1;
+          if (!product || !(product.stock >= qty)) { skipped.push(it.name); return; }
+          for (let i = 0; i < qty; i++) addProductToInvoice(product);
+          added++;
+        });
+        showToast(skipped.length ? `أُعيد صرف ${added} صنف، غير متاح: ${skipped.join("، ")}` : `تمت إعادة صرف ${added} صنف`, skipped.length ? "error" : undefined);
+        elements.mainSearchInput.focus();
       }
 
       function renderPastInvoices(invoices, filterText = "") {
@@ -4516,6 +4557,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           }
         });
 
+        document.getElementById("btnRefillLast").addEventListener("click", refillLastInvoice);
         // Add Product from Customer Past Invoices (Requirement E: adds at CURRENT demo price)
         elements.pastInvoicesContainer.addEventListener("click", e => {
           const btn = e.target.closest(".btn-add-history");
