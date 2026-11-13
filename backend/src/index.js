@@ -11,6 +11,7 @@ import { observabilityEnabled, registerStatusRoute, countError, logEvent } from 
 import { registerInboxRoutes } from './inbox.js';
 import { registerDeliveryRoutes } from './delivery.js';
 import { registerDeployRoutes } from './deploys.js';
+import { registerMsgMonitorRoutes } from './msg-monitor.js';
 import { scheduledBackup } from './backup.js';
 
 export function newRequestId() {
@@ -58,6 +59,7 @@ route('GET', '/api/v1/version', (ctx) => ({
 }));
 
 registerStatusRoute(route, { json, errorResponse });
+registerMsgMonitorRoutes(route, { json, errorResponse });
 registerAuthRoutes(route, { json, errorResponse });
 registerSyncRoutes(route, { json, errorResponse });
 registerImportRoutes(route, { json, errorResponse });
