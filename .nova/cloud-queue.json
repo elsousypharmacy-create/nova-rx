@@ -1113,21 +1113,14 @@
     "N99",
     "N100"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T12:48:50+00:00",
    "pr": 269,
-   "ci_dispatched": {
-    "sha": "0933b239a7c6d51072981276276f5441c9d3985f",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T12:51:20+00:00"
-   }
+   "merged_at": "2026-11-13T12:56:10+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/269"
   },
   {
    "id": "N102",
@@ -1142,11 +1135,21 @@
     "N99",
     "N100"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 2,
    "slot": "A",
-   "dispatched_at": "2026-11-13T12:51:20+00:00"
+   "dispatched_at": "2026-11-13T13:11:32+00:00",
+   "pr": 270,
+   "ci_dispatched": {
+    "sha": "543919e564866e780bc9a25afd80b08993db20e8",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T12:53:44+00:00"
+   }
   },
   {
    "id": "N103",
@@ -1161,9 +1164,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:53:44+00:00",
+   "pr": 271,
+   "merged_at": "2026-11-13T13:00:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/271"
   },
   {
    "id": "N104",
@@ -1178,9 +1186,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:56:10+00:00",
+   "pr": 272,
+   "merged_at": "2026-11-13T13:03:02+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/272"
   },
   {
    "id": "N105",
@@ -1195,9 +1208,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:57:46+00:00",
+   "pr": 273,
+   "merged_at": "2026-11-13T13:05:40+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/273"
   },
   {
    "id": "GATE-13",
@@ -1716,5 +1734,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T12:51:20+00:00"
+ "updated": "2026-11-13T13:11:32+00:00"
 }

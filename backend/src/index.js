@@ -1,9 +1,11 @@
 // NOVA Rx backend Worker skeleton (N90). No external calls; flag-gated by the client.
 import { VERSION } from './version.js';
 import { registerAuthRoutes, authenticate, requireReauth } from './auth/auth.js';
-import { registerSyncRoutes } from './sync.js';
 import { normalizeRole } from './auth/permissions.js';
 import { hardeningEnabled, applySecurityHeaders, checkCsrf, rateLimit, limitFor, clientId, registerExportRoute, safeLog } from './security/hardening.js';
+import { registerSyncRoutes } from './sync.js';
+import { registerSyncPullRoutes } from './sync-pull.js';
+import { registerImportRoutes } from './import.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -50,7 +52,9 @@ route('GET', '/api/v1/version', (ctx) => ({
 }));
 
 registerAuthRoutes(route, { json, errorResponse });
-registerSyncRoutes(route, { errorResponse }, { authenticate });
+registerSyncRoutes(route, { json, errorResponse });
+registerImportRoutes(route, { json, errorResponse });
+registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
 export async function handle(request, env = {}) {

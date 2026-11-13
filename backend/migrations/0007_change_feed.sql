@@ -1,4 +1,4 @@
--- 0005: per-tenant/branch change feed for sync pull (N102). Additive only.
+-- 0007: per-tenant/branch change feed for sync pull (N102). Additive only.
 -- seq is the monotonic cursor. Deletes are tombstones: a row with deleted=1 (soft flag), never a hard delete.
 CREATE TABLE IF NOT EXISTS change_feed (
   seq INTEGER PRIMARY KEY AUTOINCREMENT,
