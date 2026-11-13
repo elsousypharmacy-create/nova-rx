@@ -2304,7 +2304,7 @@
    "brief": "Files: index.html (VAT constant/label in totals, receipt and printed day report), pricing-core.js only if it already holds the rate (otherwise leave), settings section in index.html, tests/unit/vat-rate.check.mjs (new). The UI shows «15% متضمنة» (Saudi rate); Egypt standard VAT is 14% and most medicines are exempt/special. OWNER DECISION: do NOT change the default value in this task; add a single setting (stored in localStorage, default = current 15) read by sale totals, receipt and reports, labelled in Settings with a note «راجع المحاسب»; list the proposed 14% in the PR description for the owner. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/vat-rate.check.mjs asserts: default behaviour identical to today (same totals for a fixed cart), changing the setting to 14 changes totals, receipt label and day report consistently, tax-included math rounds to 2 decimals; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
@@ -2312,13 +2312,13 @@
    "dispatched_at": "2026-11-13T21:54:18+00:00",
    "pr": 322,
    "ci_dispatched": {
-    "sha": "4b5be7b95516c7b3a1811c061a3e30f7b2f0ca7b",
+    "sha": "9c035ae51ace05b3acd00fd6ad8360c7f9613005",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T21:52:22+00:00"
+    "at": "2026-11-13T21:55:33+00:00"
    }
   },
   {
@@ -2328,10 +2328,12 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T21:55:33+00:00"
   },
   {
    "id": "UX27",
@@ -2406,5 +2408,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:54:18+00:00"
+ "updated": "2026-11-13T21:55:33+00:00"
 }
