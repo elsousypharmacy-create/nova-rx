@@ -1337,10 +1337,21 @@
     "N108",
     "N109"
    ],
-   "status": "deploying",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "dispatched_at": "2026-11-13T16:30:07+00:00"
+   "dispatched_at": "2026-11-13T16:30:07+00:00",
+   "deploy": {
+    "sha": "06f5690208678868b81dec631355d949119b542e",
+    "version_id": "342ee76f-959f-4d86-a3b4-4c4f6fff6e30",
+    "previous_version_id": "aca845b0-429e-4587-8b06-4e0762a3f22b",
+    "bookmark": "00000003-00000000-00005122-88460a34721d33ba0e0ad6f5602bea8c",
+    "migrated": true,
+    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43463412123",
+    "at": "2026-11-13T16:31:17Z",
+    "job": "success"
+   },
+   "deployed_at": "2026-11-13T16:31:17Z"
   },
   {
    "id": "N110",
@@ -1760,5 +1771,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T16:30:07+00:00"
+ "updated": "2026-11-13T16:31:24+00:00"
 }
