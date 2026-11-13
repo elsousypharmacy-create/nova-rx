@@ -14,6 +14,7 @@ NEEDS-OWNER: unlocking any unknown (fail-closed) supplier operation, via the rec
 NEEDS-OWNER: NOVA_API_PIN is the one-time owner bootstrap password (NOVA_AUTH flag stays OFF until set; owner must change it after first login)
 NEEDS-OWNER: NOVA_STATUS_TOKEN (bearer secret for GET /api/v1/status; set as Worker secret by owner; NOVA_OBSERVABILITY flag stays OFF)
 NEEDS-OWNER: D1 Time Travel bookmark + encrypted GitHub artifact backups are the operational path (docs/ops/backup-restore.md). Do not enable R2 or set NOVA_BACKUP=1. If CLOUDFLARE_API_TOKEN lacks Account · D1 · Read (export / time-travel info) or Edit (restore / future migration apply), the owner adds that permission to the existing token — do not roll the token.
+NEEDS-OWNER: NOVA_INGEST_SECRET must be set before NOVA_INTEGRATION=1 (flag stays OFF); integration keys are created by the owner via createApiKey (N111)
 NEEDS-OWNER: WA_TOKEN, WA_PHONE_ID, WA_APP_SECRET, WA_VERIFY_TOKEN (Meta WhatsApp Cloud API; number migration pending; NOVA_WA_INTAKE flag stays OFF)
 NEEDS-OWNER: ZATCA e-invoice onboarding (CSID / compliance certificates) + legal/tax review of SA 15% and EG 14% VAT rules (N113; NOVA_ZATCA_EINVOICE and NOVA_COUNTRY_ADAPTERS flags stay OFF)
 NEEDS-OWNER: PHARMACY_BACKEND_URL + PHARMACY_BRIDGE_TOKEN (legacy Sheets/Apps Script backend URL and read-only bridge token, Worker secrets set by owner; NOVA_BRIDGE flag stays OFF)
