@@ -1013,12 +1013,15 @@
       z-index: 100;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.15s ease;
+      visibility: hidden; /* closed modals are not Tab-reachable; delay keeps the fade-out */
+      transition: opacity 0.15s ease, visibility 0s linear 0.15s;
     }
 
     .modal-backdrop.active {
       opacity: 1;
       pointer-events: auto;
+      visibility: visible;
+      transition: opacity 0.15s ease, visibility 0s;
     }
 
     /* Keep the receipt above the labels/AI overlays (z-index 9000+) so its close button stays clickable. */
@@ -4493,6 +4496,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
         elements.btnHelpShortcuts.addEventListener("click", () => {
           elements.helpModal.classList.add("active");
+          elements.btnCloseHelp.focus();
         });
 
         elements.btnCloseHelp.addEventListener("click", () => { elements.helpModal.classList.remove("active"); elements.mainSearchInput.focus(); });
@@ -4777,6 +4781,17 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             if (e.target && (e.target.id === "btnCancelCheckout" || e.target.id === "btnCloseCheckout" || e.target.id === "checkoutAddCustomer")) return;
             e.preventDefault();
             confirmPayment();
+          } else if (e.key === "Tab") {
+            const open = document.querySelector(".modal-backdrop.active");
+            if (open) {
+              const f = [...open.querySelectorAll("button,input,select,textarea,a[href],[tabindex]")].filter(x => !x.disabled && x.tabIndex >= 0 && x.offsetParent !== null);
+              if (f.length) {
+                const first = f[0], last = f[f.length - 1];
+                if (!open.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+                else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+              }
+            }
           } else if (e.key === "Escape") {
             if (elements.checkoutModal.classList.contains("active")) {
               closeCheckout();
