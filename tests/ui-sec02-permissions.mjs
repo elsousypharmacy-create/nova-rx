@@ -43,11 +43,11 @@ await t('cashier export is blocked, no download, and the denial is logged and sh
 });
 await t('manager sees no owner/manager role to grant; owner does', async () => {
   await page.evaluate(() => novaAuth.signIn('Mona', 'pass123')); await openTab('invoices'); await openTab('settings');
-  await page.locator('#novaAuthCard summary').click();
+  await page.locator('#novaAuthCard details:not(#novaPermDetails) > summary').click();
   const opts = await page.locator('#novaNewRole option').allInnerTexts();
   assert.ok(!opts.includes('owner') && !opts.includes('manager') && opts.includes('cashier'));
   await page.evaluate(() => novaAuth.signIn('Ahmed', 'secret1')); await openTab('invoices'); await openTab('settings');
-  await page.locator('#novaAuthCard summary').click();
+  await page.locator('#novaAuthCard details:not(#novaPermDetails) > summary').click();
   assert.ok((await page.locator('#novaNewRole option').allInnerTexts()).includes('owner'));
 });
 await t('role cannot be escalated from the page: matrix is frozen', async () => {
