@@ -868,12 +868,22 @@
    "brief": "In index.html move/resize the floating labels button (text '✦ استيكرات الأدوية') so it does not cover table rows, totals or report rows: add bottom padding to .nova-page-view / sale totals equal to the button height, and shrink it to an icon-only round button on ≤600px (keep aria-label in Arabic). Add tests/ux/labels-fab.check.mjs asserting the padding rule and aria-label. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/labels-fab.check.mjs passes; at 390x844 the button does not intersect the 'الإجمالي النهائي' block (Playwright bounding-box check if harness available); contrast-audit passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:48:11+00:00"
+   "dispatched_at": "2026-11-13T10:48:11+00:00",
+   "pr": 257,
+   "ci_dispatched": {
+    "sha": "cdc8ce74cc20c09db7b9b50764fce4466bf09360",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T10:49:40+00:00"
+   }
   },
   {
    "id": "UX3",
@@ -882,10 +892,12 @@
    "brief": "index.html registers '/sw.js?v=3' which returns 404 on the live Worker (27 console errors in audit). Guard registration in index.html: fetch(sw url,{method:'HEAD'}) first and register only if ok, with a silent .catch. Do not add routes to the backend. Add tests/ux/sw-register-guard.check.mjs asserting the guard code is present and registration is not unconditional. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/sw-register-guard.check.mjs passes; no regression in node tests/unit/ux-tokens.check.mjs.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T10:49:40+00:00"
   },
   {
    "id": "UX2",
@@ -1641,5 +1653,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T10:48:11+00:00"
+ "updated": "2026-11-13T10:49:40+00:00"
 }
