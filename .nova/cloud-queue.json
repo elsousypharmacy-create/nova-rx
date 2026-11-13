@@ -859,7 +859,7 @@
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T10:54:35+00:00"
+    "at": "2026-11-13T12:16:18+00:00"
    },
    "note": "Second fix run 43412993917 never started (GitHub Actions billing/spending limit). Rolled fix_attempts back to 1 so CI can be re-dispatched; not a code failure."
   },
@@ -904,11 +904,13 @@
    "brief": "In index.html (.nova-nav, .nova-tab rules near lines 1385-1466) and purchases.html/purchases.css nav if present: make the tab strip horizontally scrollable with an edge fade (overflow-x:auto, scrollbar hidden, mask-image) and scroll the active tab into view (scrollIntoView({inline:'center'})) when a tab is activated, on ≤780px. Add tests/ux/mobile-nav.check.mjs asserting the CSS + scrollIntoView call exist. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-nav.check.mjs passes; manual Playwright at 390x844 shows every tab reachable by scroll; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
-   "note": "Agent run 43412811792 never started (GitHub Actions billing/spending limit). attempts reset to 0 so it can get a real try."
+   "note": "Agent run 43412811792 never started (GitHub Actions billing/spending limit). attempts reset to 0 so it can get a real try.",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:16:18+00:00"
   },
   {
    "id": "UX1",
@@ -1652,5 +1654,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T11:43:09+00:00"
+ "updated": "2026-11-13T12:16:18+00:00"
 }
