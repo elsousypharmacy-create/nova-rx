@@ -64,6 +64,48 @@ for (const [name, size, mobile] of [['mobile', { width: 390, height: 844 }, true
   }
   await ctx.close();
 }
+// UX34: listed sale-bar controls + purchases selectAll >= 44x44 at 1024x768 and 390x844; no toolbar wrap at 1024
+const UX34_IDS = ['btnNewSale', 'holdCurrentInvoice', 'btnHeldInvoices', 'btnAddLoyalty', 'btnSaleMore', 'searchModeTag', 'inputPercentDiscount', 'inputFixedDiscount', 'btnRefreshApp'];
+for (const [name, size, mobile] of [['tablet1024', { width: 1024, height: 768 }, false], ['mobile390', { width: 390, height: 844 }, true]]) {
+  const ctx = await browser.newContext({ viewport: size, locale: 'ar-EG', isMobile: mobile, hasTouch: mobile });
+  await ctx.route('**/*', r => { const m = r.request().method(); const u = r.request().url(); if ((m !== 'GET' && m !== 'HEAD') || !(u.startsWith(BASE) || u.startsWith('data:') || u.startsWith('blob:'))) return r.abort(); return r.continue(); });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
+  await page.goto(BASE + '/index.html', { waitUntil: 'load' });
+  await page.waitForSelector('#mainSearchInput');
+  await page.waitForTimeout(800);
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=sale]')?.click());
+  await page.waitForTimeout(400);
+  const res = await page.evaluate(ids => {
+    const boxes = ids.map(id => { const e = document.getElementById(id); if (!e) return [id, null]; const r = e.getBoundingClientRect(); return [id, { w: r.width, h: r.height }]; });
+    const bar = document.querySelector('.nova-sale-actions');
+    const mids = bar ? [...bar.children].filter(c => c.getBoundingClientRect().width > 0).map(c => { const q = c.getBoundingClientRect(); return q.top + q.height / 2; }) : [];
+    return { boxes, rows: mids.length && Math.max(...mids) - Math.min(...mids) > 22 ? 2 : 1 };
+  }, UX34_IDS);
+  for (const [id, b] of res.boxes) {
+    // discount inputs may sit in a collapsed panel on some layouts; zero-size = not rendered, reported as FAIL to stay honest
+    const ok = b && b.w >= 43.5 && b.h >= 43.5;
+    console.log(`${ok ? 'PASS' : 'FAIL'} ${name} #${id}: ${b ? Math.round(b.w) + 'x' + Math.round(b.h) : 'missing'}`);
+    if (!ok) failed++;
+  }
+  if (name === 'tablet1024') { const ok = res.rows <= 1; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} sale toolbar rows=${res.rows}`); if (!ok) failed++; }
+  await ctx.close();
+}
+{
+  const ctx = await browser.newContext({ viewport: { width: 1024, height: 768 }, locale: 'ar-EG' });
+  const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ar-EG', isMobile: true, hasTouch: true });
+  for (const [name, c] of [['tablet1024', ctx], ['mobile390', ctx2]]) {
+    await c.route('**/*', r => { const m = r.request().method(); const u = r.request().url(); if ((m !== 'GET' && m !== 'HEAD') || !(u.startsWith(BASE) || u.startsWith('data:') || u.startsWith('blob:'))) return r.abort(); return r.continue(); });
+    const p = await c.newPage();
+    await p.goto(BASE + '/purchases', { waitUntil: 'load' });
+    await p.waitForTimeout(600);
+    const b = await p.evaluate(() => { const l = document.querySelector('#selectAll')?.closest('label'); if (!l) return null; const r = l.getBoundingClientRect(); return { w: r.width, h: r.height }; });
+    const ok = b && b.w >= 43.5 && b.h >= 43.5;
+    console.log(`${ok ? 'PASS' : 'FAIL'} ${name} purchases selectAll label: ${b ? Math.round(b.w) + 'x' + Math.round(b.h) : 'missing'}`);
+    if (!ok) failed++;
+  }
+  await ctx.close(); await ctx2.close();
+}
 await browser.close(); server.close();
 if (failed) { console.error(`tap-targets: ${failed} failures`); process.exit(1); }
 console.log('tap-targets check passed');
