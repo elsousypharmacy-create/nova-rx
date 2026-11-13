@@ -2270,12 +2270,12 @@
    "brief": "Files: index.html (header, logo <img>), icon.svg or a local logo asset, sw.js (precache the logo only if needed), tests/ux/offline-indicator.mjs (new). Add a small header chip «بدون اتصال — الفواتير تُحفظ على هذا الجهاز» driven by online/offline events; replace the remote https://…github.io/pharmacy/logo-mark.png with a local file and an onerror fallback so no broken-image icon/alt text ever shows. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/offline-indicator.mjs uses context.setOffline(true/false) and asserts chip visible/hidden accordingly, 0 images with naturalWidth==0 while all non-BASE requests are aborted, offline reload still renders the sale screen.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:37:37+00:00",
+   "dispatched_at": "2026-11-13T21:46:01+00:00",
    "pr": 320,
    "ci_dispatched": {
     "sha": "b62f9734c2b3c79fb0709d47875a79d48b3baa00",
@@ -2294,12 +2294,22 @@
    "brief": "Files: index.html (reports screen, novaPrintDay), tests/ux/reports-breakdown.mjs (new). Add rows نقدي / بطاقة / آجل (and مرتجعات) for the selected period (اليوم/7 أيام/الشهر) and include them in the printed end-of-day report with the expected cash in drawer; wrap «بيانات العرض التجريبية» in a collapsed <details> labelled «بيانات تجريبية (للعرض فقط)». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/reports-breakdown.mjs makes 1 cash, 1 card, 1 credit sale and asserts breakdown values sum to صافي المبيعات, the demo block is collapsed by default (0 visible demo numbers), the print view contains the three method rows; journey tab+period <=2 clicks (assert).",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:42:29+00:00"
+   "dispatched_at": "2026-11-13T21:42:29+00:00",
+   "pr": 321,
+   "ci_dispatched": {
+    "sha": "536b5a31749dba56beeaaec60c7d8f3d50498c45",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T21:46:01+00:00"
+   }
   },
   {
    "id": "UX29",
@@ -2398,5 +2408,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:42:29+00:00"
+ "updated": "2026-11-13T21:46:01+00:00"
 }
