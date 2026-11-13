@@ -2109,22 +2109,15 @@
    "brief": "In index.html CSS at max-width:600px: (a) move/shorten #toast/.nova-toast to the top and auto-hide at 2.5s so it never covers #inputPercentDiscount; (b) move the ✦ #novaAiLaunch FAB off the sale footer (hide on the sale page at <=600px or dock it beside the topbar); (c) fix the overlap of the VAT label with the totals (.totals-breakdown .tot-row wrap); (d) make the invoice table fit 390px (stack the row: name+meta on line 1, price/qty/discount/total on line 2) so no column is clipped; (e) hide the <kbd>F9 / دفع</kbd> hint on touch widths; (f) ensure .suggestion-item customer results are tappable (not covered). Add tests/ux/mobile-sale-layout.mjs (Playwright 390x844): add an item, then assert bounding boxes of toast, FAB, #inputPercentDiscount, #displayGrandTotal and #btnCheckout do not intersect, no element in the invoice table is clipped past the viewport, and page.click on the customer suggestion succeeds. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/mobile-sale-layout.mjs passes at 390x844; existing node tests/ux/mobile-nav.check.mjs and tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T18:51:23+00:00",
    "pr": 312,
-   "ci_dispatched": {
-    "sha": "3e62bfe98e06c052db6cc524d91fedeb3dd21833",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T18:55:41+00:00"
-   }
+   "merged_at": "2026-11-13T19:01:03+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/312"
   },
   {
    "id": "UX9",
@@ -2133,23 +2126,16 @@
    "brief": "In index.html (.modal-backdrop / .modal-backdrop.active CSS ~lines 1000-1025 and the open/close helpers for #checkoutModal, #receiptModal, #helpModal, #customerCheckoutGate) make closed modals unfocusable: add visibility:hidden (with a visibility transition delay so the 0.15s fade still works) or the inert attribute when not .active; on open focus the first control, on close return focus to #mainSearchInput. Add tests/ux/modal-tab-trap.mjs (Playwright against local index.html): press Tab 40 times from load and assert 0 stops inside a closed .modal-backdrop; open checkout with F9 and assert Tab stays inside it; Esc returns focus to #mainSearchInput. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/modal-tab-trap.mjs passes (0 tab stops inside closed modals, was 11 in 40 presses); F2/F3/F4/F9/Esc shortcuts and node tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "B",
    "dispatched_at": "2026-11-13T18:52:39+00:00",
    "pr": 311,
-   "ci_dispatched": {
-    "sha": "c3fbcd9002f3a13db7ca55064d52d62c85247a5b",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T18:55:41+00:00"
-   }
+   "merged_at": "2026-11-13T19:01:03+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/311"
   }
  ],
- "updated": "2026-11-13T18:58:39+00:00"
+ "updated": "2026-11-13T19:01:03+00:00"
 }
