@@ -791,11 +791,21 @@
    "brief": "backend/migrations/0002_catalog_inventory.sql: products, product_barcodes, product_units, inventory_batches, inventory_movements (append-only ledger; trigger blocks UPDATE/DELETE), stock_counts, stock_transfers; every row tenant_id/branch_id, money as integer minor units. Extend migration test for invariants.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:40:24+00:00"
+   "dispatched_at": "2026-11-13T10:40:24+00:00",
+   "pr": 254,
+   "ci_dispatched": {
+    "sha": "d20c53fe3c020cf6f03549976b0c4f24ce9469db",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T10:43:00+00:00"
+   }
   },
   {
    "id": "UX7",
@@ -823,10 +833,12 @@
    "brief": "In index.html (products render near the string 'الرصيد غير متاح في هذه القائمة') hide the empty الرصيد/العبوة/التصنيف columns when every row is empty, or show a muted 'غير متوفر من المصدر' label with a title tooltip; also change the 'الرصيد: غير متاح' KPI to a clearer Arabic message. No backend/data change. Add tests/ux/products-empty-columns.check.mjs (jsdom-free: extract the render function or assert the string/rule exists). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/products-empty-columns.check.mjs passes; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T10:43:00+00:00"
   },
   {
    "id": "UX5",
@@ -1618,5 +1630,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T10:41:54+00:00"
+ "updated": "2026-11-13T10:43:00+00:00"
 }
