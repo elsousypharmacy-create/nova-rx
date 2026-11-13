@@ -1865,21 +1865,14 @@
     "N124",
     "N125"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "B",
    "dispatched_at": "2026-11-13T18:26:45+00:00",
    "pr": 300,
-   "ci_dispatched": {
-    "sha": "b1c77b2144e9a6b44957f722e43b1bcf77c17971",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T18:28:01+00:00"
-   }
+   "merged_at": "2026-11-13T18:33:53+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/300"
   },
   {
    "id": "N129",
@@ -1970,12 +1963,22 @@
    "brief": "In index.html: translate the keyboard-shortcuts table in #helpModal (English rows «Start New Sale…» etc.) and the English title= tooltips («New Sale (F2)», «Add / Switch Customer (F3)», «Clear Line Items (F4)») to Arabic via the existing tr()/i18n helper so they flip with the language switch; add aria-label to #novaNewRole and #novaNewOk; unify button radius/height tokens (use ux-tokens.js variables) so each page has at most 3 button variants (primary/secondary/danger). Add tests/unit/ux-i18n-consistency.check.mjs (node, static scan of index.html): no English-only title= or help rows in the Arabic default, every button/select has an accessible name, and button variants per page <= 3 via a Playwright count if a harness exists. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/unit/ux-i18n-consistency.check.mjs passes; node tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro.json",
    "slot": "B",
-   "dispatched_at": "2026-11-13T18:29:45+00:00"
+   "dispatched_at": "2026-11-13T18:29:45+00:00",
+   "pr": 302,
+   "ci_dispatched": {
+    "sha": "edbb80f952a865adf6a63593225e51a8b1bee7ec",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T18:33:53+00:00"
+   }
   },
   {
    "id": "UX17",
@@ -1984,10 +1987,12 @@
    "brief": "In index.html (handleSearchKeyDown ~line 3018 and the window keydown handler ~line 4672): (a) Enter with suggestions open and no arrow selection adds the first suggestion; (b) typing `*3` or `3*` before/after a query sets the quantity of the added line; (c) F6 focuses the % discount, F7 the fixed discount; (d) inside checkout: F10 selects card, F11 credit, F12/C cash (preventDefault; Enter confirms); (e) Enter on an empty search box when the invoice has lines opens checkout; (f) Enter on the receipt modal starts a new sale (same as F2); (g) F1 opens the help modal; update the help table and button hints in Arabic. Add tests/ux/sale-clicks.mjs (Playwright, local index.html) asserting the measured counts: barcode sale = typed barcode + at most 3 key presses and 0 clicks (Enter, Enter, Enter); name+qty+10% discount+card sale <= 5 interactions after typing; ui-pos01-sale-flow.mjs and ui-pos02-payment.mjs still pass. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/sale-clicks.mjs passes with barcode sale <= 3 key presses (was 5) and mouse/keyboard card sale with discount <= 5 interactions (was 8 clicks); node tests/ui-pos01-sale-flow.mjs and node tests/ui-pos02-payment.mjs still pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro.json"
+   "source": "inbox/ux-pro.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-13T18:33:53+00:00"
   },
   {
    "id": "UX16",
@@ -2086,5 +2091,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:32:30+00:00"
+ "updated": "2026-11-13T18:33:53+00:00"
 }
