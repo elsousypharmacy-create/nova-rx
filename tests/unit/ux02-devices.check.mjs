@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const h = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
+t('viewport meta present', () => assert.match(h, /<meta name="viewport" content="width=device-width/));
+t('UX-02 block: 44px targets', () => assert.match(h, /UX-02[\s\S]*min-height:44px!important/));
+t('UX-02 block: visible keyboard focus', () => assert.match(h, /UX-02[\s\S]*a:focus-visible[\s\S]*outline:2px solid/));
+t('UX-02 block: no horizontal page scroll', () => assert.match(h, /html,body\{max-width:100%;overflow-x:hidden\}/));
+t('UX-02 block uses no physical left/right (RTL safe)', () => { const b = h.slice(h.lastIndexOf('/* UX-02')); const css = b.slice(0, b.indexOf('</style>')); assert.doesNotMatch(css, /(margin|padding)-(left|right)|\b(left|right):/); });
+t('search input and nav have accessible names', () => { assert.match(h, /id="mainSearchInput"[\s\S]{0,80}aria-label="Search"/); assert.match(h, /<nav class="nova-nav" aria-label=/); });
+console.log(n + ' passed');
