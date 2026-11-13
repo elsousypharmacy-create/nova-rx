@@ -4969,6 +4969,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
  const money=n=>(Number(n)||0).toFixed(2)+(localStorage.getItem('nova-rx-language')==='en'?' EGP':' ج.م');
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
+ const cards=(h,r)=>table(h,r).replace('<table class="nova-data-table">','<table class="nova-data-table nova-cards">');
  const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
 
@@ -5015,18 +5016,18 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
- +table(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td>'+esc(c.name)+'</td><td dir="ltr">'+esc(c.phone)+'</td><td>'+esc(c.tier)+'</td><td>'+esc(c.visits)+'</td><td>'+esc(c.points)+'</td><td data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+'</td></tr>'}));
+ +cards(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td data-label="الاسم">'+esc(c.name)+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(c.tier)+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+'</td></tr>'}));
  }else if(page==='invoices'){
  const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:new Date(x.at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
  const backupBar='<div class="nova-panel" style="padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="novaSalesExport" class="btn btn-secondary nova-return-btn" style="min-height:44px">'+tr('تصدير نسخة احتياطية (JSON)','Export backup (JSON)')+'</button><button type="button" id="novaSalesImport" class="btn btn-secondary nova-return-btn" style="min-height:44px">'+tr('استيراد نسخة احتياطية','Import backup')+'</button><input type="file" id="novaSalesImportFile" accept="application/json,.json" hidden><span id="novaBackupMsg" role="status" style="font-size:13px;color:#9eacb9"></span></div>';
  const savedBlock=saved.length?'<div class="nova-kpis">'+kpi('فواتير محفوظة',saved.length)+kpi('إجمالي المبيعات',money(saved.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(saved.reduce((s,i)=>s+i.total,0)/saved.length))+'</div>'
-  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+esc(i.pay)+'</td><td>'+money(i.total)+'</td><td>'+(i.ret>0?money(i.ret):'—')+(i.cx?' <b>'+tr('ملغاة','Cancelled')+'</b>':'')+'</td><td>'+esc(i.items)+'</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="nova-return-btn" data-reprint="'+esc(i.sid)+'">'+tr('إعادة طباعة نسخة','Reprint Copy')+'</button><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
+  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table nova-cards"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="الدفع">'+esc(i.pay)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="المرتجع">'+(i.ret>0?money(i.ret):'—')+(i.cx?' <b>'+tr('ملغاة','Cancelled')+'</b>':'')+'</td><td data-label="الأصناف">'+esc(i.items)+'</td><td class="nova-actions" data-label="إجراء"><button type="button" class="nova-return-btn" data-reprint="'+esc(i.sid)+'">'+tr('إعادة طباعة نسخة','Reprint Copy')+'</button><button type="button" class="nova-return-btn" data-return="'+esc(i.sid)+'">'+tr('مرتجع / إلغاء','Return / Void')+'</button></td></tr>')+'</tbody></table></div></div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا</div></div>';
  const list=filtered(inv,['id','customer','date','branch']);
  content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+backupBar+savedBlock
   +'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
- +table(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+money(i.total)+'</td><td>'+esc((i.items||[]).length)+'</td></tr>'));
+ +cards(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="الأصناف">'+esc((i.items||[]).length)+'</td></tr>'));
  }else if(page==='reports'){
  const sum=inv.reduce((s,i)=>s+i.total,0);
 const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDateString();
@@ -6035,6 +6036,22 @@ input,select,textarea{min-height:44px}
 .nova-nav .nova-tab,.nova-tab{min-height:44px!important;display:inline-flex;align-items:center;flex-shrink:0}
 @media(max-width:780px){.nova-nav-row{height:48px;min-height:48px}}
 .nova-inventory-action,.nova-return-btn,.nova-page-btn,.nova-page-view button,.nova-page-view select,.nova-page-view input:not([type=checkbox]):not([type=radio]),#novaAuthName,#novaAuthPw,#novaAuthIn,#novaNewName,#novaNewPw,#novaNewRole,#novaNewOk,#novaNearExpiryDays{min-height:44px!important}
+/* UX24: card layout for invoices/customers tables on phones */
+.nova-data-table .nova-actions{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:640px){
+.nova-page-view div[style*="overflow:auto"]{overflow:visible!important}
+.nova-data-table.nova-cards{min-width:0!important;width:100%;display:block}
+.nova-data-table.nova-cards thead{display:none}
+.nova-data-table.nova-cards tbody{display:block}
+.nova-data-table.nova-cards tr{display:block;margin:0 0 10px;padding:6px 12px;background:#1c2229;border:1px solid #292f36;border-radius:10px}
+.nova-data-table.nova-cards td{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:0;padding:6px 0;font-size:13px;min-width:0;overflow-wrap:anywhere}
+.nova-data-table.nova-cards td::before{content:attr(data-label);color:#a7b3bd;font-size:12px;flex:none}
+.nova-data-table.nova-cards td.nova-actions{justify-content:stretch}
+.nova-data-table.nova-cards td.nova-actions::before{display:none}
+.nova-data-table.nova-cards .nova-return-btn{min-width:44px!important;min-height:44px!important;flex:1 1 auto}
+.nova-data-table.nova-cards td[data-debt]{flex-wrap:wrap}
+.nova-data-table.nova-cards [data-pay-debt]{flex:none;min-width:72px!important;min-height:44px!important}
+}
 /* UX33: compact mobile cart rows (<=96px: name row + stepper/unit/total row), discount only if >0 */
 @media(max-width:640px){
 .invoice-table tbody tr{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"item price act" "qty total total";gap:0 8px!important;padding:2px 8px!important;align-items:center;min-height:0}
