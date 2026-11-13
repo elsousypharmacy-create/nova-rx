@@ -562,9 +562,9 @@
    "brief": "Create only the file .nova/noop/CHAIN1.txt containing the exact single line CHAIN1 and no other text. Do not modify any other file. Commit and push on this branch.",
    "acceptance": "File .nova/noop/CHAIN1.txt exists with contents CHAIN1. No other files changed. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "failed",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T05:34:46+00:00",
    "pr": 218,
@@ -590,5 +590,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T05:35:43+00:00"
+ "updated": "2026-11-13T05:37:18+00:00"
 }
