@@ -2188,12 +2188,22 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:20:53+00:00"
+   "dispatched_at": "2026-11-13T21:20:53+00:00",
+   "pr": 316,
+   "ci_dispatched": {
+    "sha": "e3f49ba14c22cfc1f79ebcd9b9a4add35268e9d1",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T21:22:39+00:00"
+   }
   },
   {
    "id": "UX34",
@@ -2202,10 +2212,12 @@
    "brief": "Files: index.html (sale toolbar buttons #btnNewSale, #holdCurrentInvoice, #btnHeldInvoices, #btnAddLoyalty, #btnSaleMore, #searchModeTag, #inputPercentDiscount, #inputFixedDiscount, #btnRefreshApp), purchases.html/purchases.css (#selectAll hit area), tests/ux/tap-targets.mjs (already exists from UX16: extend it, keep existing assertions). Use min-height/min-width 44px (or padding hit areas) without breaking the single-row toolbar at 1366 and 768-wide tablet. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "extended tests/ux/tap-targets.mjs asserts every listed control has bounding box >=44x44 at 1024x768 and 390x844 (selectAll via its label), no toolbar wrap at 1024 width, and the sale keyboard journey is unchanged.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T21:22:39+00:00"
   },
   {
    "id": "UX33",
@@ -2352,5 +2364,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:20:53+00:00"
+ "updated": "2026-11-13T21:22:39+00:00"
 }
