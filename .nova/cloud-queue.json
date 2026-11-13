@@ -904,13 +904,23 @@
    "brief": "In index.html (.nova-nav, .nova-tab rules near lines 1385-1466) and purchases.html/purchases.css nav if present: make the tab strip horizontally scrollable with an edge fade (overflow-x:auto, scrollbar hidden, mask-image) and scroll the active tab into view (scrollIntoView({inline:'center'})) when a tab is activated, on ≤780px. Add tests/ux/mobile-nav.check.mjs asserting the CSS + scrollIntoView call exist. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-nav.check.mjs passes; manual Playwright at 390x844 shows every tab reachable by scroll; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-phase10.json",
    "note": "Agent run 43412811792 never started (GitHub Actions billing/spending limit). attempts reset to 0 so it can get a real try.",
    "slot": "A",
-   "dispatched_at": "2026-11-13T12:16:18+00:00"
+   "dispatched_at": "2026-11-13T12:16:18+00:00",
+   "pr": 259,
+   "ci_dispatched": {
+    "sha": "4ac6eb92d8f36acc34065f7c2008d8a7e47aeb8f",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T12:17:31+00:00"
+   }
   },
   {
    "id": "UX1",
@@ -919,10 +929,12 @@
    "brief": "In index.html (CSS for the sale topbar: search wrapper .search-container/.search-box-wrapper, invoice number chip, buttons «فاتورة جديدة/تعليق/معلقة/ربط عميل») make the bar wrap to two rows at max-width:600px so #mainSearchInput is fully visible and tappable at 390x844 and the invoice number does not overlap «منتج». Add tests/ux/mobile-topbar.check.mjs (static CSS/DOM check on index.html, node) asserting a wrap rule exists for ≤600px, and extend with a Playwright check against local index.html if tests/ux has a harness. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-topbar.check.mjs passes; at 390x844 page.click('#mainSearchInput') succeeds with no Timeout; existing node tests/unit/ux-tokens.check.mjs and tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:17:31+00:00"
   },
   {
    "id": "N93",
@@ -1654,5 +1666,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T12:16:18+00:00"
+ "updated": "2026-11-13T12:17:31+00:00"
 }
