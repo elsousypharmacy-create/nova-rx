@@ -2024,7 +2024,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="المزيد من الإجراءات" title="المزيد من الإجراءات" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
             <div id="novaSaleMoreMenu" class="nova-more-menu" hidden>
               <button id="btnClearInvoice" class="nova-more-item nova-more-danger" type="button" title="مسح الأصناف (F4)">Clear Invoice</button>
-              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="عرض اختصارات الكيبورد">Keyboard Shortcuts</button>
+              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="عرض اختصارات الكيبورد (F1)">Keyboard Shortcuts (F1)</button>
             </div>
           </div>
         </div>
@@ -2239,13 +2239,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           <label style="font-size:12px; font-weight:600; color:#94a3b8; display:block; margin-bottom:6px;">Payment Method</label>
           <div class="pay-methods-grid">
             <button class="pay-method-btn active" data-method="cash">
-              <span>Cash / نقدي</span>
+              <span>Cash / نقدي (F12)</span>
             </button>
             <button class="pay-method-btn" data-method="card">
-              <span>Mada / بطاقة</span>
+              <span>Mada / بطاقة (F10)</span>
             </button>
             <button class="pay-method-btn" data-method="credit">
-              <span>Credit / آجل</span>
+              <span>Credit / آجل (F11)</span>
             </button>
             <button class="pay-method-btn" data-method="split">
               <span>Split / مشترك</span>
@@ -2322,7 +2322,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <button id="btnPrintReceiptBtn" class="btn btn-secondary">Print</button>
         <button id="btnReprintReceipt" class="btn btn-secondary">Reprint Copy</button>
         <button id="btnExportReceiptPdf" class="btn btn-secondary">Download PDF</button>
-        <button id="btnReceiptNewSale" class="btn btn-primary">Start New Sale (F2)</button>
+        <button id="btnReceiptNewSale" class="btn btn-primary">Start New Sale (F2 / Enter)</button>
       </div>
     </div>
   </div>
@@ -2344,6 +2344,12 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F3</strong></td><td style="color:#38bdf8;">إضافة عميل / تبديل البحث عن عميل بدون مسح الأصناف</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F4</strong></td><td style="color:#38bdf8;">مسح أصناف الفاتورة الحالية</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F9</strong></td><td style="color:#38bdf8;">فتح نافذة الدفع</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F1</strong></td><td style="color:#38bdf8;">فتح هذه النافذة (الاختصارات)</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (على بحث فارغ والفاتورة بها أصناف)</td><td style="color:#38bdf8;">فتح نافذة الدفع؛ ثم Enter لتأكيد الدفع وEnter لفاتورة جديدة</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (بدون تحديد بالأسهم)</td><td style="color:#38bdf8;">يضيف أول صنف في الاقتراحات</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>*3</strong> قبل الاسم أو <strong>3*</strong> بعده</td><td style="color:#38bdf8;">تحديد الكمية (مثال: *3 بانادول)</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F6 / F7</strong></td><td style="color:#38bdf8;">خصم بالنسبة % / خصم بمبلغ ثابت</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F10 / F11 / F12 (أو C)</strong> داخل الدفع</td><td style="color:#38bdf8;">بطاقة / آجل / نقدي</td></tr>
           <tr><td style="padding:6px 0;"><strong>Esc</strong></td><td style="color:#38bdf8;">إغلاق القوائم والنوافذ المفتوحة</td></tr>
         </table>
       </div>
@@ -2965,8 +2971,26 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       }
 
       // --- SEARCH & AUTOCOMPLETE ENGINE ---
+      // UX17: "*3 query" or "query*3" sets the quantity of the added line.
+      function parseQtyQuery(raw) {
+        const t = String(raw || "").trim();
+        let m = t.match(/^\*\s*(\d{1,3})\s+(.+)$/) || t.match(/^\*(\d{1,3})(\D.*)$/);
+        if (m) return { qty: Math.max(1, +m[1]), query: m[2].trim() };
+        m = t.match(/^(.*\D)\s*\*\s*(\d{1,3})$/) || t.match(/^(\d+)\s*\*\s*(\d{1,3})$/);
+        if (m && m[1].trim()) return { qty: Math.max(1, +m[2]), query: m[1].trim() };
+        return { qty: 1, query: t };
+      }
+      function addProductWithQty(product, qty) {
+        const r = addProductToInvoice(product);
+        if (qty > 1 && r && r.ok !== false) {
+          const line = state.invoiceLines.find(l => l.productId === product.id && (l.unit || "box") === r.unit);
+          if (line) { line.qty += qty - 1; renderInvoice(); }
+        }
+        return r;
+      }
+
       function handleSearchInput(e) {
-        const query = e.target.value.trim();
+        const query = state.mode === "PRODUCT" ? parseQtyQuery(e.target.value).query : e.target.value.trim();
         state.searchQuery = query;
 
         // Check if user is typing or scanning a product barcode directly in Customer Mode
@@ -3071,7 +3095,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
       // --- KEYBOARD NAVIGATION FOR SEARCH INPUT ---
       function handleSearchKeyDown(e) {
-        const query = elements.mainSearchInput.value.trim();
+        const parsedQ = state.mode === "PRODUCT" ? parseQtyQuery(elements.mainSearchInput.value) : { qty: 1, query: elements.mainSearchInput.value.trim() };
+        const query = parsedQ.query;
+        const lineQty = parsedQ.qty;
 
         if (e.key === "ArrowDown") {
           e.preventDefault();
@@ -3116,11 +3142,17 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             return;
           }
 
+          // UX17: Enter on an empty product search with lines opens checkout
+          if (state.mode === "PRODUCT" && query === "" && state.invoiceLines.length > 0) {
+            openCheckout();
+            return;
+          }
+
           // In Product Mode with query: check exact barcode match first
           if (state.mode === "PRODUCT") {
             const exactBarcode = findExactBarcodeProduct(query);
             if (exactBarcode) {
-              addProductToInvoice(exactBarcode);
+              addProductWithQty(exactBarcode, lineQty);
               elements.mainSearchInput.value = "";
               closeSuggestions();
               showToast(`Product added: ${escH(exactBarcode.name)}`);
@@ -3129,13 +3161,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           }
 
           // Otherwise select from active dropdown if present
-          if (state.suggestions.length > 0 && state.selectedIndex >= 0) {
-            const selected = state.suggestions[state.selectedIndex];
+          if (state.suggestions.length > 0) {
+            const selected = state.suggestions[Math.max(0, state.selectedIndex)];
             if (state.mode === "CUSTOMER") {
               attachCustomer(selected);
               setSearchMode("PRODUCT");
             } else {
-              addProductToInvoice(selected);
+              addProductWithQty(selected, lineQty);
               elements.mainSearchInput.value = "";
               closeSuggestions();
             }
@@ -4762,7 +4794,31 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
         // Global Keyboard Shortcuts
         window.addEventListener("keydown", e => {
-          if (e.key === "F2") {
+          const checkoutOpen = elements.checkoutModal.classList.contains("active");
+          const payHotkey = { F10: "card", F11: "credit", F12: "cash" }[e.key] || ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target && e.target.tagName) ? "cash" : null);
+          if (checkoutOpen && payHotkey) {
+            e.preventDefault();
+            const b = document.querySelector('.pay-method-btn[data-method="' + payHotkey + '"]');
+            if (b) b.click();
+            return;
+          }
+          if (e.key === "F1") {
+            e.preventDefault();
+            elements.helpModal.classList.add("active");
+            elements.btnCloseHelp.focus();
+          } else if (e.key === "F6" && !checkoutOpen) {
+            e.preventDefault();
+            elements.inputPercentDiscount.focus();
+            elements.inputPercentDiscount.select();
+          } else if (e.key === "F7" && !checkoutOpen) {
+            e.preventDefault();
+            elements.inputFixedDiscount.focus();
+            elements.inputFixedDiscount.select();
+          } else if (e.key === "Enter" && elements.receiptModal.classList.contains("active")) {
+            e.preventDefault();
+            elements.receiptModal.classList.remove("active");
+            startNewSale();
+          } else if (e.key === "F2") {
             e.preventDefault();
             startNewSale();
           } else if (e.key === "F3") {
@@ -5126,6 +5182,12 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   'Search to select a replacement customer.':'ابحث لاختيار عميل بديل.','Re-added from history at current price:':'أُعيدت الإضافة من السجل بالسعر الحالي:','Discount cannot be negative. The value is ignored.':'لا يمكن أن يكون الخصم بالسالب. تم تجاهل القيمة.','Percent discount cannot exceed 100%. Using 100%.':'نسبة الخصم لا تتجاوز 100%. تم استخدام 100%.','Discount is larger than the invoice total. The total is set to zero.':'الخصم أكبر من إجمالي الفاتورة. الإجمالي أصبح صفرًا.','No products found matching':'لا توجد منتجات مطابقة','No customers found. Press':'لا يوجد عميل بهذا البحث. اضغط','to skip and switch to Product Scan.':'للتخطي والانتقال لبحث المنتجات.','Walk-in Customer':'عميل عابر','Start New Sale (F2)':'فاتورة جديدة (F2)',
   'Skips customer and switches to Product Scan mode':'يتخطى العميل وينتقل لوضع مسح المنتج','Barcode Scan':'مسح الباركود',
   'Directly adds product & switches to Product mode':'يضيف المنتج مباشرة وينتقل لوضع المنتج',
+  'Opens this window (shortcuts)':'فتح هذه النافذة (الاختصارات)','(on empty search with items on the invoice)':'(على بحث فارغ والفاتورة بها أصناف)',
+  'Opens checkout; then Enter confirms payment and Enter starts a new sale':'فتح نافذة الدفع؛ ثم Enter لتأكيد الدفع وEnter لفاتورة جديدة',
+  '(no arrow selection)':'(بدون تحديد بالأسهم)','Adds the first suggestion':'يضيف أول صنف في الاقتراحات',
+  'before the name or':'قبل الاسم أو','after it':'بعده','Set quantity (e.g. *3 Panadol)':'تحديد الكمية (مثال: *3 بانادول)',
+  'Percent discount / fixed discount':'خصم بالنسبة % / خصم بمبلغ ثابت','(or C) inside checkout':'داخل الدفع',
+  'Card / Credit / Cash':'بطاقة / آجل / نقدي',
   'Start New Sale (resets invoice & focuses search)':'فاتورة جديدة (تمسح الفاتورة وتركّز على البحث)',
   'Add Loyalty / Switch customer search without resetting items':'إضافة عميل / تبديل البحث عن عميل بدون مسح الأصناف',
   '(on blank customer search)':'(في بحث العميل الفارغ)','(anytime)':'(في أي وقت)','Arrow Up / Down':'السهم لأعلى / لأسفل',
@@ -5138,6 +5200,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  /* Exact mixed-language markup strings: [English, Arabic] */
  const mixedText={
   'Complete Sale & Payment / إنهاء الفاتورة':['Complete Sale & Payment','إتمام البيع والدفع'],
+  'F10 / F11 / F12 (أو C)':['F10 / F11 / F12 (or C)','F10 / F11 / F12 (أو C)'],'Cash / نقدي (F12)':['Cash (F12)','نقدي (F12)'],'Mada / بطاقة (F10)':['Mada / Card (F10)','مدى / بطاقة (F10)'],'Credit / آجل (F11)':['Credit (F11)','آجل (F11)'],'Start New Sale (F2 / Enter)':['Start New Sale (F2 / Enter)','فاتورة جديدة (F2 / Enter)'],
   'Cash / نقدي':['Cash','نقدي'],'Mada / بطاقة':['Mada / Card','مدى / بطاقة'],'Split / مشترك':['Split','مشترك'],'Credit / آجل':['Credit','آجل'],'Card (mock) / بطاقة':['Card (mock)','بطاقة (تجريبية)'],'Credit / آجل (يحتاج عميلاً)':['Credit (needs a customer)','آجل (يحتاج عميلاً)'],
   'Transaction Receipt / إيصال الدفع':['Transaction Receipt','إيصال الدفع'],
   'اختصارات الكيبورد ودليل الكاشير':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],
