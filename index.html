@@ -1105,9 +1105,14 @@
 
     .pay-methods-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
+    @media (max-width: 600px) { .pay-methods-grid { grid-template-columns: repeat(2, 1fr); } }
+    #checkoutCreditHint { color:#ff6b6b; font-size:12px; font-weight:600; margin-top:6px; }
+    #checkoutCreditHint[hidden] { display:none; }
+    #btnCancelCheckout { order:1; } #btnConfirmPayment { order:2; }
+    #btnConfirmPayment:disabled { opacity:.45; cursor:not-allowed; }
 
     .pay-method-btn {
       padding: 10px;
@@ -2242,6 +2247,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           <div class="label">Total Amount Payable</div>
           <div id="modalAmountDue" class="val">0.00 EGP</div>
           <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div><button type="button" id="checkoutAddCustomer" class="nova-checkout-customer">إضافة رقم العميل (اختياري)</button>
+          <div id="checkoutCreditHint" role="alert" hidden>اختر عميلاً لإتمام البيع الآجل</div>
         </div>
 
         <div>
@@ -2257,7 +2263,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               <span>Credit / آجل (F11)</span>
             </button>
             <button class="pay-method-btn" data-method="split">
-              <span>Split / مشترك</span>
+              <span>Split / مختلط</span>
             </button>
           </div>
         </div>
@@ -2282,11 +2288,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             placeholder="0.00"
           >
           <div class="quick-cash-row">
-            <button class="quick-cash-btn" data-val="exact">Exact</button>
-            <button class="quick-cash-btn" data-val="50">50</button>
-            <button class="quick-cash-btn" data-val="100">100</button>
-            <button class="quick-cash-btn" data-val="200">200</button>
-            <button class="quick-cash-btn" data-val="500">500</button>
+            <button class="quick-cash-btn" tabindex="-1" data-val="exact">Exact</button>
+            <button class="quick-cash-btn" tabindex="-1" data-val="50">50</button>
+            <button class="quick-cash-btn" tabindex="-1" data-val="100">100</button>
+            <button class="quick-cash-btn" tabindex="-1" data-val="200">200</button>
+            <button class="quick-cash-btn" tabindex="-1" data-val="500">500</button>
           </div>
 
           <div class="change-due-box" style="margin-top:10px;">
@@ -2296,10 +2302,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         </div>
       </div>
       <div class="modal-footer">
-        <button id="btnCancelCheckout" class="btn btn-secondary">Cancel (Esc)</button>
         <button id="btnConfirmPayment" class="btn btn-primary" style="padding:8px 18px; font-size:13px;">
           Confirm & Print Receipt (Enter)
         </button>
+        <button id="btnCancelCheckout" class="btn btn-secondary">Cancel (Esc)</button>
       </div>
     </div>
   </div>
@@ -3604,6 +3610,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         elements.inputCashReceived.value = grandTotal.toFixed(2);
         state.cashReceived = grandTotal;
         updateChangeDue(grandTotal, grandTotal);
+        refreshChange();
 
         elements.checkoutModal.classList.add("active");
         elements.inputCashReceived.focus();
@@ -3620,6 +3627,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       function refreshChange() {
         const { grandTotal } = recalculateFinancials(), tp = currentTenderPlan(grandTotal);
         elements.displayChangeDue.textContent = formatMoney(tp.ok ? tp.change : 0);
+        const needCust = !tp.ok && tp.error === "credit-needs-customer";
+        const hint = document.getElementById("checkoutCreditHint");
+        if (hint) hint.hidden = !needCust;
+        elements.btnConfirmPayment.disabled = needCust;
       }
 
       function updateChangeDue(received, total) {
@@ -4104,6 +4115,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       function confirmPayment() { window.novaStock.withLock(confirmPaymentCore); }
 
       function confirmPaymentCore() {
+        if (elements.btnConfirmPayment.disabled) return;
         if (!state.attachedCustomer && !state.customerGateSkipped) { closeCheckout(); openCheckout(); return; }
         const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
         const tp = currentTenderPlan(grandTotal);
@@ -4239,7 +4251,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           return n;
         }
         function reprintCount(num) { return Number(reprintsMap()[num]) || 0; }
-        function payLabel(m) { return ({ cash: 'نقدي (Cash)', card: 'بطاقة (Card)', credit: 'آجل (Credit)', mixed: 'مشترك (Mixed)' })[m] || String(m || 'نقدي'); }
+        function payLabel(m) { return ({ cash: 'نقدي (Cash)', card: 'بطاقة (Card)', credit: 'آجل (Credit)', mixed: 'مختلط (Mixed)' })[m] || String(m || 'نقدي'); }
         function render() {
           if (!currentSale || !elements.receiptSlipContent) return '';
           const s = currentSale, w = getWidth(), dt = new Date(s.at || Date.now());
@@ -4752,6 +4764,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             refreshChange();
             if (state.checkoutPaymentMethod === "cash") elements.inputCashReceived.focus();
             else if (state.checkoutPaymentMethod === "split") document.getElementById("inputCardAmount").focus();
+            else if (elements.btnConfirmPayment.disabled) { const ac = document.getElementById("checkoutAddCustomer"); (ac.hidden ? elements.btnCancelCheckout : ac).focus(); }
             else elements.btnConfirmPayment.focus();
           });
         });
@@ -4808,7 +4821,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           if (checkoutOpen && payHotkey) {
             e.preventDefault();
             const b = document.querySelector('.pay-method-btn[data-method="' + payHotkey + '"]');
-            if (b) b.click();
+            if (b) {
+              b.click();
+              if (payHotkey === "cash") elements.inputCashReceived.focus();
+              else if (!elements.btnConfirmPayment.disabled) elements.btnConfirmPayment.focus();
+            }
             return;
           }
           if (e.key === "F1") {
@@ -5209,8 +5226,9 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  /* Exact mixed-language markup strings: [English, Arabic] */
  const mixedText={
   'Complete Sale & Payment / إنهاء الفاتورة':['Complete Sale & Payment','إتمام البيع والدفع'],
+  'اختر عميلاً لإتمام البيع الآجل':['Select a customer to complete the credit sale','اختر عميلاً لإتمام البيع الآجل'],
   'F10 / F11 / F12 (أو C)':['F10 / F11 / F12 (or C)','F10 / F11 / F12 (أو C)'],'Cash / نقدي (F12)':['Cash (F12)','نقدي (F12)'],'Mada / بطاقة (F10)':['Mada / Card (F10)','مدى / بطاقة (F10)'],'Credit / آجل (F11)':['Credit (F11)','آجل (F11)'],'Start New Sale (F2 / Enter)':['Start New Sale (F2 / Enter)','فاتورة جديدة (F2 / Enter)'],
-  'Cash / نقدي':['Cash','نقدي'],'Mada / بطاقة':['Mada / Card','مدى / بطاقة'],'Split / مشترك':['Split','مشترك'],'Credit / آجل':['Credit','آجل'],'Card (mock) / بطاقة':['Card (mock)','بطاقة (تجريبية)'],'Credit / آجل (يحتاج عميلاً)':['Credit (needs a customer)','آجل (يحتاج عميلاً)'],
+  'Cash / نقدي':['Cash','نقدي'],'Mada / بطاقة':['Mada / Card','مدى / بطاقة'],'Split / مختلط':['Split','مختلط'],'Credit / آجل':['Credit','آجل'],'Card (mock) / بطاقة':['Card (mock)','بطاقة (تجريبية)'],'Credit / آجل (يحتاج عميلاً)':['Credit (needs a customer)','آجل (يحتاج عميلاً)'],
   'Transaction Receipt / إيصال الدفع':['Transaction Receipt','إيصال الدفع'],
   'اختصارات الكيبورد ودليل الكاشير':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],
   'Keyboard Shortcuts & POS Manual':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],

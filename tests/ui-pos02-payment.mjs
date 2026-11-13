@@ -83,7 +83,9 @@ await t('credit without a customer is refused; invoice numbers stay unique', asy
   await addAndOpen('جافيسكون');
   await page.locator('.pay-method-btn[data-method=credit]').click();
   const n = await page.evaluate(() => window.novaSales.list().length);
-  await page.locator('#btnConfirmPayment').click(); await page.waitForTimeout(250);
+  // UX32: confirm is disabled up-front for credit with a walk-in customer (no post-Enter rejection)
+  assert.ok(await page.locator('#btnConfirmPayment').isDisabled());
+  await page.waitForTimeout(250);
   assert.equal(await page.evaluate(() => window.novaSales.list().length), n);
   await page.locator('#btnCloseCheckout').click();
   const nums = await page.evaluate(() => { const used = window.novaSales.list()[0].number; localStorage.setItem('nova-rx-sale-sequence-v1', '0'); return { used, next: window.novaPay.numberTaken(used) }; });
