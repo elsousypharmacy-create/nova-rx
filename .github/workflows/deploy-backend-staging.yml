@@ -1,0 +1,76 @@
+# Manual, guarded deploy of the NOVA Rx *staging* backend Worker (nova-rx-api-staging only).
+# Start it from Actions > "Deploy backend staging" > Run workflow.
+# First run should be a dry run (default). A real deploy requires confirm:
+#   DEPLOY nova-rx-api-staging
+# Never touches nova-rx-preview or production. Uses existing GitHub secrets.
+# Prints secret NAMES only, never values. Feature flags stay OFF.
+name: Deploy backend staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = check everything, upload nothing"
+        required: true
+        type: boolean
+        default: true
+      confirm:
+        description: "For a real deploy type exactly: DEPLOY nova-rx-api-staging"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-backend-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Single attempt only
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: '[ "$RUN_ATTEMPT" = "1" ] || { echo "Re-runs are blocked. Start a new run."; exit 1; }'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Run backend unit checks
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(tests/unit/backend-*.check.mjs)
+          for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done
+          node tools/backend/check-migrations.mjs
+          node tools/backend/stale-artifact-guard.mjs 0.1.0
+      - name: Guard migrations are additive only
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          bad=0
+          for f in backend/migrations/*.sql; do
+            if grep -EinH '\b(DROP[[:space:]]+(TABLE|COLUMN|INDEX|VIEW|TRIGGER)|TRUNCATE|DELETE[[:space:]]+FROM)\b' "$f"; then bad=1; fi
+          done
+          [ "$bad" = 0 ] || { echo "::error::destructive SQL in a migration (owner review required)"; exit 1; }
+      - name: Check the token secret exists
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: '[ -n "$CF_API_TOKEN" ] || { echo "::error::Add the CLOUDFLARE_API_TOKEN secret (Settings > Secrets and variables > Actions)."; exit 1; }'
+      - name: Deploy (or dry run)
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NOVA_API_PIN: ${{ secrets.NOVA_API_PIN }}
+          NOVA_INGEST_SECRET: ${{ secrets.NOVA_INGEST_SECRET }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CONFIRM: ${{ inputs.confirm }}
+          BUILD_SHA: ${{ github.sha }}
+          LIVE_URL: https://nova-rx-api-staging.elsousypharmacy.workers.dev
+        run: bash .github/scripts/deploy_backend_staging.sh

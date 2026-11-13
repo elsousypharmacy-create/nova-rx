@@ -1,4 +1,8 @@
-# TEMPLATE ONLY — placeholder ids. Do not create resources or deploy without owner approval.
+# Staging bindings are real (GATE-11 / GATE-13). dev and production ids stay placeholders
+# until those environments are created. Do not deploy production without a later owner gate.
+# R2 is omitted on staging: the account has not enabled R2 in the Cloudflare dashboard
+# (API 10042). After the owner enables R2, create bucket nova-rx-staging and add the binding.
+account_id = "7140d9b8f71fb0854b43e50172a7146c"
 name = "nova-rx-api"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
@@ -23,20 +27,18 @@ bucket_name = "nova-rx-dev"
 
 [env.staging]
 name = "nova-rx-api-staging"
+workers_dev = true
 [env.staging.vars]
 NOVA_ENV = "staging"
-CORS_ALLOW_ORIGINS = "https://staging.example.invalid"
+CORS_ALLOW_ORIGINS = "https://nova-rx-preview.elsousypharmacy.workers.dev"
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "nova-rx-staging"
-database_id = "PLACEHOLDER_D1_STAGING_ID"
+database_id = "6e128d17-749e-4e44-9dee-1bf125486f4b"
 migrations_dir = "migrations"
 [[env.staging.kv_namespaces]]
 binding = "KV"
-id = "PLACEHOLDER_KV_STAGING_ID"
-[[env.staging.r2_buckets]]
-binding = "R2"
-bucket_name = "nova-rx-staging"
+id = "d93eba4d82a94f099d545983618614e6"
 
 [env.production]
 name = "nova-rx-api"
