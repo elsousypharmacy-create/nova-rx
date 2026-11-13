@@ -202,20 +202,20 @@
     "N43",
     "N47"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "slot": "A",
    "dispatched_at": "2026-11-13T05:56:39+00:00",
    "pr": 226,
    "ci_dispatched": {
-    "sha": "47816e276c4aa3d2aaa70f386dd72166552b4c46",
+    "sha": "fa200c8ece9952067a848715a9f40c2d1684a6c3",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T05:52:41+00:00"
+    "at": "2026-11-13T05:58:49+00:00"
    }
   },
   {
@@ -627,5 +627,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/221"
   }
  ],
- "updated": "2026-11-13T05:56:39+00:00"
+ "updated": "2026-11-13T05:58:49+00:00"
 }
