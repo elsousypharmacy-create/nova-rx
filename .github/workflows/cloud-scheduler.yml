@@ -7,7 +7,7 @@
 # Chaining: GitHub suppresses workflow_run (and pull_request/push CI) for
 # events caused by GITHUB_TOKEN. This workflow therefore never wakes from
 # the agent-task or branch CI that it itself dispatched — only from
-# workflow_dispatch (allowed), the hourly cron (unreliable), or a
+# workflow_dispatch (allowed), a 15-minute cron fallback, or a
 # workflow_run of a non-token workflow (e.g. a human PR). Agent-task does
 # dispatch this workflow when it finishes, but that is too early: the
 # scheduler opens the PR, starts CI, and would otherwise exit before CI
@@ -19,7 +19,8 @@ name: Cloud scheduler
 
 on:
   schedule:
-    - cron: "17 * * * *"
+    # Fallback if the self-dispatch / agent-wake chain dies (GitHub may delay cron).
+    - cron: "*/15 * * * *"
   workflow_dispatch:
   workflow_run:
     types: [completed]
