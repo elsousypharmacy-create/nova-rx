@@ -6,6 +6,7 @@ import { hardeningEnabled, applySecurityHeaders, checkCsrf, rateLimit, limitFor,
 import { registerSyncRoutes } from './sync.js';
 import { registerSyncPullRoutes } from './sync-pull.js';
 import { registerImportRoutes } from './import.js';
+import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -51,6 +52,7 @@ route('GET', '/api/v1/version', (ctx) => ({
   env: String((ctx.env && ctx.env.NOVA_ENV) || 'dev'), requestId: ctx.requestId,
 }));
 
+registerStatusRoute(route, { json, errorResponse });
 registerAuthRoutes(route, { json, errorResponse });
 registerSyncRoutes(route, { json, errorResponse });
 registerImportRoutes(route, { json, errorResponse });
@@ -95,6 +97,7 @@ async function handleInner(request, env) {
     return json(out, 200, { 'X-Request-Id': requestId, ...cors });
   } catch (e) {
     if (hardeningEnabled(env)) safeLog({ requestId, error: String(e && e.message) });
+    if (observabilityEnabled(env)) { countError('INTERNAL_ERROR'); logEvent('error', 'request_failed', { requestId, error: String(e && e.message) }); }
     return errorResponse('INTERNAL_ERROR', 'حدث خطأ داخلي. حاول مرة أخرى لاحقاً.', 500, requestId, cors);
   }
 }
