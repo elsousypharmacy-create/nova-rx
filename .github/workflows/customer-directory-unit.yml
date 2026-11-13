@@ -1,0 +1,30 @@
+name: Customer directory unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'customer-directory.js'
+      - 'tests/unit/customer-directory.check.mjs'
+      - '.github/workflows/customer-directory-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'customer-directory.js'
+      - 'tests/unit/customer-directory.check.mjs'
+      - '.github/workflows/customer-directory-unit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run customer directory checks (no dependencies, no network)
+        run: node --no-warnings tests/unit/customer-directory.check.mjs
