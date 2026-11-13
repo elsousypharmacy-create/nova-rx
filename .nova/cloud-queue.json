@@ -1647,19 +1647,12 @@
     "N119",
     "N120"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "pr": 292,
-   "ci_dispatched": {
-    "sha": "a83f2f6d2b8b3e6c47108aba3e83d589fba2833a",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T17:22:31+00:00"
-   }
+   "merged_at": "2026-11-13T17:27:03+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/292"
   },
   {
    "id": "N122",
@@ -1855,5 +1848,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T17:22:31+00:00"
+ "updated": "2026-11-13T17:27:03+00:00"
 }
