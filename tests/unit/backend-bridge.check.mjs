@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import * as B from '../../backend/src/bridge.js';
 
 const sql = new DatabaseSync(':memory:');
-sql.exec(readFileSync(new URL('../../backend/migrations/0011_legacy_bridge.sql', import.meta.url), 'utf8'));
+sql.exec(readFileSync(new URL('../../backend/migrations/0010_legacy_bridge.sql', import.meta.url), 'utf8'));
 const db = { prepare: (q) => ({ bind: (...a) => ({
   run: async () => sql.prepare(q).run(...a),
   first: async () => sql.prepare(q).get(...a),
