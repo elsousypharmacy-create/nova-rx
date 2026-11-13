@@ -995,11 +995,21 @@
     "N94",
     "N95"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T12:30:52+00:00"
+   "dispatched_at": "2026-11-13T12:30:52+00:00",
+   "pr": 264,
+   "ci_dispatched": {
+    "sha": "2474e99132db6a3c30858476ba633069c8f4e676",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T12:33:24+00:00"
+   }
   },
   {
    "id": "N97",
@@ -1016,9 +1026,11 @@
     "N94",
     "N95"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:33:24+00:00"
   },
   {
    "id": "N98",
@@ -1679,5 +1691,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T12:30:52+00:00"
+ "updated": "2026-11-13T12:33:24+00:00"
 }
