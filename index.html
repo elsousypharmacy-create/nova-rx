@@ -1236,6 +1236,7 @@
     .nova-receipt-width-btn, .nova-printer-toggle { min-height: 44px; min-width: 44px; padding: 6px 12px; font-size: 12px; border-radius: 8px; background: #222a33; border: 1px solid #3a4652; color: #d9e2e9; cursor: pointer; }
     .nova-receipt-width-btn.active { background: #1a3444; color: #f1f3f5; border-color: #6dbde0; font-weight: 700; }
     .nova-printer-toggle[data-connected="false"] { background: #29181c; color: #efa2a8; border-color: #56323a; }
+    .nova-receipt-alert[hidden] { display: none !important; }
     .nova-receipt-alert { background: #29181c; color: #fecaca; border: 1px solid #56323a; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .nova-receipt-copy { background: #fef3c7; color: #78350f; border: 1px dashed #b45309; padding: 4px 8px; text-align: center; font-weight: 800; font-size: 12px; margin-bottom: 8px; border-radius: 4px; }
     .nova-receipt-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 12px; }
@@ -2330,10 +2331,10 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             <button type="button" id="btnReceiptWidth80" class="nova-receipt-width-btn active" data-receipt-width="80mm">80mm</button>
             <button type="button" id="btnReceiptWidth58" class="nova-receipt-width-btn" data-receipt-width="58mm">58mm</button>
           </div>
-          <button type="button" id="btnPrinterStatus" class="nova-printer-toggle" data-connected="true">Printer Ready</button>
+          <button type="button" id="btnPrinterStatus" class="nova-printer-toggle" data-connected="true" data-printer-state="unknown">Printer: browser print</button>
         </div>
         <div id="receiptPrinterAlert" class="nova-receipt-alert" role="alert" hidden>
-          <span id="receiptPrinterAlertMsg">Printer Disconnected</span>
+          <span id="receiptPrinterAlertMsg">Check power/cable and retry</span>
           <button type="button" id="btnReconnectPrinter" class="btn btn-secondary" style="min-height:44px;">Reconnect &amp; Retry</button>
         </div>
         <div id="receiptSlipContent" class="receipt-slip" data-width="80mm">
@@ -4256,17 +4257,26 @@ window.NovaFmt=(function(){
           if (currentSale) render();
           return v;
         }
-        function isPrinterConnected() { try { return localStorage.getItem(PK) !== '0'; } catch (_) { return true; } }
+        // Single source of truth: 'connected' | 'disconnected' | 'unknown' (no printer state yet: browser print)
+        function printerState() { try { const v = localStorage.getItem(PK); return v === '1' ? 'connected' : v === '0' ? 'disconnected' : 'unknown'; } catch (_) { return 'unknown'; } }
+        function applyPrinterState() {
+          const st = printerState();
+          const en = localStorage.getItem('nova-rx-language') === 'en';
+          const btn = document.getElementById('btnPrinterStatus'), al = document.getElementById('receiptPrinterAlert'), msg = document.getElementById('receiptPrinterAlertMsg');
+          if (btn) {
+            btn.setAttribute('data-connected', st === 'disconnected' ? 'false' : 'true');
+            btn.setAttribute('data-printer-state', st);
+            btn.textContent = st === 'connected' ? (en ? 'Printer Ready' : 'الطابعة متصلة') : st === 'disconnected' ? (en ? 'Printer Offline' : 'الطابعة غير متصلة') : (en ? 'Printer: browser print' : 'الطابعة غير معروفة');
+          }
+          if (msg) msg.textContent = en ? 'Check power/cable and retry' : 'تحقق من التوصيل أو البلوتوث ثم أعد المحاولة';
+          if (al) al.hidden = st !== 'disconnected';
+          return st;
+        }
+        function isPrinterConnected() { return printerState() !== 'disconnected'; }
         function setPrinterConnected(flag) {
           const ok = !!flag;
           try { localStorage.setItem(PK, ok ? '1' : '0'); } catch (_) {}
-          const btn = document.getElementById('btnPrinterStatus'), al = document.getElementById('receiptPrinterAlert');
-          if (btn) {
-            btn.setAttribute('data-connected', String(ok));
-            const en = localStorage.getItem('nova-rx-language') === 'en';
-            btn.textContent = ok ? (en ? 'Printer Ready' : 'الطابعة متصلة') : (en ? 'Printer Offline' : 'الطابعة غير متصلة');
-          }
-          if (ok && al) al.hidden = true;
+          applyPrinterState();
           return ok;
         }
         function reprintsMap() { try { const o = JSON.parse(localStorage.getItem(RK) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (_) { return {}; } }
@@ -4382,9 +4392,7 @@ window.NovaFmt=(function(){
           currentCopy = !!opts.copy;
           currentCopyNo = currentCopy ? (opts.copyNo || bumpReprint(sale.number)) : 0;
           setWidth(getWidth());
-          setPrinterConnected(isPrinterConnected());
-          const al = document.getElementById('receiptPrinterAlert');
-          if (al) al.hidden = isPrinterConnected();
+          applyPrinterState();
           render();
           elements.receiptModal.classList.add('active');
           return { sale: currentSale, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
@@ -4400,15 +4408,12 @@ window.NovaFmt=(function(){
           }
           if (!isPrinterConnected()) {
             pendingJob = { sale: currentSale, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
-            const al = document.getElementById('receiptPrinterAlert'), msg = document.getElementById('receiptPrinterAlertMsg');
             const en = localStorage.getItem('nova-rx-language') === 'en';
-            if (msg) msg.textContent = en ? 'Printer disconnected — check power/cable and retry' : 'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة';
-            if (al) al.hidden = false;
+            applyPrinterState();
             showToast(en ? 'Printer disconnected. Receipt saved for retry.' : 'انقطع اتصال الطابعة — الإيصال محفوظ لإعادة الطباعة.', 'error');
             return { ok: false, error: 'printer-disconnected', queued: pendingJob };
           }
-          const al = document.getElementById('receiptPrinterAlert');
-          if (al) al.hidden = true;
+          applyPrinterState();
           pendingJob = null;
           try { window.print(); } catch (_) {}
           return { ok: true, saleNumber: currentSale && currentSale.number, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
@@ -5256,7 +5261,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   'Adds product or attaches customer':'يضيف المنتج أو يربط العميل','Clear current invoice line items':'مسح أصناف الفاتورة الحالية',
   'Open Checkout / Payment dialog':'فتح نافذة الدفع','Dismiss dropdowns and close open modals':'إغلاق القوائم والنوافذ المفتوحة','Got it (Esc)':'تمام (Esc)',
   'More actions':'المزيد من الإجراءات','Clear Line Items (F4)':'مسح الأصناف (F4)','Close':'إغلاق','Switch between medicine and customer search':'التبديل بين البحث عن دواء وعميل','Switch search mode':'تبديل وضع البحث','Language':'اللغة',
-  'Print':'طباعة','Reprint Copy':'إعادة طباعة نسخة','Download PDF':'تحميل PDF','Printer Ready':'الطابعة متصلة','Printer Offline':'الطابعة غير متصلة','Printer Disconnected':'الطابعة غير متصلة','Reconnect & Retry':'إعادة التوصيل والمحاولة','Paper width':'مقاس الورق','Printer disconnected — check power/cable and retry':'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة'};
+  'Print':'طباعة','Reprint Copy':'إعادة طباعة نسخة','Download PDF':'تحميل PDF','Printer Ready':'الطابعة متصلة','Printer Offline':'الطابعة غير متصلة','Printer: browser print':'الطابعة غير معروفة','Check power/cable and retry':'تحقق من التوصيل أو البلوتوث ثم أعد المحاولة','Printer Disconnected':'الطابعة غير متصلة','Reconnect & Retry':'إعادة التوصيل والمحاولة','Paper width':'مقاس الورق','Printer disconnected — check power/cable and retry':'الطابعة غير متصلة — تحقق من التوصيل أو البلوتوث ثم أعد المحاولة'};
  for(const [k,v] of Object.entries(arExtra)){if(!(k in enToAr))enToAr[k]=v;if(!(v in toEn))toEn[v]=k;}
  /* Exact mixed-language markup strings: [English, Arabic] */
  const mixedText={
