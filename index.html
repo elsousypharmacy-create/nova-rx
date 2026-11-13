@@ -5075,6 +5075,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 #novaAiLaunch{position:fixed;bottom:18px;left:18px;z-index:8000;background:#2563eb;color:#fff;border:0;border-radius:14px;padding:11px 16px;font:700 13px Cairo;box-shadow:0 6px 22px #0008;cursor:pointer}
 /* Keep the sticker button off the checkout bar on phones (it used to cover «CHECKOUT»). */
 @media(max-width:780px){#novaAiLaunch{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:10px;padding:8px 12px;font-size:12px}}
+/* UX4: reserve room for the floating labels button (~44px + 18px offset) so it never covers rows/totals. */
+.nova-page-view{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+.totals-breakdown{margin-bottom:72px}
+@media(max-width:600px){#novaAiLaunch{width:44px;height:44px;padding:0;border-radius:50%;font-size:0;line-height:0;display:flex;align-items:center;justify-content:center}#novaAiLaunch::before{content:"✦";font-size:20px;line-height:1}}
 .discount-hint{font-size:11px;line-height:1.5;color:var(--accent-amber,#bba477);margin-top:6px}
 .input-grp input[aria-invalid="true"]{outline:1px solid var(--accent-red,#ef4444);border-color:var(--accent-red,#ef4444)}
 .nova-empty{padding:18px 12px;text-align:center;color:#a4adb7;font-size:13px}
