@@ -100,6 +100,8 @@
       position: relative;
     }
 
+    .cust-refill-box{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid #2b3037;background:#171a1f;border-radius:10px;font-size:12px;color:#d9e0e9}
+    .cust-refill-box[hidden]{display:none}
     .customer-sidebar {
       flex: 0 0 28%;
       width: 28%;
@@ -1266,7 +1268,8 @@ body{font-size:14px;line-height:1.45}
 .status-pill.customer-mode,.search-mode-tag.customer{background:#241e2c;color:#c7b6e3;border:1px solid #514460}
 .status-pill.product-mode,.search-mode-tag.product{background:#132530;color:#90d5f0;border:1px solid #315568}
 .header-actions{gap:6px}
-.btn{font-size:12px;min-height:40px;padding:8px 11px;border-radius:8px;box-shadow:none}
+:root{--nova-btn-radius:8px;--nova-btn-h:40px}
+.btn{font-size:12px;min-height:var(--nova-btn-h);padding:8px 11px;border-radius:var(--nova-btn-radius);box-shadow:none}
 .btn-secondary{background:#1b2027;color:#dce3ea;border-color:#343c46}
 .btn-secondary:hover{background:#262d36;border-color:#4b5967}
 .btn-loyalty{background:#231f2b;color:#c8b7df;border-color:#50455c}
@@ -1403,7 +1406,7 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 .nova-data-table tr:hover td{background:#20262d}
 .nova-muted{color:#9aa7b3;font-size:12px}.nova-empty{padding:35px;text-align:center;color:#a4adb7}
 .nova-tag{border:1px solid #385260;background:#1b2e38;color:#a6d5e9;padding:3px 8px;border-radius:6px;font-size:12px}
-.nova-page-btn{background:#263d4b;border:1px solid #4b7185;color:#d7eaf2;border-radius:7px;padding:8px 12px;font:inherit;cursor:pointer}
+.nova-page-btn{background:#263d4b;border:1px solid #4b7185;color:#d7eaf2;border-radius:var(--nova-btn-radius,8px);min-height:var(--nova-btn-h,40px);padding:8px 12px;font:inherit;cursor:pointer}
 .nova-page-btn:hover{background:#335365}
 .nova-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .nova-setting-card{background:#171b20;border:1px solid #303841;border-radius:12px;padding:20px}
@@ -1966,26 +1969,26 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         </div>
 
         <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" aria-label="رقم عملية البيع"></span>
-          <button id="btnNewSale" class="btn nova-new-sale" type="button" title="New Sale (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
+          <button id="btnNewSale" class="btn nova-new-sale" type="button" title="فاتورة جديدة (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
           <button id="holdCurrentInvoice" class="btn nova-hold-action" type="button" title="تعليق الفاتورة الحالية" aria-label="تعليق الفاتورة الحالية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M10 9v6m4-6v6"/></svg><span>تعليق</span></button>
-          <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="Held Invoices" aria-label="Held Invoices"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
-          <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="Add / Switch Customer (F3)" aria-label="Add / Switch Customer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
+          <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="الفواتير المعلقة" aria-label="الفواتير المعلقة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
+          <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="إضافة أو تغيير العميل (F3)" aria-label="إضافة أو تغيير العميل"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
           <div class="nova-more-wrap">
-            <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="More actions" title="More actions" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+            <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="المزيد من الإجراءات" title="المزيد من الإجراءات" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
             <div id="novaSaleMoreMenu" class="nova-more-menu" hidden>
-              <button id="btnClearInvoice" class="nova-more-item nova-more-danger" type="button" title="Clear Line Items (F4)">Clear Invoice</button>
-              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="View Keyboard Shortcuts">Keyboard Shortcuts</button>
+              <button id="btnClearInvoice" class="nova-more-item nova-more-danger" type="button" title="مسح الأصناف (F4)">Clear Invoice</button>
+              <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="عرض اختصارات الكيبورد">Keyboard Shortcuts</button>
             </div>
           </div>
         </div>
       </header>
 
-      <div id="heldInvoicePanel" class="nova-held-panel" hidden role="dialog" aria-label="Held Invoices"><div class="nova-held-heading"><strong>Held Invoices</strong><button id="closeHeldInvoices" type="button" aria-label="Close">×</button></div><div id="heldInvoiceList" class="nova-held-list"></div></div>
+      <div id="heldInvoicePanel" class="nova-held-panel" hidden role="dialog" aria-label="الفواتير المعلقة"><div class="nova-held-heading"><strong>Held Invoices</strong><button id="closeHeldInvoices" type="button" aria-label="إغلاق">×</button></div><div id="heldInvoiceList" class="nova-held-list"></div></div>
 
       <!-- Unified Main Search Bar -->
       <div class="search-container">
         <div class="search-box-wrapper">
-          <button type="button" id="searchModeTag" class="search-mode-tag product" title="Switch between medicine and customer search" aria-label="Switch search mode">
+          <button type="button" id="searchModeTag" class="search-mode-tag product" title="التبديل بين البحث عن دواء وعميل" aria-label="تبديل وضع البحث">
             Product
           </button>
           <input 
@@ -2137,6 +2140,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               <div class="cust-stat-pill">النقاط <strong id="custCardPoints">0</strong></div>
             </div>
           </div>
+          <div id="custRefillBox" class="cust-refill-box" hidden>
+            <div class="cust-refill-line">أدوية مزمنة: <span id="custChronicList" dir="auto"></span></div>
+            <div class="cust-refill-line">آخر شراء: <span id="custLastPurchase" dir="ltr"></span></div>
+            <button type="button" id="btnRefillLast" class="btn btn-loyalty">إعادة صرف آخر فاتورة</button>
+          </div>
           <details class="cust-extra-details" id="custExtraDetails">
             <summary>مشتريات سابقة <span class="cust-detail-chevron" aria-hidden="true">⌄</span></summary>
             <div class="cust-extra-content">
@@ -2249,7 +2257,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
       </div>
       <div class="modal-body" style="padding:12px;">
         <div class="nova-receipt-toolbar">
-          <div class="nova-receipt-widths" role="group" aria-label="Paper width">
+          <div class="nova-receipt-widths" role="group" aria-label="مقاس الورق">
             <button type="button" id="btnReceiptWidth80" class="nova-receipt-width-btn active" data-receipt-width="80mm">80mm</button>
             <button type="button" id="btnReceiptWidth58" class="nova-receipt-width-btn" data-receipt-width="58mm">58mm</button>
           </div>
@@ -2276,24 +2284,24 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   <div id="helpModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Keyboard Shortcuts & POS Manual</h3>
+        <h3>اختصارات الكيبورد ودليل الكاشير</h3>
         <button id="btnCloseHelp" class="btn-icon-del">✕</button>
       </div>
       <div class="modal-body" style="font-size:12px; line-height:1.6;">
         <table style="width:100%; border-collapse:collapse;">
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (on blank customer search)</td><td style="color:#38bdf8;">Skips customer and switches to Product Scan mode</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Barcode Scan</strong> (anytime)</td><td style="color:#38bdf8;">Directly adds product & switches to Product mode</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Arrow Up / Down</strong></td><td style="color:#38bdf8;">Navigate autocomplete suggestion dropdown</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (on selected item)</td><td style="color:#38bdf8;">Adds product or attaches customer</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F2</strong></td><td style="color:#38bdf8;">Start New Sale (resets invoice & focuses search)</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F3</strong></td><td style="color:#38bdf8;">Add Loyalty / Switch customer search without resetting items</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F4</strong></td><td style="color:#38bdf8;">Clear current invoice line items</td></tr>
-          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F9</strong></td><td style="color:#38bdf8;">Open Checkout / Payment dialog</td></tr>
-          <tr><td style="padding:6px 0;"><strong>Esc</strong></td><td style="color:#38bdf8;">Dismiss dropdowns and close open modals</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (في بحث العميل الفارغ)</td><td style="color:#38bdf8;">يتخطى العميل وينتقل لوضع مسح المنتج</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>مسح الباركود</strong> (في أي وقت)</td><td style="color:#38bdf8;">يضيف المنتج مباشرة وينتقل لوضع المنتج</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>السهم لأعلى / لأسفل</strong></td><td style="color:#38bdf8;">التنقل في قائمة الاقتراحات</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (على الصنف المحدد)</td><td style="color:#38bdf8;">يضيف المنتج أو يربط العميل</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F2</strong></td><td style="color:#38bdf8;">فاتورة جديدة (تمسح الفاتورة وتركّز على البحث)</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F3</strong></td><td style="color:#38bdf8;">إضافة عميل / تبديل البحث عن عميل بدون مسح الأصناف</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F4</strong></td><td style="color:#38bdf8;">مسح أصناف الفاتورة الحالية</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F9</strong></td><td style="color:#38bdf8;">فتح نافذة الدفع</td></tr>
+          <tr><td style="padding:6px 0;"><strong>Esc</strong></td><td style="color:#38bdf8;">إغلاق القوائم والنوافذ المفتوحة</td></tr>
         </table>
       </div>
       <div class="modal-footer">
-        <button id="btnDismissHelp" class="btn btn-primary">Got it (Esc)</button>
+        <button id="btnDismissHelp" class="btn btn-primary">تمام (Esc)</button>
       </div>
     </div>
   </div>
@@ -3135,6 +3143,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         // Render Offers (subtle green accents)
         // Render Past Invoices
         renderPastInvoices(customer.pastInvoices);
+        renderRefillBox(customer);
         closeSuggestions();
         persistActiveInvoice();
         showToast(`Customer attached: ${customer.name}`);
@@ -3153,6 +3162,39 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         if (!elements.checkoutModal.classList.contains("active") && !elements.receiptModal.classList.contains("active")) {
           elements.mainSearchInput.focus();
         }
+      }
+
+      function latestInvoice(customer) {
+        return [...((customer && customer.pastInvoices) || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] || null;
+      }
+
+      function renderRefillBox(customer) {
+        const box = document.getElementById("custRefillBox");
+        const last = latestInvoice(customer);
+        box.hidden = !last;
+        if (!last) return;
+        const chronic = new Set();
+        (customer.pastInvoices || []).forEach(inv => (inv.items || []).forEach(it => {
+          const p = DEMO_PRODUCTS.find(x => x.id === it.productId);
+          if (p && p.category === "Chronic") chronic.add(p.name.replace(/\s*\(.*\)\s*$/, ""));
+        }));
+        document.getElementById("custChronicList").textContent = chronic.size ? [...chronic].join("، ") : "لا يوجد";
+        document.getElementById("custLastPurchase").textContent = String(last.date).slice(0, 10);
+      }
+
+      function refillLastInvoice() {
+        const last = latestInvoice(state.attachedCustomer);
+        if (!last) return;
+        let added = 0, skipped = [];
+        (last.items || []).forEach(it => {
+          const product = DEMO_PRODUCTS.find(p => p.id === it.productId);
+          const qty = Number(it.qty) || 1;
+          if (!product || !(product.stock >= qty)) { skipped.push(it.name); return; }
+          for (let i = 0; i < qty; i++) addProductToInvoice(product);
+          added++;
+        });
+        showToast(skipped.length ? `أُعيد صرف ${added} صنف، غير متاح: ${skipped.join("، ")}` : `تمت إعادة صرف ${added} صنف`, skipped.length ? "error" : undefined);
+        elements.mainSearchInput.focus();
       }
 
       function renderPastInvoices(invoices, filterText = "") {
@@ -4516,6 +4558,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           }
         });
 
+        document.getElementById("btnRefillLast").addEventListener("click", refillLastInvoice);
         // Add Product from Customer Past Invoices (Requirement E: adds at CURRENT demo price)
         elements.pastInvoicesContainer.addEventListener("click", e => {
           const btn = e.target.closest(".btn-add-history");
@@ -4848,8 +4891,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   const ov=document.createElement('div');ov.className='nova-return-overlay';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
   const box=document.createElement('div');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.style.cssText='background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:16px';
   box.innerHTML='<h3 style="margin:0 0 6px">'+tr('مرتجع / إلغاء — فاتورة ','Return / Void — Invoice ')+esc(sale.number)+'</h3><p style="margin:0 0 10px;color:#9eacb9;font-size:13px">اختر الكمية المرتجعة لكل صنف. المبلغ يرجع بنفس طريقة الدفع الأصلية ('+(sale.payment==='cash'?tr('نقدي','cash'):tr('بطاقة','card'))+').</p>'
+   +'<div style="margin:0 0 8px"><button type="button" id="novaRetAll" class="nova-return-btn" style="font-weight:700">إرجاع كل الأصناف</button></div>'
    +sale.lines.map((l,i)=>{const left=l.qty-(done[i]||0);return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(l.name)+' <small style="color:#9eacb9">('+tr('متاح للإرجاع ','can return ')+left+')</small></span><input type="number" min="0" max="'+left+'" step="1" value="0" data-ret-idx="'+i+'" '+(left?'':'disabled')+' style="width:80px;padding:6px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px"></div>'}).join('')
    +'<label style="display:block;margin:10px 0 4px;font-size:13px">سبب المرتجع (مطلوب)</label><input type="text" id="novaRetReason" maxlength="200" style="width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px">'
+   +'<div id="novaRetChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+['عيب/تالف','خطأ في الصرف','رجوع العميل','انتهاء صلاحية'].map(r=>'<button type="button" class="nova-return-btn" data-ret-chip="'+r+'">'+r+'</button>').join('')+'</div>'
    +'<div id="novaRetAmount" style="margin:10px 0;font-weight:700"></div><div id="novaRetMsg" role="alert" style="color:#ffb4a8;min-height:18px;font-size:13px"></div>'
    +'<details id="novaCancelBox" style="margin:6px 0"><summary>'+tr('إلغاء الفاتورة بالكامل (يحتاج صلاحية واعتماد)','Cancel the whole invoice (needs permission and approval)')+'</summary><div style="display:grid;gap:6px;margin-top:6px"><input id="novaCxBy" placeholder="'+tr('اسم المنفذ','Your name')+'" maxlength="60"><select id="novaCxRole"><option value="cashier">'+tr('كاشير','Cashier')+'</option><option value="pharmacist">'+tr('صيدلي','Pharmacist')+'</option><option value="manager">'+tr('مدير','Manager')+'</option><option value="owner">'+tr('المالك','Owner')+'</option></select><input id="novaCxApprover" placeholder="'+tr('اسم المعتمد (شخص آخر)','Approver name (another person)')+'" maxlength="60"><button type="button" id="novaCxOk" class="nova-return-btn" style="font-weight:700">'+tr('تأكيد الإلغاء','Confirm cancellation')+'</button></div></details>'
    +'<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" id="novaRetCancel" class="nova-return-btn">إغلاق</button><button type="button" id="novaRetOk" class="nova-return-btn" style="font-weight:700">تأكيد المرتجع</button></div>';
@@ -4857,6 +4902,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   const qtys=()=>{const o={};box.querySelectorAll('[data-ret-idx]').forEach(i=>{o[i.dataset.retIdx]=Number(i.value)||0});return o};
   const upd=()=>{const q=window.novaSales.quoteReturn(sale,qtys());box.querySelector('#novaRetAmount').textContent=q.ok?'مبلغ الإرجاع: '+money(q.amount):''};
   box.addEventListener('input',upd);
+  box.querySelector('#novaRetAll').onclick=()=>{box.querySelectorAll('[data-ret-idx]:not([disabled])').forEach(i=>{i.value=i.max});upd()};
+  box.querySelectorAll('[data-ret-chip]').forEach(c=>c.onclick=()=>{const r=box.querySelector('#novaRetReason');r.value=c.dataset.retChip;r.focus()});
+  box.querySelector('#novaRetReason').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){e.preventDefault();box.querySelector('#novaRetOk').click()}});
   box.querySelector('#novaRetCancel').onclick=()=>ov.remove();
   box.querySelector('#novaCxOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب الإلغاء',permission:'ليس لديك صلاحية إلغاء الفاتورة (مدير أو مالك فقط)',approval:'اكتب اسمك واسم المعتمد','self-approval':'المعتمد لازم يكون شخصًا آخر','already-cancelled':'الفاتورة ملغاة بالفعل',empty:'لا توجد كميات متاحة للإلغاء','too-many':'لا توجد كميات متاحة للإلغاء',storage:'تعذر حفظ الإلغاء على هذا الجهاز'}[res.error]||'تعذر تنفيذ الإلغاء';return}
@@ -4864,7 +4912,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   box.querySelector('#novaRetOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
    ov.remove();render(page,filter)};
-  box.querySelector('input:not([disabled])')?.focus();
+  (box.querySelector('#novaRetAll')||box.querySelector('input:not([disabled])'))?.focus();
  });
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
@@ -4958,7 +5006,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   '↻ توليد تاني':'↻ Generate again','👁 معاينة الاستيكرات':'👁 Preview stickers','إخفاء معاينة الاستيكرات':'Hide sticker preview','👁 معاينة الاستيكر':'👁 Preview sticker',
   'لا توجد نتائج مطابقة':'No matching results',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
-  'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','رقم العميل قبل الدفع':'Customer number before payment',
+  'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','آخر شراء:':'Last purchase:','أدوية مزمنة:':'Chronic medicines:','إعادة صرف آخر فاتورة':'Refill last invoice','رقم العميل قبل الدفع':'Customer number before payment',
   'سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.':'Enter the customer number, or press Enter with no number to skip.',
   'متابعة بالرقم':'Continue with number','تخطي · عميل نقدي':'Skip · cash customer','رجوع للفاتورة':'Back to invoice',
   'إضافة رقم العميل (اختياري)':'Add customer number (optional)','تعليق':'Hold','المجموع الفرعي (':'Subtotal (',
@@ -4966,7 +5014,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   '✦ قراءة فاتورة مشتريات':'✦ Read purchase invoice','لغة الواجهة':'Interface language','اختار لغة العرض':'Choose display language','عربي':'Arabic',
   'التنقل الرئيسي':'Main navigation','متصل':'Online','حالة الاتصال':'Connection status','إعادة تحميل الصفحة':'Reload page',
   'رقم عملية البيع':'Sale number','فاتورة جديدة (F2)':'New sale (F2)','إضافة أو تغيير العميل (F3)':'Add or change customer (F3)',
-  'إضافة أو تغيير العميل':'Add or change customer','إزالة العميل':'Remove customer','بحث':'Search','بحث في الصفحة':'Search this page',
+  'إضافة أو تغيير العميل':'Add or change customer','عرض اختصارات الكيبورد':'View keyboard shortcuts','المزيد من الإجراءات':'More actions','الفواتير المعلقة':'Held Invoices','مقاس الورق':'Paper width','مسح الأصناف (F4)':'Clear Line Items (F4)','إزالة العميل':'Remove customer','بحث':'Search','بحث في الصفحة':'Search this page',
   'رقم موبايل العميل':'Customer mobile number','اسم العميل (اختياري)':'Customer name (optional)','اسم العميل الجديد':'New customer name',
   'مراجعة فاتورة مشتريات بالذكاء الاصطناعي':'AI purchase invoice review','مراحل العمل':'Steps','المريض والأدوية':'Patient and medicines',
   'اختياري':'Optional','وحدة العمر':'Age unit','كجم':'kg','أدوية الاستيكرات':'Label medicines','يحتاج مراجعة':'Needs review',
@@ -5003,6 +5051,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   'Complete Sale & Payment / إنهاء الفاتورة':['Complete Sale & Payment','إتمام البيع والدفع'],
   'Cash / نقدي':['Cash','نقدي'],'Mada / بطاقة':['Mada / Card','مدى / بطاقة'],'Split / مشترك':['Split','مشترك'],'Credit / آجل':['Credit','آجل'],'Card (mock) / بطاقة':['Card (mock)','بطاقة (تجريبية)'],'Credit / آجل (يحتاج عميلاً)':['Credit (needs a customer)','آجل (يحتاج عميلاً)'],
   'Transaction Receipt / إيصال الدفع':['Transaction Receipt','إيصال الدفع'],
+  'اختصارات الكيبورد ودليل الكاشير':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],
   'Keyboard Shortcuts & POS Manual':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],
   'View اختصارات الكيبورد':['View keyboard shortcuts','عرض اختصارات الكيبورد'],
   'View Keyboard Shortcuts':['View keyboard shortcuts','عرض اختصارات الكيبورد'],
@@ -5783,6 +5832,12 @@ input,select,textarea{min-height:44px}
 }
 /* UX2: mobile nav edge fade */
 @media(max-width:780px){.nova-nav-row>.nova-nav,.nova-nav{overflow-x:auto!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-nav::-webkit-scrollbar{display:none}}
+/* UX16: tap targets >=44px on nav, tables and settings (single-line nav keeps UX2 horizontal scroll) */
+.nova-nav-row{height:48px;min-height:48px}
+.nova-nav-row>.nova-nav{padding:2px 8px!important;flex-wrap:nowrap!important;align-items:center}
+.nova-nav .nova-tab,.nova-tab{min-height:44px!important;display:inline-flex;align-items:center;flex-shrink:0}
+@media(max-width:780px){.nova-nav-row{height:48px;min-height:48px}}
+.nova-inventory-action,.nova-return-btn,.nova-page-btn,.nova-page-view button,.nova-page-view select,.nova-page-view input:not([type=checkbox]):not([type=radio]),#novaAuthName,#novaAuthPw,#novaAuthIn,#novaNewName,#novaNewPw,#novaNewRole,#novaNewOk,#novaNearExpiryDays{min-height:44px!important}
 </style>
 
 <script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="bi-dictionary.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
