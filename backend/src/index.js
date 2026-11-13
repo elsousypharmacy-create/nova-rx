@@ -9,6 +9,7 @@ import { registerImportRoutes } from './import.js';
 import { registerBalanceMigrationRoutes } from './balance-migration.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
 import { registerInboxRoutes } from './inbox.js';
+import { registerCameraRoutes } from './cameras.js';
 import { registerDeliveryRoutes } from './delivery.js';
 import { registerDeployRoutes } from './deploys.js';
 import { registerMsgMonitorRoutes } from './msg-monitor.js';
@@ -67,6 +68,7 @@ registerBalanceMigrationRoutes(route, { json, errorResponse });
 registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
+registerCameraRoutes(route, { errorResponse }, { authenticate });
 registerDeliveryRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
