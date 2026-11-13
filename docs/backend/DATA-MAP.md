@@ -16,7 +16,8 @@ Today every module is pure logic with injectable storage (localStorage/IndexedDB
 | `finance-shifts.js`, `finance-coa.js` | `shifts`, `chart_of_accounts` — `backend/finance` | Shift open/close with cash count, append-only | Shift reports |
 | `supplier-accounts.js`, `supplier-lookup.js`, `supplier-provider.js` | `suppliers`, `supplier_operations` (fail-closed state) — `backend/procurement` | Connectors server-side only (AUMET_*/PO_*), mock adapter until owner enables | Read-only lookup; real cart/order writes owner-only |
 | `purchases*.js`, `stock-count.js` | `purchase_drafts`, `stock_counts` | Via same sync path | Review screens |
-| `backup-schedule.js` | R2 object `backups/YYYY-MM-DD.json` | Scheduled Worker cron export | Owner restore drill (`docs/OFF-04_BACKUP_DRILL.md`) |
+| `backup-schedule.js` | Local encrypted sales snapshots (IndexedDB / files) | Client-side schedule (OFF-04) | Owner restore drill (`docs/OFF-04_BACKUP_DRILL.md`) |
+| Staging D1 (`nova-rx-staging`) | D1 Time Travel bookmarks (30 days) + encrypted GitHub Actions SQL artifact (30 days) | Daily workflow `d1-backup-staging.yml`; bookmark recorded before migrate | `docs/ops/backup-restore.md` (new DB only for artifact import; Time Travel restore is owner-approved in-place) |
 | Sessions, rate limits, flags | **KV** (`sess:*`, `rl:*`, `flag:*`) | Worker only | Worker only |
 
 Not mapped yet (later phases): BI modules, clinical/Rx modules, messaging (`msg-policy.js`, `unified-inbox.js`), loyalty, attendance — each gets an entry when its backend task starts.

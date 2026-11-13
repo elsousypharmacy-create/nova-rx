@@ -10,6 +10,8 @@
 | Rate-limit buckets | ≤ 1 h | KV TTL expiry. |
 | Idempotency keys | 24 h | Replay window only. |
 | Application logs | 30 days | Redacted: no passwords, tokens, cookies, card numbers. |
+| D1 Time Travel bookmarks | 30 days | Built-in Cloudflare point-in-time restore window. |
+| Encrypted D1 export artifacts | 30 days | GitHub Actions artifact; ciphertext only (repo is public). |
 
 Export: owner only, `GET /api/v1/export`, requires recent re-authentication (5 min), rate-limited to 3/hour, secrets and hashes stripped.
 Deletions are owner-approved and performed by an explicit, reviewed migration; nothing is auto-deleted from D1.

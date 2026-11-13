@@ -7,6 +7,7 @@ import { registerSyncRoutes } from './sync.js';
 import { registerSyncPullRoutes } from './sync-pull.js';
 import { registerImportRoutes } from './import.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
+import { registerDeployRoutes } from './deploys.js';
 import { scheduledBackup } from './backup.js';
 
 export function newRequestId() {
@@ -58,6 +59,7 @@ registerAuthRoutes(route, { json, errorResponse });
 registerSyncRoutes(route, { json, errorResponse });
 registerImportRoutes(route, { json, errorResponse });
 registerSyncPullRoutes(route, { errorResponse }, { authenticate });
+registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
 export async function handle(request, env = {}) {

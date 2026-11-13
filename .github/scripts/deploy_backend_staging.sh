@@ -41,6 +41,35 @@ export CLOUDFLARE_ACCOUNT_ID="$ACC"
 # wrangler is noisy; never let it print env.
 export WRANGLER_SEND_METRICS=false
 
+# Record a D1 Time Travel bookmark (read-only) via scripts/d1-bookmark.sh. It is the data
+# rollback target if this run applies migrations. Missing D1 permission is reported, not fatal.
+BOOKMARK="unrecorded"
+MIGRATED=0
+PREV_VERSION=""
+NEW_VERSION=""
+RESULT_FILE="${RESULT_FILE:-}"
+record_time_travel_bookmark() {
+  local j rc
+  set +e; j="$(cd "$ROOT/backend" && bash "$ROOT/scripts/d1-bookmark.sh" nova-rx-staging)"; rc=$?; set -e
+  if [ "$rc" = 0 ]; then
+    BOOKMARK="$(printf '%s' "$j" | jq -r .bookmark)"
+    say "D1 Time Travel bookmark (pre-migrate): $BOOKMARK"
+  else
+    say "could not record D1 Time Travel bookmark (non-fatal): $(printf '%s' "$j" | jq -r '.reason // "unknown"' 2>/dev/null)"
+  fi
+  return 0
+}
+current_version() {
+  cf "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME/deployments" \
+    | jq -r '(.result.deployments // [])[0].versions[0].version_id // empty' 2>/dev/null || true
+}
+write_result() { # status
+  [ -n "$RESULT_FILE" ] || return 0
+  jq -n --arg st "$1" --arg sha "$BUILD_SHA" --arg v "$NEW_VERSION" --arg pv "$PREV_VERSION" \
+    --arg bm "$BOOKMARK" --argjson mig "$MIGRATED" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '{status:$st,sha:$sha,version_id:$v,previous_version_id:$pv,bookmark:$bm,migrated:($mig==1),at:$at}' > "$RESULT_FILE"
+}
+
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
@@ -87,16 +116,41 @@ if [ "$HAD_PREVIOUS" = 1 ]; then
 fi
 say "rollback target: $ROLLBACK_TARGET"
 
+record_time_travel_bookmark
+say "data rollback bookmark: $BOOKMARK"
+[ "$HAD_PREVIOUS" = 1 ] && PREV_VERSION="$(current_version)"
+say "worker rollback version: ${PREV_VERSION:-none}"
+
+restore_d1_if_migrated() {
+  if [ "$MIGRATED" != 1 ]; then say "no migrations applied in this run; D1 left as is"; return 0; fi
+  if [ -z "$BOOKMARK" ] || [ "$BOOKMARK" = unrecorded ]; then
+    say "MIGRATIONS WERE APPLIED but no bookmark was recorded; D1 NOT restored (owner action, see docs/ops/backup-restore.md)"; return 0
+  fi
+  say "restoring D1 nova-rx-staging to pre-migrate bookmark $BOOKMARK (staging only)"
+  cf -X POST "$API/accounts/$ACC/d1/database/$D1_STAGING_ID/time_travel/restore?bookmark=$BOOKMARK" > "$WORK/restore.json" || true
+  if jq -e '.success==true' "$WORK/restore.json" >/dev/null 2>&1; then
+    say "D1 RESTORED to $BOOKMARK (undo bookmark: $(jq -r '.result.previous_bookmark // "n/a"' "$WORK/restore.json"))"
+  else
+    say "D1 RESTORE FAILED: $(jq -c '.errors // empty' "$WORK/restore.json" 2>/dev/null | cut -c1-300). Needs token permission Account.D1:Edit, or restore manually."
+  fi
+}
+
 rollback() {
   if [ "$UPLOADED" != 1 ]; then
     say "no upload happened; nothing to roll back"
+    restore_d1_if_migrated
+    write_result failed
     return 0
   fi
-  if [ "$HAD_PREVIOUS" = 1 ] && [ -s "$WORK/backup.js" ]; then
-    say "rolling back to previous staging Worker..."
-    # Best-effort: redeploy previous script as a module worker with the same staging bindings via wrangler is not possible from a raw dump easily.
-    # Use the Cloudflare API multipart put with kept bindings.
-    cf "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME/settings" > "$WORK/settings.json" || true
+  local done_rb=0
+  if [ -n "$PREV_VERSION" ]; then
+    say "rolling back $SCRIPT_NAME to previous version $PREV_VERSION (wrangler rollback)"
+    if (cd "$ROOT/backend" && npx --yes wrangler@4 rollback "$PREV_VERSION" --name "$SCRIPT_NAME" -m "auto rollback: smoke failed sha ${BUILD_SHA:0:12}" -y); then
+      say "ROLLED BACK to $PREV_VERSION"; done_rb=1
+    fi
+  fi
+  if [ "$done_rb" != 1 ] && [ "$HAD_PREVIOUS" = 1 ] && [ -s "$WORK/backup.js" ]; then
+    say "wrangler rollback unavailable; re-uploading the downloaded previous script"
     META='{"main_module":"index.js","compatibility_date":"2026-01-01","bindings":[{"type":"d1","name":"DB","id":"'"$D1_STAGING_ID"'"},{"type":"kv_namespace","name":"KV","namespace_id":"d93eba4d82a94f099d545983618614e6"},{"type":"plain_text","name":"NOVA_ENV","text":"staging"}]}'
     echo "$META" > "$WORK/meta.json"
     curl -sS --max-time 180 -X PUT \
@@ -105,18 +159,17 @@ rollback() {
       -F "index.js=@$WORK/backup.js;type=application/javascript+module;filename=index.js" \
       "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME" > "$WORK/rollback.json" || true
     if jq -e '.success==true' "$WORK/rollback.json" >/dev/null 2>&1; then
-      say "ROLLED BACK to previous staging Worker"
-    else
-      say "ROLLBACK FAILED; inspect Cloudflare dashboard for $SCRIPT_NAME. Target was: $ROLLBACK_TARGET"
+      say "ROLLED BACK to previous staging Worker (re-upload)"; done_rb=1
     fi
-  else
-    say "first deploy failed after upload; no previous version to restore. Worker left in place for inspection. rollback target: $ROLLBACK_TARGET"
   fi
+  [ "$done_rb" = 1 ] || say "ROLLBACK FAILED; inspect Cloudflare dashboard for $SCRIPT_NAME. Target was: ${PREV_VERSION:-$ROLLBACK_TARGET}"
+  restore_d1_if_migrated
+  write_result failed
 }
 
 # 4. dry run stops before any mutation of the Worker (D1/KV already created earlier; no further creates here)
 if [ "$DRY_RUN" = true ]; then
-  say "DRY RUN ok: would apply additive migrations 0001-0007 to D1 nova-rx-staging, deploy $SCRIPT_NAME at $LIVE_URL, set Worker secrets NOVA_API_PIN and NOVA_INGEST_SECRET (names only), smoke /api/v1/health and /api/v1/version. Flags stay OFF. R2 binding omitted (dashboard enablement pending). rollback target: $ROLLBACK_TARGET"
+  say "DRY RUN ok: would apply additive migrations to D1 nova-rx-staging, deploy $SCRIPT_NAME at $LIVE_URL, set Worker secrets NOVA_API_PIN and NOVA_INGEST_SECRET (names only), smoke /api/v1/health and /api/v1/version. Flags stay OFF. R2 is not used. data rollback bookmark: $BOOKMARK. worker rollback target: $ROLLBACK_TARGET"
   exit 0
 fi
 
@@ -142,7 +195,10 @@ MIG_AUTH=0
 if d1_query "$WORK/init_mig.sql"; then
   MIG_AUTH=1
 else
-  if d1_auth_failed; then
+  if d1_auth_failed && [ "${REQUIRE_MIGRATIONS:-false}" = true ]; then
+    write_result failed
+    die "missing Cloudflare token permission: Account.D1:Edit (needed to apply migrations). Nothing deployed."
+  elif d1_auth_failed; then
     say "CLOUDFLARE_API_TOKEN lacks D1 query/import permission; migrations 0001-0007 were already applied to nova-rx-staging via the owner Cloudflare session. Continuing to Worker deploy. Add D1 Write to the token for future applies."
   else
     die "could not init schema_migrations: $(jq -c '.errors // .' "$WORK/q.out")"
@@ -150,15 +206,21 @@ else
 fi
 
 if [ "$MIG_AUTH" = 1 ]; then
+  printf '%s\n' "SELECT version FROM schema_migrations;" > "$WORK/applied.sql"
+  d1_query "$WORK/applied.sql" || die "could not read schema_migrations"
+  APPLIED=" $(jq -r '[.result[]?.results[]?.version]|map(tostring)|join(" ")' "$WORK/q.out") "
   for f in "$ROOT"/backend/migrations/*.sql; do
+    b="$(basename "$f" .sql)"; v="${b%%_*}"; v=$((10#$v))
+    case "$APPLIED" in *" $v "*) continue;; esac
+    MIGRATED=1
     say "applying migration $(basename "$f")"
-    d1_query "$f" || die "migration $(basename "$f") failed: $(jq -c '.errors // .' "$WORK/q.out")"
+    d1_query "$f" || { restore_d1_if_migrated; write_result failed; die "migration $(basename "$f") failed: $(jq -c '.errors // .' "$WORK/q.out")"; }
     base="$(basename "$f" .sql)"
     ver="${base%%_*}"; ver=$((10#$ver))
     printf "INSERT OR IGNORE INTO schema_migrations (version, name) VALUES (%s, '%s');\n" "$ver" "$base" > "$WORK/rec.sql"
     d1_query "$WORK/rec.sql" || die "could not record $base in schema_migrations"
   done
-  say "migrations applied and recorded in schema_migrations"
+  say "pending migrations applied: $([ "$MIGRATED" = 1 ] && echo yes || echo none)"
 fi
 
 # 6. deploy Worker (flags unset = OFF)
@@ -168,6 +230,7 @@ if (cd "$ROOT/backend" && npx --yes wrangler@4 deploy --env staging --var "BUILD
   deploy_ok=1
 fi
 if [ "$deploy_ok" != 1 ]; then
+  restore_d1_if_migrated; write_result failed
   die "wrangler deploy failed (no upload confirmed)"
 fi
 UPLOADED=1
@@ -224,8 +287,11 @@ smoke() {
 
 smoke /api/v1/health '.ok==true and .status=="healthy"' || { rollback; exit 1; }
 smoke /api/v1/version '.ok==true and .name=="nova-rx-api" and .env=="staging"' || { rollback; exit 1; }
-say "DEPLOYED $SCRIPT_NAME version 0.1.0 sha=${BUILD_SHA:0:12} url=$LIVE_URL"
-say "rollback target: $ROLLBACK_TARGET"
+NEW_VERSION="$(current_version)"
+write_result done
+say "DEPLOYED $SCRIPT_NAME cf_version=${NEW_VERSION:-unknown} version 0.1.0 sha=${BUILD_SHA:0:12} url=$LIVE_URL"
+say "worker rollback target: $ROLLBACK_TARGET"
+say "data rollback bookmark: $BOOKMARK"
 say "frontend flag novaBackend.enabled left OFF; worker flags NOVA_AUTH/NOVA_SYNC/NOVA_IMPORT/NOVA_HARDENING left unset (OFF). R2 not bound."
 trap - ERR
 exit 0
