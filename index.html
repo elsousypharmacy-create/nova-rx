@@ -1931,6 +1931,14 @@ html body .customer-sidebar{min-height:0!important}
 html body .table-container{min-height:46dvh!important;overflow-x:auto}
 html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 }
+/* UX1 — mobile sale topbar wraps to two rows so the search field stays tappable */
+@media (max-width:600px){
+ .top-header{flex-wrap:wrap!important;height:auto!important;min-height:48px!important;row-gap:6px;padding-block:6px!important}
+ .top-header .brand-section{flex:1 1 100%;flex-wrap:wrap;min-width:0}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex:1 1 100%;flex-wrap:wrap!important;justify-content:flex-start;row-gap:6px}
+ .nova-sale-number{flex:0 0 auto;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .search-container{position:relative;z-index:1;clear:both}
+}
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
   <link rel="stylesheet" href="supplier-lookup.css">
