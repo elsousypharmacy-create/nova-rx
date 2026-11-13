@@ -198,9 +198,25 @@ def main():
         files = [f["filename"] for f in api(f"repos/{REPO}/pulls/{p['number']}/files?per_page=100") or []]
         wfs = wfs if wfs is not None else ci_workflows()
         need = applicable(wfs, files)
+        # Ignore pull_request runs that complete as action_required (GITHUB_TOKEN
+        # PRs often need approval). Those would otherwise overwrite a green
+        # workflow_dispatch of the same workflow and be treated as red CI.
         latest = {}
         for r in sorted((api(f"repos/{REPO}/actions/runs?head_sha={sha}&per_page=100") or {}).get("workflow_runs", []), key=lambda r: r["created_at"]):
-            latest[os.path.basename(r["path"].split("@")[0])] = r
+            if r.get("conclusion") == "action_required":
+                continue
+            fn = os.path.basename(r["path"].split("@")[0])
+            prev = latest.get(fn)
+            if prev is None:
+                latest[fn] = r
+                continue
+            def score(x):
+                good = 2 if x.get("conclusion") in ("success", "skipped", "neutral") else 0
+                ev = 1 if x.get("event") == "workflow_dispatch" else 0
+                done = 1 if x["status"] == "completed" else 0
+                return (good, ev, done, x.get("created_at", ""))
+            if score(r) >= score(prev):
+                latest[fn] = r
         disp = t.setdefault("ci_dispatched", {})
         if disp.get("sha") != sha:
             disp.clear(); disp["sha"] = sha; disp["wf"] = []; disp["at"] = iso()
