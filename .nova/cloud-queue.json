@@ -1821,21 +1821,14 @@
     "N124",
     "N125"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T18:23:31+00:00",
    "pr": 297,
-   "ci_dispatched": {
-    "sha": "8574a4cb96ee929d4e1bfa42a71a0928ded3418b",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T18:25:24+00:00"
-   }
+   "merged_at": "2026-11-13T18:29:45+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/297"
   },
   {
    "id": "N127",
@@ -1908,11 +1901,21 @@
     "N124",
     "N125"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T18:28:01+00:00"
+   "dispatched_at": "2026-11-13T18:28:01+00:00",
+   "pr": 301,
+   "ci_dispatched": {
+    "sha": "11214083899e39164c10d74eb1ccfa74a663f9e8",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T18:29:45+00:00"
+   }
   },
   {
    "id": "GATE-17",
@@ -1929,7 +1932,166 @@
    "status": "owner_gate",
    "attempts": 0,
    "fix_attempts": 0
+  },
+  {
+   "id": "UX20",
+   "phase": 10,
+   "title": "Rebuild worker/live/nova-rx-preview.ux-pro1.js from the repo frontend (UX9-UX19, NO deploy)",
+   "brief": "Like UX7: build the new live Worker artifact worker/live/nova-rx-preview.ux-pro1.js. Method: take worker/live/nova-rx-preview.ux-fixes1.js as the base (it carries live-only content the repo index.html lacks: supplier UI, sticker overlay), extract the app HTML literal, apply the index.html/purchases.html changes of UX9-UX19 (git diff of those commits) with patch, and write it back with tools/build-worker-artifact.mjs so that Worker code outside the app HTML literal stays byte-identical. Add tests/unit/ux-pro1-artifact.check.mjs modelled on tests/unit/ux-fixes1-artifact.check.mjs (node --check, contains markers of every UX9-UX19 change, /emergency/stock.json and supplier/whatsapp handlers unchanged). Do NOT deploy, do NOT touch wrangler config or secrets. Frontend/artifact only; backend frozen; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node --check worker/live/nova-rx-preview.ux-pro1.js; node tests/unit/ux-pro1-artifact.check.mjs; node tests/unit/ux-fixes1-artifact.check.mjs; node tests/unit/procurement-worker-artifact.check.mjs all pass; no deploy performed.",
+   "after": [
+    "UX9",
+    "UX10",
+    "UX11",
+    "UX12",
+    "UX13",
+    "UX14",
+    "UX15",
+    "UX16",
+    "UX17",
+    "UX18"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX19",
+   "phase": 10,
+   "title": "Purchases: add «استلام فاتورة» entry from the purchases screen",
+   "brief": "In purchases.html / purchases.js (next to #review and #openPo) add a primary «استلام فاتورة» button that deep-links to index.html#products and auto-opens the existing receiving panel (the handler of #novaInventoryPurchase in index.html ~line 4869) via a location.hash flag (#products&receive=1); on mobile show the #selectAll checkbox with a 44px label. No backend/API changes. Add tests/ux/purchases-receive-link.mjs (Playwright): from /purchases one click opens the receiving panel in the products page (total clicks <= 2 from the purchases screen) and tests/purchases-ux-browser.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/purchases-receive-link.mjs passes with 1 click from purchases to receiving (was 3+ with navigation); node tests/purchases-ux-browser.mjs unchanged result.",
+   "after": [],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T18:29:45+00:00"
+  },
+  {
+   "id": "UX18",
+   "phase": 10,
+   "title": "Arabic consistency: help table, tooltips, aria-labels and button styles",
+   "brief": "In index.html: translate the keyboard-shortcuts table in #helpModal (English rows «Start New Sale…» etc.) and the English title= tooltips («New Sale (F2)», «Add / Switch Customer (F3)», «Clear Line Items (F4)») to Arabic via the existing tr()/i18n helper so they flip with the language switch; add aria-label to #novaNewRole and #novaNewOk; unify button radius/height tokens (use ux-tokens.js variables) so each page has at most 3 button variants (primary/secondary/danger). Add tests/unit/ux-i18n-consistency.check.mjs (node, static scan of index.html): no English-only title= or help rows in the Arabic default, every button/select has an accessible name, and button variants per page <= 3 via a Playwright count if a harness exists. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/unit/ux-i18n-consistency.check.mjs passes; node tests/ux/contrast-audit.mjs still pass.",
+   "after": [],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-13T18:29:45+00:00"
+  },
+  {
+   "id": "UX17",
+   "phase": 10,
+   "title": "Faster keyboard/mouse sale: Enter picks first result, qty shortcut, payment hotkeys, Enter finishes",
+   "brief": "In index.html (handleSearchKeyDown ~line 3018 and the window keydown handler ~line 4672): (a) Enter with suggestions open and no arrow selection adds the first suggestion; (b) typing `*3` or `3*` before/after a query sets the quantity of the added line; (c) F6 focuses the % discount, F7 the fixed discount; (d) inside checkout: F10 selects card, F11 credit, F12/C cash (preventDefault; Enter confirms); (e) Enter on an empty search box when the invoice has lines opens checkout; (f) Enter on the receipt modal starts a new sale (same as F2); (g) F1 opens the help modal; update the help table and button hints in Arabic. Add tests/ux/sale-clicks.mjs (Playwright, local index.html) asserting the measured counts: barcode sale = typed barcode + at most 3 key presses and 0 clicks (Enter, Enter, Enter); name+qty+10% discount+card sale <= 5 interactions after typing; ui-pos01-sale-flow.mjs and ui-pos02-payment.mjs still pass. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/sale-clicks.mjs passes with barcode sale <= 3 key presses (was 5) and mouse/keyboard card sale with discount <= 5 interactions (was 8 clicks); node tests/ui-pos01-sale-flow.mjs and node tests/ui-pos02-payment.mjs still pass.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX16",
+   "phase": 10,
+   "title": "Tap targets >= 44px on nav, tables and settings",
+   "brief": "In index.html (.nova-tab ~line 1385 min-height:37px, .nova-return-btn, products action buttons #novaInventoryPurchase/#novaInventoryLabels, settings inputs and buttons #novaAuthName/#novaAuthPw/#novaAuthIn/#novaNewName) and purchases.css (nav links 38-41px): raise to min-height:44px on touch widths (<=1050px) and 40px+ with 44px hit area on desktop via padding or ::after; keep the nav a single line (horizontal scroll from UX2). Add tests/ux/tap-targets.mjs (Playwright 390x844 and 1366x768): for sale, products, customers, reports, invoices, settings and /purchases assert 0 visible interactive controls under 44px height at 390px (ignore inline text links) and that the nav does not wrap. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/tap-targets.mjs passes (was 18/11/9/9/13/21 controls under 44px on desktop screens, 12 on purchases); node tests/ux/mobile-nav.check.mjs still passes.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX15",
+   "phase": 10,
+   "title": "Customer panel in sale: chronic meds, last purchases and «إعادة صرف»",
+   "brief": "In index.html customer sidebar renderer (.customer-sidebar, «مشتريات سابقة» collapsible) show for an attached customer: a short «أدوية مزمنة» line (derived from the customer's past items with category Chronic in demo/sale data), the last purchase date, and a one-tap «إعادة صرف آخر فاتورة» button that adds the previous invoice's lines to the cart (respecting stock checks). No new data storage beyond local sales. Add tests/ux/customer-refill.mjs (Playwright): attach demo customer, click «إعادة صرف» once and assert the cart holds the prior lines; total clicks from a fresh sale <= 3 (ربط عميل, اختيار, إعادة صرف). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/customer-refill.mjs passes with <= 3 clicks to refill a previous invoice; the sidebar shows chronic medicines for a chronic demo customer.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX14",
+   "phase": 10,
+   "title": "Return flow: «إرجاع كل الأصناف» + quick reason chips",
+   "brief": "In index.html return dialog (code near data-return / novaRetOk / novaRetReason, ~lines 4845-4870): add a «إرجاع كل الأصناف» button that fills all remaining quantities, and reason chips (عيب/تالف، خطأ في الصرف، رجوع العميل، انتهاء صلاحية) that fill #novaRetReason with one tap (free text still allowed, reason stays mandatory); focus the first control on open; Enter on the reason confirms when valid. Add tests/ux/return-fast.mjs (Playwright): make a sale, open invoices, then return everything with <= 4 clicks total (فواتير, مرتجع, إرجاع الكل + سبب جاهز is 2, تأكيد) and assert the refund amount equals the invoice total and the existing ui-pos04-returns-cancel.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/return-fast.mjs passes with click count <= 5 including the tab (was 5 clicks + 7 typed chars); node tests/ui-pos04-returns-cancel.mjs unchanged result.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX13",
+   "phase": 10,
+   "title": "Reports: period selector + print end-of-day",
+   "brief": "In index.html reports page renderer (search «مبيعات اليوم» / «صافي اليوم»): add a segmented period control (اليوم / آخر 7 أيام / الشهر) defaulting to today that re-filters the local novaSales data, and a «طباعة تقرير نهاية اليوم» button that prints a clean A4/80mm-friendly summary (window.print with a print-only stylesheet: sales, returns, net, cash/card/credit split, invoice count). Add tests/ux/reports-period.mjs (Playwright): complete a local sale, open reports (1 click), assert today KPIs, switch to 7 days with 1 click and assert the totals update, and assert the print button exists with a @media print rule. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/reports-period.mjs passes; daily report reachable in 1 click and printable in 2 clicks.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX12",
+   "phase": 10,
+   "title": "Low-stock KPI clickable + red low-stock badges + tidy products table",
+   "brief": "In index.html products page renderer (search «مخزون منخفض» / novaFilter): make the low-stock KPI card a real <button> that filters the table to stock < 30 (toggle, aria-pressed, shows an active state and a «عرض الكل» chip); colour/badge the رصيد cell red for low stock; keep «بحث» focus; hide the empty «العبوة» column when every value is «—» or fill it from packaging (stripsPerBox x unitsPerStrip); show Arabic category labels (map Chronic->مزمن, Analgesic->مسكنات, Antibiotic->مضاد حيوي, Lipid->دهون, GI Care->جهاز هضمي) via the existing tr()/i18n helper. Add tests/ux/low-stock-filter.mjs (Playwright): one click on the KPI filters rows to only stock<30 (rows < 21) and the rows carry the badge; click again restores 21 rows. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/low-stock-filter.mjs passes: 1 click reaches the low-stock list (was: no way); no English category labels remain in the Arabic products table.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX11",
+   "phase": 10,
+   "title": "Customer debt: show balance and add a simple «سداد» flow",
+   "brief": "Frontend only, local device data. In index.html customers page renderer (search for the customers view near the novaFilter/customers table, and the credit sale path that already records آجل in confirmPaymentCore) wire credit-ledger.js (createCreditLedger, already in repo; load it via the existing script mechanism if not yet inlined) to: add a «المديونية» column in the customers table (red when > 0), and a «سداد» button per customer with debt that opens a small RTL dialog with the amount prefilled to the full balance, cash/card choice (default cash) and one confirm button; Enter confirms, Esc closes; success toast and the balance updates. Do not add backend calls. Add tests/ux/customer-debt-payment.mjs (Playwright, local index.html): make a credit sale to a demo customer, open customers, assert the debt column, pay in full via the dialog and assert click count <= 4 (customers tab, سداد, confirm) and the balance becomes 0. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/customer-debt-payment.mjs passes with click count <= 4 (was: impossible); credit-ledger unit tests under tests/unit still pass.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX10",
+   "phase": 10,
+   "title": "Mobile sale screen: toast/FAB must not cover discount or totals; no clipped columns",
+   "brief": "In index.html CSS at max-width:600px: (a) move/shorten #toast/.nova-toast to the top and auto-hide at 2.5s so it never covers #inputPercentDiscount; (b) move the ✦ #novaAiLaunch FAB off the sale footer (hide on the sale page at <=600px or dock it beside the topbar); (c) fix the overlap of the VAT label with the totals (.totals-breakdown .tot-row wrap); (d) make the invoice table fit 390px (stack the row: name+meta on line 1, price/qty/discount/total on line 2) so no column is clipped; (e) hide the <kbd>F9 / دفع</kbd> hint on touch widths; (f) ensure .suggestion-item customer results are tappable (not covered). Add tests/ux/mobile-sale-layout.mjs (Playwright 390x844): add an item, then assert bounding boxes of toast, FAB, #inputPercentDiscount, #displayGrandTotal and #btnCheckout do not intersect, no element in the invoice table is clipped past the viewport, and page.click on the customer suggestion succeeds. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/mobile-sale-layout.mjs passes at 390x844; existing node tests/ux/mobile-nav.check.mjs and tests/ux/contrast-audit.mjs still pass.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
+  },
+  {
+   "id": "UX9",
+   "phase": 10,
+   "title": "Closed modals must not be reachable by Tab (inert/visibility)",
+   "brief": "In index.html (.modal-backdrop / .modal-backdrop.active CSS ~lines 1000-1025 and the open/close helpers for #checkoutModal, #receiptModal, #helpModal, #customerCheckoutGate) make closed modals unfocusable: add visibility:hidden (with a visibility transition delay so the 0.15s fade still works) or the inert attribute when not .active; on open focus the first control, on close return focus to #mainSearchInput. Add tests/ux/modal-tab-trap.mjs (Playwright against local index.html): press Tab 40 times from load and assert 0 stops inside a closed .modal-backdrop; open checkout with F9 and assert Tab stays inside it; Esc returns focus to #mainSearchInput. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
+   "acceptance": "node tests/ux/modal-tab-trap.mjs passes (0 tab stops inside closed modals, was 11 in 40 presses); F2/F3/F4/F9/Esc shortcuts and node tests/ux/contrast-audit.mjs still pass.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:28:01+00:00"
+ "updated": "2026-11-13T18:29:45+00:00"
 }
