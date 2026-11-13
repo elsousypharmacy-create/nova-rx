@@ -2424,7 +2424,7 @@
    "brief": "Files: index.html (receipt modal: #btnPrinterStatus / #btnReconnectPrinter and the red reconnect alert), tests/ux/receipt-printer-status.mjs (new). Bug: after a sale the receipt shows both «الطابعة متصلة» and «الطابعة غير متصلة» plus a red «إعادة التوصيل والمحاولة» strip. Fix: render exactly one state (متصلة / غير متصلة / غير معروفة before first check) driven by one variable; show the reconnect strip only when disconnected; neutral wording when no printer is paired (browser print). Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-printer-status.mjs asserts after a cash sale: exactly 1 visible printer-status element, reconnect strip hidden when connected and visible when disconnected; the barcode sale journey still needs 0 clicks and 4 keys (Enter,Enter,Enter,Enter); node tests/ux/sale-clicks.mjs passes; no console errors.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
@@ -2432,15 +2432,15 @@
    "dispatched_at": "2026-11-13T22:35:27+00:00",
    "pr": 329,
    "ci_dispatched": {
-    "sha": "fec5d0a754495a825a4df2bdd6a8d07cab83c026",
+    "sha": "dd1bd49e2d3668521be4c126240ba17742d5165b",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T22:32:47+00:00"
+    "at": "2026-11-13T22:37:55+00:00"
    }
   }
  ],
- "updated": "2026-11-13T22:35:27+00:00"
+ "updated": "2026-11-13T22:37:55+00:00"
 }
