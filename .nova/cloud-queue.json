@@ -1942,7 +1942,7 @@
    "brief": "In purchases.html / purchases.js (next to #review and #openPo) add a primary «استلام فاتورة» button that deep-links to index.html#products and auto-opens the existing receiving panel (the handler of #novaInventoryPurchase in index.html ~line 4869) via a location.hash flag (#products&receive=1); on mobile show the #selectAll checkbox with a 44px label. No backend/API changes. Add tests/ux/purchases-receive-link.mjs (Playwright): from /purchases one click opens the receiving panel in the products page (total clicks <= 2 from the purchases screen) and tests/purchases-ux-browser.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/purchases-receive-link.mjs passes with 1 click from purchases to receiving (was 3+ with navigation); node tests/purchases-ux-browser.mjs unchanged result.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro.json",
@@ -1950,14 +1950,14 @@
    "dispatched_at": "2026-11-13T18:40:51+00:00",
    "pr": 303,
    "ci_dispatched": {
-    "sha": "018e5cdce5b9301439f3d3f591316fece03badd9",
+    "sha": "3eeec87546a8da92fa25c9905032b9413f28cb29",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T18:35:26+00:00"
+    "at": "2026-11-13T18:42:21+00:00"
    }
   },
   {
@@ -1967,22 +1967,15 @@
    "brief": "In index.html: translate the keyboard-shortcuts table in #helpModal (English rows «Start New Sale…» etc.) and the English title= tooltips («New Sale (F2)», «Add / Switch Customer (F3)», «Clear Line Items (F4)») to Arabic via the existing tr()/i18n helper so they flip with the language switch; add aria-label to #novaNewRole and #novaNewOk; unify button radius/height tokens (use ux-tokens.js variables) so each page has at most 3 button variants (primary/secondary/danger). Add tests/unit/ux-i18n-consistency.check.mjs (node, static scan of index.html): no English-only title= or help rows in the Arabic default, every button/select has an accessible name, and button variants per page <= 3 via a Playwright count if a harness exists. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/unit/ux-i18n-consistency.check.mjs passes; node tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T18:35:26+00:00",
    "pr": 302,
-   "ci_dispatched": {
-    "sha": "f5b167e864aa69ddf7a2df73d8b363651077b0cd",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T18:37:00+00:00"
-   }
+   "merged_at": "2026-11-13T18:42:21+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/302"
   },
   {
    "id": "UX17",
@@ -1991,12 +1984,12 @@
    "brief": "In index.html (handleSearchKeyDown ~line 3018 and the window keydown handler ~line 4672): (a) Enter with suggestions open and no arrow selection adds the first suggestion; (b) typing `*3` or `3*` before/after a query sets the quantity of the added line; (c) F6 focuses the % discount, F7 the fixed discount; (d) inside checkout: F10 selects card, F11 credit, F12/C cash (preventDefault; Enter confirms); (e) Enter on an empty search box when the invoice has lines opens checkout; (f) Enter on the receipt modal starts a new sale (same as F2); (g) F1 opens the help modal; update the help table and button hints in Arabic. Add tests/ux/sale-clicks.mjs (Playwright, local index.html) asserting the measured counts: barcode sale = typed barcode + at most 3 key presses and 0 clicks (Enter, Enter, Enter); name+qty+10% discount+card sale <= 5 interactions after typing; ui-pos01-sale-flow.mjs and ui-pos02-payment.mjs still pass. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/sale-clicks.mjs passes with barcode sale <= 3 key presses (was 5) and mouse/keyboard card sale with discount <= 5 interactions (was 8 clicks); node tests/ui-pos01-sale-flow.mjs and node tests/ui-pos02-payment.mjs still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-pro.json",
-   "slot": "B",
-   "dispatched_at": "2026-11-13T18:39:32+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T18:42:21+00:00",
    "pr": 304,
    "ci_dispatched": {
     "sha": "2d9c4cf2572800ad513e3b1d96da2a153149e740",
@@ -2040,7 +2033,7 @@
    "brief": "In index.html customer sidebar renderer (.customer-sidebar, «مشتريات سابقة» collapsible) show for an attached customer: a short «أدوية مزمنة» line (derived from the customer's past items with category Chronic in demo/sale data), the last purchase date, and a one-tap «إعادة صرف آخر فاتورة» button that adds the previous invoice's lines to the cart (respecting stock checks). No new data storage beyond local sales. Add tests/ux/customer-refill.mjs (Playwright): attach demo customer, click «إعادة صرف» once and assert the cart holds the prior lines; total clicks from a fresh sale <= 3 (ربط عميل, اختيار, إعادة صرف). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/customer-refill.mjs passes with <= 3 clicks to refill a previous invoice; the sidebar shows chronic medicines for a chronic demo customer.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro.json",
@@ -2048,13 +2041,13 @@
    "dispatched_at": "2026-11-13T18:40:51+00:00",
    "pr": 305,
    "ci_dispatched": {
-    "sha": "87ee42bf3a38888a47e94e49ba8023dd573f8625",
+    "sha": "27d6b139a2359e6ec1041bbdc31511441e635ef6",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T18:39:32+00:00"
+    "at": "2026-11-13T18:42:21+00:00"
    }
   },
   {
@@ -2064,10 +2057,12 @@
    "brief": "In index.html return dialog (code near data-return / novaRetOk / novaRetReason, ~lines 4845-4870): add a «إرجاع كل الأصناف» button that fills all remaining quantities, and reason chips (عيب/تالف، خطأ في الصرف، رجوع العميل، انتهاء صلاحية) that fill #novaRetReason with one tap (free text still allowed, reason stays mandatory); focus the first control on open; Enter on the reason confirms when valid. Add tests/ux/return-fast.mjs (Playwright): make a sale, open invoices, then return everything with <= 4 clicks total (فواتير, مرتجع, إرجاع الكل + سبب جاهز is 2, تأكيد) and assert the refund amount equals the invoice total and the existing ui-pos04-returns-cancel.mjs still passes. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/return-fast.mjs passes with click count <= 5 including the tab (was 5 clicks + 7 typed chars); node tests/ui-pos04-returns-cancel.mjs unchanged result.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro.json"
+   "source": "inbox/ux-pro.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-13T18:42:21+00:00"
   },
   {
    "id": "UX13",
@@ -2130,5 +2125,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:40:51+00:00"
+ "updated": "2026-11-13T18:42:21+00:00"
 }
