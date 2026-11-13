@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import { generateFixture } from '../../tools/load/load-fixture.mjs';
+import { run, pct } from '../../tools/load/run-load.mjs';
+const a = generateFixture({ items: 500, movements: 2000 }), b = generateFixture({ items: 500, movements: 2000 });
+assert.equal(a.products.length, 500); assert.equal(a.movements.length, 2000);
+assert.deepEqual(a.movements.slice(0, 50), b.movements.slice(0, 50), 'deterministic');
+assert.equal(new Set(a.movements.map(m => m.cashier)).size <= 30, true);
+assert.throws(() => generateFixture({ branches: 11 }));
+assert.equal(pct([1, 2, 3, 4, 100], 50), 3); assert.equal(pct([1, 2, 3, 4, 100], 95), 100);
+const o = run({ items: 500, movements: 2000, runs: 20 });
+assert.equal(o.search.warm.errorRate, 0); assert.equal(o.balances.cold.errorRate, 0);
+console.log('load fixture checks ok');
