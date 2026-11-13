@@ -1243,11 +1243,14 @@
     "N104",
     "N105"
    ],
-   "status": "running",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T14:27:49+00:00"
+   "dispatched_at": "2026-11-13T14:27:49+00:00",
+   "pr": 275,
+   "merged_at": "2026-11-13T14:34:36+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/275"
   },
   {
    "id": "N107",
@@ -1262,21 +1265,14 @@
     "N104",
     "N105"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "B",
    "dispatched_at": "2026-11-13T14:27:49+00:00",
    "pr": 274,
-   "ci_dispatched": {
-    "sha": "58102241e4732fe2a491349291d83a8f7088a286",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T14:29:04+00:00"
-   }
+   "merged_at": "2026-11-13T14:33:11+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/274"
   },
   {
    "id": "N108",
@@ -1291,11 +1287,21 @@
     "N104",
     "N105"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
-   "slot": "B",
-   "dispatched_at": "2026-11-13T14:29:04+00:00"
+   "fix_attempts": 1,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T14:35:58+00:00",
+   "pr": 276,
+   "ci_dispatched": {
+    "sha": "b79e1ab7a4b7182979385568a1a8d77e975b7b2e",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T14:31:45+00:00"
+   }
   },
   {
    "id": "N109",
@@ -1310,9 +1316,21 @@
     "N104",
     "N105"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T14:30:19+00:00",
+   "pr": 277,
+   "ci_dispatched": {
+    "sha": "d01a4000f700f536249fd870d1d3a644ac9bb2d6",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T14:31:45+00:00"
+   }
   },
   {
    "id": "GATE-14",
@@ -1746,5 +1764,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T14:29:04+00:00"
+ "updated": "2026-11-13T14:35:58+00:00"
 }
