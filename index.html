@@ -1984,6 +1984,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             type="text" 
             id="mainSearchInput" 
             class="main-search-input" 
+            aria-label="Search"
             placeholder="Search customer by name or phone... (Press Enter to skip)"
             autocomplete="off"
             spellcheck="false"
@@ -5751,6 +5752,14 @@ load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds(
 #novaLabelsPanel .patient-card .card-body>details{flex:1 1 calc(50% - 6px)}
 #novaLabelsPanel .patient-card .card-body>details[open]{flex-basis:100%}
 #novaLabelsPanel .nl-cond .chips-more{max-height:180px;overflow-y:auto;overscroll-behavior:contain}
+}
+/* UX-02 devices & accessibility: touch >=44px, visible focus, no horizontal page scroll (RTL-safe: logical props only) */
+html,body{max-width:100%;overflow-x:hidden}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid #79c9eb!important;outline-offset:2px!important}
+@media(pointer:coarse),(max-width:1280px){
+.btn,.nova-tab,.nova-lang-btn,.nova-sale-actions button,.header-actions button,#searchModeTag,#btnRefreshApp{min-height:44px!important;min-width:44px}
+.nova-refresh-icon{min-width:44px;min-height:44px}
+input,select,textarea{min-height:44px}
 }
 </style>
 
