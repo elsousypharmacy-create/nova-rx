@@ -49,3 +49,7 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:10px;flex-wrap:nowrap;alig
 .offer-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .offer-actions button{margin-top:0}
 @media(max-width:800px){.panel-tools{width:100%}.panel-tools input{flex:1;min-width:120px}}
+
+/* UX16: tap targets >=44px; nav stays one line (scrolls horizontally) */
+.nova-topbar .brand{display:inline-flex;align-items:center;min-height:44px}.nova-topbar nav{flex-wrap:nowrap}.nova-topbar nav a{display:inline-flex;align-items:center;min-height:44px;flex-shrink:0}
+#modeAuto,#modeManual,#loadMock,#search,.controls button,.controls input{min-height:44px}

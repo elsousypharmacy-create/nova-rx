@@ -5780,6 +5780,12 @@ input,select,textarea{min-height:44px}
 }
 /* UX2: mobile nav edge fade */
 @media(max-width:780px){.nova-nav-row>.nova-nav,.nova-nav{overflow-x:auto!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-nav::-webkit-scrollbar{display:none}}
+/* UX16: tap targets >=44px on nav, tables and settings (single-line nav keeps UX2 horizontal scroll) */
+.nova-nav-row{height:48px;min-height:48px}
+.nova-nav-row>.nova-nav{padding:2px 8px!important;flex-wrap:nowrap!important;align-items:center}
+.nova-nav .nova-tab,.nova-tab{min-height:44px!important;display:inline-flex;align-items:center;flex-shrink:0}
+@media(max-width:780px){.nova-nav-row{height:48px;min-height:48px}}
+.nova-inventory-action,.nova-return-btn,.nova-page-btn,.nova-page-view button,.nova-page-view select,.nova-page-view input:not([type=checkbox]):not([type=radio]),#novaAuthName,#novaAuthPw,#novaAuthIn,#novaNewName,#novaNewPw,#novaNewRole,#novaNewOk,#novaNearExpiryDays{min-height:44px!important}
 </style>
 
 <script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="bi-dictionary.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>
