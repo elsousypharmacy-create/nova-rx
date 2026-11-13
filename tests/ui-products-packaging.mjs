@@ -31,7 +31,7 @@ await t('strip x strips and unitsPerBox are shown', async () => {
 });
 await t('inconsistent, invalid, hostile and missing packaging fall back to a dash', async () => {
   const c = await cells();
-  for (const i of [2, 3, 4, 5]) assert.equal(c[i], '—', `row ${i}: ${c[i]}`);
+  for (const i of [2, 3, 4, 5]) assert.equal(c[i], 'غير محدد', `row ${i}: ${c[i]}`);
   assert.equal(await page.evaluate(() => window.__xss), undefined);
 });
 await t('no page errors', async () => assert.deepEqual(errors, []));
