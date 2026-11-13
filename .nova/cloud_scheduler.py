@@ -84,6 +84,17 @@ def api(path):
     return _parse_gh_json(out)
 
 
+
+def ci_never_started(r):
+    """True when GitHub failed the run without starting any job (billing, spending limit)."""
+    if r.get("status") != "completed" or r.get("conclusion") not in ("failure", "timed_out", "startup_failure"):
+        return False
+    jobs = (api(f"repos/{REPO}/actions/runs/{r['id']}/jobs") or {}).get("jobs") or []
+    if not jobs:
+        return True
+    return all((not j.get("runner_name")) and not (j.get("steps") or []) for j in jobs)
+
+
 def act(*a):
     log("+ " + " ".join(x if len(x) < 80 else x[:77] + "..." for x in a))
     if not DRY:
@@ -276,9 +287,11 @@ def main():
         # Ignore pull_request runs that complete as action_required (GITHUB_TOKEN
         # PRs often need approval). Those would otherwise overwrite a green
         # workflow_dispatch of the same workflow and be treated as red CI.
+        # Also ignore runs that never got a runner (billing / spending-limit
+        # blocks). Treating those as red CI marks tasks failed and stalls the chain.
         latest = {}
         for r in sorted((api(f"repos/{REPO}/actions/runs?head_sha={sha}&per_page=100") or {}).get("workflow_runs", []), key=lambda r: r["created_at"]):
-            if r.get("conclusion") == "action_required":
+            if r.get("conclusion") == "action_required" or ci_never_started(r):
                 continue
             fn = os.path.basename(r["path"].split("@")[0])
             prev = latest.get(fn)

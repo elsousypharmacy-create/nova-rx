@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: NOVA Rx API
+  version: 1.0.0
+  description: |
+    v1 contract (FND-04). Behind flag NOVA_API_CONTRACT (default OFF); the offline app never calls it unless enabled.
+    All writes require `Idempotency-Key`; replays return the stored response. Lists use cursor pagination (limit max 200).
+    Errors: `{ok:false, code, message_ar, requestId}`.
+servers:
+  - url: /api/v1
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 128, pattern: '^[A-Za-z0-9_\-:.]+$' }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+  schemas:
+    Error:
+      type: object
+      required: [ok, code, message_ar, requestId]
+      properties:
+        ok: { type: boolean, enum: [false] }
+        code: { type: string }
+        message_ar: { type: string }
+        requestId: { type: string }
+    Page:
+      type: object
+      required: [ok, items, nextCursor, requestId]
+      properties:
+        ok: { type: boolean }
+        items: { type: array, items: { type: object } }
+        nextCursor: { type: string, nullable: true }
+        requestId: { type: string }
+  responses:
+    Error:
+      description: Error
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  securitySchemes:
+    bearer: { type: http, scheme: bearer }
+paths:
+  /health:
+    get:
+      summary: Liveness
+      responses: { '200': { description: healthy } }
+  /auth/login:
+    post:
+      summary: Sign in
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, properties: { username: { type: string }, secret: { type: string } } } } }
+      responses:
+        '200': { description: session issued }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+  /sync/push:
+    post:
+      summary: Push local changes
+      security: [ { bearer: [] } ]
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, properties: { changes: { type: array, items: { type: object } } } } } }
+      responses:
+        '200': { description: accepted }
+        '422': { $ref: '#/components/responses/Error' }
+  /sync/pull:
+    get:
+      summary: Pull changes since cursor
+      security: [ { bearer: [] } ]
+      parameters: [ { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses: { '200': { description: page, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } } }
+  /sales:
+    get:
+      summary: List sales
+      security: [ { bearer: [] } ]
+      parameters: [ { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses: { '200': { description: page, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } } }
+    post:
+      summary: Create sale
+      security: [ { bearer: [] } ]
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object } } }
+      responses:
+        '201': { description: created }
+        '400': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /stock:
+    get:
+      summary: List stock
+      security: [ { bearer: [] } ]
+      parameters: [ { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses: { '200': { description: page, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } } }
+  /stock/adjustments:
+    post:
+      summary: Adjust stock
+      security: [ { bearer: [] } ]
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object } } }
+      responses:
+        '201': { description: created }
+        '400': { $ref: '#/components/responses/Error' }

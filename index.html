@@ -1931,6 +1931,14 @@ html body .customer-sidebar{min-height:0!important}
 html body .table-container{min-height:46dvh!important;overflow-x:auto}
 html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 }
+/* UX1 — mobile sale topbar wraps to two rows so the search field stays tappable */
+@media (max-width:600px){
+ .top-header{flex-wrap:wrap!important;height:auto!important;min-height:48px!important;row-gap:6px;padding-block:6px!important}
+ .top-header .brand-section{flex:1 1 100%;flex-wrap:wrap;min-width:0}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex:1 1 100%;flex-wrap:wrap!important;justify-content:flex-start;row-gap:6px}
+ .nova-sale-number{flex:0 0 auto;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .search-container{position:relative;z-index:1;clear:both}
+}
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
   <link rel="stylesheet" href="supplier-lookup.css">
@@ -4734,7 +4742,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
     })();
   </script>
-<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=3', {updateViaCache:'none'}).catch(() => {})); }</script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=3'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
 <script>
 (function(){
   const btn=document.getElementById('btnRefreshApp');
@@ -4860,7 +4868,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
@@ -5075,6 +5083,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 #novaAiLaunch{position:fixed;bottom:18px;left:18px;z-index:8000;background:#2563eb;color:#fff;border:0;border-radius:14px;padding:11px 16px;font:700 13px Cairo;box-shadow:0 6px 22px #0008;cursor:pointer}
 /* Keep the sticker button off the checkout bar on phones (it used to cover «CHECKOUT»). */
 @media(max-width:780px){#novaAiLaunch{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:10px;padding:8px 12px;font-size:12px}}
+/* UX4: reserve room for the floating labels button (~44px + 18px offset) so it never covers rows/totals. */
+.nova-page-view{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+.totals-breakdown{margin-bottom:72px}
+@media(max-width:600px){#novaAiLaunch{width:44px;height:44px;padding:0;border-radius:50%;font-size:0;line-height:0;display:flex;align-items:center;justify-content:center}#novaAiLaunch::before{content:"✦";font-size:20px;line-height:1}}
 .discount-hint{font-size:12px;line-height:1.5;color:var(--accent-amber,#bba477);margin-top:6px}
 .input-grp input[aria-invalid="true"]{outline:1px solid var(--accent-red,#ef4444);border-color:var(--accent-red,#ef4444)}
 .nova-empty{padding:18px 12px;text-align:center;color:#a4adb7;font-size:13px}
@@ -5761,6 +5773,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .nova-refresh-icon{min-width:44px;min-height:44px}
 input,select,textarea{min-height:44px}
 }
+/* UX2: mobile nav edge fade */
+@media(max-width:780px){.nova-nav-row>.nova-nav,.nova-nav{overflow-x:auto!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-nav::-webkit-scrollbar{display:none}}
 </style>
 
 <script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script defer src="bi-dictionary.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script></body>

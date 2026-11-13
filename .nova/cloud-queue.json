@@ -768,21 +768,14 @@
    "brief": "backend/migrations/0001_identity.sql: tenants, branches, users, roles, user_roles, sessions (token_hash only), devices, schema_migrations. backend/src/db/migrate.js applies numbered migrations in order, idempotent, records applied versions. Test tests/unit/backend-migrations.check.mjs with node:sqlite: apply twice = no change, FK + unique constraints enforced.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T10:39:13+00:00",
    "pr": 253,
-   "ci_dispatched": {
-    "sha": "1e3f9f70447a9be67013a5d196774358fb3c2e25",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T10:40:24+00:00"
-   }
+   "merged_at": "2026-11-13T10:45:31+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/253"
   },
   {
    "id": "N92",
@@ -791,21 +784,14 @@
    "brief": "backend/migrations/0002_catalog_inventory.sql: products, product_barcodes, product_units, inventory_batches, inventory_movements (append-only ledger; trigger blocks UPDATE/DELETE), stock_counts, stock_transfers; every row tenant_id/branch_id, money as integer minor units. Extend migration test for invariants.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
    "dispatched_at": "2026-11-13T10:40:24+00:00",
    "pr": 254,
-   "ci_dispatched": {
-    "sha": "d20c53fe3c020cf6f03549976b0c4f24ce9469db",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T10:43:00+00:00"
-   }
+   "merged_at": "2026-11-13T10:48:11+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/254"
   },
   {
    "id": "UX7",
@@ -833,22 +819,23 @@
    "brief": "In index.html (products render near the string 'الرصيد غير متاح في هذه القائمة') hide the empty الرصيد/العبوة/التصنيف columns when every row is empty, or show a muted 'غير متوفر من المصدر' label with a title tooltip; also change the 'الرصيد: غير متاح' KPI to a clearer Arabic message. No backend/data change. Add tests/ux/products-empty-columns.check.mjs (jsdom-free: extract the render function or assert the string/rule exists). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/products-empty-columns.check.mjs passes; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "failed",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 2,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:43:00+00:00",
+   "dispatched_at": "2026-11-13T10:50:57+00:00",
    "pr": 255,
    "ci_dispatched": {
-    "sha": "ac1cc6a40aea4ef7503b3c27218cc75791a99833",
+    "sha": "a7faa26d5210e434a526af3c51923f31385183ad",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T10:44:16+00:00"
-   }
+    "at": "2026-11-13T10:52:15+00:00"
+   },
+   "note": "Failed after 2 fixes: Playwright UI products packaging (N05) on run 43412464981 — tests/ui-products-packaging.mjs expected a dash for inconsistent/missing packaging, got «غير متوفر» on row 2. PR #255 left open. Not retried so backend can proceed."
   },
   {
    "id": "UX5",
@@ -857,12 +844,24 @@
    "brief": "In index.html CSS (nova-tab at ≤780px uses 11px, table th 10-11px, small/badges ~11px) and sticker-studio.html (badges «ناقص: …» 11px) and purchases.css (#status 11px): set a floor of 12px for UI text (not the printed sticker preview). Add tests/ux/min-font.check.mjs that scans those CSS files for font-size values <12px outside the sticker preview selectors and fails on any. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/min-font.check.mjs passes; node tests/ux/contrast-audit.mjs and node tests/unit/ux-tokens.check.mjs still pass.",
    "after": [],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 2,
    "source": "inbox/ux-phase10.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T10:44:16+00:00"
+   "dispatched_at": "2026-11-13T13:51:09+00:00",
+   "pr": 256,
+   "ci_dispatched": {
+    "sha": "bae4a008ff0f5feb2562fe71900ebb7b503ca2d1",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T13:48:53+00:00"
+   },
+   "note": "Second fix run 43412993917 never started (GitHub Actions billing/spending limit). Rolled fix_attempts back to 1 so CI can be re-dispatched; not a code failure."
   },
   {
    "id": "UX4",
@@ -871,10 +870,15 @@
    "brief": "In index.html move/resize the floating labels button (text '✦ استيكرات الأدوية') so it does not cover table rows, totals or report rows: add bottom padding to .nova-page-view / sale totals equal to the button height, and shrink it to an icon-only round button on ≤600px (keep aria-label in Arabic). Add tests/ux/labels-fab.check.mjs asserting the padding rule and aria-label. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/labels-fab.check.mjs passes; at 390x844 the button does not intersect the 'الإجمالي النهائي' block (Playwright bounding-box check if harness available); contrast-audit passes.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T10:48:11+00:00",
+   "pr": 257,
+   "merged_at": "2026-11-13T10:54:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/257"
   },
   {
    "id": "UX3",
@@ -883,10 +887,15 @@
    "brief": "index.html registers '/sw.js?v=3' which returns 404 on the live Worker (27 console errors in audit). Guard registration in index.html: fetch(sw url,{method:'HEAD'}) first and register only if ok, with a silent .catch. Do not add routes to the backend. Add tests/ux/sw-register-guard.check.mjs asserting the guard code is present and registration is not unconditional. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/sw-register-guard.check.mjs passes; no regression in node tests/unit/ux-tokens.check.mjs.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T10:49:40+00:00",
+   "pr": 258,
+   "merged_at": "2026-11-13T10:56:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/258"
   },
   {
    "id": "UX2",
@@ -895,10 +904,16 @@
    "brief": "In index.html (.nova-nav, .nova-tab rules near lines 1385-1466) and purchases.html/purchases.css nav if present: make the tab strip horizontally scrollable with an edge fade (overflow-x:auto, scrollbar hidden, mask-image) and scroll the active tab into view (scrollIntoView({inline:'center'})) when a tab is activated, on ≤780px. Add tests/ux/mobile-nav.check.mjs asserting the CSS + scrollIntoView call exist. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-nav.check.mjs passes; manual Playwright at 390x844 shows every tab reachable by scroll; node tests/unit/ux-tokens.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "note": "Agent run 43412811792 never started (GitHub Actions billing/spending limit). attempts reset to 0 so it can get a real try.",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:16:18+00:00",
+   "pr": 259,
+   "merged_at": "2026-11-13T12:21:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/259"
   },
   {
    "id": "UX1",
@@ -907,10 +922,15 @@
    "brief": "In index.html (CSS for the sale topbar: search wrapper .search-container/.search-box-wrapper, invoice number chip, buttons «فاتورة جديدة/تعليق/معلقة/ربط عميل») make the bar wrap to two rows at max-width:600px so #mainSearchInput is fully visible and tappable at 390x844 and the invoice number does not overlap «منتج». Add tests/ux/mobile-topbar.check.mjs (static CSS/DOM check on index.html, node) asserting a wrap rule exists for ≤600px, and extend with a Playwright check against local index.html if tests/ux has a harness. Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-report-phase10.md.",
    "acceptance": "node tests/ux/mobile-topbar.check.mjs passes; at 390x844 page.click('#mainSearchInput') succeeds with no Timeout; existing node tests/unit/ux-tokens.check.mjs and tests/ux/contrast-audit.mjs still pass.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-phase10.json"
+   "source": "inbox/ux-phase10.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:17:31+00:00",
+   "pr": 260,
+   "merged_at": "2026-11-13T12:22:56+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/260"
   },
   {
    "id": "N93",
@@ -919,9 +939,14 @@
    "brief": "backend/migrations/0003_sales_finance.sql: customers, sales, sale_items, payments, sale_returns(+items), suppliers, purchase_orders(+items), receipts, cashier_sessions, journal_entries/lines, audit_logs (append-only trigger), idempotency_keys unique per tenant. Tests: returns cannot exceed sold qty (constraint or service check documented), audit_logs cannot be updated/deleted.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:18:50+00:00",
+   "pr": 261,
+   "merged_at": "2026-11-13T12:25:41+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/261"
   },
   {
    "id": "N94",
@@ -930,9 +955,14 @@
    "brief": "docs/backend/openapi.yaml for v1 (health, auth, sync, sales, stock). backend/src/http/idempotency.js (Idempotency-Key required on writes, replay returns stored response), pagination (cursor, max 200), request timeouts helper. Tests tests/unit/backend-http.check.mjs.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:21:20+00:00",
+   "pr": 262,
+   "merged_at": "2026-11-13T12:28:21+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/262"
   },
   {
    "id": "N95",
@@ -941,9 +971,14 @@
    "brief": "backend/src/version.js exposing build sha/version; docs/backend/ENVIRONMENTS.md (dev/staging/production separation, numbered migrations, deploy + rollback record); tools/backend/check-migrations.mjs that lints numbering gaps and destructive SQL; tools/backend/stale-artifact-guard.mjs refusing a deploy whose version is older than the recorded live one. Tests.\n\nHARD RULES (backend phase): Sonnet only. No paid services or APIs and no live calls to any external service (Meta/WhatsApp, Telegram, payment, AI, supplier sites, Cloudflare API) — use mock adapters in tests. Do not create Cloudflare resources and do not deploy; backend/wrangler.toml keeps placeholder ids only. Never touch repo elsousypharmacy-create/pharmacy. Do not add or edit GitHub secrets or workflows; reference secrets only by NAME via Worker env bindings, never print or commit values. Migrations in backend/migrations are numbered and ADDITIVE ONLY (no DROP/TRUNCATE/DELETE FROM; CI blocks them). Everything new sits behind a feature flag that defaults OFF; with the flag off the current local/offline app behaves exactly as today and makes zero network calls to the new backend; any backend error falls back to local mode. Integrations needing a key or account that does not exist: build the adapter + mock, keep its flag OFF, and add a line 'NEEDS-OWNER: <key/account>' to docs/backend/NEEDS-OWNER.md. Backend code lives in backend/ (Cloudflare Worker, ES modules, no npm deps); tests are tests/unit/backend-*.check.mjs (plain node, may use node:sqlite to emulate D1, no network) and run in the 'Backend unit checks' CI. Keep Arabic error messages with a stable code + requestId.",
    "acceptance": "Run all tests/unit/backend-*.check.mjs plus the nearest existing unit tests you touch and report exact results; small focused diff; flag default OFF verified by a test. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:24:21+00:00",
+   "pr": 263,
+   "merged_at": "2026-11-13T12:30:52+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/263"
   },
   {
    "id": "N96",
@@ -960,9 +995,14 @@
     "N94",
     "N95"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:30:52+00:00",
+   "pr": 264,
+   "merged_at": "2026-11-13T12:38:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/264"
   },
   {
    "id": "N97",
@@ -979,9 +1019,14 @@
     "N94",
     "N95"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:33:24+00:00",
+   "pr": 265,
+   "merged_at": "2026-11-13T12:40:56+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/265"
   },
   {
    "id": "N98",
@@ -998,9 +1043,14 @@
     "N94",
     "N95"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:35:49+00:00",
+   "pr": 266,
+   "merged_at": "2026-11-13T12:43:37+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/266"
   },
   {
    "id": "N99",
@@ -1017,9 +1067,14 @@
     "N94",
     "N95"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:38:15+00:00",
+   "pr": 267,
+   "merged_at": "2026-11-13T12:45:08+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/267"
   },
   {
    "id": "N100",
@@ -1036,9 +1091,14 @@
     "N94",
     "N95"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:40:56+00:00",
+   "pr": 268,
+   "merged_at": "2026-11-13T12:48:50+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/268"
   },
   {
    "id": "N101",
@@ -1053,9 +1113,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:48:50+00:00",
+   "pr": 269,
+   "merged_at": "2026-11-13T12:56:10+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/269"
   },
   {
    "id": "N102",
@@ -1070,9 +1135,21 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 2,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T13:11:32+00:00",
+   "pr": 270,
+   "ci_dispatched": {
+    "sha": "8072a31cbc847893942eba2bbf59c604440e3b5e",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T13:12:49+00:00"
+   }
   },
   {
    "id": "N103",
@@ -1087,9 +1164,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:53:44+00:00",
+   "pr": 271,
+   "merged_at": "2026-11-13T13:00:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/271"
   },
   {
    "id": "N104",
@@ -1104,9 +1186,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:56:10+00:00",
+   "pr": 272,
+   "merged_at": "2026-11-13T13:03:02+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/272"
   },
   {
    "id": "N105",
@@ -1121,9 +1208,14 @@
     "N99",
     "N100"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T12:57:46+00:00",
+   "pr": 273,
+   "merged_at": "2026-11-13T13:05:40+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/273"
   },
   {
    "id": "GATE-13",
@@ -1642,5 +1734,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T10:44:16+00:00"
+ "updated": "2026-11-13T13:51:09+00:00"
 }

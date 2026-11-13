@@ -11,3 +11,4 @@ NEEDS-OWNER: KIMI_MODEL_API_KEY (optional AI, paid; flag stays OFF)
 NEEDS-OWNER: AUMET_* / PO_* supplier connector credentials (server-side only; real cart/order writes need specific approval)
 NEEDS-OWNER: production deploy and production migration apply
 NEEDS-OWNER: unlocking any unknown (fail-closed) supplier operation, via the reconciliation design only
+NEEDS-OWNER: NOVA_API_PIN is the one-time owner bootstrap password (NOVA_AUTH flag stays OFF until set; owner must change it after first login)
