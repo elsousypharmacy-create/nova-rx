@@ -12,7 +12,8 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-  function create(storage) {
+  /* remote (optional): { enabled(): bool, baseUrl(): string, fetch, getToken() }. Off/absent => zero network calls. */
+  function create(storage, remote) {
     var state = { conversations: [], seq: 0 };
     function save() { if (storage) storage.setItem(KEY, JSON.stringify(state)); }
     function load() {
@@ -62,7 +63,23 @@
         return (!filter.assignee || c.assignee === filter.assignee) && (!filter.mode || c.mode === filter.mode);
       }).sort(function (a, b) { return b.updatedAt - a.updatedAt; });
     }
-    var api = { load: load, open: open, receive: receive, send: send, setStatus: setStatus, assign: assign, handoff: handoff, link: link, list: list,
+    /* With the flag on, read conversations from the server API and mirror them locally; any error keeps the local state. */
+    function pullRemote() {
+      var on = false;
+      try { on = !!(remote && remote.enabled() && remote.baseUrl() && typeof remote.fetch === 'function'); } catch (e) { on = false; }
+      if (!on) return Promise.resolve({ skipped: true });
+      var t = remote.getToken ? remote.getToken() : null, h = { Accept: 'application/json' };
+      if (t) h.Authorization = 'Bearer ' + t;
+      return Promise.resolve().then(function () { return remote.fetch(String(remote.baseUrl()).replace(/\/+$/, '') + '/api/v1/inbox/conversations', { method: 'GET', headers: h }); })
+        .then(function (r) { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
+        .then(function (j) {
+          if (!j || !Array.isArray(j.conversations)) throw new Error('bad-response');
+          state.conversations = j.conversations; save();
+          return { skipped: false, count: j.conversations.length };
+        })
+        .catch(function (e) { return { skipped: false, error: String((e && e.message) || e) }; });
+    }
+    var api = { pullRemote: pullRemote, load: load, open: open, receive: receive, send: send, setStatus: setStatus, assign: assign, handoff: handoff, link: link, list: list,
       get: function (id) { return clone(conv(id)); } };
     return api;
   }

@@ -8,6 +8,7 @@ import { registerSyncPullRoutes } from './sync-pull.js';
 import { registerImportRoutes } from './import.js';
 import { registerBalanceMigrationRoutes } from './balance-migration.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
+import { registerInboxRoutes } from './inbox.js';
 import { registerDeployRoutes } from './deploys.js';
 import { registerWhatsAppRoutes } from './whatsapp-intake.js';
 import { scheduledBackup } from './backup.js';
@@ -64,6 +65,7 @@ registerBalanceMigrationRoutes(route, { json, errorResponse });
 registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerWhatsAppRoutes(route, { json, errorResponse });
+registerInboxRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
 export async function handle(request, env = {}) {
