@@ -2188,7 +2188,7 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2196,13 +2196,13 @@
    "dispatched_at": "2026-11-13T22:24:54+00:00",
    "pr": 316,
    "ci_dispatched": {
-    "sha": "0b907fb7155749160e1db2922af7b18ff8880b6b",
+    "sha": "6e670c78f833b9caa6db30920b6d582403b8c150",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T22:17:05+00:00"
+    "at": "2026-11-13T22:27:20+00:00"
    }
   },
   {
@@ -2414,10 +2414,12 @@
    "brief": "Files: index.html (the .nova-return-overlay builder, text «بنفس طريقة الدفع الأصلية (…)»), tests/ux/return-clicks.mjs (new). Bug: dialog always says «(بطاقة)». Fix: read the invoice payment method and print نقدي / بطاقة / آجل (for آجل: «يُخصم من مديونية العميل»), and confirm the credit return lowers the customer balance shown in العملاء; optional: preselect last-used reason chip to save one click. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/return-clicks.mjs creates a cash sale, a card sale and a credit sale for a registered customer and asserts the dialog text names the right method for each and that the credit return reduces the debt column; return-all journey is <=5 clicks and 0 typed chars (assert count); node tests/ux/sale-clicks.mjs still passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T22:27:20+00:00"
   },
   {
    "id": "UX22",
@@ -2432,5 +2434,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T22:24:54+00:00"
+ "updated": "2026-11-13T22:27:20+00:00"
 }
