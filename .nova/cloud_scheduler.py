@@ -38,9 +38,50 @@ def sh(*a, check=True):
     return r.stdout
 
 
+def _parse_gh_json(out):
+    """Parse `gh api` JSON, including `--paginate` concatenation of pages.
+
+    `gh api --paginate` writes one JSON document per page back-to-back
+    (arrays or objects). json.loads then raises JSONDecodeError: Extra data.
+    """
+    out = (out or "").strip()
+    if not out:
+        return None
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError:
+        pass
+    dec = json.JSONDecoder()
+    pages, idx, n = [], 0, len(out)
+    while idx < n:
+        while idx < n and out[idx].isspace():
+            idx += 1
+        if idx >= n:
+            break
+        val, idx = dec.raw_decode(out, idx)
+        pages.append(val)
+    if not pages:
+        return None
+    if all(isinstance(p, list) for p in pages):
+        merged = []
+        for p in pages:
+            merged.extend(p)
+        return merged
+    if all(isinstance(p, dict) for p in pages):
+        merged = {}
+        for p in pages:
+            for k, v in p.items():
+                if isinstance(v, list) and isinstance(merged.get(k), list):
+                    merged[k].extend(v)
+                else:
+                    merged[k] = v
+        return merged
+    return pages[0]
+
+
 def api(path):
     out = sh("gh", "api", "--paginate", path) if "per_page" in path else sh("gh", "api", path)
-    return json.loads(out) if out.strip() else None
+    return _parse_gh_json(out)
 
 
 def act(*a):
