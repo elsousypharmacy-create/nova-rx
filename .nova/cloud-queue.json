@@ -1438,20 +1438,20 @@
     "N108",
     "N109"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "slot": "B",
    "dispatched_at": "2026-11-13T16:48:38+00:00",
    "pr": 284,
    "ci_dispatched": {
-    "sha": "e4f6efd4c5ecaab4614089265cedf96e8e539e55",
+    "sha": "72957d88fc8315801beb018e96d7b3bc93cc1b62",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:43:45+00:00"
+    "at": "2026-11-13T16:50:11+00:00"
    }
   },
   {
@@ -1466,11 +1466,11 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "slot": "A",
-   "dispatched_at": "2026-11-13T16:43:45+00:00",
+   "dispatched_at": "2026-11-13T16:50:11+00:00",
    "pr": 285,
    "ci_dispatched": {
     "sha": "3bcae7d545e498053b3cfc2d62482fdfe259e149",
@@ -1536,20 +1536,20 @@
     "N108",
     "N109"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "slot": "A",
    "dispatched_at": "2026-11-13T16:48:38+00:00",
    "pr": 288,
    "ci_dispatched": {
-    "sha": "ee549620896ed5d9cf1788796af2a0a124723a03",
+    "sha": "bedb68061eb0729c56e28b68abb84e624ef338d3",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T16:43:45+00:00"
+    "at": "2026-11-13T16:50:11+00:00"
    }
   },
   {
@@ -1620,9 +1620,11 @@
     "N108",
     "N109"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "slot": "B",
+   "dispatched_at": "2026-11-13T16:50:11+00:00"
   },
   {
    "id": "GATE-15",
@@ -1864,5 +1866,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T16:48:38+00:00"
+ "updated": "2026-11-13T16:50:11+00:00"
 }
