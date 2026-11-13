@@ -1287,11 +1287,11 @@
     "N104",
     "N105"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
-   "slot": "B",
-   "dispatched_at": "2026-11-13T14:29:04+00:00",
+   "fix_attempts": 1,
+   "slot": "A",
+   "dispatched_at": "2026-11-13T14:35:58+00:00",
    "pr": 276,
    "ci_dispatched": {
     "sha": "b79e1ab7a4b7182979385568a1a8d77e975b7b2e",
@@ -1764,5 +1764,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T14:34:36+00:00"
+ "updated": "2026-11-13T14:35:58+00:00"
 }
