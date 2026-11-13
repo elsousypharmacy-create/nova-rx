@@ -2025,22 +2025,15 @@
    "brief": "In index.html customer sidebar renderer (.customer-sidebar, «مشتريات سابقة» collapsible) show for an attached customer: a short «أدوية مزمنة» line (derived from the customer's past items with category Chronic in demo/sale data), the last purchase date, and a one-tap «إعادة صرف آخر فاتورة» button that adds the previous invoice's lines to the cart (respecting stock checks). No new data storage beyond local sales. Add tests/ux/customer-refill.mjs (Playwright): attach demo customer, click «إعادة صرف» once and assert the cart holds the prior lines; total clicks from a fresh sale <= 3 (ربط عميل, اختيار, إعادة صرف). Frontend only, small change: preserve Black Edition Arabic RTL (dir=rtl, Cairo, existing colour tokens); backend frozen; no deploys; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro-report.md.",
    "acceptance": "node tests/ux/customer-refill.mjs passes with <= 3 clicks to refill a previous invoice; the sidebar shows chronic medicines for a chronic demo customer.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T18:40:51+00:00",
    "pr": 305,
-   "ci_dispatched": {
-    "sha": "27d6b139a2359e6ec1041bbdc31511441e635ef6",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T18:42:21+00:00"
-   }
+   "merged_at": "2026-11-13T18:46:50+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/305"
   },
   {
    "id": "UX14",
@@ -2131,5 +2124,5 @@
    "source": "inbox/ux-pro.json"
   }
  ],
- "updated": "2026-11-13T18:45:15+00:00"
+ "updated": "2026-11-13T18:46:50+00:00"
 }
