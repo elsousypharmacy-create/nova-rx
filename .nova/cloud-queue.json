@@ -113,11 +113,20 @@
    "brief": "Record an append-only on-device audit log with actor, time, before/after values, reason, and requestId. Financial log rows cannot be deleted; secrets and sensitive fields must be redacted. Frontend/local only; backend is frozen — if the item truly needs backend, commit only a file .nova/noop/N47.md containing 'NOOP-FREEZE <reason>' instead.",
    "acceptance": "Existing and new unit tests pass (run them and report exact results); small focused diff; Arabic RTL UX preserved. The scheduler opens the PR and merges it on green CI.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "slot": "A",
-   "dispatched_at": "2026-11-13T04:10:52+00:00"
+   "dispatched_at": "2026-11-13T04:10:52+00:00",
+   "pr": 216,
+   "ci_dispatched": {
+    "sha": "19589f30cf915cba150c2d2d2a3faab728e4ed05",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-13T04:12:16+00:00"
+   }
   },
   {
    "id": "N52",
@@ -553,5 +562,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T04:10:52+00:00"
+ "updated": "2026-11-13T04:12:16+00:00"
 }
