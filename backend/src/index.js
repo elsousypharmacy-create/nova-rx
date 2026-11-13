@@ -7,6 +7,7 @@ import { registerSyncRoutes } from './sync.js';
 import { registerSyncPullRoutes } from './sync-pull.js';
 import { registerImportRoutes } from './import.js';
 import { observabilityEnabled, registerStatusRoute, countError, logEvent } from './observability.js';
+import { scheduledBackup } from './backup.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -102,4 +103,7 @@ async function handleInner(request, env) {
   }
 }
 
-export default { fetch: (request, env) => handle(request, env) };
+export default {
+  fetch: (request, env) => handle(request, env),
+  scheduled: (event, env, ctx) => { const p = scheduledBackup(env); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; },
+};

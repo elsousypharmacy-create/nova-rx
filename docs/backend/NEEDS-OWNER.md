@@ -13,3 +13,4 @@ NEEDS-OWNER: production deploy and production migration apply
 NEEDS-OWNER: unlocking any unknown (fail-closed) supplier operation, via the reconciliation design only
 NEEDS-OWNER: NOVA_API_PIN is the one-time owner bootstrap password (NOVA_AUTH flag stays OFF until set; owner must change it after first login)
 NEEDS-OWNER: NOVA_STATUS_TOKEN (bearer secret for GET /api/v1/status; set as Worker secret by owner; NOVA_OBSERVABILITY flag stays OFF)
+NEEDS-OWNER: enable R2 + create backup bucket and cron trigger (wrangler [triggers] crons) before setting NOVA_BACKUP=1
