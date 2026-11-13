@@ -1,3 +1,4 @@
+import { audit } from '../audit.js';
 // SEC-01: login + sessions. WebCrypto only, KV storage, no network. Flag NOVA_AUTH=1 (default OFF).
 export const PBKDF2_ITERATIONS = 100000; // Workers WebCrypto maximum
 export const ACCESS_TTL_S = 3600;
@@ -168,6 +169,14 @@ export function registerAuthRoutes(route, { json, errorResponse }) {
     let body = {};
     try { body = await ctx.request.json(); } catch { body = {}; }
     const r = await fn(ctx, body);
+    const action = 'auth.' + ctx.url.pathname.split('/').pop();
+    let actor = null;
+    if (action === 'auth.login') actor = String((body && body.username) || '').trim().toLowerCase().slice(0, 64) || null;
+    else if (String(ctx.env.NOVA_AUDIT) === '1') { const a = await authenticate(ctx.request, ctx.env); actor = a.session ? a.session.user : null; }
+    const denied = r.fail && (r.fail.status === 403 || r.fail.status === 401 || r.fail.status === 429);
+    await audit(ctx.env, { actor, action: r.fail && r.fail.status === 403 ? 'permission.denied' : action, entity: 'auth', requestId: ctx.requestId,
+      outcome: r.fail ? (denied ? 'DENIED' : 'FAILED') : 'ALLOWED', reason: r.fail ? r.fail.code : null,
+      after: action === 'auth.login' && body && body.device_id ? { device_id: body.device_id } : null });
     if (r.fail) return errorResponse(r.fail.code, r.fail.message_ar, r.fail.status, ctx.requestId);
     return json({ ok: true, ...r.ok, requestId: ctx.requestId }, 200, { 'X-Request-Id': ctx.requestId });
   };
