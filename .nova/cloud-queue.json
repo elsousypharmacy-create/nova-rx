@@ -2314,7 +2314,7 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "failed",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
@@ -2407,12 +2407,22 @@
    "brief": "Files: index.html (the .nova-return-overlay builder, text «بنفس طريقة الدفع الأصلية (…)»), tests/ux/return-clicks.mjs (new). Bug: dialog always says «(بطاقة)». Fix: read the invoice payment method and print نقدي / بطاقة / آجل (for آجل: «يُخصم من مديونية العميل»), and confirm the credit return lowers the customer balance shown in العملاء; optional: preselect last-used reason chip to save one click. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/return-clicks.mjs creates a cash sale, a card sale and a credit sale for a registered customer and asserts the dialog text names the right method for each and that the credit return reduces the debt column; return-all journey is <=5 clicks and 0 typed chars (assert count); node tests/ux/sale-clicks.mjs still passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T22:27:20+00:00"
+   "dispatched_at": "2026-11-13T22:27:20+00:00",
+   "pr": 328,
+   "ci_dispatched": {
+    "sha": "9f1f8c5683a0b1c2753b009078e8f385eeaa10b5",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T22:30:01+00:00"
+   }
   },
   {
    "id": "UX22",
@@ -2421,11 +2431,13 @@
    "brief": "Files: index.html (receipt modal: #btnPrinterStatus / #btnReconnectPrinter and the red reconnect alert), tests/ux/receipt-printer-status.mjs (new). Bug: after a sale the receipt shows both «الطابعة متصلة» and «الطابعة غير متصلة» plus a red «إعادة التوصيل والمحاولة» strip. Fix: render exactly one state (متصلة / غير متصلة / غير معروفة before first check) driven by one variable; show the reconnect strip only when disconnected; neutral wording when no printer is paired (browser print). Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/receipt-printer-status.mjs asserts after a cash sale: exactly 1 visible printer-status element, reconnect strip hidden when connected and visible when disconnected; the barcode sale journey still needs 0 clicks and 4 keys (Enter,Enter,Enter,Enter); node tests/ux/sale-clicks.mjs passes; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T22:30:01+00:00"
   }
  ],
- "updated": "2026-11-13T22:28:37+00:00"
+ "updated": "2026-11-13T22:30:01+00:00"
 }
