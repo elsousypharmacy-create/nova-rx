@@ -11,6 +11,11 @@ on:
       - 'scripts/d1-*.sh'
       - '.github/workflows/backend-unit.yml'
       - '.github/workflows/d1-backup.yml'
+      - '.nova/cloud_scheduler.py'
+      - '.nova/gate_result.py'
+      - '.github/workflows/deploy-backend-staging.yml'
+      - '.github/scripts/deploy_backend_staging.sh'
+      - 'tests/unit/scheduler_gates_test.py'
   push:
     branches: [main]
     paths:
@@ -18,6 +23,11 @@ on:
       - 'backend-client.js'
       - 'tests/unit/backend-*.check.mjs'
       - 'scripts/d1-*.sh'
+      - '.nova/cloud_scheduler.py'
+      - '.nova/gate_result.py'
+      - '.github/workflows/deploy-backend-staging.yml'
+      - '.github/scripts/deploy_backend_staging.sh'
+      - 'tests/unit/scheduler_gates_test.py'
   workflow_dispatch:
 
 permissions:
