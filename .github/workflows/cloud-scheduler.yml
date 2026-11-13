@@ -69,7 +69,7 @@ jobs:
       - name: Run scheduler
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HAS_B: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_B != '' }}
+          HAS_B: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_B != '' && vars.DISABLE_SLOT_B != 'true' }}
           SCHEDULER_STAY_FILE: /tmp/cloud-scheduler-stay
         run: |
           set -euo pipefail

@@ -1013,12 +1013,15 @@
       z-index: 100;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.15s ease;
+      visibility: hidden; /* closed modals are not Tab-reachable; delay keeps the fade-out */
+      transition: opacity 0.15s ease, visibility 0s linear 0.15s;
     }
 
     .modal-backdrop.active {
       opacity: 1;
       pointer-events: auto;
+      visibility: visible;
+      transition: opacity 0.15s ease, visibility 0s;
     }
 
     /* Keep the receipt above the labels/AI overlays (z-index 9000+) so its close button stays clickable. */
@@ -1243,6 +1246,21 @@
     }
   
 
+/* UX13: reports period selector + end-of-day print */
+.nova-rep-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:0 0 12px}
+.nova-rep-seg{display:inline-flex;border:1px solid var(--border-subtle);border-radius:8px;overflow:hidden}
+.nova-rep-seg button{min-height:44px;padding:0 16px;background:var(--bg-surface);color:var(--text-main);border:0;font-family:inherit;font-size:14px;cursor:pointer}
+.nova-rep-seg button.active{background:var(--accent-cyan);color:#fff;font-weight:700}
+#novaDayReport{display:none}
+@media print{
+ @page{margin:8mm}
+ body.nova-printing-report>*:not(#novaDayReport){display:none!important}
+ body.nova-printing-report>#novaDayReport{display:block!important;background:#fff;color:#000;font-family:Cairo,sans-serif;max-width:80mm;margin:0 auto;padding:0}
+ #novaDayReport h1{font-size:16px;margin:0 0 4px}#novaDayReport p{font-size:12px;margin:0 0 8px}
+ #novaDayReport table{width:100%;border-collapse:collapse;font-size:13px}
+ #novaDayReport td{padding:4px 2px;border-bottom:1px dashed #666;color:#000}#novaDayReport td+td{text-align:left}
+}
+
 /* NOVA Rx / BLACK EDITION — unified design system */
 :root{color-scheme:dark;--bg-base:#050607;--bg-panel:#0b0d10;--bg-surface:#171b20;--bg-surface-hover:#21272e;--bg-surface-active:#29313a;--border-subtle:#272c33;--border-focus:#5badd6;--text-main:#f4f5f6;--text-muted:#a7afb9;--text-dim:#77828f;--accent-cyan:#2b90bd;--accent-cyan-light:#79c9eb;--accent-green:#69c6a8;--accent-green-bg:#10231e;--accent-green-border:#254c40;--accent-red:#e88e96;--accent-red-bg:#29181c;--accent-amber:#c5aa79;--badge-customer:#b8a6d7;--badge-customer-bg:#221d2a;--badge-product:#79c9eb;--badge-product-bg:#142530;--shadow-sm:0 2px 8px #0005;--shadow-md:0 8px 24px #0007;--shadow-lg:0 18px 48px #0009}
 html,body{background:#050607!important;color:#f4f5f6!important;color-scheme:dark}
@@ -1464,6 +1482,7 @@ html,body{min-width:0}
 .nova-tab{flex-shrink:0}
 .nova-page-view{min-width:0}
 .nova-kpi{min-width:0}
+button.nova-kpi-btn{font:inherit;cursor:pointer;text-align:inherit;color:inherit;min-height:44px}.nova-kpi-btn.active{border-color:#e5484d!important}.nova-chip{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;background:#3a1519;color:#ff8a8f;font-size:12px}.nova-low-badge{display:inline-block;min-width:28px;text-align:center;padding:1px 8px;border-radius:999px;background:#3a1519;color:#ff8a8f;font-weight:700}
 .nova-kpi strong{overflow-wrap:anywhere}
 @media(max-width:1150px){.nova-nav{gap:2px}.nova-tab{padding:7px 10px}.nova-demo-label{display:none}}
 @media(max-width:780px){.nova-nav{padding-inline:6px}.nova-tab{font-size:12px;padding:6px 8px}.nova-lang-switch{position:sticky;inset-inline-end:0;z-index:3;background:#1b2026}.nova-page-view{padding:12px}.nova-kpis{gap:8px}}
@@ -1945,6 +1964,34 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
   <link rel="stylesheet" href="supplier-lookup.css">
+<style id="ux10-mobile-sale">
+/* UX10: mobile sale layout (toast/FAB/totals/table) */
+@media (max-width:600px){
+ .toast-container{top:calc(8px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%);max-width:92vw;pointer-events:none;z-index:9000}
+ .toast{max-width:92vw;padding:6px 12px;font-size:12px}
+ body[data-active-page="sale"] #novaAiLaunch,body:not([data-active-page]) #novaAiLaunch{display:none!important}
+ .kbd-hint,.btn-checkout kbd{display:none!important}
+ .totals-breakdown{margin-bottom:0!important}
+ .totals-breakdown .tot-row{flex-wrap:wrap;gap:2px 8px;min-width:0}
+ .totals-breakdown .tot-row>span{min-width:0;overflow-wrap:anywhere}
+ .invoice-table{min-width:0!important;width:100%;display:block}
+ .invoice-table thead{display:none}
+ .invoice-table tbody{display:block}
+ .invoice-table tbody tr{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;padding:8px;border-bottom:1px solid #22272d;max-width:100%;box-sizing:border-box}
+ .invoice-table tbody td{display:block;padding:0!important;border:0!important;min-width:0;box-sizing:border-box}
+ .invoice-table td.col-idx,.invoice-table td.col-barcode{display:none!important}
+ .invoice-table td.col-item{order:1;flex:1 1 calc(100% - 60px);min-width:0;overflow-wrap:anywhere}
+ .invoice-table td.col-act{order:2;flex:0 0 auto}
+ .invoice-table td.col-price{order:3;flex:0 0 auto}
+ .invoice-table td.col-qty{order:4;flex:1 1 auto;min-width:0}
+ .invoice-table td.col-disc{display:block!important;order:5;flex:0 0 auto;font-size:11px}
+ .invoice-table td.col-total{order:6;flex:0 0 auto;font-weight:700}
+ .invoice-table tbody tr::after{content:none}
+ .invoice-table .qty-control{flex-wrap:wrap;max-width:100%}
+ .suggestions-dropdown{z-index:60}
+ .suggestion-item{position:relative;z-index:1}
+}
+</style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
@@ -2087,7 +2134,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div class="checkout-action-box">
           <button id="btnCheckout" class="btn-checkout" disabled>
             <span>CHECKOUT</span>
-            <kbd>F9 / Pay</kbd>
+            <kbd class="kbd-hint">F9 / Pay</kbd>
           </button>
         </div>
       </footer>
@@ -2882,7 +2929,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           toast.style.opacity = "0";
           toast.style.transform = "translateY(-10px)";
           setTimeout(() => toast.remove(), 300);
-        }, type === 'error' ? 4500 : 2200);
+        }, window.matchMedia && matchMedia('(max-width:600px)').matches ? 2500 : (type === 'error' ? 4500 : 2200));
       }
 
       function formatMoney(val) {
@@ -4450,6 +4497,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
         elements.btnHelpShortcuts.addEventListener("click", () => {
           elements.helpModal.classList.add("active");
+          elements.btnCloseHelp.focus();
         });
 
         elements.btnCloseHelp.addEventListener("click", () => { elements.helpModal.classList.remove("active"); elements.mainSearchInput.focus(); });
@@ -4734,6 +4782,17 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             if (e.target && (e.target.id === "btnCancelCheckout" || e.target.id === "btnCloseCheckout" || e.target.id === "checkoutAddCustomer")) return;
             e.preventDefault();
             confirmPayment();
+          } else if (e.key === "Tab") {
+            const open = document.querySelector(".modal-backdrop.active");
+            if (open) {
+              const f = [...open.querySelectorAll("button,input,select,textarea,a[href],[tabindex]")].filter(x => !x.disabled && x.tabIndex >= 0 && x.offsetParent !== null);
+              if (f.length) {
+                const first = f[0], last = f[f.length - 1];
+                if (!open.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+                else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+              }
+            }
           } else if (e.key === "Escape") {
             if (elements.checkoutModal.classList.contains("active")) {
               closeCheckout();
@@ -4834,6 +4893,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   document.addEventListener('keydown',key,true);ov.querySelector('#novaPayOk').addEventListener('click',ok);
  }
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pay-debt]');if(b)openPayDebt(b.getAttribute('data-pay-debt'))});
+ let novaLowOnly=false;
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
  const inv=customers.flatMap(c=>(c.pastInvoices||[]).map(i=>({...i,customer:c.name}))).sort((a,b)=>b.date.localeCompare(a.date));
@@ -4844,16 +4904,19 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  const cat=window.novaCatalog||{},real=cat.source==='STOCK LIVE',fold=window.novaFold||(x=>String(x).toLowerCase());
  const tokens=fold(filter).split(' ').filter(Boolean);
  const list=real?(tokens.length?products.filter(p=>String(p.barcode).includes(filter.trim())||tokens.every(t=>fold(p.name).includes(t))):products):filtered(products,['name','barcode','generic','category']);
- const shown=real?list.slice(0,300):list;
+ const lowList=real?list:list.filter(p=>p.stock<30);const shown=real?list.slice(0,300):(novaLowOnly?lowList:list);
+ const catAr={Chronic:'مزمن',Analgesic:'مسكنات',Antibiotic:'مضاد حيوي',Lipid:'دهون','GI Care':'جهاز هضمي',Vitamins:'فيتامينات',Antihistamine:'مضاد هيستامين'};
+ const catLbl=c=>catAr[c]?tr(catAr[c],c):esc(c);
+ const packOf=p=>p.pack||(p.packaging&&p.packaging.stripsPerBox&&p.packaging.unitsPerStrip?p.packaging.stripsPerBox+' × '+p.packaging.unitsPerStrip:'');
  const dups=window.novaDuplicates?window.novaDuplicates(products):[];
  const dupBlock=dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',true) +'<div class="nova-inventory-actions"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi(tr('الرصيد','Stock'),tr('غير متوفر من مصدر الأسعار','Not available from price source'))+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
- :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+kpi('مخزون منخفض (أقل من 30)',products.filter(p=>p.stock<30).length)+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
+ :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
  +dupBlock+(()=>{const cols=[['الصنف',p=>'<td>'+esc(p.name)+'</td>'],['الباركود',p=>'<td dir="ltr">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td>'+money(p.price)+'</td>']];
- if(!real||shown.some(p=>p.pack))cols.push(['العبوة',p=>'<td data-pack>'+(p.pack?esc(p.pack):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
- if(!real){cols.push(['الرصيد',p=>'<td>'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td>'+esc(p.category)+'</td>']);}
+ if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack>'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
+ if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td>'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td>'+catLbl(p.category)+'</td>']);}
  return table(cols.map(c=>c[0]),rows(shown,p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>'));})().replace(real?'البيانات التجريبية':'\u0000','أسعار STOCK LIVE')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
@@ -4873,10 +4936,17 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  +table(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr">'+esc(i.id)+'</td><td dir="ltr">'+esc(i.date)+'</td><td>'+esc(i.customer)+'</td><td>'+money(i.total)+'</td><td>'+esc((i.items||[]).length)+'</td></tr>'));
  }else if(page==='reports'){
  const sum=inv.reduce((s,i)=>s+i.total,0);
- const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDateString();const today=sv.filter(x=>new Date(x.at).toDateString()===day);
- const tot=a=>a.reduce((s,x)=>s+(Number(x.total)||0),0);const rets=window.novaSales?window.novaSales.returns():[];const retTotal=rets.reduce((s,r)=>s+(Number(r.amount)||0),0),retToday=rets.filter(r=>new Date(r.at).toDateString()===day).reduce((s,r)=>s+(Number(r.amount)||0),0);const by={};sv.forEach(x=>{const rq=window.novaSales.returnedQty(x.id);x.lines.forEach((l,ix)=>{by[l.name]=(by[l.name]||0)+l.qty-(rq[ix]||0)})});
+const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDateString();
+ const per=window.__novaRepPeriod||'day';const nowD=new Date();const from7=new Date(nowD.getFullYear(),nowD.getMonth(),nowD.getDate()-6).getTime();
+ const inPer=t=>{const d=new Date(t);return per==='day'?d.toDateString()===day:per==='week'?d.getTime()>=from7&&d<=nowD:d.getFullYear()===nowD.getFullYear()&&d.getMonth()===nowD.getMonth()};
+ const today=sv.filter(x=>inPer(x.at));
+ const tot=a=>a.reduce((s,x)=>s+(Number(x.total)||0),0);const rets=window.novaSales?window.novaSales.returns():[];const retTotal=rets.reduce((s,r)=>s+(Number(r.amount)||0),0),retToday=rets.filter(r=>inPer(r.at)).reduce((s,r)=>s+(Number(r.amount)||0),0);const by={};sv.forEach(x=>{const rq=window.novaSales.returnedQty(x.id);x.lines.forEach((l,ix)=>{by[l.name]=(by[l.name]||0)+l.qty-(rq[ix]||0)})});
+ const split={cash:0,card:0,credit:0};today.forEach(x=>{if(Array.isArray(x.tenders)&&x.tenders.length)x.tenders.forEach(t=>{if(split[t.method]!==undefined)split[t.method]+=Number(t.amount)||0});else if(split[x.payment]!==undefined)split[x.payment]+=Number(x.total)||0});
+ window.__novaRepData={per,sales:tot(today),returns:retToday,net:tot(today)-retToday,count:today.length,split};
+ const pl=per==='day'?tr('اليوم','Today'):per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');
+ const perBar='<div class="nova-rep-bar"><div class="nova-rep-seg" role="group" aria-label="'+tr('الفترة','Period')+'">'+[['day',tr('اليوم','Today')],['week',tr('آخر 7 أيام','Last 7 days')],['month',tr('الشهر','This month')]].map(p=>'<button type="button" data-rep-period="'+p[0]+'" aria-pressed="'+(per===p[0])+'" class="'+(per===p[0]?'active':'')+'">'+p[1]+'</button>').join('')+'</div><button type="button" id="novaPrintDay" class="nova-return-btn">🖨 '+tr('طباعة تقرير نهاية اليوم','Print end-of-day report')+'</button></div>';
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5);
- const realBlock=sv.length?'<div class="nova-kpis">'+kpi('مبيعات اليوم',money(tot(today)))+kpi('مرتجعات اليوم',money(retToday))+kpi('صافي اليوم',money(tot(today)-retToday))+kpi('فواتير اليوم',today.length)+kpi('كل المبيعات المحفوظة',money(tot(sv)))+kpi('إجمالي المرتجعات',money(retTotal))+kpi('صافي المبيعات',money(tot(sv)-retTotal))+kpi('متوسط الفاتورة',money(tot(sv)/sv.length))+'</div>'
+ const realBlock=sv.length?perBar+'<div class="nova-kpis">'+kpi(tr('مبيعات','Sales')+' '+pl,money(tot(today)))+kpi(tr('مرتجعات','Returns')+' '+pl,money(retToday))+kpi(tr('صافي','Net')+' '+pl,money(tot(today)-retToday))+kpi(tr('فواتير','Invoices')+' '+pl,today.length)+kpi('كل المبيعات المحفوظة',money(tot(sv)))+kpi('إجمالي المرتجعات',money(retTotal))+kpi('صافي المبيعات',money(tot(sv)-retTotal))+kpi('متوسط الفاتورة',money(tot(sv)/sv.length))+'</div>'
   +'<div class="nova-panel"><div class="nova-panel-title">الأكثر مبيعًا (من فواتير هذا الجهاز)</div>'+rows(top,t=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(t[0])+'</span><strong>'+esc(t[1])+'</strong></div>')+'</div>'
   :'<div class="nova-panel"><div class="nova-panel-title">لا توجد مبيعات محفوظة بعد — التقارير الحقيقية تظهر بعد أول عملية بيع</div></div>';
  content=head(title,'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض')+realBlock+'<h2 style="margin:18px 0 8px;font-size:15px;color:#9eacb9">بيانات العرض التجريبية</h2>'
@@ -4888,6 +4958,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
  }
  view.innerHTML=content;
  if(window.novaAuthUI)window.novaAuthUI.mount();
+ document.querySelectorAll('[data-rep-period]').forEach(b=>b.onclick=()=>{window.__novaRepPeriod=b.dataset.repPeriod;render(page,filter)});
+ const pd=document.getElementById('novaPrintDay');if(pd)pd.onclick=()=>{const d=window.__novaRepData;if(!d)return;const old=document.getElementById('novaDayReport');if(old)old.remove();const el=document.createElement('div');el.id='novaDayReport';el.setAttribute('dir','rtl');const pn=d.per==='day'?tr('اليوم','Today'):d.per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');const r=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>';el.innerHTML='<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+' — '+esc(new Date().toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}))+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('عدد الفواتير','Invoices'),d.count)+'</table>';document.body.appendChild(el);document.body.classList.add('nova-printing-report');const done=()=>{document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);window.print()};
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
 
  const bx=document.getElementById('novaSalesExport');if(bx)bx.onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('data.export'))return;const run=()=>{const blob=new Blob([window.novaSales.exportBackup()],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-rx-sales-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};if(window.novaAuthUI)window.novaAuthUI.guard(run);else run()};
@@ -4907,8 +4979,10 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   const ov=document.createElement('div');ov.className='nova-return-overlay';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
   const box=document.createElement('div');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.style.cssText='background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:16px';
   box.innerHTML='<h3 style="margin:0 0 6px">'+tr('مرتجع / إلغاء — فاتورة ','Return / Void — Invoice ')+esc(sale.number)+'</h3><p style="margin:0 0 10px;color:#9eacb9;font-size:13px">اختر الكمية المرتجعة لكل صنف. المبلغ يرجع بنفس طريقة الدفع الأصلية ('+(sale.payment==='cash'?tr('نقدي','cash'):tr('بطاقة','card'))+').</p>'
+   +'<div style="margin:0 0 8px"><button type="button" id="novaRetAll" class="nova-return-btn" style="font-weight:700">إرجاع كل الأصناف</button></div>'
    +sale.lines.map((l,i)=>{const left=l.qty-(done[i]||0);return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(l.name)+' <small style="color:#9eacb9">('+tr('متاح للإرجاع ','can return ')+left+')</small></span><input type="number" min="0" max="'+left+'" step="1" value="0" data-ret-idx="'+i+'" '+(left?'':'disabled')+' style="width:80px;padding:6px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px"></div>'}).join('')
    +'<label style="display:block;margin:10px 0 4px;font-size:13px">سبب المرتجع (مطلوب)</label><input type="text" id="novaRetReason" maxlength="200" style="width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px">'
+   +'<div id="novaRetChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+['عيب/تالف','خطأ في الصرف','رجوع العميل','انتهاء صلاحية'].map(r=>'<button type="button" class="nova-return-btn" data-ret-chip="'+r+'">'+r+'</button>').join('')+'</div>'
    +'<div id="novaRetAmount" style="margin:10px 0;font-weight:700"></div><div id="novaRetMsg" role="alert" style="color:#ffb4a8;min-height:18px;font-size:13px"></div>'
    +'<details id="novaCancelBox" style="margin:6px 0"><summary>'+tr('إلغاء الفاتورة بالكامل (يحتاج صلاحية واعتماد)','Cancel the whole invoice (needs permission and approval)')+'</summary><div style="display:grid;gap:6px;margin-top:6px"><input id="novaCxBy" placeholder="'+tr('اسم المنفذ','Your name')+'" maxlength="60"><select id="novaCxRole"><option value="cashier">'+tr('كاشير','Cashier')+'</option><option value="pharmacist">'+tr('صيدلي','Pharmacist')+'</option><option value="manager">'+tr('مدير','Manager')+'</option><option value="owner">'+tr('المالك','Owner')+'</option></select><input id="novaCxApprover" placeholder="'+tr('اسم المعتمد (شخص آخر)','Approver name (another person)')+'" maxlength="60"><button type="button" id="novaCxOk" class="nova-return-btn" style="font-weight:700">'+tr('تأكيد الإلغاء','Confirm cancellation')+'</button></div></details>'
    +'<div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" id="novaRetCancel" class="nova-return-btn">إغلاق</button><button type="button" id="novaRetOk" class="nova-return-btn" style="font-weight:700">تأكيد المرتجع</button></div>';
@@ -4916,6 +4990,9 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   const qtys=()=>{const o={};box.querySelectorAll('[data-ret-idx]').forEach(i=>{o[i.dataset.retIdx]=Number(i.value)||0});return o};
   const upd=()=>{const q=window.novaSales.quoteReturn(sale,qtys());box.querySelector('#novaRetAmount').textContent=q.ok?'مبلغ الإرجاع: '+money(q.amount):''};
   box.addEventListener('input',upd);
+  box.querySelector('#novaRetAll').onclick=()=>{box.querySelectorAll('[data-ret-idx]:not([disabled])').forEach(i=>{i.value=i.max});upd()};
+  box.querySelectorAll('[data-ret-chip]').forEach(c=>c.onclick=()=>{const r=box.querySelector('#novaRetReason');r.value=c.dataset.retChip;r.focus()});
+  box.querySelector('#novaRetReason').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){e.preventDefault();box.querySelector('#novaRetOk').click()}});
   box.querySelector('#novaRetCancel').onclick=()=>ov.remove();
   box.querySelector('#novaCxOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب الإلغاء',permission:'ليس لديك صلاحية إلغاء الفاتورة (مدير أو مالك فقط)',approval:'اكتب اسمك واسم المعتمد','self-approval':'المعتمد لازم يكون شخصًا آخر','already-cancelled':'الفاتورة ملغاة بالفعل',empty:'لا توجد كميات متاحة للإلغاء','too-many':'لا توجد كميات متاحة للإلغاء',storage:'تعذر حفظ الإلغاء على هذا الجهاز'}[res.error]||'تعذر تنفيذ الإلغاء';return}
@@ -4923,18 +5000,24 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   box.querySelector('#novaRetOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
    ov.remove();render(page,filter)};
-  box.querySelector('input:not([disabled])')?.focus();
+  (box.querySelector('#novaRetAll')||box.querySelector('input:not([disabled])'))?.focus();
  });
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
+ const lowBtn=document.getElementById('novaLowKpi');if(lowBtn)lowBtn.onclick=()=>{novaLowOnly=!novaLowOnly;const f=document.getElementById('novaFilter');render(page,f?f.value:'');const b=document.getElementById('novaLowKpi');if(b)b.focus()};
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
- window.addEventListener('hashchange',()=>switchPage(location.hash.slice(1)||'sale'));
- switchPage(location.hash.slice(1)||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
+ const hashPage=()=>location.hash.slice(1).split('&')[0];
+ const wantReceive=()=>/[#&]receive=1(&|$)/.test(location.hash);
+ const openReceive=(n=0)=>{const b=document.getElementById('novaInventoryPurchase'),pn=document.getElementById('novaAiPanel');if(b&&pn)pn.classList.add('open');else if(n<50)setTimeout(()=>openReceive(n+1),100)};
+ window.addEventListener('hashchange',()=>{const r=wantReceive();switchPage(hashPage()||'sale');if(r)openReceive()});
+ const initReceive=wantReceive();
+ switchPage(hashPage()||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
+ if(initReceive)openReceive();
 })();
 </script>
 
