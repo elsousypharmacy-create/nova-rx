@@ -4734,7 +4734,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 
     })();
   </script>
-<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=3', {updateViaCache:'none'}).catch(() => {})); }</script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=3'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
 <script>
 (function(){
   const btn=document.getElementById('btnRefreshApp');
