@@ -14,3 +14,4 @@ NEEDS-OWNER: unlocking any unknown (fail-closed) supplier operation, via the rec
 NEEDS-OWNER: NOVA_API_PIN is the one-time owner bootstrap password (NOVA_AUTH flag stays OFF until set; owner must change it after first login)
 NEEDS-OWNER: NOVA_STATUS_TOKEN (bearer secret for GET /api/v1/status; set as Worker secret by owner; NOVA_OBSERVABILITY flag stays OFF)
 NEEDS-OWNER: D1 Time Travel bookmark + encrypted GitHub artifact backups are the operational path (docs/ops/backup-restore.md). Do not enable R2 or set NOVA_BACKUP=1. If CLOUDFLARE_API_TOKEN lacks Account · D1 · Read (export / time-travel info) or Edit (restore / future migration apply), the owner adds that permission to the existing token — do not roll the token.
+NEEDS-OWNER: WA_TOKEN, WA_PHONE_ID, WA_APP_SECRET, WA_VERIFY_TOKEN (Meta WhatsApp Cloud API; number migration pending; NOVA_WA_INTAKE flag stays OFF)
