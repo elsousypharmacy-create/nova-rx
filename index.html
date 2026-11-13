@@ -2050,11 +2050,11 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           <div class="discount-inputs">
             <div class="input-grp">
               <span>%</span>
-              <input type="number" id="inputPercentDiscount" title="خصم بالنسبة (F6)" min="0" max="100" step="1" placeholder="0">
+              <input type="number" id="inputPercentDiscount" title="Percent discount (F6)" min="0" max="100" step="1" placeholder="0">
             </div>
             <div class="input-grp">
               <span>EGP</span>
-              <input type="number" id="inputFixedDiscount" title="خصم بمبلغ (F7)" min="0" step="0.5" placeholder="0.00">
+              <input type="number" id="inputFixedDiscount" title="Fixed discount (F7)" min="0" step="0.5" placeholder="0.00">
             </div>
           </div>
           <div id="discountHint" class="discount-hint" role="status" aria-live="polite" hidden></div>
@@ -2183,13 +2183,13 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         <div>
           <label style="font-size:12px; font-weight:600; color:#94a3b8; display:block; margin-bottom:6px;">Payment Method</label>
           <div class="pay-methods-grid">
-            <button class="pay-method-btn active" data-method="cash" title="نقدي (F12 / C)">
+            <button class="pay-method-btn active" data-method="cash" title="Cash (F12 / C)">
               <span>Cash / نقدي</span>
             </button>
-            <button class="pay-method-btn" data-method="card" title="بطاقة (F10)">
+            <button class="pay-method-btn" data-method="card" title="Card (F10)">
               <span>Mada / بطاقة</span>
             </button>
-            <button class="pay-method-btn" data-method="credit" title="آجل (F11)">
+            <button class="pay-method-btn" data-method="credit" title="Credit (F11)">
               <span>Credit / آجل</span>
             </button>
             <button class="pay-method-btn" data-method="split">
@@ -5030,7 +5030,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
   'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)'
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
- const arExtra={'CHECKOUT':'إتمام الدفع','NET TOTAL':'الإجمالي النهائي','F9 / Pay':'F9 / دفع','items)':'صنف)',
+ const arExtra={'Percent discount (F6)':'خصم بالنسبة (F6)','Fixed discount (F7)':'خصم بمبلغ (F7)','Cash (F12 / C)':'نقدي (F12 / C)','Card (F10)':'بطاقة (F10)','Credit (F11)':'آجل (F11)','CHECKOUT':'إتمام الدفع','NET TOTAL':'الإجمالي النهائي','F9 / Pay':'F9 / دفع','items)':'صنف)',
   'Added to invoice:':'تمت الإضافة للفاتورة:','Scanned product added:':'تمت إضافة المنتج بالباركود:','Barcode match added:':'تمت الإضافة بالباركود:','Product added:':'تمت إضافة المنتج:',
   'Customer skipped (Walk-in). Switched to Product Scan mode.':'تم تخطي العميل (عميل عابر). تم التحويل لبحث المنتجات.','No customer found. Searching medicines instead.':'لا يوجد عميل بهذا البحث. جارٍ البحث عن الأدوية.',
   'Customer attached:':'تم ربط العميل:','Customer detached. Operating in Walk-in mode.':'تم فصل العميل. الفاتورة لعميل عابر.','Invalid quantity. Enter a number from 1 to 999.':'كمية غير صالحة. اكتب رقمًا من 1 إلى 999.',
