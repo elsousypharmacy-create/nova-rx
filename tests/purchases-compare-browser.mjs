@@ -30,6 +30,8 @@ const executablePath = [
 const browser = await chromium.launch({ headless: true, executablePath, args: ['--no-sandbox'] });
 try {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  // Offers expire after 6h; pin the page clock near the fixture stamp so the test is date-independent.
+  await context.clock.install({ time: new Date(Date.parse(stamp) + 3600000) });
   await context.addInitScript(() => {
     localStorage.setItem('novaApiPin', 'test-pin');
     localStorage.setItem(
