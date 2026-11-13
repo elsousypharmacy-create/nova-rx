@@ -52,7 +52,7 @@ await t('Reports tab shows today’s real sales and top items, separate from the
   await page.locator('.nova-tab[data-page=reports]').click(); await page.waitForTimeout(200);
   const txt = await page.locator('body').innerText(); const list = await page.evaluate(() => window.novaSales.list());
   const sum = list.reduce((a, x) => a + x.total, 0);
-  assert.ok(txt.includes('مبيعات اليوم')); assert.ok(txt.includes(sum.toFixed(2) + ' ج.م')); assert.ok(txt.includes('الأكثر مبيعًا')); assert.ok(txt.includes('بيانات العرض التجريبية'));
+  assert.ok(txt.includes('مبيعات اليوم')); assert.ok(txt.includes(sum.toFixed(2) + ' ج.م')); assert.ok(txt.includes('الأكثر مبيعًا')); assert.ok(txt.includes('بيانات تجريبية (للعرض فقط)'));
 });
 await t('hostile customer/item names are inert in the tables', async () => {
   await page.evaluate(() => window.novaSales.add({ id: 'x1', number: 'S-X', at: new Date().toISOString(), customer: '<img src=x onerror=window.__pwn=1>', payment: 'cash', lines: [{ name: '<b onmouseover=1>evil</b>', price: 1, qty: 1, discount: 0 }], subtotal: 1, discount: 0, vat: 0, total: 1, received: 1, change: 0 }));
