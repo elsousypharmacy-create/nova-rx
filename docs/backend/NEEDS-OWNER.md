@@ -25,4 +25,5 @@ NEEDS-OWNER: Hik-Connect/camera report ingestion source (writes camera_reports/c
 NEEDS-OWNER: existing order-system endpoint/credentials for the delivery adapter (OPS-03 uses a mock adapter; NOVA_DELIVERY flag stays OFF)
 NEEDS-OWNER: none for N121 (NOVA_ONBOARDING flag stays OFF; owner approval needed before enabling tenant creation in production, and a real session-to-tenant mapping for multi-tenant auth)
 NEEDS-OWNER: payment provider account + API key for billing (N122 SAAS-02 uses a mock billing adapter only; NOVA_ENTITLEMENTS flag stays OFF)
+NEEDS-OWNER: none for N124 (NOVA_RELEASES flag stays OFF; session-to-tenant mapping needed for multi-tenant flag evaluation; owner decides rollout percentages)
 NEEDS-OWNER: none for N125 (docs-only; legal drafts in docs/backend/legal/ need legal review, pricing/jurisdiction/contact details by owner)

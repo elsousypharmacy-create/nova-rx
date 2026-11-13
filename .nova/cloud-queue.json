@@ -1389,7 +1389,7 @@
     "N108",
     "N109"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "slot": "A",
@@ -1655,6 +1655,20 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/292"
   },
   {
+   "id": "UX8",
+   "phase": 10,
+   "title": "Professional UX review: smoothness, fewest clicks, practical pro UI + fix tasks",
+   "brief": "Professional UX review (read-only audit, then follow-up fix tasks). Goal from owner Ahmed: find every flaw and deliver the BEST user experience for a pharmacist using the app all day: smooth, fewest clicks, practical, professional interface. Serve the CURRENT repo frontend locally (it already includes UX1-UX6 fixes; e.g. `npx http-server` on the frontend dir, or use worker/live/nova-rx-preview.ux-fixes1.js via `npx wrangler dev --local` if simpler) — do NOT hit the live server for writes. Write tools/qa/ux-pro-audit.mjs (Playwright headless Chromium; `npm ci && npx playwright install --with-deps chromium`), desktop 1366x768 and mobile 390x844. Walk real end-to-end pharmacist journeys with fake data: quick sale (search by name/barcode, add qty, discount, pay cash/card, print/sticker), return, purchase/receiving, stock lookup + low-stock, customer debt payment, prescription/chronic patient, daily report, settings. For each journey record: number of clicks/taps and keystrokes, time-to-complete, screen transitions, any dead ends, confusing labels, missing keyboard shortcuts (Enter/F-keys/barcode focus), missing confirmations or too many confirmations, slow interactions (measure INP/long tasks, first load, screen switch time), layout jank (CLS), inconsistent spacing/colours/buttons/typography, RTL issues, empty/error/loading states, accessibility (contrast, focus, tap target >=44px). Compare against best-practice POS UX and propose the ideal flow per journey with a target click count. Write .nova/qa/ux-pro-report.md in Arabic: executive summary, per-journey table (الرحلة | الكليكات الحالية | المستهدف | المشاكل | الحل), prioritized findings (عالية/متوسطة/منخفضة) with screenshots in .nova/qa/ux-pro/ (max ~40 small PNGs), performance numbers. Then write .nova/inbox/ux-pro.json = {\"tasks\":[...]} with one fix task per high/medium finding (group related, max 20), ids starting at UX9 (UX9, UX10, …), each {id, phase:10, title, brief, acceptance, after:[]} — frontend only, small, exact files + test to add (tests/unit or tests/ux, include click-count assertions for improved journeys), preserve Black Edition Arabic RTL, backend frozen, no deploys; set `after` only where a task truly builds on another. LAST item: a task (next UX id) that rebuilds the live Worker artifact worker/live/nova-rx-preview.ux-pro1.js from the repo frontend like UX7 did, after = all other new UX ids, must NOT deploy. Do not edit .nova/cloud-queue.json. Commit script, screenshots, report, inbox file on this branch.",
+   "acceptance": "Arabic report .nova/qa/ux-pro-report.md with per-journey click counts (current vs target), perf numbers and prioritized findings with screenshots; valid .nova/inbox/ux-pro.json with UX9+ fix tasks and a final no-deploy artifact rebuild task; no live writes, fake data only.",
+   "after": [],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-pro-request.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-13T18:17:54+00:00"
+  },
+  {
    "id": "N122",
    "phase": 16,
    "title": "SAAS-02 plans + entitlements",
@@ -1674,18 +1688,18 @@
    ],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 1,
    "slot": "A",
-   "dispatched_at": "2026-11-13T17:44:23+00:00",
+   "dispatched_at": "2026-11-13T18:17:54+00:00",
    "pr": 293,
    "ci_dispatched": {
-    "sha": "6b4ae06ad6a54513e46f4bb59dff11cf5b0865d8",
+    "sha": "012236562fa52cfe6d2be7eb4b356a2e3ee59541",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml"
     ],
-    "at": "2026-11-13T17:39:27+00:00"
+    "at": "2026-11-13T17:45:45+00:00"
    }
   },
   {
@@ -1733,21 +1747,14 @@
     "N119",
     "N120"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "slot": "A",
    "dispatched_at": "2026-11-13T17:42:00+00:00",
    "pr": 296,
-   "ci_dispatched": {
-    "sha": "49934f04b4f391dd7a11a527b9bbec4bebf5ec1f",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-13T17:44:23+00:00"
-   }
+   "merged_at": "2026-11-13T17:48:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/296"
   },
   {
    "id": "N125",
@@ -1878,5 +1885,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T17:44:23+00:00"
+ "updated": "2026-11-13T18:17:54+00:00"
 }
