@@ -859,7 +859,7 @@
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-13T12:46:32+00:00"
+    "at": "2026-11-13T13:17:57+00:00"
    },
    "note": "Second fix run 43412993917 never started (GitHub Actions billing/spending limit). Rolled fix_attempts back to 1 so CI can be re-dispatched; not a code failure."
   },
@@ -1734,5 +1734,5 @@
    "fix_attempts": 0
   }
  ],
- "updated": "2026-11-13T13:12:49+00:00"
+ "updated": "2026-11-13T13:17:57+00:00"
 }
