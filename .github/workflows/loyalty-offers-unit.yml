@@ -1,0 +1,30 @@
+name: Loyalty and offers unit checks
+
+on:
+  pull_request:
+    paths:
+      - 'loyalty-offers.js'
+      - 'tests/unit/loyalty-offers.check.mjs'
+      - '.github/workflows/loyalty-offers-unit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'loyalty-offers.js'
+      - 'tests/unit/loyalty-offers.check.mjs'
+      - '.github/workflows/loyalty-offers-unit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run loyalty and offers checks (no dependencies, no network)
+        run: node --no-warnings tests/unit/loyalty-offers.check.mjs
