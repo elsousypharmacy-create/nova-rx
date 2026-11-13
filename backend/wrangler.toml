@@ -1,0 +1,56 @@
+# TEMPLATE ONLY — placeholder ids. Do not create resources or deploy without owner approval.
+name = "nova-rx-api"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+NOVA_ENV = "dev"
+CORS_ALLOW_ORIGINS = "http://localhost:8787"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nova-rx-dev"
+database_id = "PLACEHOLDER_D1_DEV_ID"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "PLACEHOLDER_KV_DEV_ID"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "nova-rx-dev"
+
+[env.staging]
+name = "nova-rx-api-staging"
+[env.staging.vars]
+NOVA_ENV = "staging"
+CORS_ALLOW_ORIGINS = "https://staging.example.invalid"
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "nova-rx-staging"
+database_id = "PLACEHOLDER_D1_STAGING_ID"
+migrations_dir = "migrations"
+[[env.staging.kv_namespaces]]
+binding = "KV"
+id = "PLACEHOLDER_KV_STAGING_ID"
+[[env.staging.r2_buckets]]
+binding = "R2"
+bucket_name = "nova-rx-staging"
+
+[env.production]
+name = "nova-rx-api"
+[env.production.vars]
+NOVA_ENV = "production"
+CORS_ALLOW_ORIGINS = "https://production.example.invalid"
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "nova-rx-production"
+database_id = "PLACEHOLDER_D1_PRODUCTION_ID"
+migrations_dir = "migrations"
+[[env.production.kv_namespaces]]
+binding = "KV"
+id = "PLACEHOLDER_KV_PRODUCTION_ID"
+[[env.production.r2_buckets]]
+binding = "R2"
+bucket_name = "nova-rx-production"
