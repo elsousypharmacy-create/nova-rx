@@ -2246,12 +2246,22 @@
    "brief": "Files: index.html (#checkoutModal markup/CSS/JS), tests/ux/checkout-polish.mjs (new). Fix: methods grid 4 columns on desktop and 2x2 on mobile (no orphan row), rename «مشترك» → «مختلط»، when آجل is chosen with a walk-in customer show an inline red hint «اختر عميلاً لإتمام البيع الآجل» + focus «إضافة رقم العميل» and disable confirm (instead of rejecting after Enter with a toast), after F10/F11/F12 move focus to #btnConfirmPayment (cash: back to #inputCashReceived), logical Tab order (methods → amount → confirm → cancel). Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/checkout-polish.mjs asserts all .pay-method-btn share one row at 1366 and two rows of two at 390, F11 with walk-in disables #btnConfirmPayment and shows the hint, activeElement.id after F10 is btnConfirmPayment, Tab order sequence; keyboard barcode sale stays 0 clicks and <=4 keys; node tests/ux/sale-clicks.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
-   "dispatched_at": "2026-11-13T21:33:37+00:00"
+   "dispatched_at": "2026-11-13T21:33:37+00:00",
+   "pr": 319,
+   "ci_dispatched": {
+    "sha": "dee53c2c98a6b2c5eab74de754a585b49be1b695",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-13T21:37:37+00:00"
+   }
   },
   {
    "id": "UX31",
@@ -2260,10 +2270,12 @@
    "brief": "Files: index.html (header, logo <img>), icon.svg or a local logo asset, sw.js (precache the logo only if needed), tests/ux/offline-indicator.mjs (new). Add a small header chip «بدون اتصال — الفواتير تُحفظ على هذا الجهاز» driven by online/offline events; replace the remote https://…github.io/pharmacy/logo-mark.png with a local file and an onerror fallback so no broken-image icon/alt text ever shows. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them).",
    "acceptance": "tests/ux/offline-indicator.mjs uses context.setOffline(true/false) and asserts chip visible/hidden accordingly, 0 images with naturalWidth==0 while all non-BASE requests are aborted, offline reload still renders the sale screen.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-13T21:37:37+00:00"
   },
   {
    "id": "UX30",
@@ -2374,5 +2386,5 @@
    "source": "inbox/ux-pro2.json"
   }
  ],
- "updated": "2026-11-13T21:37:05+00:00"
+ "updated": "2026-11-13T21:37:37+00:00"
 }
