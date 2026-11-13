@@ -1,5 +1,5 @@
 // NOVA Rx backend Worker skeleton (N90). No external calls; flag-gated by the client.
-const VERSION = '0.1.0';
+import { VERSION } from './version.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
