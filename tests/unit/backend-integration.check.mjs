@@ -6,7 +6,7 @@ import { handle } from '../../backend/src/index.js';
 import * as I from '../../backend/src/integration.js';
 
 const sql = new DatabaseSync(':memory:');
-sql.exec(readFileSync('backend/migrations/0014_integration_api.sql', 'utf8'));
+sql.exec(readFileSync('backend/migrations/0015_integration_api.sql', 'utf8'));
 const mk = (q) => ({ args: [], bind(...a) { this.args = a; return this; },
   run: async function () { return sql.prepare(q).run(...this.args); },
   first: async function () { return sql.prepare(q).get(...this.args) ?? null; } });
