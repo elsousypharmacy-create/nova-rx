@@ -13,6 +13,7 @@ import { registerInboxRoutes } from './inbox.js';
 import { registerCameraRoutes } from './cameras.js';
 import { registerDeliveryRoutes } from './delivery.js';
 import { registerDeployRoutes } from './deploys.js';
+import { registerWhatsAppRoutes } from './whatsapp-intake.js';
 import { registerMsgMonitorRoutes } from './msg-monitor.js';
 import { scheduledBackup } from './backup.js';
 
@@ -69,6 +70,7 @@ registerBalanceMigrationRoutes(route, { json, errorResponse });
 registerRxOrderRoutes(route, { json, errorResponse });
 registerSyncPullRoutes(route, { errorResponse }, { authenticate });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
+registerWhatsAppRoutes(route, { json, errorResponse });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
 registerCameraRoutes(route, { errorResponse }, { authenticate });
 registerDeliveryRoutes(route, { errorResponse }, { authenticate });
