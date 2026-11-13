@@ -1963,6 +1963,12 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 }
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script>
+<script>/* UX29: single VAT-rate source (percent, tax-included). Default 15 = current behaviour; owner/accountant decides. */
+window.novaVat=(function(){var K='nova-rx-vat-rate',D=15;function get(){try{var v=localStorage.getItem(K);if(v===null||v==='')return D;var n=Number(v);return isFinite(n)&&n>=0&&n<=100?n:D}catch(e){return D}}
+function set(n){n=Number(n);if(!isFinite(n)||n<0||n>100)return false;try{localStorage.setItem(K,String(n));return true}catch(e){return false}}
+function calc(total,rate){var r=rate===undefined?get():Number(rate);return Math.round(((Number(total)||0)*r/(100+r)+Number.EPSILON)*100)/100}
+function label(rate){var r=rate===undefined?get():rate;return String(Math.round(r*100)/100)}
+return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
   <link rel="stylesheet" href="supplier-lookup.css">
 <style id="ux10-mobile-sale">
 /* UX10: mobile sale layout (toast/FAB/totals/table) */
@@ -2128,7 +2134,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             <span id="displayDiscount">-0.00 EGP</span>
           </div>
           <div class="tot-row">
-            <span>VAT (15% Included)</span>
+            <span id="displayVatLabel">VAT (15% Included)</span>
             <span id="displayVat">0.00 EGP</span>
           </div>
           <div class="tot-row grand-total">
@@ -3544,7 +3550,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
           elements.inputFixedDiscount.setAttribute('aria-invalid', String(badF));
         }
         const grandTotal = Math.max(0, subtotal - actualDiscount);
-        const vatIncluded = grandTotal * (15 / 115); // Standard KSA 15% VAT component
+        const vatIncluded = window.novaVat.calc(grandTotal); // configurable tax-included VAT (Settings), default 15%
 
         elements.totalItemsCount.textContent = totalQty;
         elements.displaySubtotal.textContent = formatMoney(subtotal);
@@ -3557,10 +3563,15 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
         }
 
         elements.displayVat.textContent = formatMoney(vatIncluded);
+        { const vl = document.getElementById('displayVatLabel'), vr = window.novaVat.get();
+          if (vl && vr !== window.novaVat.DEFAULT) vl.textContent = document.documentElement.lang === 'en' ? 'VAT (' + window.novaVat.label(vr) + '% Included)' : 'ضريبة القيمة المضافة (' + window.novaVat.label(vr) + '% متضمنة)';
+          else if (vl && vl.dataset.vatCustom) vl.textContent = document.documentElement.lang === 'en' ? 'VAT (15% Included)' : 'ضريبة القيمة المضافة (15% متضمنة)';
+          if (vl) vl.dataset.vatCustom = vr !== window.novaVat.DEFAULT ? '1' : ''; }
         elements.displayGrandTotal.textContent = formatMoney(grandTotal);
 
         return { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty };
       }
+      window.novaRecalc = () => { try { recalculateFinancials(); } catch (_) {} };
 
       // --- CHECKOUT & MODAL WORKFLOW ---
       function openCheckout() {
@@ -4143,7 +4154,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
               ...(lots && lots.length ? { lot: lots[0].lot, expiry: lots[0].expiry, lots } : {})
             };
           }),
-          subtotal, discount: actualDiscount, vat: vatIncluded, total: grandTotal, received: cashRec, change: tp.change,
+          subtotal, discount: actualDiscount, vat: vatIncluded, vatRate: window.novaVat.get(), total: grandTotal, received: cashRec, change: tp.change,
           source: window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' ? 'STOCK LIVE' : 'DEMO'
         };
         // U1: keep a local record of every completed sale (this device only; not a server ledger).
@@ -4267,7 +4278,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             <div style="font-size:12px;border-top:1px dashed #94a3b8;padding-top:6px">
               <div style="display:flex;justify-content:space-between"><span>المجموع الفرعي:</span><span dir="ltr">${(Number(s.subtotal) || 0).toFixed(2)} ج.م</span></div>
               <div style="display:flex;justify-content:space-between"><span>الخصم:</span><span dir="ltr">-${(Number(s.discount) || 0).toFixed(2)} ج.م</span></div>
-              <div style="display:flex;justify-content:space-between"><span>ضريبة القيمة المضافة (15%):</span><span dir="ltr">${(Number(s.vat) || 0).toFixed(2)} ج.م</span></div>
+              <div style="display:flex;justify-content:space-between"><span>ضريبة القيمة المضافة (${window.novaVat.label(Number(s.vatRate) >= 0 && s.vatRate != null ? Number(s.vatRate) : undefined)}%):</span><span dir="ltr">${(Number(s.vat) || 0).toFixed(2)} ج.م</span></div>
               <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13px;margin-top:2px"><span>الإجمالي المستحق:</span><span dir="ltr">${(Number(s.total) || 0).toFixed(2)} ج.م</span></div>
               <div style="display:flex;justify-content:space-between"><span>طريقة الدفع:</span><span>${escH(payLabel(s.payment))}${tendersTxt ? ' (' + escH(tendersTxt) + ')' : ''}</span></div>
               <div style="display:flex;justify-content:space-between"><span>المدفوع نقدًا:</span><span dir="ltr">${(Number(s.received) || 0).toFixed(2)} ج.م</span></div>
@@ -4296,7 +4307,7 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
             ...(s.lines || []).map((l, i) => `${i + 1}. ${l.name} x${l.qty} @ ${(Number(l.price) || 0).toFixed(2)} = ${(((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0)).toFixed(2)} ج.م`),
             `المجموع الفرعي / Subtotal: ${(Number(s.subtotal) || 0).toFixed(2)} ج.م`,
             `الخصم / Discount: -${(Number(s.discount) || 0).toFixed(2)} ج.م`,
-            `الضريبة / VAT (15%): ${(Number(s.vat) || 0).toFixed(2)} ج.م`,
+            `الضريبة / VAT (${window.novaVat.label(Number(s.vatRate) >= 0 && s.vatRate != null ? Number(s.vatRate) : undefined)}%): ${(Number(s.vat) || 0).toFixed(2)} ج.م`,
             `الإجمالي النهائي / NET TOTAL: ${(Number(s.total) || 0).toFixed(2)} ج.م`,
             `الباركود / Barcode: *${s.number}*`
           ];
@@ -5005,7 +5016,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const today=sv.filter(x=>inPer(x.at));
  const tot=a=>a.reduce((s,x)=>s+(Number(x.total)||0),0);const rets=window.novaSales?window.novaSales.returns():[];const retTotal=rets.reduce((s,r)=>s+(Number(r.amount)||0),0),retToday=rets.filter(r=>inPer(r.at)).reduce((s,r)=>s+(Number(r.amount)||0),0);const by={};sv.forEach(x=>{const rq=window.novaSales.returnedQty(x.id);x.lines.forEach((l,ix)=>{by[l.name]=(by[l.name]||0)+l.qty-(rq[ix]||0)})});
  const split={cash:0,card:0,credit:0};today.forEach(x=>{if(Array.isArray(x.tenders)&&x.tenders.length)x.tenders.forEach(t=>{if(split[t.method]!==undefined)split[t.method]+=Number(t.amount)||0});else if(split[x.payment]!==undefined)split[x.payment]+=Number(x.total)||0});
- window.__novaRepData={per,sales:tot(today),returns:retToday,net:tot(today)-retToday,count:today.length,split};
+ window.__novaRepData={per,vat:today.reduce((a,x)=>a+(Number(x.vat)||0),0),sales:tot(today),returns:retToday,net:tot(today)-retToday,count:today.length,split};
  const pl=per==='day'?tr('اليوم','Today'):per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');
  const perBar='<div class="nova-rep-bar"><div class="nova-rep-seg" role="group" aria-label="'+tr('الفترة','Period')+'">'+[['day',tr('اليوم','Today')],['week',tr('آخر 7 أيام','Last 7 days')],['month',tr('الشهر','This month')]].map(p=>'<button type="button" data-rep-period="'+p[0]+'" aria-pressed="'+(per===p[0])+'" class="'+(per===p[0]?'active':'')+'">'+p[1]+'</button>').join('')+'</div><button type="button" id="novaPrintDay" class="nova-return-btn">🖨 '+tr('طباعة تقرير نهاية اليوم','Print end-of-day report')+'</button></div>';
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -5017,12 +5028,13 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div>';
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px;font-size:14px"></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختار لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض.</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>نسبة ضريبة القيمة المضافة (%)</h3><p>تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.</p><input id="novaVatRate" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="نسبة ضريبة القيمة المضافة"></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px;font-size:14px"></div></div>';
  }
  view.innerHTML=content;
  if(window.novaAuthUI)window.novaAuthUI.mount();
  document.querySelectorAll('[data-rep-period]').forEach(b=>b.onclick=()=>{window.__novaRepPeriod=b.dataset.repPeriod;render(page,filter)});
- const pd=document.getElementById('novaPrintDay');if(pd)pd.onclick=()=>{const d=window.__novaRepData;if(!d)return;const old=document.getElementById('novaDayReport');if(old)old.remove();const el=document.createElement('div');el.id='novaDayReport';el.setAttribute('dir','rtl');const pn=d.per==='day'?tr('اليوم','Today'):d.per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');const r=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>';el.innerHTML='<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+' — '+esc(new Date().toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}))+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('عدد الفواتير','Invoices'),d.count)+'</table>';document.body.appendChild(el);document.body.classList.add('nova-printing-report');const done=()=>{document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);window.print()};
+ const pd=document.getElementById('novaPrintDay');if(pd)pd.onclick=()=>{const d=window.__novaRepData;if(!d)return;const old=document.getElementById('novaDayReport');if(old)old.remove();const el=document.createElement('div');el.id='novaDayReport';el.setAttribute('dir','rtl');const pn=d.per==='day'?tr('اليوم','Today'):d.per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');const r=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>';el.innerHTML='<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+' — '+esc(new Date().toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}))+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('عدد الفواتير','Invoices'),d.count)+r(tr('ضريبة متضمنة','VAT included')+' ('+window.novaVat.label()+'%)',money(d.vat))+'</table>';document.body.appendChild(el);document.body.classList.add('nova-printing-report');const done=()=>{document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);window.print()};
+ const vr=document.getElementById('novaVatRate');if(vr)vr.onchange=()=>{if(!window.novaVat.set(vr.value))vr.value=window.novaVat.get();else if(window.novaRecalc)window.novaRecalc()};
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
 
  const bx=document.getElementById('novaSalesExport');if(bx)bx.onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('data.export'))return;const run=()=>{const blob=new Blob([window.novaSales.exportBackup()],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nova-rx-sales-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};if(window.novaAuthUI)window.novaAuthUI.guard(run);else run()};
