@@ -1,0 +1,1077 @@
+{
+ "date": "2026-11-13T21:09:19.444Z",
+ "base": "local repo frontend",
+ "viewports": {
+  "desktop": {
+   "perf": {
+    "loadMs": 502,
+    "nav": {
+     "dcl": 450,
+     "load": 454,
+     "fcp": 156,
+     "transferKB": 446,
+     "htmlKB": 446
+    },
+    "screenSwitchMs": {
+     "sale": 8,
+     "invoices": 34,
+     "products": 27,
+     "customers": 28,
+     "reports": 31,
+     "settings": 59,
+     "sale_2": 18
+    },
+    "addItemStress": {
+     "max": 4,
+     "avg": 2,
+     "rows": 5
+    },
+    "cls": 0.0111,
+    "longTasks": [
+     71,
+     50,
+     51,
+     50,
+     50,
+     50,
+     50,
+     54,
+     50,
+     52,
+     50,
+     50,
+     50,
+     52,
+     54,
+     52,
+     50,
+     50,
+     53,
+     54,
+     52
+    ],
+    "lcp": 68,
+    "slowEvents": [],
+    "inpApprox": 0
+   },
+   "pages": {
+    "sale": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 20,
+     "tapUnder44": 12,
+     "tapSamples": [
+      "البيع 41x44",
+      "btnRefreshApp 43x24",
+      "btnNewSale 111x34",
+      "holdCurrentInvoice 71x34",
+      "btnHeldInvoices 95x34",
+      "btnAddLoyalty 34x34",
+      "btnSaleMore 34x34",
+      "searchModeTag 43x34",
+      "inputPercentDiscount 174x38",
+      "inputFixedDiscount 166x38"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 43,
+     "buttonStyleVariants": 7,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "purchases": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "المشتريات | NOVA Rx",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 8,
+     "controls": 24,
+     "tapUnder44": 1,
+     "tapSamples": [
+      "selectAll 22x22"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 0,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "products": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 13,
+     "tapUnder44": 3,
+     "tapSamples": [
+      "البيع 41x44",
+      "btnRefreshApp 43x24",
+      "novaAiLaunch 138x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 47,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "reports": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 13,
+     "tapUnder44": 3,
+     "tapSamples": [
+      "البيع 41x44",
+      "btnRefreshApp 43x24",
+      "novaAiLaunch 138x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 47,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settings": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 5,
+     "controls": 21,
+     "tapUnder44": 3,
+     "tapSamples": [
+      "البيع 41x44",
+      "btnRefreshApp 43x24",
+      "novaAiLaunch 138x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 47,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settingsEn": {
+     "dir": "ltr",
+     "englishLeftoverArabic": 37
+    },
+    "invoices": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 5,
+     "controls": 20,
+     "tapUnder44": 3,
+     "tapSamples": [
+      "البيع 41x44",
+      "btnRefreshApp 43x24",
+      "novaAiLaunch 138x39"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 47,
+     "buttonStyleVariants": 4,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    }
+   },
+   "journeys": {
+    "quick_sale_barcode_keyboard": {
+     "name": "quick_sale_barcode_keyboard",
+     "clicks": 0,
+     "keys": 4,
+     "typed": 13,
+     "steps": [
+      "type 13 chars",
+      "key Enter",
+      "key Enter",
+      "key Enter",
+      "key Enter"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "البحث يأخذ التركيز تلقائياً: true",
+      "الدفع النقدي: المبلغ المستلم مُعبّأ = 12.00، التركيز على: inputCashReceived",
+      "حالة الطابعة المعروضة في الإيصال: الطابعة متصلة + الطابعة غير متصلة\nإعادة التوصي + الطابعة غير متصلة + إعادة التوصيل والمحاولة",
+      "بعد Enter: الإيصال مغلق وفاتورة جديدة = true، التركيز: mainSearchInput"
+     ],
+     "ms": 1214,
+     "total": 4
+    },
+    "quick_sale_name_keyboard_discount_card": {
+     "name": "quick_sale_name_keyboard_discount_card",
+     "clicks": 0,
+     "keys": 6,
+     "typed": 13,
+     "steps": [
+      "key Enter",
+      "key F6",
+      "key Enter",
+      "key F10",
+      "key Enter",
+      "key Enter"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "كمية السطر بعد *2: 2",
+      "زر التأكيد بعد F10 عليه التركيز: "
+     ],
+     "ms": 1384,
+     "total": 6
+    },
+    "quick_sale_name_mouse_discount_card": {
+     "name": "quick_sale_name_mouse_discount_card",
+     "clicks": 8,
+     "keys": 0,
+     "typed": 10,
+     "steps": [
+      "focus #mainSearchInput",
+      "type 8 chars",
+      "click نتيجة البحث",
+      "click +",
+      "focus #inputPercentDiscount",
+      "type 2 chars",
+      "click #btnCheckout",
+      "click بطاقة",
+      "click #btnConfirmPayment",
+      "click فاتورة جديدة"
+     ],
+     "deadEnds": [],
+     "notes": [],
+     "ms": 1173,
+     "total": 8
+    },
+    "credit_sale_then_debt_collection": {
+     "name": "credit_sale_then_debt_collection",
+     "clicks": 3,
+     "keys": 7,
+     "typed": 17,
+     "steps": [
+      "focus #mainSearchInput",
+      "key Enter",
+      "key F3",
+      "key Enter",
+      "key F9",
+      "key F11",
+      "key Enter",
+      "key Enter",
+      "click تبويب customers",
+      "click زر سداد",
+      "click تأكيد السداد"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "لوحة العميل: العميل د. طارق المنصور Dr. Tariq Al-Mansoor 0501234567 VIP Gold الزيارات 24 النقاط 480 أدوية مزمنة: كونكور 5 مجم آخر شراء: 2026-10-28 إعادة صرف آخر فاتورة مشتري",
+      "طريقة الدفع في الإيصال: طريقة الدفع: آجل (Credit) (credit 12.00)",
+      "المبلغ مُعبّأ: 12، التركيز: novaPayAmt",
+      "زر تأكيد السداد: {\"bg\":\"rgb(107, 107, 107)\",\"color\":\"rgb(255, 255, 255)\",\"disabled\":false}",
+      "بعد السداد: تم سداد 12.00 ج.م — المتبقي 0.00 ج.م — المديونية: 34567 VIP Gold 24 480 0.00 ج.م"
+     ],
+     "ms": 2845,
+     "total": 10
+    },
+    "return": {
+     "name": "return",
+     "clicks": 5,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب invoices",
+      "click مرتجع",
+      "click إرجاع كل الأصناف",
+      "click سبب جاهز",
+      "click تأكيد"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "نص الدفع في الحوار: بنفس طريقة الدفع الأصلية (بطاقة)",
+      "الفاتورة بعد المرتجع: S-000007 13/11/2026, 21:09 د. طارق المنصور (Dr. Tariq Al-Mansoor) آجل 12.00 ج.م 12.00 ج.م بانادول إكسترا (Panadol Extra)",
+      "Toast: تم سداد 12.00 ج.م — المتبقي 0.00 ج.م"
+     ],
+     "ms": 919,
+     "total": 5
+    },
+    "purchase_receiving": {
+     "name": "purchase_receiving",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب المشتريات",
+      "click استلام فاتورة"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "زر «استلام فاتورة»: index.html#products&receive=1 (65x64)",
+      "بعد النقر: /index.html#products — نافذة الاستلام ظاهرة: true"
+     ],
+     "ms": 1983,
+     "total": 2
+    },
+    "stock_lookup_low_stock": {
+     "name": "stock_lookup_low_stock",
+     "clicks": 4,
+     "keys": 0,
+     "typed": 4,
+     "steps": [
+      "click تبويب products",
+      "click بطاقة مخزون منخفض",
+      "click إلغاء الفلتر",
+      "focus #novaFilter",
+      "type 4 chars"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "تصنيفات إنجليزية متبقية: Topical,ENT",
+      "عمود العبوة «—»: 2",
+      "بطاقة النواقص: الصفوف 27 → 16",
+      "شارات حمراء: 1",
+      "بحث «جلوك» → صفوف: 16"
+     ],
+     "ms": 1116,
+     "total": 4
+    },
+    "prescription_chronic_patient": {
+     "name": "prescription_chronic_patient",
+     "clicks": 1,
+     "keys": 3,
+     "typed": 4,
+     "steps": [
+      "key F3",
+      "key Enter",
+      "click إعادة صرف آخر فاتورة",
+      "key F2"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "الأصناف في الفاتورة بعد إعادة الصرف: 2",
+      "هل يتحقق من المخزون/الصلاحية قبل الإضافة: يعتمد على مسار البيع الأصلي — غير ظاهر للمستخدم"
+     ],
+     "ms": 1113,
+     "total": 4
+    },
+    "daily_report": {
+     "name": "daily_report",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب reports",
+      "click الشهر"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "أزرار الفترة: اليوم | آخر 7 أيام | الشهر | 🖨 طباعة تقرير نهاية اليوم",
+      "طريقة الدفع (نقدي/بطاقة/آجل) في التقرير: false",
+      "بيانات تجريبية تظهر بجانب الحقيقية في نفس الشاشة: true",
+      "زر طباعة نهاية اليوم: true"
+     ],
+     "ms": 634,
+     "total": 2
+    },
+    "settings": {
+     "name": "settings",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب settings",
+      "click English",
+      "click عربي"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "نصوص تقنية ظاهرة (صلاحيات sale.create…): true"
+     ],
+     "ms": 1058,
+     "total": 3
+    },
+    "details_probe": {
+     "name": "details_probe",
+     "clicks": 2,
+     "keys": 1,
+     "typed": 13,
+     "steps": [
+      "click معلقة",
+      "focus #mainSearchInput",
+      "type 13 chars",
+      "key Enter"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "صورة مكسورة: -create.github.io/pharmacy/logo-mark.png|شعار صيدلية السوسي",
+      "نصوص إنجليزية ظاهرة في شاشة البيع: ",
+      "نسبة الضريبة المعروضة: ضريبة القيمة المضافة (15% متضمنة)",
+      "F1 يفتح المساعدة: true",
+      "مدة بقاء التوست (مللي ث): 2527",
+      "توست فوق نافذة الدفع:  / مغطي لزر التأكيد: false",
+      "أزرار طرق الدفع: 4 في 2 صفوف",
+      "عند قطع الإنترنت: مؤشر الاتصال = لا مؤشر"
+     ],
+     "ms": 8790,
+     "total": 3
+    }
+   },
+   "keyboard": {
+    "autofocusSearch": true,
+    "fKeysDocumented": [
+     "F2",
+     "F3",
+     "F4",
+     "F9"
+    ],
+    "hasF1Help": false,
+    "tabStopsInsideClosedModals": 0,
+    "tabOrder": [
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     }
+    ],
+    "focusIndicatorMissing": 0,
+    "focusOnInvisible": 0
+   },
+   "errors": [
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "mobile": {
+   "perf": {
+    "loadMs": 489,
+    "nav": {
+     "dcl": 443,
+     "load": 447,
+     "fcp": 76,
+     "transferKB": 446,
+     "htmlKB": 446
+    },
+    "screenSwitchMs": {
+     "sale": 7,
+     "invoices": 30,
+     "products": 28,
+     "customers": 26,
+     "reports": 32,
+     "settings": 58,
+     "sale_2": 16
+    },
+    "addItemStress": {
+     "max": 4,
+     "avg": 2,
+     "rows": 5
+    },
+    "cls": 0.0401,
+    "longTasks": [
+     70,
+     50,
+     51,
+     50,
+     51,
+     53,
+     51,
+     50,
+     53,
+     51,
+     53,
+     51,
+     50,
+     50,
+     54,
+     53,
+     53,
+     52,
+     50
+    ],
+    "lcp": 40,
+    "slowEvents": [],
+    "inpApprox": 0
+   },
+   "pages": {
+    "sale": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 12,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 19,
+     "tapUnder44": 1,
+     "tapSamples": [
+      "inputFixedDiscount 44x44"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 54,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "purchases": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "المشتريات | NOVA Rx",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 7,
+     "controls": 24,
+     "tapUnder44": 1,
+     "tapSamples": [
+      "selectAll 22x22"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 0,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "products": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 8,
+     "controls": 13,
+     "tapUnder44": 0,
+     "tapSamples": [],
+     "unlabeled": [],
+     "hiddenTabbable": 58,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "reports": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 13,
+     "tapUnder44": 0,
+     "tapSamples": [],
+     "unlabeled": [],
+     "hiddenTabbable": 58,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settings": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 21,
+     "tapUnder44": 0,
+     "tapSamples": [],
+     "unlabeled": [],
+     "hiddenTabbable": 58,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    },
+    "settingsEn": {
+     "dir": "ltr",
+     "englishLeftoverArabic": 37
+    },
+    "invoices": {
+     "dir": "rtl",
+     "lang": "ar",
+     "title": "NOVA Rx | صيدلية السوسي",
+     "contrastFails": 0,
+     "worst": [],
+     "minFont": 0,
+     "fontFamilies": [
+      "Cairo"
+     ],
+     "fontSizesUsed": 6,
+     "controls": 20,
+     "tapUnder44": 8,
+     "tapSamples": [
+      "إعادة طباعة نسخة 38x49",
+      "مرتجع / إلغاء 38x44",
+      "إعادة طباعة نسخة 38x49",
+      "مرتجع / إلغاء 38x44",
+      "إعادة طباعة نسخة 38x49",
+      "مرتجع / إلغاء 38x44",
+      "إعادة طباعة نسخة 38x49",
+      "مرتجع / إلغاء 38x44"
+     ],
+     "unlabeled": [],
+     "hiddenTabbable": 58,
+     "buttonStyleVariants": 5,
+     "overflowX": false,
+     "bodyDir": "rtl"
+    }
+   },
+   "journeys": {
+    "quick_sale_barcode_keyboard": {
+     "name": "quick_sale_barcode_keyboard",
+     "clicks": 0,
+     "keys": 4,
+     "typed": 13,
+     "steps": [
+      "type 13 chars",
+      "key Enter",
+      "key Enter",
+      "key Enter",
+      "key Enter"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "البحث يأخذ التركيز تلقائياً: true",
+      "الدفع النقدي: المبلغ المستلم مُعبّأ = 12.00، التركيز على: inputCashReceived",
+      "حالة الطابعة المعروضة في الإيصال: الطابعة متصلة + الطابعة غير متصلة\nإعادة التوصي + الطابعة غير متصلة + إعادة التوصيل والمحاولة",
+      "بعد Enter: الإيصال مغلق وفاتورة جديدة = true، التركيز: mainSearchInput"
+     ],
+     "ms": 1144,
+     "total": 4
+    },
+    "quick_sale_name_keyboard_discount_card": {
+     "name": "quick_sale_name_keyboard_discount_card",
+     "clicks": 0,
+     "keys": 6,
+     "typed": 13,
+     "steps": [
+      "key Enter",
+      "key F6",
+      "key Enter",
+      "key F10",
+      "key Enter",
+      "key Enter"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "كمية السطر بعد *2: 2",
+      "زر التأكيد بعد F10 عليه التركيز: "
+     ],
+     "ms": 1349,
+     "total": 6
+    },
+    "quick_sale_name_mouse_discount_card": {
+     "name": "quick_sale_name_mouse_discount_card",
+     "clicks": 8,
+     "keys": 0,
+     "typed": 10,
+     "steps": [
+      "focus #mainSearchInput",
+      "type 8 chars",
+      "click نتيجة البحث",
+      "click +",
+      "focus #inputPercentDiscount",
+      "type 2 chars",
+      "click #btnCheckout",
+      "click بطاقة",
+      "click #btnConfirmPayment",
+      "click فاتورة جديدة"
+     ],
+     "deadEnds": [],
+     "notes": [],
+     "ms": 1064,
+     "total": 8
+    },
+    "credit_sale_then_debt_collection": {
+     "name": "credit_sale_then_debt_collection",
+     "clicks": 3,
+     "keys": 7,
+     "typed": 17,
+     "steps": [
+      "focus #mainSearchInput",
+      "key Enter",
+      "key F3",
+      "key Enter",
+      "key F9",
+      "key F11",
+      "key Enter",
+      "key Enter",
+      "click تبويب customers",
+      "click زر سداد",
+      "click تأكيد السداد"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "لوحة العميل: العميل د. طارق المنصور Dr. Tariq Al-Mansoor 0501234567 VIP Gold الزيارات 24 النقاط 480 أدوية مزمنة: كونكور 5 مجم آخر شراء: 2026-10-28 إعادة صرف آخر فاتورة مشتري",
+      "طريقة الدفع في الإيصال: طريقة الدفع: آجل (Credit) (credit 12.00)",
+      "المبلغ مُعبّأ: 12، التركيز: novaPayAmt",
+      "زر تأكيد السداد: {\"bg\":\"rgb(107, 107, 107)\",\"color\":\"rgb(255, 255, 255)\",\"disabled\":false}",
+      "بعد السداد: تم سداد 12.00 ج.م — المتبقي 0.00 ج.م — المديونية: 34567 VIP Gold 24 480 0.00 ج.م"
+     ],
+     "ms": 2802,
+     "total": 10
+    },
+    "return": {
+     "name": "return",
+     "clicks": 5,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب invoices",
+      "click مرتجع",
+      "click إرجاع كل الأصناف",
+      "click سبب جاهز",
+      "click تأكيد"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "نص الدفع في الحوار: بنفس طريقة الدفع الأصلية (بطاقة)",
+      "الفاتورة بعد المرتجع: S-000007 13/11/2026, 21:09 د. طارق المنصور (Dr. Tariq Al-Mansoor) آجل 12.00 ج.م 12.00 ج.م بانادول إكسترا (Panadol Extra)",
+      "Toast: تم سداد 12.00 ج.م — المتبقي 0.00 ج.م"
+     ],
+     "ms": 903,
+     "total": 5
+    },
+    "purchase_receiving": {
+     "name": "purchase_receiving",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب المشتريات",
+      "click استلام فاتورة"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "زر «استلام فاتورة»: index.html#products&receive=1 (105x44)",
+      "بعد النقر: /index.html#products — نافذة الاستلام ظاهرة: true"
+     ],
+     "ms": 3877,
+     "total": 2
+    },
+    "stock_lookup_low_stock": {
+     "name": "stock_lookup_low_stock",
+     "clicks": 4,
+     "keys": 0,
+     "typed": 4,
+     "steps": [
+      "click تبويب products",
+      "click بطاقة مخزون منخفض",
+      "click إلغاء الفلتر",
+      "focus #novaFilter",
+      "type 4 chars"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "تصنيفات إنجليزية متبقية: Topical,ENT",
+      "عمود العبوة «—»: 2",
+      "بطاقة النواقص: الصفوف 27 → 16",
+      "شارات حمراء: 1",
+      "بحث «جلوك» → صفوف: 16"
+     ],
+     "ms": 1093,
+     "total": 4
+    },
+    "prescription_chronic_patient": {
+     "name": "prescription_chronic_patient",
+     "clicks": 1,
+     "keys": 3,
+     "typed": 4,
+     "steps": [
+      "key F3",
+      "key Enter",
+      "click إعادة صرف آخر فاتورة",
+      "key F2"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "الأصناف في الفاتورة بعد إعادة الصرف: 2",
+      "هل يتحقق من المخزون/الصلاحية قبل الإضافة: يعتمد على مسار البيع الأصلي — غير ظاهر للمستخدم"
+     ],
+     "ms": 1079,
+     "total": 4
+    },
+    "daily_report": {
+     "name": "daily_report",
+     "clicks": 2,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب reports",
+      "click الشهر"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "أزرار الفترة: اليوم | آخر 7 أيام | الشهر | 🖨 طباعة تقرير نهاية اليوم",
+      "طريقة الدفع (نقدي/بطاقة/آجل) في التقرير: false",
+      "بيانات تجريبية تظهر بجانب الحقيقية في نفس الشاشة: true",
+      "زر طباعة نهاية اليوم: true"
+     ],
+     "ms": 617,
+     "total": 2
+    },
+    "settings": {
+     "name": "settings",
+     "clicks": 3,
+     "keys": 0,
+     "typed": 0,
+     "steps": [
+      "click تبويب settings",
+      "click English",
+      "click عربي"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "نصوص تقنية ظاهرة (صلاحيات sale.create…): true"
+     ],
+     "ms": 1041,
+     "total": 3
+    },
+    "details_probe": {
+     "name": "details_probe",
+     "clicks": 2,
+     "keys": 1,
+     "typed": 13,
+     "steps": [
+      "click معلقة",
+      "focus #mainSearchInput",
+      "type 13 chars",
+      "key Enter"
+     ],
+     "deadEnds": [],
+     "notes": [
+      "صورة مكسورة: -create.github.io/pharmacy/logo-mark.png|شعار صيدلية السوسي",
+      "نصوص إنجليزية ظاهرة في شاشة البيع: ",
+      "نسبة الضريبة المعروضة: ضريبة القيمة المضافة (15% متضمنة)",
+      "F1 يفتح المساعدة: true",
+      "مدة بقاء التوست (مللي ث): 2777",
+      "توست فوق نافذة الدفع:  / مغطي لزر التأكيد: false",
+      "أزرار طرق الدفع: 4 في 2 صفوف",
+      "عند قطع الإنترنت: مؤشر الاتصال = لا مؤشر"
+     ],
+     "ms": 8841,
+     "total": 3
+    }
+   },
+   "keyboard": {
+    "autofocusSearch": true,
+    "fKeysDocumented": [
+     "F2",
+     "F3",
+     "F4",
+     "F9"
+    ],
+    "hasF1Help": false,
+    "tabStopsInsideClosedModals": 0,
+    "tabOrder": [
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "SELECT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "BUTTON",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     },
+     {
+      "id": "INPUT",
+      "visible": true,
+      "outline": true,
+      "shadow": false
+     }
+    ],
+    "focusIndicatorMissing": 0,
+    "focusOnInvisible": 0
+   },
+   "errors": [
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: net::ERR_FAILED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ "blockedWrites": []
+}
