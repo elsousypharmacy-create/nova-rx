@@ -1965,6 +1965,10 @@ body *:not(svg):not(svg *){
 .nova-sale-actions .nova-hold-action{background:#2a3541;border:1px solid #526476;color:#e8f2fb;font-weight:700;padding:0 10px;font-size:12px}.nova-sale-actions .nova-hold-action:hover{background:#364657}@media(max-width:420px){.nova-sale-actions .nova-hold-action{padding:0 8px}.nova-sale-actions .nova-hold-action span{font-size:12px}}
 .nova-customer-gate-card input{width:100%;box-sizing:border-box;background:#101820;border:1px solid #52687a;border-radius:var(--r-2);padding:13px;color:#fff;font-size:17px;outline:none}.nova-customer-gate-card input:focus{border-color:#6ec9f2;box-shadow:0 0 0 2px #6ec9f222}#gateCustomerResult{font-size:12px;color:#f5b7a5;min-height:0;margin-top:5px}.nova-customer-gate-card .nova-gate-primary{margin-top:10px}
 #gateCustomerResult.nova-customer-found{color:#86d9b4;font-weight:700;background:#183328;border:1px solid #35664e;border-radius:var(--r-1);padding:9px;margin-top:9px;line-height:1.6}
+/* UX204: keep the NOVA Rx wordmark whole and off the screen edge (content-sized block, safe-area padding, no shrink/clip). */
+.nova-nav-row>.nova-nav-brand{flex:0 0 auto!important;width:auto!important;min-width:max-content!important;box-sizing:border-box!important;overflow:visible!important;padding-block:0!important;padding-inline:max(14px,env(safe-area-inset-left)) 14px!important;justify-content:flex-start!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name{flex:none!important;min-width:max-content!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important}
+@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex:0 0 auto!important;width:auto!important;padding-inline:max(12px,env(safe-area-inset-left)) 8px!important}}
 </style>
 <style id="NOVA_SALE_POLISH">
 /* sale screen layout, applied BEFORE first paint (lives in <head>) so nothing jumps after load */
