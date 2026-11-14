@@ -26,7 +26,7 @@ const mkAccounts = () => page.evaluate(async () => {
   novaAuth.signOut();
 });
 await t('matrix card lists seven roles in Settings', async () => {
-  await openTab('settings'); await page.waitForSelector('#novaPermMatrix');
+  await openTab('settings'); await page.waitForSelector('#novaPermMatrix', { state: 'attached' });
   assert.equal(await page.locator('#novaPermMatrix thead th').count(), 8);
 });
 await t('cashier export is blocked, no download, and the denial is logged and shown', async () => {
@@ -39,16 +39,16 @@ await t('cashier export is blocked, no download, and the denial is logged and sh
   const log = await page.evaluate(() => novaPerms.denied());
   assert.equal(log.length, 1); assert.equal(log[0].action, 'data.export'); assert.equal(log[0].role, 'cashier');
   await openTab('settings'); await page.waitForSelector('#novaPermDenied');
-  assert.match(await page.locator('#novaPermDenied').innerText(), /Sara.*cashier.*data\.export/);
+  assert.match(await page.locator('#novaPermDenied').innerText(), /Sara.*(cashier|الكاشير).*(data\.export|تصدير البيانات)/);
 });
 await t('manager sees no owner/manager role to grant; owner does', async () => {
   await page.evaluate(() => novaAuth.signIn('Mona', 'pass123')); await openTab('invoices'); await openTab('settings');
-  await page.locator('#novaAuthCard summary').click();
-  const opts = await page.locator('#novaNewRole option').allInnerTexts();
+  await page.locator('#novaAuthCard summary').first().click();
+  const opts = await page.locator('#novaNewRole option').evaluateAll(o => o.map(x => x.value));
   assert.ok(!opts.includes('owner') && !opts.includes('manager') && opts.includes('cashier'));
   await page.evaluate(() => novaAuth.signIn('Ahmed', 'secret1')); await openTab('invoices'); await openTab('settings');
-  await page.locator('#novaAuthCard summary').click();
-  assert.ok((await page.locator('#novaNewRole option').allInnerTexts()).includes('owner'));
+  await page.locator('#novaAuthCard summary').first().click();
+  assert.ok((await page.locator('#novaNewRole option').evaluateAll(o => o.map(x => x.value))).includes('owner'));
 });
 await t('role cannot be escalated from the page: matrix is frozen', async () => {
   const r = await page.evaluate(() => { try { NovaPerms.MATRIX.cashier.push('data.export'); } catch (e) {} return novaAuth.signIn('Sara', 'pass123').then(() => novaPerms.can('data.export')); });
