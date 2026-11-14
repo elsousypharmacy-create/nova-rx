@@ -2601,7 +2601,7 @@
    "brief": "Files: index.html (Products page toolbar next to #novaInventoryPurchase), tests/ux/manual-receive.mjs (new). Gap: only the AI photo panel exists; no manual lot/expiry entry. Add button «استلام بضاعة» opening a Black Edition dialog: product search (reuse the instant search), quantity (boxes), lot number, expiry (month input, must be future), optional cost; confirm calls the existing window.novaStock.addLot (use the same key shape as keyOf of the product) and toasts «تم استلام N — تشغيلة X تنتهي MM/YYYY». Reject past expiry with an Arabic inline error; Enter confirms, Esc closes. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F3.",
    "acceptance": "tests/ux/manual-receive.mjs: receive 20 of a demo product with lot B2611 expiry 2027-03 -> novaStock.lots(key) contains it and a FEFO pick uses it; past expiry rejected with inline Arabic error and no stock change; a full receive journey is <=4 clicks plus typing from the Products page; no console errors.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
@@ -2609,13 +2609,13 @@
    "dispatched_at": "2026-11-14T01:18:13+00:00",
    "pr": 358,
    "ci_dispatched": {
-    "sha": "8a58ff9252a2559f14323dd57ab9927403f46c90",
+    "sha": "b7a94723ab42860bb149f8924f4c6881aac4e9ef",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T01:15:19+00:00"
+    "at": "2026-11-14T01:22:37+00:00"
    }
   },
   {
@@ -2684,12 +2684,21 @@
     "UX30",
     "UX31"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T01:19:56+00:00"
+   "dispatched_at": "2026-11-14T01:19:56+00:00",
+   "pr": 361,
+   "ci_dispatched": {
+    "sha": "0666161e614c73ddb2fd10d4cf53e3e010c7f231",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T01:22:37+00:00"
+   }
   },
   {
    "id": "UX35",
@@ -2930,5 +2939,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:21:14+00:00"
+ "updated": "2026-11-14T01:22:37+00:00"
 }
