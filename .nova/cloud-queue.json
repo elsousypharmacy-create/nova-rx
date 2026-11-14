@@ -2263,12 +2263,22 @@
    "brief": "Files: backend/src/transfers.js (new), backend/src/index.js (register routes), tests/unit/backend-transfers.check.mjs (new). Routes /api/v1/transfers/{create,ship,receive,cancel,list} using existing stock_transfers and inventory_movements (transfer_out/transfer_in), tenant+branch scope from the session via security/tenant.js, FEFO source batch, flag NOVA_TRANSFERS default OFF => 404. Additive only; no migration applied to any real D1; no deploy.",
    "acceptance": "mock D1 tests: ship cannot exceed balance or use expired/recalled batch; receive twice rejected; same source/destination rejected; wrong tenant/branch cannot read or mutate; flag off -> 404; node tests/unit/backend-inbox.check.mjs style harness reused; existing backend tests still pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:28:30+00:00"
+   "dispatched_at": "2026-11-14T00:28:30+00:00",
+   "pr": 337,
+   "ci_dispatched": {
+    "sha": "117663f14c86d22d399d33a42578a64905686f0c",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T00:31:21+00:00"
+   }
   },
   {
    "id": "UX50",
@@ -2277,10 +2287,12 @@
    "brief": "Files: backend/src/wa-sender.js (new), tests/unit/backend-wa-sender.check.mjs (new). Injected-fetch adapter that builds Cloud API payloads, requires msg-policy decision (opt-in, 24h service window via messaging.js, daily/monthly limits) before any call, reads secret NAMES WA_TOKEN and WA_PHONE_ID only from env, flag NOVA_WA_SEND default OFF => error WA_SEND_DISABLED; never calls the network in tests; maps provider errors to inbox status failed. No real keys, no paid calls.",
    "acceptance": "tests with a fake fetch: flag off -> no fetch call; closed window or missing opt-in -> blocked with Arabic message; allowed -> exactly one fetch with expected body and no token in logs/errors; failure -> status failed; node tests/unit/msg-policy.check.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:31:21+00:00"
   },
   {
    "id": "UX49",
@@ -2806,5 +2818,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:29:54+00:00"
+ "updated": "2026-11-14T00:31:21+00:00"
 }
