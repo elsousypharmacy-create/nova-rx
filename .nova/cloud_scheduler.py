@@ -333,73 +333,15 @@ def _latest_run(path, since):
 
 
 def preview_deploys(items, byid, smoke=None, exists=os.path.exists, live_modified=None, markers=None):
-    """State machine per qa build task: dry run -> real deploy -> smoke -> (rollback on failure).
-    Never touches production / api-staging / GATE-17; never applies migrations."""
-    smoke = smoke or preview_smoke
-    live_modified = live_modified or live_modified_on
-    markers = markers or missing_markers
-    busy = any(isinstance(t.get("preview_deploy"), dict) and t["preview_deploy"].get("stage") in ("dry", "real", "rollback") for t in items)
-    last_ok = [t["preview_deploy"] for t in items if isinstance(t.get("preview_deploy"), dict) and t["preview_deploy"].get("stage") == "deployed"]
-    for t in items:
-        m = QA_BUILD.match(t.get("title", ""))
-        if not m or t.get("status") not in DONE:
-            continue
-        path, d = m.group(1), t.get("preview_deploy")
-        if d is None:
-            if busy or not exists(path):
-                continue
-            miss = markers(path)
-            if miss:  # stale artifact without PIN history / FIX50 / FIX51 must never reach the preview
-                t["preview_deploy"] = {"stage": "skipped", "path": path, "at": iso(), "reason": "missing markers: " + ",".join(miss)}
-                log(f"{t['id']}: {path} skipped, missing markers {miss}")
-                continue
-            if any(_qa_num(x.get("path")) > _qa_num(path) for x in last_ok):
-                t["preview_deploy"] = {"stage": "skipped", "path": path, "at": iso(), "reason": "older than an already deployed qa artifact"}
-                continue
-            lm = live_modified()
-            if not lm:
-                t["preview_deploy"] = {"stage": "skipped", "path": path, "at": iso(), "reason": "live modified_on unknown (fail closed)"}
-                continue
-            sha = _sha256(path)
-            d = t["preview_deploy"] = {"stage": "dry", "live_modified_on": lm, "path": path, "sha256": sha, "at": iso(),
-                                       "previous": ({"path": last_ok[-1]["path"], "sha256": last_ok[-1]["sha256"]} if last_ok else None)}
-            _deploy_run(path, sha, True, expected=lm); busy = True
-            log(f"{t['id']}: dispatched preview dry run for {path}")
-            continue
-        stage = d.get("stage")
-        if stage not in ("dry", "real", "rollback"):
-            continue
-        r = _latest_run(path, d["at"])
-        if not r or r.get("status") != "completed":
-            if age(d["at"]) > PREVIEW_STALE:
-                d.update(stage="failed", reason="deploy run not completed in time")
-            continue
-        ok = r.get("conclusion") == "success"
-        d["run_url"] = r.get("html_url")
-        if stage == "dry":
-            if ok:
-                if not d.get("live_modified_on"):
-                    d.update(stage="failed", reason="no recorded live modified_on (fail closed)"); continue
-                d.update(stage="real", at=iso()); _deploy_run(path, d["sha256"], False, expected=d["live_modified_on"])
-                log(f"{t['id']}: dry run ok -> real preview deploy")
-            else:
-                d.update(stage="failed", reason="dry run failed")
-        elif stage == "real":
-            good, why = (smoke() if ok else (False, "deploy run failed"))
-            if good:
-                d.update(stage="deployed", deployed_at=iso(), smoke="ok")
-                log(f"{t['id']}: preview deployed + smoke ok")
-            elif d.get("previous") and exists(d["previous"]["path"]):
-                d.update(stage="rollback", reason=why, at=iso()); _deploy_run(d["previous"]["path"], d["previous"]["sha256"], False)
-                log(f"{t['id']}: {why} -> rollback to {d['previous']['path']}")
-            else:
-                d.update(stage="failed", reason=why + " (no previous artifact recorded; the deploy workflow restores the pre-deploy code itself on upload/verify failure)")
-        elif stage == "rollback":
-            d.update(stage="rolled_back" if ok else "failed", reason=d.get("reason", "") + (" (rolled back)" if ok else " (ROLLBACK FAILED: check Cloudflare)"))
-        busy = any(x.get("stage") in ("dry", "real", "rollback") for x in [d])
+    """Disabled. nova-rx-preview auto-deploy lives in .github/workflows/auto-deploy-preview.yml
+    so only the newest worker/live artifact (by git commit time) is deployed, never a stale qa-* file.
+    This function no longer dispatches deploy-worker.yml."""
+    log("preview_deploys: disabled; auto-deploy-preview.yml owns nova-rx-preview deploys")
+    return
 
 
 # ---------- main ----------
+
 def main():
     q = json.load(open(QF)); items = q["tasks"]; byid = {t["id"]: t for t in items}
     before = json.dumps(q, sort_keys=True)
