@@ -4282,13 +4282,23 @@
    "brief": "Reproduced: search 'اوجمنتين' (vs أوجمنتين) and Arabic-Indic barcode digits return 0 rows ('لا توجد نتائج مطابقة'). Normalise query and haystack (hamza/alef forms, ya/alef-maqsura, ta-marbuta, tashkeel, tatweel, Arabic-Indic digits) like normAr() in unified-inbox.js; keep <100ms; highlight match; add × clear button. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "'اوجمنتين' returns Augmentin row; Hindi digit barcode returns the row; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:39:24+00:00"
+   "dispatched_at": "2026-11-14T23:39:24+00:00",
+   "pr": 442,
+   "ci_dispatched": {
+    "sha": "30bada56289baf4cb1cdde61db3fb1aadf9b2650",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:41:55+00:00"
+   }
   }
  ],
- "updated": "2026-11-14T23:39:24+00:00"
+ "updated": "2026-11-14T23:41:55+00:00"
 }
