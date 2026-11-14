@@ -3996,6 +3996,8 @@ window.NovaFmt=(function(){
             sale.lines.forEach((l, i) => { const left = l.qty - (done[i] || 0); if (left > 0) rest[i] = left; });
             return this.addReturn(sale, rest, reason, { kind: 'cancel', by, role: o.role, approvedBy: approver });
           },
+          // UX226: undo of a just-saved plain return (UI offers it for 10s). Removes only that record; nothing else is touched.
+          removeReturn(id) { try { const all = this.returns(), n = all.filter(x => x.id !== id); if (n.length === all.length) return false; localStorage.setItem(RKEY, JSON.stringify(n)); return true; } catch (_) { return false; } },
           addReturn(sale, qtyByIdx, reason, extra) {
             const text = String(reason || '').trim();
             if (!text) return { ok: false, error: 'reason' };
@@ -5444,6 +5446,23 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   const r=window.novaSales.applyBackup(p);
   if(!r.ok){bm.textContent=r.error==='too-many'?tr('سيتجاوز الحد الأقصى (1000) — لم يتغير شيء','Would exceed the 1000 limit — nothing changed'):tr('تعذر الحفظ على هذا الجهاز — لم يتغير شيء','Could not save on this device — nothing changed');return}
   render(page,filter);const m2=document.getElementById('novaBackupMsg');if(m2)m2.textContent=tr('تمت الإضافة: '+p.newSales.length+' فاتورة، '+p.newReturns.length+' مرتجع','Imported: '+p.newSales.length+' sales, '+p.newReturns.length+' returns')}}
+function novaReturnNotice(sale,ret,canUndo,rerender){
+ const am=money(ret.amount),m=sale.payment;
+ const how=m==='cash'?tr('ردّ المبلغ نقدًا','Hand back cash'):m==='credit'?tr('خصم من الآجل','Deducted from credit'):m==='mixed'?tr('ردّ المبلغ بنفس طريقة الدفع (مشترك)','Refund via original mixed payment'):tr('ردّ المبلغ على البطاقة','Refund to card');
+ let host=document.getElementById('novaRetToast');if(host)host.remove();
+ host=document.createElement('div');host.id='novaRetToast';host.setAttribute('role','status');host.setAttribute('aria-live','polite');host.dir='rtl';
+ host.style.cssText='position:fixed;bottom:20px;inset-inline:0;margin:0 auto;width:fit-content;max-width:92vw;z-index:100000;background:#14181d;color:#e7ebf0;border:1px solid #c9a54a;border-radius:var(--r-2);padding:12px 16px;display:flex;gap:12px;align-items:center;font-weight:700';
+ const tx=document.createElement('span');tx.textContent=tr('تم تسجيل مرتجع بقيمة '+am+' — '+how,'Return recorded: '+am+' — '+how);host.appendChild(tx);
+ let tm;const kill=()=>{clearTimeout(tm);host.remove()};
+ if(canUndo){const u=document.createElement('button');u.type='button';u.className='btn btn-secondary nova-return-btn';u.setAttribute('data-ret-undo','');u.textContent=tr('تراجع','Undo');
+  u.onclick=()=>{const ok=window.novaSales.removeReturn(ret.id);tx.textContent=ok?tr('تم التراجع عن المرتجع','Return undone'):tr('تعذر التراجع','Could not undo');u.remove();tm=setTimeout(kill,3000);if(ok)rerender()};host.appendChild(u)}
+ document.body.appendChild(host);tm=setTimeout(kill,10000);
+ const row=document.querySelector('[data-return="'+String(sale.id).replace(/["\\]/g,'')+'"]');const tr_=row&&row.closest('tr');
+ if(tr_){tr_.setAttribute('data-ret-flash','');tr_.style.outline='2px solid #c9a54a';tr_.style.outlineOffset='-2px';
+  const calm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!calm)tr_.animate([{backgroundColor:'rgba(201,165,74,.35)'},{backgroundColor:'transparent'}],{duration:1600});
+  setTimeout(()=>{tr_.removeAttribute('data-ret-flash');tr_.style.outline=''},2500)}
+}
  view.querySelectorAll('[data-reprint]').forEach(b=>b.onclick=()=>{if(window.novaReceipt)window.novaReceipt.reopenSale(b.dataset.reprint,{copy:true})});
  view.querySelectorAll('[data-return]').forEach(b=>b.onclick=()=>{
   const sale=(window.novaSales.list()).find(x=>x.id===b.dataset.return);if(!sale)return;
@@ -5476,7 +5495,8 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   box.querySelector('#novaRetOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
    if(sale.payment==='credit'&&sale.customerId&&window.NovaCredit&&res.ret){try{const l=ledger(),b=l.balance(String(sale.customerId)),a=Math.min(b,Math.round(res.ret.amount*100)/100);if(a>0)l.collect({id:'ret-'+res.ret.id,customerId:String(sale.customerId),amount:a,method:'return'})}catch(e){}}
-   closeRet();render(page,filter)};
+   const credited=sale.payment==='credit'&&sale.customerId&&window.NovaCredit;
+   closeRet();render(page,filter);novaReturnNotice(sale,res.ret,!credited,()=>render(page,filter))};
   (box.querySelector('#novaRetAll')||box.querySelector('input:not([disabled])'))?.focus();
  });
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
