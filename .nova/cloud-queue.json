@@ -3532,6 +3532,18 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/398"
   },
   {
+   "id": "UX300",
+   "phase": "ux",
+   "title": "WhatsApp customer-service dashboard: exact response times and conversation volume",
+   "brief": "Ahmed: build an in-app dashboard (inside NOVA Rx, Black Edition Arabic RTL, opened from the conversations screen and/or reports; same PIN gate as the old chats, PIN-gated staging endpoint under /api/v1/inbox/history/ style, read-only, no customer data in the public artifact) showing EXACTLY how long we take to reply to customers, from the imported WhatsApp history in staging D1 (26 chats/561 msgs from the bot log; senders user/bot/pharm/sys; note live forwarder timestamps are in seconds not ms, normalize). Metrics: first response time and every reply time per customer message, split bot vs pharmacist (human) — exact minutes/seconds; median, average, p90, slowest; % replied within 1/5/15/60 min; unanswered customer messages and waiting-now list; time from bot handoff (اتحوّل للصيدلي) to pharmacist reply. Volume: number of customers who wrote (unique), new vs returning, conversations and messages per day/hour, busiest hours heatmap, top topics if simple (keyword based). Filters: date range, today/7d/30d, bot vs pharmacist. Each metric clickable to the chats behind it. Charts smooth, design top priority. Tests for the metric calculations (exact times, timezone Africa/Cairo display, seconds-vs-ms normalization). Build into the next worker/live artifact (next free name, tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
+   "acceptance": "Dashboard shows exact reply times (bot and pharmacist) and how many customers write, with filters; PIN-gated; tests pass; artifact built; no deploy.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/ux-wa-dashboard.json"
+  },
+  {
    "id": "UX243",
    "phase": 10,
    "title": "Build worker/live/nova-rx-preview.qa-231.js (qa-loop, no deploy)",
@@ -3619,22 +3631,15 @@
    "brief": "Reproduced: .wa-head shows only avatar+name (headSubtitle false); the read-only/archive status is only in the composer placeholder, the lock button lives in a separate bar above, and the mobile back chevron is a bare › glyph (text button, no 44px target) (m-wa-chat-big.png). Add a subtitle (عدد الرسائل · آخر نشاط · أرشيف للقراءة فقط), a chevron icon button of 44x44 on touch, and a compact lock icon button in the header; RTL-correct arrow direction. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Header shows subtitle, 44px back target and lock button on mobile; test measures sizes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:24:12+00:00",
    "pr": 403,
-   "ci_dispatched": {
-    "sha": "2dd4c76decae3f0321d25c00c6456608d56be617",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:28:08+00:00"
-   }
+   "merged_at": "2026-11-14T14:32:06+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/403"
   },
   {
    "id": "UX238",
@@ -3662,19 +3667,19 @@
    "after": [],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:30:44+00:00",
+   "dispatched_at": "2026-11-14T14:39:59+00:00",
    "pr": 405,
    "ci_dispatched": {
-    "sha": "82b59c625156df0a2a7cba3cd67de9b5c6fdc446",
+    "sha": "247d35eadd7db9cf4cbe6eae72fde9d6ed14b1f5",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:24:12+00:00"
+    "at": "2026-11-14T14:33:32+00:00"
    }
   },
   {
@@ -3686,19 +3691,19 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:28:08+00:00",
+   "dispatched_at": "2026-11-14T14:38:27+00:00",
    "pr": 406,
    "ci_dispatched": {
-    "sha": "0d9d8a655972524ffe9ee33fc21373ea797a78c7",
+    "sha": "5cb704b03aa95b0ad58b9601f9d345a61c58500e",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:30:44+00:00"
+    "at": "2026-11-14T14:39:59+00:00"
    }
   },
   {
@@ -3708,10 +3713,22 @@
    "brief": "Reproduced: with no PIN the list shows 'عميل تجريبي (عرض محلي)' (demo-1) under the lock bar (d/m-wa-locked.png) which looks like a real chat. Hide the demo chat unless the local-demo flag is on, otherwise label it clearly 'عرض تجريبي'; show a proper locked empty state (lock icon + short explanation) in the list pane instead, and when the main pane is empty show the same guidance. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Locked state shows no fake chat and a clear empty state; test updated.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:33:32+00:00",
+   "pr": 407,
+   "ci_dispatched": {
+    "sha": "ea446e2f8c0474a9675c90c89c979f3daf94ac16",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T14:38:27+00:00"
+   }
   },
   {
    "id": "UX234",
@@ -3898,5 +3915,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:30:44+00:00"
+ "updated": "2026-11-14T14:39:59+00:00"
 }
