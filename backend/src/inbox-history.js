@@ -3,6 +3,7 @@
 // so the public preview never gets chat data without the PIN. SELECT only: never writes, deletes or sends.
 // Failed PIN attempts are rate limited per client IP in KV (10 per 15 minutes).
 import { sha256Hex } from './auth/auth.js';
+import { waIsHandoff, waTopics } from './wa-metrics.js';
 
 const FAIL_MAX = 10;
 const FAIL_WINDOW_S = 900;
@@ -70,6 +71,20 @@ export async function getHistory(db, t, id) {
   return { id: c.id, customer: c.customer || c.id, updatedAt: atMs(c.updated_at), messages: (results || []).map(toMsg) };
 }
 
+// UX300: slim, text-free events for the response-time dashboard (SELECT only). Message text is read only to tag
+// handoffs/topics server-side and is never returned.
+export async function metricsData(db, t) {
+  const cs = await db.prepare('SELECT id, customer FROM inbox_conversations WHERE tenant_id = ? LIMIT 5000').bind(t).all();
+  const ms = await db.prepare('SELECT id, conversation_id AS c, dir, text, at FROM inbox_messages WHERE tenant_id = ? ORDER BY ' + MS('at') + ' ASC, rowid ASC LIMIT 60000').bind(t).all();
+  const events = (ms.results || []).map((r) => {
+    const k = kindOf(r.id, r.dir), e = { c: r.c, k, t: atMs(r.at) };
+    if (k === 'sys' && waIsHandoff(r.text)) e.h = 1;
+    if (k === 'in') { const tp = waTopics(r.text); if (tp.length) e.tp = tp; }
+    return e;
+  });
+  return { customers: (cs.results || []).map((c) => ({ id: c.id, name: c.customer || c.id })), events };
+}
+
 export function registerInboxHistoryRoutes(route, { errorResponse }) {
   const guard = (handler) => async (ctx) => {
     const { env, requestId, request, url } = ctx;
@@ -82,6 +97,7 @@ export function registerInboxHistoryRoutes(route, { errorResponse }) {
     }
   };
   route('GET', '/api/v1/inbox/history/conversations', guard(async ({ db, t }) => ({ conversations: await listHistory(db, t) })));
+  route('GET', '/api/v1/inbox/history/metrics', guard(async ({ db, t }) => ({ data: await metricsData(db, t) })));
   route('GET', '/api/v1/inbox/history/conversation', guard(async ({ db, t, url }) => {
     const c = await getHistory(db, t, url.searchParams.get('id') || '');
     return c ? { conversation: c } : { conversation: null };
