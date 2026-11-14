@@ -1,5 +1,6 @@
-# Staging bindings are real (GATE-11 / GATE-13). dev and production ids stay placeholders
-# until those environments are created. Do not deploy production without a later owner gate.
+# Staging bindings are real (GATE-11 / GATE-13). Production bindings are real since GATE-17
+# (owner approved 2026-11-14). dev ids stay placeholders. Production deploys only via
+# .github/workflows/deploy-backend-production.yml (owner-approved, guarded).
 # R2 is not used: enabling it requires a Cloudflare billing profile (payment card) and the
 # owner declined. Backups are D1 Time Travel + the daily encrypted GitHub artifact workflow
 # (docs/ops/backup-restore.md). Do not add r2_buckets bindings.
@@ -42,14 +43,15 @@ id = "d93eba4d82a94f099d545983618614e6"
 
 [env.production]
 name = "nova-rx-api"
+workers_dev = true
 [env.production.vars]
 NOVA_ENV = "production"
-CORS_ALLOW_ORIGINS = "https://production.example.invalid"
+CORS_ALLOW_ORIGINS = "https://nova-rx-preview.elsousypharmacy.workers.dev"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "nova-rx-production"
-database_id = "PLACEHOLDER_D1_PRODUCTION_ID"
+database_id = "0b284ffa-5aa4-431e-a5fd-c0fded92a1af"
 migrations_dir = "migrations"
 [[env.production.kv_namespaces]]
 binding = "KV"
-id = "PLACEHOLDER_KV_PRODUCTION_ID"
+id = "47d469e0972347c3b52dc4a767d1ad44"

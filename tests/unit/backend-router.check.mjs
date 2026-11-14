@@ -37,7 +37,7 @@ assert.equal(r.status, 204);
 
 assert.notEqual(newRequestId(), newRequestId());
 
-// wrangler: staging may have real D1/KV ids after GATE-11; dev and production stay placeholders.
+// wrangler: staging may have real D1/KV ids after GATE-11; production has real ids since GATE-17; dev stays placeholder.
 // R2 is not bound (billing card required; owner declined). Backups use D1 Time Travel + encrypted artifacts.
 const t = readFileSync(new URL('../../backend/wrangler.toml', import.meta.url), 'utf8');
 assert.match(t, /name = "nova-rx-api"/);
@@ -45,10 +45,10 @@ for (const k of ['binding = "DB"', 'binding = "KV"', '[env.staging]', '[env.prod
 assert.doesNotMatch(t, /binding = "R2"/);
 assert.doesNotMatch(t, /^\[\[(?:env\.\w+\.)?r2_buckets\]\]/m);
 assert.match(t, /database_name = "nova-rx-dev"\s*\ndatabase_id = "PLACEHOLDER_D1_DEV_ID"/);
-assert.match(t, /database_name = "nova-rx-production"\s*\ndatabase_id = "PLACEHOLDER_D1_PRODUCTION_ID"/);
+assert.match(t, /database_name = "nova-rx-production"\s*\ndatabase_id = "[0-9a-f-]{36}"/);
 assert.match(t, /database_name = "nova-rx-staging"\s*\ndatabase_id = "[0-9a-f-]{36}"/);
 assert.match(t, /id = "PLACEHOLDER_KV_DEV_ID"/);
-assert.match(t, /id = "PLACEHOLDER_KV_PRODUCTION_ID"/);
+assert.doesNotMatch(t, /PLACEHOLDER_D1_PRODUCTION_ID|PLACEHOLDER_KV_PRODUCTION_ID/);
 assert.doesNotMatch(t, /PLACEHOLDER_D1_STAGING_ID|PLACEHOLDER_KV_STAGING_ID/);
 
 // feature flag defaults OFF: app code must not reference the new backend

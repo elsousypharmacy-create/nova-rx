@@ -1,0 +1,137 @@
+# GATE-17: guarded deploy of the NOVA Rx *production* backend Worker (nova-rx-api, D1 nova-rx-production).
+# Owner-approved only (Ahmed approved GATE-17 on 2026-11-14). Never dispatched by cloud-scheduler.
+# Dry run first (default). A real deploy requires confirm: DEPLOY nova-rx-api production
+# Order: backend unit checks -> additive-migration guard -> encrypted D1 backup + Time Travel bookmark
+# -> additive migrations -> wrangler deploy --env production -> secrets (names only) -> smoke -> auto rollback.
+# Feature flags stay OFF (unset). R2 not used. Never touches nova-rx-preview or nova-rx-api-staging.
+name: Deploy backend production
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = check everything, upload nothing"
+        required: true
+        type: boolean
+        default: true
+      confirm:
+        description: "For a real deploy type exactly: DEPLOY nova-rx-api production"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-backend-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Main only, single attempt
+        env:
+          REF: ${{ github.ref }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          [ "$REF" = refs/heads/main ] || { echo "::error::production deploys run from main only"; exit 1; }
+          [ "$RUN_ATTEMPT" = "1" ] || { echo "Re-runs are blocked. Start a new run."; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Run backend unit checks
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for f in tests/unit/backend-*.check.mjs; do echo "== $f"; node --no-warnings "$f"; done
+          node tools/backend/check-migrations.mjs
+          node tools/backend/stale-artifact-guard.mjs 0.1.0
+      - name: Guard migrations are additive only
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          bad=0
+          for f in backend/migrations/*.sql; do
+            if grep -EinH '\b(DROP[[:space:]]+(TABLE|COLUMN|INDEX|VIEW|TRIGGER)|TRUNCATE|DELETE[[:space:]]+FROM)\b' "$f"; then bad=1; fi
+          done
+          [ "$bad" = 0 ] || { echo "::error::destructive SQL in a migration (owner review required)"; exit 1; }
+      - name: Check required secret names
+        env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PIN: ${{ secrets.NOVA_API_PIN }}
+          ING: ${{ secrets.NOVA_INGEST_SECRET }}
+        run: |
+          m=0
+          [ -n "$CF" ] || { echo "::error::MISSING SECRET: CLOUDFLARE_API_TOKEN"; m=1; }
+          [ -n "$PIN" ] || { echo "::error::MISSING SECRET: NOVA_API_PIN"; m=1; }
+          [ -n "$ING" ] || { echo "::error::MISSING SECRET: NOVA_INGEST_SECRET"; m=1; }
+          exit $m
+      - name: Encrypted D1 backup + Time Travel bookmark (before migrations)
+        working-directory: backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || '7140d9b8f71fb0854b43e50172a7146c' }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE || secrets.NOVA_INGEST_SECRET }}
+          BACKUP_OUTDIR: ${{ github.workspace }}/artifacts/d1-backup
+        run: |
+          set -uo pipefail
+          if bash ../scripts/d1-backup.sh nova-rx-production; then exit 0; fi
+          # A brand-new production DB has no tables, so there is nothing to export. Anything else fails.
+          n="$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database/0b284ffa-5aa4-431e-a5fd-c0fded92a1af" | jq -r '.result.num_tables // "unknown"')"
+          [ "$n" = 0 ] || { echo "::error::pre-deploy backup failed and DB is not empty (num_tables=$n)"; exit 1; }
+          echo "D1 nova-rx-production is empty (0 tables): nothing to back up before the first deploy." | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload encrypted pre-deploy backup (30 days)
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-predeploy-nova-rx-production-${{ github.run_id }}
+          path: |
+            artifacts/d1-backup/*.sql.gz.enc
+            artifacts/d1-backup/manifest.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
+      - name: Deploy (or dry run)
+        env:
+          RESULT_FILE: ${{ runner.temp }}/deploy-result.json
+          REQUIRE_MIGRATIONS: "true"
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NOVA_API_PIN: ${{ secrets.NOVA_API_PIN }}
+          NOVA_INGEST_SECRET: ${{ secrets.NOVA_INGEST_SECRET }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CONFIRM: ${{ inputs.confirm }}
+          BUILD_SHA: ${{ github.sha }}
+          LIVE_URL: https://nova-rx-api.elsousypharmacy.workers.dev
+        run: bash .github/scripts/deploy_backend_production.sh
+      - name: Encrypted D1 backup (after deploy)
+        if: ${{ !inputs.dry_run }}
+        working-directory: backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || '7140d9b8f71fb0854b43e50172a7146c' }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE || secrets.NOVA_INGEST_SECRET }}
+          BACKUP_OUTDIR: ${{ github.workspace }}/artifacts/d1-postdeploy
+        run: bash ../scripts/d1-backup.sh nova-rx-production
+      - name: Upload encrypted post-deploy backup (30 days)
+        if: ${{ !inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-postdeploy-nova-rx-production-${{ github.run_id }}
+          path: |
+            artifacts/d1-postdeploy/*.sql.gz.enc
+            artifacts/d1-postdeploy/manifest.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: Result
+        if: always()
+        env:
+          RF: ${{ runner.temp }}/deploy-result.json
+        run: '[ -s "$RF" ] && jq . "$RF" || echo "no result file (dry run or stopped early)"'
