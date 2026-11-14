@@ -4166,22 +4166,15 @@
    "brief": "Mobile nav scrollWidth 473 vs clientWidth 197: only البيع/الفواتير/المنتجات/العملاء partly visible, التقارير/المشتريات/الإعدادات unreachable without discovering horizontal scroll. Add edge fade/chevron affordance, scrollIntoView for the active tab, or a bottom tab bar with the 5 main screens; keep RTL. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "All 7 destinations reachable in <=1 gesture with visible affordance; active tab always visible; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:17:53+00:00",
    "pr": 436,
-   "ci_dispatched": {
-    "sha": "61c24cc30b8ba366d3be703ac0cb4eb6819985ff",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:20:20+00:00"
-   }
+   "merged_at": "2026-11-14T23:25:36+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/436"
   },
   {
    "id": "UX307",
@@ -4214,12 +4207,22 @@
    "brief": "d-products.png: fixed 151x48 FAB at x18,y624 covers the category cell; m-products.png: 44px FAB at y704 covers row content (unchanged since UX207 / qa-loop-203 finding 4, so the earlier fix is not verified). Remove the floating overlay on the products page (header button already exists) or dock it outside the scroll content with bottom padding reserved. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "FAB does not intersect any table cell on either viewport; test measures intersection.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:24:19+00:00"
+   "dispatched_at": "2026-11-14T23:24:19+00:00",
+   "pr": 438,
+   "ci_dispatched": {
+    "sha": "5660131886b523b76321e027df7578769bbc51f3",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:25:36+00:00"
+   }
   },
   {
    "id": "UX305",
@@ -4228,10 +4231,12 @@
    "brief": "All 21 th have no aria-sort, no sort handler; rows tabIndex=-1 and cursor:auto although clicking opens a modal. Add sortable columns (الصنف، السعر، الرصيد، الصلاحية) with aria-sort and arrow icon, sticky header inside the scroller, rows focusable (tabindex 0, Enter opens), visible focus ring. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Sort toggles asc/desc with aria-sort; Tab reaches rows; Enter opens details; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:25:36+00:00"
   },
   {
    "id": "UX304",
@@ -4270,5 +4275,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:24:19+00:00"
+ "updated": "2026-11-14T23:25:36+00:00"
 }
