@@ -24,3 +24,6 @@
 **Q2 — متوسطة: «الرصيد null · منخفض» في اقتراحات البحث مع الأسعار الحقيقية.** القائمة السعرية (STOCK LIVE) بلا أرصدة، فيظهر في كل اقتراح «الرصيد null» مع وسم «منخفض» وزر «الموردين» (لأن `null < 30`)، فيبدو كل صنف ناقصاً. (`supplier-lookup.js` ~440–448؛ `d-null-stock.png`، `m-search.png`)
 
 لم يُختبر: ماسح باركود فعلي (سرعة الإدخال الحقيقية)، الصوت، الطابعة، الشبكة الحقيقية.
+
+## UX83 — unknown barcode + Enter
+index.html Enter handler (PRODUCT mode): barcode-like query (digits only, >=6, Arabic digits included) with no exact match and no suggestions now shows the error toast 'لا يوجد صنف بهذا الباركود: <code>', keeps the 'سجّل نقص' button, and selects the input text. Test: tests/ui-ux83-unknown-barcode.mjs (5 checks pass); ui-pos01 (8), ui-cat05 (6), ui-pos05 pass.

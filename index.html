@@ -3332,6 +3332,20 @@ window.NovaFmt=(function(){
             }
           }
 
+          // UX83: unknown barcode-looking query (digits only, >=6, Arabic digits too) with no suggestion:
+          // error toast, keep the shortage option visible, select the text so the next scan replaces it.
+          if (state.mode === "PRODUCT" && state.suggestions.length === 0) {
+            const digits = String(query).replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660)).replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0));
+            if (/^\d{6,}$/.test(digits) && !findExactBarcodeProduct(query)) {
+              state.searchQuery = query;
+              renderProductSuggestions([]);
+              showToast((localStorage.getItem('nova-rx-language') === 'en' ? 'No product for barcode: ' : 'لا يوجد صنف بهذا الباركود: ') + escH(query), 'error');
+              elements.mainSearchInput.focus();
+              elements.mainSearchInput.select();
+              return;
+            }
+          }
+
           // Otherwise select from active dropdown if present
           if (state.suggestions.length > 0) {
             const selected = state.suggestions[Math.max(0, state.selectedIndex)];
