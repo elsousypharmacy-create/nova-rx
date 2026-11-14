@@ -35,3 +35,6 @@ UX204 (الشعار)، UX209 (أيقونة واتساب 36/44px)، UX208 (الم
 ## UX226 — return confirmation toast (frontend only)
 - index.html: `novaReturnNotice` (role=status live region: "تم تسجيل مرتجع بقيمة X — ردّ المبلغ نقدًا/على البطاقة/خصم من الآجل"), row highlight (static outline when prefers-reduced-motion), 10s undo via new `novaSales.removeReturn(id)`. Undo not offered for credit returns (customer-ledger collect cannot be reversed from the UI).
 - Tests (run from a temp playwright install, chromium): ui-ux226-return-toast 6/6, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.
+
+## UX224 — return dialog cancel-invoice fields (2026-11-14)
+Fixed in index.html: cancel-box inputs/select styled like #novaRetReason, real `<label for>` (incl. reason label), per-qty `aria-label` with product name, disclosure summary with rotating chevron, danger-tone confirm button. Test: tests/ui-ux224-return-fields.mjs (9 cases PASS). Also PASS: ui-returns (10), ui-pos04-returns-cancel (8), ui-sales-ledger (8).
