@@ -2503,22 +2503,15 @@
    "brief": "Files: index.html (customers page row actions and the debt dialog), tests/ux/customer-statement.mjs (new). Gap: no account statement. Add a «كشف حساب» button per customer opening a Black Edition dialog listing local credit sales and payments with running balance and a print action (reuse the receipt/print styles, 80mm or A4 per existing width setting). Also add quick partial-payment chips (نصف، الكل) next to the prefilled amount in the debt dialog. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F8.",
    "acceptance": "tests/ux/customer-statement.mjs: after one credit sale of 38.50 and a 10.00 payment the statement shows 2 rows and balance 28.50; the «نصف» chip fills half the balance; opening the statement is <=2 clicks from Customers; customer-debt-payment.mjs still passes; no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:53:26+00:00",
    "pr": 351,
-   "ci_dispatched": {
-    "sha": "814dd1b0215d1b2f962c8e35af72af14644df302",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:57:53+00:00"
-   }
+   "merged_at": "2026-11-14T01:03:24+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/351"
   },
   {
    "id": "UX67",
@@ -2892,5 +2885,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:00:36+00:00"
+ "updated": "2026-11-14T01:03:24+00:00"
 }
