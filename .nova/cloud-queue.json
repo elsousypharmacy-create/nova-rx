@@ -3354,22 +3354,15 @@
    "brief": "Make #novaWaBtn at least 36x36 (44 on touch) with aria-label, focus ring and consistent spacing with status dot and refresh button; align header icon group. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Button >=36px desktop/44px mobile; keyboard focus visible; test asserts size.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T11:23:54+00:00",
    "pr": 388,
-   "ci_dispatched": {
-    "sha": "e9ebb86e4d43e2ec68561ca34a9f784453cf3554",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:29:44+00:00"
-   }
+   "merged_at": "2026-11-14T11:34:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/388"
   },
   {
    "id": "UX208",
@@ -3378,22 +3371,15 @@
    "brief": "The inbox tab (#novaInboxTab view) renders a white/beige WhatsApp-like light panel; restyle with Black Edition tokens (ux-tokens.css): dark surfaces, matching radius/borders, readable contrast, empty-state 'اختر محادثة لعرضها' with icon; keep RTL bubbles. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Inbox uses dark tokens, contrast >=4.5:1, desktop+mobile screenshots consistent; test asserts computed background is dark.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T11:26:48+00:00",
    "pr": 387,
-   "ci_dispatched": {
-    "sha": "7d3653220a3fba51dbbf8ba7a5d14e42c21c5aef",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:29:44+00:00"
-   }
+   "merged_at": "2026-11-14T11:34:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/387"
   },
   {
    "id": "UX207",
@@ -3472,5 +3458,5 @@
    "dispatched_at": "2026-11-14T11:32:44+00:00"
   }
  ],
- "updated": "2026-11-14T11:32:44+00:00"
+ "updated": "2026-11-14T11:34:15+00:00"
 }
