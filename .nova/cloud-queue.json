@@ -3912,7 +3912,7 @@
    "brief": "On 1366x768 opening the cancel box pushes 'تأكيد المرتجع / إغلاق' below the fold (scroll inside dialog; d-dlg-cancelbox.png). On 390px the reason chips wrap leaving an orphan chip. Make the dialog a flex column with scrollable body and a sticky footer for primary actions, and lay chips in a 2x2 grid / horizontal scroll row on mobile. Primary confirm should be the visually dominant, full-width on mobile. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Confirm/close always visible without scrolling at 1366x768 and 390x844; chips never orphaned.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-219-fixes.json",
@@ -3920,13 +3920,13 @@
    "dispatched_at": "2026-11-14T15:53:45+00:00",
    "pr": 419,
    "ci_dispatched": {
-    "sha": "4aba22696376d69d5603a8942e30fa141079fb38",
+    "sha": "9f511479b8a6448dbce181fb02ee7e50647beb90",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T15:47:04+00:00"
+    "at": "2026-11-14T15:56:21+00:00"
    }
   },
   {
@@ -3953,12 +3953,12 @@
    "brief": "Dialog has role=dialog aria-modal but no focus trap: after 14 Tab presses focus is outside the overlay; after Esc/close focus lands on BODY instead of the originating 'مرتجع / إلغاء' button. Add a Tab/Shift+Tab trap, aria-labelledby on the h3, restore focus to the opener on close, and lock background scroll while open. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Tab cycles inside the dialog; Esc/close returns focus to the opener; test asserts both.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:47:04+00:00",
+   "dispatched_at": "2026-11-14T15:56:21+00:00",
    "pr": 421,
    "ci_dispatched": {
     "sha": "49e4fac9998949d6902686390a17f2bf8e739140",
@@ -4019,5 +4019,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:53:45+00:00"
+ "updated": "2026-11-14T15:56:21+00:00"
 }
