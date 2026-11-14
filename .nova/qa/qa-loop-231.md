@@ -57,7 +57,15 @@ Fix (index.html): demo-1 seeded/shown only with localStorage nova.flags.localDem
 Tests (Playwright run from /tmp install, repo has no node_modules): ux235-locked-empty OK (flag off/on × desktop/mobile), fix46-wa-history OK, inbox-flag.mjs FAILS identically at baseline (stale selector section[data-conv], pre-existing, unrelated), unified-inbox.check.mjs pass.
 Screenshots: .nova/qa/qa-loop-231/ux235-*.png
 
+# QA loop 231 — UX233 (chat list scroll kept on open/back)
+Bug: draw() rebuilt the view and reset #waList scrollTop to 0 on open and on mobile back; chat just left not highlighted.
+Fix (index.html inbox block): wa.top tracked by capture scroll listener on #waList; draw() restores it; back sets wa.back so the chat just left gets .active and is scrolled into view.
+Tests (Playwright from /tmp install): tests/ux/ux233-wa-list-scroll.mjs OK (22 chats, desktop+mobile). unified-inbox.check.mjs: 4 passed. fix46-wa-history.mjs FAILS at "composer stays a disabled draft", identical at baseline (pre-existing).
+Screenshots: .nova/qa/qa-loop-231/ux233-*.png
 ## UX234 - chat open loading/error state
 - index.html: hist.pend/oerr per conversation; renderWa chatLoading/chatError -> skeleton + loading text with aria-busy on #waMsgs; inline role=alert error + retry button.
 - Test: tests/ux/ux234-wa-chat-loading.mjs (mock delayed/failed history) PASS. Screenshots: ux234-loading.png, ux234-error.png.
 - tests/ux/fix46-wa-history.mjs fails at "composer stays a disabled draft": pre-existing (same failure without my change; WA-SEND #408 enabled the composer).
+
+## UX232 fix
+CSS only (index.html WA_CSS): #novaInboxView flex column; .wa-root flex:1 1 auto, height:auto; bars flex:0 0 auto. Test: tests/ux/ux232-inbox-fit.mjs (1366x768, 390x844, 844x390; lock open/closed). Shots: .nova/qa/qa-loop-231/ux232-*.png
