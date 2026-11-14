@@ -1,4 +1,4 @@
-// QA loop 231 repro: runs the UX238 keyboard/a11y test and saves screenshots to .nova/qa/qa-loop-231/
-import { spawnSync } from 'node:child_process';
-const r = spawnSync('node', ['tests/ux/ux238-wa-keyboard.mjs'], { stdio: 'inherit', env: { ...process.env, SHOTS: '.nova/qa/qa-loop-231' } });
-process.exit(r.status ?? 1);
+// UX235 repro/evidence: runs the locked-state test and writes screenshots to .nova/qa/qa-loop-231/
+// Usage: SHOTS=.nova/qa/qa-loop-231 node tools/qa/qa-loop-231.mjs (needs server on :8765 and @playwright/test)
+process.env.SHOTS ||= '.nova/qa/qa-loop-231';
+await import('../../tests/ux/ux235-locked-empty.mjs');

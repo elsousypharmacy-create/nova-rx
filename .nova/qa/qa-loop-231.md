@@ -50,3 +50,9 @@ Tests (Playwright from /tmp, mocked history API, no real PIN): ux238-wa-keyboard
 Fix: normAr() in unified-inbox.js + inline copy in index.html; searches name, id/phone, all message text; hamza/tashkeel/tatweel/ya/ta-marbuta/Arabic-Indic digits folded; 'لا نتائج لـ "…"'; × clear button (#waSearchClear).
 Passed: tests/unit/ux236-wa-search.check.mjs (7), unified-inbox.check, fix43, ux81, ux200 unit tests.
 NOT run: tests/ux/ux236-wa-search.mjs and fix46-wa-history.mjs — @playwright/test not installed in this environment (ERR_MODULE_NOT_FOUND). No screenshots captured.
+
+# QA loop 231 — UX235
+Bug: locked WhatsApp history showed fake chat 'عميل تجريبي (عرض محلي)' under the PIN form.
+Fix (index.html): demo-1 seeded/shown only with localStorage nova.flags.localDemo=1 and labelled 'عرض تجريبي'; locked state shows lock-icon empty state in list pane (and main pane on desktop).
+Tests (Playwright run from /tmp install, repo has no node_modules): ux235-locked-empty OK (flag off/on × desktop/mobile), fix46-wa-history OK, inbox-flag.mjs FAILS identically at baseline (stale selector section[data-conv], pre-existing, unrelated), unified-inbox.check.mjs pass.
+Screenshots: .nova/qa/qa-loop-231/ux235-*.png
