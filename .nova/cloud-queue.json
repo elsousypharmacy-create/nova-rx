@@ -4217,12 +4217,12 @@
    "brief": "All 21 th have no aria-sort, no sort handler; rows tabIndex=-1 and cursor:auto although clicking opens a modal. Add sortable columns (الصنف، السعر، الرصيد، الصلاحية) with aria-sort and arrow icon, sticky header inside the scroller, rows focusable (tabindex 0, Enter opens), visible focus ring. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Sort toggles asc/desc with aria-sort; Tab reaches rows; Enter opens details; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:25:36+00:00",
+   "dispatched_at": "2026-11-14T23:37:42+00:00",
    "pr": 439,
    "ci_dispatched": {
     "sha": "51a6fbeeb1e0d7df0b2b2cbe2b7a48713e881e39",
@@ -4241,22 +4241,15 @@
    "brief": "KPI 'مخزون منخفض (أقل من 30)' is static, threshold hard-coded and not explained; only one amber/red pill shows. Add filter chips (الكل، نواقص، نفد، قريب الانتهاء) where the KPI cards are clickable shortcuts, show the count per chip, an empty state per filter, and keep chips in the search state; threshold shown in a tooltip/legend. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Clicking KPI/chip filters rows instantly (<100ms) and chip counts match; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:29:55+00:00",
    "pr": 440,
-   "ci_dispatched": {
-    "sha": "26220c46f9f374bf798f158eb6d477b4caa6a29e",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:33:51+00:00"
-   }
+   "merged_at": "2026-11-14T23:37:42+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/440"
   },
   {
    "id": "UX303",
@@ -4265,12 +4258,22 @@
    "brief": "Inventory table has no expiry column, no near-expiry/expired badges and no lot count although FEFO lots exist (INV02 lots store, index.html ~3589-3729). Add an 'أقرب صلاحية' column + badge states (منتهي أحمر، <=30 يوم أصفر، <=90 كهرماني) with text not colour only, and a KPI card 'قريب الانتهاء' using the existing lots store; fake lots in the test. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Column + badges render from lots data on desktop and mobile; badges carry text; test seeds lots.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:33:51+00:00"
+   "dispatched_at": "2026-11-14T23:33:51+00:00",
+   "pr": 441,
+   "ci_dispatched": {
+    "sha": "d41d745d4abcc17830c7780a8fa40418be749f71",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:37:42+00:00"
+   }
   },
   {
    "id": "UX302",
@@ -4285,5 +4288,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:33:51+00:00"
+ "updated": "2026-11-14T23:37:42+00:00"
 }
