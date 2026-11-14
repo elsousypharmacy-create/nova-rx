@@ -2923,13 +2923,22 @@
    "brief": "Rebuild the live Worker artifact exactly like UX54 did: base worker/live/nova-rx-preview.ux-pro2b.js, extract the app HTML literal, apply the index.html diffs of UX60, UX61, UX62, UX63, UX64, UX65, UX66, UX67, UX68, UX69, UX70, UX71 in merge order (git log), re-apply by hand any hunk that does not apply, write back with tools/build-worker-artifact.mjs to worker/live/nova-rx-preview.ux-pro3.js. Also check that any UX22-UX35 or UX40-UX53 change is not lost. Worker code outside the HTML literal must stay byte-identical to ux-pro2b. Add tests/unit/ux-pro3-artifact.check.mjs asserting markers of each UX60-UX71 change plus earlier markers; run node --check and all ux-pro*-artifact checks. Must NOT deploy.",
    "acceptance": "worker/live/nova-rx-preview.ux-pro3.js exists with all UX1-UX71 frontend changes, artifact check tests pass, no deploy.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3-build.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T02:15:26+00:00"
+   "dispatched_at": "2026-11-14T02:15:26+00:00",
+   "pr": 363,
+   "ci_dispatched": {
+    "sha": "7c4517188f4a60664fbe78624a855279dc231b53",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T02:16:53+00:00"
+   }
   }
  ],
- "updated": "2026-11-14T02:15:26+00:00"
+ "updated": "2026-11-14T02:16:53+00:00"
 }
