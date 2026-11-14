@@ -24,3 +24,7 @@
 **Q2 — متوسطة: «الرصيد null · منخفض» في اقتراحات البحث مع الأسعار الحقيقية.** القائمة السعرية (STOCK LIVE) بلا أرصدة، فيظهر في كل اقتراح «الرصيد null» مع وسم «منخفض» وزر «الموردين» (لأن `null < 30`)، فيبدو كل صنف ناقصاً. (`supplier-lookup.js` ~440–448؛ `d-null-stock.png`، `m-search.png`)
 
 لم يُختبر: ماسح باركود فعلي (سرعة الإدخال الحقيقية)، الصوت، الطابعة، الشبكة الحقيقية.
+
+## UX84 — unknown stock in suggestions
+supplier-lookup.js decorateRow: non-finite stock now shows neutral 'غير متوفر' chip + icon-only suppliers button (no 'null', no 'منخفض'). Numeric stock unchanged (<30 low badge).
+Tests: tests/ui-ux84-unknown-stock.mjs OK; ui-pos01-sale-flow OK (8 checks); ui-cat05-instant-search PASS (6 cases).
