@@ -3130,12 +3130,12 @@
    "brief": "In index.html main search Enter handler (PRODUCT mode, ~lines 3320-3346): when the query looks like a barcode (digits only, length>=6, also Arabic digits) and no exact barcode product nor suggestion matches, show an error toast in Arabic ('لا يوجد صنف بهذا الباركود: <code>' — reuse the existing string near line 4652), keep the 'سجّل نقص' option visible, and select the input text (or clear it) so the next scan does not concatenate to the stale code. Do not change behavior for name searches. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add/extend a Playwright/node test under tests/, run it plus the nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests and record exact results). Evidence: .nova/qa/qa-loop-82.md.",
    "acceptance": "Scanning an unknown barcode shows a toast and the next scan replaces the stale value; known barcode and name flows unchanged; test passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-82-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T10:49:03+00:00",
+   "dispatched_at": "2026-11-14T10:56:39+00:00",
    "pr": 375,
    "ci_dispatched": {
     "sha": "1004a74c89a82c3c38dd196c12373ba04fc5e28b",
@@ -3148,5 +3148,5 @@
    }
   }
  ],
- "updated": "2026-11-14T10:54:07+00:00"
+ "updated": "2026-11-14T10:56:39+00:00"
 }
