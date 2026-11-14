@@ -2168,12 +2168,20 @@
    "brief": "Extra focus requested by owner Ahmed, on top of UX21 and after the UX22-UX36 fix tasks (read .nova/qa/ux-pro2-report.md and .nova/inbox/ux-pro2.json first; do NOT duplicate UX22+ tasks, extend them instead). Audit the ux-pro1 frontend locally (Playwright, desktop 1366x768 + mobile 390x844, fake data, no live writes). PART 1 Layout: on EVERY screen/page/modal check element distribution and placement, use of space (wasted space, crowding, uneven gaps, overflow, scroll where none needed), visual hierarchy, grid alignment, consistent spacing scale, card/button sizes, and consistency of ALL icons (same set/style/stroke/size, meaning, alignment with labels, RTL mirroring). Produce a per-screen table (الشاشة | توزيع العناصر | المساحة | الأيقونات | المشكلة | الحل) with screenshots in .nova/qa/ux-pro2b/ (max ~30 PNGs). PART 2 Activation: review the WhatsApp feature (integrations/whatsapp/inbox.html, unified-inbox.js, msg-policy.js, backend/src/whatsapp-intake.js, backend/src/inbox.js) and the warehouses/stores/stock-locations feature (find all related code: stores, branches, stock locations, transfers, purchases/procurement). For each: what works today, what is hidden behind flags or stubbed, exact steps and what is missing to fully activate it (UI, backend endpoint, flag, secret/credential names only, WhatsApp provider/API needs, cost if any), risks. Write findings to .nova/qa/ux-pro2b-report.md in Arabic with a clear «خطة التفعيل» section per feature. Then write .nova/inbox/ux-pro2b.json = {\"tasks\":[...]} ids starting UX40: small frontend-only layout/icon fix tasks (max 12, with tests) plus activation tasks that need NO new secrets and NO paid services and keep backend flags OFF by default (code + tests only, behind flags); anything needing a secret, paid service, or flag ON goes only in the report as an owner decision. If ux-pro2.json's final artifact-rebuild task exists, set its `after` dependency note in the report (do not edit cloud-queue.json); add your own final task rebuilding worker/live/nova-rx-preview.ux-pro2b.js after all your other ids, must NOT deploy. Commit report, screenshots and inbox file on this branch.",
    "acceptance": "Arabic report .nova/qa/ux-pro2b-report.md with per-screen layout/space/icon table + screenshots and activation plans for WhatsApp and warehouses; valid .nova/inbox/ux-pro2b.json with UX40+ tasks (no secrets, no paid services, flags off, no deploy) and a final no-deploy artifact rebuild; no live writes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b-request.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:16:03+00:00"
+   "dispatched_at": "2026-11-14T00:16:03+00:00",
+   "pr": 334,
+   "ci_dispatched": {
+    "sha": "0d1764e9cdf8d6a66263468feb32cc175d4016ad",
+    "wf": [
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T00:22:30+00:00"
+   }
   },
   {
    "id": "UX71",
@@ -2182,10 +2190,12 @@
    "brief": "Files: index.html (customer sidebar where «آخر شراء» and #btnRefillLast render), tests/ux/refill-days.mjs (new). Gap: panel shows last purchase date only. Add «صُرف منذ N يوم» using the last invoice date, and for chronic items show a calm hint «مبكر» when N < 20 days and «متأخر» when N > 40 (thresholds constants at top of the block, no medical advice wording). Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F10.",
    "acceptance": "tests/ux/refill-days.mjs: customer with last purchase 17 days ago shows «صُرف منذ 17 يوم» and «مبكر»; 50 days shows «متأخر»; no previous purchase shows nothing; customer-refill.mjs still passes; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:22:30+00:00"
   },
   {
    "id": "UX70",
@@ -2589,5 +2599,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:21:03+00:00"
+ "updated": "2026-11-14T00:22:30+00:00"
 }
