@@ -4004,23 +4004,16 @@
    "brief": "After a full return or cancellation the Invoices row keeps an enabled 'مرتجع / إلغاء' button, and the dialog for a fully returned sale still enables 'إرجاع كل الأصناف' and 'تأكيد المرتجع' while every qty input is disabled (screens d/m-dlg-fully-returned). Add a status badge in the المرتجع column (مرتجع جزئي / مرتجع بالكامل / ملغاة, with tone colours), disable or replace the row button with a disabled 'تم الإرجاع بالكامل' state (aria-disabled + tooltip), and in the dialog disable Return-all/Confirm and show an inline notice when nothing is returnable. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Fully returned/cancelled rows show a badge and no actionable return button; dialog confirm is disabled when no qty is available; test covers partial, full and cancelled.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T16:01:45+00:00",
    "pr": 424,
-   "ci_dispatched": {
-    "sha": "559a5645f06324c587ccd0bd4d3c83238fdbcbcb",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T16:09:14+00:00"
-   }
+   "merged_at": "2026-11-14T16:14:10+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/424"
   }
  ],
- "updated": "2026-11-14T16:11:45+00:00"
+ "updated": "2026-11-14T16:14:10+00:00"
 }
