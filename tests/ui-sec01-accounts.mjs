@@ -11,6 +11,7 @@ const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, l
 await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:')) return r.continue(); return r.abort(); });
 const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
 await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
 await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'en'); localStorage.removeItem('nova.activePage'); } catch {} });
 await page.goto(BASE, { waitUntil: 'load' });
 await page.waitForFunction(() => window.novaAuth && window.novaAuthUI && window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
