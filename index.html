@@ -559,7 +559,8 @@
     .nova-first-run-hint[hidden]{display:none}
     .nova-first-run-hint ol{margin:0 0 8px;padding-inline-start:20px;line-height:1.9}
     .nova-first-run-hint button{min-height:36px}
-    .nova-help-chip{min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--border,#444);background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+    #btnCloseReceipt,#btnCloseHelp,#btnCloseCheckout{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+    .nova-help-chip{min-height:44px;padding:0 10px;border-radius:999px;border:1px solid var(--border,#444);background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
     .empty-invoice-state {
       display: flex;
       flex-direction: column;
@@ -2300,7 +2301,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
     <div class="modal-card">
       <div class="modal-header">
         <h3>Complete Sale & Payment / إنهاء الفاتورة</h3>
-        <button id="btnCloseCheckout" class="btn-icon-del" style="color:#cbd5e1;">✕</button>
+        <button id="btnCloseCheckout" class="btn-icon-del" type="button" aria-label="إغلاق" style="color:#cbd5e1;">✕</button>
       </div>
       <div class="modal-body">
         <div class="checkout-amount-display">
@@ -2375,7 +2376,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
     <div class="modal-card" style="max-width: 480px;">
       <div class="modal-header">
         <h3>Transaction Receipt / إيصال الدفع</h3>
-        <button id="btnCloseReceipt" class="btn-icon-del" style="color:#cbd5e1;">✕</button>
+        <button id="btnCloseReceipt" class="btn-icon-del" type="button" aria-label="إغلاق" style="color:#cbd5e1;">✕</button>
       </div>
       <div class="modal-body" style="padding:12px;">
         <div class="nova-receipt-toolbar">
@@ -2407,7 +2408,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
     <div class="modal-card">
       <div class="modal-header">
         <h3>اختصارات الكيبورد ودليل الكاشير</h3>
-        <button id="btnCloseHelp" class="btn-icon-del">✕</button>
+        <button id="btnCloseHelp" class="btn-icon-del" type="button" aria-label="إغلاق">✕</button>
       </div>
       <div class="modal-body" style="font-size:12px; line-height:1.6;">
         <table style="width:100%; border-collapse:collapse;">
