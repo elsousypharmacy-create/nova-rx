@@ -2582,12 +2582,12 @@
    "brief": "Files: index.html (cart row render, qty change handlers, the existing «المخزون لا يكفي» check), tests/ux/oversell-inline.mjs (new). Bug: «*500 كونكور» adds quantity 500 (19,250 EGP) silently; refusal appears only at payment. Fix: when line qty > available show a red inline note «المتاح 42» on the row with a one-click «اضبط على المتاح» button, and a toast at add time; checkout stays blocked while any line exceeds stock. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F5.",
    "acceptance": "tests/ux/oversell-inline.mjs: *500 on a stock-42 item shows the inline «المتاح 42» note immediately; one click on «اضبط على المتاح» sets qty 42 and clears the note; in-stock sales keep 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
-   "slot": "A",
-   "dispatched_at": "2026-11-14T01:06:38+00:00",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:15:19+00:00",
    "pr": 356,
    "ci_dispatched": {
     "sha": "ded729730681cb7710d561bb1a6ff7c0753d2cb0",
@@ -2630,12 +2630,22 @@
    "brief": "Files: index.html (Products page toolbar next to #novaInventoryPurchase), tests/ux/manual-receive.mjs (new). Gap: only the AI photo panel exists; no manual lot/expiry entry. Add button «استلام بضاعة» opening a Black Edition dialog: product search (reuse the instant search), quantity (boxes), lot number, expiry (month input, must be future), optional cost; confirm calls the existing window.novaStock.addLot (use the same key shape as keyOf of the product) and toasts «تم استلام N — تشغيلة X تنتهي MM/YYYY». Reject past expiry with an Arabic inline error; Enter confirms, Esc closes. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F3.",
    "acceptance": "tests/ux/manual-receive.mjs: receive 20 of a demo product with lot B2611 expiry 2027-03 -> novaStock.lots(key) contains it and a FEFO pick uses it; past expiry rejected with inline Arabic error and no stock change; a full receive journey is <=4 clicks plus typing from the Products page; no console errors.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T01:12:14+00:00"
+   "dispatched_at": "2026-11-14T01:12:14+00:00",
+   "pr": 358,
+   "ci_dispatched": {
+    "sha": "8a58ff9252a2559f14323dd57ab9927403f46c90",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:15:19+00:00"
+   }
   },
   {
    "id": "UX61",
@@ -2925,5 +2935,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:13:47+00:00"
+ "updated": "2026-11-14T01:15:19+00:00"
 }
