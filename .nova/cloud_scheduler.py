@@ -283,10 +283,46 @@ def preview_smoke(url=PREVIEW_URL):
         return False, f"smoke error: {ex}"
 
 
-def _deploy_run(path, sha, dry, ref="main"):
-    # expected_modified_on "20" = any 20xx time: the qa artifact is built from the latest live artifact
+# FIX52: a candidate must carry these markers (PIN history UI + FIX50 + FIX51 + WA-SEND) or it is never auto-deployed
+REQUIRED_MARKERS = ("hLoad", "inbox/history", "waHistPin", "NOVA_FIX50", "NOVA_FIX50_VV", "hPoll", "winClosed",
+                    "data-wa-window", "hSend", "X-Nova-Pin")
+
+
+def missing_markers(path):
+    try:
+        txt = open(path, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return list(REQUIRED_MARKERS)
+    return [m for m in REQUIRED_MARKERS if m not in txt]
+
+
+def _qa_num(path):
+    m = re.search(r"qa-([0-9]+)\.js$", path or "")
+    return int(m.group(1)) if m else -1
+
+
+def live_modified_on():
+    """Real modified_on of the live preview Worker (Cloudflare API, read-only). None if unknown -> fail closed."""
+    tok, acct = os.environ.get("CF_API_TOKEN"), os.environ.get("CF_ACCOUNT_ID")
+    if not tok or not acct:
+        return None
+    try:
+        import urllib.request
+        rq = urllib.request.Request(f"https://api.cloudflare.com/client/v4/accounts/{acct}/workers/scripts",
+                                    headers={"Authorization": "Bearer " + tok})
+        with urllib.request.urlopen(rq, timeout=30) as r:
+            for x in json.loads(r.read()).get("result", []):
+                if x.get("id") == "nova-rx-preview":
+                    return x.get("modified_on")
+    except Exception:
+        return None
+    return None
+
+
+def _deploy_run(path, sha, dry, ref="main", expected="20"):
+    # FIX52: expected is the REAL live modified_on (recorded), never the any-20xx wildcard on real deploys
     act("gh", "workflow", "run", PREVIEW_WF, "-R", REPO, "--ref", "main", "-f", f"artifact_ref={ref}",
-        "-f", f"artifact_path={path}", "-f", f"sha256={sha}", "-f", "expected_modified_on=20",
+        "-f", f"artifact_path={path}", "-f", f"sha256={sha}", "-f", f"expected_modified_on={expected}",
         "-f", f"dry_run={'true' if dry else 'false'}", "-f", "confirm=" + ("" if dry else "DEPLOY nova-rx-preview"))
 
 
@@ -296,10 +332,12 @@ def _latest_run(path, since):
     return mine[0] if mine else None  # newest first
 
 
-def preview_deploys(items, byid, smoke=None, exists=os.path.exists):
+def preview_deploys(items, byid, smoke=None, exists=os.path.exists, live_modified=None, markers=None):
     """State machine per qa build task: dry run -> real deploy -> smoke -> (rollback on failure).
     Never touches production / api-staging / GATE-17; never applies migrations."""
     smoke = smoke or preview_smoke
+    live_modified = live_modified or live_modified_on
+    markers = markers or missing_markers
     busy = any(isinstance(t.get("preview_deploy"), dict) and t["preview_deploy"].get("stage") in ("dry", "real", "rollback") for t in items)
     last_ok = [t["preview_deploy"] for t in items if isinstance(t.get("preview_deploy"), dict) and t["preview_deploy"].get("stage") == "deployed"]
     for t in items:
@@ -310,10 +348,22 @@ def preview_deploys(items, byid, smoke=None, exists=os.path.exists):
         if d is None:
             if busy or not exists(path):
                 continue
+            miss = markers(path)
+            if miss:  # stale artifact without PIN history / FIX50 / FIX51 must never reach the preview
+                t["preview_deploy"] = {"stage": "skipped", "path": path, "at": iso(), "reason": "missing markers: " + ",".join(miss)}
+                log(f"{t['id']}: {path} skipped, missing markers {miss}")
+                continue
+            if any(_qa_num(x.get("path")) > _qa_num(path) for x in last_ok):
+                t["preview_deploy"] = {"stage": "skipped", "path": path, "at": iso(), "reason": "older than an already deployed qa artifact"}
+                continue
+            lm = live_modified()
+            if not lm:
+                t["preview_deploy"] = {"stage": "skipped", "path": path, "at": iso(), "reason": "live modified_on unknown (fail closed)"}
+                continue
             sha = _sha256(path)
-            d = t["preview_deploy"] = {"stage": "dry", "path": path, "sha256": sha, "at": iso(),
+            d = t["preview_deploy"] = {"stage": "dry", "live_modified_on": lm, "path": path, "sha256": sha, "at": iso(),
                                        "previous": ({"path": last_ok[-1]["path"], "sha256": last_ok[-1]["sha256"]} if last_ok else None)}
-            _deploy_run(path, sha, True); busy = True
+            _deploy_run(path, sha, True, expected=lm); busy = True
             log(f"{t['id']}: dispatched preview dry run for {path}")
             continue
         stage = d.get("stage")
@@ -328,7 +378,9 @@ def preview_deploys(items, byid, smoke=None, exists=os.path.exists):
         d["run_url"] = r.get("html_url")
         if stage == "dry":
             if ok:
-                d.update(stage="real", at=iso()); _deploy_run(path, d["sha256"], False)
+                if not d.get("live_modified_on"):
+                    d.update(stage="failed", reason="no recorded live modified_on (fail closed)"); continue
+                d.update(stage="real", at=iso()); _deploy_run(path, d["sha256"], False, expected=d["live_modified_on"])
                 log(f"{t['id']}: dry run ok -> real preview deploy")
             else:
                 d.update(stage="failed", reason="dry run failed")

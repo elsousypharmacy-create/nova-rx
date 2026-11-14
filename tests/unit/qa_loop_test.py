@@ -49,10 +49,18 @@ def mk(status="done"):
     return items, {i["id"]: i for i in items}
 items, byid = mk("running"); S.preview_deploys(items, byid, exists=lambda p: True); assert not calls
 items, byid = mk(); S.preview_deploys(items, byid, exists=lambda p: False); assert not calls
-S.preview_deploys(items, byid, exists=lambda p: True)
-c = calls[0]; assert c[:4] == ("gh", "workflow", "run", "deploy-worker.yml") and "dry_run=true" in c and f"artifact_path={art}" in c
+LM = "2026-11-14T16:48:11"; OK = lambda p: []
+S.preview_deploys(items, byid, exists=lambda p: True, live_modified=lambda: LM, markers=OK)
+c = calls[0]; assert f"expected_modified_on={LM}" in c and "expected_modified_on=20" not in c; assert c[:4] == ("gh", "workflow", "run", "deploy-worker.yml") and "dry_run=true" in c and f"artifact_path={art}" in c
 assert not any("production" in x or "staging" in x for x in c)
-d = items[0]["preview_deploy"]; assert d["stage"] == "dry"
+d = items[0]["preview_deploy"]; assert d["stage"] == "dry" and d["live_modified_on"] == LM
+# FIX52: stale artifact lacking markers, or unknown live modified_on, is skipped and never dispatched
+calls.clear(); i2, b2 = mk(); S.preview_deploys(i2, b2, exists=lambda p: True, live_modified=lambda: LM, markers=lambda p: ["hLoad"])
+assert not calls and i2[0]["preview_deploy"]["stage"] == "skipped"
+calls.clear(); i2, b2 = mk(); S.preview_deploys(i2, b2, exists=lambda p: True, live_modified=lambda: None, markers=OK)
+assert not calls and i2[0]["preview_deploy"]["stage"] == "skipped"
+assert S.missing_markers("worker/live/nova-rx-preview.qa-219.js") and not S.missing_markers("worker/live/nova-rx-preview.qa-231.js")
+calls.clear()
 fresh = S.iso(S.NOW + 5)
 RUN["workflow_runs"] = [{"created_at": fresh, "status": "in_progress"}]
 calls.clear(); S.preview_deploys(items, byid, exists=lambda p: True); assert not calls and d["stage"] == "dry"
