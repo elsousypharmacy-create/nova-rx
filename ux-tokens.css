@@ -1,0 +1,2 @@
+/* UX45: spacing + radius scale tokens (display layer only). */
+:root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--r-1:6px;--r-2:10px;--r-pill:999px}
