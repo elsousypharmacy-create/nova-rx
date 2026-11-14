@@ -3143,7 +3143,14 @@
    "dispatched_at": "2026-11-14T11:02:38+00:00",
    "pr": 377,
    "merged_at": "2026-11-14T11:09:34+00:00",
-   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/377"
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/377",
+   "preview_deploy": {
+    "stage": "dry",
+    "path": "worker/live/nova-rx-preview.qa-82.js",
+    "sha256": "aa09c4dc628626f1b147512f9491ca31ad773eb80b0b3a5065f3dd3bc59319d3",
+    "at": "2026-11-14T11:10:05+00:00",
+    "previous": null
+   }
   },
   {
    "id": "UX84",
@@ -3209,12 +3216,23 @@
    "brief": "Add <link rel=icon href=icon.svg> (and in purchases.html) so the browser stops requesting /favicon.ico; verify no 404 in the Playwright console log. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "No /favicon.ico request or 404 on both pages; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T11:08:08+00:00"
+   "dispatched_at": "2026-11-14T11:08:08+00:00",
+   "pr": 380,
+   "ci_dispatched": {
+    "sha": "4bf0cabf55515496c1a1289ab0633abf87e40f52",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T11:10:05+00:00"
+   }
   },
   {
    "id": "UX216",
@@ -3223,12 +3241,22 @@
    "brief": "Disabled F9 pay button text has very low contrast (greyed on dark teal) and the empty-cart state shows both an empty message and a 3-step box with a separate 'إخفاء'. Raise disabled contrast to >=3:1 with clear disabled style; merge the empty state and tips into one concise block. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Disabled pay button contrast >=3:1; single empty-state block; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T11:08:08+00:00"
+   "dispatched_at": "2026-11-14T11:08:08+00:00",
+   "pr": 379,
+   "ci_dispatched": {
+    "sha": "bc3152b85ed614e7a0b7a267de00c8821912bfd9",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T11:10:05+00:00"
+   }
   },
   {
    "id": "UX215",
@@ -3237,10 +3265,12 @@
    "brief": "Settings 'الحسابات والجلسات' form inputs span the full width (~300px each, huge empty left). Constrain to max-width ~420px, group in a card with clear headings, align cards in a consistent 2-column grid, add helper/ error states, correct tab order. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Form max-width applied; both viewports screenshot clean; test asserts input width <=460px.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-203-fixes.json"
+   "source": "inbox/qa-loop-203-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T11:10:05+00:00"
   },
   {
    "id": "UX214",
@@ -3249,10 +3279,12 @@
    "brief": "Layout shift measured 0.0195 on 1366 load (none on mobile). Find via PerformanceObserver layout-shift sources (likely header badge/nav or fonts) and reserve space (fixed min-height/width, font-display/size-adjust, preload fonts). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "CLS <=0.005 on desktop load in a Playwright measurement test.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-203-fixes.json"
+   "source": "inbox/qa-loop-203-fixes.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T11:10:05+00:00"
   },
   {
    "id": "UX213",
@@ -3375,5 +3407,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:09:34+00:00"
+ "updated": "2026-11-14T11:10:05+00:00"
 }
