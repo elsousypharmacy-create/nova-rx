@@ -52,6 +52,9 @@ Fixed in index.html: cancel-box inputs/select styled like #novaRetReason, real `
 - index.html return dialog: error #novaRetMsg clears on input/chip/return-all; per-row inline msg (`[data-ret-err]`) + aria-invalid for over-max ('الحد الأقصى N'), fraction, negative; clamp on blur; inputmode=numeric, step=1.
 - Tests (run from a temp dir with @playwright/test, CHROME_PATH=/usr/bin/chromium, python http.server :8765): ui-ux222-return-validation 8/8, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.
 
+## UX221 — return dialog header (frontend only)
+index.html: header is now a sticky flex row (`.nova-ret-head`: h3 + 44px static close, gap, no 28px margin hack; sticky top inside the scrollable dialog). Test tests/ui-ux221-return-header.mjs (bounding boxes at 1366 and 390: no overlap, title not clipped, close 44x44, close at inline-start, header sticky after scroll): 16/16 PASS. ui-returns 10 PASS, ui-pos04-returns-cancel 8 PASS, ui-sales-ledger 8 PASS. Not tested: real devices, screen reader.
+
 ## UX220 — fully returned / cancelled invoice state (frontend only)
 - index.html Invoices: المرتجع column badge (مرتجع جزئي / مرتجع بالكامل / ملغاة, `data-ret-status`, tone colours); fully returned or cancelled rows replace the button with a disabled «تم الإرجاع بالكامل» (aria-disabled + title, no `data-return`). Return dialog: when nothing is returnable, inline `#novaRetNone` notice and Return-all/Confirm disabled.
 - Tests (temp-dir @playwright/test, CHROME_PATH=/usr/bin/chromium, python http.server :8765): ui-ux220-full-return-state 6/6, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8, ui-ux225-returns-footer 2/2, ui-ux229-returns-cls PASS.
