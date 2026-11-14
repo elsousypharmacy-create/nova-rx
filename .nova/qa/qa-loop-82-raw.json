@@ -1,0 +1,261 @@
+{
+ "http404": [
+  "/favicon.ico",
+  "/api/whatsapp/chats",
+  "/favicon.ico",
+  "/api/whatsapp/chats"
+ ],
+ "blocked": [],
+ "res": {
+  "d": {
+   "errs": [
+    "HTTP 404 /api/whatsapp/chats",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "tabs": {
+    "البيع": {
+     "len": 552,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#sale"
+    },
+    "الفواتير": {
+     "len": 816,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#invoices"
+    },
+    "المنتجات": {
+     "len": 13366,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#products"
+    },
+    "العملاء": {
+     "len": 648,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#customers"
+    },
+    "التقارير": {
+     "len": 251,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#reports"
+    },
+    "الإعدادات": {
+     "len": 1138,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#settings"
+    }
+   },
+   "notes": [
+    "novaWaBtn clicked → /integrations/whatsapp/inbox.html tab=undefined len=196",
+    "nav visible after wa: false",
+    "mode before: منتج",
+    "barcode exact [30017213] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\"]",
+    "barcode again (qty++?) [30017213] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\"]",
+    "arabic digits barcode [٣٠٠١٨٦٥٨] sugg=*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 250مل الرصيد null · منخفض الموردين 144.00 ج. | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\"]",
+    "unknown barcode [9999999999999] sugg=لا توجد منتجات مطابقة \"9999999999999\". سجّل نقص الموردين | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\"]",
+    "partial code no enter [3001] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast= | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\"]",
+    "name arabic [جافيسكون] sugg=*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 250مل الرصيد null · منخفض الموردين 144.00 ج. | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\"]",
+    "name latin lower [gaviscon] sugg=*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 250مل الرصيد null · منخفض الموردين 144.00 ج. | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\"]",
+    "name arabic generic [باراسيتامول] sugg=باراسيتامول 500مج 20حبة (PARACETAMOL 500MG 20TAB) 500مج • 20حبة الرصيد null · منخفض الموردين 34.00 ج | toast=● أُضيف: باراسيتامول 500مج 20حبة (PARACETAMOL 500MG 20TAB) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\",\"3 باراسيتامول 500مج 20حبة 10017610 34.00 − + علبة 0.00 34.00\"]",
+    "single char [ك] sugg=ك-ريتارد 500مج 10كبسول (C-RETARD 500MG 10CAP) 500مج • 10CAP الرصيد null · منخفض الموردين 35.00 ج.م 1 | toast=● أُضيف: ك-ريتارد 500مج 10كبسول (C-RETARD 500MG 10CAP) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\",\"3 باراسيتامول 500مج 20حبة 10017610 34.00 − + علبة 0.00 34.00\",\"4 ك-ريتارد 500مج 10كبسول 10002454 35.00 − + علبة 0.00 35.00 \"]",
+    "whitespace barcode [ 30017213 ] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\",\"3 باراسيتامول 500مج 20حبة 10017610 34.00 − + علبة 0.00 34.00\",\"4 ك-ريتارد 500مج 10كبسول 10002454 35.00 − + علبة 0.00 35.00 \"]",
+    "barcode w/ newline-like tab [30017213\t] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"1 *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60\",\"2 *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 30\",\"3 باراسيتامول 500مج 20حبة 10017610 34.00 − + علبة 0.00 34.00\",\"4 ك-ريتارد 500مج 10كبسول 10002454 35.00 − + علبة 0.00 35.00 \"]",
+    "checkout disabled=false",
+    "F2 → cart=0 toast=● فاتورة جديدة جاهزة. امسح الباركود أو ابحث عن دواء. dialogs=0",
+    "F4 → cart=0 toast=● فاتورة جديدة جاهزة. امسح الباركود أو ابحث عن دواء. dialogs=0"
+   ],
+   "tabList": [
+    {
+     "t": "البيع",
+     "id": "",
+     "p": "sale",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "الفواتير",
+     "id": "",
+     "p": "invoices",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "المنتجات",
+     "id": "",
+     "p": "products",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "العملاء",
+     "id": "",
+     "p": "customers",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "التقارير",
+     "id": "",
+     "p": "reports",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "المشتريات",
+     "id": "novaPurchasesNav",
+     "p": "",
+     "h": "/purchases",
+     "vis": true
+    },
+    {
+     "t": "الإعدادات",
+     "id": "",
+     "p": "settings",
+     "h": "",
+     "vis": true
+    }
+   ],
+   "purchases": {
+    "status": 200,
+    "len": 711,
+    "ov": false
+   },
+   "lsKeys": [
+    "nova.activePage",
+    "nova.stickerStudio.draft.v1",
+    "nova-rx-sale-sequence-v1"
+   ],
+   "noHScroll": true
+  },
+  "m": {
+   "errs": [
+    "HTTP 404 /api/whatsapp/chats",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "tabs": {
+    "البيع": {
+     "len": 472,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#sale"
+    },
+    "الفواتير": {
+     "len": 760,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#invoices"
+    },
+    "المنتجات": {
+     "len": 13331,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#products"
+    },
+    "العملاء": {
+     "len": 588,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#customers"
+    },
+    "التقارير": {
+     "len": 238,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#reports"
+    },
+    "الإعدادات": {
+     "len": 1125,
+     "nf": false,
+     "ov": false,
+     "url": "http://127.0.0.1:34399/#settings"
+    }
+   },
+   "notes": [
+    "novaWaBtn clicked → /integrations/whatsapp/inbox.html tab=undefined len=109",
+    "nav visible after wa: false",
+    "mode before: منتج",
+    "barcode exact [30017213] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\"]",
+    "barcode again (qty++?) [30017213] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\"]",
+    "arabic digits barcode [٣٠٠١٨٦٥٨] sugg=*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 250مل الرصيد null · منخفض الموردين 144.00 ج. | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\"]",
+    "unknown barcode [9999999999999] sugg=لا توجد منتجات مطابقة \"9999999999999\". سجّل نقص الموردين | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\"]",
+    "partial code no enter [3001] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast= | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\"]",
+    "name arabic [جافيسكون] sugg=*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 250مل الرصيد null · منخفض الموردين 144.00 ج. | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\"]",
+    "name latin lower [gaviscon] sugg=*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 250مل الرصيد null · منخفض الموردين 144.00 ج. | toast=● أُضيف: *جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\"]",
+    "name arabic generic [باراسيتامول] sugg=باراسيتامول 500مج 20حبة (PARACETAMOL 500MG 20TAB) 500مج • 20حبة الرصيد null · منخفض الموردين 34.00 ج | toast=● أُضيف: باراسيتامول 500مج 20حبة (PARACETAMOL 500MG 20TAB) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\",\"باراسيتامول 500مج 20حبة 34.00 − + علبة 34.00\"]",
+    "single char [ك] sugg=ك-ريتارد 500مج 10كبسول (C-RETARD 500MG 10CAP) 500مج • 10CAP الرصيد null · منخفض الموردين 35.00 ج.م 1 | toast=● أُضيف: ك-ريتارد 500مج 10كبسول (C-RETARD 500MG 10CAP) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\",\"باراسيتامول 500مج 20حبة 34.00 − + علبة 34.00\",\"ك-ريتارد 500مج 10كبسول 35.00 − + علبة 35.00\"]",
+    "whitespace barcode [ 30017213 ] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\",\"باراسيتامول 500مج 20حبة 34.00 − + علبة 34.00\",\"ك-ريتارد 500مج 10كبسول 35.00 − + علبة 35.00\"]",
+    "barcode w/ newline-like tab [30017213\t] sugg=*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) 60حبة الرصيد null · منخفض الموردين 15 | toast=● أُضيف: *كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TAB) | cart=[\"*كالترات 600+د+مينيرالس 60حبة (*CALTRATE 600+D+MINERALS 60TA\",\"*جافيسكون ليكويد 250مل يوكا (*GAVISCON LIQUID 250ML UK) 144.\",\"باراسيتامول 500مج 20حبة 34.00 − + علبة 34.00\",\"ك-ريتارد 500مج 10كبسول 35.00 − + علبة 35.00\"]",
+    "checkout disabled=false",
+    "F2 → cart=0 toast=● فاتورة جديدة جاهزة. امسح الباركود أو ابحث عن دواء. dialogs=0",
+    "F4 → cart=0 toast=● فاتورة جديدة جاهزة. امسح الباركود أو ابحث عن دواء. dialogs=0"
+   ],
+   "tabList": [
+    {
+     "t": "البيع",
+     "id": "",
+     "p": "sale",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "الفواتير",
+     "id": "",
+     "p": "invoices",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "المنتجات",
+     "id": "",
+     "p": "products",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "العملاء",
+     "id": "",
+     "p": "customers",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "التقارير",
+     "id": "",
+     "p": "reports",
+     "h": "",
+     "vis": true
+    },
+    {
+     "t": "المشتريات",
+     "id": "novaPurchasesNav",
+     "p": "",
+     "h": "/purchases",
+     "vis": true
+    },
+    {
+     "t": "الإعدادات",
+     "id": "",
+     "p": "settings",
+     "h": "",
+     "vis": true
+    }
+   ],
+   "purchases": {
+    "status": 200,
+    "len": 628,
+    "ov": false
+   },
+   "lsKeys": [
+    "nova.activePage",
+    "nova.stickerStudio.draft.v1",
+    "nova-rx-sale-sequence-v1"
+   ],
+   "noHScroll": true
+  }
+ }
+}

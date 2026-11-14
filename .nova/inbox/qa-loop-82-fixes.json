@@ -1,0 +1,31 @@
+{
+  "tasks": [
+    {
+      "id": "UX83",
+      "phase": 10,
+      "title": "Unknown barcode + Enter: show error toast and clear/select the input (Q1)",
+      "brief": "In index.html main search Enter handler (PRODUCT mode, ~lines 3320-3346): when the query looks like a barcode (digits only, length>=6, also Arabic digits) and no exact barcode product nor suggestion matches, show an error toast in Arabic ('لا يوجد صنف بهذا الباركود: <code>' — reuse the existing string near line 4652), keep the 'سجّل نقص' option visible, and select the input text (or clear it) so the next scan does not concatenate to the stale code. Do not change behavior for name searches. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add/extend a Playwright/node test under tests/, run it plus the nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests and record exact results). Evidence: .nova/qa/qa-loop-82.md.",
+      "acceptance": "Scanning an unknown barcode shows a toast and the next scan replaces the stale value; known barcode and name flows unchanged; test passes.",
+      "after": []
+    },
+    {
+      "id": "UX84",
+      "phase": 10,
+      "title": "Hide 'الرصيد null / منخفض' in suggestions when stock is unknown (Q2)",
+      "brief": "In supplier-lookup.js (~lines 440-456) the stock chip renders 'الرصيد null' and a low-stock flag when prod.stock is null/undefined (real price list has no stock). When stock is not a finite number, do not render the stock number or the 'منخفض' tag/'الموردين' text button; show a neutral 'غير متوفر' chip or just the icon button. Keep behavior for numeric stock. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add/extend a Playwright/node test under tests/, run it plus the nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests and record exact results). Evidence: .nova/qa/qa-loop-82.md.",
+      "acceptance": "With /emergency/stock.json items no suggestion contains the text 'null' or 'منخفض'; numeric stock still shows low badge under 30; test passes.",
+      "after": []
+    },
+    {
+      "id": "UX85",
+      "phase": 10,
+      "title": "Build worker/live/nova-rx-preview.qa-82.js (qa-loop, no deploy)",
+      "brief": "Rebuild the live Worker artifact like UX80 did: take the latest worker/live artifact (the newest nova-rx-preview.*.js by the previous build tasks, e.g. ux-pro4/qa-81 chain), extract the app HTML literal, apply the index.html and supplier-lookup.js diffs of UX83 and UX84 in merge order, write back with tools/build-worker-artifact.mjs to worker/live/nova-rx-preview.qa-82.js. Worker code outside the HTML literal must stay byte-identical. Add a markers test asserting UX83/UX84 markers plus earlier markers; run it, node --check on the artifact and the existing *-artifact checks. Must NOT deploy.",
+      "acceptance": "worker/live/nova-rx-preview.qa-82.js exists, markers test and node --check pass, no deploy.",
+      "after": [
+        "UX83",
+        "UX84"
+      ]
+    }
+  ]
+}
