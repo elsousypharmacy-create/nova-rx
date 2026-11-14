@@ -3545,7 +3545,6 @@ window.NovaFmt=(function(){
         if (!o) return;
         if (o.available <= 0) removeLine(productId); else updateLineQty(productId, String(o.available));
       }
-      function invoiceHasOversell() { return state.invoiceLines.some(l => lineOverStock(l)); }
 
       function renderInvoice() {
         persistActiveInvoice();
@@ -3685,7 +3684,6 @@ window.NovaFmt=(function(){
           return;
         }
 
-        if (invoiceHasOversell()) { renderInvoice(); showToast("لا يمكن الدفع: كمية أكبر من المتاح — اضبط الكمية", "error"); return; }
         if (!state.attachedCustomer && !state.customerGateSkipped) {
           document.getElementById("customerCheckoutGate").hidden = false;
           document.getElementById("gatePhone").value = "";
