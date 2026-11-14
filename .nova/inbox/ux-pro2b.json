@@ -1,0 +1,142 @@
+{
+  "tasks": [
+    {
+      "id": "UX40",
+      "phase": 10,
+      "title": "Unify all icons on one SVG set (replace emoji/text glyphs) (UX37-1)",
+      "brief": "Files: index.html (settings 🔐 ⚙️ ✓, reports 🖨, products ✦, dialogs ✕, receipt printer icon 19x23), purchases.html/purchases.css, sticker-studio.html, tests/ux/icon-consistency.mjs (new). Define one inline SVG sprite (stroke 1.75, currentColor, 16px default, 20px headings) reusing the existing nav/sale SVG style; replace emoji/text glyphs in buttons and headings; directional icons get [dir=rtl] scaleX(-1). Frontend only, Black Edition RTL kept. Source: .nova/qa/ux-pro2b-report.md section 2.",
+      "acceptance": "tests/ux/icon-consistency.mjs at 1366x768 and 390x844 on sale/products/reports/settings/purchases: no visible button/heading text node containing emoji or ✦✕✓◉⚙; every svg icon width in {16,20}; icons vertically centered with label (|center delta|<=2px); node tests/ux/sale-clicks.mjs and tests/ux/dialog-style.mjs still pass.",
+      "after": []
+    },
+    {
+      "id": "UX41",
+      "phase": 10,
+      "title": "Floating sticker button: stop covering content (UX37-2)",
+      "brief": "Files: index.html (the fixed «استيكرات الأدوية» button CSS/JS), tests/ux/labels-fab.check.mjs (extend). Show it only on products page (it already exists as a toolbar button there) or move it into the sale «⋯» menu; if a floating button remains it must sit above the sticky pay bar on mobile and never overlap table rows, toasts or modal footers.",
+      "acceptance": "Extended labels-fab.check.mjs: at both viewports on sale/products/customers/reports/settings the button's bounding box does not intersect any visible table row, #btnCheckout, .toast or modal footer; node tests/ux/toast-position.mjs and tests/ux/labels-fab.check.mjs pass.",
+      "after": []
+    },
+    {
+      "id": "UX42",
+      "phase": 10,
+      "title": "Settings screen: equal-height grid, merged info cards, styled VAT input (UX37-3)",
+      "brief": "Files: index.html (settings section, #vat input), tests/ux/settings-layout.mjs (new). Equal-height cards per row (grid-auto-rows:1fr or align-items:stretch); merge «المظهر», «النسخة», «بيانات النظام» into one «عن النظام» card; style the VAT input with the shared input class (height 44px, border, Black Edition background, width >=96px, unit suffix %). Keep UX29/UX35 behavior.",
+      "acceptance": "tests/ux/settings-layout.mjs: at 1366x768 cards in each row have equal height (+-2px), VAT input height>=44 and computed background not rgb(59,59,59)-grey default, no card with >40% empty area; node tests/ux/settings-copy.mjs and tests/unit/vat-rate.check.mjs pass.",
+      "after": []
+    },
+    {
+      "id": "UX43",
+      "phase": 10,
+      "title": "Products screen: single toolbar row and mobile card rows (UX37-4)",
+      "brief": "Files: index.html (products page header/toolbar/table CSS), tests/ux/products-layout.mjs (new). Desktop: one toolbar row (search flex:1 + two buttons aligned on the same baseline) under the title; mobile <=640px: table rows become cards (name, barcode, price, balance, pack) so content width never exceeds its card (extends UX24).",
+      "acceptance": "tests/ux/products-layout.mjs: at 390x844 products table scrollWidth <= clientWidth+2 and all columns readable; at 1366x768 search and buttons share one row with equal heights; node tests/ux/mobile-tables.mjs, tests/ux/low-stock-filter.mjs and tests/ux/products-empty-columns.check.mjs pass.",
+      "after": []
+    },
+    {
+      "id": "UX44",
+      "phase": 10,
+      "title": "Mobile sale totals: no overlap, collapsible discount (UX37-5)",
+      "brief": "Files: index.html (totals panel / discount card CSS under max-width:640px), tests/ux/mobile-totals.mjs (new). Put the invoice discount inputs inside a collapsible row inside the totals block; no text clipped (the 0.98 VAT line is cut today); keep the pay button sticky and >=48px; keep UX33 compact rows.",
+      "acceptance": "tests/ux/mobile-totals.mjs at 390x844 after adding two items: no element in the totals block overlaps another (bounding boxes), all totals text fully visible, pay bar does not cover the last cart row at scroll end; node tests/ux/mobile-cart.mjs and tests/ux/mobile-sale-layout.mjs pass.",
+      "after": []
+    },
+    {
+      "id": "UX45",
+      "phase": 10,
+      "title": "Spacing/radius scale tokens + shared tab strip on purchases (UX37-6)",
+      "brief": "Files: ux-tokens.js (or a :root token block in index.html and purchases.css), purchases.html (top bar), tests/ux/spacing-scale.mjs (new). Define --sp-1..6 = 4/8/12/16/24/32 and radii 6/10/999; map the most used gap/padding/radius values to them (display layer only, no visual redesign); purchases page reuses the app brand block (status dot) and tab strip with active-tab scrollIntoView on mobile. Do after UX40.",
+      "acceptance": "tests/ux/spacing-scale.mjs: computed border-radius on sale/products/settings limited to <=4 distinct values and flex/grid gaps to the 4/8/12/16/24 scale (allow 2px exceptions list); at 390x844 the active purchases tab is fully inside the viewport; node tests/ux/mobile-nav.check.mjs passes.",
+      "after": [
+        "UX40"
+      ]
+    },
+    {
+      "id": "UX46",
+      "phase": 10,
+      "title": "Dialog buttons and quick-amount chips >=44px (UX37-7)",
+      "brief": "Files: index.html (#checkoutModal quick amounts, .nova-return-overlay reason chips and buttons, #novaPayAmt dialog), tests/ux/tap-targets.mjs (extend with dialogs). Raise quick cash amounts (50/100/200/500/بالضبط) and reason chips from 28-36px to 44px on touch; hide number-input spinner arrows; keep layout within the dialog without new scroll.",
+      "acceptance": "Extended tests/ux/tap-targets.mjs covers checkout, return and debt dialogs at 390x844: every control >=44px high; no dialog body scroll at 1366x768; node tests/ux/checkout-polish.mjs and tests/ux/dialog-style.mjs pass.",
+      "after": []
+    },
+    {
+      "id": "UX47",
+      "phase": 10,
+      "title": "WhatsApp inbox, supplier-compare and customers empty state inside Black Edition (UX37-8)",
+      "brief": "Files: integrations/whatsapp/inbox.html, supplier-compare.html, index.html (customers empty state), tests/ux/standalone-pages.mjs (new). Give inbox.html the Black Edition palette tokens, a header with a «رجوع للتطبيق» link, buttons >=44px, SVG instead of ◉, 12px minimum font; supplier-compare buttons >=44px; customers page with fewer than 8 rows shows an empty-state card with an «إضافة عميل» action instead of 230px blank. Inbox stays unpublished; no network/flag change.",
+      "acceptance": "tests/ux/standalone-pages.mjs at both viewports: inbox.html buttons >=44px and min font >=12px, back link present, no emoji glyph; supplier-compare buttons >=44px; node tests/unit/whatsapp-bridge.check.mjs still passes; no live writes.",
+      "after": []
+    },
+    {
+      "id": "UX48",
+      "phase": 10,
+      "title": "Hidden local «المحادثات» tab on unified-inbox.js behind a local flag (OFF) (UX37-9)",
+      "brief": "Files: index.html (flag-gated tab + view only), tests/ux/inbox-flag.mjs (new). Load unified-inbox.js; tab visible only when localStorage['nova.flags.inbox']==='1' (default off, no UI change when off). Shows conversations from NovaUnifiedInbox (local storage, demo seed only when the flag is on), human handoff, assign, customer/order link, statuses; zero network calls; no secrets; sw.js precache updated if needed.",
+      "acceptance": "tests/ux/inbox-flag.mjs: flag off -> no tab and no extra requests; flag on -> tab opens, handoff toggles mode and persists after reload; all non-GET requests blocked and none attempted; node tests/unit/unified-inbox.check.mjs passes.",
+      "after": []
+    },
+    {
+      "id": "UX49",
+      "phase": 10,
+      "title": "Backend WhatsApp queue processor into inbox (flag OFF, mock only) (UX37-10)",
+      "brief": "Files: backend/src/whatsapp-process.js (new), backend/src/index.js (scheduled hook guarded by NOVA_WA_INTAKE), tests/unit/backend-whatsapp-process.check.mjs (new). Convert a stored Meta message payload (text/image/document) to openConversation+receiveMessage using phone_number_id->tenant from a non-secret config var, feed it to existing processQueue; idempotent by wa message id; no network; flags stay OFF by default (still 404 when off). No secrets or wrangler.toml changes.",
+      "acceptance": "tests with mock D1: processing creates exactly one conversation+message per wa id, duplicate id is no-op, bad payload retries then dead-letters, unknown phone_number_id dead-letters without cross-tenant write, flag off -> scheduled hook does nothing; node tests/unit/backend-whatsapp-intake.check.mjs and tests/unit/backend-inbox.check.mjs pass.",
+      "after": []
+    },
+    {
+      "id": "UX50",
+      "phase": 10,
+      "title": "WhatsApp sender adapter enforcing messaging policy (flag OFF, mock fetch) (UX37-11)",
+      "brief": "Files: backend/src/wa-sender.js (new), tests/unit/backend-wa-sender.check.mjs (new). Injected-fetch adapter that builds Cloud API payloads, requires msg-policy decision (opt-in, 24h service window via messaging.js, daily/monthly limits) before any call, reads secret NAMES WA_TOKEN and WA_PHONE_ID only from env, flag NOVA_WA_SEND default OFF => error WA_SEND_DISABLED; never calls the network in tests; maps provider errors to inbox status failed. No real keys, no paid calls.",
+      "acceptance": "tests with a fake fetch: flag off -> no fetch call; closed window or missing opt-in -> blocked with Arabic message; allowed -> exactly one fetch with expected body and no token in logs/errors; failure -> status failed; node tests/unit/msg-policy.check.mjs passes.",
+      "after": []
+    },
+    {
+      "id": "UX51",
+      "phase": 10,
+      "title": "Backend stock transfers API over stock_transfers (flag OFF) (UX37-12)",
+      "brief": "Files: backend/src/transfers.js (new), backend/src/index.js (register routes), tests/unit/backend-transfers.check.mjs (new). Routes /api/v1/transfers/{create,ship,receive,cancel,list} using existing stock_transfers and inventory_movements (transfer_out/transfer_in), tenant+branch scope from the session via security/tenant.js, FEFO source batch, flag NOVA_TRANSFERS default OFF => 404. Additive only; no migration applied to any real D1; no deploy.",
+      "acceptance": "mock D1 tests: ship cannot exceed balance or use expired/recalled batch; receive twice rejected; same source/destination rejected; wrong tenant/branch cannot read or mutate; flag off -> 404; node tests/unit/backend-inbox.check.mjs style harness reused; existing backend tests still pass.",
+      "after": []
+    },
+    {
+      "id": "UX52",
+      "phase": 10,
+      "title": "Hidden «تحويلات المخزون» screen on local novaTransfers behind a local flag (OFF) (UX37-13)",
+      "brief": "Files: index.html (flag-gated section in products page only), tests/ux/transfers-flag.mjs (new). localStorage['nova.flags.transfers']==='1' shows list + request/send/receive-with-difference dialogs over the existing window.novaTransfers (INV-05); default off, zero UI change when off; Black Edition RTL, 44px targets, SVG icons; this-device-only notice in Arabic; no network.",
+      "acceptance": "tests/ux/transfers-flag.mjs: flag off -> section absent; flag on -> request then send reduces local lots FEFO, receive with a shortage records the difference, state survives reload; no non-GET requests; node tests/ux/low-stock-filter.mjs passes.",
+      "after": []
+    },
+    {
+      "id": "UX53",
+      "phase": 10,
+      "title": "Stock locations schema + read-only branches API (flag OFF, not applied) (UX37-14)",
+      "brief": "Files: backend/migrations/0021_stock_locations.sql (new, additive only), backend/src/branches.js (new), backend/src/index.js, tests/unit/backend-branches.check.mjs (new). stock_locations(tenant_id,branch_id,id,name,kind main|shelf|fridge|controlled) + nullable location_id on inventory_batches via a new table link (no ALTER of existing data); GET /api/v1/branches and /stock-locations scoped by session, flag NOVA_BRANCHES default OFF => 404. Migration is NOT applied to any real D1 (owner decision).",
+      "acceptance": "tests load all migrations 0001-0021 into the existing test sqlite/mocks without error; scope test: another tenant's or unassigned branch is never returned; flag off -> 404; no destructive SQL (grep DROP/DELETE/ALTER-drop absent).",
+      "after": []
+    },
+    {
+      "id": "UX54",
+      "phase": 10,
+      "title": "Rebuild worker/live/nova-rx-preview.ux-pro2b.js from the repo frontend (UX40-UX53, NO deploy)",
+      "brief": "Like UX36: take worker/live/nova-rx-preview.ux-pro2.js (created by UX36) as base, extract the app HTML literal, apply the index.html/purchases.html/purchases.css/sticker-studio changes of UX40-UX53 (git diff of those commits) with patch, write back with tools/build-worker-artifact.mjs so Worker code outside the app HTML literal stays byte-identical. Add tests/unit/ux-pro2b-artifact.check.mjs modelled on tests/unit/ux-pro2-artifact.check.mjs (node --check, markers of each frontend change, flags default OFF, /emergency/stock.json and supplier/whatsapp handlers unchanged). Do NOT deploy, do NOT touch wrangler config or secrets; backend files (UX49-UX51, UX53) are not part of the artifact. Do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2b-report.md.",
+      "acceptance": "node --check worker/live/nova-rx-preview.ux-pro2b.js; node tests/unit/ux-pro2b-artifact.check.mjs; node tests/unit/ux-pro2-artifact.check.mjs; node tests/unit/ux-pro1-artifact.check.mjs; node tests/unit/procurement-worker-artifact.check.mjs all pass; no deploy performed.",
+      "after": [
+        "UX36",
+        "UX40",
+        "UX41",
+        "UX42",
+        "UX43",
+        "UX44",
+        "UX45",
+        "UX46",
+        "UX47",
+        "UX48",
+        "UX49",
+        "UX50",
+        "UX51",
+        "UX52",
+        "UX53"
+      ]
+    }
+  ]
+}

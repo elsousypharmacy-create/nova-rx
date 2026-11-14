@@ -1,0 +1,1418 @@
+{
+ "date": "2026-11-14T00:17:44.901Z",
+ "blockedWrites": [],
+ "screens": {
+  "sale_empty": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 15,
+    "iconSizes": {
+     "44x44": 2,
+     "16x16": 4,
+     "15x15": 1,
+     "18x18": 2,
+     "26x26": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×13",
+     "39px×1",
+     "40px×1",
+     "146px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12
+    ],
+    "radii": [
+     3,
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     14,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 15,
+    "iconSizes": {
+     "44x44": 2,
+     "16x16": 3,
+     "15x15": 1,
+     "18x18": 2,
+     "26x26": 1
+    },
+    "emoji": [],
+    "btnHeights": [
+     "44px×14",
+     "48px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     12
+    ],
+    "radii": [
+     4,
+     7,
+     8,
+     9,
+     10,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "sale_suggestions": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 17,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 4,
+     "15x15": 1,
+     "18x18": 2,
+     "14x14": 2,
+     "22x22": 1,
+     "26x26": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×13",
+     "38px×2",
+     "22px×1",
+     "30px×1",
+     "39px×1",
+     "40px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12
+    ],
+    "radii": [
+     2,
+     3,
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     14,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 7,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 17,
+    "iconSizes": {
+     "44x44": 2,
+     "16x16": 3,
+     "15x15": 1,
+     "18x18": 2,
+     "14x14": 2,
+     "26x26": 1
+    },
+    "emoji": [],
+    "btnHeights": [
+     "44px×18",
+     "48px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     12
+    ],
+    "radii": [
+     2,
+     3,
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 7,
+    "dir": "rtl"
+   }
+  },
+  "sale_filled": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 17,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 4,
+     "15x15": 1,
+     "18x18": 2,
+     "22x22": 2,
+     "14x14": 2,
+     "26x26": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×13",
+     "38px×4",
+     "22px×2",
+     "39px×1",
+     "40px×1",
+     "146px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12
+    ],
+    "radii": [
+     3,
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     14,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 17,
+    "iconSizes": {
+     "44x44": 3,
+     "16x16": 3,
+     "15x15": 1,
+     "18x18": 2,
+     "14x14": 2,
+     "26x26": 1
+    },
+    "emoji": [],
+    "btnHeights": [
+     "44px×20",
+     "48px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     12
+    ],
+    "radii": [
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "checkout_modal": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 17,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 4,
+     "15x15": 1,
+     "18x18": 2,
+     "22x22": 2,
+     "14x14": 2,
+     "26x26": 1,
+     "19x23": 1
+    },
+    "emoji": [
+     "✕",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×13",
+     "28px×6",
+     "37px×4",
+     "38px×4",
+     "40px×3",
+     "22px×2"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     14
+    ],
+    "radii": [
+     3,
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     14,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 7,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 17,
+    "iconSizes": {
+     "44x44": 4,
+     "16x16": 3,
+     "15x15": 1,
+     "18x18": 2,
+     "14x14": 2,
+     "26x26": 1
+    },
+    "emoji": [
+     "✕"
+    ],
+    "btnHeights": [
+     "44px×29",
+     "37px×4",
+     "48px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     14
+    ],
+    "radii": [
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 7,
+    "dir": "rtl"
+   }
+  },
+  "receipt_modal": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 2,
+     "16x16": 4,
+     "15x15": 1,
+     "18x18": 2,
+     "26x26": 1,
+     "19x23": 1,
+     "177x40": 1
+    },
+    "emoji": [
+     "✕",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×16",
+     "40px×5",
+     "23px×1",
+     "39px×1",
+     "146px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     14
+    ],
+    "radii": [
+     3,
+     4,
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     14,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 3,
+     "16x16": 3,
+     "15x15": 1,
+     "18x18": 2,
+     "26x26": 1,
+     "177x40": 1
+    },
+    "emoji": [
+     "✕"
+    ],
+    "btnHeights": [
+     "44px×22",
+     "48px×1"
+    ],
+    "gaps": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     12,
+     14
+    ],
+    "radii": [
+     4,
+     7,
+     8,
+     9,
+     10,
+     12,
+     50
+    ],
+    "usedWidthPct": 100,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "invoices": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×11",
+     "39px×1"
+    ],
+    "gaps": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     8,
+     9,
+     10,
+     14,
+     50
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×12"
+    ],
+    "gaps": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     12
+    ],
+    "radii": [
+     7,
+     8,
+     9,
+     10,
+     50
+    ],
+    "usedWidthPct": 94,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "products": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ قراءة فاتورة",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×9",
+     "39px×1",
+     "88px×1"
+    ],
+    "gaps": [
+     4,
+     5,
+     7,
+     8,
+     9,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     8,
+     9,
+     10,
+     14,
+     50,
+     999
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "البيع",
+     "الإعدادات"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ قراءة فاتورة",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×10",
+     "82px×1"
+    ],
+    "gaps": [
+     4,
+     5,
+     7,
+     8,
+     9,
+     12
+    ],
+    "radii": [
+     7,
+     8,
+     9,
+     10,
+     50,
+     999
+    ],
+    "usedWidthPct": 139,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "customers": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×7",
+     "39px×1"
+    ],
+    "gaps": [
+     4,
+     5,
+     7,
+     8,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     9,
+     10,
+     14,
+     50
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 234,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "البيع",
+     "الفواتير"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×8"
+    ],
+    "gaps": [
+     4,
+     5,
+     7,
+     8,
+     12
+    ],
+    "radii": [
+     7,
+     8,
+     9,
+     10,
+     50
+    ],
+    "usedWidthPct": 94,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "reports": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "🖨 طباعة تقرير",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×11",
+     "39px×1"
+    ],
+    "gaps": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     10,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     8,
+     10,
+     14,
+     50
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "البيع",
+     "الفواتير",
+     "المنتجات"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "🖨 طباعة تقرير",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×12"
+    ],
+    "gaps": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     10,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     8,
+     10,
+     50
+    ],
+    "usedWidthPct": 94,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   }
+  },
+  "settings": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "🔐 مفاتيح API ",
+     "⚙️ إدارة المفا",
+     "✓",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×13",
+     "39px×1"
+    ],
+    "gaps": [
+     2,
+     4,
+     5,
+     6,
+     7,
+     8,
+     12,
+     14
+    ],
+    "radii": [
+     5,
+     6,
+     7,
+     8,
+     12,
+     14,
+     50
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "البيع",
+     "الفواتير",
+     "المنتجات",
+     "العملاء"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "🔐 مفاتيح API ",
+     "⚙️ إدارة المفا",
+     "✓",
+     "✦ استيكرات الأ"
+    ],
+    "btnHeights": [
+     "44px×14"
+    ],
+    "gaps": [
+     2,
+     4,
+     5,
+     6,
+     7,
+     12,
+     14
+    ],
+    "radii": [
+     5,
+     6,
+     7,
+     8,
+     12,
+     50
+    ],
+    "usedWidthPct": 112,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   }
+  },
+  "return_dialog": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ",
+     "✕"
+    ],
+    "btnHeights": [
+     "44px×15",
+     "36px×5",
+     "39px×1"
+    ],
+    "gaps": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     14,
+     50,
+     999
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 6,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "الإعدادات"
+    ],
+    "svgCount": 16,
+    "iconSizes": {
+     "44x44": 1,
+     "16x16": 1
+    },
+    "emoji": [
+     "✦ استيكرات الأ",
+     "✕"
+    ],
+    "btnHeights": [
+     "44px×16",
+     "36px×5"
+    ],
+    "gaps": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     12
+    ],
+    "radii": [
+     6,
+     7,
+     8,
+     9,
+     10,
+     12,
+     50,
+     999
+    ],
+    "usedWidthPct": 94,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 7,
+    "dir": "rtl"
+   }
+  },
+  "debt_dialog": {
+   "desktop": {
+    "error": "page.click: Timeout 3000ms exceeded."
+   },
+   "mobile": {
+    "error": "page.click: Timeout 3000ms exceeded."
+   }
+  },
+  "purchases": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "44px×12"
+    ],
+    "gaps": [
+     5,
+     7,
+     8,
+     10,
+     12,
+     18
+    ],
+    "radii": [
+     8,
+     9,
+     12,
+     13,
+     999
+    ],
+    "usedWidthPct": 98,
+    "emptyBottomPx": 10,
+    "fontSizeCount": 8,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": true,
+    "docH": 1079,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [
+     "المشتريات",
+     "الإعدادات"
+    ],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "44px×12"
+    ],
+    "gaps": [
+     5,
+     7,
+     8,
+     10,
+     12
+    ],
+    "radii": [
+     8,
+     9,
+     12,
+     13,
+     999
+    ],
+    "usedWidthPct": 95,
+    "emptyBottomPx": 10,
+    "fontSizeCount": 7,
+    "dir": "rtl"
+   }
+  },
+  "whatsapp_inbox": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "28px×4"
+    ],
+    "gaps": [
+     8,
+     12
+    ],
+    "radii": [
+     9,
+     18
+    ],
+    "usedWidthPct": null,
+    "emptyBottomPx": null,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "28px×4"
+    ],
+    "gaps": [
+     8,
+     12
+    ],
+    "radii": [
+     9,
+     18
+    ],
+    "usedWidthPct": null,
+    "emptyBottomPx": null,
+    "fontSizeCount": 3,
+    "dir": "rtl"
+   }
+  },
+  "sticker_studio": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [
+     "t:بانادول إكسترا",
+     "t:أوجمنتين 1 جم ",
+     "heroCaption:الاستيكر 1 من "
+    ],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [
+     "⚙ إعدادات الطب"
+    ],
+    "btnHeights": [
+     "36px×6",
+     "42px×4",
+     "44px×3"
+    ],
+    "gaps": [
+     5,
+     6,
+     7,
+     8,
+     10,
+     12,
+     16,
+     18
+    ],
+    "radii": [
+     3,
+     4,
+     10,
+     11,
+     12,
+     14,
+     16,
+     50,
+     999
+    ],
+    "usedWidthPct": 97,
+    "emptyBottomPx": 0,
+    "fontSizeCount": 9,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": true,
+    "docH": 1633,
+    "vh": 844,
+    "clipped": [
+     "t:بانادول إكسترا",
+     "t:أوجمنتين 1 جم ",
+     "heroCaption:الاستيكر 1 من "
+    ],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [
+     "⚙ إعدادات الطب"
+    ],
+    "btnHeights": [
+     "44px×11",
+     "42px×2"
+    ],
+    "gaps": [
+     5,
+     6,
+     8,
+     10,
+     12
+    ],
+    "radii": [
+     3,
+     4,
+     10,
+     11,
+     12,
+     14,
+     16,
+     50,
+     999
+    ],
+    "usedWidthPct": 98,
+    "emptyBottomPx": 10,
+    "fontSizeCount": 8,
+    "dir": "rtl"
+   }
+  },
+  "emergency": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "52px×3"
+    ],
+    "gaps": [
+     8
+    ],
+    "radii": [
+     12,
+     14
+    ],
+    "usedWidthPct": 96,
+    "emptyBottomPx": 24,
+    "fontSizeCount": 4,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 844,
+    "vh": 844,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "52px×3"
+    ],
+    "gaps": [
+     8
+    ],
+    "radii": [
+     12,
+     14
+    ],
+    "usedWidthPct": 92,
+    "emptyBottomPx": 24,
+    "fontSizeCount": 4,
+    "dir": "rtl"
+   }
+  },
+  "supplier_compare": {
+   "desktop": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 768,
+    "vh": 768,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "33px×2"
+    ],
+    "gaps": [
+     10
+    ],
+    "radii": [
+     10,
+     14,
+     999
+    ],
+    "usedWidthPct": null,
+    "emptyBottomPx": null,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   },
+   "mobile": {
+    "scrollX": false,
+    "scrollY": false,
+    "docH": 1264,
+    "vh": 1264,
+    "clipped": [],
+    "offscreen": [],
+    "svgCount": 0,
+    "iconSizes": {},
+    "emoji": [],
+    "btnHeights": [
+     "33px×2"
+    ],
+    "gaps": [
+     10
+    ],
+    "radii": [
+     10,
+     14,
+     999
+    ],
+    "usedWidthPct": null,
+    "emptyBottomPx": null,
+    "fontSizeCount": 5,
+    "dir": "rtl"
+   }
+  }
+ }
+}
