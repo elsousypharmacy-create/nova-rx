@@ -441,18 +441,22 @@
     if (!prod) return;
     var nameEl = item.querySelector('.sugg-primary');
     var name = nameEl ? nameEl.textContent.trim() : '';
-    var st = modelApi ? modelApi.stockUnitState(prod.stock) : { tone: prod.stock < 30 ? 'low' : 'ok', label: '' };
-    var low = st.tone === 'low';
+    var known = typeof prod.stock === 'number' && Number.isFinite(prod.stock);
+    var st = !known ? { tone: 'unknown', label: '' }
+      : modelApi ? modelApi.stockUnitState(prod.stock) : { tone: prod.stock < 30 ? 'low' : 'ok', label: '' };
+    var low = known && st.tone === 'low';
     var w = document.createElement('div');
-    w.className = 'su ' + (low ? 'su-low' : 'su-ok');
-    w.innerHTML = '<span class="su-stock"><span class="su-dot"></span><small>' + tr('الرصيد') + '</small><b>' + prod.stock + '</b>' +
-      (low ? '<small>· ' + tr('منخفض') + '</small>' : '') + '</span>' +
-      (low ? '<button type="button" class="su-btn">' + SEARCH_SVG + tr('الموردين') + '</button>'
-           : '<button type="button" class="su-btn icon" title="' + tr('الموردين') + '" aria-label="' + tr('الموردين') + '">' + SEARCH_SVG + '</button>');
+    w.className = 'su ' + (!known ? 'su-ok su-unknown' : low ? 'su-low' : 'su-ok');
+    var iconBtn = '<button type="button" class="su-btn icon" title="' + tr('الموردين') + '" aria-label="' + tr('الموردين') + '">' + SEARCH_SVG + '</button>';
+    w.innerHTML = (known
+      ? '<span class="su-stock"><span class="su-dot"></span><small>' + tr('الرصيد') + '</small><b>' + prod.stock + '</b>' +
+        (low ? '<small>· ' + tr('منخفض') + '</small>' : '') + '</span>'
+      : '<span class="su-stock"><span class="su-dot"></span><small>' + tr('غير متوفر') + '</small></span>') +
+      (low ? '<button type="button" class="su-btn">' + SEARCH_SVG + tr('الموردين') + '</button>' : iconBtn);
     w.querySelector('.su-btn').addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      openLookup(name, prod.stock);
+      openLookup(name, known ? prod.stock : undefined);
     });
     item.insertBefore(w, item.lastElementChild);
   }
