@@ -3303,22 +3303,15 @@
    "brief": "Products header: merge duplicate count cards when search empty (show one 'N صنف' + results only when filtering), shrink the 'الرصيد غير متوفر' card to a compact notice chip, make the action buttons (طباعة الاستيكرات/استلام بضاعة/قراءة فاتورة) single-line with ellipsis or an icon row on mobile. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "KPI area <=90px tall on mobile; no 3-line button labels; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T11:17:11+00:00",
    "pr": 385,
-   "ci_dispatched": {
-    "sha": "fb83a7173e95462f5443bb0762f1485aa1898472",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:23:54+00:00"
-   }
+   "merged_at": "2026-11-14T11:28:08+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/385"
   },
   {
    "id": "UX211",
@@ -3327,22 +3320,15 @@
    "brief": "Switching to المنتجات renders 300 rows synchronously (long task 115ms, tab latency 155ms, target <100ms). Render first ~40 rows then fill the rest in idle chunks (requestIdleCallback/rAF) or virtualize; keep search/scroll smooth at 60fps; avoid layout thrash. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Tab switch to products <100ms and no long task >50ms in Playwright measurement; row count and search results unchanged; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T11:18:31+00:00",
    "pr": 384,
-   "ci_dispatched": {
-    "sha": "3757e761607024665976bc7e356ec7d7246ac105",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:23:54+00:00"
-   }
+   "merged_at": "2026-11-14T11:28:08+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/384"
   },
   {
    "id": "UX210",
@@ -3445,5 +3431,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:26:48+00:00"
+ "updated": "2026-11-14T11:28:08+00:00"
 }
