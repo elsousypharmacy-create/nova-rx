@@ -4,7 +4,7 @@ Inventory of suppliers known to the system (worker/procurement/provider/hub.js `
 
 | Supplier | Connector | Credential secret names | Live check result |
 |---|---|---|---|
-| Aumet (`aumet`) | worker/procurement/connectors/aumet.js | AUMET_USERNAME, AUMET_PASSWORD | NOT RUN in this cloud session (no network/secrets). Runs in `supplier-health.yml` every 30 min. |
+| Aumet (`aumet`) | worker/procurement/connectors/aumet.js | AUMET_USERNAME, AUMET_PASSWORD | NOT RUN in this cloud session (no network/secrets). Runs in `tools/suppliers/supplier-health.workflow.yml` (must be copied to .github/workflows by a maintainer; the bot token lacks the `workflows` permission) every 30 min. |
 | PharmaOverseas (`pharmaoverseas`) | worker/procurement/connectors/pharmaoverseas.js | PHARMAOVERSEAS_USERNAME, PHARMAOVERSEAS_PASSWORD | NOT RUN here; same workflow. |
 | fixture | connectors/fixture.js (test-only, not a real supplier) | none | n/a |
 
