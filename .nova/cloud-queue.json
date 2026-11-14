@@ -3106,6 +3106,20 @@
    "dispatched_at": "2026-11-14T11:00:13+00:00"
   },
   {
+   "id": "FIX44",
+   "phase": "fix",
+   "title": "Aumet shows missing_credential: auto-login from existing secrets",
+   "brief": "supplier-health run 43587871889: pharmaoverseas connected, aumet missing_credential (no saved session in the Worker), although GitHub secrets AUMET_USERNAME and AUMET_PASSWORD exist. Make the Aumet connector create/refresh its session automatically from those existing credentials (same pattern pharmaoverseas uses to stay connected), read-only: login + catalog/search probe only, never carts/orders/POs. Never print secret values. If the Worker needs the credentials as Worker secrets, add a guarded GitHub Actions step that copies them by name (no values in logs). Tests required. No deploy.",
+   "acceptance": "Health check reports aumet connected; read-only; tests pass; no secret values logged; no deploy.",
+   "after": [],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-aumet-session.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T11:01:24+00:00"
+  },
+  {
    "id": "UX85",
    "phase": 10,
    "title": "Build worker/live/nova-rx-preview.qa-82.js (qa-loop, no deploy)",
@@ -3162,5 +3176,5 @@
    }
   }
  ],
- "updated": "2026-11-14T11:00:13+00:00"
+ "updated": "2026-11-14T11:01:24+00:00"
 }
