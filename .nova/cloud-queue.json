@@ -2625,22 +2625,15 @@
    "brief": "Files: index.html (Reports page, near #novaPayBreakdown), tests/ux/shift-close.mjs (new). Gap: no shift concept; report shows expected cash only. Add (localStorage only, key nova-rx-shift-v1) an opening-float input and a «قفل الوردية» panel in Reports: enter counted cash, show expected (float + cash sales - cash returns + cash debt collections), difference (green/red), and a print button reusing the end-of-day print. No backend. Preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F2.",
    "acceptance": "tests/ux/shift-close.mjs: seed 2 cash sales + 1 return, set float 100, count correct amount -> difference 0.00; wrong count -> difference shown in red with sign; reload keeps float; reaching the panel from the sale page takes <=2 clicks; no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T01:13:47+00:00",
    "pr": 359,
-   "ci_dispatched": {
-    "sha": "2c0d1a9481033d8fbfbd23ce6fc432ddd918dd08",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T01:18:13+00:00"
-   }
+   "merged_at": "2026-11-14T01:23:56+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/359"
   },
   {
    "id": "UX60",
@@ -2939,5 +2932,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:22:37+00:00"
+ "updated": "2026-11-14T01:23:56+00:00"
 }
