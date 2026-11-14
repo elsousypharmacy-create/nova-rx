@@ -2266,22 +2266,15 @@
    "brief": "Files: backend/src/transfers.js (new), backend/src/index.js (register routes), tests/unit/backend-transfers.check.mjs (new). Routes /api/v1/transfers/{create,ship,receive,cancel,list} using existing stock_transfers and inventory_movements (transfer_out/transfer_in), tenant+branch scope from the session via security/tenant.js, FEFO source batch, flag NOVA_TRANSFERS default OFF => 404. Additive only; no migration applied to any real D1; no deploy.",
    "acceptance": "mock D1 tests: ship cannot exceed balance or use expired/recalled batch; receive twice rejected; same source/destination rejected; wrong tenant/branch cannot read or mutate; flag off -> 404; node tests/unit/backend-inbox.check.mjs style harness reused; existing backend tests still pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T00:28:30+00:00",
    "pr": 337,
-   "ci_dispatched": {
-    "sha": "117663f14c86d22d399d33a42578a64905686f0c",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T00:31:21+00:00"
-   }
+   "merged_at": "2026-11-14T00:35:49+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/337"
   },
   {
    "id": "UX50",
@@ -2338,12 +2331,22 @@
    "brief": "Files: index.html (flag-gated tab + view only), tests/ux/inbox-flag.mjs (new). Load unified-inbox.js; tab visible only when localStorage['nova.flags.inbox']==='1' (default off, no UI change when off). Shows conversations from NovaUnifiedInbox (local storage, demo seed only when the flag is on), human handoff, assign, customer/order link, statuses; zero network calls; no secrets; sw.js precache updated if needed.",
    "acceptance": "tests/ux/inbox-flag.mjs: flag off -> no tab and no extra requests; flag on -> tab opens, handoff toggles mode and persists after reload; all non-GET requests blocked and none attempted; node tests/unit/unified-inbox.check.mjs passes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:32:39+00:00"
+   "dispatched_at": "2026-11-14T00:32:39+00:00",
+   "pr": 341,
+   "ci_dispatched": {
+    "sha": "61164a7dfa665ad4a58fa9f64950bfe992380ede",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:35:49+00:00"
+   }
   },
   {
    "id": "UX47",
@@ -2366,10 +2369,12 @@
    "brief": "Files: index.html (#checkoutModal quick amounts, .nova-return-overlay reason chips and buttons, #novaPayAmt dialog), tests/ux/tap-targets.mjs (extend with dialogs). Raise quick cash amounts (50/100/200/500/بالضبط) and reason chips from 28-36px to 44px on touch; hide number-input spinner arrows; keep layout within the dialog without new scroll.",
    "acceptance": "Extended tests/ux/tap-targets.mjs covers checkout, return and debt dialogs at 390x844: every control >=44px high; no dialog body scroll at 1366x768; node tests/ux/checkout-polish.mjs and tests/ux/dialog-style.mjs pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:35:49+00:00"
   },
   {
    "id": "UX45",
@@ -2839,5 +2844,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:34:30+00:00"
+ "updated": "2026-11-14T00:35:49+00:00"
 }
