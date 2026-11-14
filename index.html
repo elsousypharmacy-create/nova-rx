@@ -5490,8 +5490,17 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   box.querySelector('#novaRetAll').onclick=()=>{box.querySelectorAll('[data-ret-idx]:not([disabled])').forEach(i=>{i.value=i.max});clearRetMsg();upd()};
   box.querySelectorAll('[data-ret-chip]').forEach(c=>c.onclick=()=>{const r=box.querySelector('#novaRetReason');r.value=c.dataset.retChip;clearRetMsg();r.focus()});
   box.querySelector('#novaRetReason').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){e.preventDefault();box.querySelector('#novaRetOk').click()}});
-  const closeRet=()=>{ov.remove();document.removeEventListener('keydown',retKey,true)};
-  function retKey(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeRet()}}
+  const opener=b,prevOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+  const hh=box.querySelector('h3');hh.id='novaRetTitle';box.setAttribute('aria-labelledby','novaRetTitle');
+  const closeRet=()=>{if(!ov.isConnected)return;ov.remove();document.removeEventListener('keydown',retKey,true);document.body.style.overflow=prevOverflow;
+   const back=()=>{const t=opener.isConnected?opener:document.querySelector('[data-return="'+String(sale.id).replace(/["\\]/g,'')+'"]');if(t)t.focus()};back();setTimeout(back,0)};
+  function retKey(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeRet();return}
+   if(e.key!=='Tab')return;
+   const f=[...box.querySelectorAll('button,input,select,textarea,summary,[tabindex]')].filter(x=>!x.disabled&&x.tabIndex>=0&&x.getClientRects().length);
+   if(!f.length)return;const first=f[0],last=f[f.length-1],cur=document.activeElement;
+   if(!box.contains(cur)){e.preventDefault();(e.shiftKey?last:first).focus()}
+   else if(e.shiftKey&&cur===first){e.preventDefault();last.focus()}
+   else if(!e.shiftKey&&cur===last){e.preventDefault();first.focus()}}
   document.addEventListener('keydown',retKey,true);
   box.querySelector('[data-dlg-close]').onclick=closeRet;ov.addEventListener('mousedown',e=>{if(e.target===ov)closeRet()});
   box.querySelector('#novaRetCancel').onclick=closeRet;
