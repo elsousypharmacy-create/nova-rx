@@ -4217,22 +4217,15 @@
    "brief": "All 21 th have no aria-sort, no sort handler; rows tabIndex=-1 and cursor:auto although clicking opens a modal. Add sortable columns (الصنف، السعر، الرصيد، الصلاحية) with aria-sort and arrow icon, sticky header inside the scroller, rows focusable (tabindex 0, Enter opens), visible focus ring. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Sort toggles asc/desc with aria-sort; Tab reaches rows; Enter opens details; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:37:42+00:00",
    "pr": 439,
-   "ci_dispatched": {
-    "sha": "e557df098f67313420e8e7e5d14d46c5b1720fb5",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:39:24+00:00"
-   }
+   "merged_at": "2026-11-14T23:43:17+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/439"
   },
   {
    "id": "UX304",
@@ -4282,12 +4275,12 @@
    "brief": "Reproduced: search 'اوجمنتين' (vs أوجمنتين) and Arabic-Indic barcode digits return 0 rows ('لا توجد نتائج مطابقة'). Normalise query and haystack (hamza/alef forms, ya/alef-maqsura, ta-marbuta, tashkeel, tatweel, Arabic-Indic digits) like normAr() in unified-inbox.js; keep <100ms; highlight match; add × clear button. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "'اوجمنتين' returns Augmentin row; Hindi digit barcode returns the row; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:39:24+00:00",
+   "dispatched_at": "2026-11-14T23:43:17+00:00",
    "pr": 442,
    "ci_dispatched": {
     "sha": "30bada56289baf4cb1cdde61db3fb1aadf9b2650",
@@ -4300,5 +4293,5 @@
    }
   }
  ],
- "updated": "2026-11-14T23:41:55+00:00"
+ "updated": "2026-11-14T23:43:17+00:00"
 }
