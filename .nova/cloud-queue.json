@@ -2399,7 +2399,7 @@
    "brief": "Files: index.html (products page header/toolbar/table CSS), tests/ux/products-layout.mjs (new). Desktop: one toolbar row (search flex:1 + two buttons aligned on the same baseline) under the title; mobile <=640px: table rows become cards (name, barcode, price, balance, pack) so content width never exceeds its card (extends UX24).",
    "acceptance": "tests/ux/products-layout.mjs: at 390x844 products table scrollWidth <= clientWidth+2 and all columns readable; at 1366x768 search and buttons share one row with equal heights; node tests/ux/mobile-tables.mjs, tests/ux/low-stock-filter.mjs and tests/ux/products-empty-columns.check.mjs pass.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
@@ -2407,13 +2407,13 @@
    "dispatched_at": "2026-11-14T00:50:26+00:00",
    "pr": 344,
    "ci_dispatched": {
-    "sha": "1bf7c37c6f975c4898c869d6023f0224fabd1187",
+    "sha": "b6fb90d3afd2382c951f67b46c5196fa88924fda",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T00:44:37+00:00"
+    "at": "2026-11-14T00:51:47+00:00"
    }
   },
   {
@@ -2423,22 +2423,15 @@
    "brief": "Files: index.html (settings section, #vat input), tests/ux/settings-layout.mjs (new). Equal-height cards per row (grid-auto-rows:1fr or align-items:stretch); merge «المظهر», «النسخة», «بيانات النظام» into one «عن النظام» card; style the VAT input with the shared input class (height 44px, border, Black Edition background, width >=96px, unit suffix %). Keep UX29/UX35 behavior.",
    "acceptance": "tests/ux/settings-layout.mjs: at 1366x768 cards in each row have equal height (+-2px), VAT input height>=44 and computed background not rgb(59,59,59)-grey default, no card with >40% empty area; node tests/ux/settings-copy.mjs and tests/unit/vat-rate.check.mjs pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T00:44:37+00:00",
    "pr": 345,
-   "ci_dispatched": {
-    "sha": "70686c3f5c27295e3b1f90d2de597d360e61e4e8",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:47:30+00:00"
-   }
+   "merged_at": "2026-11-14T00:51:47+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/345"
   },
   {
    "id": "UX41",
@@ -2471,12 +2464,23 @@
    "brief": "Files: index.html (settings 🔐 ⚙️ ✓, reports 🖨, products ✦, dialogs ✕, receipt printer icon 19x23), purchases.html/purchases.css, sticker-studio.html, tests/ux/icon-consistency.mjs (new). Define one inline SVG sprite (stroke 1.75, currentColor, 16px default, 20px headings) reusing the existing nav/sale SVG style; replace emoji/text glyphs in buttons and headings; directional icons get [dir=rtl] scaleX(-1). Frontend only, Black Edition RTL kept. Source: .nova/qa/ux-pro2b-report.md section 2.",
    "acceptance": "tests/ux/icon-consistency.mjs at 1366x768 and 390x844 on sale/products/reports/settings/purchases: no visible button/heading text node containing emoji or ✦✕✓◉⚙; every svg icon width in {16,20}; icons vertically centered with label (|center delta|<=2px); node tests/ux/sale-clicks.mjs and tests/ux/dialog-style.mjs still pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:47:30+00:00"
+   "dispatched_at": "2026-11-14T00:47:30+00:00",
+   "pr": 348,
+   "ci_dispatched": {
+    "sha": "49a49285be6b5df3a7ca35f5a724fdc5d68afa08",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:51:47+00:00"
+   }
   },
   {
    "id": "UX70",
@@ -2485,10 +2489,12 @@
    "brief": "Files: index.html (the page controller near switchPage/initial page logic, localStorage key nova.activePage), tests/ux/start-on-sale.mjs (new). Gap: the app reopens on the last tab (e.g. Products) so the sale search is not visible when a shift starts or after reload. Make a fresh page load open Sale unless the URL hash names a page (keep #products&receive=1 working); keep in-session tab switching unchanged; focus #mainSearchInput on load of Sale. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F9.",
    "acceptance": "tests/ux/start-on-sale.mjs: select Products, reload -> Sale active and #mainSearchInput focused and visible; load with #reports -> Reports; load with #products&receive=1 still opens the receive panel (node tests/ux/purchases-receive-link.mjs passes); no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:51:47+00:00"
   },
   {
    "id": "UX69",
@@ -2497,10 +2503,12 @@
    "brief": "Files: index.html (sale page empty state and top bar), tests/ux/first-run-hint.mjs (new). Gap: new cashier gets no guidance. Extend the empty-cart state with 3 short steps (امسح الباركود/اكتب الاسم، Enter لإضافة، Enter للدفع) and a small «F1 اختصارات» chip in the sale toolbar that opens the help dialog; the hint card shows only until the first completed sale on the device (localStorage flag nova-rx-hint-done) and has a «إخفاء» button. Frontend-only; preserve Black Edition RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F9.",
    "acceptance": "tests/ux/first-run-hint.mjs: fresh storage shows the 3 steps and the chip; clicking the chip opens #helpModal; after one completed sale and reload the card is gone; the chip stays; barcode sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:51:47+00:00"
   },
   {
    "id": "UX68",
@@ -2872,5 +2880,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:50:26+00:00"
+ "updated": "2026-11-14T00:51:47+00:00"
 }
