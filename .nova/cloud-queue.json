@@ -4142,7 +4142,7 @@
    "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
    "after": [],
-   "status": "pr_open",
+   "status": "failed",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-301-fixes.json",
@@ -4183,22 +4183,15 @@
    "brief": "m-products.png: each product is a 6-row label/value card. Redesign nova-cards for products: name + price on the first line, barcode small, stock badge + category chip on the second (<=84px), keep 44px tap target; no horizontal overflow. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "At least 6 products visible in 390x844 first fold; tap target >=44px; test asserts card height.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:20:20+00:00",
    "pr": 437,
-   "ci_dispatched": {
-    "sha": "229218019735ee7ed796fdc413e90b0a78bda620",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:22:53+00:00"
-   }
+   "merged_at": "2026-11-14T23:28:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/437"
   },
   {
    "id": "UX306",
@@ -4207,22 +4200,15 @@
    "brief": "d-products.png: fixed 151x48 FAB at x18,y624 covers the category cell; m-products.png: 44px FAB at y704 covers row content (unchanged since UX207 / qa-loop-203 finding 4, so the earlier fix is not verified). Remove the floating overlay on the products page (header button already exists) or dock it outside the scroll content with bottom padding reserved. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "FAB does not intersect any table cell on either viewport; test measures intersection.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:24:19+00:00",
    "pr": 438,
-   "ci_dispatched": {
-    "sha": "5660131886b523b76321e027df7578769bbc51f3",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:25:36+00:00"
-   }
+   "merged_at": "2026-11-14T23:31:13+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/438"
   },
   {
    "id": "UX305",
@@ -4231,12 +4217,22 @@
    "brief": "All 21 th have no aria-sort, no sort handler; rows tabIndex=-1 and cursor:auto although clicking opens a modal. Add sortable columns (الصنف، السعر، الرصيد، الصلاحية) with aria-sort and arrow icon, sticky header inside the scroller, rows focusable (tabindex 0, Enter opens), visible focus ring. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Sort toggles asc/desc with aria-sort; Tab reaches rows; Enter opens details; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:25:36+00:00"
+   "dispatched_at": "2026-11-14T23:37:42+00:00",
+   "pr": 439,
+   "ci_dispatched": {
+    "sha": "51a6fbeeb1e0d7df0b2b2cbe2b7a48713e881e39",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:29:55+00:00"
+   }
   },
   {
    "id": "UX304",
@@ -4245,10 +4241,15 @@
    "brief": "KPI 'مخزون منخفض (أقل من 30)' is static, threshold hard-coded and not explained; only one amber/red pill shows. Add filter chips (الكل، نواقص، نفد، قريب الانتهاء) where the KPI cards are clickable shortcuts, show the count per chip, an empty state per filter, and keep chips in the search state; threshold shown in a tooltip/legend. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Clicking KPI/chip filters rows instantly (<100ms) and chip counts match; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:29:55+00:00",
+   "pr": 440,
+   "merged_at": "2026-11-14T23:37:42+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/440"
   },
   {
    "id": "UX303",
@@ -4257,10 +4258,22 @@
    "brief": "Inventory table has no expiry column, no near-expiry/expired badges and no lot count although FEFO lots exist (INV02 lots store, index.html ~3589-3729). Add an 'أقرب صلاحية' column + badge states (منتهي أحمر، <=30 يوم أصفر، <=90 كهرماني) with text not colour only, and a KPI card 'قريب الانتهاء' using the existing lots store; fake lots in the test. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Column + badges render from lots data on desktop and mobile; badges carry text; test seeds lots.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:33:51+00:00",
+   "pr": 441,
+   "ci_dispatched": {
+    "sha": "d41d745d4abcc17830c7780a8fa40418be749f71",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:37:42+00:00"
+   }
   },
   {
    "id": "UX302",
@@ -4275,5 +4288,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:25:36+00:00"
+ "updated": "2026-11-14T23:37:42+00:00"
 }
