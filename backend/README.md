@@ -10,3 +10,11 @@ ES modules, no npm dependencies. Skeleton only (N90): tiny router, `GET /api/v1/
 
 ## Auth (SEC-01)
 `/api/v1/auth/login|logout|refresh|reauth` — flag `NOVA_AUTH=1`, defaults OFF (404 `AUTH_DISABLED` otherwise). KV-stored hashed sessions, PBKDF2-SHA256 passwords, owner bootstrap via `NOVA_API_PIN` only while no owner exists.
+
+## WhatsApp bot bridge (pharmacy bot <-> NOVA Rx)
+All flags default OFF; with them off nothing changes.
+- `POST /api/v1/webhooks/whatsapp-bridge` — bot forwards messages `{source,v,messages:[…]}` with `Authorization: Bearer <NOVA_WA_BRIDGE_TOKEN>`. Flag `NOVA_WA_BRIDGE_INTAKE=1` (404 `WA_INTAKE_DISABLED` otherwise). Token >= 32 chars, constant-time compare. `direction:'in'` items are queued (dedup by message id) in the same queue as the Meta webhook; `'out'` and unrepresentable items (no text, not image/document) are counted in `skipped`. Returns `{ok,queued,duplicates,skipped}`.
+- The queue is drained by the existing processor only when `NOVA_WA_INTAKE=1`, and the tenant is resolved from the non-secret config `WA_TENANT_MAP` (`{"<phone_number_id>":"<tenantId>"}`); an unmapped `phone_number_id` ends dead-lettered.
+- `GET|POST /api/v1/whatsapp/auto-reply` — session-authenticated, behind `NOVA_INBOX=1` (+ `DB`, `KV`). Proxies Apps Script `novaWhatsAppBridge` `autoReplyGet` / `autoReplySet {enabled}` using `WA_BACKEND_URL` + `NOVA_WA_BRIDGE_TOKEN`; 503 `WA_AUTOREPLY_NOT_CONFIGURED` (Arabic) when either is missing/short.
+- Flags: `NOVA_WA_BRIDGE_INTAKE`, `NOVA_WA_INTAKE`, `NOVA_INBOX`. Config: `WA_TENANT_MAP`. Secrets (names only): `NOVA_WA_BRIDGE_TOKEN`, `WA_BACKEND_URL`.
+- Tests: `node tests/unit/backend-whatsapp-bridge.check.mjs` (no network; fetch is injected as `env.NOVA_FETCH`).
