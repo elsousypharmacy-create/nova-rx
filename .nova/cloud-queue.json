@@ -2363,23 +2363,15 @@
    "after": [
     "UX40"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T01:10:31+00:00",
    "pr": 353,
-   "ci_dispatched": {
-    "sha": "beb652e3fbde9cafa10a516599f2cc41b8f0f328",
-    "wf": [
-     "playwright-smoke.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T01:12:14+00:00"
-   }
+   "merged_at": "2026-11-14T01:16:41+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/353"
   },
   {
    "id": "UX44",
@@ -2582,7 +2574,7 @@
    "brief": "Files: index.html (cart row render, qty change handlers, the existing «المخزون لا يكفي» check), tests/ux/oversell-inline.mjs (new). Bug: «*500 كونكور» adds quantity 500 (19,250 EGP) silently; refusal appears only at payment. Fix: when line qty > available show a red inline note «المتاح 42» on the row with a one-click «اضبط على المتاح» button, and a toast at add time; checkout stays blocked while any line exceeds stock. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F5.",
    "acceptance": "tests/ux/oversell-inline.mjs: *500 on a stock-42 item shows the inline «المتاح 42» note immediately; one click on «اضبط على المتاح» sets qty 42 and clears the note; in-stock sales keep 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
@@ -2590,13 +2582,13 @@
    "dispatched_at": "2026-11-14T01:15:19+00:00",
    "pr": 356,
    "ci_dispatched": {
-    "sha": "ded729730681cb7710d561bb1a6ff7c0753d2cb0",
+    "sha": "011627f3864a0550d7a35ec45ef3bfd245b434ff",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T01:10:31+00:00"
+    "at": "2026-11-14T01:16:41+00:00"
    }
   },
   {
@@ -2668,10 +2660,12 @@
    "brief": "Files: index.html (checkout split box: #inputCardAmount/#inputCreditAmount/#inputCashReceived/#displayChangeDue and the receipt tender lines), tests/ux/split-payment-cash.mjs (new). Bug: in «مختلط» the cash field stays at the full total (92.00) after entering 40 card, so the modal shows change 40.00 and the receipt prints «المدفوع نقدًا 92.00 / الباقي 40.00» next to «نقدي 52.00 + بطاقة 40.00». Fix: on input of card/credit amount set cash received = total - card - credit (still editable), focus the cash field only if remainder > 0, change due computed from that, receipt shows cash tendered and change consistent with the tender split. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F1.",
    "acceptance": "tests/ux/split-payment-cash.mjs: total 92, card 40 -> cash field 52.00, change 0.00; receipt text has no «الباقي: 40.00»; card > total still rejected with toast; cash-only sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:16:41+00:00"
   },
   {
    "id": "UX36",
@@ -2935,5 +2929,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:15:19+00:00"
+ "updated": "2026-11-14T01:16:41+00:00"
 }
