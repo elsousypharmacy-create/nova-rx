@@ -1,3 +1,4 @@
-# QA loop 231 — UX238 keyboard + screen reader in conversations
-Fixed (index.html inbox block): h1 heading; #waSearch aria-label; #waList role=group+label; #waMsgs role=log, aria-live=polite, label, tabindex=-1; aria-current on the active chat; lock button aria-label; role=status on the lock-bar text; PIN focused on open and after every error; focus to back button (mobile) or #waMsgs on open; Escape/back returns focus to the chat button; ArrowUp/Down in the list (and from search); focus kept across redraws.
-Tests (Playwright from /tmp, mocked history API, no real PIN): ux238-wa-keyboard OK (desktop+mobile), fix46-wa-history OK. Repro: node tools/qa/qa-loop-231.mjs. Screenshots in qa-loop-231/.
+# UX236 — inbox search (qa-loop-231)
+Fix: normAr() in unified-inbox.js + inline copy in index.html; searches name, id/phone, all message text; hamza/tashkeel/tatweel/ya/ta-marbuta/Arabic-Indic digits folded; 'لا نتائج لـ "…"'; × clear button (#waSearchClear).
+Passed: tests/unit/ux236-wa-search.check.mjs (7), unified-inbox.check, fix43, ux81, ux200 unit tests.
+NOT run: tests/ux/ux236-wa-search.mjs and fix46-wa-history.mjs — @playwright/test not installed in this environment (ERR_MODULE_NOT_FOUND). No screenshots captured.

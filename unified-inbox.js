@@ -154,7 +154,7 @@
   var WA_CSS = '.wa-root{direction:rtl;display:flex;height:calc(100vh - 120px);min-height:420px;background:#0d0f12;color:#f2f3f5;border:1px solid #2a313a;font-family:system-ui,"Segoe UI",Tahoma,sans-serif;border-radius:8px;overflow:hidden}' +
     '.wa-side{width:30%;min-width:280px;max-width:420px;background:#14171c;border-inline-start:1px solid #2a313a;display:flex;flex-direction:column}' +
     '.wa-side-head,.wa-head{height:59px;box-sizing:border-box;background:#1a1e24;display:flex;align-items:center;gap:12px;padding:0 16px;font-weight:600}' +
-    '.wa-search{padding:8px 12px;background:#14171c}.wa-search input{width:100%;box-sizing:border-box;height:35px;border:0;border-radius:10px;background:#0d0f12;color:#f2f3f5;border:1px solid #2a313a;padding:0 14px;font:inherit;font-size:14px}.wa-search input::placeholder,.wa-composer input::placeholder{color:#9eacb9}' +
+    '.wa-search{padding:8px 12px;background:#14171c;position:relative}.wa-search input::-webkit-search-cancel-button{display:none}.wa-sclear{position:absolute;inset-inline-end:20px;top:50%;transform:translateY(-50%);width:28px;height:28px;border:0;border-radius:50%;background:#26303a;color:#f2f3f5;font-size:18px;line-height:1;cursor:pointer;padding:0}.wa-sclear[hidden]{display:none}.wa-sclear:focus-visible{outline:2px solid #79c9eb}.wa-search input{width:100%;box-sizing:border-box;height:35px;border:0;border-radius:10px;background:#0d0f12;color:#f2f3f5;border:1px solid #2a313a;padding:0 14px;font:inherit;font-size:14px}.wa-search input::placeholder,.wa-composer input::placeholder{color:#9eacb9}' +
     '.wa-list{flex:1;overflow:auto}.wa-chat{display:flex;align-items:center;gap:13px;padding:0 15px;height:72px;cursor:pointer;border-bottom:1px solid #232a32;background:#14171c;width:100%;text-align:start;border-top:0;border-inline:0;font:inherit;color:inherit}' +
     '.wa-chat:hover,.wa-chat.active{background:#1f252c}.wa-avatar{flex:none;width:49px;height:49px;border-radius:50%;background:#26303a;color:#cfd8df;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600}' +
     '.wa-chat-body{flex:1;min-width:0}.wa-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.wa-name{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
@@ -176,17 +176,32 @@
     '.wa-empty{margin:auto;color:#b5c0ca;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;font-size:16px}.wa-empty svg{color:#76b8d5;opacity:.9}.wa-note{font-size:12px;color:#9eacb9;text-align:center;padding:4px}' +
     '@media(max-width:700px){.wa-side{width:100%;max-width:none}.wa-root[data-view=chat] .wa-side{display:none}.wa-root[data-view=list] .wa-main{display:none}.wa-back{display:inline-block}.wa-bubble{max-width:85%}.wa-msgs{padding:10px 4%}}';
 
+  /* UX236: Arabic-insensitive search key: tashkeel/tatweel removed, hamza/alef forms, ya/alef-maqsura, ta-marbuta, Arabic-Indic digits folded */
+  function normAr(s) {
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
+      .replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627').replace(/\u0649/g, '\u064A').replace(/\u0629/g, '\u0647')
+      .replace(/\u0624/g, '\u0648').replace(/\u0626/g, '\u064A')
+      .replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x660); })
+      .replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x6F0); });
+  }
+  function convHit(c, nq) {
+    if (normAr(String(c.customer || '') + ' ' + c.id).indexOf(nq) >= 0) return { found: true, msg: null };
+    var ms = arr(c.messages);
+    for (var i = ms.length - 1; i >= 0; i--) if (normAr(ms[i].text).indexOf(nq) >= 0) return { found: true, msg: ms[i] };
+    return { found: false, msg: null };
+  }
   function chatListHtml(convs, selId, q, now) {
-    q = String(q || '').trim().toLowerCase();
-    var items = arr(convs).filter(function (c) { return !q || (String(c.customer) + ' ' + c.id).toLowerCase().indexOf(q) >= 0; })
+    var rawQ = String(q || '').trim(), nq = normAr(rawQ), hits = {};
+    var items = arr(convs).filter(function (c) { if (!nq) return true; var h = convHit(c, nq); hits[c.id] = h.msg; return h.found; })
       .sort(function (a, b) { return b.updatedAt - a.updatedAt; });
-    if (!items.length) return '<div class="wa-empty">لا توجد محادثات</div>';
+    if (!items.length) return rawQ ? '<div class="wa-empty" data-wa-noresult>\u0644\u0627 \u0646\u062a\u0627\u0626\u062c \u0644\u0640 \u201c' + esc(rawQ) + '\u201d</div>' : '<div class="wa-empty">\u0644\u0627 \u062a\u0648\u062c\u062f \u0645\u062d\u0627\u062f\u062b\u0627\u062a</div>';
     return items.map(function (c) {
-      var ms = arr(c.messages), last = ms[ms.length - 1], u = unreadCount(c), name = c.customer || c.id;
+      var ms = arr(c.messages), last = ms[ms.length - 1], u = unreadCount(c), name = c.customer || c.id, pv = hits[c.id] || last;
       return '<button type="button" class="wa-chat' + (c.id === selId ? ' active' : '') + (u ? ' unread' : '') + '" data-conv="' + esc(c.id) + '">' +
         '<span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-chat-body"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
         '<span class="wa-ctime">' + (last ? esc(dateLabel(last.at, now) === 'اليوم' ? timeLabel(last.at) : dateLabel(last.at, now)) : '') + '</span></span>' +
-        '<span class="wa-row"><span class="wa-preview">' + (last ? (last.dir === 'out' ? tick(last) + ' ' : '') + esc(last.text) : '') + '</span>' +
+        '<span class="wa-row"><span class="wa-preview">' + (pv ? (pv.dir === 'out' ? tick(pv) + ' ' : '') + esc(pv.text) : '') + '</span>' +
         (u ? '<span class="wa-badge" data-unread="' + u + '">' + (u > 99 ? '99+' : u) + '</span>' : '') + '</span></span></button>';
     }).join('');
   }
@@ -203,12 +218,12 @@
       : '<div class="wa-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>اختر محادثة لعرضها</span></div>';
     var en = !!opts.sendEnabled;
     return '<style>' + WA_CSS + '</style><div class="wa-root" dir="rtl" data-wa-root data-view="' + (sel ? 'chat' : 'list') + '">' +
-      '<aside class="wa-side"><div class="wa-side-head">المحادثات</div><div class="wa-search"><input type="search" id="waSearch" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"></div>' +
+      '<aside class="wa-side"><div class="wa-side-head">المحادثات</div><div class="wa-search"><input type="search" id="waSearch" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"><button type="button" class="wa-sclear" id="waSearchClear" data-wa-sclear aria-label="\u0645\u0633\u062d \u0627\u0644\u0628\u062d\u062b"' + (opts.query ? '' : ' hidden') + '>\u00d7</button></div>' +
       '<div class="wa-list" id="waList">' + chatListHtml(convs, opts.selected, opts.query, now) + '</div></aside>' +
       '<section class="wa-main">' + main + (sel ? '<form class="wa-composer" id="waComposer"><input type="text" id="waInput" dir="auto" placeholder="' + (en ? 'اكتب رسالة' : 'مسودة فقط — الإرسال متوقف') + '"' + (en ? '' : ' disabled') + '><button type="submit" class="wa-send" aria-label="إرسال"' + (en ? '' : ' disabled') + '>➤</button></form>' : '') + '</section></div>';
   }
 
-  var api = { create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+  var api = { normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);
