@@ -2327,22 +2327,15 @@
    "brief": "Files: integrations/whatsapp/inbox.html, supplier-compare.html, index.html (customers empty state), tests/ux/standalone-pages.mjs (new). Give inbox.html the Black Edition palette tokens, a header with a «رجوع للتطبيق» link, buttons >=44px, SVG instead of ◉, 12px minimum font; supplier-compare buttons >=44px; customers page with fewer than 8 rows shows an empty-state card with an «إضافة عميل» action instead of 230px blank. Inbox stays unpublished; no network/flag change.",
    "acceptance": "tests/ux/standalone-pages.mjs at both viewports: inbox.html buttons >=44px and min font >=12px, back link present, no emoji glyph; supplier-compare buttons >=44px; node tests/unit/whatsapp-bridge.check.mjs still passes; no live writes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:40:34+00:00",
    "pr": 342,
-   "ci_dispatched": {
-    "sha": "ecd6ac0cb26429e66d59b31239e5a694cbf3c304",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:42:02+00:00"
-   }
+   "merged_at": "2026-11-14T00:47:30+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/342"
   },
   {
    "id": "UX46",
@@ -2382,12 +2375,22 @@
    "brief": "Files: index.html (totals panel / discount card CSS under max-width:640px), tests/ux/mobile-totals.mjs (new). Put the invoice discount inputs inside a collapsible row inside the totals block; no text clipped (the 0.98 VAT line is cut today); keep the pay button sticky and >=48px; keep UX33 compact rows.",
    "acceptance": "tests/ux/mobile-totals.mjs at 390x844 after adding two items: no element in the totals block overlaps another (bounding boxes), all totals text fully visible, pay bar does not cover the last cart row at scroll end; node tests/ux/mobile-cart.mjs and tests/ux/mobile-sale-layout.mjs pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:42:02+00:00"
+   "dispatched_at": "2026-11-14T00:42:02+00:00",
+   "pr": 346,
+   "ci_dispatched": {
+    "sha": "85f3eb1a40d9ad24bbe05880fc8c5b57bd0fc92b",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:47:30+00:00"
+   }
   },
   {
    "id": "UX43",
@@ -2420,12 +2423,22 @@
    "brief": "Files: index.html (settings section, #vat input), tests/ux/settings-layout.mjs (new). Equal-height cards per row (grid-auto-rows:1fr or align-items:stretch); merge «المظهر», «النسخة», «بيانات النظام» into one «عن النظام» card; style the VAT input with the shared input class (height 44px, border, Black Edition background, width >=96px, unit suffix %). Keep UX29/UX35 behavior.",
    "acceptance": "tests/ux/settings-layout.mjs: at 1366x768 cards in each row have equal height (+-2px), VAT input height>=44 and computed background not rgb(59,59,59)-grey default, no card with >40% empty area; node tests/ux/settings-copy.mjs and tests/unit/vat-rate.check.mjs pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:44:37+00:00"
+   "dispatched_at": "2026-11-14T00:44:37+00:00",
+   "pr": 345,
+   "ci_dispatched": {
+    "sha": "70686c3f5c27295e3b1f90d2de597d360e61e4e8",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:47:30+00:00"
+   }
   },
   {
    "id": "UX41",
@@ -2434,10 +2447,12 @@
    "brief": "Files: index.html (the fixed «استيكرات الأدوية» button CSS/JS), tests/ux/labels-fab.check.mjs (extend). Show it only on products page (it already exists as a toolbar button there) or move it into the sale «⋯» menu; if a floating button remains it must sit above the sticky pay bar on mobile and never overlap table rows, toasts or modal footers.",
    "acceptance": "Extended labels-fab.check.mjs: at both viewports on sale/products/customers/reports/settings the button's bounding box does not intersect any visible table row, #btnCheckout, .toast or modal footer; node tests/ux/toast-position.mjs and tests/ux/labels-fab.check.mjs pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:47:30+00:00"
   },
   {
    "id": "UX40",
@@ -2446,10 +2461,12 @@
    "brief": "Files: index.html (settings 🔐 ⚙️ ✓, reports 🖨, products ✦, dialogs ✕, receipt printer icon 19x23), purchases.html/purchases.css, sticker-studio.html, tests/ux/icon-consistency.mjs (new). Define one inline SVG sprite (stroke 1.75, currentColor, 16px default, 20px headings) reusing the existing nav/sale SVG style; replace emoji/text glyphs in buttons and headings; directional icons get [dir=rtl] scaleX(-1). Frontend only, Black Edition RTL kept. Source: .nova/qa/ux-pro2b-report.md section 2.",
    "acceptance": "tests/ux/icon-consistency.mjs at 1366x768 and 390x844 on sale/products/reports/settings/purchases: no visible button/heading text node containing emoji or ✦✕✓◉⚙; every svg icon width in {16,20}; icons vertically centered with label (|center delta|<=2px); node tests/ux/sale-clicks.mjs and tests/ux/dialog-style.mjs still pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:47:30+00:00"
   },
   {
    "id": "UX70",
@@ -2845,5 +2862,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:45:56+00:00"
+ "updated": "2026-11-14T00:47:30+00:00"
 }
