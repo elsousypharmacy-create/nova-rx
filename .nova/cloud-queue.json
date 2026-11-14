@@ -3351,12 +3351,22 @@
    "brief": "On 390px the sale header (shop, new sale, hold, held, customer, more, F1 chip, invoice no.) wraps to 3 rows. Compress to a single action row + overflow menu; hide the F1 shortcuts chip on touch/coarse pointer; keep 44px targets. Gives the cart more room. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Header block <=110px tall on 390x844; F1 chip hidden on hasTouch; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T11:23:54+00:00"
+   "dispatched_at": "2026-11-14T11:23:54+00:00",
+   "pr": 386,
+   "ci_dispatched": {
+    "sha": "e71b171eca778d81b65036aef2e86ac40675330e",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T11:26:48+00:00"
+   }
   },
   {
    "id": "UX209",
@@ -3379,10 +3389,12 @@
    "brief": "The inbox tab (#novaInboxTab view) renders a white/beige WhatsApp-like light panel; restyle with Black Edition tokens (ux-tokens.css): dark surfaces, matching radius/borders, readable contrast, empty-state 'اختر محادثة لعرضها' with icon; keep RTL bubbles. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Inbox uses dark tokens, contrast >=4.5:1, desktop+mobile screenshots consistent; test asserts computed background is dark.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-203-fixes.json"
+   "source": "inbox/qa-loop-203-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T11:26:48+00:00"
   },
   {
    "id": "UX207",
@@ -3433,5 +3445,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:23:54+00:00"
+ "updated": "2026-11-14T11:26:48+00:00"
 }
