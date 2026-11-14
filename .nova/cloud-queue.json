@@ -1908,9 +1908,26 @@
     "N128",
     "N129"
    ],
-   "status": "owner_gate",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0
+   "fix_attempts": 0,
+   "deployed_at": "2026-11-14T12:51:00+00:00",
+   "approved_by": "Ahmed 2026-11-14 15:45 Asia/Riyadh",
+   "deploy": {
+    "worker": "nova-rx-api",
+    "version_id": "759096f6-de7f-47e6-b32a-2ca613d6f072",
+    "previous_version_id": null,
+    "sha": "d23510c05cc0",
+    "d1": "nova-rx-production 0b284ffa-5aa4-431e-a5fd-c0fded92a1af",
+    "kv": "47d469e0972347c3b52dc4a767d1ad44",
+    "migrated": true,
+    "migrations": "0001-0022",
+    "bookmark": "00000001-00000000-00005123-ae849831752cfbee7644e7e0d0517c5b",
+    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43596758962",
+    "job": "success",
+    "at": "2026-11-14T12:51:34+00:00"
+   },
+   "notes": "Production backend enabled with all feature flags OFF; frontend novaBackend.enabled OFF; WhatsApp bridge stays on staging. Store pilot (QA-03) runs with Ahmed per docs/qa/PILOT_STORE_KIT.md."
   },
   {
    "id": "UX20",
@@ -3481,5 +3498,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/394"
   }
  ],
- "updated": "2026-11-14T12:44:27+00:00"
+ "updated": "2026-11-14T12:51:34+00:00"
 }
