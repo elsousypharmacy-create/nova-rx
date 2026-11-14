@@ -2410,12 +2410,22 @@
    "brief": "Files: index.html (products page header/toolbar/table CSS), tests/ux/products-layout.mjs (new). Desktop: one toolbar row (search flex:1 + two buttons aligned on the same baseline) under the title; mobile <=640px: table rows become cards (name, barcode, price, balance, pack) so content width never exceeds its card (extends UX24).",
    "acceptance": "tests/ux/products-layout.mjs: at 390x844 products table scrollWidth <= clientWidth+2 and all columns readable; at 1366x768 search and buttons share one row with equal heights; node tests/ux/mobile-tables.mjs, tests/ux/low-stock-filter.mjs and tests/ux/products-empty-columns.check.mjs pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:42:02+00:00"
+   "dispatched_at": "2026-11-14T00:42:02+00:00",
+   "pr": 344,
+   "ci_dispatched": {
+    "sha": "1bf7c37c6f975c4898c869d6023f0224fabd1187",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:44:37+00:00"
+   }
   },
   {
    "id": "UX42",
@@ -2424,10 +2434,12 @@
    "brief": "Files: index.html (settings section, #vat input), tests/ux/settings-layout.mjs (new). Equal-height cards per row (grid-auto-rows:1fr or align-items:stretch); merge «المظهر», «النسخة», «بيانات النظام» into one «عن النظام» card; style the VAT input with the shared input class (height 44px, border, Black Edition background, width >=96px, unit suffix %). Keep UX29/UX35 behavior.",
    "acceptance": "tests/ux/settings-layout.mjs: at 1366x768 cards in each row have equal height (+-2px), VAT input height>=44 and computed background not rgb(59,59,59)-grey default, no card with >40% empty area; node tests/ux/settings-copy.mjs and tests/unit/vat-rate.check.mjs pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:44:37+00:00"
   },
   {
    "id": "UX41",
@@ -2847,5 +2859,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:42:02+00:00"
+ "updated": "2026-11-14T00:44:37+00:00"
 }
