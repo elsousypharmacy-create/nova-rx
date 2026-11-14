@@ -2232,12 +2232,22 @@
    "brief": "Files: backend/migrations/0021_stock_locations.sql (new, additive only), backend/src/branches.js (new), backend/src/index.js, tests/unit/backend-branches.check.mjs (new). stock_locations(tenant_id,branch_id,id,name,kind main|shelf|fridge|controlled) + nullable location_id on inventory_batches via a new table link (no ALTER of existing data); GET /api/v1/branches and /stock-locations scoped by session, flag NOVA_BRANCHES default OFF => 404. Migration is NOT applied to any real D1 (owner decision).",
    "acceptance": "tests load all migrations 0001-0021 into the existing test sqlite/mocks without error; scope test: another tenant's or unassigned branch is never returned; flag off -> 404; no destructive SQL (grep DROP/DELETE/ALTER-drop absent).",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:26:05+00:00"
+   "dispatched_at": "2026-11-14T00:26:05+00:00",
+   "pr": 336,
+   "ci_dispatched": {
+    "sha": "8a2cd7f4ab81dcc8cf2eede33ebc547a020d20a4",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T00:28:30+00:00"
+   }
   },
   {
    "id": "UX52",
@@ -2246,10 +2256,12 @@
    "brief": "Files: index.html (flag-gated section in products page only), tests/ux/transfers-flag.mjs (new). localStorage['nova.flags.transfers']==='1' shows list + request/send/receive-with-difference dialogs over the existing window.novaTransfers (INV-05); default off, zero UI change when off; Black Edition RTL, 44px targets, SVG icons; this-device-only notice in Arabic; no network.",
    "acceptance": "tests/ux/transfers-flag.mjs: flag off -> section absent; flag on -> request then send reduces local lots FEFO, receive with a shortage records the difference, state survives reload; no non-GET requests; node tests/ux/low-stock-filter.mjs passes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:28:30+00:00"
   },
   {
    "id": "UX51",
@@ -2258,10 +2270,12 @@
    "brief": "Files: backend/src/transfers.js (new), backend/src/index.js (register routes), tests/unit/backend-transfers.check.mjs (new). Routes /api/v1/transfers/{create,ship,receive,cancel,list} using existing stock_transfers and inventory_movements (transfer_out/transfer_in), tenant+branch scope from the session via security/tenant.js, FEFO source batch, flag NOVA_TRANSFERS default OFF => 404. Additive only; no migration applied to any real D1; no deploy.",
    "acceptance": "mock D1 tests: ship cannot exceed balance or use expired/recalled batch; receive twice rejected; same source/destination rejected; wrong tenant/branch cannot read or mutate; flag off -> 404; node tests/unit/backend-inbox.check.mjs style harness reused; existing backend tests still pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:28:30+00:00"
   },
   {
    "id": "UX50",
@@ -2678,7 +2692,7 @@
    "brief": "Files: index.html, purchases.html (STOCK LIVE), data/ demo catalogue categories and tiers (display layer only, no schema change), tests/unit/ux-i18n-consistency.check.mjs (extend). Fix: «No held invoices» → «لا توجد فواتير معلقة», hint «Enter: Add Item» → «Enter: إضافة»، categories Topical/ENT → «موضعي»/«أنف وأذن وحنجرة», pack fallback «—» → «غير محدد», tiers VIP Gold/Silver/Bronze Member → «ذهبي/فضي/برونزي» in the display layer, hide the English name in parentheses in tables and the receipt (keep it searchable), «STOCK LIVE» → «المخزون الحي». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them). NOTE: previous PR conflicted with main after UX22-UX34 merged; start fresh from current main and keep the diff minimal. NOTE 2: last attempt failed tests/ui-products-packaging.mjs ('inconsistent, invalid, hostile and missing packaging fall back to a dash': row 2 showed 'غير محدد'). Keep the packaging column fallback as a dash '—'; do not translate it. Run node tests/ui-products-packaging.mjs and the full Playwright smoke locally before pushing.",
    "acceptance": "tests/unit/ux-i18n-consistency.check.mjs extended: no visible Latin-only label in sale/products/customers/purchases/held panel in Arabic mode; products screen has 0 categories matching /^[A-Za-z]+$/ and 0 pack cells equal «—»; search by English name still finds the product; node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2.json",
@@ -2686,14 +2700,14 @@
    "dispatched_at": "2026-11-14T00:21:03+00:00",
    "pr": 332,
    "ci_dispatched": {
-    "sha": "79c5b6272abe411286d122d1fd0ade6b830197f9",
+    "sha": "75b40340ee35a5796f34dc8e13d7767602474a7a",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T00:16:03+00:00"
+    "at": "2026-11-14T00:28:30+00:00"
    }
   },
   {
@@ -2799,5 +2813,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:26:05+00:00"
+ "updated": "2026-11-14T00:28:30+00:00"
 }
