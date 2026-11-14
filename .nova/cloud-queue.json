@@ -4253,19 +4253,19 @@
    "after": [],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:44:54+00:00",
+   "dispatched_at": "2026-11-14T23:51:36+00:00",
    "pr": 441,
    "ci_dispatched": {
-    "sha": "d41d745d4abcc17830c7780a8fa40418be749f71",
+    "sha": "e8421287ab00a0c0b919f6936b0210190cd4d525",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T23:37:42+00:00"
+    "at": "2026-11-14T23:46:22+00:00"
    }
   },
   {
@@ -4275,23 +4275,16 @@
    "brief": "Reproduced: search 'اوجمنتين' (vs أوجمنتين) and Arabic-Indic barcode digits return 0 rows ('لا توجد نتائج مطابقة'). Normalise query and haystack (hamza/alef forms, ya/alef-maqsura, ta-marbuta, tashkeel, tatweel, Arabic-Indic digits) like normAr() in unified-inbox.js; keep <100ms; highlight match; add × clear button. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "'اوجمنتين' returns Augmentin row; Hindi digit barcode returns the row; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:43:17+00:00",
    "pr": 442,
-   "ci_dispatched": {
-    "sha": "19539e9eed2ec39a480e2ab10674acc5fa18cf5f",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:44:54+00:00"
-   }
+   "merged_at": "2026-11-14T23:50:02+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
   }
  ],
- "updated": "2026-11-14T23:44:54+00:00"
+ "updated": "2026-11-14T23:51:36+00:00"
 }
