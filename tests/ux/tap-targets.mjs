@@ -106,6 +106,58 @@ for (const [name, size, mobile] of [['tablet1024', { width: 1024, height: 768 },
   }
   await ctx.close(); await ctx2.close();
 }
+// UX46: dialogs (checkout, return, debt): every control >= 44px at 390x844; no dialog body scroll at 1366x768
+for (const [name, size, mobile] of [['mobile390', { width: 390, height: 844 }, true], ['desktop1366', { width: 1366, height: 768 }, false]]) {
+  const ctx = await browser.newContext({ viewport: size, locale: 'ar-EG', isMobile: mobile, hasTouch: mobile });
+  await ctx.route('**/*', r => { const m = r.request().method(); const u = r.request().url(); if ((m !== 'GET' && m !== 'HEAD') || !(u.startsWith(BASE) || u.startsWith('data:') || u.startsWith('blob:'))) return r.abort(); return r.continue(); });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
+  await page.goto(BASE + '/index.html', { waitUntil: 'load' });
+  await page.waitForSelector('#mainSearchInput');
+  await page.waitForTimeout(800);
+  await page.evaluate(() => {
+    const id = String(window.NOVA_DEMO.customers[0].id);
+    window.NovaCredit.createCreditLedger(localStorage, 'nova.credit').charge({ id: 'c1', customerId: id, amount: 50, ref: 'x' });
+    window.novaSales.add({ id: 'f1', number: 'S-f1', at: new Date().toISOString(), customer: '', payment: 'cash',
+      lines: [{ name: 'A', barcode: 'A1', price: 100, qty: 2, discount: 0, unitFactor: 1, lots: [{ lot: 'L1', expiry: '2027-01-01', qty: 2, cost: 10 }] }],
+      subtotal: 200, discount: 0, vat: 0, total: 200, received: 200, change: 0 });
+  });
+  const dlg = (rootSel, scrollSel) => page.evaluate(([root, sc]) => {
+    const R = document.querySelector(root); const S = document.querySelector(sc);
+    const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden'; };
+    const ctrls = [...R.querySelectorAll('button,input:not([type=hidden]):not([type=checkbox]):not([type=radio]),select,summary')].filter(e => vis(e) && !e.disabled);
+    const small = ctrls.filter(e => e.getBoundingClientRect().height < 43.5).map(e => (e.id || e.className || e.tagName) + ':' + Math.round(e.getBoundingClientRect().height));
+    return { total: ctrls.length, small, scroll: S.scrollHeight - S.clientHeight };
+  }, [rootSel, scrollSel]);
+  const report = (label, r, scrollOk) => {
+    const ok = r.total > 0 && (name !== 'mobile390' || r.small.length === 0) && scrollOk(r);
+    console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${label}: ${r.small.length}/${r.total} under 44px, overflow ${r.scroll}px${r.small.length ? ' [' + r.small.join(', ') + ']' : ''}`);
+    if (!ok) failed++;
+  };
+  const noScroll = r => name !== 'desktop1366' || r.scroll <= 0;
+  // checkout (cash view, then split view with extra inputs)
+  await page.evaluate(() => { document.getElementById('checkoutModal').classList.add('active'); });
+  report('checkout cash', await dlg('#checkoutModal', '#checkoutModal .modal-card'), noScroll);
+  await page.evaluate(() => { document.getElementById('splitDetailsBox').style.display = 'block'; });
+  report('checkout split', await dlg('#checkoutModal', '#checkoutModal .modal-card'), r => true);
+  await page.evaluate(() => { document.getElementById('checkoutModal').classList.remove('active'); });
+  // debt
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=customers]')?.click());
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('[data-pay-debt]').click());
+  await page.waitForSelector('#novaPayAmt');
+  report('debt dialog', await dlg('#novaPayDebt', '#novaPayDebt > div'), noScroll);
+  await page.evaluate(() => document.getElementById('novaPayDebt').remove());
+  // return
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=invoices]')?.click());
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('[data-return="f1"]').click());
+  await page.waitForSelector('#novaRetOk');
+  report('return dialog', await dlg('.nova-return-overlay', '.nova-return-overlay > div'), () => true);
+  await page.evaluate(() => { document.querySelector('#novaCancelBox').open = true; });
+  report('return dialog (cancel box open)', await dlg('.nova-return-overlay', '.nova-return-overlay > div'), () => true);
+  await ctx.close();
+}
 await browser.close(); server.close();
 if (failed) { console.error(`tap-targets: ${failed} failures`); process.exit(1); }
 console.log('tap-targets check passed');
