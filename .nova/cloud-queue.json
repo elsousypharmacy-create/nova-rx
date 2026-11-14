@@ -2942,10 +2942,12 @@
    "after": [
     "FIX40"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/fix-qa-loop.json"
+   "source": "inbox/fix-qa-loop.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T02:52:16+00:00"
   },
   {
    "id": "FIX40",
@@ -2954,22 +2956,16 @@
    "brief": "backend unit CI fails on every PR with 'duplicate migration version 21': backend/migrations/0021_stock_locations.sql (UX53) and 0021_transfers_recalls.sql (UX51) share a number. Renumber 0021_transfers_recalls.sql to the next free number (0022 unless taken) with git mv, update any references (tests, docs, migration lists, wrangler config) and keep content identical. Neither should be applied to any D1 yet; verify from the deploy workflow/migration logs in the repo and note it in the PR. No DB operations, no deploy. Make unit CI green.",
    "acceptance": "No duplicate migration numbers; backend unit CI green; no deploy.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/fix-qa-loop.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T02:49:44+00:00",
    "pr": 365,
-   "ci_dispatched": {
-    "sha": "d5a505a2a8d789e01ac132b47281f537adbfcfb7",
-    "wf": [
-     "backend-unit.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T02:51:00+00:00"
-   }
+   "merged_at": "2026-11-14T02:52:16+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/365"
   }
  ],
- "updated": "2026-11-14T02:51:00+00:00"
+ "updated": "2026-11-14T02:52:16+00:00"
 }
