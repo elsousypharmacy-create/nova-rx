@@ -3047,21 +3047,15 @@
     "UX200",
     "UX201"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-wa-chat-suppliers.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T10:46:24+00:00",
    "pr": 374,
-   "ci_dispatched": {
-    "sha": "80e1c3edabfe8b9e4ae672a3ec561439547c3067",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T10:49:03+00:00"
-   }
+   "merged_at": "2026-11-14T10:54:07+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/374"
   },
   {
    "id": "UX201",
@@ -3119,22 +3113,15 @@
    "brief": "In supplier-lookup.js (~lines 440-456) the stock chip renders 'الرصيد null' and a low-stock flag when prod.stock is null/undefined (real price list has no stock). When stock is not a finite number, do not render the stock number or the 'منخفض' tag/'الموردين' text button; show a neutral 'غير متوفر' chip or just the icon button. Keep behavior for numeric stock. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add/extend a Playwright/node test under tests/, run it plus the nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests and record exact results). Evidence: .nova/qa/qa-loop-82.md.",
    "acceptance": "With /emergency/stock.json items no suggestion contains the text 'null' or 'منخفض'; numeric stock still shows low badge under 30; test passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-82-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T10:41:26+00:00",
    "pr": 373,
-   "ci_dispatched": {
-    "sha": "f4b74bb34596c33e7ef473d80c0022a6c2012b1e",
-    "wf": [
-     "playwright-smoke.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T10:46:24+00:00"
-   }
+   "merged_at": "2026-11-14T10:51:27+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/373"
   },
   {
    "id": "UX83",
@@ -3143,13 +3130,23 @@
    "brief": "In index.html main search Enter handler (PRODUCT mode, ~lines 3320-3346): when the query looks like a barcode (digits only, length>=6, also Arabic digits) and no exact barcode product nor suggestion matches, show an error toast in Arabic ('لا يوجد صنف بهذا الباركود: <code>' — reuse the existing string near line 4652), keep the 'سجّل نقص' option visible, and select the input text (or clear it) so the next scan does not concatenate to the stale code. Do not change behavior for name searches. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add/extend a Playwright/node test under tests/, run it plus the nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests and record exact results). Evidence: .nova/qa/qa-loop-82.md.",
    "acceptance": "Scanning an unknown barcode shows a toast and the next scan replaces the stale value; known barcode and name flows unchanged; test passes.",
    "after": [],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-82-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T10:49:03+00:00"
+   "dispatched_at": "2026-11-14T10:56:39+00:00",
+   "pr": 375,
+   "ci_dispatched": {
+    "sha": "1004a74c89a82c3c38dd196c12373ba04fc5e28b",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T10:51:27+00:00"
+   }
   }
  ],
- "updated": "2026-11-14T10:49:03+00:00"
+ "updated": "2026-11-14T10:56:39+00:00"
 }

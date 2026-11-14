@@ -19,7 +19,7 @@ FOCUS = [
     "mobile layout", "keyboard & accessibility", "performance",
     "Arabic copy & RTL", "errors, offline & edge cases",
 ]
-FIX_CAP = 12
+FIX_CAP = 15
 UX_ID = re.compile(r"^UX([0-9]+)$")
 
 
@@ -73,20 +73,24 @@ def build_task(nxt, focus):
         "(البيع، الفواتير، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات، and any other top-nav tab or link). "
         "Click every top-nav link/tab and every visible primary header button (including the WhatsApp #novaWaBtn icon). "
         "Flag any HTTP 404, blank page, 'Not found', failed navigation, or console error. "
-        "Read all previous .nova/qa/*report*.md first to avoid duplicates. "
+        "Quality bar is EXCEPTIONAL (world-class pharmacy POS, Apple/Linear-level polish): judge as the strictest senior product designer + QA lead. "
+        "Report findings at every severity including low/polish (alignment, spacing, contrast, copy, empty/loading/error states, speed, keyboard flow). "
+        "Score each of the 14 focus areas 0-10 and update .nova/qa/scorecard.json ({area: {score, last_cycle, open_findings}}); "
+        "an area counts as exceptional only at >=9.5 with zero open findings. Never mark the product done; the loop continues. "
+        "Read all previous .nova/qa/*report*.md and qa-loop-*.md first to avoid duplicates and to re-verify that earlier fixes really work. "
         f"Write .nova/qa/qa-loop-{nxt}.md (Arabic, short) with screenshots in .nova/qa/qa-loop-{nxt}/ (max 15). "
-        f"Then write .nova/inbox/qa-loop-{nxt}-fixes.json ({{\"tasks\":[...]}}) with at most {cap} small frontend-only fix tasks "
-        f"(ids UX{nxt + 1}..UX{last}; only high/medium findings; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), "
+        f"Then write .nova/inbox/qa-loop-{nxt}-fixes.json ({{\"tasks\":[...]}}) with at most {cap} frontend-only fix tasks "
+        f"(ids UX{nxt + 1}..UX{last}; highest impact first, any severity; areas scoring <9.5 first; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), "
         f"plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-{nxt}.js (qa-loop, no deploy)' "
         f"with after = all its fix ids, which rebuilds the artifact from the latest worker/live artifact the same way UX80 did "
         f"(tools/build-worker-artifact.mjs, markers test, node --check, no deploy). Fix ids available: {fix_ids}. "
-        "If nothing high/medium is found, write the report only (no fixes file). Do not edit .nova/cloud-queue.json."
+        "If truly nothing is found, write the report only (no fixes file). Do not edit .nova/cloud-queue.json."
     )
     return {"tasks": [{
         "id": f"UX{nxt}", "phase": 10,
         "title": f"QA loop audit {nxt}: {focus}",
         "brief": brief,
-        "acceptance": f"Report .nova/qa/qa-loop-{nxt}.md exists; fixes inbox file only if high/medium findings; no deploy; backend untouched.",
+        "acceptance": f"Report .nova/qa/qa-loop-{nxt}.md exists; scorecard updated; fixes inbox file if any findings; no deploy; backend untouched.",
         "after": [],
     }]}
 
