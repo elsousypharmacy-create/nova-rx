@@ -23,6 +23,7 @@ import { registerDeployRoutes } from './deploys.js';
 import { registerWhatsAppRoutes } from './whatsapp-intake.js';
 import { registerMsgMonitorRoutes } from './msg-monitor.js';
 import { scheduledBackup } from './backup.js';
+import { scheduledWaProcess } from './whatsapp-process.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -135,5 +136,5 @@ async function handleInner(request, env) {
 
 export default {
   fetch: (request, env) => handle(request, env),
-  scheduled: (event, env, ctx) => { const p = scheduledBackup(env); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; },
+  scheduled: (event, env, ctx) => { const p = Promise.all([scheduledBackup(env), scheduledWaProcess(env).catch(() => null)]).then((r) => r[0]); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; },
 };
