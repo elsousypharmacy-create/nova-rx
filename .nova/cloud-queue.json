@@ -3540,20 +3540,20 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-wa-dashboard.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:42:35+00:00",
+   "dispatched_at": "2026-11-14T14:56:51+00:00",
    "pr": 409,
    "ci_dispatched": {
-    "sha": "ace07baa2fd28745e65401507e8af5549f183754",
+    "sha": "6c64418b9fe121445bcdfaabbd01c7a9c609a26b",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:51:53+00:00"
+    "at": "2026-11-14T14:58:17+00:00"
    }
   },
   {
@@ -3702,21 +3702,21 @@
    "brief": "Reproduced: searching 'احمد' returns 0 results while 'أحمد' returns 1 (searchNoHamza vs searchHamza); search only matches name+id, not message text or phone digits (Arabic-Indic digits ٠-٩ not folded either). Normalize Arabic (أإآ->ا, ى->ي, ة->ه, tashkeel, tatweel, digits) for names and message text, highlight matches optionally, and show 'لا نتائج لـ \"…\"' with a clear (×) button in the field. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Search finds names/messages ignoring hamza/diacritics/digits; unit test for the normalizer plus Playwright check.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:38:27+00:00",
+   "dispatched_at": "2026-11-14T14:58:17+00:00",
    "pr": 406,
    "ci_dispatched": {
-    "sha": "5cb704b03aa95b0ad58b9601f9d345a61c58500e",
+    "sha": "007610848db97fd3020db9570da4165ac6c2727d",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:39:59+00:00"
+    "at": "2026-11-14T14:53:13+00:00"
    }
   },
   {
@@ -3743,10 +3743,22 @@
    "brief": "Reproduced: after clicking a chat the pane shows only the single last message (the preview) for the whole fetch, no spinner/skeleton/aria-busy (loadingState msgs:1, spinner:false), then 8-320 messages pop in (CLS + looks like the whole chat). Show a skeleton or 'جاري تحميل المحادثة…' with aria-busy until hist.full[id] arrives, and an inline error with 'إعادة المحاولة' if the fetch fails (currently only a global hist.err). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Loading and error states are visible and accessible; test delays the mocked conversation response and asserts the placeholder, then the messages.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:53:13+00:00",
+   "pr": 410,
+   "ci_dispatched": {
+    "sha": "6246b82c0bffa908d85779ee71c85149e579f644",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T14:56:51+00:00"
+   }
   },
   {
    "id": "UX233",
@@ -3921,5 +3933,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:51:53+00:00"
+ "updated": "2026-11-14T14:58:17+00:00"
 }

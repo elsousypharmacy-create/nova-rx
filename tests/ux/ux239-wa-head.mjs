@@ -45,7 +45,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop', touch: false }, {
   await view.locator('[data-conv="wa_201000000001"]').click();
   await view.locator('[data-mid="h_u_1"]').waitFor();
   const sub = await view.locator('.wa-head [data-wa-sub]').innerText();
-  assert.match(sub, /4 رسالة/, 'message count'); assert.match(sub, /آخر نشاط/, 'last activity'); assert.match(sub, /أرشيف للقراءة فقط/, 'read-only');
+  assert.match(sub, /4 رسالة/, 'message count'); assert.match(sub, /آخر نشاط/, 'last activity'); assert.doesNotMatch(sub, /أرشيف للقراءة فقط/, 'PIN entered => replies enabled (WA-SEND), not read-only');
   const lock = view.locator('.wa-head [data-wa-lock]');
   assert.equal(await lock.count(), 1, 'header lock button');
   const lb = await lock.boundingBox();
