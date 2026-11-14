@@ -2399,12 +2399,12 @@
    "brief": "Files: index.html (products page header/toolbar/table CSS), tests/ux/products-layout.mjs (new). Desktop: one toolbar row (search flex:1 + two buttons aligned on the same baseline) under the title; mobile <=640px: table rows become cards (name, barcode, price, balance, pack) so content width never exceeds its card (extends UX24).",
    "acceptance": "tests/ux/products-layout.mjs: at 390x844 products table scrollWidth <= clientWidth+2 and all columns readable; at 1366x768 search and buttons share one row with equal heights; node tests/ux/mobile-tables.mjs, tests/ux/low-stock-filter.mjs and tests/ux/products-empty-columns.check.mjs pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
-   "slot": "B",
-   "dispatched_at": "2026-11-14T00:42:02+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:50:26+00:00",
    "pr": 344,
    "ci_dispatched": {
     "sha": "1bf7c37c6f975c4898c869d6023f0224fabd1187",
@@ -2447,12 +2447,22 @@
    "brief": "Files: index.html (the fixed «استيكرات الأدوية» button CSS/JS), tests/ux/labels-fab.check.mjs (extend). Show it only on products page (it already exists as a toolbar button there) or move it into the sale «⋯» menu; if a floating button remains it must sit above the sticky pay bar on mobile and never overlap table rows, toasts or modal footers.",
    "acceptance": "Extended labels-fab.check.mjs: at both viewports on sale/products/customers/reports/settings the button's bounding box does not intersect any visible table row, #btnCheckout, .toast or modal footer; node tests/ux/toast-position.mjs and tests/ux/labels-fab.check.mjs pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:47:30+00:00"
+   "dispatched_at": "2026-11-14T00:47:30+00:00",
+   "pr": 347,
+   "ci_dispatched": {
+    "sha": "a04cb302c0e4da7a16890c86aad0c82d14825b66",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:50:26+00:00"
+   }
   },
   {
    "id": "UX40",
@@ -2862,5 +2872,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:47:30+00:00"
+ "updated": "2026-11-14T00:50:26+00:00"
 }
