@@ -4142,7 +4142,7 @@
    "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-301-fixes.json",
@@ -4150,13 +4150,13 @@
    "dispatched_at": "2026-11-14T23:22:53+00:00",
    "pr": 435,
    "ci_dispatched": {
-    "sha": "548389fcca0f775f6afdcc99c1eaae02654351a8",
+    "sha": "b430e1eae13a9e2f71588e5908cfa979a9a38474",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T23:17:53+00:00"
+    "at": "2026-11-14T23:24:19+00:00"
    }
   },
   {
@@ -4214,10 +4214,12 @@
    "brief": "d-products.png: fixed 151x48 FAB at x18,y624 covers the category cell; m-products.png: 44px FAB at y704 covers row content (unchanged since UX207 / qa-loop-203 finding 4, so the earlier fix is not verified). Remove the floating overlay on the products page (header button already exists) or dock it outside the scroll content with bottom padding reserved. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "FAB does not intersect any table cell on either viewport; test measures intersection.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:24:19+00:00"
   },
   {
    "id": "UX305",
@@ -4268,5 +4270,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:22:53+00:00"
+ "updated": "2026-11-14T23:24:19+00:00"
 }
