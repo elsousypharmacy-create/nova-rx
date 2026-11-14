@@ -3112,12 +3112,22 @@
    "brief": "supplier-health run 43587871889: pharmaoverseas connected, aumet missing_credential (no saved session in the Worker), although GitHub secrets AUMET_USERNAME and AUMET_PASSWORD exist. Make the Aumet connector create/refresh its session automatically from those existing credentials (same pattern pharmaoverseas uses to stay connected), read-only: login + catalog/search probe only, never carts/orders/POs. Never print secret values. If the Worker needs the credentials as Worker secrets, add a guarded GitHub Actions step that copies them by name (no values in logs). Tests required. No deploy.",
    "acceptance": "Health check reports aumet connected; read-only; tests pass; no secret values logged; no deploy.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/fix-aumet-session.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T11:01:24+00:00"
+   "dispatched_at": "2026-11-14T11:01:24+00:00",
+   "pr": 376,
+   "ci_dispatched": {
+    "sha": "85f6d3368c8eb0c39ca2970e5991298659b6d539",
+    "wf": [
+     "playwright-smoke.yml",
+     "procurement-unit.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T11:02:38+00:00"
+   }
   },
   {
    "id": "UX85",
@@ -3129,10 +3139,12 @@
     "UX83",
     "UX84"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-82-fixes.json"
+   "source": "inbox/qa-loop-82-fixes.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T11:02:38+00:00"
   },
   {
    "id": "UX84",
@@ -3158,23 +3170,16 @@
    "brief": "In index.html main search Enter handler (PRODUCT mode, ~lines 3320-3346): when the query looks like a barcode (digits only, length>=6, also Arabic digits) and no exact barcode product nor suggestion matches, show an error toast in Arabic ('لا يوجد صنف بهذا الباركود: <code>' — reuse the existing string near line 4652), keep the 'سجّل نقص' option visible, and select the input text (or clear it) so the next scan does not concatenate to the stale code. Do not change behavior for name searches. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add/extend a Playwright/node test under tests/, run it plus the nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests and record exact results). Evidence: .nova/qa/qa-loop-82.md.",
    "acceptance": "Scanning an unknown barcode shows a toast and the next scan replaces the stale value; known barcode and name flows unchanged; test passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-82-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T10:56:39+00:00",
    "pr": 375,
-   "ci_dispatched": {
-    "sha": "5aae0aa2dc0f25221715b6698392522c6f360aee",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T10:57:46+00:00"
-   }
+   "merged_at": "2026-11-14T11:02:38+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/375"
   }
  ],
- "updated": "2026-11-14T11:01:24+00:00"
+ "updated": "2026-11-14T11:02:38+00:00"
 }
