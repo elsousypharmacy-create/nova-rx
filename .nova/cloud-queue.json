@@ -2656,12 +2656,22 @@
    "brief": "Files: index.html (checkout split box: #inputCardAmount/#inputCreditAmount/#inputCashReceived/#displayChangeDue and the receipt tender lines), tests/ux/split-payment-cash.mjs (new). Bug: in «مختلط» the cash field stays at the full total (92.00) after entering 40 card, so the modal shows change 40.00 and the receipt prints «المدفوع نقدًا 92.00 / الباقي 40.00» next to «نقدي 52.00 + بطاقة 40.00». Fix: on input of card/credit amount set cash received = total - card - credit (still editable), focus the cash field only if remainder > 0, change due computed from that, receipt shows cash tendered and change consistent with the tender split. Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F1.",
    "acceptance": "tests/ux/split-payment-cash.mjs: total 92, card 40 -> cash field 52.00, change 0.00; receipt text has no «الباقي: 40.00»; card > total still rejected with toast; cash-only sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T01:16:41+00:00"
+   "dispatched_at": "2026-11-14T01:16:41+00:00",
+   "pr": 360,
+   "ci_dispatched": {
+    "sha": "ec91bdc67a123c2b84c678c2128c5b508a47aa9e",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:19:56+00:00"
+   }
   },
   {
    "id": "UX36",
@@ -2681,10 +2691,12 @@
     "UX30",
     "UX31"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2.json"
+   "source": "inbox/ux-pro2.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:19:56+00:00"
   },
   {
    "id": "UX35",
@@ -2925,5 +2937,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:18:13+00:00"
+ "updated": "2026-11-14T01:19:56+00:00"
 }
