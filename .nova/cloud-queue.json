@@ -2572,12 +2572,22 @@
    "brief": "Files: index.html (search no-result message, UX64 inline note if present), tests/ux/shortage-log.mjs (new). Gap: when a customer asks for an item that is missing or out of stock there is nowhere to record it. Add a «سجّل نقص» button in the no-result message and next to the out-of-stock note; it stores {text, date, qty} in localStorage key nova-rx-shortages-v1 (dedupe same text same day, increment count) and toasts. Show the count on the Products low-stock card tooltip or a small list in Products. No backend. Preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F4/F5.",
    "acceptance": "tests/ux/shortage-log.mjs: search «xyz-not-found» -> no-result message shows the button; 1 click stores the entry; second click same day increments count to 2 instead of duplicating; entry survives reload; no console errors.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T01:04:55+00:00"
+   "dispatched_at": "2026-11-14T01:04:55+00:00",
+   "pr": 355,
+   "ci_dispatched": {
+    "sha": "62e6eea9e542a5264736b1c81cbdd5f6e21832af",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:07:54+00:00"
+   }
   },
   {
    "id": "UX64",
@@ -2600,10 +2610,12 @@
    "brief": "Files: index.html (search function using foldKey/splitToks near the instant-search code), tests/ux/search-aliases.mjs (new). Gap: «اموكسيسيلين»، «ديكلوفيناك»، «باراسيتامول»، «مسكن صداع»، «كولسترول»، «بخاخ انف»، «سترزين» return nothing. Add a small static alias map (Arabic generic name and indication keyword -> the Latin generic already in the product records) and allow edit distance 1 per token of length >= 5 as a lower-ranked tier; exact/prefix matches must still rank first. Keep search under 10 ms for the 12 demo products and a 5,000 product list. Frontend-only; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F4.",
    "acceptance": "tests/ux/search-aliases.mjs: each of the 7 queries returns the expected demo product (اموكسيسيلين->أوجمنتين، ديكلوفيناك->فولتارين، باراسيتامول->بانادول، مسكن صداع->بانادول، كولسترول->ليبيتور، بخاخ انف->أوتريفين، سترزين->سيتريزين); previously passing queries (بنادول، اوجمنتن، panadol، كونكر) unchanged; a nonsense query still returns 0; node tests/ux/sale-clicks.mjs passes; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:07:54+00:00"
   },
   {
    "id": "UX62",
@@ -2903,5 +2915,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:06:38+00:00"
+ "updated": "2026-11-14T01:07:54+00:00"
 }
