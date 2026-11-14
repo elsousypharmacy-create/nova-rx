@@ -2,6 +2,7 @@
 // outbound is recorded as 'sent'; delivered/failed only arrive from the (mock) source through /inbox/status.
 // Tenant comes ONLY from the authenticated session. Nothing here deletes.
 import { scopeFromSession } from './security/tenant.js';
+import { backfillSheetRows, backfillFromQueue } from './inbox-backfill.js';
 
 export const inboxEnabled = (env) => !!env && String(env.NOVA_INBOX) === '1';
 const STATUSES = ['sent', 'delivered', 'failed'];
@@ -127,5 +128,6 @@ export function registerInboxRoutes(route, { errorResponse }, { authenticate }) 
   route('POST', base + 'status', guard(async ({ db, t, body }) => ({ message: await setStatus(db, t, body) })));
   route('POST', base + 'assign', guard(async ({ db, t, body }) => ({ conversation: await assign(db, t, body) })));
   route('POST', base + 'handoff', guard(async ({ db, t, body }) => ({ conversation: await handoff(db, t, body) })));
+  route('POST', base + 'backfill', guard(async ({ db, t, body }) => ({ result: body.source === 'queue' ? await backfillFromQueue(db, t) : await backfillSheetRows(db, t, Array.isArray(body.rows) ? body.rows.slice(0, 2000) : []) })));
   route('POST', base + 'link', guard(async ({ db, t, body }) => ({ conversation: await link(db, t, body) })));
 }

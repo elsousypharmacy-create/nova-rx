@@ -6480,8 +6480,7 @@ input,select,textarea{min-height:44px}
 #inputCardAmount,#inputCreditAmount{height:44px!important}
 </style>
 
-<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script><script id="fix43-inbox-lib">/* FIX43: unified-inbox.js inlined (the preview Worker serves no separate JS files) */
-/* NOVA Rx — MSG-02 local unified inbox (pure logic + HTML string, frontend/local only, NO real WhatsApp sending).
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script><script id="fix43-inbox-lib">/* NOVA Rx — MSG-02 local unified inbox (pure logic + HTML string, frontend/local only, NO real WhatsApp sending).
    Conversations: messages, assignee, human handoff, customer/order links. Message status sent|delivered|failed comes from a
    mock source (setStatus). State persists through an injected storage (localStorage-like) and is restored by load() after refresh.
    Works as <script> (window.NovaUnifiedInbox) and in Node. */
@@ -6540,6 +6539,26 @@ input,select,textarea{min-height:44px}
       if ('orderId' in links) c.orderId = links.orderId == null ? null : String(links.orderId);
       save(); return c;
     }
+    /* UX200: additive, idempotent history import. rows: [{conv, customer?, id, dir:'in'|'out', text, at, status?}] (at = ms).
+       A message whose id already exists is skipped; nothing is ever removed or overwritten. Never sends anything. */
+    function importHistory(rows) {
+      var added = 0, skipped = 0, seen = {};
+      state.conversations.forEach(function (c) { c.messages.forEach(function (m) { seen[c.id + '\u0001' + m.id] = 1; }); });
+      arr(rows).forEach(function (r) {
+        if (!r || r.conv == null || r.id == null || !String(r.text == null ? '' : r.text).length) { skipped++; return; }
+        var cid = String(r.conv), k = cid + '\u0001' + String(r.id);
+        if (seen[k]) { skipped++; return; }
+        var c = state.conversations.filter(function (x) { return x.id === cid; })[0];
+        if (!c) { c = { id: cid, customer: String(r.customer || cid), customerId: null, orderId: null, assignee: null, mode: 'bot', messages: [], updatedAt: 0 }; state.conversations.push(c); }
+        else if (r.customer && (!c.customer || c.customer === c.id)) c.customer = String(r.customer);
+        var m = { id: String(r.id), dir: r.dir === 'out' ? 'out' : 'in', text: String(r.text), at: Number(r.at) || 0, status: r.dir === 'out' ? (STATUS_AR[r.status] ? r.status : 'delivered') : null };
+        var i = c.messages.length; while (i > 0 && c.messages[i - 1].at > m.at) i--;
+        c.messages.splice(i, 0, m); seen[k] = 1; added++;
+        if (m.at > c.updatedAt) c.updatedAt = m.at;
+      });
+      if (added) save();
+      return { added: added, skipped: skipped };
+    }
     function list(filter) {
       filter = filter || {};
       return clone(state.conversations).filter(function (c) {
@@ -6562,7 +6581,7 @@ input,select,textarea{min-height:44px}
         })
         .catch(function (e) { return { skipped: false, error: String((e && e.message) || e) }; });
     }
-    var api = { pullRemote: pullRemote, load: load, open: open, receive: receive, send: send, setStatus: setStatus, assign: assign, handoff: handoff, link: link, list: list,
+    var api = { pullRemote: pullRemote, importHistory: importHistory, load: load, open: open, receive: receive, send: send, setStatus: setStatus, assign: assign, handoff: handoff, link: link, list: list,
       get: function (id) { return clone(conv(id)); } };
     return api;
   }
@@ -6583,17 +6602,100 @@ input,select,textarea{min-height:44px}
     }).join('') + '</div>';
   }
 
-  var api = { create: create, render: render, KEY: KEY };
+  /* ---- UX200: WhatsApp Web layout (pure HTML strings, RTL). The composer is a disabled draft unless sendEnabled. ---- */
+  var DAY = 86400000;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function dayStart(t) { var d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); }
+  function timeLabel(t) { var d = new Date(t); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function dateLabel(t, now) {
+    var diff = Math.round((dayStart(now) - dayStart(t)) / DAY);
+    if (diff === 0) return 'اليوم';
+    if (diff === 1) return 'أمس';
+    var d = new Date(t); return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate());
+  }
+  /* unread = trailing incoming messages after the last outgoing one */
+  function unreadCount(c) { var n = 0, m = arr(c && c.messages); for (var i = m.length - 1; i >= 0 && m[i].dir === 'in'; i--) n++; return n; }
+  function totalUnread(cs) { return arr(cs).reduce(function (a, c) { return a + (unreadCount(c) > 0 ? 1 : 0); }, 0); }
+  function tick(m) {
+    if (m.dir !== 'out') return '';
+    if (m.status === 'failed') return '<span class="wa-tick failed" data-tick="failed">!</span>';
+    if (m.status === 'sent') return '<span class="wa-tick sent" data-tick="sent">✓</span>';
+    return '<span class="wa-tick ' + (m.status === 'delivered' ? 'delivered' : 'read') + '" data-tick="' + esc(m.status || 'delivered') + '">✓✓</span>';
+  }
+  function initial(name) { var s = String(name || '').trim(); return s ? Array.from(s)[0] : '؟'; }
+  function bubbles(msgs, now) {
+    var out = '', last = null;
+    arr(msgs).forEach(function (m) {
+      var ds = dayStart(m.at);
+      if (ds !== last) { last = ds; out += '<div class="wa-date" data-date-sep><span>' + esc(dateLabel(m.at, now)) + '</span></div>'; }
+      out += '<div class="wa-msg wa-' + (m.dir === 'out' ? 'out' : 'in') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"><div class="wa-bubble" dir="auto">' +
+        '<span class="wa-text">' + esc(m.text) + '</span><span class="wa-meta"><span class="wa-time">' + timeLabel(m.at) + '</span>' + tick(m) + '</span></div></div>';
+    });
+    return out;
+  }
+  var WA_CSS = '.wa-root{direction:rtl;display:flex;height:calc(100vh - 120px);min-height:420px;background:#f0f2f5;color:#111b21;font-family:system-ui,"Segoe UI",Tahoma,sans-serif;border-radius:8px;overflow:hidden}' +
+    '.wa-side{width:30%;min-width:280px;max-width:420px;background:#fff;border-inline-start:1px solid #e9edef;display:flex;flex-direction:column}' +
+    '.wa-side-head,.wa-head{height:59px;box-sizing:border-box;background:#f0f2f5;display:flex;align-items:center;gap:12px;padding:0 16px;font-weight:600}' +
+    '.wa-search{padding:8px 12px;background:#fff}.wa-search input{width:100%;box-sizing:border-box;height:35px;border:0;border-radius:8px;background:#f0f2f5;padding:0 14px;font:inherit;font-size:14px}' +
+    '.wa-list{flex:1;overflow:auto}.wa-chat{display:flex;align-items:center;gap:13px;padding:0 15px;height:72px;cursor:pointer;border-bottom:1px solid #f0f2f5;background:#fff;width:100%;text-align:start;border-top:0;border-inline:0;font:inherit;color:inherit}' +
+    '.wa-chat:hover,.wa-chat.active{background:#f0f2f5}.wa-avatar{flex:none;width:49px;height:49px;border-radius:50%;background:#dfe5e7;color:#54656f;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600}' +
+    '.wa-chat-body{flex:1;min-width:0}.wa-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.wa-name{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.wa-ctime{font-size:12px;color:#667781;flex:none}.wa-chat.unread .wa-ctime{color:#25d366}.wa-preview{font-size:14px;color:#667781;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.wa-badge{flex:none;min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:10px;background:#25d366;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:20px}' +
+    '.wa-main{flex:1;display:flex;flex-direction:column;min-width:0;background:#efeae2;background-image:radial-gradient(rgba(11,20,26,.06) 1px,transparent 1px);background-size:18px 18px}' +
+    '.wa-head{background:#f0f2f5;border-bottom:1px solid #e9edef}.wa-back{display:none;border:0;background:none;font-size:22px;cursor:pointer;color:#54656f}' +
+    '.wa-msgs{flex:1;overflow:auto;padding:12px 7%;display:flex;flex-direction:column;gap:3px}.wa-date{text-align:center;margin:10px 0}.wa-date span{background:#fff;color:#54656f;font-size:12.5px;padding:5px 12px;border-radius:8px;box-shadow:0 1px .5px rgba(11,20,26,.13)}' +
+    '.wa-msg{display:flex}.wa-msg.wa-in{justify-content:flex-start}.wa-msg.wa-out{justify-content:flex-end}' +
+    '.wa-bubble{position:relative;max-width:65%;padding:6px 9px 8px;border-radius:8px;font-size:14.2px;line-height:19px;box-shadow:0 1px .5px rgba(11,20,26,.13);overflow-wrap:anywhere;white-space:pre-wrap}' +
+    '.wa-in .wa-bubble{background:#fff;border-top-left-radius:0}.wa-out .wa-bubble{background:#d9fdd3;border-top-right-radius:0}' +
+    '.wa-in .wa-bubble:before{content:"";position:absolute;top:0;left:-8px;border:8px solid transparent;border-top-color:#fff;border-right-color:#fff}' +
+    '.wa-out .wa-bubble:before{content:"";position:absolute;top:0;right:-8px;border:8px solid transparent;border-top-color:#d9fdd3;border-left-color:#d9fdd3}' +
+    '.wa-meta{float:left;margin:6px 8px -4px 0;font-size:11px;color:#667781;display:inline-flex;gap:3px;direction:ltr}.wa-tick{color:#667781}.wa-tick.read{color:#53bdeb}.wa-tick.failed{color:#c33;font-weight:700}' +
+    '.wa-composer{min-height:62px;box-sizing:border-box;background:#f0f2f5;display:flex;align-items:center;gap:10px;padding:10px 16px}.wa-composer input{flex:1;height:42px;border:0;border-radius:8px;padding:0 14px;font:inherit;font-size:15px;background:#fff}' +
+    '.wa-composer input:disabled{background:#e9edef;cursor:not-allowed}.wa-send{width:42px;height:42px;border:0;border-radius:50%;background:#00a884;color:#fff;font-size:18px;cursor:pointer}.wa-send:disabled{background:#aab7bd;cursor:not-allowed}' +
+    '.wa-empty{margin:auto;color:#667781;text-align:center;padding:24px}.wa-note{font-size:12px;color:#667781;text-align:center;padding:4px}' +
+    '@media(max-width:700px){.wa-side{width:100%;max-width:none}.wa-root[data-view=chat] .wa-side{display:none}.wa-root[data-view=list] .wa-main{display:none}.wa-back{display:inline-block}.wa-bubble{max-width:85%}.wa-msgs{padding:10px 4%}}';
+
+  function chatListHtml(convs, selId, q, now) {
+    q = String(q || '').trim().toLowerCase();
+    var items = arr(convs).filter(function (c) { return !q || (String(c.customer) + ' ' + c.id).toLowerCase().indexOf(q) >= 0; })
+      .sort(function (a, b) { return b.updatedAt - a.updatedAt; });
+    if (!items.length) return '<div class="wa-empty">لا توجد محادثات</div>';
+    return items.map(function (c) {
+      var ms = arr(c.messages), last = ms[ms.length - 1], u = unreadCount(c), name = c.customer || c.id;
+      return '<button type="button" class="wa-chat' + (c.id === selId ? ' active' : '') + (u ? ' unread' : '') + '" data-conv="' + esc(c.id) + '">' +
+        '<span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-chat-body"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
+        '<span class="wa-ctime">' + (last ? esc(dateLabel(last.at, now) === 'اليوم' ? timeLabel(last.at) : dateLabel(last.at, now)) : '') + '</span></span>' +
+        '<span class="wa-row"><span class="wa-preview">' + (last ? (last.dir === 'out' ? tick(last) + ' ' : '') + esc(last.text) : '') + '</span>' +
+        (u ? '<span class="wa-badge" data-unread="' + u + '">' + (u > 99 ? '99+' : u) + '</span>' : '') + '</span></span></button>';
+    }).join('');
+  }
+  /* opts: { selected, query, now, sendEnabled } */
+  function renderWa(convs, opts) {
+    opts = opts || {}; var now = opts.now || Date.now(), sel = null;
+    arr(convs).forEach(function (c) { if (c.id === opts.selected) sel = c; });
+    var name = sel ? (sel.customer || sel.id) : '';
+    var main = sel
+      ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع">›</button><span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span>' + esc(name) + '</span></div>' +
+        '<div class="wa-msgs" id="waMsgs">' + bubbles(sel.messages, now) + '</div>'
+      : '<div class="wa-empty">اختر محادثة لعرضها</div>';
+    var en = !!opts.sendEnabled;
+    return '<style>' + WA_CSS + '</style><div class="wa-root" dir="rtl" data-wa-root data-view="' + (sel ? 'chat' : 'list') + '">' +
+      '<aside class="wa-side"><div class="wa-side-head">المحادثات</div><div class="wa-search"><input type="search" id="waSearch" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"></div>' +
+      '<div class="wa-list" id="waList">' + chatListHtml(convs, opts.selected, opts.query, now) + '</div></aside>' +
+      '<section class="wa-main">' + main + (sel ? '<form class="wa-composer" id="waComposer"><input type="text" id="waInput" dir="auto" placeholder="' + (en ? 'اكتب رسالة' : 'مسودة فقط — الإرسال متوقف') + '"' + (en ? '' : ' disabled') + '><button type="submit" class="wa-send" aria-label="إرسال"' + (en ? '' : ' disabled') + '>➤</button></form>' : '') + '</section></div>';
+  }
+
+  var api = { create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);
-
 </script><script>/* UX48: hidden local inbox tab. Flag nova.flags.inbox==='1' (default OFF => nothing loaded, no UI). Local only, zero network. */
 (function(){var on=false;try{on=localStorage.getItem('nova.flags.inbox')==='1'}catch(e){}
 function boot(){var nav=document.querySelector('.nova-nav');if(!nav||document.getElementById('novaInboxTab'))return;init(nav)}
 /* FIX43: the WhatsApp header icon opens the in-app conversations view (SPA, no navigation) even when the flag is off */
 window.NovaOpenInbox=function(){boot();var t=document.getElementById('novaInboxTab');if(t){t.click();return true}return false};
-function init(nav){var U=window.NovaUnifiedInbox;if(!U)return;var inbox=U.create(localStorage).load();
+function init(nav){var U=window.NovaUnifiedInbox;if(!U)return;var remote={enabled:function(){return localStorage.getItem('novaBackend.enabled')==='true'},baseUrl:function(){return localStorage.getItem('novaBackend.url')},fetch:function(u,o){return fetch(u,o)},getToken:function(){return sessionStorage.getItem('novaBackend.token')}};var inbox=U.create(localStorage,remote).load();var wa={sel:null,q:''};function sendOn(){try{return localStorage.getItem('nova.flags.inboxSend')==='1'}catch(e){return false}}
 if(!inbox.list().length){var n=Date.now();inbox.open('demo-1','عميل تجريبي (عرض محلي)',n);inbox.receive('demo-1','السلام عليكم، هل الدواء متوفر؟',n);inbox.send('demo-1','نعم متوفر',n+1);inbox.setStatus('demo-1','m2','delivered');inbox.link('demo-1',{customerId:'C-1',orderId:'O-1'})}
 var tab=document.createElement('button');tab.type='button';tab.className='nova-tab';tab.id='novaInboxTab';tab.textContent='المحادثات';
 var anchor=nav.querySelector('[data-page="settings"]');nav.insertBefore(tab,anchor?anchor.nextSibling:nav.firstChild);
@@ -6602,11 +6704,11 @@ var ar={on:null,err:''};
 function arCfg(){try{var u=localStorage.getItem('novaBackend.url'),k=sessionStorage.getItem('novaBackend.token');return localStorage.getItem('novaBackend.enabled')==='true'&&u&&k?{u:String(u).replace(/\/+$/,'')+'/api/v1/whatsapp/auto-reply',k:k}:null}catch(e){return null}}
 function arBar(){if(!arCfg())return '';var t=ar.on===null?'غير متاح':ar.on?'شغّال':'موقوف';return '<div id="novaAutoReply" dir="rtl" style="margin:8px 0;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button type="button" class="btn" id="novaAutoReplyBtn" aria-pressed="'+(ar.on===true)+'"'+(ar.on===null?' disabled':'')+' style="min-height:44px">الرد الآلي للبوت: '+t+'</button><div style="font-size:13px;margin-top:6px">الرسائل هتفضل توصل حتى لو الرد الآلي موقوف'+(ar.err?' — <span style="color:#b91c1c">'+ar.err+'</span>':'')+'</div></div>'}
 function arCall(method,body){var c=arCfg();if(!c||typeof fetch!=='function')return Promise.resolve();return fetch(c.u,{method:method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.k},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok&&typeof j.autoReply==='boolean'){ar.on=j.autoReply;ar.err=''}else ar.err=(j&&j.message_ar)||'تعذّر الاتصال بالبوت'}).catch(function(){ar.err='تعذّر الاتصال بالبوت'}).then(draw)}
-function draw(){var cs=inbox.list();box.innerHTML='<h2>المحادثات <small>(نسخة محلية تجريبية)</small></h2>'+arBar()+U.render(cs)+'<div class="nova-inbox-actions" dir="rtl">'+cs.map(function(c){return '<div data-conv-actions="'+c.id.replace(/[^\w-]/g,'')+'"><button type="button" class="btn" data-act="handoff" data-id="'+c.id.replace(/[^\w-]/g,'')+'" style="min-height:44px">'+(c.mode==='human'?'إعادة للرد الآلي':'تحويل لموظف')+'</button> <button type="button" class="btn" data-act="assign" data-id="'+c.id.replace(/[^\w-]/g,'')+'" style="min-height:44px">تعيين لي</button></div>'}).join('')+'</div>'}
-box.addEventListener('click',function(e){if(e.target.closest('#novaAutoReplyBtn')){arCall('POST',{enabled:!ar.on});return}var b=e.target.closest('[data-act]');if(!b)return;var id=b.dataset.id,c=inbox.get(id);
-if(b.dataset.act==='handoff'){if(c.mode==='human'){c.mode='bot';inbox.assign(id,null);var st=JSON.parse(localStorage.getItem(U.KEY));st.conversations.forEach(function(x){if(x.id===id)x.mode='bot'});localStorage.setItem(U.KEY,JSON.stringify(st));inbox.load()}else inbox.handoff(id,'الصيدلي')}
-else inbox.assign(id,'الصيدلي');draw()});
-tab.addEventListener('click',function(){draw();arCall('GET');var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
+function draw(){var cs=inbox.list();box.innerHTML=arBar()+U.renderWa(cs,{selected:wa.sel,query:wa.q,sendEnabled:sendOn(),now:Date.now()});var ms=box.querySelector&&box.querySelector('#waMsgs');if(ms)ms.scrollTop=ms.scrollHeight}
+box.addEventListener('click',function(e){if(e.target.closest('#novaAutoReplyBtn')){arCall('POST',{enabled:!ar.on});return}if(e.target.closest('[data-wa-back]')){wa.sel=null;draw();return}var b=e.target.closest('[data-conv]');if(b){wa.sel=b.dataset.conv;draw()}});
+box.addEventListener('input',function(e){if(e.target&&e.target.id==='waSearch'){wa.q=e.target.value;var l=box.querySelector('#waList');if(l)l.innerHTML=U.chatListHtml(inbox.list(),wa.sel,wa.q,Date.now())}});
+box.addEventListener('submit',function(e){e.preventDefault();if(!sendOn()||!wa.sel)return;var i=box.querySelector('#waInput'),t=i&&i.value.trim();if(!t)return;inbox.send(wa.sel,t,Date.now());draw()});
+tab.addEventListener('click',function(){draw();inbox.pullRemote().then(function(r){if(r&&r.count!=null)draw()});arCall('GET');var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
 nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box.hidden=true;tab.classList.remove('active')}},true)}
 if(on){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()}})()</script><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="ux81-wa-badge">/* UX81: WhatsApp icon + unread badge. Unread = conversation whose last message is incoming. Flag/backend off => icon only. */
 (function(){var KEY='nova.inbox.v1',timer=null;
