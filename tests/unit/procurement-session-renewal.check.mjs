@@ -26,4 +26,8 @@ assert.ok(src.indexOf('await verifyAumetCart(')<src.indexOf("await send('aumet'"
 const aumetStart = src.indexOf('async function aumet');
 assert.ok(/newContext\(\{[^}]*serviceWorkers: 'block'/.test(src.slice(aumetStart, src.indexOf("phase = 'prepare'", aumetStart))), 'Aumet context blocks service workers');
 await assert.rejects(() => verifyAumetCart({ get: async () => ({ status: () => 401, json: async () => ({ data: { buyer: { id: 456 }, sellers: [] } }) }) }, template, 'fake', ''), /cart-read-verification-failed/);
+// FIX44: a failed/missing cart verification must not block saving the read-only search session, and must drop the template.
+const vi=src.indexOf('await verifyAumetCart(',aumetStart);
+assert.ok(/try \{ await verifyAumetCart\([^)]*\); \} catch \{ cartVerified = false; capturedCartRequest = null; \}/.test(src.slice(vi-8,vi+200)),'cart verification is best-effort');
+assert.ok(!/throw/.test(src.slice(aumetStart,src.indexOf('async function aumet')+20000).split("phase = 'save-session'")[0].split("phase = 'verify-cart-session'")[1]||''),'no throw between verify and save');
 console.log('PASS: renewal blocks writes, captures cart on normal refresh, rejects missing/wrong-account/expired cart before success');

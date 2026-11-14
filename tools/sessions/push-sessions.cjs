@@ -203,7 +203,11 @@ async function aumet(browser) {
       capturedCartRequest = await captureAumetCart(page, capturedCart);
     }
     phase = 'verify-cart-session';
-    await verifyAumetCart(ctx.request, capturedCartRequest, auth, xsrf);
+    // Cart verification is best-effort (FIX44): search needs only the login session. If the cart
+    // contract was not captured or does not verify, drop the template (cart writes then stay
+    // fail-closed in the Worker) but still save the read-only search session.
+    let cartVerified = true;
+    try { await verifyAumetCart(ctx.request, capturedCartRequest, auth, xsrf); } catch { cartVerified = false; capturedCartRequest = null; }
     if (process.env.INSPECT_CART === 'true') {
       await inspectStatic(page,ctx.request,'aumet','marketplace.aumet.com');
       const fs = require('node:fs');
@@ -239,7 +243,7 @@ async function aumet(browser) {
     delete searchParams.task;
     await sellersTask;
     const code = await send('aumet', { authorization: auth, cookie, xsrf: xsrf || '', searchParams, searchTaskTemplate, sellers, cartRequestTemplate: capturedCartRequest }, Date.now() + 10 * 3600 * 1000);
-    return { id: 'aumet', result: code === 200 ? 'session saved (cart read verified; no cart writes)' : `worker answered ${code}` };
+    return { id: 'aumet', result: code === 200 ? 'session saved (' + (cartVerified ? 'cart read verified' : 'search only, cart not verified') + '; no cart writes)' : `worker answered ${code}` };
   } catch (error) {
     return { id: 'aumet', result: `error at ${phase} (${error.name === 'TimeoutError' ? 'timeout' : /context.*destroyed/i.test(error.message) ? 'navigation interrupted inspection' : /net::/i.test(error.message) ? 'navigation network error' : 'operation failed'})` };
   } finally {
