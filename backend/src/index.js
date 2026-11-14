@@ -15,6 +15,7 @@ import { registerEntitlementRoutes } from './entitlements.js';
 import { registerReleasesRoutes } from './releases.js';
 import { registerMeteringRoutes } from './metering.js';
 import { registerInboxRoutes } from './inbox.js';
+import { registerInboxHistoryRoutes } from './inbox-history.js';
 import { registerTransferRoutes } from './transfers.js';
 import { registerCameraRoutes } from './cameras.js';
 import { registerBranchRoutes } from './branches.js';
@@ -44,7 +45,7 @@ export function corsHeaders(request, env) {
   if (origin && list.includes(origin)) {
     h['Access-Control-Allow-Origin'] = origin;
     h['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
-    h['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Request-Id';
+    h['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Request-Id,X-Nova-Pin';
     h['Access-Control-Max-Age'] = '600';
   }
   return h;
@@ -87,6 +88,7 @@ registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerWhatsAppRoutes(route, { json, errorResponse });
 registerWaBridgeRoutes(route, { json, errorResponse }, { authenticate });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
+registerInboxHistoryRoutes(route, { errorResponse });
 registerTransferRoutes(route, { errorResponse }, { authenticate });
 registerCameraRoutes(route, { errorResponse }, { authenticate });
 registerBranchRoutes(route, { errorResponse }, { authenticate });

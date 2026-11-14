@@ -226,7 +226,9 @@ fi
 # 6. deploy Worker (flags unset = OFF)
 say "deploying $SCRIPT_NAME"
 deploy_ok=0
-if (cd "$ROOT/backend" && npx --yes wrangler@4 deploy --env staging --var "BUILD_SHA:${BUILD_SHA}"); then
+# --keep-vars: keep flags/config set on the Worker outside wrangler.toml (NOVA_INBOX, NOVA_WA_*, WA_TENANT_MAP);
+# without it a redeploy silently switches the WhatsApp bridge off.
+if (cd "$ROOT/backend" && npx --yes wrangler@4 deploy --env staging --keep-vars --var "BUILD_SHA:${BUILD_SHA}"); then
   deploy_ok=1
 fi
 if [ "$deploy_ok" != 1 ]; then
