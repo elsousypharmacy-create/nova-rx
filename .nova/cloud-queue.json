@@ -2213,10 +2213,12 @@
     "UX47",
     "UX48"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T01:27:50+00:00"
   },
   {
    "id": "UX53",
@@ -2601,22 +2603,15 @@
    "brief": "Files: index.html (Products page toolbar next to #novaInventoryPurchase), tests/ux/manual-receive.mjs (new). Gap: only the AI photo panel exists; no manual lot/expiry entry. Add button «استلام بضاعة» opening a Black Edition dialog: product search (reuse the instant search), quantity (boxes), lot number, expiry (month input, must be future), optional cost; confirm calls the existing window.novaStock.addLot (use the same key shape as keyOf of the product) and toasts «تم استلام N — تشغيلة X تنتهي MM/YYYY». Reject past expiry with an Arabic inline error; Enter confirms, Esc closes. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F3.",
    "acceptance": "tests/ux/manual-receive.mjs: receive 20 of a demo product with lot B2611 expiry 2027-03 -> novaStock.lots(key) contains it and a FEFO pick uses it; past expiry rejected with inline Arabic error and no stock change; a full receive journey is <=4 clicks plus typing from the Products page; no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T01:18:13+00:00",
    "pr": 358,
-   "ci_dispatched": {
-    "sha": "b7a94723ab42860bb149f8924f4c6881aac4e9ef",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T01:22:37+00:00"
-   }
+   "merged_at": "2026-11-14T01:27:50+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/358"
   },
   {
    "id": "UX61",
@@ -2670,21 +2665,15 @@
     "UX30",
     "UX31"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T01:19:56+00:00",
    "pr": 361,
-   "ci_dispatched": {
-    "sha": "0666161e614c73ddb2fd10d4cf53e3e010c7f231",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T01:22:37+00:00"
-   }
+   "merged_at": "2026-11-14T01:27:50+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/361"
   },
   {
    "id": "UX35",
@@ -2925,5 +2914,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:25:20+00:00"
+ "updated": "2026-11-14T01:27:50+00:00"
 }
