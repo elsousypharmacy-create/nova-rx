@@ -2185,22 +2185,15 @@
    "brief": "Files: index.html (customer sidebar where «آخر شراء» and #btnRefillLast render), tests/ux/refill-days.mjs (new). Gap: panel shows last purchase date only. Add «صُرف منذ N يوم» using the last invoice date, and for chronic items show a calm hint «مبكر» when N < 20 days and «متأخر» when N > 40 (thresholds constants at top of the block, no medical advice wording). Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F10.",
    "acceptance": "tests/ux/refill-days.mjs: customer with last purchase 17 days ago shows «صُرف منذ 17 يوم» and «مبكر»; 50 days shows «متأخر»; no previous purchase shows nothing; customer-refill.mjs still passes; no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:22:30+00:00",
    "pr": 335,
-   "ci_dispatched": {
-    "sha": "286f47225732631d2556c8d960a8e3bfbd93940e",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:26:05+00:00"
-   }
+   "merged_at": "2026-11-14T00:29:54+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/335"
   },
   {
    "id": "UX54",
@@ -2813,5 +2806,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:28:30+00:00"
+ "updated": "2026-11-14T00:29:54+00:00"
 }
