@@ -4142,12 +4142,12 @@
    "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:16:20+00:00",
+   "dispatched_at": "2026-11-14T23:22:53+00:00",
    "pr": 435,
    "ci_dispatched": {
     "sha": "548389fcca0f775f6afdcc99c1eaae02654351a8",
@@ -4190,12 +4190,22 @@
    "brief": "m-products.png: each product is a 6-row label/value card. Redesign nova-cards for products: name + price on the first line, barcode small, stock badge + category chip on the second (<=84px), keep 44px tap target; no horizontal overflow. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "At least 6 products visible in 390x844 first fold; tap target >=44px; test asserts card height.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:20:20+00:00"
+   "dispatched_at": "2026-11-14T23:20:20+00:00",
+   "pr": 437,
+   "ci_dispatched": {
+    "sha": "229218019735ee7ed796fdc413e90b0a78bda620",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:22:53+00:00"
+   }
   },
   {
    "id": "UX306",
@@ -4258,5 +4268,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:20:20+00:00"
+ "updated": "2026-11-14T23:22:53+00:00"
 }
