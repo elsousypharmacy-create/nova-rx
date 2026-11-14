@@ -35,6 +35,7 @@ try {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+  await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
   await page.addInitScript(() => {
     try {
       if (!sessionStorage.getItem('seeded')) {

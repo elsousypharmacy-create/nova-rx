@@ -20,6 +20,7 @@ try {
     await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:') || u.startsWith('blob:')) return r.continue(); return r.abort(); });
     const page = await ctx.newPage();
     await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+    await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
     await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); localStorage.setItem('nova-rx-sales-v1', JSON.stringify([{ id: 'sale-0', number: 'S-0', at: new Date().toISOString(), customer: '', payment: 'cash', lines: [{ name: 'A', barcode: '', price: 100, qty: 3, discount: 0 }], subtotal: 300, discount: 0, vat: 0, total: 300, received: 300, change: 0, source: 'STOCK LIVE' }])); } catch {} });
     await page.goto(BASE, { waitUntil: 'load' });
     await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });

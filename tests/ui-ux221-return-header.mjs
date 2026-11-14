@@ -16,6 +16,7 @@ try {
     await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:') || u.startsWith('blob:')) return r.continue(); return r.abort(); });
     const page = await ctx.newPage();
     await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+    await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
     await page.addInitScript(() => {
       try { localStorage.clear(); localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage');
         const lines = Array.from({ length: 12 }, (_, i) => ({ name: 'صنف ' + i, barcode: '', price: 10, qty: 2, discount: 0 }));

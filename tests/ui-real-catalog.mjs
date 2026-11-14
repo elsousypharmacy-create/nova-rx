@@ -15,6 +15,7 @@ async function open({ stock }) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG', hasTouch: true });
   await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:')) return r.continue(); return r.abort(); });
   const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
+  await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
   await page.route('**/emergency/stock.json', r => stock === 'ok' ? r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }) : stock === 'bad' ? r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[{"code":"1","namear":"x","price":1}]}' }) : r.fulfill({ status: 404, body: 'no' }));
   await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
@@ -95,7 +96,7 @@ await t('a hostile product name (<img onerror>) is inert: shown as text in the l
   const body = JSON.stringify({ exportedAt: '2026-11-11T00:00:00Z', items: [{ code: '777001', namear: evil, price: 5.5 }, ...filler] });
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG', hasTouch: true });
   await ctx.route('**/*', r => { const u = r.request().url(); return u.startsWith(new URL(BASE).origin) || u.startsWith('data:') ? r.continue() : r.abort(); });
-  const page = await ctx.newPage(); await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body }));
+  const page = await ctx.newPage(); await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; }); await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body }));
   await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' }); await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE');
   await search(page, 'فيتامين'); await page.waitForTimeout(200);
@@ -114,7 +115,7 @@ await t('scanning a hostile-named item by barcode or by code never runs its mark
   const body = JSON.stringify({ exportedAt: '2026-11-11T00:00:00Z', items: [{ code: '777002', gtin: '6221000000002', namear: evil, price: 5.5 }, { code: '777003', gtin: '12345', namear: evil + 'B', price: 6.5 }, ...filler] });
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG', hasTouch: true });
   await ctx.route('**/*', r => { const u = r.request().url(); return u.startsWith(new URL(BASE).origin) || u.startsWith('data:') ? r.continue() : r.abort(); });
-  const page = await ctx.newPage(); await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body }));
+  const page = await ctx.newPage(); await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; }); await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body }));
   await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' }); await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE');
   for (const q of ['6221000000002', '777002']) {

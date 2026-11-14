@@ -2903,11 +2903,16 @@ window.NovaFmt=(function(){
       window.novaCatalog = { source: "demo", exportedAt: null, count: DEMO_PRODUCTS.length };
       function loadRealPrices() {
         if (location.protocol === "file:") return;
-        fetch("/emergency/stock.json", { cache: "no-cache" }).then(r => (r.ok ? r.text() : null)).then(txt => {
-          if (!txt) return;
-          let j; try { j = JSON.parse(String(txt).replace(/^\uFEFF/, "")); } catch (e) { return; }
+        // Browsers log every HTTP 404 as a console error, whatever JS does with it. So on a loopback static host
+        // (no Worker route) and after a remembered miss we do not request the file at all: cached snapshot or demo data.
+        const MISS_KEY = "nova-stock-missing-v1", SNAP_KEY = "nova-stock-snapshot-v1", MISS_TTL = 6 * 3600 * 1000;
+        const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+        const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+        const loopback = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+        const apply = txt => {
+          let j; try { j = JSON.parse(String(txt).replace(/^\uFEFF/, "")); } catch (e) { return false; }
           const raw = Array.isArray(j) ? j : j && j.items;
-          if (!Array.isArray(raw)) return;
+          if (!Array.isArray(raw)) return false;
           const seen = new Set(), out = [];
           for (const r of raw) {
             const code = String(r.code == null ? "" : r.code).replace(/[^\d]/g, "");
@@ -2918,11 +2923,21 @@ window.NovaFmt=(function(){
             seen.add(code || gtin);
             const pk = window.novaPackagingLabel ? window.novaPackagingLabel(r.packaging) : ""; out.push({ id: code || gtin, barcode: gtin || code, pack: pk, packaging: pk ? r.packaging : null, name: nameAr && nameEn ? nameAr + " (" + nameEn + ")" : nameAr || nameEn, generic: "", form: "", price: Math.round(price * 100) / 100, stock: null, category: "", real: true });
           }
-          if (out.length < 50) return; // an almost empty file is not a catalog: keep the demo data
+          if (out.length < 50) return false; // an almost empty file is not a catalog: keep the demo data
           DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
           const ts = Date.parse(j && j.exportedAt);
           window.novaCatalog = { source: "STOCK LIVE", exportedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null, count: out.length };
           window.dispatchEvent(new CustomEvent("nova-catalog"));
+          return true;
+        };
+        const snap = lsGet(SNAP_KEY);
+        if (snap) apply(snap);
+        const missAt = Number(lsGet(MISS_KEY));
+        if (missAt && Date.now() - missAt < MISS_TTL) return;
+        if (loopback && !window.NOVA_STOCK_PROBE && !/[?&]stock=1\b/.test(location.search)) return;
+        fetch("/emergency/stock.json", { cache: "no-cache" }).then(r => (r.ok ? r.text() : (lsSet(MISS_KEY, String(Date.now())), null))).then(txt => {
+          if (!txt) return;
+          if (apply(txt)) { try { if (txt.length < 2500000) lsSet(SNAP_KEY, txt); } catch (e) {} }
         }).catch(() => {});
       }
       loadRealPrices();

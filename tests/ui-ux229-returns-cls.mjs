@@ -17,6 +17,7 @@ try {
       await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:') || u.startsWith('blob:')) return r.continue(); return r.abort(); });
       const page = await ctx.newPage();
       await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+      await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
       await page.addInitScript(() => {
         try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {}
         try { if (!localStorage.getItem('nova-rx-sales-v1')) { const now = new Date().toISOString(), pays = ['cash', 'card', 'credit', 'mixed']; localStorage.setItem('nova-rx-sales-v1', JSON.stringify(pays.map((p, i) => ({ id: 'sale-' + i, number: 'S-' + i, at: now, customer: '', payment: p, lines: [{ name: 'A', barcode: '', price: 100, qty: 3, discount: 0 }], subtotal: 300, discount: 0, vat: 0, total: 300, received: 300, change: 0, source: 'STOCK LIVE' })))); } } catch {}
