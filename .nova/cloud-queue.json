@@ -4017,13 +4017,23 @@
    "brief": "Ahmed (owner): the conversations list disappeared entirely from the live nova-rx-preview conversations screen. DO NOT roll back the preview worker or the staging backend (he said «لا مترجعش»). Staging D1 is intact (28 conversations, 563 messages, tenant default). Staging history API is fine: unauthenticated GET /api/v1/inbox/history/conversations returns 401 PIN_REQUIRED with CORS for the preview origin; the frontend still calls that same path with X-Nova-Pin; response shape is still {ok, conversations}. The cause is a later frontend deploy, not the backend.\n\nRoot cause: at 2026-11-14T16:48:11Z wa-live2 (FIX50 + FIX51 + WA-SEND + PIN history) was live. At 16:51:18Z cloud-scheduler auto-deployed the stale artifact worker/live/nova-rx-preview.qa-219.js (UX230 preview_deploy, sha256 0c832d9e…c68a6, run 43617871203) because preview_deploys uses expected_modified_on=20 (matches any 20xx timestamp) and QA_BUILD auto-deploys any done 'Build worker/live/nova-rx-preview.qa-N.js' task. qa-219 was built from older HTML and does NOT contain the PIN history UI (no hLoad, no inbox/history, no waHistPin), nor FIX50/FIX51. The screen therefore only shows the empty local inbox («لا توجد محادثات»). Live HTML is still that qa-219 app (about 573216 bytes, no those markers). An operator attempt to redeploy wa-live2 (run 43621714384) failed verification with 'Worker code missing from download'; its automatic rollback also failed; do not retry a rollback.\n\nFix: keep FIX50 (style#NOVA_FIX50 16px touch inputs, script#NOVA_FIX50_VV visualViewport composer, no user-scalable=no) and FIX51 (hPoll 4s, winClosed, data-wa-window, auto-reopen composer) and WA-SEND (hSend / X-Nova-Pin / history API). Rebuild the next free worker/live artifact from worker/live/nova-rx-preview.wa-live2.js (or wa-send1 if needed) + current main index.html (now also has merged UX237/UX240/UX300). worker/live/nova-rx-preview.qa-231.js on main already contains the history/FIX50/FIX51/hSend markers — you may use or rebuild it, but verify markers and node --check. Add/extend a markers test. Worker code outside the HTML literal must stay unchanged vs the chosen base. Do NOT auto-deploy qa-219. Do not change secrets, Script Properties, or D1 (no DELETE/DROP/TRUNCATE). No deploy in this task (cloud tasks never deploy). Also harden .nova/cloud_scheduler.py preview_deploys so a stale qa-* artifact cannot overwrite a newer good preview (stop using expected_modified_on=20; record the real live modified_on; skip auto-deploy if the candidate lacks inbox/history or FIX50/FIX51 markers).\n\nAhmed wants the conversations to show again after PIN, like before, with no iOS zoom and live inbound/24h window still working.",
    "acceptance": "New or verified worker/live artifact contains PIN history UI (hLoad, inbox/history, waHistPin), FIX50, FIX51, and WA-SEND; markers test and node --check pass; scheduler can no longer clobber a newer good preview with a stale qa-219-style artifact; no deploy; no rollback; no data loss.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/fix-conversations-missing.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T17:35:28+00:00"
+   "dispatched_at": "2026-11-14T17:35:28+00:00",
+   "pr": 428,
+   "ci_dispatched": {
+    "sha": "a6c171ec620ea39add4ea0c1f032a4883718c022",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T17:37:10+00:00"
+   }
   }
  ],
- "updated": "2026-11-14T17:35:28+00:00"
+ "updated": "2026-11-14T17:37:10+00:00"
 }
