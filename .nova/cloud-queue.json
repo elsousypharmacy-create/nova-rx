@@ -2976,7 +2976,7 @@
    "brief": "Add a WhatsApp icon to the app's top bar (header) on every page. Show an unread-message count badge on it, read from the NOVA inbox/conversations data (the WhatsApp bridge intake). Clicking the icon opens the المحادثات screen. Hide the badge when the count is 0. Keep the icon style consistent with the other header icons, RTL-safe and responsive. Degrade gracefully when the backend flag is off (icon only, no badge, no errors). After the code change, rebuild the live front-end artifact the usual way so it gets auto-deployed to nova-rx-preview.",
    "acceptance": "the icon is visible in the header; the badge shows the unread count and updates; clicking it opens the conversations screen; the existing UI tests pass; the new test covers the badge at 0 and at n>0.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-wa-badge.json",
@@ -2984,15 +2984,15 @@
    "dispatched_at": "2026-11-14T03:50:27+00:00",
    "pr": 367,
    "ci_dispatched": {
-    "sha": "d0263695aba8d068b05cff3ab33f488b4dedc496",
+    "sha": "4fab62f44ad20e65bb1816cc4d094cbe82ccb393",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T03:49:10+00:00"
+    "at": "2026-11-14T03:51:45+00:00"
    }
   }
  ],
- "updated": "2026-11-14T03:50:27+00:00"
+ "updated": "2026-11-14T03:51:45+00:00"
 }
