@@ -3286,22 +3286,15 @@
    "brief": "Reports empty state is one text bar and ~500px of blank space. Add a designed empty state (icon, title, hint, primary CTA 'ابدأ بيع' linking to the sale tab) and make the demo-data disclosure clear with a skeleton preview, not blank. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Empty reports shows icon+CTA; CTA switches to sale tab; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T11:15:53+00:00",
    "pr": 383,
-   "ci_dispatched": {
-    "sha": "940796d5df199de411d1be7962bcf62cc504c1fd",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:18:31+00:00"
-   }
+   "merged_at": "2026-11-14T11:23:54+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/383"
   },
   {
    "id": "UX212",
@@ -3310,12 +3303,22 @@
    "brief": "Products header: merge duplicate count cards when search empty (show one 'N صنف' + results only when filtering), shrink the 'الرصيد غير متوفر' card to a compact notice chip, make the action buttons (طباعة الاستيكرات/استلام بضاعة/قراءة فاتورة) single-line with ellipsis or an icon row on mobile. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "KPI area <=90px tall on mobile; no 3-line button labels; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T11:17:11+00:00"
+   "dispatched_at": "2026-11-14T11:17:11+00:00",
+   "pr": 385,
+   "ci_dispatched": {
+    "sha": "fb83a7173e95462f5443bb0762f1485aa1898472",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T11:23:54+00:00"
+   }
   },
   {
    "id": "UX211",
@@ -3324,12 +3327,22 @@
    "brief": "Switching to المنتجات renders 300 rows synchronously (long task 115ms, tab latency 155ms, target <100ms). Render first ~40 rows then fill the rest in idle chunks (requestIdleCallback/rAF) or virtualize; keep search/scroll smooth at 60fps; avoid layout thrash. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Tab switch to products <100ms and no long task >50ms in Playwright measurement; row count and search results unchanged; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T11:18:31+00:00"
+   "dispatched_at": "2026-11-14T11:18:31+00:00",
+   "pr": 384,
+   "ci_dispatched": {
+    "sha": "3757e761607024665976bc7e356ec7d7246ac105",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T11:23:54+00:00"
+   }
   },
   {
    "id": "UX210",
@@ -3338,10 +3351,12 @@
    "brief": "On 390px the sale header (shop, new sale, hold, held, customer, more, F1 chip, invoice no.) wraps to 3 rows. Compress to a single action row + overflow menu; hide the F1 shortcuts chip on touch/coarse pointer; keep 44px targets. Gives the cart more room. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Header block <=110px tall on 390x844; F1 chip hidden on hasTouch; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-203-fixes.json"
+   "source": "inbox/qa-loop-203-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T11:23:54+00:00"
   },
   {
    "id": "UX209",
@@ -3350,10 +3365,12 @@
    "brief": "Make #novaWaBtn at least 36x36 (44 on touch) with aria-label, focus ring and consistent spacing with status dot and refresh button; align header icon group. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Button >=36px desktop/44px mobile; keyboard focus visible; test asserts size.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-203-fixes.json"
+   "source": "inbox/qa-loop-203-fixes.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T11:23:54+00:00"
   },
   {
    "id": "UX208",
@@ -3416,5 +3433,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:22:29+00:00"
+ "updated": "2026-11-14T11:23:54+00:00"
 }
