@@ -36,9 +36,9 @@ try {
     ck(name + ' close 44x44', Math.round(a.x.w) === 44 && Math.round(a.x.h) === 44);
     ck(name + ' title within dialog', a.h.l >= a.d.l && a.h.r <= a.d.r);
     ck(name + ' close at inline-start (left in RTL)', a.x.l < a.h.l);
-    await page.evaluate(() => { const d = document.querySelector('.nova-return-overlay [role=dialog]'); d.scrollTop = d.scrollHeight; });
+    await page.evaluate(() => { const d = document.querySelector('.nova-return-overlay .nova-ret-body'); d.scrollTop = d.scrollHeight; });
     await page.waitForTimeout(200);
-    const sc = await page.evaluate(() => document.querySelector('.nova-return-overlay [role=dialog]').scrollTop);
+    const sc = await page.evaluate(() => document.querySelector('.nova-return-overlay .nova-ret-body').scrollTop);
     a = await m();
     ck(name + ' dialog scrolled', sc > 20, 'scrollTop=' + sc);
     ck(name + ' header sticky at top while scrolled', a.hd.t >= a.d.t && a.hd.t - a.d.t < 4 && a.x.b <= a.d.b, 'offset=' + (a.hd.t - a.d.t));
