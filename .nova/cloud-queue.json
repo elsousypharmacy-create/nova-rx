@@ -3269,22 +3269,15 @@
    "brief": "Layout shift measured 0.0195 on 1366 load (none on mobile). Find via PerformanceObserver layout-shift sources (likely header badge/nav or fonts) and reserve space (fixed min-height/width, font-display/size-adjust, preload fonts). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "CLS <=0.005 on desktop load in a Playwright measurement test.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T11:10:05+00:00",
    "pr": 382,
-   "ci_dispatched": {
-    "sha": "03fe2fd847c770b16876645dab304a49b4547fde",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:17:11+00:00"
-   }
+   "merged_at": "2026-11-14T11:22:29+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/382"
   },
   {
    "id": "UX213",
@@ -3423,5 +3416,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:19:52+00:00"
+ "updated": "2026-11-14T11:22:29+00:00"
 }
