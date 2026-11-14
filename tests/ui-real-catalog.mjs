@@ -150,7 +150,7 @@ for (const mode of ['missing', 'bad']) {
     assert.equal(await d.page.evaluate(() => window.novaCatalog.source), 'demo'); assert.equal(await d.page.evaluate(() => window.NOVA_DEMO.products.length), 12);
     await search(d.page, 'بانادول'); assert.ok(await suggestions(d.page).count() > 0, 'demo search still works');
     await d.page.locator('.nova-tab[data-page="products"]').click(); await d.page.waitForTimeout(300);
-    assert.ok((await d.page.locator('#novaPageView').innerText()).includes('البيانات التجريبية'));
+    { const pv = await d.page.locator('#novaPageView').innerText(); assert.ok(pv.includes('الأصناف') && pv.includes('عرض تجريبي'), 'demo panel is titled الأصناف with a demo chip'); }
     assert.equal(d.errors.length, 0, d.errors.join(' | ')); await d.ctx.close();
   });
 }
