@@ -2242,12 +2242,12 @@
    "brief": "Files: index.html (flag-gated section in products page only), tests/ux/transfers-flag.mjs (new). localStorage['nova.flags.transfers']==='1' shows list + request/send/receive-with-difference dialogs over the existing window.novaTransfers (INV-05); default off, zero UI change when off; Black Edition RTL, 44px targets, SVG icons; this-device-only notice in Arabic; no network.",
    "acceptance": "tests/ux/transfers-flag.mjs: flag off -> section absent; flag on -> request then send reduces local lots FEFO, receive with a shortage records the difference, state survives reload; no non-GET requests; node tests/ux/low-stock-filter.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:28:30+00:00",
+   "dispatched_at": "2026-11-14T00:38:54+00:00",
    "pr": 339,
    "ci_dispatched": {
     "sha": "08a2b014c0fe5d82341bf01682c2db8131e6f42e",
@@ -2300,22 +2300,15 @@
    "brief": "Files: backend/src/whatsapp-process.js (new), backend/src/index.js (scheduled hook guarded by NOVA_WA_INTAKE), tests/unit/backend-whatsapp-process.check.mjs (new). Convert a stored Meta message payload (text/image/document) to openConversation+receiveMessage using phone_number_id->tenant from a non-secret config var, feed it to existing processQueue; idempotent by wa message id; no network; flags stay OFF by default (still 404 when off). No secrets or wrangler.toml changes.",
    "acceptance": "tests with mock D1: processing creates exactly one conversation+message per wa id, duplicate id is no-op, bad payload retries then dead-letters, unknown phone_number_id dead-letters without cross-tenant write, flag off -> scheduled hook does nothing; node tests/unit/backend-whatsapp-intake.check.mjs and tests/unit/backend-inbox.check.mjs pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:32:39+00:00",
    "pr": 340,
-   "ci_dispatched": {
-    "sha": "ac0f4bafbadf46922dc1af6b6c499c6b867ad782",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T00:34:30+00:00"
-   }
+   "merged_at": "2026-11-14T00:38:54+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/340"
   },
   {
    "id": "UX48",
@@ -2348,12 +2341,22 @@
    "brief": "Files: integrations/whatsapp/inbox.html, supplier-compare.html, index.html (customers empty state), tests/ux/standalone-pages.mjs (new). Give inbox.html the Black Edition palette tokens, a header with a «رجوع للتطبيق» link, buttons >=44px, SVG instead of ◉, 12px minimum font; supplier-compare buttons >=44px; customers page with fewer than 8 rows shows an empty-state card with an «إضافة عميل» action instead of 230px blank. Inbox stays unpublished; no network/flag change.",
    "acceptance": "tests/ux/standalone-pages.mjs at both viewports: inbox.html buttons >=44px and min font >=12px, back link present, no emoji glyph; supplier-compare buttons >=44px; node tests/unit/whatsapp-bridge.check.mjs still passes; no live writes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:34:30+00:00"
+   "dispatched_at": "2026-11-14T00:34:30+00:00",
+   "pr": 342,
+   "ci_dispatched": {
+    "sha": "244826ea1c0a61a005852e29ff0e8d5477b516ad",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:38:54+00:00"
+   }
   },
   {
    "id": "UX46",
@@ -2837,5 +2840,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:37:21+00:00"
+ "updated": "2026-11-14T00:38:54+00:00"
 }
