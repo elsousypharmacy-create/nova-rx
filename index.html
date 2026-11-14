@@ -2114,7 +2114,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
       <!-- Invoice Footer & Totals Section -->
       <footer class="invoice-footer">
         <!-- Overall Discounts -->
-        <div class="discount-controls">
+        <div class="discount-controls" id="discountControls">
           <div class="discount-title">
             <span>Overall Invoice Discount</span>
             <span style="font-size:12px; color:var(--text-dim);">No negative total floor</span>
@@ -2134,6 +2134,9 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 
         <!-- Financial Totals -->
         <div class="totals-breakdown">
+          <button type="button" class="discount-toggle" id="btnDiscountToggle" aria-expanded="false" aria-controls="discountControls">
+            <span>خصم الفاتورة</span><span class="discount-toggle-caret" aria-hidden="true">▾</span>
+          </button>
           <div class="tot-row">
             <span>Subtotal (<span id="totalItemsCount">0</span> items)</span>
             <span id="displaySubtotal">0.00 EGP</span>
@@ -6142,7 +6145,48 @@ if(b.dataset.act==='handoff'){if(c.mode==='human'){c.mode='bot';inbox.assign(id,
 else inbox.assign(id,'الصيدلي');draw()});
 tab.addEventListener('click',function(){draw();var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
 nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box.hidden=true;tab.classList.remove('active')}},true)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script></body>
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux44-mobile-totals">
+/* UX44: mobile totals — collapsible discount inside totals block, no overlap/clipping, sticky pay >=48px */
+.discount-toggle{display:none}
+@media(max-width:640px){
+ .invoice-footer{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:6px!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))!important;position:sticky;bottom:0;z-index:20}
+ .totals-breakdown{display:flex!important;flex-direction:column;flex:0 0 auto!important;width:100%;gap:2px;margin:0!important;font-size:13px;overflow:visible}
+ .totals-breakdown .tot-row{display:flex;flex-wrap:nowrap!important;justify-content:space-between;align-items:center;gap:8px;min-height:20px;line-height:1.4;white-space:normal}
+ .totals-breakdown .tot-row>span{min-width:0;overflow-wrap:anywhere}
+ .totals-breakdown .tot-row>span:last-child{flex:none;white-space:nowrap}
+ .totals-breakdown .tot-row.grand-total{font-size:15px;padding-top:2px;margin-top:0}
+ .totals-breakdown .tot-row.grand-total span:last-child{font-size:16px}
+ .discount-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 10px;background:#191e24;color:#dce3ea;border:1px solid #303841;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+ .discount-toggle[aria-expanded="true"] .discount-toggle-caret{transform:rotate(180deg)}
+ .totals-breakdown .discount-controls{display:none;flex:none;width:100%;box-sizing:border-box;margin:0}
+ .totals-breakdown .discount-controls.open{display:flex}
+ .totals-breakdown .discount-title{flex-wrap:wrap;gap:2px 8px}
+ .totals-breakdown .discount-inputs{display:flex;gap:8px}
+ .totals-breakdown .discount-inputs .input-grp{flex:1 1 0;min-width:0}
+ .checkout-action-box{flex:0 0 auto!important;width:100%!important;min-width:0!important;align-self:stretch}
+ .btn-checkout{min-height:48px!important;height:48px;width:100%}
+ .toast-container{bottom:calc(210px + env(safe-area-inset-bottom,0px))!important}
+}
+</style>
+<script>
+/* UX44: on phones the discount card lives inside the totals block as a collapsible row; desktop keeps the original footer layout. */
+(function(){
+ var mq=window.matchMedia('(max-width:640px)');
+ function sync(){
+  var dc=document.getElementById('discountControls'),tb=document.querySelector('.totals-breakdown'),ft=document.querySelector('.invoice-footer'),tg=document.getElementById('btnDiscountToggle');
+  if(!dc||!tb||!ft||!tg)return;
+  if(mq.matches){ if(dc.parentNode!==tb)tg.after(dc); }
+  else{ if(dc.parentNode!==ft)ft.insertBefore(dc,tb); dc.classList.remove('open'); tg.setAttribute('aria-expanded','false'); }
+ }
+ document.addEventListener('DOMContentLoaded',function(){
+  var tg=document.getElementById('btnDiscountToggle');
+  if(tg)tg.addEventListener('click',function(){var dc=document.getElementById('discountControls');var o=!dc.classList.contains('open');dc.classList.toggle('open',o);tg.setAttribute('aria-expanded',String(o));});
+  sync();
+ });
+ if(mq.addEventListener)mq.addEventListener('change',sync);
+})();
+</script>
+</body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
