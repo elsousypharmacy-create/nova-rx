@@ -1,0 +1,7 @@
+/* UX40: unified icon set */
+.nova-ico{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;vertical-align:middle;margin-inline-end:6px;position:relative;top:-1px}
+h1 .nova-ico,h2 .nova-ico,h3 .nova-ico,h4 .nova-ico{width:20px;height:20px}
+button:empty .nova-ico,button>.nova-ico:only-child{margin-inline-end:0}
+[dir=rtl] .nova-ico-dir{transform:scaleX(-1)}
+button svg:not(.receipt-barcode-svg),a.btn svg,summary svg,.btn svg,.nova-tab svg{width:16px;height:16px}
+h1 svg,h2 svg,h3 svg,h4 svg{width:20px;height:20px}
