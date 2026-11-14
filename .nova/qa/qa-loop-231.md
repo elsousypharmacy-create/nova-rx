@@ -8,3 +8,6 @@ Screenshots: .nova/qa/qa-loop-231/ux235-*.png
 - index.html: hist.pend/oerr per conversation; renderWa chatLoading/chatError -> skeleton + loading text with aria-busy on #waMsgs; inline role=alert error + retry button.
 - Test: tests/ux/ux234-wa-chat-loading.mjs (mock delayed/failed history) PASS. Screenshots: ux234-loading.png, ux234-error.png.
 - tests/ux/fix46-wa-history.mjs fails at "composer stays a disabled draft": pre-existing (same failure without my change; WA-SEND #408 enabled the composer).
+
+## UX232 fix
+CSS only (index.html WA_CSS): #novaInboxView flex column; .wa-root flex:1 1 auto, height:auto; bars flex:0 0 auto. Test: tests/ux/ux232-inbox-fit.mjs (1366x768, 390x844, 844x390; lock open/closed). Shots: .nova/qa/qa-loop-231/ux232-*.png
