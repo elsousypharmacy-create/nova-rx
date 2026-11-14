@@ -1,0 +1,46 @@
+// UX65: shortage log from search no-result.
+import { chromium } from 'playwright';
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.svg': 'image/svg+xml', '.json': 'application/json' };
+const server = http.createServer((req, res) => {
+  let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  if (p === '/') p = '/index.html';
+  const f = path.resolve(ROOT, '.' + p);
+  if (!f.startsWith(ROOT + path.sep) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404).end('nf'); return; }
+  res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream', 'cache-control': 'no-store' });
+  fs.createReadStream(f).pipe(res);
+});
+await new Promise(r => server.listen(0, '127.0.0.1', r));
+const BASE = `http://127.0.0.1:${server.address().port}`;
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
+const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, locale: 'ar-EG' });
+await ctx.route('**/*', r => { const m = r.request().method(); const u = r.request().url(); if ((m !== 'GET' && m !== 'HEAD') || !(u.startsWith(BASE) || u.startsWith('data:') || u.startsWith('blob:'))) return r.abort(); return r.continue(); });
+const page = await ctx.newPage();
+await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
+const errs = [];
+page.on('pageerror', e => errs.push(String(e)));
+page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|net::ERR/.test(m.text())) errs.push(m.text()); });
+let fail = 0;
+const check = (ok, msg) => { console.log((ok ? 'PASS ' : 'FAIL ') + msg); if (!ok) fail++; };
+const get = () => page.evaluate(() => JSON.parse(localStorage.getItem('nova-rx-shortages-v1') || '[]'));
+await page.goto(BASE + '/index.html', { waitUntil: 'load' });
+await page.waitForSelector('#mainSearchInput');
+await page.fill('#mainSearchInput', 'xyz-not-found');
+await page.waitForSelector('#novaShortageBtn');
+check(true, 'no-result shows shortage button');
+await page.click('#novaShortageBtn');
+let l = await get();
+check(l.length === 1 && l[0].text === 'xyz-not-found' && l[0].count === 1 && l[0].qty === 1 && !!l[0].date, 'first click stores entry');
+await page.click('#novaShortageBtn');
+l = await get();
+check(l.length === 1 && l[0].count === 2, 'second click increments count to 2, no duplicate');
+await page.reload({ waitUntil: 'load' });
+l = await get();
+check(l.length === 1 && l[0].count === 2, 'entry survives reload');
+check(errs.length === 0, 'no console errors ' + errs.join('|'));
+await browser.close(); server.close();
+process.exit(fail ? 1 : 0);

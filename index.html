@@ -3178,6 +3178,19 @@ window.NovaFmt=(function(){
         elements.suggestionsBox.classList.add("open");
       }
 
+      window.novaShortages = {
+        KEY: "nova-rx-shortages-v1",
+        list() { try { const v = JSON.parse(localStorage.getItem(this.KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } },
+        add(text, qty) {
+          text = String(text || "").trim(); if (!text) return 0;
+          const d = new Date(), date = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+          const l = this.list(); let e = l.find(x => x.text === text && x.date === date);
+          if (e) e.count = (e.count || 1) + 1; else { e = { text, date, qty: qty || 1, count: 1 }; l.push(e); }
+          try { localStorage.setItem(this.KEY, JSON.stringify(l)); } catch (er) { return 0; }
+          return e.count;
+        }
+      };
+
       function renderProductSuggestions(matches) {
         state.suggestions = matches;
         state.selectedIndex = matches.length > 0 ? 0 : -1;
@@ -3185,6 +3198,7 @@ window.NovaFmt=(function(){
           elements.suggestionsBox.innerHTML = `
             <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
               No products found matching "${escH(state.searchQuery)}".
+              <div><button type="button" class="btn btn-secondary" id="novaShortageBtn" style="min-height:44px;margin-top:8px">سجّل نقص</button></div>
             </div>
           `;
           elements.suggestionsBox.classList.add("open");
@@ -4666,9 +4680,15 @@ window.NovaFmt=(function(){
 
         // Click on Autocomplete Suggestion
         elements.suggestionsBox.addEventListener("mousedown", e => {
-          if (e.target.closest(".suggestion-item")) e.preventDefault();
+          if (e.target.closest(".suggestion-item, #novaShortageBtn")) e.preventDefault();
         });
         elements.suggestionsBox.addEventListener("click", e => {
+          if (e.target.closest("#novaShortageBtn")) {
+            const n = window.novaShortages.add(state.searchQuery, 1);
+            if (n) showToast("تم تسجيل النقص: " + state.searchQuery + (n > 1 ? " (" + n + " مرات)" : ""));
+            else showToast("تعذر حفظ النقص على هذا الجهاز", "error");
+            return;
+          }
           const item = e.target.closest(".suggestion-item");
           if (!item) return;
           const idx = parseInt(item.getAttribute("data-idx"), 10);
@@ -5195,7 +5215,7 @@ window.NovaFmt=(function(){
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false) +'<div class="nova-products-toolbar"><input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('نتيجة البحث',list.length)+kpi(tr('الرصيد','Stock'),tr('غير متوفر من مصدر الأسعار','Not available from price source'))+kpi('مصدر الأسعار','STOCK LIVE')+'</div>'
- :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
+ :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'" title="'+tr('نقص مسجّل','Logged shortages')+': '+window.novaShortages.list().length+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
  +dupBlock+trfBlock+(()=>{const cols=[['الصنف',p=>'<td data-label="الصنف">'+esc(window.novaDispName(p.name))+'</td>'],['الباركود',p=>'<td dir="ltr" data-label="الباركود">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td data-label="السعر">'+money(p.price)+'</td>']];
  if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
  if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1" data-label="الرصيد"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td data-label="الرصيد">'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
