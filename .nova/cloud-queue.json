@@ -3642,7 +3642,13 @@
    "dispatched_at": "2026-11-14T17:07:38+00:00",
    "pr": 427,
    "merged_at": "2026-11-14T17:14:08+00:00",
-   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/427"
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/427",
+   "preview_deploy": {
+    "stage": "skipped",
+    "path": "worker/live/nova-rx-preview.qa-231.js",
+    "reason": "Do not auto-deploy: a stale qa-219 auto-deploy hid Ahmed's conversations. Owner forbade rollback; FIX52 will restore FIX50/FIX51/history first.",
+    "at": "2026-11-14T17:35:08+00:00"
+   }
   },
   {
    "id": "UX242",
@@ -4005,5 +4011,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/424"
   }
  ],
- "updated": "2026-11-14T17:14:08+00:00"
+ "updated": "2026-11-14T17:35:08+00:00"
 }
