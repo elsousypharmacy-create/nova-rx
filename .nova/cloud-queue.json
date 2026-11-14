@@ -3532,6 +3532,109 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/398"
   },
   {
+   "id": "FIX51",
+   "phase": "fix",
+   "title": "WhatsApp conversations: new customer messages not arriving live; 24h window wrongly blocks send",
+   "brief": "Ahmed (owner) just sent a WhatsApp message to the pharmacy number from his phone, but the NOVA conversations screen still shows the last inbound as yesterday 21:26 and blocks sending with 'آخر رسالة منه عدّى عليها أكتر من 24 ساعة'. So live inbound messages are not reaching staging D1 (the history only has the one-time backfill from sheet tab محادثات البوت; bot logged nothing after Oct 25). Diagnose end to end, read-only on the pharmacy repo/Apps Script: is the approved bridge (bot forwards copy of each message to NOVA ingest) merged/deployed and calling the ingest endpoint with NOVA_INGEST_SECRET? Does ingest write into the same tables the history/conversation and send endpoints read? Fix NOVA side so every new inbound/outbound appears in the chat within seconds (polling or SSE, like WhatsApp), and the 24h check uses the latest real inbound timestamp. If the bridge is missing on the bot side, prepare the PR for the pharmacy repo for Ahmed's review only (do not merge). Also make the composer behave like WhatsApp: clear 24h-window state instead of a red banner over messages, auto-refresh after new inbound, sent message shows instantly with ticks. Never send test messages to real customers; never touch WA_TOKEN or Script Properties; no deploy. Build the next worker/live artifact and report the exact root cause.",
+   "acceptance": "Root cause stated; new inbound appears live; 24h window computed from latest inbound; tests added; artifact built; no deploy.",
+   "after": [],
+   "status": "done",
+   "attempts": 0,
+   "fix_attempts": 1,
+   "source": "inbox/fix-wa-live-inbound.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:19:13+00:00",
+   "pr": 414,
+   "merged_at": "2026-11-14T15:26:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/414"
+  },
+  {
+   "id": "FIX50",
+   "phase": "fix",
+   "title": "iOS Safari zooms in when typing in any input; keep screen fixed like WhatsApp everywhere",
+   "brief": "Ahmed (iPhone Safari, screenshot): tapping the conversations composer makes the page zoom in and the layout shifts; he wants the screen to stay exactly like WhatsApp when typing, and the same in EVERY input across the whole app (search, sale, barcode, PIN, settings, returns, forms). Root cause: iOS auto-zooms inputs/textarea/select with computed font-size < 16px. Fix globally: all input/textarea/select font-size >= 16px on touch devices (keep visual design, adjust padding), viewport meta with width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content (do NOT disable user pinch zoom unless needed for accessibility review; prefer the 16px fix). Conversations: composer pinned above the keyboard (visualViewport / dvh), message list stays scrolled to bottom, header stays visible, no page jump, like WhatsApp. Add a Playwright WebKit iPhone test asserting every input's computed font-size >= 16px and no scale change on focus. Build the next free worker/live artifact (tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
+   "acceptance": "No zoom on focus in any input on iPhone; composer stays above keyboard like WhatsApp; test covers all inputs; artifact built; no deploy.",
+   "after": [],
+   "status": "done",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-ios-zoom.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:15:24+00:00",
+   "pr": 415,
+   "merged_at": "2026-11-14T15:23:25+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/415"
+  },
+  {
+   "id": "UX300",
+   "phase": "ux",
+   "title": "WhatsApp customer-service dashboard: exact response times and conversation volume",
+   "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #409 is still open on cloud/UX300; the dashboard code is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX300 and resolve every conflict carefully: keep main's FIX50 (style#NOVA_FIX50 16px touch inputs, script#NOVA_FIX50_VV visualViewport composer, viewport interactive-widget=resizes-content, no user-scalable=no), FIX51 (hPoll 4s, winClosed, data-wa-window note, auto-reopen composer), WA-SEND (hSend/PIN), and later QA/return-dialog work, PLUS this dashboard (لوحة الأداء, metrics endpoint, artifact). Rebuild the next free worker/live artifact from worker/live/nova-rx-preview.wa-send1.js or newer (wa-live2 if present) + the merged index.html with tools/build-worker-artifact.mjs; run markers test and node --check. Tests must pass. No deploy.\n\nOriginal task: Ahmed: build an in-app dashboard (inside NOVA Rx, Black Edition Arabic RTL, opened from the conversations screen and/or reports; same PIN gate as the old chats, PIN-gated staging endpoint under /api/v1/inbox/history/ style, read-only, no customer data in the public artifact) showing EXACTLY how long we take to reply to customers, from the imported WhatsApp history in staging D1 (26 chats/561 msgs from the bot log; senders user/bot/pharm/sys; note live forwarder timestamps are in seconds not ms, normalize). Metrics: first response time and every reply time per customer message, split bot vs pharmacist (human) — exact minutes/seconds; median, average, p90, slowest; % replied within 1/5/15/60 min; unanswered customer messages and waiting-now list; time from bot handoff (اتحوّل للصيدلي) to pharmacist reply. Volume: number of customers who wrote (unique), new vs returning, conversations and messages per day/hour, busiest hours heatmap, top topics if simple (keyword based). Filters: date range, today/7d/30d, bot vs pharmacist. Each metric clickable to the chats behind it. Charts smooth, design top priority. Tests for the metric calculations (exact times, timezone Africa/Cairo display, seconds-vs-ms normalization). Build into the next worker/live artifact (next free name, tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
+   "acceptance": "Dashboard shows exact reply times (bot and pharmacist) and how many customers write, with filters; PIN-gated; tests pass; artifact built; no deploy.",
+   "after": [],
+   "status": "pr_open",
+   "attempts": 0,
+   "fix_attempts": 1,
+   "source": "inbox/ux-wa-dashboard.json",
+   "pr": 409,
+   "ci_dispatched": {
+    "sha": "b043a4ffc9a08a59fe76b85ee805b125b782a68a",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T16:50:39+00:00"
+   },
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:49:03+00:00"
+  },
+  {
+   "id": "UX237",
+   "phase": 10,
+   "title": "التواريخ: صيغة 2026/11/12 جافة وفواصل الأيام غير ثابتة",
+   "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #405 is still open on cloud/UX237; the date-separator work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX237 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, and other conversation fixes, PLUS weekday names for the last 6 days and sticky frosted .wa-date separators. Re-run tests/ux/ux237-wa-dates.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+   "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
+   "after": [],
+   "status": "pr_open",
+   "attempts": 0,
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-231-fixes.json",
+   "pr": 405,
+   "ci_dispatched": {
+    "sha": "2141f73c078925e5a3ebe98c8d9cf4cde3021113",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T16:53:39+00:00"
+   },
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:50:39+00:00"
+  },
+  {
+   "id": "UX240",
+   "phase": 10,
+   "title": "شريط قفل PIN: هرمية بصرية ضعيفة وحقل بعرض كامل على الموبايل",
+   "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #402 is still open on cloud/UX240; the lock-bar work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX240 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, UX241/UX242 and other conversation fixes, PLUS the compact PIN lock bar in the sidebar header (show/hide toggle, no busy-state layout shift). Re-run tests/ux/ux240-wa-lock-bar.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+   "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
+   "after": [],
+   "status": "fixing",
+   "attempts": 0,
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-231-fixes.json",
+   "pr": 402,
+   "ci_dispatched": {
+    "sha": "b764270bb0b819c627da63904a4bbe0292d07cc7",
+    "wf": [],
+    "at": "2026-11-14T16:49:03+00:00"
+   },
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:53:39+00:00"
+  },
+  {
    "id": "UX243",
    "phase": 10,
    "title": "Build worker/live/nova-rx-preview.qa-231.js (qa-loop, no deploy)",
@@ -3589,52 +3692,21 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/401"
   },
   {
-   "id": "UX240",
-   "phase": 10,
-   "title": "شريط قفل PIN: هرمية بصرية ضعيفة وحقل بعرض كامل على الموبايل",
-   "brief": "Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
-   "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
-   "after": [],
-   "status": "fixing",
-   "attempts": 0,
-   "fix_attempts": 2,
-   "source": "inbox/qa-loop-231-fixes.json",
-   "slot": "A",
-   "dispatched_at": "2026-11-14T14:19:24+00:00",
-   "pr": 402,
-   "ci_dispatched": {
-    "sha": "46cf3f5e113763484e1856224f49c69e922c6cbf",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:13:05+00:00"
-   }
-  },
-  {
    "id": "UX239",
    "phase": 10,
    "title": "ترويسة المحادثة فقيرة: لا عدد رسائل/وضع قراءة فقط ولا زر قفل ولا هدف رجوع كافٍ",
    "brief": "Reproduced: .wa-head shows only avatar+name (headSubtitle false); the read-only/archive status is only in the composer placeholder, the lock button lives in a separate bar above, and the mobile back chevron is a bare › glyph (text button, no 44px target) (m-wa-chat-big.png). Add a subtitle (عدد الرسائل · آخر نشاط · أرشيف للقراءة فقط), a chevron icon button of 44x44 on touch, and a compact lock icon button in the header; RTL-correct arrow direction. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Header shows subtitle, 44px back target and lock button on mobile; test measures sizes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:16:47+00:00",
+   "dispatched_at": "2026-11-14T14:24:12+00:00",
    "pr": 403,
-   "ci_dispatched": {
-    "sha": "76a6c3b53d03fb0142a6e2a4d726377c90434adc",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:19:24+00:00"
-   }
+   "merged_at": "2026-11-14T14:32:06+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/403"
   },
   {
    "id": "UX238",
@@ -3643,34 +3715,15 @@
    "brief": "Reproduced (a11y step): #waSearch has no label/aria-label, active chat has no aria-current, #waList/#waMsgs have no role/aria-label, no aria-live for the loaded chat, lock button has no label; after a wrong PIN the field is cleared and focus goes to BODY, the PIN field is not focused on open, opening a chat leaves focus on BODY, Escape does not go back to the list on mobile, and the page has no heading. Add labels/roles, aria-current, focus the PIN field on open and after errors, move focus to the message pane/back button on open and back to the chat button on Escape/back, role=alert already on errors. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Keyboard-only flow works (Tab to PIN, Enter, arrow/Tab into list, Esc back); test asserts focus targets and aria attributes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:13:05+00:00",
    "pr": 404,
-   "ci_dispatched": {
-    "sha": "553faa871e10930f2df82fdcf9352d0072e48d20",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:16:47+00:00"
-   }
-  },
-  {
-   "id": "UX237",
-   "phase": 10,
-   "title": "التواريخ: صيغة 2026/11/12 جافة وفواصل الأيام غير ثابتة",
-   "brief": "Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
-   "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
-   "after": [],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "merged_at": "2026-11-14T14:21:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/404"
   },
   {
    "id": "UX236",
@@ -3679,10 +3732,15 @@
    "brief": "Reproduced: searching 'احمد' returns 0 results while 'أحمد' returns 1 (searchNoHamza vs searchHamza); search only matches name+id, not message text or phone digits (Arabic-Indic digits ٠-٩ not folded either). Normalize Arabic (أإآ->ا, ى->ي, ة->ه, tashkeel, tatweel, digits) for names and message text, highlight matches optionally, and show 'لا نتائج لـ \"…\"' with a clear (×) button in the field. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Search finds names/messages ignoring hamza/diacritics/digits; unit test for the normalizer plus Playwright check.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "fix_attempts": 2,
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:58:17+00:00",
+   "pr": 406,
+   "merged_at": "2026-11-14T15:03:52+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/406"
   },
   {
    "id": "UX235",
@@ -3691,10 +3749,15 @@
    "brief": "Reproduced: with no PIN the list shows 'عميل تجريبي (عرض محلي)' (demo-1) under the lock bar (d/m-wa-locked.png) which looks like a real chat. Hide the demo chat unless the local-demo flag is on, otherwise label it clearly 'عرض تجريبي'; show a proper locked empty state (lock icon + short explanation) in the list pane instead, and when the main pane is empty show the same guidance. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Locked state shows no fake chat and a clear empty state; test updated.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:33:32+00:00",
+   "pr": 407,
+   "merged_at": "2026-11-14T14:43:54+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/407"
   },
   {
    "id": "UX234",
@@ -3703,10 +3766,15 @@
    "brief": "Reproduced: after clicking a chat the pane shows only the single last message (the preview) for the whole fetch, no spinner/skeleton/aria-busy (loadingState msgs:1, spinner:false), then 8-320 messages pop in (CLS + looks like the whole chat). Show a skeleton or 'جاري تحميل المحادثة…' with aria-busy until hist.full[id] arrives, and an inline error with 'إعادة المحاولة' if the fetch fails (currently only a global hist.err). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Loading and error states are visible and accessible; test delays the mocked conversation response and asserts the placeholder, then the messages.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:53:13+00:00",
+   "pr": 410,
+   "merged_at": "2026-11-14T15:01:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/410"
   },
   {
    "id": "UX233",
@@ -3715,10 +3783,15 @@
    "brief": "Reproduced: scrolling the chat list to 600px then clicking a chat resets #waList scrollTop to 0 on desktop and mobile; on mobile the back button also returns to scrollTop 0 and the chat just left is not highlighted (backScroll). draw() rebuilds the entire view on every click. Preserve list scrollTop across draw (or update only the active class and the main pane), restore on back, and scroll the previously opened chat into view. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Scroll position of the list is kept on open and on back (desktop+mobile); test covers it with 22 chats.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:06:44+00:00",
+   "pr": 412,
+   "merged_at": "2026-11-14T15:13:58+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/412"
   },
   {
    "id": "UX232",
@@ -3727,10 +3800,15 @@
    "brief": "Reproduced: .wa-root height is calc(100vh - 120px) but the view starts at top ~146px (desktop) / ~162px (mobile) because of the PIN lock bar, so root bottom = 794 > 768 (desktop) and 886 > 844 (mobile) and the composer is cut off (d-wa-chat-big.png, m-wa-chat-big.png). Make the inbox view a flex column filling the viewport under the header (dvh, min-height safe), with .wa-root flex:1 and the lock bar counted in the layout; no clipped composer on 1366x768, 390x844 and short landscape. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "On both viewports root bottom <= innerHeight and the composer is fully visible; test asserts it with the lock bar open and closed.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:02:31+00:00",
+   "pr": 413,
+   "merged_at": "2026-11-14T15:12:27+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/413"
   },
   {
    "id": "UX230",
@@ -3750,10 +3828,24 @@
     "UX228",
     "UX229"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:23:47+00:00",
+   "pr": 425,
+   "merged_at": "2026-11-14T16:30:09+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/425",
+   "preview_deploy": {
+    "stage": "failed",
+    "path": "worker/live/nova-rx-preview.qa-219.js",
+    "sha256": "0c832d9e95451f3f0371271a9ff7405db2ee4afebf4b600611a3b2bfd66368a6",
+    "at": "2026-11-14T16:50:39+00:00",
+    "previous": null,
+    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43617871203",
+    "reason": "smoke error: HTTP Error 403: Forbidden (no previous artifact recorded; the deploy workflow restores the pre-deploy code itself on upload/verify failure)"
+   }
   },
   {
    "id": "UX229",
@@ -3779,10 +3871,15 @@
    "brief": "The reason and refund method are saved (returns() has reason/method) but never shown: Invoices only shows the amount, Reports 'مرتجعات نقدية' without a breakdown. Add an expandable per-invoice return history row (date, items, qty, amount, method, reason) and a reasons breakdown (عيب/خطأ صرف/رجوع/صلاحية) in Reports; Arabic digits unchanged; empty state when none. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Return history visible per invoice; reports show reasons; test covers rendering and XSS-safe escaping.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:20:43+00:00",
+   "pr": 416,
+   "merged_at": "2026-11-14T15:30:01+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/416"
   },
   {
    "id": "UX227",
@@ -3791,10 +3888,15 @@
    "brief": "'إعادة طباعة نسخة' and 'مرتجع / إلغاء' are identical flat grey (rgb 107) blocks that look disabled on desktop (d-inv). Differentiate: ghost style for reprint, outlined/amber for return, add icons, consistent 36px desktop / 44px touch height, hover/focus/pressed states and tonal Black Edition tokens; on mobile cards keep them side by side. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Two distinct, enabled-looking action styles; focus ring visible; contrast >=4.5; screenshot test.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:37:41+00:00",
+   "pr": 417,
+   "merged_at": "2026-11-14T15:45:39+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/417"
   },
   {
    "id": "UX226",
@@ -3803,10 +3905,15 @@
    "brief": "After confirming a return (50ms) the dialog closes and the table updates with no toast/status message; a cashier cannot tell the refund was recorded or how much to hand back. Show a toast/live-region 'تم تسجيل مرتجع بقيمة X ج.م — ردّ المبلغ نقدًا/بالبطاقة/خصم من الآجل' with the refund method, highlight the updated row briefly (respect prefers-reduced-motion), and optionally keep a 10-second undo that removes the just-saved return from the ledger. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Toast appears with amount and method; row highlight; test asserts role=status text.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:30:01+00:00",
+   "pr": 418,
+   "merged_at": "2026-11-14T15:37:41+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/418"
   },
   {
    "id": "UX225",
@@ -3815,10 +3922,15 @@
    "brief": "On 1366x768 opening the cancel box pushes 'تأكيد المرتجع / إغلاق' below the fold (scroll inside dialog; d-dlg-cancelbox.png). On 390px the reason chips wrap leaving an orphan chip. Make the dialog a flex column with scrollable body and a sticky footer for primary actions, and lay chips in a 2x2 grid / horizontal scroll row on mobile. Primary confirm should be the visually dominant, full-width on mobile. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Confirm/close always visible without scrolling at 1366x768 and 390x844; chips never orphaned.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "fix_attempts": 2,
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:53:45+00:00",
+   "pr": 419,
+   "merged_at": "2026-11-14T16:00:20+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/419"
   },
   {
    "id": "UX224",
@@ -3827,10 +3939,15 @@
    "brief": "Inside the 'إلغاء الفاتورة بالكامل' details the inputs/select are default grey (rgb 59/107) unlike the dark reason input, with no labels; the reason label has no for=, qty inputs have no aria-label (labelForReason:false, qtyAria empty). Style them with the same tokens as #novaRetReason, add real <label for>, aria-label per qty input with the product name, and style the details summary as a proper disclosure with a rotating chevron and a danger tone for the confirm-cancel button. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "All dialog fields share one style; every input has an accessible name; test asserts labels.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:40:34+00:00",
+   "pr": 420,
+   "merged_at": "2026-11-14T15:49:30+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/420"
   },
   {
    "id": "UX223",
@@ -3839,10 +3956,15 @@
    "brief": "Dialog has role=dialog aria-modal but no focus trap: after 14 Tab presses focus is outside the overlay; after Esc/close focus lands on BODY instead of the originating 'مرتجع / إلغاء' button. Add a Tab/Shift+Tab trap, aria-labelledby on the h3, restore focus to the opener on close, and lock background scroll while open. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Tab cycles inside the dialog; Esc/close returns focus to the opener; test asserts both.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:56:21+00:00",
+   "pr": 421,
+   "merged_at": "2026-11-14T16:03:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/421"
   },
   {
    "id": "UX222",
@@ -3851,10 +3973,15 @@
    "brief": "(a) After 'اكتب سبب المرتجع' is shown, picking a reason chip or typing a reason does not clear the red message. (b) Typing qty above the available, a fraction (1.5) or negative silently blanks 'مبلغ الإرجاع' with no message until confirm. Clear #novaRetMsg on input/chip, mark the offending qty input aria-invalid with an inline Arabic message ('الحد الأقصى N'), clamp on blur, use inputmode=numeric and step=1. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Error clears on fix; over-max/fraction/negative show inline message and aria-invalid; tests assert each.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:49:30+00:00",
+   "pr": 422,
+   "merged_at": "2026-11-14T15:58:49+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/422"
   },
   {
    "id": "UX221",
@@ -3863,10 +3990,15 @@
    "brief": "In the return dialog the 44px close button is absolutely positioned over the h3, clipping the first letters of 'مرتجع / إلغاء — فاتورة S-1001' (d-dlg-open.png). Give the header a flex row (title + close) with proper gap, remove the 28px hack margin, keep close at 44px, and make the header sticky inside the scrollable dialog. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Title fully visible at 1366 and 390 with no overlap of the close button; bounding-box test.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "fix_attempts": 2,
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:16:47+00:00",
+   "pr": 423,
+   "merged_at": "2026-11-14T16:23:47+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/423"
   },
   {
    "id": "UX220",
@@ -3875,11 +4007,16 @@
    "brief": "After a full return or cancellation the Invoices row keeps an enabled 'مرتجع / إلغاء' button, and the dialog for a fully returned sale still enables 'إرجاع كل الأصناف' and 'تأكيد المرتجع' while every qty input is disabled (screens d/m-dlg-fully-returned). Add a status badge in the المرتجع column (مرتجع جزئي / مرتجع بالكامل / ملغاة, with tone colours), disable or replace the row button with a disabled 'تم الإرجاع بالكامل' state (aria-disabled + tooltip), and in the dialog disable Return-all/Confirm and show an inline notice when nothing is returnable. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Fully returned/cancelled rows show a badge and no actionable return button; dialog confirm is disabled when no qty is available; test covers partial, full and cancelled.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:01:45+00:00",
+   "pr": 424,
+   "merged_at": "2026-11-14T16:14:10+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/424"
   }
  ],
- "updated": "2026-11-14T14:19:24+00:00"
+ "updated": "2026-11-14T16:53:39+00:00"
 }

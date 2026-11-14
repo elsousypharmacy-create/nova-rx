@@ -45,3 +45,35 @@ Tests: tests/ux/ux241-big-chat.mjs (320 msgs, desktop+mobile) OK; fix46-wa-histo
 Frontend only (index.html unified-inbox block). New panels `.wa-state[data-state=pin|error|network|offline|empty]` with Arabic copy and retry (`#waHistRetry`); PIN_INVALID/PIN_REQUIRED/network/offline/500 mapped to clear messages; typed PIN length hint kept (length only, PIN never stored). Remaining attempts are unknown (backend frozen), the hint says so.
 Tests (Playwright installed in /tmp/pw, system chromium): `node tests/ux/ux242-wa-error-states.mjs` OK; `node tests/ux/fix46-wa-history.mjs` OK; unit: unified-inbox, ux200-wa-chat, fix43, ux81 all pass.
 Screenshots: .nova/qa/qa-loop-231/ux242-*.png (mobile 390px).
+
+## UX239 fix (chat header)
+- index.html: `.wa-head` now has subtitle (`N رسالة · آخر نشاط … · أرشيف للقراءة فقط`), 44x44 SVG chevron back button (right-pointing = RTL back), 44x44 header lock icon button (`data-wa-lock`, shown only when history unlocked) handled by the same click path as `#waHistLock`.
+- tests/ux/ux239-wa-head.mjs measured: mobile back 44x44, lock 44x44, desktop lock 44x44; subtitle present. Screenshots: ux239-mobile-head.png, ux239-desktop-head.png.
+
+# QA loop 231 — UX238 keyboard + screen reader in conversations
+Fixed (index.html inbox block): h1 heading; #waSearch aria-label; #waList role=group+label; #waMsgs role=log, aria-live=polite, label, tabindex=-1; aria-current on the active chat; lock button aria-label; role=status on the lock-bar text; PIN focused on open and after every error; focus to back button (mobile) or #waMsgs on open; Escape/back returns focus to the chat button; ArrowUp/Down in the list (and from search); focus kept across redraws.
+Tests (Playwright from /tmp, mocked history API, no real PIN): ux238-wa-keyboard OK (desktop+mobile), fix46-wa-history OK. Repro: node tools/qa/qa-loop-231.mjs. Screenshots in qa-loop-231/.
+
+# UX236 — inbox search (qa-loop-231)
+Fix: normAr() in unified-inbox.js + inline copy in index.html; searches name, id/phone, all message text; hamza/tashkeel/tatweel/ya/ta-marbuta/Arabic-Indic digits folded; 'لا نتائج لـ "…"'; × clear button (#waSearchClear).
+Passed: tests/unit/ux236-wa-search.check.mjs (7), unified-inbox.check, fix43, ux81, ux200 unit tests.
+NOT run: tests/ux/ux236-wa-search.mjs and fix46-wa-history.mjs — @playwright/test not installed in this environment (ERR_MODULE_NOT_FOUND). No screenshots captured.
+
+# QA loop 231 — UX235
+Bug: locked WhatsApp history showed fake chat 'عميل تجريبي (عرض محلي)' under the PIN form.
+Fix (index.html): demo-1 seeded/shown only with localStorage nova.flags.localDemo=1 and labelled 'عرض تجريبي'; locked state shows lock-icon empty state in list pane (and main pane on desktop).
+Tests (Playwright run from /tmp install, repo has no node_modules): ux235-locked-empty OK (flag off/on × desktop/mobile), fix46-wa-history OK, inbox-flag.mjs FAILS identically at baseline (stale selector section[data-conv], pre-existing, unrelated), unified-inbox.check.mjs pass.
+Screenshots: .nova/qa/qa-loop-231/ux235-*.png
+
+# QA loop 231 — UX233 (chat list scroll kept on open/back)
+Bug: draw() rebuilt the view and reset #waList scrollTop to 0 on open and on mobile back; chat just left not highlighted.
+Fix (index.html inbox block): wa.top tracked by capture scroll listener on #waList; draw() restores it; back sets wa.back so the chat just left gets .active and is scrolled into view.
+Tests (Playwright from /tmp install): tests/ux/ux233-wa-list-scroll.mjs OK (22 chats, desktop+mobile). unified-inbox.check.mjs: 4 passed. fix46-wa-history.mjs FAILS at "composer stays a disabled draft", identical at baseline (pre-existing).
+Screenshots: .nova/qa/qa-loop-231/ux233-*.png
+## UX234 - chat open loading/error state
+- index.html: hist.pend/oerr per conversation; renderWa chatLoading/chatError -> skeleton + loading text with aria-busy on #waMsgs; inline role=alert error + retry button.
+- Test: tests/ux/ux234-wa-chat-loading.mjs (mock delayed/failed history) PASS. Screenshots: ux234-loading.png, ux234-error.png.
+- tests/ux/fix46-wa-history.mjs fails at "composer stays a disabled draft": pre-existing (same failure without my change; WA-SEND #408 enabled the composer).
+
+## UX232 fix
+CSS only (index.html WA_CSS): #novaInboxView flex column; .wa-root flex:1 1 auto, height:auto; bars flex:0 0 auto. Test: tests/ux/ux232-inbox-fit.mjs (1366x768, 390x844, 844x390; lock open/closed). Shots: .nova/qa/qa-loop-231/ux232-*.png
