@@ -26,6 +26,8 @@ id = "PLACEHOLDER_KV_DEV_ID"
 [env.staging]
 name = "nova-rx-api-staging"
 workers_dev = true
+[env.staging.triggers]
+crons = ["* * * * *"]
 [env.staging.vars]
 NOVA_ENV = "staging"
 CORS_ALLOW_ORIGINS = "https://nova-rx-preview.elsousypharmacy.workers.dev"
