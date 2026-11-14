@@ -1,0 +1,27 @@
+name: Supplier health (read-only)
+# Every 30 minutes: read-only connection check of every supplier. No carts, orders or POs.
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  health:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check suppliers (states only)
+        env:
+          NOVA_API_PIN: ${{ secrets.NOVA_API_PIN }}
+          NOVA_WORKER_URL: ${{ secrets.NOVA_WORKER_URL || 'https://nova-rx-preview.elsousypharmacy.workers.dev' }}
+        run: |
+          node tools/suppliers/health-check.mjs out/suppliers-status.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suppliers-status
+          path: out/suppliers-status.json

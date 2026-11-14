@@ -201,7 +201,7 @@ async function refreshSellers(){
  }
  catch{status('تعذر قراءة مخازن أوميت؛ الاختيارات المحفوظة لم تتغير',true);}finally{$('refreshSellers').disabled=false;}
 }
-function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumetSellers);pendingExcludedSellers=new Set(prefs.excludedSellers);['aumet','pharmaoverseas'].forEach(id=>$('supplier-'+id).checked=prefs.suppliers.includes(id)&&!prefs.excludedSuppliers.includes(id));$('dashboardPin').value=dashboardPin;renderSellers();$('settings').showModal();if(checkConnection&&!mockScenario)provider().listSuppliers().then(list=>{for(const s of list){const el=$(s.id==='aumet'?'aumetState':'pharmaState');el.textContent=s.state==='ok'?'متصل':'الجلسة تحتاج تجديد';}}).catch(()=>status('تعذر فحص اتصال الموردين',true));}
+function openSettings(checkConnection=true){pendingSellerIds=new Set(prefs.aumetSellers);pendingExcludedSellers=new Set(prefs.excludedSellers);['aumet','pharmaoverseas'].forEach(id=>$('supplier-'+id).checked=prefs.suppliers.includes(id)&&!prefs.excludedSuppliers.includes(id));$('dashboardPin').value=dashboardPin;renderSellers();$('settings').showModal();if(checkConnection&&!mockScenario)provider().listSuppliers().then(list=>{for(const s of list){const el=$(s.id==='aumet'?'aumetState':'pharmaState');el.textContent=s.state==='ok'?'متصل':'الجلسة تحتاج تجديد';}renderSupplierStatus(list);}).catch(()=>status('تعذر فحص اتصال الموردين',true));}
 function setMode(mode){
  prefs.mode=mode==='manual'?'manual':'auto';
  persist();
@@ -328,3 +328,5 @@ $('scopeChip').onclick=()=>openSettings();scopeView();
 
 // UX45: keep the active purchases tab fully visible in the scrollable mobile tab strip.
 (function(){try{const a=document.querySelector('.nova-topbar nav a[aria-current]');if(a&&a.scrollIntoView)a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}})();
+
+function renderSupplierStatus(list){const el=$('supplierStatusPanel'),M=window.NovaSupplierStatus;if(!el||!M)return;const t=new Date().toLocaleTimeString('ar-EG');el.replaceChildren(...list.map(s=>{const st=M.classify(s),d=document.createElement('div');d.textContent=(s.name||s.id)+': '+M.label(st);return d;}),Object.assign(document.createElement('small'),{textContent:'آخر فحص: '+t}));}
