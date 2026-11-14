@@ -3412,22 +3412,15 @@
    "brief": "On 390px the cart row shows only '−' (plus button clipped), unit price duplicated ('144.00' twice), product name clipped at start ('i0ML UK)*'), no line total. Rework the mobile cart row into a 2-line grid: name (wrap/ellipsis end), then qty stepper (−/qty/+) with unit price and line total; delete button 44px. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Row fits 390px without clipping; − qty + all visible and tappable; no duplicated price; test asserts all controls inside viewport.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T11:29:44+00:00",
    "pr": 389,
-   "ci_dispatched": {
-    "sha": "68f1af8910bdbcb9263d67498f22e8f89fc898be",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:32:44+00:00"
-   }
+   "merged_at": "2026-11-14T11:37:22+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/389"
   },
   {
    "id": "UX205",
@@ -3479,5 +3472,5 @@
    }
   }
  ],
- "updated": "2026-11-14T11:35:50+00:00"
+ "updated": "2026-11-14T11:37:22+00:00"
 }
