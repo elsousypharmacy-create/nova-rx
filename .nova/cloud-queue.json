@@ -4142,7 +4142,7 @@
    "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
@@ -4150,13 +4150,13 @@
    "dispatched_at": "2026-11-14T23:16:20+00:00",
    "pr": 435,
    "ci_dispatched": {
-    "sha": "8e044c3328675372659c09a3dd8a0efa05c55755",
+    "sha": "548389fcca0f775f6afdcc99c1eaae02654351a8",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T23:13:50+00:00"
+    "at": "2026-11-14T23:17:53+00:00"
    }
   },
   {
@@ -4166,12 +4166,12 @@
    "brief": "Mobile nav scrollWidth 473 vs clientWidth 197: only البيع/الفواتير/المنتجات/العملاء partly visible, التقارير/المشتريات/الإعدادات unreachable without discovering horizontal scroll. Add edge fade/chevron affordance, scrollIntoView for the active tab, or a bottom tab bar with the 5 main screens; keep RTL. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "All 7 destinations reachable in <=1 gesture with visible affordance; active tab always visible; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:13:50+00:00",
+   "dispatched_at": "2026-11-14T23:17:53+00:00",
    "pr": 436,
    "ci_dispatched": {
     "sha": "d394c6feb9d332e6929d839b3b904a7b1f50beec",
@@ -4256,5 +4256,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:16:20+00:00"
+ "updated": "2026-11-14T23:17:53+00:00"
 }
