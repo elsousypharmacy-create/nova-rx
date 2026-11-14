@@ -39,3 +39,7 @@ UX204 (الشعار)، UX209 (أيقونة واتساب 36/44px)، UX208 (الم
 ## UX226 — return confirmation toast (frontend only)
 - index.html: `novaReturnNotice` (role=status live region: "تم تسجيل مرتجع بقيمة X — ردّ المبلغ نقدًا/على البطاقة/خصم من الآجل"), row highlight (static outline when prefers-reduced-motion), 10s undo via new `novaSales.removeReturn(id)`. Undo not offered for credit returns (customer-ledger collect cannot be reversed from the UI).
 - Tests (run from a temp playwright install, chromium): ui-ux226-return-toast 6/6, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.
+
+## UX223 — return dialog focus trap (frontend only)
+- index.html: Tab/Shift+Tab trap, aria-labelledby on h3, focus restored to opener (or re-rendered same data-return button), body scroll locked while open.
+- Tests (http.server :8765): ui-ux223-return-focus PASS; ui-returns PASS 10; ui-pos04-returns-cancel PASS 8; ui-sales-ledger PASS 8.
