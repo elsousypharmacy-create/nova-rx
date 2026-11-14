@@ -2039,7 +2039,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><a id="novaPurchasesNav" class="nova-tab" style="text-decoration:none;display:inline-flex;align-items:center" href="/purchases">المشتريات</a><button class="nova-tab" data-page="settings">الإعدادات</button>
   <span class="nova-demo-label">نسخة تجريبية</span>
   
-  </nav><div class="nova-nav-brand" dir="ltr"><span class="nova-brand-name">NOVA <span>Rx</span></span><div class="pharmacy-banner-right"><span class="pharmacy-banner-live" title="متصل" aria-label="حالة الاتصال"><b></b></span><button id="btnRefreshApp" class="nova-refresh-icon" type="button" title="إعادة تحميل الصفحة" aria-label="إعادة تحميل الصفحة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button></div></div></div>
+  </nav><div class="nova-nav-brand" dir="ltr"><span class="nova-brand-name">NOVA <span>Rx</span></span><div class="pharmacy-banner-right"><button id="novaWaBtn" class="nova-refresh-icon nova-wa-icon" type="button" title="المحادثات (واتساب)" aria-label="المحادثات (واتساب)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></svg><span id="novaWaBadge" class="nova-wa-badge" hidden aria-live="polite"></span></button><span class="pharmacy-banner-live" title="متصل" aria-label="حالة الاتصال"><b></b></span><button id="btnRefreshApp" class="nova-refresh-icon" type="button" title="إعادة تحميل الصفحة" aria-label="إعادة تحميل الصفحة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button></div></div></div>
   
   <div id="novaPageView" class="nova-page-view" dir="rtl" hidden></div>
   <div class="pos-root">
@@ -5688,8 +5688,11 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
       'Search product name or scan barcode...':lang==='ar'?'ابحث عن دواء أو امسح الباركود...':'Search product name or scan barcode...',
       'بحث بالاسم أو الرقم أو الباركود':lang==='en'?'Search by name, number, or barcode':'بحث بالاسم أو الرقم أو الباركود',
       'تحديث التطبيق':lang==='en'?'Refresh app':'تحديث التطبيق',
-      'التنقل الرئيسي':lang==='en'?'Main navigation':'التنقل الرئيسي'
+      'التنقل الرئيسي':lang==='en'?'Main navigation':'التنقل الرئيسي',
+      'المحادثات (واتساب)':lang==='en'?'Conversations (WhatsApp)':'المحادثات (واتساب)'
     };
+    const waM=/^المحادثات \(واتساب\) — (\d+) غير مقروء$/.exec(original);
+    if(waM)extra[original]=lang==='en'?'Conversations (WhatsApp) — '+waM[1]+' unread':original;
     el.setAttribute(attr,extra[original]||translateText(original,lang));
    }
   });
@@ -6496,6 +6499,17 @@ if(b.dataset.act==='handoff'){if(c.mode==='human'){c.mode='bot';inbox.assign(id,
 else inbox.assign(id,'الصيدلي');draw()});
 tab.addEventListener('click',function(){draw();arCall('GET');var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
 nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box.hidden=true;tab.classList.remove('active')}},true)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="ux81-wa-badge">/* UX81: WhatsApp icon + unread badge. Unread = conversation whose last message is incoming. Flag/backend off => icon only. */
+(function(){var KEY='nova.inbox.v1',timer=null;
+function unread(cs){var n=0;(Array.isArray(cs)?cs:[]).forEach(function(c){var m=c&&Array.isArray(c.messages)?c.messages:[];if(m.length&&m[m.length-1]&&m[m.length-1].dir==='in')n++});return n}
+function paint(n){var b=document.getElementById('novaWaBadge');if(!b)return;n=Number(n)||0;if(n>0){b.textContent=n>99?'99+':String(n);b.hidden=false}else{b.textContent='';b.hidden=true}var t=document.getElementById('novaWaBtn');if(t){var l='المحادثات (واتساب)'+(n>0?' — '+n+' غير مقروء':'');t.setAttribute('aria-label',l);if(t.dataset)t.dataset.novaOriginalAriaLabel=l}}
+function cfg(){try{var u=localStorage.getItem('novaBackend.url'),k=sessionStorage.getItem('novaBackend.token');return localStorage.getItem('novaBackend.enabled')==='true'&&u&&k?{u:String(u).replace(/\/+$/,'')+'/api/v1/inbox/conversations',k:k}:null}catch(e){return null}}
+function local(){try{var raw=localStorage.getItem(KEY),p=raw?JSON.parse(raw):null;return p&&p.conversations?unread(p.conversations):0}catch(e){return 0}}
+function refresh(){var c=cfg();if(!c||typeof fetch!=='function'){paint(local());return Promise.resolve()}
+return fetch(c.u,{method:'GET',headers:{Accept:'application/json',Authorization:'Bearer '+c.k}}).then(function(r){if(!r.ok)throw new Error('http');return r.json()}).then(function(j){if(!j||!Array.isArray(j.conversations))throw new Error('bad');paint(unread(j.conversations))}).catch(function(){paint(local())})}
+function open(){var t=document.getElementById('novaInboxTab');if(t){t.click();return}location.href='integrations/whatsapp/inbox.html'}
+function boot(){var b=document.getElementById('novaWaBtn');if(!b)return;b.addEventListener('click',open);refresh();if(!timer)timer=setInterval(function(){if(!document.hidden)refresh()},30000);window.addEventListener('storage',function(e){if(!e.key||e.key===KEY)refresh()})}
+window.NovaWaBadge={unread:unread,paint:paint,refresh:refresh,open:open};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux44-mobile-totals">
 /* UX44: mobile totals — collapsible discount inside totals block, no overlap/clipping, sticky pay >=48px */
 .discount-toggle{display:none}
