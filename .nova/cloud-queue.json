@@ -3561,22 +3561,15 @@
    "brief": "Reproduced: a wrong PIN logs 'Failed to load resource 401' in the console (acceptable) but the error text sits in the bar with no retry; a network failure/empty history ('conversations: []') shows only 'لا توجد محادثات' without explanation; the PIN input is cleared after a wrong attempt with no remaining-attempts or lockout hint. Add distinct empty/offline/error panels with a retry button, keep the typed PIN length hint, and map PIN_INVALID/PIN_REQUIRED/network codes to clear Arabic messages. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Empty, offline and wrong-PIN states have explicit copy and retry; test mocks 401, 500, network abort and an empty list.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T13:51:18+00:00",
    "pr": 400,
-   "ci_dispatched": {
-    "sha": "61b68da98485fce296d811a3437ca321528264ea",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T13:54:54+00:00"
-   }
+   "merged_at": "2026-11-14T14:00:08+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/400"
   },
   {
    "id": "UX241",
@@ -3861,5 +3854,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T13:58:47+00:00"
+ "updated": "2026-11-14T14:00:08+00:00"
 }
