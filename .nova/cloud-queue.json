@@ -4091,22 +4091,15 @@
    "brief": "Every page load logs 'Failed to load resource 404 emergency/stock.json' + net::ERR_FAILED on static hosting, polluting console QA. Handle the failure silently with a cached/fallback snapshot and a single calm status line; do not log as error. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Zero console errors on cold load with the file missing; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T22:55:16+00:00",
    "pr": 432,
-   "ci_dispatched": {
-    "sha": "d4750eb4e0ad3a730abbda2c2af4279fece2044e",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:01:00+00:00"
-   }
+   "merged_at": "2026-11-14T23:06:03+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/432"
   },
   {
    "id": "UX311",
@@ -4115,12 +4108,12 @@
    "brief": "m-products.png: two header buttons are truncated with ellipsis; panel title says 'البيانات التجريبية' above real-looking stock. Use a wrapping 2-col grid with full labels (or icons+short copy), and rename the panel 'الأصناف' with a small 'عرض تجريبي' chip. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "No truncated button labels at 390px; panel title updated; test asserts scrollWidth==clientWidth for buttons.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:01:00+00:00",
+   "dispatched_at": "2026-11-14T23:06:03+00:00",
    "pr": 433,
    "ci_dispatched": {
     "sha": "dec74d7a8122feccb90e33c221c49dc8f88d4b87",
@@ -4139,12 +4132,22 @@
    "brief": "Measured: btnCloseReceipt 24x24, btnCloseHelp 24x24, btnCloseCheckout 24x44, novaHelpChip 88x32. Raise to >=44px hit area (padding/pseudo-element) without changing the glyph size, add aria-label if missing. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "All listed controls >=44x44 hit area; test asserts via bounding boxes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T23:03:32+00:00"
+   "dispatched_at": "2026-11-14T23:03:32+00:00",
+   "pr": 434,
+   "ci_dispatched": {
+    "sha": "e83ace140951217664164138a711875f4f58be6a",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:06:03+00:00"
+   }
   },
   {
    "id": "UX309",
@@ -4243,5 +4246,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:03:32+00:00"
+ "updated": "2026-11-14T23:06:03+00:00"
 }
