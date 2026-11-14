@@ -3538,12 +3538,12 @@
    "brief": "Ahmed: build an in-app dashboard (inside NOVA Rx, Black Edition Arabic RTL, opened from the conversations screen and/or reports; same PIN gate as the old chats, PIN-gated staging endpoint under /api/v1/inbox/history/ style, read-only, no customer data in the public artifact) showing EXACTLY how long we take to reply to customers, from the imported WhatsApp history in staging D1 (26 chats/561 msgs from the bot log; senders user/bot/pharm/sys; note live forwarder timestamps are in seconds not ms, normalize). Metrics: first response time and every reply time per customer message, split bot vs pharmacist (human) — exact minutes/seconds; median, average, p90, slowest; % replied within 1/5/15/60 min; unanswered customer messages and waiting-now list; time from bot handoff (اتحوّل للصيدلي) to pharmacist reply. Volume: number of customers who wrote (unique), new vs returning, conversations and messages per day/hour, busiest hours heatmap, top topics if simple (keyword based). Filters: date range, today/7d/30d, bot vs pharmacist. Each metric clickable to the chats behind it. Charts smooth, design top priority. Tests for the metric calculations (exact times, timezone Africa/Cairo display, seconds-vs-ms normalization). Build into the next worker/live artifact (next free name, tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
    "acceptance": "Dashboard shows exact reply times (bot and pharmacist) and how many customers write, with filters; PIN-gated; tests pass; artifact built; no deploy.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-wa-dashboard.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:56:51+00:00",
+   "dispatched_at": "2026-11-14T15:09:39+00:00",
    "pr": 409,
    "ci_dispatched": {
     "sha": "6c64418b9fe121445bcdfaabbd01c7a9c609a26b",
@@ -3765,7 +3765,7 @@
    "brief": "Reproduced: scrolling the chat list to 600px then clicking a chat resets #waList scrollTop to 0 on desktop and mobile; on mobile the back button also returns to scrollTop 0 and the chat just left is not highlighted (backScroll). draw() rebuilds the entire view on every click. Preserve list scrollTop across draw (or update only the active class and the main pane), restore on back, and scroll the previously opened chat into view. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Scroll position of the list is kept on open and on back (desktop+mobile); test covers it with 22 chats.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
@@ -3773,13 +3773,13 @@
    "dispatched_at": "2026-11-14T15:06:44+00:00",
    "pr": 412,
    "ci_dispatched": {
-    "sha": "9ba66e174747fa61ac0112b94455d4de4390779f",
+    "sha": "7bf6a56944ec5eeca39e2d25720b9ec2a4997d8f",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T15:02:31+00:00"
+    "at": "2026-11-14T15:09:39+00:00"
    }
   },
   {
@@ -3955,5 +3955,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:08:20+00:00"
+ "updated": "2026-11-14T15:09:39+00:00"
 }
