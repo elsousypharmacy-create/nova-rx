@@ -3521,12 +3521,20 @@
    "brief": "Continuous QA audit (focus: conversations (WhatsApp inbox)). Audit the CURRENT repo frontend locally with Playwright (desktop 1366x768 + mobile 390x844, fake data, no live writes, no supplier/live sites), focusing on the focus area plus a quick smoke of all main journeys. Every cycle must cover every main screen (البيع، الفواتير، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات، and any other top-nav tab or link). Click every top-nav link/tab and every visible primary header button (including the WhatsApp #novaWaBtn icon). Flag any HTTP 404, blank page, 'Not found', failed navigation, or console error. Quality bar is EXCEPTIONAL (world-class pharmacy POS, Apple/Linear-level polish): judge as the strictest senior product designer + QA lead. TOP PRIORITY (owner): visual design and smoothness. Every cycle, besides the focus area, do a full design + smoothness pass on all screens: visual hierarchy, consistent spacing/grid, typography, icons, color/contrast, polish of every state; smooth 60fps transitions and scrolling, no jank/layout shift/flicker, instant feedback (<100ms) on every tap, fast screen switches, no extra clicks in common flows. Measure (Playwright traces, CLS, long tasks, interaction latency) and order fix tasks design/smoothness first. Report findings at every severity including low/polish (alignment, spacing, contrast, copy, empty/loading/error states, speed, keyboard flow). Score each of the 14 focus areas 0-10 and update .nova/qa/scorecard.json ({area: {score, last_cycle, open_findings}}); an area counts as exceptional only at >=9.5 with zero open findings. Never mark the product done; the loop continues. Read all previous .nova/qa/*report*.md and qa-loop-*.md first to avoid duplicates and to re-verify that earlier fixes really work. Write .nova/qa/qa-loop-231.md (Arabic, short) with screenshots in .nova/qa/qa-loop-231/ (max 15). Then write .nova/inbox/qa-loop-231-fixes.json ({\"tasks\":[...]}) with at most 15 frontend-only fix tasks (ids UX232..UX246; highest impact first, any severity; areas scoring <9.5 first; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-231.js (qa-loop, no deploy)' with after = all its fix ids, which rebuilds the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs, markers test, node --check, no deploy). Fix ids available: UX232, UX233, UX234, UX235, UX236, UX237, UX238, UX239, UX240, UX241, UX242, UX243, UX244, UX245, UX246. If truly nothing is found, write the report only (no fixes file). Do not edit .nova/cloud-queue.json. DEEP MODE (owner): take your time, accuracy over speed. Test every screen and every flow end to end on desktop and mobile, re-verify each previous fix, include the conversations screen with old chats, and only report findings you reproduced with a screenshot. Old chats (FIX46, merged 37d6a97): click #novaWaBtn -> #novaInboxView shows #waHistForm (PIN). In local Playwright, route GET **/api/v1/inbox/history/conversations and **/api/v1/inbox/history/conversation?id=* to fake data shaped like tests/ux/fix46-wa-history.mjs (kinds in/bot/pharm/sys, 20+ chats, long Arabic texts, 300+ messages in one chat) and 401 for a wrong PIN; never use a real PIN or real customer data. Judge it against real WhatsApp Web/mobile (list, bubbles, day separators, system notes, scroll position, search, back button on mobile, lock button), and re-verify qa-loop-219 found nothing about it because it ran before FIX46 merged.",
    "acceptance": "Report .nova/qa/qa-loop-231.md exists; scorecard updated; fixes inbox file if any findings; no deploy; backend untouched.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T13:34:17+00:00"
+   "dispatched_at": "2026-11-14T13:34:17+00:00",
+   "pr": 398,
+   "ci_dispatched": {
+    "sha": "5e6954f0a465cfcd50c5a52670654d6452d32252",
+    "wf": [
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T13:41:49+00:00"
+   }
   },
   {
    "id": "UX230",
@@ -3558,10 +3566,12 @@
    "brief": "Measured CLS after the returns journey: 0.0245 on 390px and 0.0065 on 1366 (loop includes seeding 4 invoices). Find the shifting nodes (PerformanceObserver layout-shift sources) in the invoices/reports re-render and reserve space (min-height for KPI strip, font-display, table skeleton) so CLS <= 0.01 in this journey. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "CLS <= 0.01 for the invoices->return->reports journey on both viewports; test measures it.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T13:41:49+00:00"
   },
   {
    "id": "UX228",
@@ -3672,5 +3682,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T13:34:17+00:00"
+ "updated": "2026-11-14T13:41:49+00:00"
 }
