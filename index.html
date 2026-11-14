@@ -6480,10 +6480,119 @@ input,select,textarea{min-height:44px}
 #inputCardAmount,#inputCreditAmount{height:44px!important}
 </style>
 
-<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script><script>/* UX48: hidden local inbox tab. Flag nova.flags.inbox==='1' (default OFF => nothing loaded, no UI). Local only, zero network. */
-(function(){var on=false;try{on=localStorage.getItem('nova.flags.inbox')==='1'}catch(e){}if(!on)return;
-function boot(){var nav=document.querySelector('.nova-nav');if(!nav||document.getElementById('novaInboxTab'))return;
-var s=document.createElement('script');s.src='unified-inbox.js';s.onload=function(){init(nav)};document.head.appendChild(s)}
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script><script id="fix43-inbox-lib">/* FIX43: unified-inbox.js inlined (the preview Worker serves no separate JS files) */
+/* NOVA Rx — MSG-02 local unified inbox (pure logic + HTML string, frontend/local only, NO real WhatsApp sending).
+   Conversations: messages, assignee, human handoff, customer/order links. Message status sent|delivered|failed comes from a
+   mock source (setStatus). State persists through an injected storage (localStorage-like) and is restored by load() after refresh.
+   Works as <script> (window.NovaUnifiedInbox) and in Node. */
+(function (root) {
+  'use strict';
+  var KEY = 'nova.inbox.v1';
+  var STATUS_AR = { sent: 'أُرسلت', delivered: 'وصلت', failed: 'فشلت' };
+  var MODE_AR = { bot: 'آلي', human: 'بشري' };
+
+  function arr(a) { return Array.isArray(a) ? a : []; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  /* remote (optional): { enabled(): bool, baseUrl(): string, fetch, getToken() }. Off/absent => zero network calls. */
+  function create(storage, remote) {
+    var state = { conversations: [], seq: 0 };
+    function save() { if (storage) storage.setItem(KEY, JSON.stringify(state)); }
+    function load() {
+      try {
+        var raw = storage && storage.getItem(KEY), p = raw ? JSON.parse(raw) : null;
+        if (p && Array.isArray(p.conversations)) state = { conversations: p.conversations, seq: Number(p.seq) || 0 };
+      } catch (e) { /* corrupt storage: keep empty state */ }
+      return api;
+    }
+    function conv(id) {
+      for (var i = 0; i < state.conversations.length; i++) if (state.conversations[i].id === id) return state.conversations[i];
+      throw new Error('unknown conversation ' + id);
+    }
+    function open(id, customer, now) {
+      if (state.conversations.some(function (c) { return c.id === id; })) return conv(id);
+      var c = { id: String(id), customer: String(customer || ''), customerId: null, orderId: null, assignee: null, mode: 'bot', messages: [], updatedAt: now || 0 };
+      state.conversations.push(c); save(); return c;
+    }
+    function add(id, dir, text, now, status) {
+      var c = conv(id), m = { id: 'm' + (++state.seq), dir: dir, text: String(text), at: now || 0, status: status || null };
+      c.messages.push(m); c.updatedAt = m.at; save(); return m;
+    }
+    /* incoming message from the mock source; a customer message never auto-resets a human handoff */
+    function receive(id, text, now) { return add(id, 'in', text, now, null); }
+    /* outbound is only recorded locally as "sent"; the mock source later reports delivered/failed */
+    function send(id, text, now) {
+      if (!String(text || '').trim()) throw new Error('empty message');
+      return add(id, 'out', text, now, 'sent');
+    }
+    function setStatus(id, msgId, status) {
+      if (!STATUS_AR[status]) throw new Error('bad status ' + status);
+      var m = conv(id).messages.filter(function (x) { return x.id === msgId && x.dir === 'out'; })[0];
+      if (!m) throw new Error('unknown outbound message ' + msgId);
+      m.status = status; save(); return m;
+    }
+    function assign(id, staff) { var c = conv(id); c.assignee = staff ? String(staff) : null; save(); return c; }
+    function handoff(id, staff) { var c = conv(id); c.mode = 'human'; if (staff) c.assignee = String(staff); save(); return c; }
+    function link(id, links) {
+      var c = conv(id); links = links || {};
+      if ('customerId' in links) c.customerId = links.customerId == null ? null : String(links.customerId);
+      if ('orderId' in links) c.orderId = links.orderId == null ? null : String(links.orderId);
+      save(); return c;
+    }
+    function list(filter) {
+      filter = filter || {};
+      return clone(state.conversations).filter(function (c) {
+        return (!filter.assignee || c.assignee === filter.assignee) && (!filter.mode || c.mode === filter.mode);
+      }).sort(function (a, b) { return b.updatedAt - a.updatedAt; });
+    }
+    /* With the flag on, read conversations from the server API and mirror them locally; any error keeps the local state. */
+    function pullRemote() {
+      var on = false;
+      try { on = !!(remote && remote.enabled() && remote.baseUrl() && typeof remote.fetch === 'function'); } catch (e) { on = false; }
+      if (!on) return Promise.resolve({ skipped: true });
+      var t = remote.getToken ? remote.getToken() : null, h = { Accept: 'application/json' };
+      if (t) h.Authorization = 'Bearer ' + t;
+      return Promise.resolve().then(function () { return remote.fetch(String(remote.baseUrl()).replace(/\/+$/, '') + '/api/v1/inbox/conversations', { method: 'GET', headers: h }); })
+        .then(function (r) { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
+        .then(function (j) {
+          if (!j || !Array.isArray(j.conversations)) throw new Error('bad-response');
+          state.conversations = j.conversations; save();
+          return { skipped: false, count: j.conversations.length };
+        })
+        .catch(function (e) { return { skipped: false, error: String((e && e.message) || e) }; });
+    }
+    var api = { pullRemote: pullRemote, load: load, open: open, receive: receive, send: send, setStatus: setStatus, assign: assign, handoff: handoff, link: link, list: list,
+      get: function (id) { return clone(conv(id)); } };
+    return api;
+  }
+
+  var CSS = '.nova-inbox{direction:rtl;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}' +
+    '.nova-inbox .c{border:1px solid #444;border-radius:8px;padding:8px;min-width:0;overflow-wrap:anywhere}' +
+    '.nova-inbox .m{margin:4px 0;padding:4px 8px;border-radius:6px}.nova-inbox .m[data-dir=out]{background:#1d2a1d}.nova-inbox .m[data-status=failed]{border:1px solid #c33}';
+
+  function render(convs) {
+    return '<style>' + CSS + '</style><div class="nova-inbox" dir="rtl">' + arr(convs).map(function (c) {
+      return '<section class="c" data-conv="' + esc(c.id) + '" data-mode="' + esc(c.mode) + '"><h3>' + esc(c.customer) + '</h3>' +
+        '<small>' + (c.assignee ? 'المسؤول: ' + esc(c.assignee) : 'غير معيّن') + ' · ' + MODE_AR[c.mode] +
+        (c.customerId ? ' · عميل ' + esc(c.customerId) : '') + (c.orderId ? ' · طلب ' + esc(c.orderId) : '') + '</small>' +
+        arr(c.messages).map(function (m) {
+          return '<div class="m" data-dir="' + esc(m.dir) + '"' + (m.status ? ' data-status="' + esc(m.status) + '"' : '') + '>' + esc(m.text) +
+            (m.status ? ' <small>' + STATUS_AR[m.status] + '</small>' : '') + '</div>';
+        }).join('') + '</section>';
+    }).join('') + '</div>';
+  }
+
+  var api = { create: create, render: render, KEY: KEY };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.NovaUnifiedInbox = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script><script>/* UX48: hidden local inbox tab. Flag nova.flags.inbox==='1' (default OFF => nothing loaded, no UI). Local only, zero network. */
+(function(){var on=false;try{on=localStorage.getItem('nova.flags.inbox')==='1'}catch(e){}
+function boot(){var nav=document.querySelector('.nova-nav');if(!nav||document.getElementById('novaInboxTab'))return;init(nav)}
+/* FIX43: the WhatsApp header icon opens the in-app conversations view (SPA, no navigation) even when the flag is off */
+window.NovaOpenInbox=function(){boot();var t=document.getElementById('novaInboxTab');if(t){t.click();return true}return false};
 function init(nav){var U=window.NovaUnifiedInbox;if(!U)return;var inbox=U.create(localStorage).load();
 if(!inbox.list().length){var n=Date.now();inbox.open('demo-1','عميل تجريبي (عرض محلي)',n);inbox.receive('demo-1','السلام عليكم، هل الدواء متوفر؟',n);inbox.send('demo-1','نعم متوفر',n+1);inbox.setStatus('demo-1','m2','delivered');inbox.link('demo-1',{customerId:'C-1',orderId:'O-1'})}
 var tab=document.createElement('button');tab.type='button';tab.className='nova-tab';tab.id='novaInboxTab';tab.textContent='المحادثات';
@@ -6499,7 +6608,7 @@ if(b.dataset.act==='handoff'){if(c.mode==='human'){c.mode='bot';inbox.assign(id,
 else inbox.assign(id,'الصيدلي');draw()});
 tab.addEventListener('click',function(){draw();arCall('GET');var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
 nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box.hidden=true;tab.classList.remove('active')}},true)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="ux81-wa-badge">/* UX81: WhatsApp icon + unread badge. Unread = conversation whose last message is incoming. Flag/backend off => icon only. */
+if(on){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()}})()</script><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="ux81-wa-badge">/* UX81: WhatsApp icon + unread badge. Unread = conversation whose last message is incoming. Flag/backend off => icon only. */
 (function(){var KEY='nova.inbox.v1',timer=null;
 function unread(cs){var n=0;(Array.isArray(cs)?cs:[]).forEach(function(c){var m=c&&Array.isArray(c.messages)?c.messages:[];if(m.length&&m[m.length-1]&&m[m.length-1].dir==='in')n++});return n}
 function paint(n){var b=document.getElementById('novaWaBadge');if(!b)return;n=Number(n)||0;if(n>0){b.textContent=n>99?'99+':String(n);b.hidden=false}else{b.textContent='';b.hidden=true}var t=document.getElementById('novaWaBtn');if(t){var l='المحادثات (واتساب)'+(n>0?' — '+n+' غير مقروء':'');t.setAttribute('aria-label',l);if(t.dataset)t.dataset.novaOriginalAriaLabel=l}}
@@ -6507,7 +6616,7 @@ function cfg(){try{var u=localStorage.getItem('novaBackend.url'),k=sessionStorag
 function local(){try{var raw=localStorage.getItem(KEY),p=raw?JSON.parse(raw):null;return p&&p.conversations?unread(p.conversations):0}catch(e){return 0}}
 function refresh(){var c=cfg();if(!c||typeof fetch!=='function'){paint(local());return Promise.resolve()}
 return fetch(c.u,{method:'GET',headers:{Accept:'application/json',Authorization:'Bearer '+c.k}}).then(function(r){if(!r.ok)throw new Error('http');return r.json()}).then(function(j){if(!j||!Array.isArray(j.conversations))throw new Error('bad');paint(unread(j.conversations))}).catch(function(){paint(local())})}
-function open(){var t=document.getElementById('novaInboxTab');if(t){t.click();return}location.href='integrations/whatsapp/inbox.html'}
+function open(){if(typeof window.NovaOpenInbox==='function'&&window.NovaOpenInbox())return;var t=document.getElementById('novaInboxTab');if(t)t.click()}
 function boot(){var b=document.getElementById('novaWaBtn');if(!b)return;b.addEventListener('click',open);refresh();if(!timer)timer=setInterval(function(){if(!document.hidden)refresh()},30000);window.addEventListener('storage',function(e){if(!e.key||e.key===KEY)refresh()})}
 window.NovaWaBadge={unread:unread,paint:paint,refresh:refresh,open:open};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux44-mobile-totals">

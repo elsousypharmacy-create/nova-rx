@@ -37,5 +37,12 @@ r = run({ store, session: { 'novaBackend.token': 't' }, fetchImpl: async () => {
 await r.ctx.NovaWaBadge.refresh(); assert.equal(r.badge.hidden, true);
 // click: opens inbox tab when present, else the bridge page
 r = run({ store: { tab: 1 } }); r.btn.listeners.click(); assert.equal(r.clicked(), 1);
-r = run({}); r.btn.listeners.click(); assert.match(r.href(), /whatsapp\/inbox\.html/);
+r = run({}); r.btn.listeners.click(); assert.equal(r.href(), null, 'FIX43: never navigates (no 404)');
+// FIX43: NovaOpenInbox (inline conversations view) is used and no navigation happens
+{ let opened = 0; const r2 = run({}); r2.ctx.NovaOpenInbox = () => { opened++; return true; }; r2.btn.listeners.click(); assert.equal(opened, 1); assert.equal(r2.href(), null); }
+const page = readFileSync('index.html', 'utf8');
+assert.ok(!/location\.href\s*=\s*'integrations\/whatsapp\/inbox\.html'/.test(page), 'no fallback to inbox.html');
+assert.ok(!/s\.src='unified-inbox\.js'/.test(page), 'inbox lib is inlined, not fetched');
+assert.match(page, /<script id="fix43-inbox-lib">/);
+assert.match(page, /window\.NovaOpenInbox=/);
 console.log('ux81-wa-badge OK');
