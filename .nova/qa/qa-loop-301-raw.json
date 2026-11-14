@@ -1,0 +1,175 @@
+{
+ "d": {
+  "pages": {
+   "sale": {
+    "ms": 66,
+    "hs": false,
+    "len": 507,
+    "nf": false,
+    "small": [
+     "novaHelpChip:88x32",
+     "btnCloseCheckout:24x44",
+     "btnCloseReceipt:24x24",
+     "btnCloseHelp:24x24"
+    ]
+   },
+   "invoices": {
+    "ms": 135,
+    "hs": false,
+    "len": 816,
+    "nf": false,
+    "small": [
+     "btnCloseCheckout:24x44",
+     "btnCloseReceipt:24x24",
+     "btnCloseHelp:24x24"
+    ]
+   },
+   "products": {
+    "ms": 70,
+    "hs": false,
+    "len": 1099,
+    "nf": false,
+    "small": [
+     "btnCloseCheckout:24x44",
+     "btnCloseReceipt:24x24",
+     "btnCloseHelp:24x24"
+    ]
+   },
+   "customers": {
+    "ms": 57,
+    "hs": false,
+    "len": 648,
+    "nf": false,
+    "small": [
+     "btnCloseCheckout:24x44",
+     "btnCloseReceipt:24x24",
+     "btnCloseHelp:24x24"
+    ]
+   },
+   "reports": {
+    "ms": 112,
+    "hs": false,
+    "len": 321,
+    "nf": false,
+    "small": [
+     "btnCloseCheckout:24x44",
+     "btnCloseReceipt:24x24",
+     "btnCloseHelp:24x24"
+    ]
+   },
+   "settings": {
+    "ms": 87,
+    "hs": false,
+    "len": 1189,
+    "nf": false,
+    "small": [
+     "btnCloseCheckout:24x44",
+     "btnCloseReceipt:24x24",
+     "btnCloseHelp:24x24"
+    ]
+   }
+  },
+  "purchases": {
+   "status": 404,
+   "len": 119
+  },
+  "wa": {
+   "view": true,
+   "len": 276
+  },
+  "inv": {
+   "text": "البيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nنسخة تجريبية\nNOVA Rx\nالمنتجات والمخزون\n\nقائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي\n\nقراءة فاتورة مشتريات\nاستلام بضاعة\nطباعة استيكرات الأدوية\nعدد الأصناف\n12\nإجمالي الوحدات\n705\nمخزون منخفض (أقل من 30)\n1\nقيمة المخزون بسعر البيع\n21795.50 ج.م\nالبيانات التجريبية\nالصنف\tالباركود\tالسعر\tالعبوة\tالرصيد\tالتصنيف\nكونكور 5 مجم\t6281001234567\t38.50 ج.م\t3 × 10\t45\tمزمن\nبانادول إكسترا\t6281001234568\t12.00 ج.م\t2 × 12\t120\tمسكنات\nأوجمنتين 1 جم\t6281001234569\t64.50 ج.م\t2 × 7\t28\tمضاد حيوي\nجلوكوفاج 500 مجم\t6281001234570\t18.25 ج.م\t5 × 10\t80\tمزمن\nليبيتور 20 مجم\t6281001234571\t92.00 ج.م\t3 × 10\t35\tدهون\nنيكسيوم 40 مجم\t6281001234572\t85.50 ج.م\t4 × 7\t40\tجهاز هضمي\nأوميبرازول 20 مجم\t6281001234573\t22.00 ج.م\t2 × 7\t60\tجهاز هضمي\nسولبادين فوار\t6281001234574\t16.50 ج.م\t2 × 12\t55\tمسكنات\nفيتامين د3 50,000 وحدة\t6281001234575\t45.00 ج.م\t2 × 6\t90\tفيتامينات\nسيتريزين 10 مجم\t6281001234576\t14.75 ج.م\t2 × 10\t70\tمضاد هيستامين\nفولتارين جل 50 جم\t6281001234577\t26.00 ج.م\t—\t32\tموضعي\nبخاخ أوتريفين 0.1%\t6281001234578\t11.50 ج.م\t—\t50\tأنف وأذن وحنجرة\n استيكرات الأدوية",
+   "controls": [],
+   "rows": 29,
+   "badges": [
+    "nova-low-badge:28"
+   ]
+  },
+  "cls": 0,
+  "longtasks": [
+   75
+  ],
+  "errors": [
+   "Failed to load resource: net::ERR_FAILED",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 http://127.0.0.1:8765/emergency/stock.json",
+   "404 http://127.0.0.1:8765/purchases"
+  ],
+  "blocked": []
+ },
+ "m": {
+  "pages": {
+   "sale": {
+    "ms": 49,
+    "hs": false,
+    "len": 403,
+    "nf": false,
+    "small": []
+   },
+   "invoices": {
+    "ms": 60,
+    "hs": false,
+    "len": 760,
+    "nf": false,
+    "small": []
+   },
+   "products": {
+    "ms": 55,
+    "hs": false,
+    "len": 1043,
+    "nf": false,
+    "small": []
+   },
+   "customers": {
+    "ms": 49,
+    "hs": false,
+    "len": 588,
+    "nf": false,
+    "small": []
+   },
+   "reports": {
+    "ms": 33,
+    "hs": false,
+    "len": 308,
+    "nf": false,
+    "small": []
+   },
+   "settings": {
+    "ms": 75,
+    "hs": false,
+    "len": 1176,
+    "nf": false,
+    "small": []
+   }
+  },
+  "purchases": {
+   "status": 404,
+   "len": 119
+  },
+  "wa": {
+   "view": true,
+   "len": 184
+  },
+  "inv": {
+   "text": "البيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nNOVA Rx\nالمنتجات والمخزون\n\nقائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي\n\n قراءة فاتورة مشتريات\nاستلام بضاعة\nطباعة استيكرات الأدوية\nعدد الأصناف\n12\nإجمالي الوحدات\n705\nمخزون منخفض (أقل من 30)\n1\nقيمة المخزون بسعر البيع\n21795.50 ج.م\nالبيانات التجريبية\nكونكور 5 مجم\n6281001234567\n38.50 ج.م\n3 × 10\n45\nمزمن\nبانادول إكسترا\n6281001234568\n12.00 ج.م\n2 × 12\n120\nمسكنات\nأوجمنتين 1 جم\n6281001234569\n64.50 ج.م\n2 × 7\n28\nمضاد حيوي\nجلوكوفاج 500 مجم\n6281001234570\n18.25 ج.م\n5 × 10\n80\nمزمن\nليبيتور 20 مجم\n6281001234571\n92.00 ج.م\n3 × 10\n35\nدهون\nنيكسيوم 40 مجم\n6281001234572\n85.50 ج.م\n4 × 7\n40\nجهاز هضمي\nأوميبرازول 20 مجم\n6281001234573\n22.00 ج.م\n2 × 7\n60\nجهاز هضمي\nسولبادين فوار\n6281001234574\n16.50 ج.م\n2 × 12\n55\nمسكنات\nفيتامين د3 50,000 وحدة\n6281001234575\n45.00 ج.م\n2 × 6\n90\nفيتامينات\nسيتريزين 10 مجم\n6281001234576\n14.75 ج.م\n2 × 10\n70\nمضاد هيستامين\nفولتارين جل 50 جم\n6281001234577\n26.00 ج.م\n—\n32\nموضعي\nبخاخ أوتريفين 0.1%\n6281001234578\n11.50 ج.م\n—\n50\nأنف وأذن وحنجرة\nاستيكرات الأدوية",
+   "controls": [],
+   "rows": 29,
+   "badges": [
+    "nova-low-badge:28"
+   ]
+  },
+  "cls": 0,
+  "longtasks": [],
+  "errors": [
+   "Failed to load resource: net::ERR_FAILED",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 http://127.0.0.1:8765/emergency/stock.json",
+   "404 http://127.0.0.1:8765/purchases"
+  ],
+  "blocked": []
+ }
+}
