@@ -11,7 +11,8 @@ execFileSync('node', ['--check', ART], { stdio: 'pipe' });
 const out = path.join(mkdtempSync(path.join(tmpdir(), 'nova-fix46-')), 'app.html');
 execFileSync('node', ['tools/build-worker-artifact.mjs', '--extract', ART, out], { stdio: 'pipe' });
 const app = readFileSync(out, 'utf8');
-assert.equal(app, readFileSync('index.html', 'utf8'), 'artifact HTML == index.html');
+// index.html moved on (UX300 and later); the exact-equality check lives in the newest artifact's check. Here: the FIX46 UI is still in index.html.
+assert.ok(readFileSync('index.html', 'utf8').includes('FIX46: old WhatsApp chats come from the staging API'), 'index.html keeps FIX46');
 for (const re of [/FIX46: old WhatsApp chats come from the staging API behind the pharmacy PIN/, /id="waHistForm"/, /'X-Nova-Pin':p/,
   /sessionStorage\.setItem\(HK,pv\)/, /m\.kind === 'sys'/, /if \(c && c\.history\) return 0;/, /id="novaWaBtn"/, /function renderWa\(/])
   assert.match(app, re);
