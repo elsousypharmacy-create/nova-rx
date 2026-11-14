@@ -3619,22 +3619,15 @@
    "brief": "Reproduced: .wa-head shows only avatar+name (headSubtitle false); the read-only/archive status is only in the composer placeholder, the lock button lives in a separate bar above, and the mobile back chevron is a bare › glyph (text button, no 44px target) (m-wa-chat-big.png). Add a subtitle (عدد الرسائل · آخر نشاط · أرشيف للقراءة فقط), a chevron icon button of 44x44 on touch, and a compact lock icon button in the header; RTL-correct arrow direction. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Header shows subtitle, 44px back target and lock button on mobile; test measures sizes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:24:12+00:00",
    "pr": 403,
-   "ci_dispatched": {
-    "sha": "2dd4c76decae3f0321d25c00c6456608d56be617",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:28:08+00:00"
-   }
+   "merged_at": "2026-11-14T14:32:06+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/403"
   },
   {
    "id": "UX238",
@@ -3898,5 +3891,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:30:44+00:00"
+ "updated": "2026-11-14T14:32:06+00:00"
 }
