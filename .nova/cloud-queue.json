@@ -2151,12 +2151,20 @@
    "brief": "Owner Ahmed wants tonight another independent UX/usability inspection of the CURRENT repo frontend (main, includes UX1-UX35). Do not duplicate .nova/qa/ux-pro-report.md, ux-pro2-report.md or the UX37 scope (layout/icons/WhatsApp/warehouses); read them first. Run locally only (Playwright headless, desktop 1366x768 + mobile 390x844, fake data, no live writes). Simulate a full real pharmacist shift in an Egyptian retail pharmacy as a scripted scenario: open shift, 30 mixed sales (barcode, name search with typos/Arabic-English mix, partial strips, discounts, split payment, credit customer), 3 returns, 2 receivings with expiry/batch, shortage handling, debt collection, chronic refill, end-of-day close and report. Measure friction: hesitation points, missing defaults, repeated typing, unclear errors, unsafe actions without undo, things a new cashier would not discover, speed under rush hour. Also check first-run/onboarding, search quality (Arabic normalisation أ/ا/ة/ه/ى, partial words), and keyboard-only operation. Write .nova/qa/ux-pro3-report.md in Arabic: executive summary, top 10 friction points with screenshots in .nova/qa/ux-pro3/ (max 30 PNGs), and a section «تطوير مقترح» with the highest-value improvements. Then write .nova/inbox/ux-pro3.json = {\"tasks\":[...]} ids starting UX60, max 12 small frontend-only fix tasks with tests (click-count assertions where relevant), preserve Black Edition Arabic RTL, backend frozen, no deploys, set after only where truly needed. Do not edit .nova/cloud-queue.json. Commit script, screenshots, report and inbox file on this branch.",
    "acceptance": "Arabic report .nova/qa/ux-pro3-report.md with shift-simulation friction findings and screenshots; valid .nova/inbox/ux-pro3.json with UX60+ frontend-only tasks with tests; no live writes, no deploy.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3-request.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:09:55+00:00"
+   "dispatched_at": "2026-11-14T00:09:55+00:00",
+   "pr": 333,
+   "ci_dispatched": {
+    "sha": "a2e004d97227a59c776efe432cb84b2e6edaa91c",
+    "wf": [
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T00:18:27+00:00"
+   }
   },
   {
    "id": "UX37",
@@ -2442,5 +2450,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:16:03+00:00"
+ "updated": "2026-11-14T00:18:27+00:00"
 }
