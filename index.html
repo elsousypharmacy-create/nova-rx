@@ -5386,11 +5386,11 @@ window.NovaFmt=(function(){
  const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
  content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false) +'<div class="nova-products-toolbar"><input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaManualReceive" class="nova-inventory-action">استلام بضاعة</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis nova-kpis-compact" id="novaProductsKpis">'+kpi('عدد الأصناف',products.length+tr(' صنف',' items'))+(q?kpi('نتيجة البحث',list.length):'')+kpi('مصدر الأسعار','STOCK LIVE')+'</div><div class="nova-stock-notice" id="novaStockNotice" role="note">'+tr('الرصيد','Stock')+': '+tr('غير متوفر من مصدر الأسعار','Not available from price source')+'</div>'
- :'<div class="nova-kpis">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'" title="'+tr('نقص مسجّل','Logged shortages')+': '+window.novaShortages.list().length+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
- +dupBlock+trfBlock+(()=>{const cols=[['الصنف',p=>'<td data-label="الصنف">'+esc(window.novaDispName(p.name))+'</td>'],['الباركود',p=>'<td dir="ltr" data-label="الباركود">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td data-label="السعر">'+money(p.price)+'</td>']];
- if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
- if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1" data-label="الرصيد"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td data-label="الرصيد">'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
- const rowFn=p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=shown.length>40?{items:shown.slice(40),fn:rowFn}:null;return cards(cols.map(c=>c[0]),rows(shown.slice(0,40),rowFn));})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ :'<div class="nova-kpis nova-kpis-prod">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(novaLowOnly?' active':'')+'" aria-pressed="'+novaLowOnly+'" title="'+tr('نقص مسجّل','Logged shortages')+': '+window.novaShortages.list().length+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(p=>p.stock<30).length+'</strong>'+(novaLowOnly?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+'</div>')
+ +dupBlock+trfBlock+(()=>{const cols=[['الصنف',p=>'<td class="pc-name" data-label="الصنف">'+esc(window.novaDispName(p.name))+'</td>'],['الباركود',p=>'<td dir="ltr" class="pc-bar" data-label="الباركود">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td class="pc-price" data-label="السعر">'+money(p.price)+'</td>']];
+ if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack class="pc-pack" data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
+ if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1" class="pc-stock" data-label="الرصيد"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td class="pc-stock" data-label="الرصيد">'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td class="pc-cat" data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
+ const rowFn=p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=shown.length>40?{items:shown.slice(40),fn:rowFn}:null;return cards(cols.map(c=>c[0]),rows(shown.slice(0,40),rowFn)).replace('nova-data-table nova-cards','nova-data-table nova-cards nova-prod-cards').replace('class="nova-panel"','class="nova-panel nova-prod-panel"');})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
@@ -6578,6 +6578,23 @@ input,select,textarea{min-height:44px}
 .nova-act-return:active{background:rgba(240,185,85,.30)}
 .nova-act-ghost:focus-visible,.nova-act-return:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
 .nova-act-ico{flex:none}
+/* UX307: compact product cards on phones (name+price / barcode+stock+category) */
+@media(max-width:640px){
+.nova-kpis-prod{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin-bottom:8px!important}
+.nova-kpis-prod .nova-kpi{padding:6px 10px!important;min-height:0!important}
+.nova-kpis-prod .nova-kpi small{font-size:12px!important;line-height:1.2}
+.nova-kpis-prod .nova-kpi strong{font-size:15px!important;margin-top:0!important}
+.nova-prod-panel>.nova-panel-title{display:none}
+.nova-data-table.nova-prod-cards tr{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"name name price" "bar stock cat";align-items:center;column-gap:10px;row-gap:2px;min-height:44px;margin:0 0 6px;padding:6px 12px}
+.nova-data-table.nova-prod-cards td{padding:0;font-size:14px;display:block;min-width:0}
+.nova-data-table.nova-prod-cards td::before{display:none}
+.nova-data-table.nova-prod-cards .pc-name{grid-area:name;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.nova-data-table.nova-prod-cards .pc-price{grid-area:price;font-weight:700;white-space:nowrap}
+.nova-data-table.nova-prod-cards .pc-bar{grid-area:bar;font-size:12px;color:#a7b3bd;text-align:right}
+.nova-data-table.nova-prod-cards .pc-stock{grid-area:stock;font-size:12px}
+.nova-data-table.nova-prod-cards .pc-cat{grid-area:cat;font-size:12px;color:#a7b3bd;background:#252c34;border-radius:10px;padding:1px 8px}
+.nova-data-table.nova-prod-cards .pc-pack{display:none}
+}
 @media(min-width:781px){.nova-data-table .nova-act-ghost,.nova-data-table .nova-act-return{min-height:36px!important;padding:0 12px}}
 @media(max-width:780px){.nova-data-table .nova-act-ghost,.nova-data-table .nova-act-return{min-height:44px!important}}
 @media(max-width:640px){.nova-data-table.nova-cards td.nova-actions{flex-wrap:nowrap}.nova-data-table.nova-cards .nova-act-ghost,.nova-data-table.nova-cards .nova-act-return{flex:1 1 0;min-width:0!important}}
