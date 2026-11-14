@@ -555,6 +555,11 @@
       background: var(--accent-red-bg);
     }
 
+    .nova-first-run-hint{margin-top:10px;padding:10px 16px;border:1px solid var(--border,#333);border-radius:10px;text-align:start;font-size:13px;color:var(--text-main,inherit)}
+    .nova-first-run-hint[hidden]{display:none}
+    .nova-first-run-hint ol{margin:0 0 8px;padding-inline-start:20px;line-height:1.9}
+    .nova-first-run-hint button{min-height:36px}
+    .nova-help-chip{min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--border,#444);background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
     .empty-invoice-state {
       display: flex;
       flex-direction: column;
@@ -1267,6 +1272,18 @@
  #novaDayReport td{padding:4px 2px;border-bottom:1px dashed #666;color:#000}#novaDayReport td+td{text-align:left}
 }
 
+
+/* UX68: customer statement print */
+#novaStmtDoc{display:none}
+#novaStatement .nova-stmt-table th,#novaStatement .nova-stmt-table td{padding:6px 4px;border-bottom:1px solid #2a3139;text-align:right}
+#novaStatement .nova-dlg-x{width:44px;height:44px;min-height:44px;top:4px;inset-inline-start:4px}
+#novaStatement button{min-height:44px}
+@media print{
+ body.nova-printing-stmt>*:not(#novaStmtDoc){display:none!important}
+ body.nova-printing-stmt>#novaStmtDoc{display:block!important;background:#fff;color:#000;font-family:Cairo,sans-serif;width:var(--stmt-w,80mm);max-width:100%;margin:0 auto;padding:0}
+ #novaStmtDoc h1{font-size:16px;margin:0 0 4px}#novaStmtDoc p{font-size:12px;margin:0 0 8px}
+ #novaStmtDoc table{width:100%;border-collapse:collapse;font-size:11px}#novaStmtDoc th,#novaStmtDoc td{padding:3px 2px;border-bottom:1px dashed #666;color:#000;text-align:right}
+}
 /* NOVA Rx / BLACK EDITION — unified design system */
 :root{color-scheme:dark;--bg-base:#050607;--bg-panel:#0b0d10;--bg-surface:#171b20;--bg-surface-hover:#21272e;--bg-surface-active:#29313a;--border-subtle:#272c33;--border-focus:#5badd6;--text-main:#f4f5f6;--text-muted:#a7afb9;--text-dim:#77828f;--accent-cyan:#2b90bd;--accent-cyan-light:#79c9eb;--accent-green:#69c6a8;--accent-green-bg:#10231e;--accent-green-border:#254c40;--accent-red:#e88e96;--accent-red-bg:#29181c;--accent-amber:#c5aa79;--badge-customer:#b8a6d7;--badge-customer-bg:#221d2a;--badge-product:#79c9eb;--badge-product-bg:#142530;--shadow-sm:0 2px 8px #0005;--shadow-md:0 8px 24px #0007;--shadow-lg:0 18px 48px #0009}
 html,body{background:#050607!important;color:#f4f5f6!important;color-scheme:dark}
@@ -2041,6 +2058,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
         </div>
 
         <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" aria-label="رقم عملية البيع"></span>
+          <button id="novaHelpChip" class="nova-help-chip" type="button" title="عرض اختصارات الكيبورد (F1)">F1 اختصارات</button>
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="فاتورة جديدة (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
           <button id="holdCurrentInvoice" class="btn nova-hold-action" type="button" title="تعليق الفاتورة الحالية" aria-label="تعليق الفاتورة الحالية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M10 9v6m4-6v6"/></svg><span>تعليق</span></button>
           <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="الفواتير المعلقة" aria-label="الفواتير المعلقة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
@@ -2111,6 +2129,10 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
           </svg>
           <div style="font-weight: 600; font-size: 14px;">Invoice is Empty</div>
           <div style="font-size: 12px;">Scan product barcode or type medicine name in the search bar above.</div>
+          <div id="novaFirstRunHint" class="nova-first-run-hint" role="note" dir="auto" hidden>
+            <ol><li>امسح الباركود أو اكتب الاسم</li><li>Enter لإضافة</li><li>Enter للدفع</li></ol>
+            <button type="button" id="novaHintHide" class="btn btn-secondary">إخفاء</button>
+          </div>
         </div>
       </div>
 
@@ -2987,6 +3009,64 @@ window.NovaFmt=(function(){
         }, window.matchMedia && matchMedia('(max-width:600px)').matches ? 2500 : (type === 'error' ? 4500 : 2200));
       }
 
+      // UX66: undo toast (6s) + Ctrl+Z for destructive cart actions.
+      let pendingUndo = null;
+      function expireUndo() {
+        if (!pendingUndo) return;
+        const u = pendingUndo; pendingUndo = null;
+        clearTimeout(u.timer);
+        u.toast && u.toast.remove();
+        if (u.onExpire) { try { u.onExpire(); } catch (_) {} }
+      }
+      function runUndo() {
+        if (!pendingUndo) return false;
+        const u = pendingUndo; pendingUndo = null;
+        clearTimeout(u.timer);
+        u.toast && u.toast.remove();
+        u.restore();
+        showToast("تم التراجع.");
+        return true;
+      }
+      function showUndoToast(msg, restore, onExpire) {
+        expireUndo();
+        showToast(msg);
+        const toast = elements.toastContainer.lastElementChild;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "btnUndoToast";
+        btn.className = "toast-undo";
+        btn.textContent = "تراجع";
+        btn.title = "Ctrl+Z";
+        btn.style.cssText = "margin-inline-start:8px;background:transparent;border:1px solid currentColor;color:inherit;border-radius:4px;padding:2px 10px;cursor:pointer;font:inherit;min-height:24px";
+        btn.addEventListener("click", () => { runUndo(); elements.mainSearchInput.focus(); });
+        toast.appendChild(btn);
+        pendingUndo = { restore, onExpire, toast, timer: setTimeout(expireUndo, 6000) };
+      }
+      document.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === "z" || e.key === "Z") && pendingUndo) {
+          e.preventDefault();
+          runUndo();
+        }
+      }, true);
+      function snapshotCart() {
+        return {
+          lines: JSON.parse(JSON.stringify(state.invoiceLines)),
+          percent: state.percentDiscount, fixed: state.fixedDiscount,
+          customer: state.attachedCustomer
+        };
+      }
+      function restoreCart(snap) {
+        state.invoiceLines = JSON.parse(JSON.stringify(snap.lines));
+        state.percentDiscount = snap.percent;
+        state.fixedDiscount = snap.fixed;
+        elements.inputPercentDiscount.value = snap.percent || "";
+        elements.inputFixedDiscount.value = snap.fixed || "";
+        if (snap.customer && (!state.attachedCustomer || state.attachedCustomer.id !== snap.customer.id)) attachCustomer(snap.customer);
+        else if (!snap.customer && state.attachedCustomer) detachCustomer();
+        renderInvoice();
+        elements.mainSearchInput.focus();
+      }
+
       function formatMoney(val) {
         return (Math.max(0, val) || 0).toFixed(2) + " EGP";
       }
@@ -3480,9 +3560,10 @@ window.NovaFmt=(function(){
       }
 
       function removeLine(productId) {
+        const snap = snapshotCart();
         state.invoiceLines = state.invoiceLines.filter(l => l.productId !== productId);
         renderInvoice();
-        showToast("Item removed from invoice.");
+        showUndoToast("تم حذف الصنف", () => restoreCart(snap));
       }
 
       function clearInvoice() {
@@ -3490,13 +3571,14 @@ window.NovaFmt=(function(){
           elements.mainSearchInput.focus();
           return;
         }
+        const snap = snapshotCart();
         state.invoiceLines = [];
         state.percentDiscount = 0;
         state.fixedDiscount = 0;
         elements.inputPercentDiscount.value = "";
         elements.inputFixedDiscount.value = "";
         renderInvoice();
-        showToast("Invoice cleared.");
+        showUndoToast("تم مسح الفاتورة", () => restoreCart(snap));
         elements.mainSearchInput.focus();
       }
 
@@ -4220,6 +4302,7 @@ window.NovaFmt=(function(){
         };
         // U1: keep a local record of every completed sale (this device only; not a server ledger).
         const savedOk = window.novaSales.add(saleRecord);
+        if (savedOk) { try { localStorage.setItem("nova-rx-hint-done", "1"); } catch (e) {} }
         if (!savedOk) { // atomic: nothing is cleared; a retry reuses the same card authorisation and invoice key, so the customer is never charged twice
           showToast("تعذر حفظ الفاتورة على هذا الجهاز — أعد المحاولة، لن يتم خصم البطاقة مرة أخرى.", "error");
           return;
@@ -4546,7 +4629,14 @@ window.NovaFmt=(function(){
         if (!resume && !del) return;
         const id = (resume || del).getAttribute(resume ? 'data-held-resume' : 'data-held-delete');
         const record = heldInvoices.find(x => x.id === id); if (!record) return;
-        if (del) { if (confirm('Delete this held invoice?')) { window.novaPay.cancel(record, 'parked-deleted'); saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); } return; }
+        if (del) {
+          const before = heldInvoices.slice();
+          if (!saveHeldInvoices(heldInvoices.filter(x => x.id !== id))) return;
+          showUndoToast('تم حذف الفاتورة المعلقة',
+            () => { const have = heldInvoices.filter(x => x.id !== id); const idx = Math.min(before.findIndex(x => x.id === id), have.length); have.splice(idx, 0, record); saveHeldInvoices(have); },
+            () => { window.novaPay.cancel(record, 'parked-deleted'); });
+          return;
+        }
         if (state.invoiceLines.length && !confirm('Replace the current invoice? Unsaved items will be lost.')) return;
         // Keep held record until the active invoice is restored successfully.
         activeSaleNumber = record.saleNumber || record.id;
@@ -4609,6 +4699,14 @@ window.NovaFmt=(function(){
         });
 
         elements.btnClearInvoice.addEventListener("click", clearInvoice);
+
+        (function () {
+          const chip = document.getElementById("novaHelpChip"), hint = document.getElementById("novaFirstRunHint"), hide = document.getElementById("novaHintHide");
+          let done = false; try { done = localStorage.getItem("nova-rx-hint-done") === "1"; } catch (e) {}
+          if (hint && !done) hint.hidden = false;
+          if (hide) hide.addEventListener("click", () => { hint.hidden = true; try { localStorage.setItem("nova-rx-hint-done", "1"); } catch (e) {} });
+          if (chip) chip.addEventListener("click", () => { elements.helpModal.classList.add("active"); elements.btnCloseHelp.focus(); });
+        })();
 
         elements.btnHelpShortcuts.addEventListener("click", () => {
           elements.helpModal.classList.add("active");
@@ -5030,14 +5128,46 @@ window.NovaFmt=(function(){
   const bal=debtOf(id);if(!(bal>0))return;const c=data().customers.find(x=>String(x.id)===String(id));
   const ov=document.createElement('div');ov.id='novaPayDebt';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.dir='rtl';
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Cairo,sans-serif';
-  ov.innerHTML='<div style="background:#14181d;border:1px solid #2a3139;border-radius:var(--r-2);padding:20px;min-width:300px;color:#e8eef3;position:relative"><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button><h2 style="margin:0 0 12px;font-size:18px">سداد مديونية — '+esc(c?c.name:id)+'</h2><label style="display:block;margin-bottom:6px">المبلغ</label><input id="novaPayAmt" type="number" min="0.01" step="0.01" value="'+bal+'" style="width:100%;min-height:44px;padding:0 10px;background:#0b0e11;color:inherit;border:1px solid #2a3139;border-radius:var(--r-2);box-sizing:border-box"><label style="display:block;margin:10px 0 6px">طريقة الدفع</label><select id="novaPayMethod" style="width:100%;min-height:44px;background:#0b0e11;color:inherit;border:1px solid #2a3139;border-radius:var(--r-2)"><option value="cash" selected>نقدي</option><option value="card">بطاقة</option></select><div id="novaPayErr" role="alert" style="color:#ff5d5d;min-height:20px;margin-top:6px"></div><div style="display:flex;gap:var(--sp-2);margin-top:8px"><button type="button" id="novaPayOk" class="btn btn-primary nova-return-btn" style="min-height:44px;flex:1">تأكيد السداد</button></div></div>';
+  ov.innerHTML='<div style="background:#14181d;border:1px solid #2a3139;border-radius:var(--r-2);padding:20px;min-width:300px;color:#e8eef3;position:relative"><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button><h2 style="margin:0 0 12px;font-size:18px">سداد مديونية — '+esc(c?c.name:id)+'</h2><label style="display:block;margin-bottom:6px">المبلغ</label><input id="novaPayAmt" type="number" min="0.01" step="0.01" value="'+bal+'" style="width:100%;min-height:44px;padding:0 10px;background:#0b0e11;color:inherit;border:1px solid #2a3139;border-radius:8px;box-sizing:border-box"><div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="btn btn-secondary nova-return-btn" data-pay-chip="half" style="min-height:44px;flex:1">نصف</button><button type="button" class="btn btn-secondary nova-return-btn" data-pay-chip="all" style="min-height:44px;flex:1">الكل</button></div><label style="display:block;margin:10px 0 6px">طريقة الدفع</label><select id="novaPayMethod" style="width:100%;min-height:44px;background:#0b0e11;color:inherit;border:1px solid #2a3139;border-radius:8px"><option value="cash" selected>نقدي</option><option value="card">بطاقة</option></select><div id="novaPayErr" role="alert" style="color:#ff5d5d;min-height:20px;margin-top:6px"></div><div style="display:flex;gap:8px;margin-top:8px"><button type="button" id="novaPayOk" class="btn btn-primary nova-return-btn" style="min-height:44px;flex:1">تأكيد السداد</button></div></div>';
   document.body.appendChild(ov);const amt=ov.querySelector('#novaPayAmt');amt.focus();amt.select();
   const close=()=>{ov.remove();document.removeEventListener('keydown',key,true)};
   const ok=()=>{try{const v=Number(amt.value);const r=ledger().collect({id:'pay-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),customerId:String(id),amount:v,method:ov.querySelector('#novaPayMethod').value});close();if(typeof window.novaToast==='function')window.novaToast('تم سداد '+money(r.amount)+' — المتبقي '+money(r.balanceAfter));else{const t=document.getElementById('toastContainer');if(t){t.innerHTML='<div class="toast" role="status"><span dir="auto">تم سداد '+money(r.amount)+' — المتبقي '+money(r.balanceAfter)+'</span></div>';setTimeout(()=>t.replaceChildren(),3000)}}const f=document.getElementById('novaFilter');render('customers',f?f.value:'');}catch(e){ov.querySelector('#novaPayErr').textContent=e.code==='exceeds-balance'?'المبلغ أكبر من المديونية':'مبلغ غير صحيح'}};
   function key(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}else if(e.key==='Enter'){e.preventDefault();e.stopPropagation();ok()}}
-  document.addEventListener('keydown',key,true);ov.querySelector('#novaPayOk').addEventListener('click',ok);ov.querySelector('[data-dlg-close]').addEventListener('click',close);ov.addEventListener('mousedown',e=>{if(e.target===ov)close()});
+  document.addEventListener('keydown',key,true);ov.querySelector('#novaPayOk').addEventListener('click',ok);ov.querySelectorAll('[data-pay-chip]').forEach(ch=>ch.addEventListener('click',()=>{amt.value=ch.getAttribute('data-pay-chip')==='half'?String(Math.round(bal*100/2)/100):String(bal);amt.focus()}));ov.querySelector('[data-dlg-close]').addEventListener('click',close);ov.addEventListener('mousedown',e=>{if(e.target===ov)close()});
  }
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pay-debt]');if(b)openPayDebt(b.getAttribute('data-pay-debt'))});
+
+ const hasStmt=id=>{try{const l=ledger();return !!l&&l.statement(String(id)).length>0}catch(e){return false}};
+ function openStatement(id){
+  const l=ledger();if(!l)return;const c=data().customers.find(x=>String(x.id)===String(id));
+  const w=(()=>{try{return localStorage.getItem('nova-rx-receipt-width-v1')==='58mm'?'58mm':'80mm'}catch(e){return '80mm'}})();
+  let run=0;const lines=[];
+  l.statement(String(id)).forEach(m=>{
+   if(m.type==='reversal')return;
+   const isPay=m.type==='collection';const amt=m.amount;
+   if(!m.reversed)run+=isPay?-amt:amt;
+   const lbl=m.type==='charge'?'بيع آجل':m.type==='opening'?'رصيد افتتاحي':'سداد'+(m.receiptNo?' '+m.receiptNo:'');
+   lines.push({at:m.at,lbl:lbl+(m.reversed?' (ملغى)':''),debit:isPay?0:amt,credit:isPay?amt:0,bal:run,rev:m.reversed});
+  });
+  const dt=t=>{try{return window.NovaFmt.formatDateTime(new Date(t))}catch(e){return new Date(t).toLocaleString('ar-EG')}};
+  const tbl='<table class="nova-stmt-table" style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>الرصيد</th></tr></thead><tbody>'+lines.map(r=>'<tr'+(r.rev?' style="opacity:.5;text-decoration:line-through"':'')+'><td>'+esc(dt(r.at))+'</td><td>'+esc(r.lbl)+'</td><td>'+(r.debit?money(r.debit):'')+'</td><td>'+(r.credit?money(r.credit):'')+'</td><td>'+money(r.bal)+'</td></tr>').join('')+'</tbody></table>';
+  const ov=document.createElement('div');ov.id='novaStatement';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.dir='rtl';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Cairo,sans-serif';
+  ov.innerHTML='<div style="background:#14181d;border:1px solid #2a3139;border-radius:12px;padding:20px;width:min(560px,94vw);max-height:90vh;overflow:auto;color:#e8eef3;position:relative"><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button><h2 style="margin:0 0 12px;font-size:18px">كشف حساب — '+esc(c?c.name:id)+'</h2><div style="overflow:auto">'+tbl+'</div><div id="novaStmtBal" style="margin-top:12px;font-weight:700;font-size:16px">الرصيد الحالي: <span data-stmt-balance>'+money(run)+'</span></div><div style="display:flex;gap:8px;margin-top:12px"><button type="button" id="novaStmtPrint" class="btn btn-primary nova-return-btn" style="min-height:44px;flex:1">طباعة</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>{ov.remove();document.removeEventListener('keydown',key,true)};
+  function key(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}}
+  document.addEventListener('keydown',key,true);ov.querySelector('[data-dlg-close]').addEventListener('click',close);ov.addEventListener('mousedown',e=>{if(e.target===ov)close()});
+  ov.querySelector('#novaStmtPrint').addEventListener('click',()=>{
+   const old=document.getElementById('novaStmtDoc');if(old)old.remove();
+   const el=document.createElement('div');el.id='novaStmtDoc';el.setAttribute('dir','rtl');el.style.setProperty('--stmt-w',w);
+   el.innerHTML='<h1>كشف حساب — '+esc(c?c.name:id)+'</h1><p>'+esc(dt(Date.now()))+'</p>'+tbl+'<p><b>الرصيد الحالي: '+money(run)+'</b></p>';
+   document.body.appendChild(el);document.body.classList.add('nova-printing-stmt');
+   const done=()=>{document.body.classList.remove('nova-printing-stmt');el.remove();window.removeEventListener('afterprint',done)};
+   window.addEventListener('afterprint',done);window.print();
+  });
+ }
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-stmt]');if(b)openStatement(b.getAttribute('data-stmt'))});
  let novaLowOnly=false;
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
@@ -5074,7 +5204,7 @@ window.NovaFmt=(function(){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi('العملاء النشطون',customers.filter(c=>c.visits>0).length)+'</div>'
- +cards(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td data-label="الاسم">'+esc(c.name)+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(window.novaTierAr(c.tier))+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+'</td></tr>'})+(list.length<8?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+(list.length?tr('عدد العملاء قليل','Few customers'):tr('لا يوجد عملاء بعد','No customers yet'))+'</strong><span>'+tr('أضف عميلًا لتتبّع الزيارات والنقاط والمديونية.','Add a customer to track visits, points and balance due.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button></div>':''));
+ +cards(['الاسم','الهاتف','المستوى','الزيارات','النقاط','المديونية'],rows(list,c=>{const d=debtOf(c.id);return '<tr><td data-label="الاسم">'+esc(c.name)+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(window.novaTierAr(c.tier))+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff5d5d;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+(hasStmt(c.id)?' <button type="button" class="nova-return-btn" style="min-height:44px" data-stmt="'+esc(c.id)+'">كشف حساب</button>':'')+'</td></tr>'})+(list.length<8?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+(list.length?tr('عدد العملاء قليل','Few customers'):tr('لا يوجد عملاء بعد','No customers yet'))+'</strong><span>'+tr('أضف عميلًا لتتبّع الزيارات والنقاط والمديونية.','Add a customer to track visits, points and balance due.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button></div>':''));
  }else if(page==='invoices'){
  const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، ')}));
  const sl=filtered(saved,['id','customer','date','items']);
@@ -5271,6 +5401,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   'جاهز':'Ready','ناقص':'Missing','ناقصة':'Missing','تحذير':'Warning','فشل':'Failed','جاري التوليد':'Generating',
   '↻ توليد تاني':'↻ Generate again','👁 معاينة الاستيكرات':'👁 Preview stickers','إخفاء معاينة الاستيكرات':'Hide sticker preview','👁 معاينة الاستيكر':'👁 Preview sticker',
   'لا توجد نتائج مطابقة':'No matching results',
+  'F1 اختصارات':'F1 Shortcuts','امسح الباركود أو اكتب الاسم':'Scan the barcode or type the name','Enter لإضافة':'Enter to add','Enter للدفع':'Enter to pay','إخفاء':'Hide','عرض اختصارات الكيبورد (F1)':'Show keyboard shortcuts (F1)',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
   'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','آخر شراء:':'Last purchase:','أدوية مزمنة:':'Chronic medicines:','إعادة صرف آخر فاتورة':'Refill last invoice','رقم العميل قبل الدفع':'Customer number before payment',
   'سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.':'Enter the customer number, or press Enter with no number to skip.',

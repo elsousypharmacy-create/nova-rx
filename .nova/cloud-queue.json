@@ -2363,12 +2363,23 @@
    "after": [
     "UX40"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T01:00:36+00:00"
+   "dispatched_at": "2026-11-14T01:10:31+00:00",
+   "pr": 353,
+   "ci_dispatched": {
+    "sha": "99b354d03bdc2f0285d6b5ff8632a8aa1d5ca35e",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:04:55+00:00"
+   }
   },
   {
    "id": "UX44",
@@ -2479,22 +2490,15 @@
    "brief": "Files: index.html (sale page empty state and top bar), tests/ux/first-run-hint.mjs (new). Gap: new cashier gets no guidance. Extend the empty-cart state with 3 short steps (امسح الباركود/اكتب الاسم، Enter لإضافة، Enter للدفع) and a small «F1 اختصارات» chip in the sale toolbar that opens the help dialog; the hint card shows only until the first completed sale on the device (localStorage flag nova-rx-hint-done) and has a «إخفاء» button. Frontend-only; preserve Black Edition RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F9.",
    "acceptance": "tests/ux/first-run-hint.mjs: fresh storage shows the 3 steps and the chip; clicking the chip opens #helpModal; after one completed sale and reload the card is gone; the chip stays; barcode sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:57:53+00:00",
    "pr": 350,
-   "ci_dispatched": {
-    "sha": "3497d7810a4286025e2a84a80136ed819ee6fe90",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T01:00:36+00:00"
-   }
+   "merged_at": "2026-11-14T01:04:55+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/350"
   },
   {
    "id": "UX68",
@@ -2503,22 +2507,15 @@
    "brief": "Files: index.html (customers page row actions and the debt dialog), tests/ux/customer-statement.mjs (new). Gap: no account statement. Add a «كشف حساب» button per customer opening a Black Edition dialog listing local credit sales and payments with running balance and a print action (reuse the receipt/print styles, 80mm or A4 per existing width setting). Also add quick partial-payment chips (نصف، الكل) next to the prefilled amount in the debt dialog. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F8.",
    "acceptance": "tests/ux/customer-statement.mjs: after one credit sale of 38.50 and a 10.00 payment the statement shows 2 rows and balance 28.50; the «نصف» chip fills half the balance; opening the statement is <=2 clicks from Customers; customer-debt-payment.mjs still passes; no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:53:26+00:00",
    "pr": 351,
-   "ci_dispatched": {
-    "sha": "814dd1b0215d1b2f962c8e35af72af14644df302",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:57:53+00:00"
-   }
+   "merged_at": "2026-11-14T01:03:24+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/351"
   },
   {
    "id": "UX67",
@@ -2529,19 +2526,19 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
-   "slot": "B",
-   "dispatched_at": "2026-11-14T00:56:19+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T01:04:55+00:00",
    "pr": 352,
    "ci_dispatched": {
-    "sha": "3202543673c900602d96485e0ed91abf70398eb4",
+    "sha": "27fb5a0b7e4275fa79667cd6154da8de3e82484d",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T01:00:36+00:00"
+    "at": "2026-11-14T01:06:38+00:00"
    }
   },
   {
@@ -2551,12 +2548,15 @@
    "brief": "Files: index.html (line delete handler, btnClearInvoice/F4 handler, toast helper), tests/ux/undo-cart.mjs (new). Gap: deleting a line or F4 clearing is instant and irreversible. Snapshot the cart before the action and show a toast with «تراجع» for 6 seconds; Ctrl+Z within that window restores lines, quantities, discounts and customer. Also replace the native English confirm for deleting a held invoice with the same undo pattern (delete immediately, undo restores). Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F6.",
    "acceptance": "tests/ux/undo-cart.mjs: add 2 lines, F4 -> cart empty, click «تراجع» -> 2 lines with same quantities; delete one line then Ctrl+Z restores it; after 7 seconds the undo is gone; no native dialog fires; the barcode sale journey still needs 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes).",
    "after": [],
-   "status": "running",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T01:00:36+00:00"
+   "dispatched_at": "2026-11-14T01:00:36+00:00",
+   "pr": 354,
+   "merged_at": "2026-11-14T01:10:31+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/354"
   },
   {
    "id": "UX65",
@@ -2565,10 +2565,22 @@
    "brief": "Files: index.html (search no-result message, UX64 inline note if present), tests/ux/shortage-log.mjs (new). Gap: when a customer asks for an item that is missing or out of stock there is nowhere to record it. Add a «سجّل نقص» button in the no-result message and next to the out-of-stock note; it stores {text, date, qty} in localStorage key nova-rx-shortages-v1 (dedupe same text same day, increment count) and toasts. Show the count on the Products low-stock card tooltip or a small list in Products. No backend. Preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F4/F5.",
    "acceptance": "tests/ux/shortage-log.mjs: search «xyz-not-found» -> no-result message shows the button; 1 click stores the entry; second click same day increments count to 2 instead of duplicating; entry survives reload; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:04:55+00:00",
+   "pr": 355,
+   "ci_dispatched": {
+    "sha": "62e6eea9e542a5264736b1c81cbdd5f6e21832af",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:07:54+00:00"
+   }
   },
   {
    "id": "UX64",
@@ -2577,10 +2589,22 @@
    "brief": "Files: index.html (cart row render, qty change handlers, the existing «المخزون لا يكفي» check), tests/ux/oversell-inline.mjs (new). Bug: «*500 كونكور» adds quantity 500 (19,250 EGP) silently; refusal appears only at payment. Fix: when line qty > available show a red inline note «المتاح 42» on the row with a one-click «اضبط على المتاح» button, and a toast at add time; checkout stays blocked while any line exceeds stock. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F5.",
    "acceptance": "tests/ux/oversell-inline.mjs: *500 on a stock-42 item shows the inline «المتاح 42» note immediately; one click on «اضبط على المتاح» sets qty 42 and clears the note; in-stock sales keep 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T01:06:38+00:00",
+   "pr": 356,
+   "ci_dispatched": {
+    "sha": "ded729730681cb7710d561bb1a6ff7c0753d2cb0",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:10:31+00:00"
+   }
   },
   {
    "id": "UX63",
@@ -2589,10 +2613,12 @@
    "brief": "Files: index.html (search function using foldKey/splitToks near the instant-search code), tests/ux/search-aliases.mjs (new). Gap: «اموكسيسيلين»، «ديكلوفيناك»، «باراسيتامول»، «مسكن صداع»، «كولسترول»، «بخاخ انف»، «سترزين» return nothing. Add a small static alias map (Arabic generic name and indication keyword -> the Latin generic already in the product records) and allow edit distance 1 per token of length >= 5 as a lower-ranked tier; exact/prefix matches must still rank first. Keep search under 10 ms for the 12 demo products and a 5,000 product list. Frontend-only; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F4.",
    "acceptance": "tests/ux/search-aliases.mjs: each of the 7 queries returns the expected demo product (اموكسيسيلين->أوجمنتين، ديكلوفيناك->فولتارين، باراسيتامول->بانادول، مسكن صداع->بانادول، كولسترول->ليبيتور، بخاخ انف->أوتريفين، سترزين->سيتريزين); previously passing queries (بنادول، اوجمنتن، panadol، كونكر) unchanged; a nonsense query still returns 0; node tests/ux/sale-clicks.mjs passes; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:07:54+00:00"
   },
   {
    "id": "UX62",
@@ -2892,5 +2918,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:00:36+00:00"
+ "updated": "2026-11-14T01:10:31+00:00"
 }
