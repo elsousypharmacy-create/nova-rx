@@ -1,39 +1,9 @@
-# تقرير QA رقم 231 — المحادثات (واتساب) مع الدردشات القديمة (فحص عميق)
-
-> محلي فقط (Playwright + Chromium، 1366×768 و390×844)، بيانات وهمية، **0 طلب كتابة**، 0 اتصال خارجي، بلا نشر. واجهة `inbox/history` مُحاكاة (22 محادثة، رسائل in/bot/pharm/sys، نصوص عربية طويلة، 320 رسالة في محادثة واحدة، 401 لـPIN خاطئ؛ لا PIN حقيقي).
-> السكربت: `tools/qa/qa-loop-231.mjs` · الخام: `.nova/qa/qa-loop-231-raw.json` · اللقطات (15): `.nova/qa/qa-loop-231/`.
-
-## 1. الجولة السريعة
-التبويبات (البيع، الفواتير، المنتجات، العملاء، التقارير، الإعدادات) + المشتريات (200) + `#novaWaBtn`: لا صفحة فارغة ولا «Not found» ولا 404 ولا فيض أفقي ولا أخطاء JS على الشاشتين. وحيد الكونسول: 401 متوقع عند PIN خاطئ. CLS = 0. فتح المحادثات 86–104ms، PIN خاطئ 135ms، تحميل القائمة ~327ms (فيها 250ms تأخير وهمي).
-
-## 2. إعادة فحص إصلاحات سابقة
-FIX46 يعمل وظيفيًا: بلا PIN لا طلب ولا نص، PIN خاطئ يُنسى ويظهر الخطأ، الصحيح يعرض القائمة، ملاحظات النظام في المنتصف، وسوم البوت/الصيدلي، المسودة معطلة، «قفل المحادثات» يمسح كل شيء (لا تخزين في localStorage). UX204/UX209/UX208: تعمل (أيقونة 36px/44px موبايل، واجهة داكنة). qa-loop-219 لم يغطِّ FIX46 فهذه أول مراجعة له.
-
-## 3. الملاحظات (الأعلى أثرًا أولًا) — كلها مُعاد إنتاجها
-1. **عالية — شريط الكتابة يُقص:** ارتفاع `.wa-root` = 100vh−120px لكنه يبدأ عند 146/162px (شريط PIN) فتنتهي حافته عند 794>768 (سطح مكتب) و886>844 (موبايل) (`d-wa-chat-big.png`, `m-wa-chat-big.png`) → UX232.
-2. **عالية — القائمة ترجع للأعلى** عند فتح أي محادثة وعند «رجوع» على الموبايل (600→0) (`m-wa-back.png`) → UX233.
-3. **عالية — لا مؤشر تحميل:** يظهر سطر واحد فقط أثناء الجلب ثم تقفز الرسائل (`d-wa-chat-loading.png`) → UX234.
-4. **عالية — محادثة تجريبية مزيفة** «عميل تجريبي (عرض محلي)» تحت نموذج القفل (`d/m-wa-locked.png`) → UX235.
-5. **متوسطة — البحث:** «احمد» لا يجد «أحمد»، ولا بحث في النص/الرقم/الأرقام الهندية (`d-wa-search.png`) → UX236.
-6. **متوسطة — التواريخ** «2026/11/12» جافة وفواصل الأيام غير ثابتة بين 27 يومًا → UX237.
-7. **عالية (وصول) — لوحة المفاتيح/قارئ الشاشة:** بحث بلا label، لا aria-current، التركيز يذهب لـBODY بعد الخطأ/فتح المحادثة/Esc لا يرجع → UX238 (يرفع ملاحظات «لوحة المفاتيح» المفتوحة).
-8. **متوسطة — ترويسة المحادثة** بلا عدد/«أرشيف للقراءة فقط»، سهم رجوع نصي بلا هدف 44px، وزر القفل بعيد → UX239.
-9. **متوسطة — شريط PIN** كبطاقة منفصلة (66/94px) بلا إظهار/إخفاء الرقم → UX240.
-10. **متوسطة — محادثة 320 رسالة** تُرسم كلها (20k px) بلا «انزل للأحدث» → UX241.
-11. **منخفضة — حالات الخطأ/الفراغ** بلا إعادة محاولة ولا شرح → UX242.
-
-سليم: فتح المحادثة عند آخر رسالة، لا فيض أفقي، قص الاسم الطويل بنقاط، ملاحظات النظام وفواصل الأيام صحيحة، بحث لاتيني يعمل، الاحتفاظ بعبارة البحث عند فتح محادثة، قفل يمسح الذاكرة وsessionStorage.
-
-## 4. الدرجات
-«المحادثات» 6.0 (11 مفتوحة)، «لوحة المفاتيح» 6.0، لا مجال ≥9.5. محدّث في `.nova/qa/scorecard.json`. المهام UX232–UX242 + بناء UX243 في `.nova/inbox/qa-loop-231-fixes.json`.
-
-لم يُختبر: أجهزة حقيقية، قارئ شاشة، استقبال رسائل حية، PIN حقيقي، شبكة بطيئة حقيقية.
-
-## UX241 fix (big chat, frontend only)
-index.html + unified-inbox.js: renderWa takes opts.limit (default 80); older messages behind a "رسائل أقدم (N)" button (+80 per click, anchor kept by distance-from-bottom); floating "انزل للأحدث" button when >1 screen from bottom; draw() only sticks to bottom on first open / when already near bottom.
-Tests: tests/ux/ux241-big-chat.mjs (320 msgs, desktop+mobile) OK; fix46-wa-history OK; unit unified-inbox, ux200-wa-chat, backend-inbox-history OK.
-
-## UX242 fix — WhatsApp history error/empty/offline states
-Frontend only (index.html unified-inbox block). New panels `.wa-state[data-state=pin|error|network|offline|empty]` with Arabic copy and retry (`#waHistRetry`); PIN_INVALID/PIN_REQUIRED/network/offline/500 mapped to clear messages; typed PIN length hint kept (length only, PIN never stored). Remaining attempts are unknown (backend frozen), the hint says so.
-Tests (Playwright installed in /tmp/pw, system chromium): `node tests/ux/ux242-wa-error-states.mjs` OK; `node tests/ux/fix46-wa-history.mjs` OK; unit: unified-inbox, ux200-wa-chat, fix43, ux81 all pass.
-Screenshots: .nova/qa/qa-loop-231/ux242-*.png (mobile 390px).
+# QA loop 231 (UX237) - chat date separators
+Before: days older than yesterday showed `2026/11/12`; `.wa-date` was static.
+After: last 2..6 days = weekday names (الخميس…), older = ar-EG long date, `.wa-date` sticky (top:6px) with blurred translucent pill. Changed in unified-inbox.js and the index.html inline copy.
+Tests (mock API, Chromium via playwright in /tmp, no real PIN):
+- node tests/ux/ux237-wa-dates.mjs -> ux237-wa-dates OK 28 separators
+- node tests/ux/fix46-wa-history.mjs -> fix46-wa-history OK
+- node tests/unit/ux200-wa-chat.check.mjs -> ux200-wa-chat OK (expectation updated to weekday)
+- node tests/unit/unified-inbox.check.mjs -> pass
+Screenshot: .nova/qa/qa-loop-231/ux237-sticky.png
