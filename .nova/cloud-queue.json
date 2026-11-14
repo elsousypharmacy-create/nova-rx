@@ -3388,22 +3388,15 @@
    "brief": "Floating sticker FAB overlaps table rows on products (desktop bottom-left) and mobile (sparkle FAB over rows). Add bottom padding to the products list equal to FAB height, or move the FAB into the products toolbar; keep it from covering price/barcode columns. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "No overlap of FAB with table cells at 1366 and 390; test checks bounding boxes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T11:29:44+00:00",
    "pr": 390,
-   "ci_dispatched": {
-    "sha": "038fdc4eccba1a01fa570f904b914477e5f16a97",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:32:44+00:00"
-   }
+   "merged_at": "2026-11-14T11:38:51+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/390"
   },
   {
    "id": "UX206",
@@ -3472,5 +3465,5 @@
    }
   }
  ],
- "updated": "2026-11-14T11:37:22+00:00"
+ "updated": "2026-11-14T11:38:51+00:00"
 }
