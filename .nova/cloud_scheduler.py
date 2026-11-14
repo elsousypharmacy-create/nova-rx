@@ -250,6 +250,103 @@ def gate_deploys(items, byid):
             log(f"{t['id']}: reconciled deploy -> {t['status']}")
 
 
+# ---------- auto preview deploy of qa-loop artifacts (nova-rx-preview ONLY) ----------
+PREVIEW_WF = "deploy-worker.yml"
+PREVIEW_URL = "https://nova-rx-preview.elsousypharmacy.workers.dev"
+QA_BUILD = re.compile(r"^Build (worker/live/nova-rx-preview\.qa-[0-9]+\.js)\b")
+PREVIEW_STALE = 1800
+
+
+def _sha256(path):
+    import hashlib
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()
+
+
+def preview_smoke(url=PREVIEW_URL):
+    """HTTP 200 on /, /emergency/stock.json parses as JSON with data, and the page has a search input."""
+    import urllib.request
+    def get(p):
+        with urllib.request.urlopen(url + p, timeout=30) as r:
+            return r.status, r.read()
+    try:
+        st, html = get("/")
+        if st != 200:
+            return False, f"/ -> {st}"
+        st, raw = get("/emergency/stock.json")
+        data = json.loads(raw)
+        if st != 200 or not data:
+            return False, "/emergency/stock.json empty or not 200"
+        if b"search" not in html.lower():
+            return False, "search not found in page"
+        return True, "ok"
+    except Exception as ex:
+        return False, f"smoke error: {ex}"
+
+
+def _deploy_run(path, sha, dry, ref="main"):
+    # expected_modified_on "20" = any 20xx time: the qa artifact is built from the latest live artifact
+    act("gh", "workflow", "run", PREVIEW_WF, "-R", REPO, "--ref", "main", "-f", f"artifact_ref={ref}",
+        "-f", f"artifact_path={path}", "-f", f"sha256={sha}", "-f", "expected_modified_on=20",
+        "-f", f"dry_run={'true' if dry else 'false'}", "-f", "confirm=" + ("" if dry else "DEPLOY nova-rx-preview"))
+
+
+def _latest_run(path, since):
+    runs = (api(f"repos/{REPO}/actions/workflows/{PREVIEW_WF}/runs?per_page=10") or {}).get("workflow_runs", [])[:10]
+    mine = [r for r in runs if age(r.get("created_at", "")) <= age(since) + 60]
+    return mine[0] if mine else None  # newest first
+
+
+def preview_deploys(items, byid, smoke=None, exists=os.path.exists):
+    """State machine per qa build task: dry run -> real deploy -> smoke -> (rollback on failure).
+    Never touches production / api-staging / GATE-17; never applies migrations."""
+    smoke = smoke or preview_smoke
+    busy = any(isinstance(t.get("preview_deploy"), dict) and t["preview_deploy"].get("stage") in ("dry", "real", "rollback") for t in items)
+    last_ok = [t["preview_deploy"] for t in items if isinstance(t.get("preview_deploy"), dict) and t["preview_deploy"].get("stage") == "deployed"]
+    for t in items:
+        m = QA_BUILD.match(t.get("title", ""))
+        if not m or t.get("status") not in DONE:
+            continue
+        path, d = m.group(1), t.get("preview_deploy")
+        if d is None:
+            if busy or not exists(path):
+                continue
+            sha = _sha256(path)
+            d = t["preview_deploy"] = {"stage": "dry", "path": path, "sha256": sha, "at": iso(),
+                                       "previous": ({"path": last_ok[-1]["path"], "sha256": last_ok[-1]["sha256"]} if last_ok else None)}
+            _deploy_run(path, sha, True); busy = True
+            log(f"{t['id']}: dispatched preview dry run for {path}")
+            continue
+        stage = d.get("stage")
+        if stage not in ("dry", "real", "rollback"):
+            continue
+        r = _latest_run(path, d["at"])
+        if not r or r.get("status") != "completed":
+            if age(d["at"]) > PREVIEW_STALE:
+                d.update(stage="failed", reason="deploy run not completed in time")
+            continue
+        ok = r.get("conclusion") == "success"
+        d["run_url"] = r.get("html_url")
+        if stage == "dry":
+            if ok:
+                d.update(stage="real", at=iso()); _deploy_run(path, d["sha256"], False)
+                log(f"{t['id']}: dry run ok -> real preview deploy")
+            else:
+                d.update(stage="failed", reason="dry run failed")
+        elif stage == "real":
+            good, why = (smoke() if ok else (False, "deploy run failed"))
+            if good:
+                d.update(stage="deployed", deployed_at=iso(), smoke="ok")
+                log(f"{t['id']}: preview deployed + smoke ok")
+            elif d.get("previous") and exists(d["previous"]["path"]):
+                d.update(stage="rollback", reason=why, at=iso()); _deploy_run(d["previous"]["path"], d["previous"]["sha256"], False)
+                log(f"{t['id']}: {why} -> rollback to {d['previous']['path']}")
+            else:
+                d.update(stage="failed", reason=why + " (no previous artifact recorded; the deploy workflow restores the pre-deploy code itself on upload/verify failure)")
+        elif stage == "rollback":
+            d.update(stage="rolled_back" if ok else "failed", reason=d.get("reason", "") + (" (rolled back)" if ok else " (ROLLBACK FAILED: check Cloudflare)"))
+        busy = any(x.get("stage") in ("dry", "real", "rollback") for x in [d])
+
+
 # ---------- main ----------
 def main():
     q = json.load(open(QF)); items = q["tasks"]; byid = {t["id"]: t for t in items}
@@ -386,6 +483,7 @@ def main():
         t.update(status="fixing", slot=slot, dispatched_at=iso()); active[tid] = slot
 
     gate_deploys(items, byid)
+    preview_deploys(items, byid)
 
     # start next pending tasks
     for t in items:
