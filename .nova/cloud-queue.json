@@ -4251,22 +4251,15 @@
    "brief": "Inventory table has no expiry column, no near-expiry/expired badges and no lot count although FEFO lots exist (INV02 lots store, index.html ~3589-3729). Add an 'أقرب صلاحية' column + badge states (منتهي أحمر، <=30 يوم أصفر، <=90 كهرماني) with text not colour only, and a KPI card 'قريب الانتهاء' using the existing lots store; fake lots in the test. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Column + badges render from lots data on desktop and mobile; badges carry text; test seeds lots.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:51:36+00:00",
    "pr": 441,
-   "ci_dispatched": {
-    "sha": "001433971873a279be173af00e9b6bc3fe8e92e5",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:52:44+00:00"
-   }
+   "merged_at": "2026-11-14T23:57:31+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/441"
   },
   {
    "id": "UX302",
@@ -4286,5 +4279,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
   }
  ],
- "updated": "2026-11-14T23:52:44+00:00"
+ "updated": "2026-11-14T23:57:31+00:00"
 }
