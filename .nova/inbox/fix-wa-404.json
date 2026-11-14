@@ -1,0 +1,12 @@
+{
+  "tasks": [
+    {
+      "id": "FIX43",
+      "phase": "fix",
+      "after": [],
+      "title": "Fix WhatsApp header icon opening 404 blank page",
+      "brief": "Bug (Ahmed): on live nova-rx-preview (ux-pro4, version 3bc9277a, UX81 / PR #367) clicking the top-bar WhatsApp icon (#novaWaBtn) opens a blank white page that says \"Not found\".\n\nRoot cause: UX81 open() does `var t=document.getElementById('novaInboxTab'); if(t){t.click();return} location.href='integrations/whatsapp/inbox.html'`. #novaInboxTab is created only after an external script loads (`s.src='unified-inbox.js'` then init()). The preview Worker is a single bundled artifact and does not serve unified-inbox.js or integrations/whatsapp/inbox.html. Confirmed live: both URLs return HTTP 404, Content-Type text/plain, body exactly `Not found` (9 bytes). The tab is never inserted, the click falls back to a full-page navigation, and the Worker 404 is the white page.\n\nFix: clicking #novaWaBtn must open the in-app المحادثات (conversations) screen via SPA navigation (activate the المحادثات tab / show #novaInboxView). No location.href, no full-page navigation, no 404. Do not depend on fetching unified-inbox.js from a separate Worker path — inline or bundle the conversations view into the page/artifact so it works on nova-rx-preview. Add a test that clicking #novaWaBtn lands on the conversations view (#novaInboxView visible or #novaInboxTab active) and does not navigate to integrations/whatsapp/inbox.html or any 404. Rebuild the live artifact as worker/live/nova-rx-preview.ux-pro5.js (next name after ux-pro4) the same way UX80/UX81 did (tools/build-worker-artifact.mjs, markers test, node --check). No deploy (cloud tasks never deploy).",
+      "acceptance": "Clicking the WhatsApp header icon shows the in-app conversations view; no 404 / blank 'Not found' page; tests pass including a click-lands-on-conversations test; ux-pro5 artifact built; no deploy."
+    }
+  ]
+}
