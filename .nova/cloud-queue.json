@@ -2363,12 +2363,23 @@
    "after": [
     "UX40"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T01:00:36+00:00"
+   "dispatched_at": "2026-11-14T01:00:36+00:00",
+   "pr": 353,
+   "ci_dispatched": {
+    "sha": "99b354d03bdc2f0285d6b5ff8632a8aa1d5ca35e",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:04:55+00:00"
+   }
   },
   {
    "id": "UX44",
@@ -2479,22 +2490,15 @@
    "brief": "Files: index.html (sale page empty state and top bar), tests/ux/first-run-hint.mjs (new). Gap: new cashier gets no guidance. Extend the empty-cart state with 3 short steps (امسح الباركود/اكتب الاسم، Enter لإضافة، Enter للدفع) and a small «F1 اختصارات» chip in the sale toolbar that opens the help dialog; the hint card shows only until the first completed sale on the device (localStorage flag nova-rx-hint-done) and has a «إخفاء» button. Frontend-only; preserve Black Edition RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F9.",
    "acceptance": "tests/ux/first-run-hint.mjs: fresh storage shows the 3 steps and the chip; clicking the chip opens #helpModal; after one completed sale and reload the card is gone; the chip stays; barcode sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:57:53+00:00",
    "pr": 350,
-   "ci_dispatched": {
-    "sha": "3497d7810a4286025e2a84a80136ed819ee6fe90",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T01:00:36+00:00"
-   }
+   "merged_at": "2026-11-14T01:04:55+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/350"
   },
   {
    "id": "UX68",
@@ -2520,12 +2524,12 @@
    "brief": "Files: index.html (unit-select in cart row, F6 discount handler, search input handler), tests/ux/unit-quick.mjs (new). Gap: selling a strip takes select + option + a click back to search (3 clicks) and the choice is not remembered; after F6 discount the cursor cannot return to search by keyboard. Add F8 (verify it is unused in the help table first, otherwise use another free key) to cycle the last line unit box->strip->tab, remember the last unit per product in localStorage, and make Enter/Esc inside the discount fields return focus to #mainSearchInput. Update the F1 help table. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F7.",
    "acceptance": "tests/ux/unit-quick.mjs: panadol + the unit key -> unit strip with 0 clicks; next sale of the same product starts as strip; F6, type 10, Enter -> activeElement is #mainSearchInput (0 clicks); barcode sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro3.json",
-   "slot": "B",
-   "dispatched_at": "2026-11-14T00:56:19+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T01:04:55+00:00",
    "pr": 352,
    "ci_dispatched": {
     "sha": "3202543673c900602d96485e0ed91abf70398eb4",
@@ -2544,12 +2548,22 @@
    "brief": "Files: index.html (line delete handler, btnClearInvoice/F4 handler, toast helper), tests/ux/undo-cart.mjs (new). Gap: deleting a line or F4 clearing is instant and irreversible. Snapshot the cart before the action and show a toast with «تراجع» for 6 seconds; Ctrl+Z within that window restores lines, quantities, discounts and customer. Also replace the native English confirm for deleting a held invoice with the same undo pattern (delete immediately, undo restores). Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F6.",
    "acceptance": "tests/ux/undo-cart.mjs: add 2 lines, F4 -> cart empty, click «تراجع» -> 2 lines with same quantities; delete one line then Ctrl+Z restores it; after 7 seconds the undo is gone; no native dialog fires; the barcode sale journey still needs 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes).",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T01:00:36+00:00"
+   "dispatched_at": "2026-11-14T01:00:36+00:00",
+   "pr": 354,
+   "ci_dispatched": {
+    "sha": "937fe3a35450ef22693c2f5f07ce5179ef7816bf",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T01:04:55+00:00"
+   }
   },
   {
    "id": "UX65",
@@ -2558,10 +2572,12 @@
    "brief": "Files: index.html (search no-result message, UX64 inline note if present), tests/ux/shortage-log.mjs (new). Gap: when a customer asks for an item that is missing or out of stock there is nowhere to record it. Add a «سجّل نقص» button in the no-result message and next to the out-of-stock note; it stores {text, date, qty} in localStorage key nova-rx-shortages-v1 (dedupe same text same day, increment count) and toasts. Show the count on the Products low-stock card tooltip or a small list in Products. No backend. Preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F4/F5.",
    "acceptance": "tests/ux/shortage-log.mjs: search «xyz-not-found» -> no-result message shows the button; 1 click stores the entry; second click same day increments count to 2 instead of duplicating; entry survives reload; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T01:04:55+00:00"
   },
   {
    "id": "UX64",
@@ -2885,5 +2901,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:03:24+00:00"
+ "updated": "2026-11-14T01:04:55+00:00"
 }
