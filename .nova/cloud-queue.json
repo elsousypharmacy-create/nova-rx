@@ -2993,22 +2993,16 @@
    "brief": "Add [env.staging.triggers] crons = [\"* * * * *\"] to backend/wrangler.toml so scheduledWaProcess (WhatsApp bridge queue processing) keeps running on nova-rx-api-staging after future deploys. Do not change production config. Cloud tasks never deploy.",
    "acceptance": "wrangler.toml has the staging cron; existing tests pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/fix-staging-cron.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T07:09:30+00:00",
    "pr": 368,
-   "ci_dispatched": {
-    "sha": "aacbd82d6d6496d3aff7c3f504a68d0d08267668",
-    "wf": [
-     "backend-unit.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T07:10:27+00:00"
-   }
+   "merged_at": "2026-11-14T07:11:44+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/368"
   }
  ],
- "updated": "2026-11-14T07:10:27+00:00"
+ "updated": "2026-11-14T07:11:44+00:00"
 }
