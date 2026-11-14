@@ -5353,7 +5353,7 @@ window.NovaFmt=(function(){
   });
  }
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-stmt]');if(b)openStatement(b.getAttribute('data-stmt'))});
-function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'ok',lb=out?'نفد':low?'منخفض':'متوفر',ic=out?'\u2715':low?'\u26A0':'\u2713';return '<td'+(low||out?' data-low="1"':'')+' data-stock-state="'+st+'" data-label="الرصيد"><span class="nova-stock nova-stock-'+st+(low||out?' nova-low-badge':'')+'" role="img" aria-label="'+lb+': '+esc(n)+'" title="'+lb+'"><span class="nova-stock-ic" aria-hidden="true">'+ic+'</span><span class="nova-stock-n">'+esc(n)+'</span><span class="nova-stock-t">'+lb+'</span></span></td>'}window.novaStockChip=novaStockChip;
+function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'ok',en=localStorage.getItem('nova-rx-language')==='en',lb=en?(out?'Out':low?'Low':'In stock'):(out?'نفد':low?'منخفض':'متوفر'),ic=out?'\u2715':low?'\u26A0':'\u2713';return '<td'+(low||out?' data-low="1"':'')+' data-stock-state="'+st+'" data-label="'+(en?'Stock':'الرصيد')+'"><span class="nova-stock nova-stock-'+st+(low||out?' nova-low-badge':'')+'" role="img" aria-label="'+lb+': '+esc(n)+'" title="'+lb+'"><span class="nova-stock-ic" aria-hidden="true">'+ic+'</span><span class="nova-stock-n">'+esc(n)+'</span><span class="nova-stock-t">'+lb+'</span></span></td>'}window.novaStockChip=novaStockChip;
  let novaLowOnly=false;
  function render(page,filter=''){
  const {products,customers}=data();const q=filter.toLowerCase().trim();
