@@ -4026,7 +4026,21 @@
    "pr": 428,
    "merged_at": "2026-11-14T17:41:58+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/428"
+  },
+  {
+   "id": "FIX53",
+   "phase": "fix",
+   "title": "Pharmacy WhatsApp bot not working at all; no messages logged since Oct 25",
+   "brief": "Owner Ahmed: the pharmacy WhatsApp bot (Apps Script in elsousypharmacy-create/pharmacy) does not work at all, and the newest messages NOVA has are from Oct 25. Find the exact root cause: read the bot code, recent merges (pharmacy PRs #69/#70, the NOVA bridge), doPost error paths, missing Script Properties crashing the handler, token expiry, webhook target, Apps Script deployment version, quotas. Also check the sheet 11O_CkemBGq3WEsQ2eGVW9ASJ0iNn3UPfHpmj4YMOcCM log tabs (read-only). If it is a code bug, open a PR in the pharmacy repo for Ahmed's review only (do NOT merge). Make the bot never fail to reply because of the NOVA forward (forward must be try/catch, async, non-blocking). Do not touch WA_TOKEN or Script Properties, no WhatsApp sends to customers. Write the diagnosis to .nova/reports/wa-bot-down.md with exact steps Ahmed must do if any (e.g. renew Meta token, redeploy Apps Script new version). NOTE: Ahmed will talk to you (Claude) directly now; follow his direct instructions for this task.",
+   "acceptance": "Root cause with evidence in .nova/reports/wa-bot-down.md; PR for review if code bug; no merge in pharmacy repo.",
+   "after": [],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-wa-bot-down.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T19:01:37+00:00"
   }
  ],
- "updated": "2026-11-14T17:41:58+00:00"
+ "updated": "2026-11-14T19:01:37+00:00"
 }
