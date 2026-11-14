@@ -9,17 +9,28 @@
     ]
   },
   "invoices": {
-    "score": 8.0,
-    "last_cycle": 203,
-    "open_findings": 1,
-    "refs": []
+    "score": 7.5,
+    "last_cycle": 219,
+    "open_findings": 2,
+    "refs": [
+      "UX220",
+      "UX227"
+    ]
   },
   "returns & refunds": {
-    "score": 7.0,
-    "last_cycle": 203,
-    "open_findings": 0,
+    "score": 6.0,
+    "last_cycle": 219,
+    "open_findings": 8,
     "refs": [
-      "not audited this cycle"
+      "UX220",
+      "UX221",
+      "UX222",
+      "UX223",
+      "UX224",
+      "UX225",
+      "UX226",
+      "UX227",
+      "UX228"
     ]
   },
   "purchasing & receiving": {
@@ -83,21 +94,24 @@
     ]
   },
   "keyboard & accessibility": {
-    "score": 7.5,
-    "last_cycle": 203,
-    "open_findings": 1,
+    "score": 6.5,
+    "last_cycle": 219,
+    "open_findings": 3,
     "refs": [
-      "UX209"
+      "UX209",
+      "UX223",
+      "UX224"
     ]
   },
   "performance": {
     "score": 7.5,
-    "last_cycle": 203,
+    "last_cycle": 219,
     "open_findings": 3,
     "refs": [
       "UX211",
       "UX214",
-      "UX217"
+      "UX217",
+      "UX229"
     ]
   },
   "Arabic copy & RTL": {
