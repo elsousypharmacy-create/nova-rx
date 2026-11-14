@@ -3936,22 +3936,15 @@
    "brief": "Inside the 'إلغاء الفاتورة بالكامل' details the inputs/select are default grey (rgb 59/107) unlike the dark reason input, with no labels; the reason label has no for=, qty inputs have no aria-label (labelForReason:false, qtyAria empty). Style them with the same tokens as #novaRetReason, add real <label for>, aria-label per qty input with the product name, and style the details summary as a proper disclosure with a rotating chevron and a danger tone for the confirm-cancel button. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "All dialog fields share one style; every input has an accessible name; test asserts labels.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T15:40:34+00:00",
    "pr": 420,
-   "ci_dispatched": {
-    "sha": "504eefa0aeddc4998258b1cd8206141e19106d41",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T15:44:18+00:00"
-   }
+   "merged_at": "2026-11-14T15:49:30+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/420"
   },
   {
    "id": "UX223",
@@ -3960,12 +3953,22 @@
    "brief": "Dialog has role=dialog aria-modal but no focus trap: after 14 Tab presses focus is outside the overlay; after Esc/close focus lands on BODY instead of the originating 'مرتجع / إلغاء' button. Add a Tab/Shift+Tab trap, aria-labelledby on the h3, restore focus to the opener on close, and lock background scroll while open. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Tab cycles inside the dialog; Esc/close returns focus to the opener; test asserts both.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:47:04+00:00"
+   "dispatched_at": "2026-11-14T15:47:04+00:00",
+   "pr": 421,
+   "ci_dispatched": {
+    "sha": "49e4fac9998949d6902686390a17f2bf8e739140",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:49:30+00:00"
+   }
   },
   {
    "id": "UX222",
@@ -3974,10 +3977,12 @@
    "brief": "(a) After 'اكتب سبب المرتجع' is shown, picking a reason chip or typing a reason does not clear the red message. (b) Typing qty above the available, a fraction (1.5) or negative silently blanks 'مبلغ الإرجاع' with no message until confirm. Clear #novaRetMsg on input/chip, mark the offending qty input aria-invalid with an inline Arabic message ('الحد الأقصى N'), clamp on blur, use inputmode=numeric and step=1. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Error clears on fix; over-max/fraction/negative show inline message and aria-invalid; tests assert each.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:49:30+00:00"
   },
   {
    "id": "UX221",
@@ -4004,5 +4009,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:47:04+00:00"
+ "updated": "2026-11-14T15:49:30+00:00"
 }
