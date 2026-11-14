@@ -103,6 +103,8 @@ await t('fractional stock boundary: after selling 1 strip of a 1-box item, selli
   await checkoutAndConfirm();
   assert.equal(await page.evaluate(b => window.novaStock.available(b), PANADOL), 0.5);
 
+  // UX67 remembers the last unit per product; reset it so this re-add starts at a full box
+  await page.evaluate(() => localStorage.removeItem('nova.unitPref'));
   // Try to sell 1 full box when only 0.5 box remains -> refused
   await addByBarcode(PANADOL);
   await page.locator('#btnCheckout').click();
