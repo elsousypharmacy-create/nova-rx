@@ -3059,23 +3059,15 @@
    "brief": "Ahmed: make sure ALL suppliers are connected and stay connected continuously («اول باول»). Inventory every supplier the system knows (worker/procurement/connectors/*, aumet, pharmaoverseas, any others in config/D1/sheets). For each: run a real read-only connection/health check (login/session valid, catalog or offers fetch works) using only secrets already in GitHub Secrets/Worker; never place orders, never touch carts, never create POs. Add a scheduled GitHub Actions health check (e.g. every 30 min) that records per-supplier status (connected / auth failed / missing credential / down) and shows it in a موردين status panel in the app with last-checked time. If a supplier lacks credentials or a connector, list it by name in the PR body and in .nova/reports/suppliers-status.md (secret names only, never values). Tests for the status model. No deploy, no paid services.",
    "acceptance": "Report lists every supplier with real check result; scheduled health check workflow added; status panel in app; missing credentials listed by name; no orders/carts; tests pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-wa-chat-suppliers.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T10:36:04+00:00",
    "pr": 371,
-   "ci_dispatched": {
-    "sha": "7be34579e38044f07f129c070c71fe9531cfdeb2",
-    "wf": [
-     "playwright-smoke.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T10:37:49+00:00"
-   }
+   "merged_at": "2026-11-14T10:42:45+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/371"
   },
   {
    "id": "UX200",
@@ -3144,5 +3136,5 @@
    "source": "inbox/qa-loop-82-fixes.json"
   }
  ],
- "updated": "2026-11-14T10:41:26+00:00"
+ "updated": "2026-11-14T10:42:45+00:00"
 }
