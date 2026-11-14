@@ -2987,6 +2987,64 @@ window.NovaFmt=(function(){
         }, window.matchMedia && matchMedia('(max-width:600px)').matches ? 2500 : (type === 'error' ? 4500 : 2200));
       }
 
+      // UX66: undo toast (6s) + Ctrl+Z for destructive cart actions.
+      let pendingUndo = null;
+      function expireUndo() {
+        if (!pendingUndo) return;
+        const u = pendingUndo; pendingUndo = null;
+        clearTimeout(u.timer);
+        u.toast && u.toast.remove();
+        if (u.onExpire) { try { u.onExpire(); } catch (_) {} }
+      }
+      function runUndo() {
+        if (!pendingUndo) return false;
+        const u = pendingUndo; pendingUndo = null;
+        clearTimeout(u.timer);
+        u.toast && u.toast.remove();
+        u.restore();
+        showToast("تم التراجع.");
+        return true;
+      }
+      function showUndoToast(msg, restore, onExpire) {
+        expireUndo();
+        showToast(msg);
+        const toast = elements.toastContainer.lastElementChild;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "btnUndoToast";
+        btn.className = "toast-undo";
+        btn.textContent = "تراجع";
+        btn.title = "Ctrl+Z";
+        btn.style.cssText = "margin-inline-start:8px;background:transparent;border:1px solid currentColor;color:inherit;border-radius:4px;padding:2px 10px;cursor:pointer;font:inherit;min-height:24px";
+        btn.addEventListener("click", () => { runUndo(); elements.mainSearchInput.focus(); });
+        toast.appendChild(btn);
+        pendingUndo = { restore, onExpire, toast, timer: setTimeout(expireUndo, 6000) };
+      }
+      document.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === "z" || e.key === "Z") && pendingUndo) {
+          e.preventDefault();
+          runUndo();
+        }
+      }, true);
+      function snapshotCart() {
+        return {
+          lines: JSON.parse(JSON.stringify(state.invoiceLines)),
+          percent: state.percentDiscount, fixed: state.fixedDiscount,
+          customer: state.attachedCustomer
+        };
+      }
+      function restoreCart(snap) {
+        state.invoiceLines = JSON.parse(JSON.stringify(snap.lines));
+        state.percentDiscount = snap.percent;
+        state.fixedDiscount = snap.fixed;
+        elements.inputPercentDiscount.value = snap.percent || "";
+        elements.inputFixedDiscount.value = snap.fixed || "";
+        if (snap.customer && (!state.attachedCustomer || state.attachedCustomer.id !== snap.customer.id)) attachCustomer(snap.customer);
+        else if (!snap.customer && state.attachedCustomer) detachCustomer();
+        renderInvoice();
+        elements.mainSearchInput.focus();
+      }
+
       function formatMoney(val) {
         return (Math.max(0, val) || 0).toFixed(2) + " EGP";
       }
@@ -3480,9 +3538,10 @@ window.NovaFmt=(function(){
       }
 
       function removeLine(productId) {
+        const snap = snapshotCart();
         state.invoiceLines = state.invoiceLines.filter(l => l.productId !== productId);
         renderInvoice();
-        showToast("Item removed from invoice.");
+        showUndoToast("تم حذف الصنف", () => restoreCart(snap));
       }
 
       function clearInvoice() {
@@ -3490,13 +3549,14 @@ window.NovaFmt=(function(){
           elements.mainSearchInput.focus();
           return;
         }
+        const snap = snapshotCart();
         state.invoiceLines = [];
         state.percentDiscount = 0;
         state.fixedDiscount = 0;
         elements.inputPercentDiscount.value = "";
         elements.inputFixedDiscount.value = "";
         renderInvoice();
-        showToast("Invoice cleared.");
+        showUndoToast("تم مسح الفاتورة", () => restoreCart(snap));
         elements.mainSearchInput.focus();
       }
 
@@ -4546,7 +4606,14 @@ window.NovaFmt=(function(){
         if (!resume && !del) return;
         const id = (resume || del).getAttribute(resume ? 'data-held-resume' : 'data-held-delete');
         const record = heldInvoices.find(x => x.id === id); if (!record) return;
-        if (del) { if (confirm('Delete this held invoice?')) { window.novaPay.cancel(record, 'parked-deleted'); saveHeldInvoices(heldInvoices.filter(x => x.id !== id)); } return; }
+        if (del) {
+          const before = heldInvoices.slice();
+          if (!saveHeldInvoices(heldInvoices.filter(x => x.id !== id))) return;
+          showUndoToast('تم حذف الفاتورة المعلقة',
+            () => { const have = heldInvoices.filter(x => x.id !== id); const idx = Math.min(before.findIndex(x => x.id === id), have.length); have.splice(idx, 0, record); saveHeldInvoices(have); },
+            () => { window.novaPay.cancel(record, 'parked-deleted'); });
+          return;
+        }
         if (state.invoiceLines.length && !confirm('Replace the current invoice? Unsaved items will be lost.')) return;
         // Keep held record until the active invoice is restored successfully.
         activeSaleNumber = record.saleNumber || record.id;
