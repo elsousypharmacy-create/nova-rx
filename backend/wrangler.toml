@@ -31,6 +31,8 @@ workers_dev = true
 crons = ["* * * * *"]
 [env.staging.vars]
 NOVA_ENV = "staging"
+# WA-SEND (owner approved 2026-11-14): pharmacist replies from the conversations screen reach real customers.
+NOVA_INBOX_SEND = "1"
 CORS_ALLOW_ORIGINS = "https://nova-rx-preview.elsousypharmacy.workers.dev"
 [[env.staging.d1_databases]]
 binding = "DB"
