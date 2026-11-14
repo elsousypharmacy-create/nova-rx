@@ -3702,22 +3702,15 @@
    "brief": "Reproduced: searching 'احمد' returns 0 results while 'أحمد' returns 1 (searchNoHamza vs searchHamza); search only matches name+id, not message text or phone digits (Arabic-Indic digits ٠-٩ not folded either). Normalize Arabic (أإآ->ا, ى->ي, ة->ه, tashkeel, tatweel, digits) for names and message text, highlight matches optionally, and show 'لا نتائج لـ \"…\"' with a clear (×) button in the field. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Search finds names/messages ignoring hamza/diacritics/digits; unit test for the normalizer plus Playwright check.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:58:17+00:00",
    "pr": 406,
-   "ci_dispatched": {
-    "sha": "88cc7c072768b4ce1bdaa0755badf412cd9faa69",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:59:44+00:00"
-   }
+   "merged_at": "2026-11-14T15:03:52+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/406"
   },
   {
    "id": "UX235",
@@ -3940,5 +3933,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:02:31+00:00"
+ "updated": "2026-11-14T15:03:52+00:00"
 }
