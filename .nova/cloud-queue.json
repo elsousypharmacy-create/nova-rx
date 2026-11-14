@@ -3589,22 +3589,15 @@
    "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #405 is still open on cloud/UX237; the date-separator work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX237 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, and other conversation fixes, PLUS weekday names for the last 6 days and sticky frosted .wa-date separators. Re-run tests/ux/ux237-wa-dates.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "pr": 405,
-   "ci_dispatched": {
-    "sha": "2141f73c078925e5a3ebe98c8d9cf4cde3021113",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T16:53:39+00:00"
-   },
    "slot": "A",
-   "dispatched_at": "2026-11-14T16:50:39+00:00"
+   "dispatched_at": "2026-11-14T16:50:39+00:00",
+   "merged_at": "2026-11-14T16:59:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/405"
   },
   {
    "id": "UX240",
@@ -4014,5 +4007,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/424"
   }
  ],
- "updated": "2026-11-14T16:56:35+00:00"
+ "updated": "2026-11-14T16:59:05+00:00"
 }
