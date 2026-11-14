@@ -1,0 +1,965 @@
+{
+ "date": "2026-11-14T00:13:14.356Z",
+ "blockedWrites": [],
+ "desktop": {
+  "steps": {
+   "sale-barcode-1": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1432,
+    "kind": "barcode",
+    "label": "barcode-1"
+   },
+   "sale-barcode-2": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1296,
+    "kind": "barcode",
+    "label": "barcode-2"
+   },
+   "sale-barcode-3": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1268,
+    "kind": "barcode",
+    "label": "barcode-3"
+   },
+   "sale-barcode-4": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1278,
+    "kind": "barcode",
+    "label": "barcode-4"
+   },
+   "sale-barcode-5": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1492,
+    "kind": "barcode",
+    "label": "barcode-5"
+   },
+   "sale-barcode-6": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1291,
+    "kind": "barcode",
+    "label": "barcode-6"
+   },
+   "sale-barcode-7": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1362,
+    "kind": "barcode",
+    "label": "barcode-7"
+   },
+   "sale-barcode-8": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1299,
+    "kind": "barcode",
+    "label": "barcode-8"
+   },
+   "sale-barcode-9": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1314,
+    "kind": "barcode",
+    "label": "barcode-9"
+   },
+   "sale-barcode-10": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "total": 4,
+    "ms": 1344,
+    "kind": "barcode",
+    "label": "barcode-10"
+   },
+   "sale-name-1": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 6,
+    "total": 4,
+    "ms": 1085,
+    "kind": "name",
+    "label": "name-1"
+   },
+   "sale-name-2": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 7,
+    "total": 4,
+    "ms": 1226,
+    "kind": "name",
+    "label": "name-2"
+   },
+   "sale-name-3": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 7,
+    "total": 4,
+    "ms": 1199,
+    "kind": "name",
+    "label": "name-3"
+   },
+   "sale-name-4": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 4,
+    "total": 4,
+    "ms": 1021,
+    "kind": "name",
+    "label": "name-4"
+   },
+   "sale-name-5": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 5,
+    "total": 4,
+    "ms": 1150,
+    "kind": "name",
+    "label": "name-5"
+   },
+   "sale-name-6": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 11,
+    "total": 4,
+    "ms": 1518,
+    "kind": "name",
+    "label": "name-6"
+   },
+   "sale-name-7": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 4,
+    "typed": 5,
+    "total": 4,
+    "ms": 1167,
+    "kind": "name",
+    "label": "name-7"
+   },
+   "sale-name-8": {
+    "notes": [
+     "لا نتائج لـ سترزين"
+    ],
+    "error": "no result: سترزين",
+    "clicks": 0,
+    "keys": 0,
+    "typed": 6,
+    "total": 0,
+    "ms": 563,
+    "kind": "name",
+    "label": "name-8"
+   },
+   "sale-strip-1": {
+    "notes": [
+     "وحدات: علبة/شريط/قرص",
+     "بعد اختيار شريط: 1 بانادول إكسترا (Panadol Extra) Paracetamol 500mg + Caffeine 65mg • 24 Caplets 6281001234",
+     "التركيز بعد تغيير الوحدة: INPUT#mainSearchInput"
+    ],
+    "clicks": 3,
+    "keys": 4,
+    "typed": 7,
+    "total": 7,
+    "ms": 1499,
+    "kind": "partial-strip",
+    "label": "strip-1"
+   },
+   "sale-strip-2": {
+    "notes": [
+     "وحدات: علبة/شريط/قرص",
+     "بعد اختيار شريط: 1 سيتريزين 10 مجم (Cetirizine 10mg) Cetirizine Dihydrochloride • 20 Tabs 6281001234576 7.3",
+     "التركيز بعد تغيير الوحدة: INPUT#mainSearchInput"
+    ],
+    "clicks": 3,
+    "keys": 4,
+    "typed": 8,
+    "total": 7,
+    "ms": 1482,
+    "kind": "partial-strip",
+    "label": "strip-2"
+   },
+   "sale-strip-3": {
+    "notes": [
+     "وحدات: علبة/شريط/قرص",
+     "بعد اختيار شريط: 1 جلوكوفاج 500 مجم (Glucophage 500mg) Metformin HCl • 50 Tabs 6281001234570 3.65 − + علبة ",
+     "التركيز بعد تغيير الوحدة: INPUT#mainSearchInput"
+    ],
+    "clicks": 3,
+    "keys": 4,
+    "typed": 8,
+    "total": 7,
+    "ms": 1479,
+    "kind": "partial-strip",
+    "label": "strip-3"
+   },
+   "sale-discount-1": {
+    "notes": [
+     "F6 يركّز على: inputPercentDiscount"
+    ],
+    "clicks": 1,
+    "keys": 5,
+    "typed": 15,
+    "total": 6,
+    "ms": 1745,
+    "kind": "discount",
+    "label": "discount-1"
+   },
+   "sale-discount-2": {
+    "notes": [
+     "F6 يركّز على: inputPercentDiscount"
+    ],
+    "clicks": 1,
+    "keys": 5,
+    "typed": 14,
+    "total": 6,
+    "ms": 1681,
+    "kind": "discount",
+    "label": "discount-2"
+   },
+   "sale-discount-3": {
+    "notes": [
+     "F6 يركّز على: inputPercentDiscount"
+    ],
+    "clicks": 1,
+    "keys": 5,
+    "typed": 15,
+    "total": 6,
+    "ms": 1727,
+    "kind": "discount",
+    "label": "discount-3"
+   },
+   "sale-split-1": {
+    "notes": [
+     "التركيز بعد «مختلط»: inputCardAmount",
+     "قيمة النقد/البطاقة الافتراضية: 92.00|",
+     "النقد المطلوب بعد 40 بطاقة: 92.00",
+     "Toast: ●\nتم الدفع واكتملت الفاتورة!"
+    ],
+    "clicks": 2,
+    "keys": 4,
+    "typed": 15,
+    "total": 6,
+    "ms": 1938,
+    "kind": "split",
+    "label": "split-1"
+   },
+   "sale-split-2": {
+    "notes": [
+     "التركيز بعد «مختلط»: inputCardAmount",
+     "قيمة النقد/البطاقة الافتراضية: 85.50|",
+     "النقد المطلوب بعد 40 بطاقة: 85.50",
+     "Toast: ●\nتم الدفع واكتملت الفاتورة!"
+    ],
+    "clicks": 2,
+    "keys": 4,
+    "typed": 15,
+    "total": 6,
+    "ms": 1671,
+    "kind": "split",
+    "label": "split-2"
+   },
+   "sale-credit-1": {
+    "notes": [
+     "إيصال الآجل: آجل"
+    ],
+    "clicks": 0,
+    "keys": 7,
+    "typed": 17,
+    "total": 7,
+    "ms": 2395,
+    "kind": "credit",
+    "label": "credit-1"
+   },
+   "sale-credit-2": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 7,
+    "typed": 17,
+    "total": 7,
+    "ms": 2099,
+    "kind": "credit",
+    "label": "credit-2"
+   },
+   "sale-credit-3": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 7,
+    "typed": 16,
+    "total": 7,
+    "ms": 2041,
+    "kind": "credit",
+    "label": "credit-3"
+   },
+   "sale-credit-4": {
+    "notes": [],
+    "clicks": 0,
+    "keys": 7,
+    "typed": 17,
+    "total": 7,
+    "ms": 2142,
+    "kind": "credit",
+    "label": "credit-4"
+   },
+   "shortage-oversell": {
+    "notes": [
+     "Toast بعد *500: ●\nأُضيف: كونكور 5 مجم (Concor 5mg)",
+     "كمية السطر: 500",
+     "نافذة الدفع مفتوحة رغم الكمية الزائدة: false",
+     "Toast: ●\nالمخزون لا يكفي: كونكور 5 مجم (Concor 5mg) — المتاح 42",
+     "زر «سجّل نقص / اطلب» متاح في الواجهة: false"
+    ],
+    "clicks": 0,
+    "keys": 3,
+    "typed": 11,
+    "total": 3,
+    "ms": 1738
+   },
+   "undo-delete-line": {
+    "notes": [
+     "بعد حذف السطر: Toast=●\nتم حذف الصنف من الفاتورة. | زر تراجع: false"
+    ],
+    "clicks": 0,
+    "keys": 0,
+    "typed": 0,
+    "total": 0,
+    "ms": 296
+   },
+   "undo-clear-invoice": {
+    "notes": [
+     "بعد F4: سطور السلة=0 | تأكيد؟  | تراجع: false"
+    ],
+    "clicks": 0,
+    "keys": 2,
+    "typed": 13,
+    "total": 2,
+    "ms": 1348
+   },
+   "hold-resume": {
+    "notes": [
+     "Toast التعليق: ●\nتم تعليق الفاتورة على هذا الجهاز.",
+     "اختصار مرئي للتعليق: تعليق الفاتورة الحالية",
+     "لوحة المعلقة: الفواتير المعلقة × S-000060 · عميل نقدي ١٤‏/١١‏/٢٠٢٦، ١٢:١٤:١٧ ص · 1 items Resume Delete"
+    ],
+    "clicks": 2,
+    "keys": 1,
+    "typed": 13,
+    "total": 3,
+    "ms": 1982
+   },
+   "return-1": {
+    "notes": [
+     "أزرار مرتجع: 29",
+     "Toast: ●\nتم تعليق الفاتورة على هذا الجهاز.",
+     "محاولة مرتجع ثانٍ لنفس الفاتورة مُنعت؟ الزر ما زال ظاهراً"
+    ],
+    "clicks": 4,
+    "keys": 0,
+    "typed": 0,
+    "total": 4,
+    "ms": 649
+   },
+   "return-2": {
+    "notes": [
+     "أزرار مرتجع: 29",
+     "Toast: ",
+     "محاولة مرتجع ثانٍ لنفس الفاتورة مُنعت؟ الزر ما زال ظاهراً"
+    ],
+    "clicks": 4,
+    "keys": 0,
+    "typed": 0,
+    "total": 4,
+    "ms": 966
+   },
+   "return-3": {
+    "notes": [
+     "أزرار مرتجع: 29",
+     "Toast: ",
+     "محاولة مرتجع ثانٍ لنفس الفاتورة مُنعت؟ الزر ما زال ظاهراً"
+    ],
+    "clicks": 4,
+    "keys": 0,
+    "typed": 0,
+    "total": 4,
+    "ms": 882
+   },
+   "receiving-1": {
+    "notes": [
+     "أزرار الصفحة: ✦ قراءة فاتورة مشتريات | طباعة استيكرات الأدوية | ",
+     "حقول يدوية للتشغيلة/الصلاحية: file"
+    ],
+    "clicks": 1,
+    "keys": 0,
+    "typed": 0,
+    "total": 1,
+    "ms": 1184
+   },
+   "receiving-2-purchases-page": {
+    "notes": [
+     "نموذج استلام يدوي (رقم تشغيلة/صلاحية): false"
+    ],
+    "error": "page.waitForSelector: Timeout 30000ms exceeded.",
+    "clicks": 0,
+    "keys": 0,
+    "typed": 0,
+    "total": 0,
+    "ms": 31768
+   },
+   "chronic-refill": {
+    "notes": [
+     "لوحة العميل: العميل د. طارق المنصور Dr. Tariq Al-Mansoor 0501234567 VIP Gold الزيارات 24 النقاط 480 أدوية مزمنة: كونكور 5 مجم آخر شراء: 2026-10-28 إعادة صرف آخر فاتورة مشتريات سابقة ⌄",
+     "أصناف بعد الإعادة: 2 | Toast: ●\nتمت إعادة صرف 2 صنف",
+     "تذكير موعد الصرف القادم/الأيام المتبقية: false"
+    ],
+    "clicks": 1,
+    "keys": 2,
+    "typed": 4,
+    "total": 3,
+    "ms": 1571
+   },
+   "debt-collection": {
+    "notes": [
+     "صفوف العملاء: 19",
+     "أزرار سداد: 1",
+     "المبلغ المعبّأ: 38.5",
+     "Toast: تم سداد 38.50 ج.م — المتبقي 0.00 ج.م",
+     "كشف حساب العميل/طباعة: false"
+    ],
+    "clicks": 2,
+    "keys": 0,
+    "typed": 0,
+    "total": 2,
+    "ms": 1143
+   },
+   "end-of-day": {
+    "notes": [
+     "نص التقرير: تقسيم طرق الدفع — اليوم نقدي 870.37 ج.م بطاقة 80.00 ج.م آجل 133.25 ج.م مرتجعات -94.75 ج.م النقدي المتوقع في الدرج 870.37 ج.م",
+     "جرد نقدية/فرق الدرج/إغلاق وردية: false",
+     "طباعة نهاية اليوم: true",
+     "تصدير/نسخة احتياطية ظاهرة بالتقارير: true",
+     "بيانات العرض التجريبي مختلطة مع الحقيقية: true"
+    ],
+    "clicks": 0,
+    "keys": 0,
+    "typed": 0,
+    "total": 0,
+    "ms": 849
+   }
+  },
+  "sales": [
+   {
+    "label": "barcode-1",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1432,
+    "notes": []
+   },
+   {
+    "label": "barcode-2",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1296,
+    "notes": []
+   },
+   {
+    "label": "barcode-3",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1268,
+    "notes": []
+   },
+   {
+    "label": "barcode-4",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1278,
+    "notes": []
+   },
+   {
+    "label": "barcode-5",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1492,
+    "notes": []
+   },
+   {
+    "label": "barcode-6",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1291,
+    "notes": []
+   },
+   {
+    "label": "barcode-7",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1362,
+    "notes": []
+   },
+   {
+    "label": "barcode-8",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1299,
+    "notes": []
+   },
+   {
+    "label": "barcode-9",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1314,
+    "notes": []
+   },
+   {
+    "label": "barcode-10",
+    "kind": "barcode",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 13,
+    "ms": 1344,
+    "notes": []
+   },
+   {
+    "label": "name-1",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 6,
+    "ms": 1085,
+    "notes": []
+   },
+   {
+    "label": "name-2",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 7,
+    "ms": 1226,
+    "notes": []
+   },
+   {
+    "label": "name-3",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 7,
+    "ms": 1199,
+    "notes": []
+   },
+   {
+    "label": "name-4",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 4,
+    "ms": 1021,
+    "notes": []
+   },
+   {
+    "label": "name-5",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 5,
+    "ms": 1150,
+    "notes": []
+   },
+   {
+    "label": "name-6",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 11,
+    "ms": 1518,
+    "notes": []
+   },
+   {
+    "label": "name-7",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 4,
+    "typed": 5,
+    "ms": 1167,
+    "notes": []
+   },
+   {
+    "label": "name-8",
+    "kind": "name",
+    "clicks": 0,
+    "keys": 0,
+    "typed": 6,
+    "ms": 563,
+    "error": "no result: سترزين",
+    "notes": [
+     "لا نتائج لـ سترزين"
+    ]
+   },
+   {
+    "label": "strip-1",
+    "kind": "partial-strip",
+    "clicks": 3,
+    "keys": 4,
+    "typed": 7,
+    "ms": 1499,
+    "notes": [
+     "وحدات: علبة/شريط/قرص",
+     "بعد اختيار شريط: 1 بانادول إكسترا (Panadol Extra) Paracetamol 500mg + Caffeine 65mg • 24 Caplets 6281001234",
+     "التركيز بعد تغيير الوحدة: INPUT#mainSearchInput"
+    ]
+   },
+   {
+    "label": "strip-2",
+    "kind": "partial-strip",
+    "clicks": 3,
+    "keys": 4,
+    "typed": 8,
+    "ms": 1482,
+    "notes": [
+     "وحدات: علبة/شريط/قرص",
+     "بعد اختيار شريط: 1 سيتريزين 10 مجم (Cetirizine 10mg) Cetirizine Dihydrochloride • 20 Tabs 6281001234576 7.3",
+     "التركيز بعد تغيير الوحدة: INPUT#mainSearchInput"
+    ]
+   },
+   {
+    "label": "strip-3",
+    "kind": "partial-strip",
+    "clicks": 3,
+    "keys": 4,
+    "typed": 8,
+    "ms": 1479,
+    "notes": [
+     "وحدات: علبة/شريط/قرص",
+     "بعد اختيار شريط: 1 جلوكوفاج 500 مجم (Glucophage 500mg) Metformin HCl • 50 Tabs 6281001234570 3.65 − + علبة ",
+     "التركيز بعد تغيير الوحدة: INPUT#mainSearchInput"
+    ]
+   },
+   {
+    "label": "discount-1",
+    "kind": "discount",
+    "clicks": 1,
+    "keys": 5,
+    "typed": 15,
+    "ms": 1745,
+    "notes": [
+     "F6 يركّز على: inputPercentDiscount"
+    ]
+   },
+   {
+    "label": "discount-2",
+    "kind": "discount",
+    "clicks": 1,
+    "keys": 5,
+    "typed": 14,
+    "ms": 1681,
+    "notes": [
+     "F6 يركّز على: inputPercentDiscount"
+    ]
+   },
+   {
+    "label": "discount-3",
+    "kind": "discount",
+    "clicks": 1,
+    "keys": 5,
+    "typed": 15,
+    "ms": 1727,
+    "notes": [
+     "F6 يركّز على: inputPercentDiscount"
+    ]
+   },
+   {
+    "label": "split-1",
+    "kind": "split",
+    "clicks": 2,
+    "keys": 4,
+    "typed": 15,
+    "ms": 1938,
+    "notes": [
+     "التركيز بعد «مختلط»: inputCardAmount",
+     "قيمة النقد/البطاقة الافتراضية: 92.00|",
+     "النقد المطلوب بعد 40 بطاقة: 92.00",
+     "Toast: ●\nتم الدفع واكتملت الفاتورة!"
+    ]
+   },
+   {
+    "label": "split-2",
+    "kind": "split",
+    "clicks": 2,
+    "keys": 4,
+    "typed": 15,
+    "ms": 1671,
+    "notes": [
+     "التركيز بعد «مختلط»: inputCardAmount",
+     "قيمة النقد/البطاقة الافتراضية: 85.50|",
+     "النقد المطلوب بعد 40 بطاقة: 85.50",
+     "Toast: ●\nتم الدفع واكتملت الفاتورة!"
+    ]
+   },
+   {
+    "label": "credit-1",
+    "kind": "credit",
+    "clicks": 0,
+    "keys": 7,
+    "typed": 17,
+    "ms": 2395,
+    "notes": [
+     "إيصال الآجل: آجل"
+    ]
+   },
+   {
+    "label": "credit-2",
+    "kind": "credit",
+    "clicks": 0,
+    "keys": 7,
+    "typed": 17,
+    "ms": 2099,
+    "notes": []
+   },
+   {
+    "label": "credit-3",
+    "kind": "credit",
+    "clicks": 0,
+    "keys": 7,
+    "typed": 16,
+    "ms": 2041,
+    "notes": []
+   },
+   {
+    "label": "credit-4",
+    "kind": "credit",
+    "clicks": 0,
+    "keys": 7,
+    "typed": 17,
+    "ms": 2142,
+    "notes": []
+   }
+  ],
+  "notes": {
+   "firstRun": {
+    "title": "NOVA Rx | صيدلية السوسي",
+    "hasWelcome": false,
+    "hasShiftUI": false,
+    "focusId": "mainSearchInput",
+    "emptyHint": "",
+    "visibleShortcutHints": false,
+    "searchPlaceholder": "امسح الباركود أو اكتب اسم الدواء...",
+    "modeTag": "منتج",
+    "bodyHasF1Hint": false
+   },
+   "shiftOpen": {
+    "anyShiftText": false,
+    "settingsHasShift": false
+   },
+   "salesDone": 29,
+   "seedLots": "{\"ok\":false,\"error\":\"invalid\"}",
+   "rush": {
+    "barcodeSalesMs": [
+     1432,
+     1296,
+     1268,
+     1278,
+     1492,
+     1291,
+     1362,
+     1299,
+     1314,
+     1344
+    ],
+    "avgMs": 1338
+   }
+  },
+  "search": {
+   "results": {
+    "اوجمنتين": [
+     "أوجمنتين 1 جم (Augmentin 1g) Amoxi"
+    ],
+    "أوجمنتين": [
+     "أوجمنتين 1 جم (Augmentin 1g) Amoxi"
+    ],
+    "اوجمنتن": [
+     "أوجمنتين 1 جم (Augmentin 1g) Amoxi"
+    ],
+    "بانادول": [
+     "بانادول إكسترا (Panadol Extra) Par"
+    ],
+    "بنادول": [
+     "بانادول إكسترا (Panadol Extra) Par"
+    ],
+    "بانادول اكسترا": [
+     "بانادول إكسترا (Panadol Extra) Par"
+    ],
+    "panadol": [
+     "بانادول إكسترا (Panadol Extra) Par"
+    ],
+    "panadl": [
+     "بانادول إكسترا (Panadol Extra) Par"
+    ],
+    "بانادول extra": [
+     "بانادول إكسترا (Panadol Extra) Par"
+    ],
+    "جلوك": [
+     "جلوكوفاج 500 مجم (Glucophage 500mg"
+    ],
+    "جلوكوفاج 500": [
+     "جلوكوفاج 500 مجم (Glucophage 500mg"
+    ],
+    "كونكور": [
+     "كونكور 5 مجم (Concor 5mg) Bisoprol"
+    ],
+    "كونكر": [
+     "كونكور 5 مجم (Concor 5mg) Bisoprol"
+    ],
+    "concor": [
+     "كونكور 5 مجم (Concor 5mg) Bisoprol"
+    ],
+    "اموكسيسيلين": [],
+    "amoxi": [
+     "أوجمنتين 1 جم (Augmentin 1g) Amoxi"
+    ],
+    "ديكلوفيناك": [],
+    "diclo": [
+     "فولتارين جل 50 جم (Voltaren Emulge"
+    ],
+    "مسكن صداع": [],
+    "فيتامين د": [
+     "فيتامين د3 50,000 وحدة (Vitamin D3"
+    ],
+    "فيتامين د3": [
+     "فيتامين د3 50,000 وحدة (Vitamin D3"
+    ],
+    "vit d": [
+     "فيتامين د3 50,000 وحدة (Vitamin D3"
+    ],
+    "اوميبرازول": [
+     "أوميبرازول 20 مجم (Omeprazole 20mg"
+    ],
+    "اوميبرازل": [
+     "أوميبرازول 20 مجم (Omeprazole 20mg"
+    ],
+    "نيكسيوم": [
+     "نيكسيوم 40 مجم (Nexium 40mg) Esome"
+    ],
+    "نكسيوم": [
+     "نيكسيوم 40 مجم (Nexium 40mg) Esome"
+    ],
+    "سيتريزين": [
+     "سيتريزين 10 مجم (Cetirizine 10mg) "
+    ],
+    "سترزين": [],
+    "فولتارين": [
+     "فولتارين جل 50 جم (Voltaren Emulge"
+    ],
+    "فولتارين جل": [
+     "فولتارين جل 50 جم (Voltaren Emulge"
+    ],
+    "اوتريفين": [
+     "بخاخ أوتريفين 0.1% (Otrivin Nasal)"
+    ],
+    "بخاخ انف": [],
+    "ليبيتور": [
+     "ليبيتور 20 مجم (Lipitor 20mg) Ator"
+    ],
+    "كولسترول": [],
+    "باراسيتامول": [],
+    "ستامول": [],
+    "سولبادين": [
+     "سولبادين فوار (Solpadeine Soluble)"
+    ],
+    "فوار": [
+     "سولبادين فوار (Solpadeine Soluble)"
+    ]
+   },
+   "noResultText": "لا توجد منتجات مطابقة \"اموكسي\". الموردين"
+  },
+  "keyboard": {
+   "tabOrder": [
+    "#inputPercentDiscount «0»",
+    "#inputFixedDiscount «0.00»",
+    "#btnAttachLoyalty «ربط عميل (F3)»",
+    "#novaAiLaunch «✦ استيكرات الأدوية»",
+    "BODY.lang-ar «البيع الفواتير الم»",
+    "BUTTON.nova-tab «البيع»",
+    "BUTTON.nova-tab «الفواتير»",
+    "BUTTON.nova-tab «المنتجات»",
+    "BUTTON.nova-tab «العملاء»",
+    "BUTTON.nova-tab «التقارير»",
+    "#novaPurchasesNav «المشتريات»",
+    "BUTTON.nova-tab «الإعدادات»",
+    "#btnRefreshApp «إعادة تحميل الصفحة»",
+    "#btnNewSale «فاتورة جديدة»"
+   ],
+   "helpOpen": true
+  },
+  "consoleErrors": []
+ },
+ "mobile": {
+  "notes": {
+   "cart": {
+    "lines": 2,
+    "checkoutVisible": true,
+    "h": 48
+   },
+   "checkout": {
+    "overflowX": false,
+    "confirmVisible": true
+   },
+   "splitConfirmVisible": true,
+   "reports": {
+    "overflowX": false
+   }
+  },
+  "consoleErrors": []
+ }
+}
