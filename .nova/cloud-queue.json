@@ -2375,22 +2375,15 @@
    "brief": "Files: index.html (totals panel / discount card CSS under max-width:640px), tests/ux/mobile-totals.mjs (new). Put the invoice discount inputs inside a collapsible row inside the totals block; no text clipped (the 0.98 VAT line is cut today); keep the pay button sticky and >=48px; keep UX33 compact rows.",
    "acceptance": "tests/ux/mobile-totals.mjs at 390x844 after adding two items: no element in the totals block overlaps another (bounding boxes), all totals text fully visible, pay bar does not cover the last cart row at scroll end; node tests/ux/mobile-cart.mjs and tests/ux/mobile-sale-layout.mjs pass.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T00:42:02+00:00",
    "pr": 346,
-   "ci_dispatched": {
-    "sha": "85f3eb1a40d9ad24bbe05880fc8c5b57bd0fc92b",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:47:30+00:00"
-   }
+   "merged_at": "2026-11-14T00:53:26+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/346"
   },
   {
    "id": "UX43",
@@ -2489,12 +2482,22 @@
    "brief": "Files: index.html (the page controller near switchPage/initial page logic, localStorage key nova.activePage), tests/ux/start-on-sale.mjs (new). Gap: the app reopens on the last tab (e.g. Products) so the sale search is not visible when a shift starts or after reload. Make a fresh page load open Sale unless the URL hash names a page (keep #products&receive=1 working); keep in-session tab switching unchanged; focus #mainSearchInput on load of Sale. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F9.",
    "acceptance": "tests/ux/start-on-sale.mjs: select Products, reload -> Sale active and #mainSearchInput focused and visible; load with #reports -> Reports; load with #products&receive=1 still opens the receive panel (node tests/ux/purchases-receive-link.mjs passes); no console errors.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:51:47+00:00"
+   "dispatched_at": "2026-11-14T00:51:47+00:00",
+   "pr": 349,
+   "ci_dispatched": {
+    "sha": "ae4b47056599a612af2f043684fde63bbffe8869",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:53:26+00:00"
+   }
   },
   {
    "id": "UX69",
@@ -2517,10 +2520,12 @@
    "brief": "Files: index.html (customers page row actions and the debt dialog), tests/ux/customer-statement.mjs (new). Gap: no account statement. Add a «كشف حساب» button per customer opening a Black Edition dialog listing local credit sales and payments with running balance and a print action (reuse the receipt/print styles, 80mm or A4 per existing width setting). Also add quick partial-payment chips (نصف، الكل) next to the prefilled amount in the debt dialog. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F8.",
    "acceptance": "tests/ux/customer-statement.mjs: after one credit sale of 38.50 and a 10.00 payment the statement shows 2 rows and balance 28.50; the «نصف» chip fills half the balance; opening the statement is <=2 clicks from Customers; customer-debt-payment.mjs still passes; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:53:26+00:00"
   },
   {
    "id": "UX67",
@@ -2880,5 +2885,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:51:47+00:00"
+ "updated": "2026-11-14T00:53:26+00:00"
 }
