@@ -12,12 +12,14 @@ QF = ".nova/cloud-queue.json"
 INBOX = ".nova/inbox"
 DONE = ("done", "done_noop", "failed")
 FOCUS = [
-    "quick sale & barcode", "returns & refunds", "purchasing & receiving",
-    "inventory, expiry & shortages", "customers, debts & chronic refill",
-    "reports & shift close", "settings & permissions", "mobile layout",
-    "keyboard & accessibility", "performance", "Arabic copy & RTL",
-    "errors, offline & edge cases",
+    "quick sale & barcode", "invoices", "returns & refunds",
+    "purchasing & receiving", "inventory, expiry & shortages",
+    "customers, debts & chronic refill", "reports & shift close",
+    "conversations (WhatsApp inbox)", "settings & permissions",
+    "mobile layout", "keyboard & accessibility", "performance",
+    "Arabic copy & RTL", "errors, offline & edge cases",
 ]
+FIX_CAP = 12
 UX_ID = re.compile(r"^UX([0-9]+)$")
 
 
@@ -61,14 +63,20 @@ def focus_for(queue_tasks, inbox_dir=INBOX):
 
 
 def build_task(nxt, focus):
-    fix_ids = ", ".join(f"UX{nxt + i}" for i in range(1, 9))
+    cap = FIX_CAP
+    fix_ids = ", ".join(f"UX{nxt + i}" for i in range(1, cap + 1))
+    last = nxt + cap
     brief = (
         f"Continuous QA audit (focus: {focus}). Audit the CURRENT repo frontend locally with Playwright "
         "(desktop 1366x768 + mobile 390x844, fake data, no live writes, no supplier/live sites), focusing on the focus area "
-        "plus a quick smoke of all main journeys. Read all previous .nova/qa/*report*.md first to avoid duplicates. "
+        "plus a quick smoke of all main journeys. Every cycle must cover every main screen "
+        "(البيع، الفواتير، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات، and any other top-nav tab or link). "
+        "Click every top-nav link/tab and every visible primary header button (including the WhatsApp #novaWaBtn icon). "
+        "Flag any HTTP 404, blank page, 'Not found', failed navigation, or console error. "
+        "Read all previous .nova/qa/*report*.md first to avoid duplicates. "
         f"Write .nova/qa/qa-loop-{nxt}.md (Arabic, short) with screenshots in .nova/qa/qa-loop-{nxt}/ (max 15). "
-        f"Then write .nova/inbox/qa-loop-{nxt}-fixes.json ({{\"tasks\":[...]}}) with at most 8 small frontend-only fix tasks "
-        f"(ids UX{nxt + 1}..UX{nxt + 8}; only high/medium findings; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), "
+        f"Then write .nova/inbox/qa-loop-{nxt}-fixes.json ({{\"tasks\":[...]}}) with at most {cap} small frontend-only fix tasks "
+        f"(ids UX{nxt + 1}..UX{last}; only high/medium findings; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), "
         f"plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-{nxt}.js (qa-loop, no deploy)' "
         f"with after = all its fix ids, which rebuilds the artifact from the latest worker/live artifact the same way UX80 did "
         f"(tools/build-worker-artifact.mjs, markers test, node --check, no deploy). Fix ids available: {fix_ids}. "

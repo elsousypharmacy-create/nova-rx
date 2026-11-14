@@ -1,0 +1,42 @@
+# Continuous QA loop: every 2h create ONE audit task in .nova/inbox (see .nova/qa_loop.py).
+# Pause: repository variable QA_LOOP_DISABLED=true. Never deploys.
+name: QA loop
+on:
+  schedule:
+    - cron: "17 */2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: qa-loop
+  cancel-in-progress: false
+jobs:
+  cycle:
+    if: vars.QA_LOOP_DISABLED != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Create audit task
+        id: qa
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QA_LOOP_DISABLED: ${{ vars.QA_LOOP_DISABLED }}
+        run: |
+          set -euo pipefail
+          python3 .nova/qa_loop.py
+          if [ -n "$(git status --porcelain .nova/inbox)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .nova/inbox
+            git commit -q -m "chore(qa-loop): queue audit task [skip ci]"
+            for i in 1 2 3 4; do
+              git push -q origin HEAD:main && break
+              git fetch -q origin main && git rebase -q origin/main
+              sleep 3
+            done
+            gh workflow run cloud-scheduler.yml --ref main
+          fi

@@ -1,9 +1,9 @@
-# Continuous QA loop: every 4h create ONE audit task in .nova/inbox (see .nova/qa_loop.py).
+# Continuous QA loop: every 2h create ONE audit task in .nova/inbox (see .nova/qa_loop.py).
 # Pause: repository variable QA_LOOP_DISABLED=true. Never deploys.
 name: QA loop
 on:
   schedule:
-    - cron: "17 */4 * * *"
+    - cron: "17 */2 * * *"
   workflow_dispatch:
 permissions:
   contents: write

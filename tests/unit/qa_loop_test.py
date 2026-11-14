@@ -16,7 +16,8 @@ tasks = [{"id": "UX5", "status": "done"}, {"id": "FIX3"}]
 assert Q.next_id(tasks, inbox) == 91
 assert Q.next_id([], os.path.join(tmp, "none")) == 1
 assert Q.disabled({"QA_LOOP_DISABLED": "true"}) and not Q.disabled({"QA_LOOP_DISABLED": "false"}) and not Q.disabled({})
-assert len(Q.FOCUS) == 12 and Q.focus_for([], os.path.join(tmp, "none")) == Q.FOCUS[0]
+assert len(Q.FOCUS) == 14 and Q.FIX_CAP == 12 and Q.focus_for([], os.path.join(tmp, "none")) == Q.FOCUS[0]
+assert "invoices" in Q.FOCUS and "conversations (WhatsApp inbox)" in Q.FOCUS
 json.dump({"tasks": [{"id": "UX91"}]}, open(os.path.join(inbox, "qa-loop-91.json"), "w"))
 assert Q.focus_for([], inbox) == Q.FOCUS[1]
 assert Q.busy([{"id": "UX1", "source": "inbox/qa-loop-1.json", "status": "pending"}])
@@ -30,7 +31,10 @@ before = open(qf).read()
 assert Q.run({"QA_LOOP_DISABLED": "true"}, qf, inbox) is None
 p = Q.run({}, qf, inbox); assert p.endswith("qa-loop-92.json"), p
 t = json.load(open(p))["tasks"][0]
-assert t["id"] == "UX92" and "UX93..UX100" in t["brief"] and "qa-loop-92.md" in t["brief"] and "nova-rx-preview.qa-92.js (qa-loop, no deploy)" in t["brief"]
+assert t["id"] == "UX92" and "UX93..UX104" in t["brief"] and "qa-loop-92.md" in t["brief"] and "nova-rx-preview.qa-92.js (qa-loop, no deploy)" in t["brief"]
+assert "at most 12 small" in t["brief"] and "click every top-nav" in t["brief"].lower()
+assert "404" in t["brief"] and "blank page" in t["brief"] and "console error" in t["brief"]
+assert "المحادثات" in t["brief"]
 assert open(qf).read() == before
 json.dump({"tasks": tasks + [{"id": "UX92", "source": "inbox/qa-loop-92.json", "status": "running"}]}, open(qf, "w"))
 assert Q.run({}, qf, inbox) is None

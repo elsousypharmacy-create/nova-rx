@@ -1,8 +1,8 @@
 # Continuous QA loop
 
-Every 4 hours `.github/workflows/qa-loop.yml` runs `.nova/qa_loop.py`, which (one cycle at a time) commits
-`.nova/inbox/qa-loop-<N>.json` with one audit task `UX<N>` (focus area rotates over 12 areas). The audit writes
-`.nova/qa/qa-loop-<N>.md`, up to 8 frontend-only fix tasks and, only if there are fixes, a task titled
+Every 2 hours `.github/workflows/qa-loop.yml` runs `.nova/qa_loop.py`, which (one cycle at a time) commits
+`.nova/inbox/qa-loop-<N>.json` with one audit task `UX<N>` (focus area rotates over 14 areas covering every main screen). The audit writes
+`.nova/qa/qa-loop-<N>.md`, up to 12 frontend-only fix tasks and, only if there are fixes, a task titled
 `Build worker/live/nova-rx-preview.qa-<N>.js (qa-loop, no deploy)`. The queue file is never touched by qa_loop.py.
 
 ## Auto preview deploy
@@ -19,6 +19,5 @@ Set repository variable `QA_LOOP_DISABLED=true` (Settings > Secrets and variable
 `gh variable set QA_LOOP_DISABLED --body true`). The workflow job is skipped and `qa_loop.py` exits. Resume: delete it or set `false`.
 Already-created tasks keep running; to stop the auto deploy of a queued build, mark its task `failed` in the queue.
 
-## Install step (needs a human)
-The bot token cannot push files under `.github/workflows/`. Copy `docs/ops/qa-loop.workflow.yml` to
-`.github/workflows/qa-loop.yml` on main (one commit by someone with `workflows` permission) to start the 4-hourly cycle.
+## Workflow
+`.github/workflows/qa-loop.yml` (source copy also at `docs/ops/qa-loop.workflow.yml`) runs on a 2-hourly cron (`17 */2 * * *`) and `workflow_dispatch`. Each audit must click every top-nav link and primary header button and flag any 404, blank page, or console error.
