@@ -3055,7 +3055,7 @@ window.NovaFmt=(function(){
         const r = addProductToInvoice(product);
         if (qty > 1 && r && r.ok !== false) {
           const line = state.invoiceLines.find(l => l.productId === product.id && (l.unit || "box") === r.unit);
-          if (line) { line.qty += qty - 1; renderInvoice(); }
+          if (line) { line.qty += qty - 1; renderInvoice(); warnOversell(line); }
         }
         return r;
       }
@@ -3488,6 +3488,7 @@ window.NovaFmt=(function(){
           line.qty = q;
           if (state.checkoutReserved && state.invoiceKey) { state.checkoutReserved = false; window.novaStock.release(state.invoiceKey); }
           renderInvoice();
+          warnOversell(line);
           const k = window.novaStock && window.novaStock.keyOf(line);
           if (k && window.novaStock.hasLots(k)) {
             const pick = window.novaStock.fefoPick(k, window.novaStock.boxQty(line));
@@ -3522,6 +3523,30 @@ window.NovaFmt=(function(){
         elements.mainSearchInput.focus();
       }
 
+      function lineOverStock(line) {
+        try {
+          if (!window.novaStock) return null;
+          const k = window.novaStock.keyOf(line);
+          const a = window.novaStock.available(k, state.invoiceKey);
+          if (!Number.isFinite(a)) return null;
+          const f = Number(line.unitFactor) > 1 ? Number(line.unitFactor) : 1;
+          const need = window.novaStock.boxQty(line);
+          if (need - a <= 1e-7) return null;
+          return { available: Math.max(0, Math.floor(Math.max(0, a) * f + 1e-7)) };
+        } catch (_) { return null; }
+      }
+      function warnOversell(line) {
+        const o = line && lineOverStock(line);
+        if (o) showToast("المخزون لا يكفي: " + escH(dispName(line.name)) + " — المتاح " + o.available, "error");
+      }
+      function clampLineToStock(productId) {
+        const line = state.invoiceLines.find(l => l.productId === productId);
+        const o = line && lineOverStock(line);
+        if (!o) return;
+        if (o.available <= 0) removeLine(productId); else updateLineQty(productId, String(o.available));
+      }
+      function invoiceHasOversell() { return state.invoiceLines.some(l => lineOverStock(l)); }
+
       function renderInvoice() {
         persistActiveInvoice();
         if (state.invoiceLines.length === 0) {
@@ -3555,6 +3580,8 @@ window.NovaFmt=(function(){
             const prod = DEMO_PRODUCTS.find(p => p.id === line.productId || p.barcode === line.barcode) || line;
             const units = window.novaUnits.availableUnits(prod);
             const curUnit = line.unit || "box";
+            const over = lineOverStock(line);
+            if (over) lotHtml += `<div class="item-oversell" role="alert" data-oversell="${over.available}" style="font-size:13px;color:#fecaca;background:#450a0a;border:1px solid #dc2626;padding:2px 8px;border-radius:4px;display:inline-flex;gap:8px;align-items:center;margin-top:2px">المتاح ${over.available} <button type="button" class="btn-oversell-fix" data-act="fixstock" data-id="${line.productId}" style="min-height:32px;background:#7f1d1d;color:#fff;border:1px solid #dc2626;border-radius:4px;padding:0 8px;cursor:pointer">اضبط على المتاح</button></div>`;
             return `
               <tr data-id="${line.productId}">
                 <td class="col-idx">${idx + 1}</td>
@@ -3658,6 +3685,7 @@ window.NovaFmt=(function(){
           return;
         }
 
+        if (invoiceHasOversell()) { renderInvoice(); showToast("لا يمكن الدفع: كمية أكبر من المتاح — اضبط الكمية", "error"); return; }
         if (!state.attachedCustomer && !state.customerGateSkipped) {
           document.getElementById("customerCheckoutGate").hidden = false;
           document.getElementById("gatePhone").value = "";
@@ -4665,6 +4693,8 @@ window.NovaFmt=(function(){
             updateLineQty(prodId, line.qty + 1);
           } else if (act === "dec") {
             updateLineQty(prodId, line.qty - 1);
+          } else if (act === "fixstock") {
+            clampLineToStock(prodId);
           } else if (act === "del") {
             removeLine(prodId);
           }
