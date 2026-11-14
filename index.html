@@ -6815,5 +6815,23 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
+<style id="ux206-mobile-cart-row">
+/* UX206: 2-line mobile cart row. Line 1: name (wraps, ellipsis at end) + delete 44px. Line 2: - qty + unit | unit price | line total. */
+@media(max-width:640px){
+.invoice-table tbody tr{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"item item act" "qty price total"!important;gap:2px 6px!important;padding:6px 8px!important;overflow:hidden}
+.invoice-table td.col-item{grid-area:item;overflow:hidden}
+.invoice-table td.col-item .item-title{white-space:normal!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;text-overflow:ellipsis;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start;font-size:14px}
+.invoice-table td.col-act{grid-area:act;justify-self:end}
+.invoice-table td.col-act .btn-icon-del{width:44px;height:44px;min-width:44px!important;min-height:44px!important}
+.invoice-table td.col-qty{grid-area:qty;min-width:0}
+.invoice-table .qty-control{gap:2px!important}
+.invoice-table .qty-control .qty-btn{width:44px;min-width:44px!important;flex:0 0 44px}
+.invoice-table .qty-control .qty-input{width:44px;min-width:44px;flex:0 0 44px}
+.invoice-table .qty-control .unit-select{flex:0 0 56px;width:56px;min-width:56px;max-width:56px;padding:0 2px!important}
+.invoice-table td.col-price{grid-area:price;justify-self:center;white-space:nowrap;font-size:12px;color:#aeb8c2;text-align:center}
+.invoice-table td.col-price::before{content:"× ";opacity:.8}
+.invoice-table td.col-total{grid-area:total;justify-self:end;white-space:nowrap;font-size:14px;color:#f1f3f5;padding-inline-start:0!important;text-align:end}
+}
+</style>
 </html>
 
