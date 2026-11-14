@@ -3578,22 +3578,15 @@
    "brief": "Reproduced: a 320-message chat renders 320 nodes in one draw (openBigChat ~480ms incl. mocked 250ms network) with scrollH 20k px; draw() always forces scrollTop to bottom, and after scrolling up there is no 'scroll to latest' button nor 'N new messages' marker. Render the latest ~80 messages with a 'رسائل أقدم' button that preserves scroll position, add a floating scroll-to-latest button when >1 screen away from the bottom, keep the bottom anchor on first open. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Big chat opens at the latest message with bounded DOM, older messages load on demand without jumping; test with 320 messages.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:03:57+00:00",
    "pr": 401,
-   "ci_dispatched": {
-    "sha": "3401c477ae9af094376e0ec44b89990ebcd9043b",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:06:35+00:00"
-   }
+   "merged_at": "2026-11-14T14:11:39+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/401"
   },
   {
    "id": "UX240",
@@ -3604,19 +3597,19 @@
    "after": [],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:10:17+00:00",
+   "dispatched_at": "2026-11-14T14:19:24+00:00",
    "pr": 402,
    "ci_dispatched": {
-    "sha": "951c14f5d705f0586ab3aca3883ec3c45ca478af",
+    "sha": "46cf3f5e113763484e1856224f49c69e922c6cbf",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:03:57+00:00"
+    "at": "2026-11-14T14:13:05+00:00"
    }
   },
   {
@@ -3628,19 +3621,19 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:06:35+00:00",
+   "dispatched_at": "2026-11-14T14:16:47+00:00",
    "pr": 403,
    "ci_dispatched": {
-    "sha": "b6f65ce95ebd04ea895945b72d349ef2f0b9dade",
+    "sha": "76a6c3b53d03fb0142a6e2a4d726377c90434adc",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:10:17+00:00"
+    "at": "2026-11-14T14:19:24+00:00"
    }
   },
   {
@@ -3650,10 +3643,22 @@
    "brief": "Reproduced (a11y step): #waSearch has no label/aria-label, active chat has no aria-current, #waList/#waMsgs have no role/aria-label, no aria-live for the loaded chat, lock button has no label; after a wrong PIN the field is cleared and focus goes to BODY, the PIN field is not focused on open, opening a chat leaves focus on BODY, Escape does not go back to the list on mobile, and the page has no heading. Add labels/roles, aria-current, focus the PIN field on open and after errors, move focus to the message pane/back button on open and back to the chat button on Escape/back, role=alert already on errors. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Keyboard-only flow works (Tab to PIN, Enter, arrow/Tab into list, Esc back); test asserts focus targets and aria attributes.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:13:05+00:00",
+   "pr": 404,
+   "ci_dispatched": {
+    "sha": "553faa871e10930f2df82fdcf9352d0072e48d20",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T14:16:47+00:00"
+   }
   },
   {
    "id": "UX237",
@@ -3876,5 +3881,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:10:17+00:00"
+ "updated": "2026-11-14T14:19:24+00:00"
 }
