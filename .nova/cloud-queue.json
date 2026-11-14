@@ -3602,12 +3602,12 @@
    "brief": "Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T13:58:47+00:00",
+   "dispatched_at": "2026-11-14T14:10:17+00:00",
    "pr": 402,
    "ci_dispatched": {
     "sha": "951c14f5d705f0586ab3aca3883ec3c45ca478af",
@@ -3626,12 +3626,22 @@
    "brief": "Reproduced: .wa-head shows only avatar+name (headSubtitle false); the read-only/archive status is only in the composer placeholder, the lock button lives in a separate bar above, and the mobile back chevron is a bare › glyph (text button, no 44px target) (m-wa-chat-big.png). Add a subtitle (عدد الرسائل · آخر نشاط · أرشيف للقراءة فقط), a chevron icon button of 44x44 on touch, and a compact lock icon button in the header; RTL-correct arrow direction. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Header shows subtitle, 44px back target and lock button on mobile; test measures sizes.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:06:35+00:00"
+   "dispatched_at": "2026-11-14T14:06:35+00:00",
+   "pr": 403,
+   "ci_dispatched": {
+    "sha": "b6f65ce95ebd04ea895945b72d349ef2f0b9dade",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T14:10:17+00:00"
+   }
   },
   {
    "id": "UX238",
@@ -3866,5 +3876,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:06:35+00:00"
+ "updated": "2026-11-14T14:10:17+00:00"
 }
