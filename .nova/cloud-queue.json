@@ -3597,15 +3597,19 @@
    "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #405 is still open on cloud/UX237; the date-separator work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX237 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, and other conversation fixes, PLUS weekday names for the last 6 days and sticky frosted .wa-date separators. Re-run tests/ux/ux237-wa-dates.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "pr": 405,
    "ci_dispatched": {
-    "sha": "9b2dd851433f9ac2c786dabc257479d5bd2d4801",
-    "wf": [],
-    "at": "2026-11-14T16:49:03+00:00"
+    "sha": "2141f73c078925e5a3ebe98c8d9cf4cde3021113",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T16:53:39+00:00"
    },
    "slot": "A",
    "dispatched_at": "2026-11-14T16:50:39+00:00"
@@ -3617,16 +3621,18 @@
    "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #402 is still open on cloud/UX240; the lock-bar work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX240 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, UX241/UX242 and other conversation fixes, PLUS the compact PIN lock bar in the sidebar header (show/hide toggle, no busy-state layout shift). Re-run tests/ux/ux240-wa-lock-bar.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "pr": 402,
    "ci_dispatched": {
     "sha": "b764270bb0b819c627da63904a4bbe0292d07cc7",
     "wf": [],
     "at": "2026-11-14T16:49:03+00:00"
-   }
+   },
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:53:39+00:00"
   },
   {
    "id": "UX243",
@@ -4012,5 +4018,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/424"
   }
  ],
- "updated": "2026-11-14T16:52:20+00:00"
+ "updated": "2026-11-14T16:53:39+00:00"
 }
