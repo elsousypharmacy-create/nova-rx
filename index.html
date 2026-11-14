@@ -555,6 +555,11 @@
       background: var(--accent-red-bg);
     }
 
+    .nova-first-run-hint{margin-top:10px;padding:10px 16px;border:1px solid var(--border,#333);border-radius:10px;text-align:start;font-size:13px;color:var(--text-main,inherit)}
+    .nova-first-run-hint[hidden]{display:none}
+    .nova-first-run-hint ol{margin:0 0 8px;padding-inline-start:20px;line-height:1.9}
+    .nova-first-run-hint button{min-height:36px}
+    .nova-help-chip{min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--border,#444);background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
     .empty-invoice-state {
       display: flex;
       flex-direction: column;
@@ -2041,6 +2046,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
         </div>
 
         <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" aria-label="رقم عملية البيع"></span>
+          <button id="novaHelpChip" class="nova-help-chip" type="button" title="عرض اختصارات الكيبورد (F1)">F1 اختصارات</button>
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="فاتورة جديدة (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
           <button id="holdCurrentInvoice" class="btn nova-hold-action" type="button" title="تعليق الفاتورة الحالية" aria-label="تعليق الفاتورة الحالية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M10 9v6m4-6v6"/></svg><span>تعليق</span></button>
           <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="الفواتير المعلقة" aria-label="الفواتير المعلقة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
@@ -2111,6 +2117,10 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
           </svg>
           <div style="font-weight: 600; font-size: 14px;">Invoice is Empty</div>
           <div style="font-size: 12px;">Scan product barcode or type medicine name in the search bar above.</div>
+          <div id="novaFirstRunHint" class="nova-first-run-hint" role="note" dir="auto" hidden>
+            <ol><li>امسح الباركود أو اكتب الاسم</li><li>Enter لإضافة</li><li>Enter للدفع</li></ol>
+            <button type="button" id="novaHintHide" class="btn btn-secondary">إخفاء</button>
+          </div>
         </div>
       </div>
 
@@ -4217,6 +4227,7 @@ window.NovaFmt=(function(){
         };
         // U1: keep a local record of every completed sale (this device only; not a server ledger).
         const savedOk = window.novaSales.add(saleRecord);
+        if (savedOk) { try { localStorage.setItem("nova-rx-hint-done", "1"); } catch (e) {} }
         if (!savedOk) { // atomic: nothing is cleared; a retry reuses the same card authorisation and invoice key, so the customer is never charged twice
           showToast("تعذر حفظ الفاتورة على هذا الجهاز — أعد المحاولة، لن يتم خصم البطاقة مرة أخرى.", "error");
           return;
@@ -4606,6 +4617,14 @@ window.NovaFmt=(function(){
         });
 
         elements.btnClearInvoice.addEventListener("click", clearInvoice);
+
+        (function () {
+          const chip = document.getElementById("novaHelpChip"), hint = document.getElementById("novaFirstRunHint"), hide = document.getElementById("novaHintHide");
+          let done = false; try { done = localStorage.getItem("nova-rx-hint-done") === "1"; } catch (e) {}
+          if (hint && !done) hint.hidden = false;
+          if (hide) hide.addEventListener("click", () => { hint.hidden = true; try { localStorage.setItem("nova-rx-hint-done", "1"); } catch (e) {} });
+          if (chip) chip.addEventListener("click", () => { elements.helpModal.classList.add("active"); elements.btnCloseHelp.focus(); });
+        })();
 
         elements.btnHelpShortcuts.addEventListener("click", () => {
           elements.helpModal.classList.add("active");
