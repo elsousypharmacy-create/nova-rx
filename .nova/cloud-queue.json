@@ -3987,12 +3987,22 @@
    "brief": "In the return dialog the 44px close button is absolutely positioned over the h3, clipping the first letters of 'مرتجع / إلغاء — فاتورة S-1001' (d-dlg-open.png). Give the header a flex row (title + close) with proper gap, remove the 28px hack margin, keep close at 44px, and make the header sticky inside the scrollable dialog. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Title fully visible at 1366 and 390 with no overlap of the close button; bounding-box test.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:58:49+00:00"
+   "dispatched_at": "2026-11-14T15:58:49+00:00",
+   "pr": 423,
+   "ci_dispatched": {
+    "sha": "8c546632c87ee41a23daf3efed7520b54ee97c0a",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T16:01:45+00:00"
+   }
   },
   {
    "id": "UX220",
@@ -4001,11 +4011,13 @@
    "brief": "After a full return or cancellation the Invoices row keeps an enabled 'مرتجع / إلغاء' button, and the dialog for a fully returned sale still enables 'إرجاع كل الأصناف' and 'تأكيد المرتجع' while every qty input is disabled (screens d/m-dlg-fully-returned). Add a status badge in the المرتجع column (مرتجع جزئي / مرتجع بالكامل / ملغاة, with tone colours), disable or replace the row button with a disabled 'تم الإرجاع بالكامل' state (aria-disabled + tooltip), and in the dialog disable Return-all/Confirm and show an inline notice when nothing is returnable. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Fully returned/cancelled rows show a badge and no actionable return button; dialog confirm is disabled when no qty is available; test covers partial, full and cancelled.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:01:45+00:00"
   }
  ],
- "updated": "2026-11-14T16:00:20+00:00"
+ "updated": "2026-11-14T16:01:45+00:00"
 }
