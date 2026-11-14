@@ -3299,12 +3299,22 @@
    "brief": "Reports empty state is one text bar and ~500px of blank space. Add a designed empty state (icon, title, hint, primary CTA 'ابدأ بيع' linking to the sale tab) and make the demo-data disclosure clear with a skeleton preview, not blank. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Empty reports shows icon+CTA; CTA switches to sale tab; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T11:15:53+00:00"
+   "dispatched_at": "2026-11-14T11:15:53+00:00",
+   "pr": 383,
+   "ci_dispatched": {
+    "sha": "940796d5df199de411d1be7962bcf62cc504c1fd",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T11:18:31+00:00"
+   }
   },
   {
    "id": "UX212",
@@ -3327,10 +3337,12 @@
    "brief": "Switching to المنتجات renders 300 rows synchronously (long task 115ms, tab latency 155ms, target <100ms). Render first ~40 rows then fill the rest in idle chunks (requestIdleCallback/rAF) or virtualize; keep search/scroll smooth at 60fps; avoid layout thrash. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Tab switch to products <100ms and no long task >50ms in Playwright measurement; row count and search results unchanged; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-203-fixes.json"
+   "source": "inbox/qa-loop-203-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T11:18:31+00:00"
   },
   {
    "id": "UX210",
@@ -3417,5 +3429,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:17:11+00:00"
+ "updated": "2026-11-14T11:18:31+00:00"
 }
