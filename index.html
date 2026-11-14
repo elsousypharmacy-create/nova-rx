@@ -1432,7 +1432,10 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 .nova-tag{border:1px solid #385260;background:#1b2e38;color:#a6d5e9;padding:3px 8px;border-radius:6px;font-size:12px}
 .nova-page-btn{background:#263d4b;border:1px solid #4b7185;color:#d7eaf2;border-radius:var(--nova-btn-radius,8px);min-height:var(--nova-btn-h,40px);padding:8px 12px;font:inherit;cursor:pointer}
 .nova-page-btn:hover{background:#335365}
-.nova-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.nova-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.nova-setting-card p+p{margin-top:6px}.nova-setting-card#novaAuthCard,.nova-card-wide{grid-column:1/-1}.nova-vat-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.nova-setting-card .nova-field{height:44px;min-height:44px;width:120px;min-width:96px;box-sizing:border-box;padding:6px 12px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:8px;font-size:15px}
+.nova-vat-row .nova-unit{color:#a4adb7;font-size:14px}
 .nova-setting-card{background:#171b20;border:1px solid #303841;border-radius:12px;padding:20px}
 .nova-setting-card h3{font-size:14px;color:#f1f3f5;margin:0 0 8px}.nova-setting-card p{font-size:12px;color:#a4adb7;line-height:1.8}
 @media(max-width:1050px){.nova-nav{height:44px;padding:4px 8px}.nova-tab{padding:7px 10px}.pos-root,.nova-page-view{height:calc(100dvh - 96px)}.nova-page-view{padding:15px}.nova-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -2114,7 +2117,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
       <!-- Invoice Footer & Totals Section -->
       <footer class="invoice-footer">
         <!-- Overall Discounts -->
-        <div class="discount-controls">
+        <div class="discount-controls" id="discountControls">
           <div class="discount-title">
             <span>Overall Invoice Discount</span>
             <span style="font-size:12px; color:var(--text-dim);">No negative total floor</span>
@@ -2134,6 +2137,9 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 
         <!-- Financial Totals -->
         <div class="totals-breakdown">
+          <button type="button" class="discount-toggle" id="btnDiscountToggle" aria-expanded="false" aria-controls="discountControls">
+            <span>خصم الفاتورة</span><span class="discount-toggle-caret" aria-hidden="true">▾</span>
+          </button>
           <div class="tot-row">
             <span>Subtotal (<span id="totalItemsCount">0</span> items)</span>
             <span id="displaySubtotal">0.00 EGP</span>
@@ -5102,7 +5108,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:6px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div></details>';
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card"><h3>المظهر</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p></div><div class="nova-setting-card"><h3>بيانات النظام</h3><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p></div><div class="nova-setting-card"><h3>النسخة</h3><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><input id="novaVatRate" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"></div><div class="nova-setting-card"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px;font-size:14px"></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:6px;font-size:14px"></div></div>';
  }
  view.innerHTML=content;
  if(window.novaAuthUI)window.novaAuthUI.mount();
@@ -5408,6 +5414,9 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
 /* Keep the sticker button off the checkout bar on phones (it used to cover «CHECKOUT»). */
 @media(max-width:780px){#novaAiLaunch{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:10px;padding:8px 12px;font-size:12px}}
 /* UX4: reserve room for the floating labels button (~44px + 18px offset) so it never covers rows/totals. */
+/* UX41: FAB only on the products page (toolbar button exists there); never floats over sale/customers/reports/settings content. */
+body:not([data-active-page="products"]) #novaAiLaunch{display:none!important}
+body[data-active-page="products"] #novaAiLaunch{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .nova-page-view{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 .totals-breakdown{margin-bottom:72px}
 @media(max-width:600px){#novaAiLaunch{width:44px;height:44px;padding:0;border-radius:50%;font-size:0;line-height:0;display:flex;align-items:center;justify-content:center}#novaAiLaunch::before{content:"✦";font-size:20px;line-height:1}}
@@ -6173,7 +6182,48 @@ if(b.dataset.act==='handoff'){if(c.mode==='human'){c.mode='bot';inbox.assign(id,
 else inbox.assign(id,'الصيدلي');draw()});
 tab.addEventListener('click',function(){draw();var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
 nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box.hidden=true;tab.classList.remove('active')}},true)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script></body>
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux44-mobile-totals">
+/* UX44: mobile totals — collapsible discount inside totals block, no overlap/clipping, sticky pay >=48px */
+.discount-toggle{display:none}
+@media(max-width:640px){
+ .invoice-footer{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:6px!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))!important;position:sticky;bottom:0;z-index:20}
+ .totals-breakdown{display:flex!important;flex-direction:column;flex:0 0 auto!important;width:100%;gap:2px;margin:0!important;font-size:13px;overflow:visible}
+ .totals-breakdown .tot-row{display:flex;flex-wrap:nowrap!important;justify-content:space-between;align-items:center;gap:8px;min-height:20px;line-height:1.4;white-space:normal}
+ .totals-breakdown .tot-row>span{min-width:0;overflow-wrap:anywhere}
+ .totals-breakdown .tot-row>span:last-child{flex:none;white-space:nowrap}
+ .totals-breakdown .tot-row.grand-total{font-size:15px;padding-top:2px;margin-top:0}
+ .totals-breakdown .tot-row.grand-total span:last-child{font-size:16px}
+ .discount-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 10px;background:#191e24;color:#dce3ea;border:1px solid #303841;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+ .discount-toggle[aria-expanded="true"] .discount-toggle-caret{transform:rotate(180deg)}
+ .totals-breakdown .discount-controls{display:none;flex:none;width:100%;box-sizing:border-box;margin:0}
+ .totals-breakdown .discount-controls.open{display:flex}
+ .totals-breakdown .discount-title{flex-wrap:wrap;gap:2px 8px}
+ .totals-breakdown .discount-inputs{display:flex;gap:8px}
+ .totals-breakdown .discount-inputs .input-grp{flex:1 1 0;min-width:0}
+ .checkout-action-box{flex:0 0 auto!important;width:100%!important;min-width:0!important;align-self:stretch}
+ .btn-checkout{min-height:48px!important;height:48px;width:100%}
+ .toast-container{bottom:calc(210px + env(safe-area-inset-bottom,0px))!important}
+}
+</style>
+<script>
+/* UX44: on phones the discount card lives inside the totals block as a collapsible row; desktop keeps the original footer layout. */
+(function(){
+ var mq=window.matchMedia('(max-width:640px)');
+ function sync(){
+  var dc=document.getElementById('discountControls'),tb=document.querySelector('.totals-breakdown'),ft=document.querySelector('.invoice-footer'),tg=document.getElementById('btnDiscountToggle');
+  if(!dc||!tb||!ft||!tg)return;
+  if(mq.matches){ if(dc.parentNode!==tb)tg.after(dc); }
+  else{ if(dc.parentNode!==ft)ft.insertBefore(dc,tb); dc.classList.remove('open'); tg.setAttribute('aria-expanded','false'); }
+ }
+ document.addEventListener('DOMContentLoaded',function(){
+  var tg=document.getElementById('btnDiscountToggle');
+  if(tg)tg.addEventListener('click',function(){var dc=document.getElementById('discountControls');var o=!dc.classList.contains('open');dc.classList.toggle('open',o);tg.setAttribute('aria-expanded',String(o));});
+  sync();
+ });
+ if(mq.addEventListener)mq.addEventListener('change',sync);
+})();
+</script>
+</body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>

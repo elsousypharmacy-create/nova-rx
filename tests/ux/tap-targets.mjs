@@ -76,6 +76,8 @@ for (const [name, size, mobile] of [['tablet1024', { width: 1024, height: 768 },
   await page.waitForTimeout(800);
   await page.evaluate(() => document.querySelector('.nova-tab[data-page=sale]')?.click());
   await page.waitForTimeout(400);
+  // UX44: on phones the discount inputs sit in a collapsible row; expand it before measuring
+  await page.evaluate(() => { const t = document.getElementById('btnDiscountToggle'); if (t && t.offsetParent && t.getAttribute('aria-expanded') === 'false') t.click(); });
   const res = await page.evaluate(ids => {
     const boxes = ids.map(id => { const e = document.getElementById(id); if (!e) return [id, null]; const r = e.getBoundingClientRect(); return [id, { w: r.width, h: r.height }]; });
     const bar = document.querySelector('.nova-sale-actions');
