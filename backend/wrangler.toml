@@ -33,6 +33,9 @@ crons = ["* * * * *"]
 NOVA_ENV = "staging"
 # WA-SEND (owner approved 2026-11-14): pharmacist replies from the conversations screen reach real customers.
 NOVA_INBOX_SEND = "1"
+# FIX51: bot -> NOVA live forward (bridge). DIRECT writes the message into the inbox tables immediately (no cron queue / tenant map).
+NOVA_WA_BRIDGE_INTAKE = "1"
+NOVA_WA_BRIDGE_DIRECT = "1"
 CORS_ALLOW_ORIGINS = "https://nova-rx-preview.elsousypharmacy.workers.dev"
 [[env.staging.d1_databases]]
 binding = "DB"

@@ -3563,23 +3563,15 @@
    "brief": "Ahmed (owner) just sent a WhatsApp message to the pharmacy number from his phone, but the NOVA conversations screen still shows the last inbound as yesterday 21:26 and blocks sending with 'آخر رسالة منه عدّى عليها أكتر من 24 ساعة'. So live inbound messages are not reaching staging D1 (the history only has the one-time backfill from sheet tab محادثات البوت; bot logged nothing after Oct 25). Diagnose end to end, read-only on the pharmacy repo/Apps Script: is the approved bridge (bot forwards copy of each message to NOVA ingest) merged/deployed and calling the ingest endpoint with NOVA_INGEST_SECRET? Does ingest write into the same tables the history/conversation and send endpoints read? Fix NOVA side so every new inbound/outbound appears in the chat within seconds (polling or SSE, like WhatsApp), and the 24h check uses the latest real inbound timestamp. If the bridge is missing on the bot side, prepare the PR for the pharmacy repo for Ahmed's review only (do not merge). Also make the composer behave like WhatsApp: clear 24h-window state instead of a red banner over messages, auto-refresh after new inbound, sent message shows instantly with ticks. Never send test messages to real customers; never touch WA_TOKEN or Script Properties; no deploy. Build the next worker/live artifact and report the exact root cause.",
    "acceptance": "Root cause stated; new inbound appears live; 24h window computed from latest inbound; tests added; artifact built; no deploy.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/fix-wa-live-inbound.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T15:19:13+00:00",
    "pr": 414,
-   "ci_dispatched": {
-    "sha": "91215fcb8e64065d175f05139044ef39d5ce3d02",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T15:20:43+00:00"
-   }
+   "merged_at": "2026-11-14T15:26:15+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/414"
   },
   {
    "id": "FIX50",
@@ -3869,22 +3861,15 @@
    "brief": "The reason and refund method are saved (returns() has reason/method) but never shown: Invoices only shows the amount, Reports 'مرتجعات نقدية' without a breakdown. Add an expandable per-invoice return history row (date, items, qty, amount, method, reason) and a reasons breakdown (عيب/خطأ صرف/رجوع/صلاحية) in Reports; Arabic digits unchanged; empty state when none. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Return history visible per invoice; reports show reasons; test covers rendering and XSS-safe escaping.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T15:20:43+00:00",
    "pr": 416,
-   "ci_dispatched": {
-    "sha": "d4d77dea2bb94e9ab2f218a71431c723eecc8bc4",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T15:24:55+00:00"
-   }
+   "merged_at": "2026-11-14T15:30:01+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/416"
   },
   {
    "id": "UX227",
@@ -3893,12 +3878,22 @@
    "brief": "'إعادة طباعة نسخة' and 'مرتجع / إلغاء' are identical flat grey (rgb 107) blocks that look disabled on desktop (d-inv). Differentiate: ghost style for reprint, outlined/amber for return, add icons, consistent 36px desktop / 44px touch height, hover/focus/pressed states and tonal Black Edition tokens; on mobile cards keep them side by side. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Two distinct, enabled-looking action styles; focus ring visible; contrast >=4.5; screenshot test.",
    "after": [],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:24:55+00:00"
+   "dispatched_at": "2026-11-14T15:37:41+00:00",
+   "pr": 417,
+   "ci_dispatched": {
+    "sha": "2bf686b0419e82e85a90dee376f3360f5a2a81e3",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:30:01+00:00"
+   }
   },
   {
    "id": "UX226",
@@ -3907,10 +3902,15 @@
    "brief": "After confirming a return (50ms) the dialog closes and the table updates with no toast/status message; a cashier cannot tell the refund was recorded or how much to hand back. Show a toast/live-region 'تم تسجيل مرتجع بقيمة X ج.م — ردّ المبلغ نقدًا/بالبطاقة/خصم من الآجل' with the refund method, highlight the updated row briefly (respect prefers-reduced-motion), and optionally keep a 10-second undo that removes the just-saved return from the ledger. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Toast appears with amount and method; row highlight; test asserts role=status text.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:30:01+00:00",
+   "pr": 418,
+   "merged_at": "2026-11-14T15:37:41+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/418"
   },
   {
    "id": "UX225",
@@ -3919,10 +3919,22 @@
    "brief": "On 1366x768 opening the cancel box pushes 'تأكيد المرتجع / إغلاق' below the fold (scroll inside dialog; d-dlg-cancelbox.png). On 390px the reason chips wrap leaving an orphan chip. Make the dialog a flex column with scrollable body and a sticky footer for primary actions, and lay chips in a 2x2 grid / horizontal scroll row on mobile. Primary confirm should be the visually dominant, full-width on mobile. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Confirm/close always visible without scrolling at 1366x768 and 390x844; chips never orphaned.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:32:46+00:00",
+   "pr": 419,
+   "ci_dispatched": {
+    "sha": "ea3048196cc2b366288e2a7d414a7bb0d0c7bc4a",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:37:41+00:00"
+   }
   },
   {
    "id": "UX224",
@@ -3985,5 +3997,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:24:55+00:00"
+ "updated": "2026-11-14T15:37:41+00:00"
 }

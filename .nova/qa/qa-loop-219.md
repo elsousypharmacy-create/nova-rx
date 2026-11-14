@@ -35,3 +35,7 @@ UX204 (الشعار)، UX209 (أيقونة واتساب 36/44px)، UX208 (الم
 
 ## UX227 — أزرار إجراءات الفواتير
 «إعادة طباعة نسخة» = ghost (حد رمادي #5b6875، نص فاتح، تباين 13.7–14.9)، «مرتجع / إلغاء» = حد كهرماني + خلفية كهرمانية 10% (تباين 8.0)، مع أيقونتين SVG، ارتفاع 36px سطح المكتب / 44px اللمس، حالات hover/active/focus-visible، وعلى الموبايل جنبًا إلى جنب. index.html فقط. الاختبار: tests/ui-ux227-invoice-actions.mjs (17 فحصًا PASS)؛ ui-returns (10 PASS)، ui-pos04-returns-cancel (8 PASS)، ui-sales-ledger (8 PASS). لقطات في /tmp/ux227 (غير محفوظة في المستودع). لم يُختبر: أجهزة حقيقية، قارئ شاشة.
+
+## UX226 — return confirmation toast (frontend only)
+- index.html: `novaReturnNotice` (role=status live region: "تم تسجيل مرتجع بقيمة X — ردّ المبلغ نقدًا/على البطاقة/خصم من الآجل"), row highlight (static outline when prefers-reduced-motion), 10s undo via new `novaSales.removeReturn(id)`. Undo not offered for credit returns (customer-ledger collect cannot be reversed from the UI).
+- Tests (run from a temp playwright install, chromium): ui-ux226-return-toast 6/6, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.

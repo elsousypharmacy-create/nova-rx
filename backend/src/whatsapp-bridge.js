@@ -4,6 +4,8 @@
 // Secrets by NAME only: NOVA_WA_BRIDGE_TOKEN, WA_BACKEND_URL. No network unless the injected fetch is called.
 import { timingSafeEqual, enqueue, MAX_BODY } from './whatsapp-intake.js';
 import { inboxEnabled } from './inbox.js';
+import { messageText } from './whatsapp-process.js';
+import { historyTenant } from './inbox-history.js';
 
 export const MAX_ITEMS = 100;
 const MIN_TOKEN = 32;
@@ -28,6 +30,35 @@ export function toQueueEntry(it) {
   return { id, message, metadata };
 }
 
+export function waBridgeDirectEnabled(env) { return !!env && env.NOVA_WA_BRIDGE_DIRECT === '1'; }
+
+const tsMs = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? (n < 1e12 ? Math.round(n * 1000) : Math.round(n)) : 0; };
+
+// FIX51: direct, synchronous write of the bot's forwarded copy into the SAME tables the history/send routes read
+// (inbox_conversations / inbox_messages, tenant = historyTenant). Idempotent by message id; additive only.
+// Inbound id = wa_<wamid> (same as the Meta queue path), outbound (bot reply) id = wb_<wamid>.
+export async function ingestDirect(db, tenant, items, now = Date.now()) {
+  let added = 0, duplicates = 0, skipped = 0;
+  for (const it of items) {
+    const out = it.direction === 'out';
+    const from = String(it.from).replace(/\D/g, '');
+    const text = messageText({ type: it.type || 'text', text: it.text ? { body: it.text } : undefined,
+      image: it.type === 'image' ? { caption: it.text || undefined } : undefined,
+      document: it.type === 'document' ? { filename: it.filename || undefined, caption: it.text || undefined } : undefined });
+    if (!from || !text) { skipped++; continue; }
+    const mid = (out ? 'wb_' : 'wa_') + it.id, cid = 'wa_' + from;
+    const at = Math.min(tsMs(it.timestamp) || now, now + 5 * 60 * 1000);
+    const dup = await db.prepare('SELECT id FROM inbox_messages WHERE tenant_id = ? AND id = ?').bind(tenant, mid).first();
+    if (dup) { duplicates++; continue; }
+    await db.prepare('INSERT OR IGNORE INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES (?,?,?,?)').bind(tenant, cid, (!out && s(it.name)) || from, at).run();
+    await db.prepare('INSERT OR IGNORE INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at) VALUES (?,?,?,?,?,?,?)')
+      .bind(tenant, mid, cid, out ? 'out' : 'in', text.slice(0, 4000), out ? 'sent' : null, at).run();
+    await db.prepare('UPDATE inbox_conversations SET updated_at = ? WHERE tenant_id = ? AND id = ? AND (CASE WHEN updated_at > 0 AND updated_at < 1000000000000 THEN updated_at * 1000 ELSE updated_at END) < ?').bind(at, tenant, cid, at).run();
+    added++;
+  }
+  return { added, duplicates, skipped };
+}
+
 export function registerWaBridgeRoutes(route, { json, errorResponse }, { authenticate }) {
   route('POST', '/api/v1/webhooks/whatsapp-bridge', async (ctx) => {
     const { env, requestId, request } = ctx;
@@ -44,6 +75,11 @@ export function registerWaBridgeRoutes(route, { json, errorResponse }, { authent
       return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId);
     }
     if (!env.DB) return errorResponse('WA_NO_DB', 'قاعدة البيانات غير متاحة.', 503, requestId);
+    if (waBridgeDirectEnabled(env)) {
+      for (const it of body.messages) if (!it || typeof it !== 'object' || !s(it.id) || !s(it.from)) return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId);
+      const r = await ingestDirect(env.DB, historyTenant(env), body.messages);
+      return json({ ok: true, direct: true, ...r, requestId }, 200, { 'X-Request-Id': requestId });
+    }
     const entries = [];
     let skipped = 0;
     for (const it of body.messages) {
