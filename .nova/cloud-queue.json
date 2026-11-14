@@ -2942,12 +2942,22 @@
    "after": [
     "FIX40"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/fix-qa-loop.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T02:52:16+00:00"
+   "dispatched_at": "2026-11-14T02:52:16+00:00",
+   "pr": 366,
+   "ci_dispatched": {
+    "sha": "166d96a8771664c57f0753be7c22378d8544879c",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T02:54:37+00:00"
+   }
   },
   {
    "id": "FIX40",
@@ -2967,5 +2977,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/365"
   }
  ],
- "updated": "2026-11-14T02:52:16+00:00"
+ "updated": "2026-11-14T02:54:37+00:00"
 }
