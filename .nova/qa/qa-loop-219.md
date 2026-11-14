@@ -46,3 +46,6 @@ Fixed in index.html: cancel-box inputs/select styled like #novaRetReason, real `
 ## UX222 — return dialog validation (frontend only)
 - index.html return dialog: error #novaRetMsg clears on input/chip/return-all; per-row inline msg (`[data-ret-err]`) + aria-invalid for over-max ('الحد الأقصى N'), fraction, negative; clamp on blur; inputmode=numeric, step=1.
 - Tests (run from a temp dir with @playwright/test, CHROME_PATH=/usr/bin/chromium, python http.server :8765): ui-ux222-return-validation 8/8, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.
+
+## UX221 — return dialog header (frontend only)
+index.html: header is now a sticky flex row (`.nova-ret-head`: h3 + 44px static close, gap, no 28px margin hack; sticky top inside the scrollable dialog). Test tests/ui-ux221-return-header.mjs (bounding boxes at 1366 and 390: no overlap, title not clipped, close 44x44, close at inline-start, header sticky after scroll): 16/16 PASS. ui-returns 10 PASS, ui-pos04-returns-cancel 8 PASS, ui-sales-ledger 8 PASS. Not tested: real devices, screen reader.
