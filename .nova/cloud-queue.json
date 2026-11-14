@@ -3912,12 +3912,12 @@
    "brief": "On 1366x768 opening the cancel box pushes 'تأكيد المرتجع / إغلاق' below the fold (scroll inside dialog; d-dlg-cancelbox.png). On 390px the reason chips wrap leaving an orphan chip. Make the dialog a flex column with scrollable body and a sticky footer for primary actions, and lay chips in a 2x2 grid / horizontal scroll row on mobile. Primary confirm should be the visually dominant, full-width on mobile. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Confirm/close always visible without scrolling at 1366x768 and 390x844; chips never orphaned.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:44:18+00:00",
+   "dispatched_at": "2026-11-14T15:53:45+00:00",
    "pr": 419,
    "ci_dispatched": {
     "sha": "4aba22696376d69d5603a8942e30fa141079fb38",
@@ -3977,12 +3977,22 @@
    "brief": "(a) After 'اكتب سبب المرتجع' is shown, picking a reason chip or typing a reason does not clear the red message. (b) Typing qty above the available, a fraction (1.5) or negative silently blanks 'مبلغ الإرجاع' with no message until confirm. Clear #novaRetMsg on input/chip, mark the offending qty input aria-invalid with an inline Arabic message ('الحد الأقصى N'), clamp on blur, use inputmode=numeric and step=1. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Error clears on fix; over-max/fraction/negative show inline message and aria-invalid; tests assert each.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:49:30+00:00"
+   "dispatched_at": "2026-11-14T15:49:30+00:00",
+   "pr": 422,
+   "ci_dispatched": {
+    "sha": "d0449b08fd54bb8078301508da449fce04b5b744",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:53:45+00:00"
+   }
   },
   {
    "id": "UX221",
@@ -4009,5 +4019,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:49:30+00:00"
+ "updated": "2026-11-14T15:53:45+00:00"
 }
