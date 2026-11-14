@@ -42,13 +42,17 @@
     ]
   },
   "inventory, expiry & shortages": {
-    "score": 7.5,
-    "last_cycle": 203,
-    "open_findings": 3,
+    "score": 6.0,
+    "last_cycle": 301,
+    "open_findings": 8,
     "refs": [
-      "UX207",
-      "UX211",
-      "UX212"
+      "UX302",
+      "UX303",
+      "UX304",
+      "UX305",
+      "UX306",
+      "UX307",
+      "UX309"
     ]
   },
   "customers, debts & chronic refill": {
@@ -93,25 +97,30 @@
   },
   "mobile layout": {
     "score": 6.0,
-    "last_cycle": 231,
-    "open_findings": 4,
+    "last_cycle": 301,
+    "open_findings": 7,
     "refs": [
       "UX204",
       "UX205",
       "UX206",
       "UX210",
-      "UX232"
+      "UX232",
+      "UX307",
+      "UX308",
+      "UX311"
     ]
   },
   "keyboard & accessibility": {
     "score": 6.0,
-    "last_cycle": 231,
-    "open_findings": 4,
+    "last_cycle": 301,
+    "open_findings": 6,
     "refs": [
       "UX209",
       "UX223",
       "UX224",
-      "UX238"
+      "UX238",
+      "UX305",
+      "UX310"
     ]
   },
   "performance": {
@@ -133,10 +142,10 @@
   },
   "errors, offline & edge cases": {
     "score": 7.0,
-    "last_cycle": 203,
-    "open_findings": 0,
+    "last_cycle": 301,
+    "open_findings": 1,
     "refs": [
-      "not audited this cycle"
+      "UX312"
     ]
   }
 }
