@@ -2016,7 +2016,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 #inputPercentDiscount,#inputFixedDiscount{min-height:44px;box-sizing:border-box}
 @media(min-width:769px) and (max-width:1100px){.nova-sale-actions{gap:3px!important}.nova-sale-actions .btn{padding-inline:8px!important}}
 </style>
-</head>
+<link rel="stylesheet" href="/nova-icons.css"><script src="/nova-icons.js" defer></script></head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><a id="novaPurchasesNav" class="nova-tab" style="text-decoration:none;display:inline-flex;align-items:center" href="/purchases">المشتريات</a><button class="nova-tab" data-page="settings">الإعدادات</button>
@@ -5287,7 +5287,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   'لا تخمن الجرعة':'Do not guess the dose','اكتب فقط التعليمات المؤكدة':'Write confirmed instructions only','معاينة الاستيكر':'Label preview',
   'دواء بدون اسم':'Unnamed medicine','مراجعة وطباعة':'Review and print','عدد النسخ':'Copies',
   'ابحث في المنتجات السابقة...':'Search past purchases...','البحث في المنتجات السابقة':'Search past purchases',
-  '🔐 مفاتيح API والتكاملات':'🔐 API keys & integrations','⚙️ إدارة المفاتيح':'⚙️ Manage keys',
+  '🔐 مفاتيح API والتكاملات':'🔐 API keys & integrations','قراءة فاتورة مشتريات':'Read purchase invoice','مفاتيح API والتكاملات':'API keys & integrations','إدارة المفاتيح':'Manage keys','توليد تاني':'Generate again','معاينة الاستيكرات':'Preview stickers','معاينة الاستيكر':'Preview sticker','⚙️ إدارة المفاتيح':'⚙️ Manage keys',
   'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.',
   'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)'
  };
