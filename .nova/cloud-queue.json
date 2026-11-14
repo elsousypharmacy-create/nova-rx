@@ -2524,7 +2524,7 @@
    "brief": "Files: index.html (unit-select in cart row, F6 discount handler, search input handler), tests/ux/unit-quick.mjs (new). Gap: selling a strip takes select + option + a click back to search (3 clicks) and the choice is not remembered; after F6 discount the cursor cannot return to search by keyboard. Add F8 (verify it is unused in the help table first, otherwise use another free key) to cycle the last line unit box->strip->tab, remember the last unit per product in localStorage, and make Enter/Esc inside the discount fields return focus to #mainSearchInput. Update the F1 help table. Frontend-only; preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F7.",
    "acceptance": "tests/ux/unit-quick.mjs: panadol + the unit key -> unit strip with 0 clicks; next sale of the same product starts as strip; F6, type 10, Enter -> activeElement is #mainSearchInput (0 clicks); barcode sale still 0 clicks and 4 keys (node tests/ux/sale-clicks.mjs passes); no console errors.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro3.json",
@@ -2532,13 +2532,13 @@
    "dispatched_at": "2026-11-14T01:12:14+00:00",
    "pr": 352,
    "ci_dispatched": {
-    "sha": "27fb5a0b7e4275fa79667cd6154da8de3e82484d",
+    "sha": "815fb2b06a6f4cd8a1a33f1fa73aa7558f03bce7",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T01:06:38+00:00"
+    "at": "2026-11-14T01:13:47+00:00"
    }
   },
   {
@@ -2565,22 +2565,15 @@
    "brief": "Files: index.html (search no-result message, UX64 inline note if present), tests/ux/shortage-log.mjs (new). Gap: when a customer asks for an item that is missing or out of stock there is nowhere to record it. Add a «سجّل نقص» button in the no-result message and next to the out-of-stock note; it stores {text, date, qty} in localStorage key nova-rx-shortages-v1 (dedupe same text same day, increment count) and toasts. Show the count on the Products low-stock card tooltip or a small list in Products. No backend. Preserve RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F4/F5.",
    "acceptance": "tests/ux/shortage-log.mjs: search «xyz-not-found» -> no-result message shows the button; 1 click stores the entry; second click same day increments count to 2 instead of duplicating; entry survives reload; no console errors.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro3.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T01:04:55+00:00",
    "pr": 355,
-   "ci_dispatched": {
-    "sha": "62e6eea9e542a5264736b1c81cbdd5f6e21832af",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T01:07:54+00:00"
-   }
+   "merged_at": "2026-11-14T01:13:47+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/355"
   },
   {
    "id": "UX64",
@@ -2651,10 +2644,12 @@
    "brief": "Files: index.html (Reports page, near #novaPayBreakdown), tests/ux/shift-close.mjs (new). Gap: no shift concept; report shows expected cash only. Add (localStorage only, key nova-rx-shift-v1) an opening-float input and a «قفل الوردية» panel in Reports: enter counted cash, show expected (float + cash sales - cash returns + cash debt collections), difference (green/red), and a print button reusing the end-of-day print. No backend. Preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro3-report.md F2.",
    "acceptance": "tests/ux/shift-close.mjs: seed 2 cash sales + 1 return, set float 100, count correct amount -> difference 0.00; wrong count -> difference shown in red with sign; reload keeps float; reaching the panel from the sale page takes <=2 clicks; no console errors.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro3.json"
+   "source": "inbox/ux-pro3.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T01:13:47+00:00"
   },
   {
    "id": "UX60",
@@ -2930,5 +2925,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T01:12:14+00:00"
+ "updated": "2026-11-14T01:13:47+00:00"
 }
