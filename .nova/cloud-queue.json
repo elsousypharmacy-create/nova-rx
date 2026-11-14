@@ -4200,22 +4200,15 @@
    "brief": "d-products.png: fixed 151x48 FAB at x18,y624 covers the category cell; m-products.png: 44px FAB at y704 covers row content (unchanged since UX207 / qa-loop-203 finding 4, so the earlier fix is not verified). Remove the floating overlay on the products page (header button already exists) or dock it outside the scroll content with bottom padding reserved. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "FAB does not intersect any table cell on either viewport; test measures intersection.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:24:19+00:00",
    "pr": 438,
-   "ci_dispatched": {
-    "sha": "5660131886b523b76321e027df7578769bbc51f3",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:25:36+00:00"
-   }
+   "merged_at": "2026-11-14T23:31:13+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/438"
   },
   {
    "id": "UX305",
@@ -4280,5 +4273,5 @@
    "source": "inbox/qa-loop-301-fixes.json"
   }
  ],
- "updated": "2026-11-14T23:29:55+00:00"
+ "updated": "2026-11-14T23:31:13+00:00"
 }
