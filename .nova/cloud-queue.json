@@ -3252,21 +3252,15 @@
    "brief": "Settings 'الحسابات والجلسات' form inputs span the full width (~300px each, huge empty left). Constrain to max-width ~420px, group in a card with clear headings, align cards in a consistent 2-column grid, add helper/ error states, correct tab order. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Form max-width applied; both viewports screenshot clean; test asserts input width <=460px.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T11:10:05+00:00",
    "pr": 381,
-   "ci_dispatched": {
-    "sha": "f7742e2c88ac8a1ad51f05755f145aa6b7e4f05e",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T11:15:53+00:00"
-   }
+   "merged_at": "2026-11-14T11:19:52+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/381"
   },
   {
    "id": "UX214",
@@ -3429,5 +3423,5 @@
    "source": "inbox/qa-loop-203-fixes.json"
   }
  ],
- "updated": "2026-11-14T11:18:31+00:00"
+ "updated": "2026-11-14T11:19:52+00:00"
 }
