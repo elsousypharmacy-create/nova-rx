@@ -115,7 +115,7 @@ await t('exact barcode match (Latin digits, separators, Arabic digits) and unkno
   // Pressing Enter on exact barcode adds the item to the invoice
   await page.locator('#mainSearchInput').press('Enter');
   await page.waitForTimeout(100);
-  assert.ok((await page.locator('#invoiceTableBody').innerText()).includes('Glucophage 500mg'));
+  assert.ok((await page.locator('#invoiceTableBody').innerText()).includes('جلوكوفاج 500 مجم'));
   // Unknown 13-digit barcode returns 0 items (never a fuzzy guess)
   await search('6281009999999');
   assert.equal(await suggItems().count(), 0);
