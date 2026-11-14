@@ -3538,12 +3538,23 @@
    "brief": "Ahmed: build an in-app dashboard (inside NOVA Rx, Black Edition Arabic RTL, opened from the conversations screen and/or reports; same PIN gate as the old chats, PIN-gated staging endpoint under /api/v1/inbox/history/ style, read-only, no customer data in the public artifact) showing EXACTLY how long we take to reply to customers, from the imported WhatsApp history in staging D1 (26 chats/561 msgs from the bot log; senders user/bot/pharm/sys; note live forwarder timestamps are in seconds not ms, normalize). Metrics: first response time and every reply time per customer message, split bot vs pharmacist (human) — exact minutes/seconds; median, average, p90, slowest; % replied within 1/5/15/60 min; unanswered customer messages and waiting-now list; time from bot handoff (اتحوّل للصيدلي) to pharmacist reply. Volume: number of customers who wrote (unique), new vs returning, conversations and messages per day/hour, busiest hours heatmap, top topics if simple (keyword based). Filters: date range, today/7d/30d, bot vs pharmacist. Each metric clickable to the chats behind it. Charts smooth, design top priority. Tests for the metric calculations (exact times, timezone Africa/Cairo display, seconds-vs-ms normalization). Build into the next worker/live artifact (next free name, tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
    "acceptance": "Dashboard shows exact reply times (bot and pharmacist) and how many customers write, with filters; PIN-gated; tests pass; artifact built; no deploy.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-wa-dashboard.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:42:35+00:00"
+   "dispatched_at": "2026-11-14T14:42:35+00:00",
+   "pr": 409,
+   "ci_dispatched": {
+    "sha": "ace07baa2fd28745e65401507e8af5549f183754",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T14:51:53+00:00"
+   }
   },
   {
    "id": "UX243",
@@ -3910,5 +3921,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:47:46+00:00"
+ "updated": "2026-11-14T14:51:53+00:00"
 }
