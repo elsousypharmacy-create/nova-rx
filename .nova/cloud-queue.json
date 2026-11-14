@@ -3861,22 +3861,15 @@
    "brief": "The reason and refund method are saved (returns() has reason/method) but never shown: Invoices only shows the amount, Reports 'مرتجعات نقدية' without a breakdown. Add an expandable per-invoice return history row (date, items, qty, amount, method, reason) and a reasons breakdown (عيب/خطأ صرف/رجوع/صلاحية) in Reports; Arabic digits unchanged; empty state when none. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Return history visible per invoice; reports show reasons; test covers rendering and XSS-safe escaping.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T15:20:43+00:00",
    "pr": 416,
-   "ci_dispatched": {
-    "sha": "d4d77dea2bb94e9ab2f218a71431c723eecc8bc4",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T15:24:55+00:00"
-   }
+   "merged_at": "2026-11-14T15:30:01+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/416"
   },
   {
    "id": "UX227",
@@ -3885,12 +3878,22 @@
    "brief": "'إعادة طباعة نسخة' and 'مرتجع / إلغاء' are identical flat grey (rgb 107) blocks that look disabled on desktop (d-inv). Differentiate: ghost style for reprint, outlined/amber for return, add icons, consistent 36px desktop / 44px touch height, hover/focus/pressed states and tonal Black Edition tokens; on mobile cards keep them side by side. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Two distinct, enabled-looking action styles; focus ring visible; contrast >=4.5; screenshot test.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:24:55+00:00"
+   "dispatched_at": "2026-11-14T15:24:55+00:00",
+   "pr": 417,
+   "ci_dispatched": {
+    "sha": "2bf686b0419e82e85a90dee376f3360f5a2a81e3",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:30:01+00:00"
+   }
   },
   {
    "id": "UX226",
@@ -3899,10 +3902,12 @@
    "brief": "After confirming a return (50ms) the dialog closes and the table updates with no toast/status message; a cashier cannot tell the refund was recorded or how much to hand back. Show a toast/live-region 'تم تسجيل مرتجع بقيمة X ج.م — ردّ المبلغ نقدًا/بالبطاقة/خصم من الآجل' with the refund method, highlight the updated row briefly (respect prefers-reduced-motion), and optionally keep a 10-second undo that removes the just-saved return from the ledger. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Toast appears with amount and method; row highlight; test asserts role=status text.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:30:01+00:00"
   },
   {
    "id": "UX225",
@@ -3977,5 +3982,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:26:15+00:00"
+ "updated": "2026-11-14T15:30:01+00:00"
 }
