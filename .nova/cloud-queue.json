@@ -3919,12 +3919,12 @@
    "brief": "On 1366x768 opening the cancel box pushes 'تأكيد المرتجع / إغلاق' below the fold (scroll inside dialog; d-dlg-cancelbox.png). On 390px the reason chips wrap leaving an orphan chip. Make the dialog a flex column with scrollable body and a sticky footer for primary actions, and lay chips in a 2x2 grid / horizontal scroll row on mobile. Primary confirm should be the visually dominant, full-width on mobile. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Confirm/close always visible without scrolling at 1366x768 and 390x844; chips never orphaned.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:32:46+00:00",
+   "dispatched_at": "2026-11-14T15:44:18+00:00",
    "pr": 419,
    "ci_dispatched": {
     "sha": "ea3048196cc2b366288e2a7d414a7bb0d0c7bc4a",
@@ -3943,12 +3943,22 @@
    "brief": "Inside the 'إلغاء الفاتورة بالكامل' details the inputs/select are default grey (rgb 59/107) unlike the dark reason input, with no labels; the reason label has no for=, qty inputs have no aria-label (labelForReason:false, qtyAria empty). Style them with the same tokens as #novaRetReason, add real <label for>, aria-label per qty input with the product name, and style the details summary as a proper disclosure with a rotating chevron and a danger tone for the confirm-cancel button. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "All dialog fields share one style; every input has an accessible name; test asserts labels.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:40:34+00:00"
+   "dispatched_at": "2026-11-14T15:40:34+00:00",
+   "pr": 420,
+   "ci_dispatched": {
+    "sha": "504eefa0aeddc4998258b1cd8206141e19106d41",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:44:18+00:00"
+   }
   },
   {
    "id": "UX223",
@@ -3999,5 +4009,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:40:34+00:00"
+ "updated": "2026-11-14T15:44:18+00:00"
 }
