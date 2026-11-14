@@ -2242,7 +2242,7 @@
    "brief": "Files: index.html (flag-gated section in products page only), tests/ux/transfers-flag.mjs (new). localStorage['nova.flags.transfers']==='1' shows list + request/send/receive-with-difference dialogs over the existing window.novaTransfers (INV-05); default off, zero UI change when off; Black Edition RTL, 44px targets, SVG icons; this-device-only notice in Arabic; no network.",
    "acceptance": "tests/ux/transfers-flag.mjs: flag off -> section absent; flag on -> request then send reduces local lots FEFO, receive with a shortage records the difference, state survives reload; no non-GET requests; node tests/ux/low-stock-filter.mjs passes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
@@ -2250,13 +2250,13 @@
    "dispatched_at": "2026-11-14T00:38:54+00:00",
    "pr": 339,
    "ci_dispatched": {
-    "sha": "08a2b014c0fe5d82341bf01682c2db8131e6f42e",
+    "sha": "f962c3474a5f54391a6c1de00da600e151fa5a35",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T00:32:39+00:00"
+    "at": "2026-11-14T00:40:34+00:00"
    }
   },
   {
@@ -2317,22 +2317,15 @@
    "brief": "Files: index.html (flag-gated tab + view only), tests/ux/inbox-flag.mjs (new). Load unified-inbox.js; tab visible only when localStorage['nova.flags.inbox']==='1' (default off, no UI change when off). Shows conversations from NovaUnifiedInbox (local storage, demo seed only when the flag is on), human handoff, assign, customer/order link, statuses; zero network calls; no secrets; sw.js precache updated if needed.",
    "acceptance": "tests/ux/inbox-flag.mjs: flag off -> no tab and no extra requests; flag on -> tab opens, handoff toggles mode and persists after reload; all non-GET requests blocked and none attempted; node tests/unit/unified-inbox.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T00:32:39+00:00",
    "pr": 341,
-   "ci_dispatched": {
-    "sha": "61164a7dfa665ad4a58fa9f64950bfe992380ede",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T00:35:49+00:00"
-   }
+   "merged_at": "2026-11-14T00:40:34+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/341"
   },
   {
    "id": "UX47",
@@ -2341,12 +2334,12 @@
    "brief": "Files: integrations/whatsapp/inbox.html, supplier-compare.html, index.html (customers empty state), tests/ux/standalone-pages.mjs (new). Give inbox.html the Black Edition palette tokens, a header with a «رجوع للتطبيق» link, buttons >=44px, SVG instead of ◉, 12px minimum font; supplier-compare buttons >=44px; customers page with fewer than 8 rows shows an empty-state card with an «إضافة عميل» action instead of 230px blank. Inbox stays unpublished; no network/flag change.",
    "acceptance": "tests/ux/standalone-pages.mjs at both viewports: inbox.html buttons >=44px and min font >=12px, back link present, no emoji glyph; supplier-compare buttons >=44px; node tests/unit/whatsapp-bridge.check.mjs still passes; no live writes.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T00:34:30+00:00",
+   "dispatched_at": "2026-11-14T00:40:34+00:00",
    "pr": 342,
    "ci_dispatched": {
     "sha": "244826ea1c0a61a005852e29ff0e8d5477b516ad",
@@ -2840,5 +2833,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:38:54+00:00"
+ "updated": "2026-11-14T00:40:34+00:00"
 }
