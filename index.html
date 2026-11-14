@@ -5408,6 +5408,9 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
 /* Keep the sticker button off the checkout bar on phones (it used to cover «CHECKOUT»). */
 @media(max-width:780px){#novaAiLaunch{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:10px;padding:8px 12px;font-size:12px}}
 /* UX4: reserve room for the floating labels button (~44px + 18px offset) so it never covers rows/totals. */
+/* UX41: FAB only on the products page (toolbar button exists there); never floats over sale/customers/reports/settings content. */
+body:not([data-active-page="products"]) #novaAiLaunch{display:none!important}
+body[data-active-page="products"] #novaAiLaunch{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .nova-page-view{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 .totals-breakdown{margin-bottom:72px}
 @media(max-width:600px){#novaAiLaunch{width:44px;height:44px;padding:0;border-radius:50%;font-size:0;line-height:0;display:flex;align-items:center;justify-content:center}#novaAiLaunch::before{content:"✦";font-size:20px;line-height:1}}
