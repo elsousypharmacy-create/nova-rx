@@ -33,3 +33,7 @@ FIX46 يعمل وظيفيًا: بلا PIN لا طلب ولا نص، PIN خاطئ
 Frontend only (index.html unified-inbox block). New panels `.wa-state[data-state=pin|error|network|offline|empty]` with Arabic copy and retry (`#waHistRetry`); PIN_INVALID/PIN_REQUIRED/network/offline/500 mapped to clear messages; typed PIN length hint kept (length only, PIN never stored). Remaining attempts are unknown (backend frozen), the hint says so.
 Tests (Playwright installed in /tmp/pw, system chromium): `node tests/ux/ux242-wa-error-states.mjs` OK; `node tests/ux/fix46-wa-history.mjs` OK; unit: unified-inbox, ux200-wa-chat, fix43, ux81 all pass.
 Screenshots: .nova/qa/qa-loop-231/ux242-*.png (mobile 390px).
+
+## UX239 fix (chat header)
+- index.html: `.wa-head` now has subtitle (`N رسالة · آخر نشاط … · أرشيف للقراءة فقط`), 44x44 SVG chevron back button (right-pointing = RTL back), 44x44 header lock icon button (`data-wa-lock`, shown only when history unlocked) handled by the same click path as `#waHistLock`.
+- tests/ux/ux239-wa-head.mjs measured: mobile back 44x44, lock 44x44, desktop lock 44x44; subtitle present. Screenshots: ux239-mobile-head.png, ux239-desktop-head.png.
