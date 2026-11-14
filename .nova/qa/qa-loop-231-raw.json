@@ -1,0 +1,403 @@
+{
+ "http404": [],
+ "blocked": [],
+ "res": {
+  "d": {
+   "errs": [
+    "console: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+   ],
+   "steps": {
+    "locked": {
+     "pageScrollH": 768,
+     "vh": 768,
+     "barH": 66,
+     "rootTop": 146,
+     "rootBottom": 794,
+     "pinH": 44,
+     "btnH": 44,
+     "pinType": "password",
+     "autofocus": false,
+     "demoChat": "ع\nعميل تجريبي (عرض محلي)\n13:40\n نعم متوف",
+     "root": [
+      1306,
+      648
+     ]
+    },
+    "wrong": {
+     "msg": "رقم PIN غير صحيح.",
+     "focus": "BODY",
+     "pinVal": ""
+    },
+    "empty": "اكتب رقم PIN الصيدلية.",
+    "busy": "جاري التحميل…",
+    "list": {
+     "n": 22,
+     "listScrollH": 1584,
+     "listH": 527,
+     "pageScrollH": 768,
+     "vh": 768,
+     "pageOv": false,
+     "bar": "المحادثات القديمة ظاهرة (22)\nقفل المحادثات",
+     "firstTime": "13:40",
+     "secTime": "2026/11/12",
+     "longNameW": 265,
+     "previewW": 298,
+     "chatH": 72,
+     "emptyMain": true,
+     "mainVisible": "flex"
+    },
+    "loadingState": {
+     "msgs": 1,
+     "spinner": false
+    },
+    "listScroll": {
+     "before": 600,
+     "after": 0
+    },
+    "big": {
+     "msgs": 320,
+     "scrollTop": 20150,
+     "scrollH": 20672,
+     "clientH": 522,
+     "atBottom": true,
+     "seps": [
+      "2026/10/18",
+      "2026/10/19",
+      "2026/10/20",
+      "2026/10/21",
+      "…",
+      27
+     ],
+     "dateSticky": "static",
+     "maxBubbleW": 510,
+     "mainW": 913,
+     "headText": "م\nمنى التجريبية",
+     "headH": 59,
+     "headSubtitle": false,
+     "composerDisabled": true,
+     "pageScrollH": 768,
+     "vh": 768,
+     "rootBottom": 794
+    },
+    "reclickScroll": {
+     "top": 20150,
+     "atBottom": true
+    },
+    "search1": [],
+    "searchLatin": 1,
+    "searchHamza": 1,
+    "searchNoHamza": 0,
+    "searchNone": "لا توجد محادثات",
+    "searchKept": {
+     "val": "منى",
+     "n": 1
+    },
+    "focusAfterChatClick": "BODY#",
+    "escape": {
+     "view": "chat",
+     "focus": "BODY"
+    },
+    "a11y": {
+     "searchLabel": false,
+     "chatAriaCurrent": false,
+     "backAria": "رجوع",
+     "listRole": null,
+     "msgsLive": null,
+     "lockBtnAria": null,
+     "msgsRole": null,
+     "headingCount": 0
+    },
+    "afterLock": {
+     "txt": false,
+     "pin": null,
+     "view": "list",
+     "ls": false
+    }
+   },
+   "tabs": {
+    "البيع": {
+     "len": 507,
+     "nf": false,
+     "ov": false
+    },
+    "الفواتير": {
+     "len": 816,
+     "nf": false,
+     "ov": false
+    },
+    "المنتجات": {
+     "len": 13354,
+     "nf": false,
+     "ov": false
+    },
+    "العملاء": {
+     "len": 648,
+     "nf": false,
+     "ov": false
+    },
+    "التقارير": {
+     "len": 321,
+     "nf": false,
+     "ov": false
+    },
+    "المشتريات": "link (checked via request)",
+    "الإعدادات": {
+     "len": 1189,
+     "nf": false,
+     "ov": false
+    }
+   },
+   "perf": {
+    "openInbox": 87,
+    "wrongPin": 135,
+    "loadList": 326,
+    "openSmallChat": 383,
+    "openBigChat": 485
+   },
+   "tabList": [
+    {
+     "t": "البيع",
+     "p": "sale"
+    },
+    {
+     "t": "الفواتير",
+     "p": "invoices"
+    },
+    {
+     "t": "المنتجات",
+     "p": "products"
+    },
+    {
+     "t": "العملاء",
+     "p": "customers"
+    },
+    {
+     "t": "التقارير",
+     "p": "reports"
+    },
+    {
+     "t": "المشتريات",
+     "p": "novaPurchasesNav"
+    },
+    {
+     "t": "الإعدادات",
+     "p": "settings"
+    }
+   ],
+   "purchases": 200,
+   "header": [
+    [
+     "novaWaBtn",
+     36,
+     36
+    ],
+    [
+     "btnRefreshApp",
+     36,
+     36
+    ]
+   ],
+   "cls": 0,
+   "hist": 5
+  },
+  "m": {
+   "errs": [
+    "console: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+   ],
+   "steps": {
+    "locked": {
+     "pageScrollH": 844,
+     "vh": 844,
+     "barH": 94,
+     "rootTop": 162,
+     "rootBottom": 886,
+     "pinH": 44,
+     "btnH": 44,
+     "pinType": "password",
+     "autofocus": false,
+     "demoChat": "ع\nعميل تجريبي (عرض محلي)\n13:40\n نعم متوف",
+     "root": [
+      366,
+      724
+     ]
+    },
+    "wrong": {
+     "msg": "رقم PIN غير صحيح.",
+     "focus": "BODY",
+     "pinVal": ""
+    },
+    "empty": "اكتب رقم PIN الصيدلية.",
+    "busy": "جاري التحميل…",
+    "list": {
+     "n": 22,
+     "listScrollH": 1584,
+     "listH": 603,
+     "pageScrollH": 844,
+     "vh": 844,
+     "pageOv": false,
+     "bar": "المحادثات القديمة ظاهرة (22)\nقفل المحادثات",
+     "firstTime": "13:40",
+     "secTime": "2026/11/12",
+     "longNameW": 238,
+     "previewW": 271,
+     "chatH": 72,
+     "emptyMain": true,
+     "mainVisible": "none"
+    },
+    "loadingState": {
+     "msgs": 1,
+     "spinner": false
+    },
+    "listScroll": {
+     "before": 600,
+     "after": 0
+    },
+    "backScroll": {
+     "listTop": 0,
+     "active": false,
+     "view": "list"
+    },
+    "big": {
+     "msgs": 320,
+     "scrollTop": 23604,
+     "scrollH": 24202,
+     "clientH": 598,
+     "atBottom": true,
+     "seps": [
+      "2026/10/18",
+      "2026/10/19",
+      "2026/10/20",
+      "2026/10/21",
+      "…",
+      27
+     ],
+     "dateSticky": "static",
+     "maxBubbleW": 285,
+     "mainW": 364,
+     "headText": "›\nم\nمنى التجريبية",
+     "headH": 59,
+     "headSubtitle": false,
+     "composerDisabled": true,
+     "pageScrollH": 844,
+     "vh": 844,
+     "rootBottom": 858
+    },
+    "search1": [],
+    "searchLatin": 1,
+    "searchHamza": 1,
+    "searchNoHamza": 0,
+    "searchNone": "لا توجد محادثات",
+    "searchKept": {
+     "val": "منى",
+     "n": 1
+    },
+    "focusAfterChatClick": "BODY#",
+    "escape": {
+     "view": "chat",
+     "focus": "BODY"
+    },
+    "a11y": {
+     "searchLabel": false,
+     "chatAriaCurrent": false,
+     "backAria": "رجوع",
+     "listRole": null,
+     "msgsLive": null,
+     "lockBtnAria": null,
+     "msgsRole": null,
+     "headingCount": 0
+    },
+    "afterLock": {
+     "txt": false,
+     "pin": null,
+     "view": "list",
+     "ls": false
+    }
+   },
+   "tabs": {
+    "البيع": {
+     "len": 403,
+     "nf": false,
+     "ov": false
+    },
+    "الفواتير": {
+     "len": 760,
+     "nf": false,
+     "ov": false
+    },
+    "المنتجات": {
+     "len": 13320,
+     "nf": false,
+     "ov": false
+    },
+    "العملاء": {
+     "len": 588,
+     "nf": false,
+     "ov": false
+    },
+    "التقارير": {
+     "len": 308,
+     "nf": false,
+     "ov": false
+    },
+    "المشتريات": "link (checked via request)",
+    "الإعدادات": {
+     "len": 1176,
+     "nf": false,
+     "ov": false
+    }
+   },
+   "perf": {
+    "openInbox": 85,
+    "wrongPin": 132,
+    "loadList": 326,
+    "openSmallChat": 367,
+    "openBigChat": 481
+   },
+   "tabList": [
+    {
+     "t": "البيع",
+     "p": "sale"
+    },
+    {
+     "t": "الفواتير",
+     "p": "invoices"
+    },
+    {
+     "t": "المنتجات",
+     "p": "products"
+    },
+    {
+     "t": "العملاء",
+     "p": "customers"
+    },
+    {
+     "t": "التقارير",
+     "p": "reports"
+    },
+    {
+     "t": "المشتريات",
+     "p": "novaPurchasesNav"
+    },
+    {
+     "t": "الإعدادات",
+     "p": "settings"
+    }
+   ],
+   "purchases": 200,
+   "header": [
+    [
+     "novaWaBtn",
+     44,
+     44
+    ],
+    [
+     "btnRefreshApp",
+     44,
+     44
+    ]
+   ],
+   "cls": 0,
+   "hist": 5
+  }
+ }
+}

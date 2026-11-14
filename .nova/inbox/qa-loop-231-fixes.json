@@ -1,0 +1,112 @@
+{
+  "tasks": [
+    {
+      "id": "UX232",
+      "phase": 10,
+      "title": "الشاشة: صندوق المحادثات أطول من الشاشة فيُقص شريط الكتابة السفلي",
+      "brief": "Reproduced: .wa-root height is calc(100vh - 120px) but the view starts at top ~146px (desktop) / ~162px (mobile) because of the PIN lock bar, so root bottom = 794 > 768 (desktop) and 886 > 844 (mobile) and the composer is cut off (d-wa-chat-big.png, m-wa-chat-big.png). Make the inbox view a flex column filling the viewport under the header (dvh, min-height safe), with .wa-root flex:1 and the lock bar counted in the layout; no clipped composer on 1366x768, 390x844 and short landscape. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "On both viewports root bottom <= innerHeight and the composer is fully visible; test asserts it with the lock bar open and closed.",
+      "after": []
+    },
+    {
+      "id": "UX233",
+      "phase": 10,
+      "title": "القائمة ترجع لأعلى عند فتح أي محادثة وعند زر الرجوع (ضياع المكان)",
+      "brief": "Reproduced: scrolling the chat list to 600px then clicking a chat resets #waList scrollTop to 0 on desktop and mobile; on mobile the back button also returns to scrollTop 0 and the chat just left is not highlighted (backScroll). draw() rebuilds the entire view on every click. Preserve list scrollTop across draw (or update only the active class and the main pane), restore on back, and scroll the previously opened chat into view. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Scroll position of the list is kept on open and on back (desktop+mobile); test covers it with 22 chats.",
+      "after": []
+    },
+    {
+      "id": "UX234",
+      "phase": 10,
+      "title": "فتح محادثة قديمة: لا مؤشر تحميل ويظهر سطر واحد فقط ثم تقفز القائمة",
+      "brief": "Reproduced: after clicking a chat the pane shows only the single last message (the preview) for the whole fetch, no spinner/skeleton/aria-busy (loadingState msgs:1, spinner:false), then 8-320 messages pop in (CLS + looks like the whole chat). Show a skeleton or 'جاري تحميل المحادثة…' with aria-busy until hist.full[id] arrives, and an inline error with 'إعادة المحاولة' if the fetch fails (currently only a global hist.err). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Loading and error states are visible and accessible; test delays the mocked conversation response and asserts the placeholder, then the messages.",
+      "after": []
+    },
+    {
+      "id": "UX235",
+      "phase": 10,
+      "title": "المحادثات المقفولة تعرض محادثة تجريبية مزيفة تحت نموذج PIN",
+      "brief": "Reproduced: with no PIN the list shows 'عميل تجريبي (عرض محلي)' (demo-1) under the lock bar (d/m-wa-locked.png) which looks like a real chat. Hide the demo chat unless the local-demo flag is on, otherwise label it clearly 'عرض تجريبي'; show a proper locked empty state (lock icon + short explanation) in the list pane instead, and when the main pane is empty show the same guidance. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Locked state shows no fake chat and a clear empty state; test updated.",
+      "after": []
+    },
+    {
+      "id": "UX236",
+      "phase": 10,
+      "title": "البحث لا يتجاهل الهمزات/التشكيل ولا يبحث في نص الرسائل أو الرقم",
+      "brief": "Reproduced: searching 'احمد' returns 0 results while 'أحمد' returns 1 (searchNoHamza vs searchHamza); search only matches name+id, not message text or phone digits (Arabic-Indic digits ٠-٩ not folded either). Normalize Arabic (أإآ->ا, ى->ي, ة->ه, tashkeel, tatweel, digits) for names and message text, highlight matches optionally, and show 'لا نتائج لـ \"…\"' with a clear (×) button in the field. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Search finds names/messages ignoring hamza/diacritics/digits; unit test for the normalizer plus Playwright check.",
+      "after": []
+    },
+    {
+      "id": "UX237",
+      "phase": 10,
+      "title": "التواريخ: صيغة 2026/11/12 جافة وفواصل الأيام غير ثابتة",
+      "brief": "Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
+      "after": []
+    },
+    {
+      "id": "UX238",
+      "phase": 10,
+      "title": "لوحة المفاتيح وقارئ الشاشة في المحادثات",
+      "brief": "Reproduced (a11y step): #waSearch has no label/aria-label, active chat has no aria-current, #waList/#waMsgs have no role/aria-label, no aria-live for the loaded chat, lock button has no label; after a wrong PIN the field is cleared and focus goes to BODY, the PIN field is not focused on open, opening a chat leaves focus on BODY, Escape does not go back to the list on mobile, and the page has no heading. Add labels/roles, aria-current, focus the PIN field on open and after errors, move focus to the message pane/back button on open and back to the chat button on Escape/back, role=alert already on errors. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Keyboard-only flow works (Tab to PIN, Enter, arrow/Tab into list, Esc back); test asserts focus targets and aria attributes.",
+      "after": []
+    },
+    {
+      "id": "UX239",
+      "phase": 10,
+      "title": "ترويسة المحادثة فقيرة: لا عدد رسائل/وضع قراءة فقط ولا زر قفل ولا هدف رجوع كافٍ",
+      "brief": "Reproduced: .wa-head shows only avatar+name (headSubtitle false); the read-only/archive status is only in the composer placeholder, the lock button lives in a separate bar above, and the mobile back chevron is a bare › glyph (text button, no 44px target) (m-wa-chat-big.png). Add a subtitle (عدد الرسائل · آخر نشاط · أرشيف للقراءة فقط), a chevron icon button of 44x44 on touch, and a compact lock icon button in the header; RTL-correct arrow direction. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Header shows subtitle, 44px back target and lock button on mobile; test measures sizes.",
+      "after": []
+    },
+    {
+      "id": "UX240",
+      "phase": 10,
+      "title": "شريط قفل PIN: هرمية بصرية ضعيفة وحقل بعرض كامل على الموبايل",
+      "brief": "Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
+      "after": []
+    },
+    {
+      "id": "UX241",
+      "phase": 10,
+      "title": "محادثة كبيرة (300+ رسالة): رسم كل الرسائل دفعة واحدة وبلا زر «انزل للأحدث»",
+      "brief": "Reproduced: a 320-message chat renders 320 nodes in one draw (openBigChat ~480ms incl. mocked 250ms network) with scrollH 20k px; draw() always forces scrollTop to bottom, and after scrolling up there is no 'scroll to latest' button nor 'N new messages' marker. Render the latest ~80 messages with a 'رسائل أقدم' button that preserves scroll position, add a floating scroll-to-latest button when >1 screen away from the bottom, keep the bottom anchor on first open. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Big chat opens at the latest message with bounded DOM, older messages load on demand without jumping; test with 320 messages.",
+      "after": []
+    },
+    {
+      "id": "UX242",
+      "phase": 10,
+      "title": "حالات الخطأ: 401 يظهر في الكونسول وخطأ الشبكة بلا زر إعادة محاولة وقائمة فارغة بلا شرح",
+      "brief": "Reproduced: a wrong PIN logs 'Failed to load resource 401' in the console (acceptable) but the error text sits in the bar with no retry; a network failure/empty history ('conversations: []') shows only 'لا توجد محادثات' without explanation; the PIN input is cleared after a wrong attempt with no remaining-attempts or lockout hint. Add distinct empty/offline/error panels with a retry button, keep the typed PIN length hint, and map PIN_INVALID/PIN_REQUIRED/network codes to clear Arabic messages. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
+      "acceptance": "Empty, offline and wrong-PIN states have explicit copy and retry; test mocks 401, 500, network abort and an empty list.",
+      "after": []
+    },
+    {
+      "id": "UX243",
+      "phase": 10,
+      "title": "Build worker/live/nova-rx-preview.qa-231.js (qa-loop, no deploy)",
+      "brief": "Rebuild the live Worker artifact like UX80 did: take the latest worker/live artifact (nova-rx-preview.qa-219.js), extract the app HTML literal, apply the index.html diffs of UX232, UX233, UX234, UX235, UX236, UX237, UX238, UX239, UX240, UX241, UX242 in merge order, write back with tools/build-worker-artifact.mjs to worker/live/nova-rx-preview.qa-231.js. Worker code outside the HTML literal must stay byte-identical. Add a markers test asserting these fixes' markers plus earlier markers; run it, node --check on the artifact and the existing *-artifact checks. Must NOT deploy.",
+      "acceptance": "worker/live/nova-rx-preview.qa-231.js exists, markers test and node --check pass, no deploy.",
+      "after": [
+        "UX232",
+        "UX233",
+        "UX234",
+        "UX235",
+        "UX236",
+        "UX237",
+        "UX238",
+        "UX239",
+        "UX240",
+        "UX241",
+        "UX242"
+      ]
+    }
+  ]
+}
