@@ -3595,7 +3595,7 @@
    "brief": "Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
@@ -3603,13 +3603,13 @@
    "dispatched_at": "2026-11-14T14:10:17+00:00",
    "pr": 402,
    "ci_dispatched": {
-    "sha": "951c14f5d705f0586ab3aca3883ec3c45ca478af",
+    "sha": "46cf3f5e113763484e1856224f49c69e922c6cbf",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:03:57+00:00"
+    "at": "2026-11-14T14:13:05+00:00"
    }
   },
   {
@@ -3643,10 +3643,12 @@
    "brief": "Reproduced (a11y step): #waSearch has no label/aria-label, active chat has no aria-current, #waList/#waMsgs have no role/aria-label, no aria-live for the loaded chat, lock button has no label; after a wrong PIN the field is cleared and focus goes to BODY, the PIN field is not focused on open, opening a chat leaves focus on BODY, Escape does not go back to the list on mobile, and the page has no heading. Add labels/roles, aria-current, focus the PIN field on open and after errors, move focus to the message pane/back button on open and back to the chat button on Escape/back, role=alert already on errors. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Keyboard-only flow works (Tab to PIN, Enter, arrow/Tab into list, Esc back); test asserts focus targets and aria attributes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:13:05+00:00"
   },
   {
    "id": "UX237",
@@ -3869,5 +3871,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:11:39+00:00"
+ "updated": "2026-11-14T14:13:05+00:00"
 }
