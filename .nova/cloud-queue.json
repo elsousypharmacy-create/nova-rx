@@ -2932,7 +2932,40 @@
    "pr": 363,
    "merged_at": "2026-11-14T02:21:30+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/363"
+  },
+  {
+   "id": "FIX41",
+   "phase": 10,
+   "title": "Continuous QA loop: periodic Claude audit -> auto fixes -> auto preview deploy",
+   "brief": "Owner Ahmed wants the Claude accounts to keep inspecting NOVA Rx on their own, find flaws, fix them and ship them automatically, so problems are caught before customers hit them. Build it fully on GitHub Actions (Nova must not need to wake up). 1) New workflow .github/workflows/qa-loop.yml: cron every 4 hours + workflow_dispatch, runs new .nova/qa_loop.py. 2) qa_loop.py: if the queue (.nova/cloud-queue.json) has any task with source starting 'inbox/qa-loop' that is not done/done_noop/failed, do nothing (one cycle at a time). Otherwise compute next = (highest numeric UX id in queue and inbox)+1, rotate a focus area from a fixed list (quick sale & barcode; returns & refunds; purchasing & receiving; inventory, expiry & shortages; customers, debts & chronic refill; reports & shift close; settings & permissions; mobile layout; keyboard & accessibility; performance; Arabic copy & RTL; errors, offline & edge cases), and commit .nova/inbox/qa-loop-<next>.json with ONE audit task id UX<next> whose brief: audit the CURRENT repo frontend locally with Playwright (desktop 1366x768 + mobile 390x844, fake data, no live writes), focus on that area plus a quick smoke of all main journeys, read all previous .nova/qa/*report*.md to avoid duplicates, write .nova/qa/qa-loop-<next>.md (Arabic, short) with screenshots in .nova/qa/qa-loop-<next>/ (max 15), then write .nova/inbox/qa-loop-<next>-fixes.json with at most 8 small frontend-only fix tasks (ids UX<next+1>..UX<next+8>, tests required, Black Edition Arabic RTL preserved, backend frozen, no deploy) plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-<next>.js (qa-loop, no deploy)' with after = all its fix ids, rebuilding the artifact from the latest worker/live artifact the same way UX80 did. If nothing high/medium is found, write the report only. Then trigger cloud-scheduler. Keep the queue file untouched (inbox only). 3) Auto preview deploy: in .nova/cloud_scheduler.py, when a task whose title starts with 'Build worker/live/nova-rx-preview.qa-' becomes done and its artifact exists on main and was not deployed yet, dispatch the existing guarded deploy-worker.yml for that artifact to nova-rx-preview only (dry run then real if the workflow supports it, pre-deploy tests, record previous Cloudflare version id, post-deploy smoke: HTTP 200, /emergency/stock.json, search works; auto-rollback to previous version on failure), record deployed version in the task. Never deploy production, nova-rx-api-staging, GATE-17; never apply migrations. 4) Update docs/ops with how to pause the loop (repo variable QA_LOOP_DISABLED=true makes qa_loop.py exit). Add unit tests for qa_loop.py id/focus/one-at-a-time logic and for the deploy trigger.",
+   "acceptance": "qa-loop.yml + qa_loop.py create one audit cycle at a time every 4h; audit tasks produce fix tasks + qa artifact build; scheduler auto-deploys qa artifacts to nova-rx-preview with smoke + auto-rollback; QA_LOOP_DISABLED pause switch; tests pass; CI green.",
+   "after": [
+    "FIX40"
+   ],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-qa-loop.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T02:52:16+00:00"
+  },
+  {
+   "id": "FIX40",
+   "phase": 10,
+   "title": "Fix duplicate migration version 0021 (unit CI broken)",
+   "brief": "backend unit CI fails on every PR with 'duplicate migration version 21': backend/migrations/0021_stock_locations.sql (UX53) and 0021_transfers_recalls.sql (UX51) share a number. Renumber 0021_transfers_recalls.sql to the next free number (0022 unless taken) with git mv, update any references (tests, docs, migration lists, wrangler config) and keep content identical. Neither should be applied to any D1 yet; verify from the deploy workflow/migration logs in the repo and note it in the PR. No DB operations, no deploy. Make unit CI green.",
+   "acceptance": "No duplicate migration numbers; backend unit CI green; no deploy.",
+   "after": [],
+   "status": "done",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-qa-loop.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T02:49:44+00:00",
+   "pr": 365,
+   "merged_at": "2026-11-14T02:52:16+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/365"
   }
  ],
- "updated": "2026-11-14T02:21:30+00:00"
+ "updated": "2026-11-14T02:52:16+00:00"
 }
