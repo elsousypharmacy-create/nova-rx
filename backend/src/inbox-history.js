@@ -17,6 +17,7 @@ export const atMs = (v) => { const n = Number(v) || 0; return n > 0 && n < 1e12 
 export function kindOf(id, dir) {
   const m = /^h_([ubps])_/.exec(String(id || ''));
   if (m) return KIND[m[1]];
+  if (/^ps_/.test(String(id || ''))) return 'pharm'; // WA-SEND: pharmacist reply sent from NOVA
   return dir === 'out' ? 'out' : 'in';
 }
 const toMsg = (r) => ({ id: r.id, dir: r.dir, kind: kindOf(r.id, r.dir), text: r.text, at: atMs(r.at), status: r.status || null });
