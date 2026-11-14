@@ -3572,11 +3572,18 @@
    "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #409 is still open on cloud/UX300; the dashboard code is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX300 and resolve every conflict carefully: keep main's FIX50 (style#NOVA_FIX50 16px touch inputs, script#NOVA_FIX50_VV visualViewport composer, viewport interactive-widget=resizes-content, no user-scalable=no), FIX51 (hPoll 4s, winClosed, data-wa-window note, auto-reopen composer), WA-SEND (hSend/PIN), and later QA/return-dialog work, PLUS this dashboard (لوحة الأداء, metrics endpoint, artifact). Rebuild the next free worker/live artifact from worker/live/nova-rx-preview.wa-send1.js or newer (wa-live2 if present) + the merged index.html with tools/build-worker-artifact.mjs; run markers test and node --check. Tests must pass. No deploy.\n\nOriginal task: Ahmed: build an in-app dashboard (inside NOVA Rx, Black Edition Arabic RTL, opened from the conversations screen and/or reports; same PIN gate as the old chats, PIN-gated staging endpoint under /api/v1/inbox/history/ style, read-only, no customer data in the public artifact) showing EXACTLY how long we take to reply to customers, from the imported WhatsApp history in staging D1 (26 chats/561 msgs from the bot log; senders user/bot/pharm/sys; note live forwarder timestamps are in seconds not ms, normalize). Metrics: first response time and every reply time per customer message, split bot vs pharmacist (human) — exact minutes/seconds; median, average, p90, slowest; % replied within 1/5/15/60 min; unanswered customer messages and waiting-now list; time from bot handoff (اتحوّل للصيدلي) to pharmacist reply. Volume: number of customers who wrote (unique), new vs returning, conversations and messages per day/hour, busiest hours heatmap, top topics if simple (keyword based). Filters: date range, today/7d/30d, bot vs pharmacist. Each metric clickable to the chats behind it. Charts smooth, design top priority. Tests for the metric calculations (exact times, timezone Africa/Cairo display, seconds-vs-ms normalization). Build into the next worker/live artifact (next free name, tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
    "acceptance": "Dashboard shows exact reply times (bot and pharmacist) and how many customers write, with filters; PIN-gated; tests pass; artifact built; no deploy.",
    "after": [],
-   "status": "pending",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/ux-wa-dashboard.json",
-   "pr": 409
+   "pr": 409,
+   "ci_dispatched": {
+    "sha": "a3ac54ef8a71ffb3319405282be499135b8f0ff0",
+    "wf": [],
+    "at": "2026-11-14T16:49:03+00:00"
+   },
+   "slot": "A",
+   "dispatched_at": "2026-11-14T16:49:03+00:00"
   },
   {
    "id": "UX237",
@@ -3585,11 +3592,16 @@
    "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #405 is still open on cloud/UX237; the date-separator work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX237 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, and other conversation fixes, PLUS weekday names for the last 6 days and sticky frosted .wa-date separators. Re-run tests/ux/ux237-wa-dates.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
-   "pr": 405
+   "pr": 405,
+   "ci_dispatched": {
+    "sha": "9b2dd851433f9ac2c786dabc257479d5bd2d4801",
+    "wf": [],
+    "at": "2026-11-14T16:49:03+00:00"
+   }
   },
   {
    "id": "UX240",
@@ -3598,11 +3610,16 @@
    "brief": "RETRY after 2 fix attempts failed only on merge conflicts with main (cloud-scheduler gave up; PR #402 is still open on cloud/UX240; the lock-bar work is already on that branch). Do NOT start a new branch. Merge origin/main into cloud/UX240 and resolve every conflict carefully: keep main's FIX50 (16px touch inputs, visualViewport composer), FIX51 (hPoll/winClosed/live 24h note), WA-SEND, UX241/UX242 and other conversation fixes, PLUS the compact PIN lock bar in the sidebar header (show/hide toggle, no busy-state layout shift). Re-run tests/ux/ux240-wa-lock-bar.mjs and tests/ux/fix46-wa-history.mjs plus unified-inbox unit tests. No deploy.\n\nOriginal task: Reproduced (d/m-wa-locked.png, d/m-wa-list.png): the lock bar is a separate card (66px desktop / 94px mobile) above the inbox with a loose text line, button and no show/hide PIN toggle, and after unlocking a second card 'المحادثات القديمة ظاهرة (22) / قفل المحادثات' keeps eating height. Merge the bar into the sidebar header (lock icon, state text, small lock button), full-width PIN field with a show/hide toggle and inputmode, disable the button while busy without changing its width (no layout shift). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Compact, consistent lock UI on both viewports without layout shift; test covers locked/unlocked/busy/error states.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
-   "pr": 402
+   "pr": 402,
+   "ci_dispatched": {
+    "sha": "b764270bb0b819c627da63904a4bbe0292d07cc7",
+    "wf": [],
+    "at": "2026-11-14T16:49:03+00:00"
+   }
   },
   {
    "id": "UX243",
@@ -3806,7 +3823,14 @@
    "dispatched_at": "2026-11-14T16:23:47+00:00",
    "pr": 425,
    "merged_at": "2026-11-14T16:30:09+00:00",
-   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/425"
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/425",
+   "preview_deploy": {
+    "stage": "dry",
+    "path": "worker/live/nova-rx-preview.qa-219.js",
+    "sha256": "0c832d9e95451f3f0371271a9ff7405db2ee4afebf4b600611a3b2bfd66368a6",
+    "at": "2026-11-14T16:49:03+00:00",
+    "previous": null
+   }
   },
   {
    "id": "UX229",
@@ -3979,5 +4003,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/424"
   }
  ],
- "updated": "2026-11-14T16:41:42+00:00"
+ "updated": "2026-11-14T16:49:03+00:00"
 }
