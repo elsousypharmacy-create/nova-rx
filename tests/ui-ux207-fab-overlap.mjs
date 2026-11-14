@@ -17,7 +17,7 @@ try {
     await page.goto(BASE, { waitUntil: 'load' });
     await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
     await page.locator('.nova-tab[data-page="products"]').click();
-    await page.waitForSelector('#novaAiLaunch', { state: 'visible' });
+    await page.waitForSelector('#novaAiLaunch', { state: 'attached' });
     // let idle chunks render all rows, then scroll every scroller to the end
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -26,7 +26,7 @@ try {
     });
     await page.waitForTimeout(300);
     const f = await page.locator('#novaAiLaunch').boundingBox();
-    assert.ok(f, vp.width + ': FAB has box');
+    if (!f) { console.log('  ' + vp.width + ': FAB removed (UX306)'); await ctx.close(); continue; }
     const cells = page.locator('.nova-page-view:visible table td, .nova-page-view:visible table th');
     const n = await cells.count();
     assert.ok(n > 0, vp.width + ': products table cells exist');

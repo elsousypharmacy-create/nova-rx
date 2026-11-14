@@ -5839,7 +5839,8 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
 /* UX4: reserve room for the floating labels button (~44px + 18px offset) so it never covers rows/totals. */
 /* UX41: FAB only on the products page (toolbar button exists there); never floats over sale/customers/reports/settings content. */
 body:not([data-active-page="products"]) #novaAiLaunch{display:none!important}
-body[data-active-page="products"] #novaAiLaunch{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+/* UX306: no floating overlay on products either (header button #novaInventoryLabels opens the studio); element kept in DOM for legacy hooks */
+#novaAiLaunch{display:none!important}
 .nova-page-view{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 .totals-breakdown{margin-bottom:72px}
 /* UX207: products list ends above the floating stickers FAB (bottom offset 96px + FAB height + gap) so the last rows/prices are never covered */
