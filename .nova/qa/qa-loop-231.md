@@ -32,3 +32,8 @@ FIX46 يعمل وظيفيًا: بلا PIN لا طلب ولا نص، PIN خاطئ
 ## UX241 fix (big chat, frontend only)
 index.html + unified-inbox.js: renderWa takes opts.limit (default 80); older messages behind a "رسائل أقدم (N)" button (+80 per click, anchor kept by distance-from-bottom); floating "انزل للأحدث" button when >1 screen from bottom; draw() only sticks to bottom on first open / when already near bottom.
 Tests: tests/ux/ux241-big-chat.mjs (320 msgs, desktop+mobile) OK; fix46-wa-history OK; unit unified-inbox, ux200-wa-chat, backend-inbox-history OK.
+
+## UX242 fix — WhatsApp history error/empty/offline states
+Frontend only (index.html unified-inbox block). New panels `.wa-state[data-state=pin|error|network|offline|empty]` with Arabic copy and retry (`#waHistRetry`); PIN_INVALID/PIN_REQUIRED/network/offline/500 mapped to clear messages; typed PIN length hint kept (length only, PIN never stored). Remaining attempts are unknown (backend frozen), the hint says so.
+Tests (Playwright installed in /tmp/pw, system chromium): `node tests/ux/ux242-wa-error-states.mjs` OK; `node tests/ux/fix46-wa-history.mjs` OK; unit: unified-inbox, ux200-wa-chat, fix43, ux81 all pass.
+Screenshots: .nova/qa/qa-loop-231/ux242-*.png (mobile 390px).
