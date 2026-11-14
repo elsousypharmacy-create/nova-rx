@@ -66,12 +66,21 @@
     ]
   },
   "conversations (WhatsApp inbox)": {
-    "score": 6.5,
-    "last_cycle": 203,
-    "open_findings": 2,
+    "score": 6.0,
+    "last_cycle": 231,
+    "open_findings": 11,
     "refs": [
-      "UX208",
-      "UX209"
+      "UX232",
+      "UX233",
+      "UX234",
+      "UX235",
+      "UX236",
+      "UX237",
+      "UX238",
+      "UX239",
+      "UX240",
+      "UX241",
+      "UX242"
     ]
   },
   "settings & permissions": {
@@ -84,23 +93,25 @@
   },
   "mobile layout": {
     "score": 6.0,
-    "last_cycle": 203,
+    "last_cycle": 231,
     "open_findings": 4,
     "refs": [
       "UX204",
       "UX205",
       "UX206",
-      "UX210"
+      "UX210",
+      "UX232"
     ]
   },
   "keyboard & accessibility": {
-    "score": 6.5,
-    "last_cycle": 219,
-    "open_findings": 3,
+    "score": 6.0,
+    "last_cycle": 231,
+    "open_findings": 4,
     "refs": [
       "UX209",
       "UX223",
-      "UX224"
+      "UX224",
+      "UX238"
     ]
   },
   "performance": {
