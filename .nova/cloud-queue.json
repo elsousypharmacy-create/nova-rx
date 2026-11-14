@@ -3540,21 +3540,33 @@
    "after": [],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/ux-wa-dashboard.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:56:51+00:00",
+   "dispatched_at": "2026-11-14T15:09:39+00:00",
    "pr": 409,
    "ci_dispatched": {
-    "sha": "ace07baa2fd28745e65401507e8af5549f183754",
+    "sha": "6c64418b9fe121445bcdfaabbd01c7a9c609a26b",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:51:53+00:00"
+    "at": "2026-11-14T14:58:17+00:00"
    }
+  },
+  {
+   "id": "FIX50",
+   "phase": "fix",
+   "title": "iOS Safari zooms in when typing in any input; keep screen fixed like WhatsApp everywhere",
+   "brief": "Ahmed (iPhone Safari, screenshot): tapping the conversations composer makes the page zoom in and the layout shifts; he wants the screen to stay exactly like WhatsApp when typing, and the same in EVERY input across the whole app (search, sale, barcode, PIN, settings, returns, forms). Root cause: iOS auto-zooms inputs/textarea/select with computed font-size < 16px. Fix globally: all input/textarea/select font-size >= 16px on touch devices (keep visual design, adjust padding), viewport meta with width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content (do NOT disable user pinch zoom unless needed for accessibility review; prefer the 16px fix). Conversations: composer pinned above the keyboard (visualViewport / dvh), message list stays scrolled to bottom, header stays visible, no page jump, like WhatsApp. Add a Playwright WebKit iPhone test asserting every input's computed font-size >= 16px and no scale change on focus. Build the next free worker/live artifact (tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
+   "acceptance": "No zoom on focus in any input on iPhone; composer stays above keyboard like WhatsApp; test covers all inputs; artifact built; no deploy.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-ios-zoom.json"
   },
   {
    "id": "UX243",
@@ -3702,22 +3714,15 @@
    "brief": "Reproduced: searching 'احمد' returns 0 results while 'أحمد' returns 1 (searchNoHamza vs searchHamza); search only matches name+id, not message text or phone digits (Arabic-Indic digits ٠-٩ not folded either). Normalize Arabic (أإآ->ا, ى->ي, ة->ه, tashkeel, tatweel, digits) for names and message text, highlight matches optionally, and show 'لا نتائج لـ \"…\"' with a clear (×) button in the field. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Search finds names/messages ignoring hamza/diacritics/digits; unit test for the normalizer plus Playwright check.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:38:27+00:00",
+   "dispatched_at": "2026-11-14T14:58:17+00:00",
    "pr": 406,
-   "ci_dispatched": {
-    "sha": "007610848db97fd3020db9570da4165ac6c2727d",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:53:13+00:00"
-   }
+   "merged_at": "2026-11-14T15:03:52+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/406"
   },
   {
    "id": "UX235",
@@ -3743,22 +3748,15 @@
    "brief": "Reproduced: after clicking a chat the pane shows only the single last message (the preview) for the whole fetch, no spinner/skeleton/aria-busy (loadingState msgs:1, spinner:false), then 8-320 messages pop in (CLS + looks like the whole chat). Show a skeleton or 'جاري تحميل المحادثة…' with aria-busy until hist.full[id] arrives, and an inline error with 'إعادة المحاولة' if the fetch fails (currently only a global hist.err). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Loading and error states are visible and accessible; test delays the mocked conversation response and asserts the placeholder, then the messages.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:53:13+00:00",
    "pr": 410,
-   "ci_dispatched": {
-    "sha": "6246b82c0bffa908d85779ee71c85149e579f644",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:56:51+00:00"
-   }
+   "merged_at": "2026-11-14T15:01:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/410"
   },
   {
    "id": "UX233",
@@ -3767,10 +3765,22 @@
    "brief": "Reproduced: scrolling the chat list to 600px then clicking a chat resets #waList scrollTop to 0 on desktop and mobile; on mobile the back button also returns to scrollTop 0 and the chat just left is not highlighted (backScroll). draw() rebuilds the entire view on every click. Preserve list scrollTop across draw (or update only the active class and the main pane), restore on back, and scroll the previously opened chat into view. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Scroll position of the list is kept on open and on back (desktop+mobile); test covers it with 22 chats.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:06:44+00:00",
+   "pr": 412,
+   "ci_dispatched": {
+    "sha": "7bf6a56944ec5eeca39e2d25720b9ec2a4997d8f",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:09:39+00:00"
+   }
   },
   {
    "id": "UX232",
@@ -3779,10 +3789,22 @@
    "brief": "Reproduced: .wa-root height is calc(100vh - 120px) but the view starts at top ~146px (desktop) / ~162px (mobile) because of the PIN lock bar, so root bottom = 794 > 768 (desktop) and 886 > 844 (mobile) and the composer is cut off (d-wa-chat-big.png, m-wa-chat-big.png). Make the inbox view a flex column filling the viewport under the header (dvh, min-height safe), with .wa-root flex:1 and the lock bar counted in the layout; no clipped composer on 1366x768, 390x844 and short landscape. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "On both viewports root bottom <= innerHeight and the composer is fully visible; test asserts it with the lock bar open and closed.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:02:31+00:00",
+   "pr": 413,
+   "ci_dispatched": {
+    "sha": "207448e777e72221beec5b2433a6c28a8073b8e5",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:06:44+00:00"
+   }
   },
   {
    "id": "UX230",
@@ -3933,5 +3955,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:56:51+00:00"
+ "updated": "2026-11-14T15:09:39+00:00"
 }
