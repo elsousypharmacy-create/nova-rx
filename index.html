@@ -6786,23 +6786,282 @@ function hErr(code,msg){var e=new Error(msg||HMSG[code]||HMSG.SERVER);e.code=cod
 function escH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function hUrl(){var u='';try{u=localStorage.getItem('novaBackend.url')||''}catch(e){}return String(u||'https://nova-rx-api-staging.elsousypharmacy.workers.dev').replace(/\/+$/,'')+'/api/v1/inbox/history/'}
 function hPin(){try{return sessionStorage.getItem(HK)||''}catch(e){return ''}}
-function hForget(){try{sessionStorage.removeItem(HK)}catch(e){}hist.convs=[];hist.full={};hist.loaded=false}
+function hForget(){try{sessionStorage.removeItem(HK)}catch(e){}hist.convs=[];hist.full={};hist.loaded=false;dForget()}
 function hSetErr(e){wa.f='pin';hist.code=(e&&e.code)||'SERVER';hist.err=String((e&&e.message)||e)}
 function hGet(path){var p=hPin();if(!p||typeof fetch!=='function')return Promise.reject(hErr('PIN_REQUIRED'));return fetch(hUrl()+path,{method:'GET',headers:{Accept:'application/json','X-Nova-Pin':p},cache:'no-store',credentials:'omit'}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(r.status===401){hForget();var c=(j&&j.code)==='PIN_REQUIRED'?'PIN_REQUIRED':'PIN_INVALID';throw hErr(c)}if(!r.ok||!j||!j.ok)throw hErr('SERVER');return j})},function(){throw hErr(typeof navigator!=='undefined'&&navigator.onLine===false?'OFFLINE':'NETWORK')})}
 function hLoad(){if(!hPin()||hist.busy)return;hist.busy=true;hist.err='';hist.code='';draw();hGet('conversations').then(function(j){hist.convs=Array.isArray(j.conversations)?j.conversations:[];hist.loaded=true;if(wa.sel)hOpen(wa.sel)}).catch(hSetErr).then(function(){hist.busy=false;draw()})}
 function hOpen(id){if(!hPin()||hist.full[id]||!hist.convs.some(function(c){return c.id===id}))return;hGet('conversation?id='+encodeURIComponent(id)).then(function(j){if(j.conversation){hist.full[id]=j.conversation;if(wa.sel===id)draw()}}).catch(function(e){hSetErr(e);draw()})}
 function hConvs(){return hist.convs.map(function(c){var f=hist.full[c.id];return {id:c.id,customer:c.customer||c.id,updatedAt:Number(c.updatedAt)||0,history:true,count:Number(c.count)||0,messages:f?f.messages:(c.last?[c.last]:[])}})}
 function convs(){var h=hConvs(),ids={};h.forEach(function(c){ids[c.id]=1});return h.concat(inbox.list().filter(function(c){return !ids[c.id]&&!(h.length&&c.id==='demo-1')}))}
-function lockBar(){var t;if(hist.loaded&&hPin())t='<span role="status">المحادثات القديمة ظاهرة ('+hist.convs.length+')'+'</span><button type="button" class="wa-lock-out" id="waHistLock" aria-label="قفل المحادثات القديمة وإخفاء الرسائل">قفل المحادثات</button>';else t='<span>المحادثات القديمة محمية. اكتب رقم PIN الصيدلية لعرضها.</span><form id="waHistForm" autocomplete="off"><input type="password" id="waHistPin" autocomplete="off" aria-label="رقم PIN الصيدلية" placeholder="رقم PIN"><button type="submit"'+(hist.busy?' disabled':'')+'>'+(hist.busy?'جاري التحميل…':'عرض المحادثات')+'</button></form>';return '<div class="wa-lock" id="waHistBar">'+t+'</div>'+errPanel()+emptyPanel()}
+function lockBar(){var t;if(hist.loaded&&hPin())t='<span role="status">المحادثات القديمة ظاهرة ('+hist.convs.length+')'+'</span><button type="button" class="wa-lock-out" id="waHistLock" aria-label="قفل المحادثات القديمة وإخفاء الرسائل">قفل المحادثات</button><button type="button" id="waDashOpen" aria-label="فتح لوحة أداء خدمة العملاء">لوحة الأداء</button>';else t='<span>المحادثات القديمة محمية. اكتب رقم PIN الصيدلية لعرضها.</span><form id="waHistForm" autocomplete="off"><input type="password" id="waHistPin" autocomplete="off" aria-label="رقم PIN الصيدلية" placeholder="رقم PIN"><button type="submit"'+(hist.busy?' disabled':'')+'>'+(hist.busy?'جاري التحميل…':'عرض المحادثات')+'</button></form>';return '<div class="wa-lock" id="waHistBar">'+t+'</div>'+errPanel()+emptyPanel()}
 var PS='margin:8px 0;padding:12px;border:1px solid #2a313a;border-radius:8px;background:#14181d;color:#f2f3f5;font-size:14px;line-height:1.7',BS='min-height:44px;margin-top:8px;padding:0 16px;border-radius:8px;border:1px solid #79c9eb;background:#0d0f12;color:#79c9eb;font:inherit;cursor:pointer';
 function errPanel(){if(!hist.err)return '';var pin=hist.code==='PIN_INVALID'||hist.code==='PIN_REQUIRED',h=pin?(hist.len?'<div class="wa-pin-hint" style="opacity:.8">آخر محاولة: '+hist.len+' خانة. عدد المحاولات المتبقية غير معروف — بعد عدة محاولات خاطئة ممكن يتقفل الدخول مؤقتاً.</div>':''):'';var btn=pin?'<button type="button" id="waHistRetry" data-retry="pin" style="'+BS+'">إعادة كتابة الرقم</button>':'<button type="button" id="waHistRetry" data-retry="load" style="'+BS+'">إعادة المحاولة</button>';return '<div class="wa-state wa-lock-err" role="alert" data-state="'+(pin?'pin':hist.code==='OFFLINE'?'offline':hist.code==='NETWORK'?'network':'error')+'" dir="rtl" style="'+PS+';border-color:#b91c1c"><div>'+escH(hist.err)+'</div>'+h+btn+'</div>'}
 function emptyPanel(){if(!(hist.loaded&&hPin()&&!hist.convs.length&&!hist.err))return '';return '<div class="wa-state" data-state="empty" dir="rtl" style="'+PS+'"><div>لا توجد محادثات قديمة محفوظة حتى الآن. المحادثات الجديدة تظهر هنا أول ما يوصل أي رسالة واتساب.</div><button type="button" id="waHistRetry" data-retry="load" style="'+BS+'">تحديث</button></div>'}
+/* UX300-SHARED-BEGIN (identical to backend/src/wa-metrics.js) */
+var WA_TZ = 'Africa/Cairo';
+var WA_TOPICS = [
+  { id: 'avail', ar: 'توفر دواء', re: /متوفر|موجود|عندكم|متاح/ },
+  { id: 'price', ar: 'سعر', re: /بكام|سعر|ثمن|كام/ },
+  { id: 'delivery', ar: 'توصيل', re: /توصيل|ديليفري|دليفري|يوصل|عنوان/ },
+  { id: 'order', ar: 'طلب / أوردر', re: /اوردر|طلب|اطلب|احجز/ },
+  { id: 'rx', ar: 'روشتة', re: /روشت|وصفه|تذكره/ },
+  { id: 'alt', ar: 'بديل', re: /بديل|مثيل/ },
+  { id: 'hours', ar: 'مواعيد', re: /مواعيد|فاتح|مفتوح|بتقفلوا/ },
+  { id: 'dose', ar: 'جرعة واستخدام', re: /جرعه|استخدام|اعراض|ينفع|مضاد/ }
+];
+function waNorm(s) {
+  return String(s == null ? '' : s).replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه');
+}
+function waIsHandoff(text) { return /اتحول\s+(لل|ل)?صيدلي/.test(waNorm(text)); }
+function waTopics(text) {
+  var n = waNorm(text), out = [];
+  for (var i = 0; i < WA_TOPICS.length; i++) if (WA_TOPICS[i].re.test(n)) out.push(WA_TOPICS[i].id);
+  return out;
+}
+function waTs(v) { var n = Number(v) || 0; return n > 0 && n < 1e12 ? n * 1000 : n; }
+var _waFmt = null;
+function waParts(t) {
+  if (!_waFmt) _waFmt = new Intl.DateTimeFormat('en-US', { timeZone: WA_TZ, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', weekday: 'short' });
+  var o = {};
+  _waFmt.formatToParts(new Date(t)).forEach(function (p) { o[p.type] = p.value; });
+  return { y: +o.year, mo: +o.month, d: +o.day, h: (+o.hour) % 24, mi: +o.minute, s: +o.second, wd: { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[o.weekday] };
+}
+function waOffset(t) { var p = waParts(t); return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(t / 1000) * 1000; }
+function waDayStart(t) { var p = waParts(t), g = Date.UTC(p.y, p.mo - 1, p.d), s = g - waOffset(g); return g - waOffset(s); }
+function waNextDay(t) { return waDayStart(waDayStart(t) + 30 * 3600000); }
+function waDayKey(t) { var p = waParts(t); return p.y + '-' + (p.mo < 10 ? '0' : '') + p.mo + '-' + (p.d < 10 ? '0' : '') + p.d; }
+function waKeyStart(key) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key)); return m ? waDayStart(Date.UTC(+m[1], +m[2] - 1, +m[3], 12)) : null; }
+function waPad(n) { return (n < 10 ? '0' : '') + n; }
+function waClock(t) { var p = waParts(t); return waPad(p.h) + ':' + waPad(p.mi); }
+function waDateTime(t) { var p = waParts(t); return waDayKey(t) + ' ' + waPad(p.h) + ':' + waPad(p.mi) + ':' + waPad(p.s); }
+function waDur(ms) {
+  if (ms == null || isNaN(ms)) return '—';
+  if (ms < 1000) return 'أقل من ثانية';
+  var s = Math.round(ms / 1000), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  if (d) return d + ' يوم' + (h ? ' ' + h + ' س' : '');
+  if (h) return h + ' س' + (m ? ' ' + m + ' د' : '');
+  if (m) return m + ' د' + (r ? ' ' + r + ' ث' : '');
+  return r + ' ث';
+}
+function waRange(preset, now) {
+  var s = waDayStart(now);
+  if (preset === 'today') return { from: s, to: Infinity };
+  if (preset === '7d') return { from: waDayStart(s - 6 * 86400000 + 3600000), to: Infinity };
+  if (preset === '30d') return { from: waDayStart(s - 29 * 86400000 + 3600000), to: Infinity };
+  return { from: -Infinity, to: Infinity };
+}
+function waResponder(k) { return k === 'bot' ? 'bot' : (k === 'pharm' || k === 'out') ? 'pharm' : null; }
+function waStats(items) {
+  var n = items.length;
+  if (!n) return { n: 0, min: null, median: null, mean: null, p90: null, max: null, maxItem: null };
+  var a = items.slice().sort(function (x, y) { return x.d - y.d; }), sum = 0;
+  for (var i = 0; i < n; i++) sum += a[i].d;
+  return { n: n, min: a[0].d, median: n % 2 ? a[(n - 1) / 2].d : (a[n / 2 - 1].d + a[n / 2].d) / 2, mean: sum / n, p90: a[Math.ceil(0.9 * n) - 1].d, max: a[n - 1].d, maxItem: a[n - 1] };
+}
+// data = { customers:[{id,name}], events:[{c, k:'in'|'bot'|'pharm'|'out'|'sys', t, h?:1, tp?:[topicId]}] }
+// o = { from, to, who:'all'|'bot'|'pharm', now }. Range filters the CUSTOMER message time (handoffs: the handoff time).
+function waCompute(data, o) {
+  o = o || {};
+  var now = o.now || Date.now(), who = o.who === 'bot' || o.who === 'pharm' ? o.who : 'all';
+  var from = o.from == null ? -Infinity : o.from, to = o.to == null ? Infinity : o.to;
+  var names = {}, byC = {}, ids = [];
+  (data.customers || []).forEach(function (c) { names[c.id] = c.name || c.id; });
+  (data.events || []).forEach(function (e, i) {
+    var t = waTs(e.t);
+    if (!t) return;
+    if (!byC[e.c]) { byC[e.c] = []; ids.push(e.c); }
+    byC[e.c].push({ c: e.c, k: e.k, t: t, h: !!e.h, tp: e.tp || [], i: i });
+  });
+  var msgs = [], handoffs = [], firsts = [], waiting = [], custN = {}, newC = {}, convSet = {}, topics = {};
+  var days = {}, hours = [], heat = [], totalMsgs = 0, inMsgs = 0, outMsgs = 0, h, w;
+  for (h = 0; h < 24; h++) hours.push({ msgs: 0, inMsgs: 0, convs: {} });
+  for (w = 0; w < 7; w++) { heat.push([]); for (h = 0; h < 24; h++) heat[w].push(0); }
+  function nm(c) { return names[c] || c; }
+  ids.forEach(function (c) {
+    var ev = byC[c].sort(function (a, b) { return a.t - b.t || a.i - b.i; }), n = ev.length, nextRep = null, i, e, firstIn = null;
+    for (i = 0; i < n; i++) { if (ev[i].k === 'in') { firstIn = ev[i]; break; } }
+    for (i = n - 1; i >= 0; i--) {
+      e = ev[i];
+      if (waResponder(e.k)) nextRep = e;
+      var inR = e.t >= from && e.t < to;
+      if (inR && e.k !== 'sys') {
+        convSet[c] = 1; totalMsgs++;
+        var p = waParts(e.t), dk = waDayKey(e.t), dd = days[dk] || (days[dk] = { key: dk, msgs: 0, inMsgs: 0, convs: {}, custs: {} });
+        dd.msgs++; dd.convs[c] = (dd.convs[c] || 0) + 1; hours[p.h].msgs++; hours[p.h].convs[c] = (hours[p.h].convs[c] || 0) + 1;
+        if (e.k === 'in') { inMsgs++; dd.inMsgs++; dd.custs[c] = 1; hours[p.h].inMsgs++; heat[p.wd][p.h]++; } else outMsgs++;
+      }
+      if (e.k === 'in' && inR) {
+        custN[c] = (custN[c] || 0) + 1;
+        if (e === firstIn) newC[c] = 1;
+        e.tp.forEach(function (id) { (topics[id] = topics[id] || {})[c] = (topics[id][c] || 0) + 1; });
+        var rep = nextRep, it = { c: c, name: nm(c), t: e.t, rt: rep ? rep.t : null, d: rep ? rep.t - e.t : null, by: rep ? waResponder(rep.k) : null };
+        msgs.push(it);
+        if (e === firstIn) firsts.push(it);
+      }
+      if (e.h && inR) handoffs.push({ c: c, name: nm(c), t: e.t, rt: nextRep ? nextRep.t : null, d: nextRep && waResponder(nextRep.k) === 'pharm' ? nextRep.t - e.t : null, by: nextRep ? waResponder(nextRep.k) : null, pend: !(nextRep && waResponder(nextRep.k) === 'pharm') });
+    }
+  });
+  function byT(a, b) { return a.t - b.t; }
+  msgs.sort(byT); handoffs.sort(byT); firsts.sort(byT);
+  // waiting-now: conversations whose last customer-facing message is from the customer (state at `now`, not range-bound)
+  ids.forEach(function (c) {
+    var ev = byC[c], i, firstWait = null;
+    for (i = ev.length - 1; i >= 0; i--) {
+      if (ev[i].k === 'sys') continue;
+      if (ev[i].k === 'in') firstWait = ev[i]; else break;
+    }
+    if (firstWait) waiting.push({ c: c, name: nm(c), t: firstWait.t, d: Math.max(0, now - firstWait.t), by: null });
+  });
+  waiting.sort(function (a, b) { return b.d - a.d; });
+  var answered = msgs.filter(function (m) { return m.rt != null; }), unans = msgs.filter(function (m) { return m.rt == null; });
+  var scope = answered.filter(function (m) { return who === 'all' || m.by === who; });
+  var scopeFirst = firsts.filter(function (m) { return m.rt != null && (who === 'all' || m.by === who); });
+  var den = scope.length + unans.length, within = {};
+  [1, 5, 15, 60].forEach(function (mn) {
+    var l = scope.filter(function (m) { return m.d <= mn * 60000; });
+    within[mn] = { n: l.length, den: den, pct: den ? Math.round((l.length / den) * 1000) / 10 : null, items: l };
+  });
+  var botL = answered.filter(function (m) { return m.by === 'bot'; }), phL = answered.filter(function (m) { return m.by === 'pharm'; });
+  var hoAns = handoffs.filter(function (x) { return !x.pend; });
+  var unansH = msgs.filter(function (m) { return m.by !== 'pharm'; });
+  var custList = Object.keys(custN).map(function (c) { return { c: c, name: nm(c), n: custN[c], t: null, d: null }; });
+  var dayList = [], ks = Object.keys(days).sort(), cur = isFinite(from) ? waDayStart(from) : (ks.length ? waKeyStart(ks[0]) : null);
+  var last = isFinite(to) ? waDayStart(to - 1) : (isFinite(from) ? waDayStart(now) : (ks.length ? waKeyStart(ks[ks.length - 1]) : null)), guard = 0;
+  while (cur !== null && last !== null && cur <= last && guard++ < 800) {
+    var key = waDayKey(cur), d0 = days[key];
+    dayList.push({ key: key, msgs: d0 ? d0.msgs : 0, inMsgs: d0 ? d0.inMsgs : 0, convs: d0 ? Object.keys(d0.convs).length : 0, custs: d0 ? Object.keys(d0.custs).length : 0, wd: waParts(cur + 3600000).wd });
+    cur = waNextDay(cur);
+  }
+  var drill = { replies: scope, first: scopeFirst, bot: botL, pharm: phL, slowest: scope.length ? [waStats(scope).maxItem] : [], unanswered: unans, waiting: waiting, handoff: handoffs, handoffAns: hoAns, customers: custList,
+    newC: custList.filter(function (x) { return newC[x.c]; }), returning: custList.filter(function (x) { return !newC[x.c]; }) };
+  [1, 5, 15, 60].forEach(function (mn) { drill['w' + mn] = within[mn].items; });
+  function cl(map) { return Object.keys(map).map(function (c) { return { c: c, name: nm(c), n: map[c] }; }); }
+  Object.keys(days).forEach(function (k) { drill['d:' + k] = cl(days[k].convs); });
+  hours.forEach(function (x, hh) { drill['h:' + hh] = cl(x.convs); });
+  var topicList = WA_TOPICS.filter(function (t) { return topics[t.id]; }).map(function (t) { var c = topics[t.id]; drill['t:' + t.id] = cl(c); return { id: t.id, ar: t.ar, n: Object.keys(c).reduce(function (a, k2) { return a + c[k2]; }, 0), customers: Object.keys(c).length }; }).sort(function (a, b) { return b.n - a.n; });
+  return {
+    who: who, from: from, to: to, now: now,
+    all: waStats(scope), first: waStats(scopeFirst), bot: waStats(botL), pharm: waStats(phL), handoff: waStats(hoAns),
+    within: within, answered: answered.length, unanswered: unans.length, unansweredNoHuman: unansH.length, inMsgs: inMsgs,
+    handoffs: { n: handoffs.length, answered: hoAns.length, pending: handoffs.length - hoAns.length },
+    waiting: waiting.length,
+    volume: { customers: custList.length, newC: drill.newC.length, returning: drill.returning.length, convs: Object.keys(convSet).length, msgs: totalMsgs, inMsgs: inMsgs, outMsgs: outMsgs },
+    days: dayList, hours: hours.map(function (x) { return { msgs: x.msgs, inMsgs: x.inMsgs, convs: Object.keys(x.convs).length }; }), heat: heat, topics: topicList, drill: drill
+  };
+}
+/* UX300-SHARED-END */
+/* UX300: WhatsApp customer-service dashboard (read-only). Data = text-free events from GET /api/v1/inbox/history/metrics (same X-Nova-Pin gate as the old chats), kept in memory only, cleared by lock. All times are shown in Africa/Cairo. */
+var dash={open:false,data:null,busy:false,err:'',code:'',preset:'all',who:'all',from:'',to:'',drill:null,res:null};
+var DWD=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+var DTITLE={first:'الرد الأول لكل محادثة',replies:'كل ردود الفريق',bot:'ردود البوت',pharm:'ردود الصيدلي',slowest:'أبطأ رد',unanswered:'رسائل عملاء بدون رد',waiting:'عملاء بانتظار الرد الآن',handoff:'كل التحويلات للصيدلي',handoffAns:'تحويلات رد عليها الصيدلي',customers:'العملاء اللي كتبوا',newC:'عملاء جدد',returning:'عملاء عائدون',w1:'ردود خلال دقيقة',w5:'ردود خلال 5 دقائق',w15:'ردود خلال 15 دقيقة',w60:'ردود خلال ساعة'};
+var DCSS='.wd{direction:rtl;color:#f1f3f5;font-size:14px;line-height:1.6;--wd-in:#79c9eb;--wd-bot:#b8a6d7;--wd-ph:#69c6a8;--wd-bad:#e88e96;--wd-amb:#c5aa79}.wd *{box-sizing:border-box}'+
+'.wd-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 10px}.wd-head h2{margin:0;font-size:20px;flex:1;min-width:180px}.wd button,.wd input{font:inherit}'+
+'.wd-btn{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #2a313a;background:#14181d;color:#dce3ea;cursor:pointer;transition:background .2s,border-color .2s}.wd-btn:hover{background:#1b2026;border-color:#3a4857}.wd-btn:focus-visible,.wd [data-drill]:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}'+
+'.wd-bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 12px;margin:0 0 12px;background:#101216;border:1px solid #2a3037;border-radius:12px}.wd-seg{display:inline-flex;border:1px solid #2a313a;border-radius:10px;overflow:hidden}.wd-seg button{min-height:40px;padding:0 14px;border:0;background:#0d0f12;color:#a4adb7;cursor:pointer;transition:background .2s,color .2s}.wd-seg button+button{border-inline-start:1px solid #2a313a}.wd-seg button[aria-pressed=true]{background:#1c303b;color:#79c9eb;font-weight:600}'+
+'.wd-bar label{display:inline-flex;align-items:center;gap:6px;color:#a4adb7}.wd-bar input[type=date]{height:40px;border:1px solid #2a313a;border-radius:8px;background:#0d0f12;color:#f2f3f5;padding:0 8px;color-scheme:dark}'+
+'.wd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin:0 0 14px}.wd-card{display:block;text-align:right;width:100%;padding:12px 14px;border-radius:14px;border:1px solid #2a3037;background:linear-gradient(180deg,#14181d,#101216);color:inherit;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;animation:wd-up .5s both}.wd-card:hover{transform:translateY(-2px);border-color:#3a4857;box-shadow:0 8px 24px #0007}'+
+'.wd-card .l{display:block;color:#a4adb7;font-size:13px}.wd-card .v{display:block;font-size:26px;font-weight:700;margin:2px 0;font-variant-numeric:tabular-nums}.wd-card .s{display:block;color:#808b96;font-size:12.5px}.wd-card.bot .v{color:var(--wd-bot)}.wd-card.ph .v{color:var(--wd-ph)}.wd-card.in .v{color:var(--wd-in)}.wd-card.bad .v{color:var(--wd-bad)}.wd-card.amb .v{color:var(--wd-amb)}'+
+'.wd-sec{margin:0 0 14px;padding:14px;border-radius:14px;border:1px solid #2a3037;background:#101216}.wd-sec h3{margin:0 0 10px;font-size:16px}.wd-sec h3 small{color:#808b96;font-weight:400;margin-inline-start:8px}.wd-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:0 0 14px}.wd-two>.wd-sec{margin:0}'+
+'.wd-tw{overflow-x:auto}.wd table{border-collapse:collapse;width:100%;min-width:520px}.wd th,.wd td{padding:4px 6px;text-align:right;white-space:nowrap}.wd th{color:#808b96;font-weight:500;font-size:12.5px}.wd td button{width:100%;min-height:40px;border:0;border-radius:8px;background:transparent;color:inherit;cursor:pointer;text-align:right;font-variant-numeric:tabular-nums;transition:background .2s}.wd td button:hover{background:#1b2026}.wd td.rn{font-weight:600}.wd td.rn button{font-weight:600}'+
+'.wd-w{display:grid;gap:8px}.wd-w button{display:grid;grid-template-columns:96px 1fr 120px;gap:10px;align-items:center;width:100%;min-height:44px;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:inherit;cursor:pointer;text-align:right;transition:background .2s}.wd-w button:hover{background:#1b2026}.wd-track{height:10px;border-radius:6px;background:#1b2026;overflow:hidden;direction:ltr}.wd-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#387e9e,#79c9eb);transform-origin:left;animation:wd-x .8s cubic-bezier(.2,.8,.2,1) both}.wd-w .p{font-variant-numeric:tabular-nums;color:#a4adb7;text-align:left;direction:ltr}'+
+'.wd svg{display:block;width:100%;height:auto;direction:ltr}.wd .ax{fill:#808b96;font-size:10px}.wd .gl{stroke:#232930;stroke-width:1}.wd-line{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:wd-draw 1.2s cubic-bezier(.2,.8,.2,1) forwards}.wd-area{animation:wd-fade 1s .2s both}.wd-hit{fill:transparent;cursor:pointer}.wd-hit:hover,.wd-hit:focus{fill:rgba(121,201,235,.1);outline:0}.wd-bar-r{transform-box:fill-box;transform-origin:bottom;animation:wd-grow .7s cubic-bezier(.2,.8,.2,1) both}'+
+'.wd-leg{display:flex;gap:14px;flex-wrap:wrap;color:#a4adb7;font-size:12.5px;margin:6px 0 0}.wd-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px}'+
+'.wd-heat{overflow-x:auto;direction:ltr}.wd-hr{display:grid;grid-template-columns:64px repeat(24,minmax(14px,1fr));gap:3px;margin:0 0 3px;min-width:560px;align-items:center}.wd-hr span.d{direction:rtl;text-align:right;color:#a4adb7;font-size:12px}.wd-hr i{display:block;aspect-ratio:1;border-radius:4px;background:#79c9eb;min-height:14px;transition:transform .15s}.wd-hr i:hover{transform:scale(1.25)}.wd-hr b{font-weight:400;color:#808b96;font-size:10px;text-align:center}'+
+'.wd-tp{display:grid;gap:6px}.wd-tp button{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;width:100%;min-height:40px;padding:2px 8px;border:0;border-radius:8px;background:transparent;color:inherit;cursor:pointer;text-align:right}.wd-tp button:hover{background:#1b2026}'+
+'.wd-dr{scroll-margin-top:12px;animation:wd-up .35s both}.wd-dr ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}.wd-dr li{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:8px 10px;border-radius:10px;background:#14181d;border:1px solid #232930}.wd-dr li .nm{font-weight:600;flex:1;min-width:120px}.wd-dr .t{color:#a4adb7;font-size:13px;direction:ltr;unicode-bidi:plaintext}.wd-dr .d{font-weight:700;font-variant-numeric:tabular-nums}.wd-tag{padding:1px 8px;border-radius:999px;font-size:12px;border:1px solid #2a3037}.wd-tag.bot{color:var(--wd-bot);background:#221d2a}.wd-tag.pharm{color:var(--wd-ph);background:#10231e}.wd-tag.none{color:var(--wd-bad);background:#29181c}'+
+'.wd-dr li button{min-height:36px;padding:0 12px;border-radius:8px;border:1px solid #79c9eb;background:#0d0f12;color:#79c9eb;cursor:pointer}.wd-note{color:#808b96;font-size:12.5px;margin:8px 0 0}.wd-empty{padding:18px;text-align:center;color:#a4adb7}'+
+'@keyframes wd-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes wd-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes wd-grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}@keyframes wd-draw{to{stroke-dashoffset:0}}@keyframes wd-fade{from{opacity:0}to{opacity:1}}'+
+'@media (prefers-reduced-motion:reduce){.wd *{animation:none!important;transition:none!important}.wd-line{stroke-dashoffset:0}}@media (max-width:520px){.wd-w button{grid-template-columns:78px 1fr 92px}.wd-card .v{font-size:22px}}';
+function dNow(){return Date.now()}
+function dCompute(){
+  var r;if(dash.preset==='custom'){var f=dash.from?waKeyStart(dash.from):null,t=dash.to?waKeyStart(dash.to):null;r={from:f==null?-Infinity:f,to:t==null?Infinity:waNextDay(t)}}else r=waRange(dash.preset,dNow());
+  dash.res=waCompute(dash.data,{from:r.from,to:r.to,who:dash.who,now:dNow()});return dash.res}
+function dLoad(){if(dash.busy||!hPin())return;dash.busy=true;dash.err='';dash.code='';dashDraw();
+  hGet('metrics').then(function(j){dash.data=j.data&&Array.isArray(j.data.events)?j.data:{customers:[],events:[]}}).catch(function(e){if(e&&(e.code==='PIN_INVALID'||e.code==='PIN_REQUIRED')){dash.open=false;hSetErr(e);dash.busy=false;draw();return}dash.err=String((e&&e.message)||e);dash.code=(e&&e.code)||'SERVER'}).then(function(){dash.busy=false;if(dash.open)dashDraw()})}
+function dClose(){dash.open=false;dash.drill=null;wa.f='';draw()}
+function dForget(){dash.open=false;dash.data=null;dash.res=null;dash.drill=null;dash.err=''}
+function dN(v){return String(v)}
+function dSmooth(p,top,base){if(!p.length)return '';var d='M'+p[0][0].toFixed(1)+' '+p[0][1].toFixed(1);function cy(y){return Math.max(top,Math.min(base,y)).toFixed(1)}
+  for(var i=0;i<p.length-1;i++){var a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;d+=' C'+(b[0]+(c[0]-a[0])/6).toFixed(1)+' '+cy(b[1]+(c[1]-a[1])/6)+','+(c[0]-(e[0]-b[0])/6).toFixed(1)+' '+cy(c[1]-(e[1]-b[1])/6)+','+c[0].toFixed(1)+' '+c[1].toFixed(1)}return d}
+function dNice(m){if(m<=4)return 4;var p=Math.pow(10,Math.floor(Math.log(m)/Math.LN10)),f=m/p;return (f<=1?1:f<=2?2:f<=5?5:10)*p}
+function dDayChart(days){
+  if(!days.length)return '<div class="wd-empty">لا توجد رسائل في هذه الفترة.</div>';
+  var W=640,H=220,L=34,R=10,T=14,B=26,n=days.length,mx=dNice(Math.max.apply(null,days.map(function(d){return d.msgs}).concat([1]))),iw=W-L-R,ih=H-T-B,base=T+ih;
+  function X(i){return n===1?L+iw/2:L+iw*i/(n-1)}function Y(v){return base-ih*v/mx}
+  var g='',i,pi=days.map(function(d,k){return [X(k),Y(d.inMsgs)]}),pa=days.map(function(d,k){return [X(k),Y(d.msgs)]});
+  for(i=0;i<=4;i++){var gy=T+ih*i/4;g+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'"/><text class="ax" x="'+(L-6)+'" y="'+(gy+3)+'" text-anchor="end">'+Math.round(mx*(4-i)/4)+'</text>'}
+  var step=Math.max(1,Math.ceil(n/7)),lb='';for(i=0;i<n;i+=step)lb+='<text class="ax" x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle">'+days[i].key.slice(5)+'</text>';
+  var area=n>1?dSmooth(pi,T,base)+' L'+X(n-1).toFixed(1)+' '+base+' L'+X(0).toFixed(1)+' '+base+' Z':'';
+  var hw=n===1?iw:iw/(n-1),hits=days.map(function(d,k){return '<rect class="wd-hit" tabindex="0" role="button" data-drill="d:'+d.key+'" x="'+(X(k)-hw/2).toFixed(1)+'" y="'+T+'" width="'+hw.toFixed(1)+'" height="'+ih+'" aria-label="'+d.key+': '+d.inMsgs+' رسالة عملاء، '+d.custs+' عميل"><title>'+d.key+' — '+d.inMsgs+' رسالة عملاء · '+d.msgs+' إجمالي · '+d.custs+' عميل</title></rect>'}).join('');
+  var dots=n<=31?pi.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="#79c9eb"/>'}).join(''):'';
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="الرسائل يومياً"><defs><linearGradient id="wdg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#79c9eb" stop-opacity=".45"/><stop offset="1" stop-color="#79c9eb" stop-opacity="0"/></linearGradient></defs>'+g+lb+(n>1?'<path class="wd-area" d="'+area+'" fill="url(#wdg)"/><path class="wd-line" pathLength="1" d="'+dSmooth(pa,T,base)+'" stroke="#808b96" stroke-width="1.5"/><path class="wd-line" pathLength="1" d="'+dSmooth(pi,T,base)+'" stroke="#79c9eb" stroke-width="2.5"/>':'<rect class="wd-bar-r" x="'+(X(0)-18)+'" y="'+Y(days[0].inMsgs)+'" width="36" height="'+(base-Y(days[0].inMsgs))+'" rx="6" fill="#79c9eb"/>')+dots+hits+'</svg>'+
+  '<div class="wd-leg"><span><i style="background:#79c9eb"></i>رسائل العملاء</span><span><i style="background:#808b96"></i>كل الرسائل (عملاء + رد)</span></div>'}
+function dHourChart(hs){
+  var W=640,H=170,L=26,R=6,T=10,B=22,mx=dNice(Math.max.apply(null,hs.map(function(h){return h.inMsgs}).concat([1]))),iw=W-L-R,ih=H-T-B,base=T+ih,bw=iw/24,s='',i;
+  for(i=0;i<=2;i++){var gy=T+ih*i/2;s+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'"/><text class="ax" x="'+(L-5)+'" y="'+(gy+3)+'" text-anchor="end">'+Math.round(mx*(2-i)/2)+'</text>'}
+  hs.forEach(function(h,k){var bh=ih*h.inMsgs/mx,x=L+bw*k+bw*.15;s+='<rect class="wd-bar-r" style="animation-delay:'+k*20+'ms" x="'+x.toFixed(1)+'" y="'+(base-bh).toFixed(1)+'" width="'+(bw*.7).toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="3" fill="#79c9eb" opacity="'+(h.inMsgs?1:.25)+'"/><rect class="wd-hit" tabindex="0" role="button" data-drill="h:'+k+'" x="'+(L+bw*k).toFixed(1)+'" y="'+T+'" width="'+bw.toFixed(1)+'" height="'+ih+'" aria-label="الساعة '+k+': '+h.inMsgs+' رسالة، '+h.convs+' محادثة"><title>'+waPad(k)+':00 — '+h.inMsgs+' رسالة عملاء · '+h.convs+' محادثة</title></rect>';if(k%3===0)s+='<text class="ax" x="'+(L+bw*k+bw/2)+'" y="'+(H-6)+'" text-anchor="middle">'+waPad(k)+'</text>'});
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="الرسائل حسب الساعة (توقيت القاهرة)">'+s+'</svg>'}
+function dHeat(heat){
+  var mx=1,w,h,o='<div class="wd-hr"><span></span>';for(w=0;w<7;w++)for(h=0;h<24;h++)mx=Math.max(mx,heat[w][h]);
+  for(h=0;h<24;h++)o+='<b>'+(h%3===0?waPad(h):'')+'</b>';o+='</div>';
+  [6,0,1,2,3,4,5].forEach(function(wd){o+='<div class="wd-hr"><span class="d">'+DWD[wd]+'</span>';for(h=0;h<24;h++){var v=heat[wd][h];o+='<i style="opacity:'+(v?(.18+.82*v/mx).toFixed(2):.05)+'" title="'+DWD[wd]+' '+waPad(h)+':00 — '+v+' رسالة"></i>'}o+='</div>'});
+  return '<div class="wd-heat" role="img" aria-label="أكثر الساعات ازدحاماً حسب اليوم">'+o+'</div>'}
+function dCard(cls,key,l,v,s){return '<button type="button" class="wd-card '+cls+'" data-drill="'+key+'"><span class="l">'+l+'</span><span class="v">'+v+'</span><span class="s">'+s+'</span></button>'}
+function dRow(key,label,st,slowKey){var c=function(k,v){return '<td><button type="button" data-drill="'+k+'">'+v+'</button></td>'};return '<tr><td class="rn"><button type="button" data-drill="'+key+'">'+label+'</button></td>'+c(key,st.n)+c(key,waDur(st.median))+c(key,waDur(st.mean))+c(key,waDur(st.p90))+c(slowKey||key,waDur(st.max))+'</tr>'}
+function dDrillHtml(key,r){
+  var list=(r.drill[key]||[]),title=DTITLE[key],m;
+  if(!title){if(m=/^d:(.+)$/.exec(key))title='عملاء يوم '+m[1];else if(m=/^h:(\d+)$/.exec(key))title='عملاء الساعة '+waPad(+m[1])+':00 (توقيت القاهرة)';else if(m=/^t:(.+)$/.exec(key)){var tp=WA_TOPICS.filter(function(x){return x.id===m[1]})[0];title='موضوع: '+(tp?tp.ar:m[1])}else title=key}
+  var seen=key==='waiting'||key==='unanswered'||/^w\d+$/.test(key)||key==='replies'||key==='first'||key==='bot'||key==='pharm'||key==='slowest'||key==='handoff'||key==='handoffAns';
+  var rows=list.slice(0,200).map(function(x){var o='<li><span class="nm">'+escH(x.name)+'</span>';
+    if(x.t!=null)o+='<span class="t">'+(key==='waiting'?'آخر رسالة: ':'')+waDateTime(x.t)+'</span>';
+    if(x.n!=null&&x.t==null)o+='<span class="t">'+x.n+' رسالة</span>';
+    if(key==='waiting')o+='<span class="d" style="color:#e88e96">ينتظر '+waDur(x.d)+'</span>';
+    else if(x.d!=null)o+='<span class="d">'+waDur(x.d)+'</span><span class="wd-tag '+x.by+'">'+(x.by==='bot'?'البوت':'الصيدلي')+'</span>';
+    else if(seen&&x.pend)o+='<span class="wd-tag none">لم يرد الصيدلي بعد</span>';
+    else if(seen)o+='<span class="wd-tag none">بدون رد</span>';
+    return o+'<button type="button" data-open-chat="'+escH(x.c)+'">فتح المحادثة</button></li>'}).join('');
+  return '<div class="wd-sec wd-dr" id="wdDrill" tabindex="-1" role="region" aria-label="'+escH(title)+'"><h3>'+escH(title)+'<small>'+list.length+' عنصر</small> <button type="button" class="wd-btn" data-drill-close style="min-height:36px;margin-inline-start:8px">إغلاق</button></h3>'+(rows?'<ul>'+rows+'</ul>':'<div class="wd-empty">لا توجد عناصر.</div>')+(list.length>200?'<p class="wd-note">أول 200 عنصر فقط.</p>':'')+'</div>'}
+function dashHtml(){
+  var seg=function(attr,cur,opts){return '<span class="wd-seg" role="group">'+opts.map(function(o){return '<button type="button" '+attr+'="'+o[0]+'" aria-pressed="'+(cur===o[0])+'">'+o[1]+'</button>'}).join('')+'</span>'};
+  var head='<div class="wd-head"><button type="button" class="wd-btn" id="wdBack" aria-label="الرجوع إلى المحادثات">→ المحادثات</button><h2 tabindex="-1" id="wdTitle">أداء خدمة العملاء — واتساب</h2><button type="button" class="wd-btn" id="wdRefresh"'+(dash.busy?' disabled':'')+'>'+(dash.busy?'جاري التحميل…':'تحديث')+'</button><button type="button" class="wd-btn" data-wa-lock>قفل</button></div>';
+  if(!dash.data)return '<style>'+DCSS+'</style><div class="wd" dir="rtl">'+head+(dash.err?'<div class="wd-sec" role="alert" style="border-color:#b91c1c"><div>'+escH(dash.err)+'</div><button type="button" class="wd-btn" id="wdRefresh" style="margin-top:8px">إعادة المحاولة</button></div>':'<div class="wd-sec wd-empty" role="status">جاري تحميل المقاييس…</div>')+'</div>';
+  var r=dCompute(),V=r.volume,bar='<div class="wd-bar" role="group" aria-label="فلاتر اللوحة">'+seg('data-wd-preset',dash.preset,[['today','اليوم'],['7d','7 أيام'],['30d','30 يوم'],['all','الكل'],['custom','مخصص']])+
+    '<label>من <input type="date" id="wdFrom" value="'+escH(dash.from)+'"></label><label>إلى <input type="date" id="wdTo" value="'+escH(dash.to)+'"></label>'+seg('data-wd-who',dash.who,[['all','الكل'],['bot','البوت'],['pharm','الصيدلي']])+'<span style="color:#808b96;font-size:12.5px">التوقيت: القاهرة</span></div>';
+  var cards='<div class="wd-grid">'+
+    dCard('','first','الرد الأول (وسيط)',waDur(r.first.median),'متوسط '+waDur(r.first.mean)+' · '+r.first.n+' محادثة')+
+    dCard('','replies','زمن الرد (وسيط)',waDur(r.all.median),'الأبطأ '+waDur(r.all.max)+' · '+r.all.n+' رد')+
+    dCard('bot','bot','رد البوت (وسيط)',waDur(r.bot.median),r.bot.n+' رد')+
+    dCard('ph','pharm','رد الصيدلي (وسيط)',waDur(r.pharm.median),r.pharm.n+' رد')+
+    dCard('amb','handoffAns','من التحويل لرد الصيدلي',waDur(r.handoff.median),r.handoffs.n+' تحويل · '+r.handoffs.pending+' بدون رد صيدلي')+
+    dCard('bad','unanswered','رسائل بدون رد',r.unanswered,'من '+r.inMsgs+' رسالة عميل')+
+    dCard('bad','waiting','بانتظار الرد الآن',r.waiting,'محادثات آخر رسالة فيها من العميل')+
+    dCard('in','customers','عملاء كتبوا',V.customers,'جدد '+V.newC+' · عائدون '+V.returning)+'</div>';
+  var tbl='<div class="wd-sec"><h3>أزمنة الرد بالتفصيل<small>الحدّ الأدنى للقياس: ثانية</small></h3><div class="wd-tw"><table><thead><tr><th>النوع</th><th>العدد</th><th>الوسيط</th><th>المتوسط</th><th>أبطأ 10٪ (p90)</th><th>الأبطأ</th></tr></thead><tbody>'+
+    dRow('first','الرد الأول لكل محادثة',r.first)+dRow('replies','كل الردود'+(r.who==='all'?'':r.who==='bot'?' (البوت)':' (الصيدلي)'),r.all,'slowest')+dRow('bot','البوت',r.bot)+dRow('pharm','الصيدلي',r.pharm)+dRow('handoffAns','التحويل ← رد الصيدلي',r.handoff)+'</tbody></table></div></div>';
+  var wb='<div class="wd-sec"><h3>نسبة الردود في الوقت<small>من كل رسائل العملاء في الفلتر</small></h3><div class="wd-w">'+[1,5,15,60].map(function(m){var w=r.within[m];return '<button type="button" data-drill="w'+m+'"><span>خلال '+(m===60?'ساعة':m===1?'دقيقة':m+' دقائق')+'</span><span class="wd-track"><span class="wd-fill" style="display:block;width:'+(w.pct||0)+'%"></span></span><span class="p">'+(w.pct==null?'—':w.pct+'٪')+' · '+w.n+'/'+w.den+'</span></button>'}).join('')+'</div></div>';
+  var vol='<div class="wd-sec"><h3>حجم المحادثات<small>عملاء '+V.customers+' · محادثات '+V.convs+' · رسائل '+V.msgs+'</small></h3>'+dDayChart(r.days)+'</div>';
+  var hrs='<div class="wd-two"><div class="wd-sec"><h3>الرسائل حسب الساعة<small>توقيت القاهرة</small></h3>'+dHourChart(r.hours)+'</div><div class="wd-sec"><h3>أكثر الأوقات ازدحاماً</h3>'+dHeat(r.heat)+'</div></div>';
+  var tmax=Math.max.apply(null,r.topics.map(function(t){return t.n}).concat([1])),top='<div class="wd-sec"><h3>أكثر المواضيع<small>تصنيف بالكلمات المفتاحية</small></h3>'+(r.topics.length?'<div class="wd-tp">'+r.topics.slice(0,8).map(function(t){return '<button type="button" data-drill="t:'+t.id+'"><span>'+t.ar+'</span><span class="wd-track"><span class="wd-fill" style="display:block;width:'+Math.round(100*t.n/tmax)+'%"></span></span><span class="p" style="text-align:left;direction:ltr;color:#a4adb7">'+t.n+' · '+t.customers+' عميل</span></button>'}).join('')+'</div>':'<div class="wd-empty">لا توجد مواضيع واضحة.</div>')+'</div>';
+  var dr=dash.drill?dDrillHtml(dash.drill,r):'<div id="wdDrill"></div>';
+  return '<style>'+DCSS+'</style><div class="wd" dir="rtl">'+head+bar+cards+dr+tbl+wb+vol+hrs+top+'<p class="wd-note">كل رقم قابل للضغط لعرض المحادثات وراءه. الأرقام من المحادثات المستوردة ومن الرسائل الحية؛ التوقيتات بالثواني تُحوَّل تلقائياً. العرض للقراءة فقط.</p></div>'}
+function dashDraw(){box.innerHTML=dashHtml();var t=box.querySelector('#wdTitle');if(t&&dash.fresh){dash.fresh=false;t.focus()}}
+function dDrillOnly(key){dash.drill=dash.drill===key?null:key;var el=box.querySelector('#wdDrill');if(!el)return;var tmp=document.createElement('div');tmp.innerHTML=dash.drill?dDrillHtml(dash.drill,dash.res):'<div id="wdDrill"></div>';el.replaceWith(tmp.firstChild);var n=box.querySelector('#wdDrill');if(dash.drill&&n){try{n.scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'})}catch(x){}n.focus({preventScroll:true})}}
+function dOpen(){if(!hPin()||!hist.loaded)return;dash.open=true;dash.fresh=true;dash.drill=null;dashDraw();if(!dash.data)dLoad()}
+box.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;if(t.closest('#waDashOpen')){dOpen();return}if(!dash.open)return;
+  if(t.closest('#wdBack')){dClose();return}if(t.closest('#wdRefresh')){dash.data=null;dLoad();return}
+  var p=t.closest('[data-wd-preset]');if(p){dash.preset=p.dataset.wdPreset;dash.drill=null;dashDraw();return}
+  var w=t.closest('[data-wd-who]');if(w){dash.who=w.dataset.wdWho;dash.drill=null;dashDraw();return}
+  if(t.closest('[data-drill-close]')){dDrillOnly(dash.drill);return}
+  var oc=t.closest('[data-open-chat]');if(oc){var id=oc.dataset.openChat;dash.open=false;wa.sel=id;wa.f='open';draw();hOpen(id);return}
+  var d=t.closest('[data-drill]');if(d)dDrillOnly(d.dataset.drill)});
+box.addEventListener('change',function(e){if(!dash.open||!e.target)return;if(e.target.id==='wdFrom'||e.target.id==='wdTo'){dash[e.target.id==='wdFrom'?'from':'to']=e.target.value;dash.preset='custom';dash.drill=null;dashDraw()}});
+box.addEventListener('keydown',function(e){if(!dash.open)return;if(e.key==='Escape'){e.stopPropagation();e.preventDefault();dClose();return}var d=e.target&&e.target.closest&&e.target.closest('[data-drill]');if(d&&d.tagName!=='BUTTON'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();dDrillOnly(d.dataset.drill)}},true);
 /* UX241: bounded DOM (latest wa.lim messages, "رسائل أقدم" reveals more), scroll anchor kept across redraws, floating scroll-to-latest button */
 var LIM0=80,LIMSTEP=80;
 function latestBtn(){var ms=box.querySelector('#waMsgs'),b=box.querySelector('[data-wa-latest]');if(ms&&b)b.hidden=!(ms.scrollHeight-ms.scrollTop-ms.clientHeight>ms.clientHeight)}
 function focKey(){var a=document.activeElement;if(!a||!box.contains(a))return '';if(a.id)return '#'+a.id;if(a.dataset&&a.dataset.conv)return '[data-conv="'+a.dataset.conv+'"]';if(a.hasAttribute&&a.hasAttribute('data-wa-back'))return '[data-wa-back]';return ''}
 function focGo(k){var el=null;if(k==='pin')el=box.querySelector('#waHistPin');else if(k==='open'){var b=box.querySelector('[data-wa-back]');el=b&&b.offsetParent!==null?b:box.querySelector('#waMsgs')}else if(k&&k.indexOf('chat:')===0){var id=k.slice(5);el=Array.prototype.filter.call(box.querySelectorAll('[data-conv]'),function(x){return x.dataset.conv===id})[0]}else if(k){try{el=box.querySelector(k)}catch(e){}}if(el&&el.focus)el.focus()}
-function draw(){var fk=wa.f||focKey();wa.f='';var cs=convs(),old=box.querySelector('#waMsgs'),fromBottom=null;if(old&&wa.drawn===wa.sel)fromBottom=old.scrollHeight-old.scrollTop;if(wa.drawn!==wa.sel){wa.lim=LIM0}wa.drawn=wa.sel;box.innerHTML=arBar()+lockBar()+U.renderWa(cs,{selected:wa.sel,query:wa.q,sendEnabled:sendOn(),canLock:!!(hist.loaded&&hPin()),now:Date.now(),limit:wa.lim||LIM0});var ms=box.querySelector&&box.querySelector('#waMsgs');if(ms){if(fromBottom===null||fromBottom-old.clientHeight<=40)ms.scrollTop=ms.scrollHeight;else ms.scrollTop=Math.max(0,ms.scrollHeight-fromBottom);latestBtn()}if(!box.hidden)focGo(fk)}
+function draw(){if(dash.open){dashDraw();return}var fk=wa.f||focKey();wa.f='';var cs=convs(),old=box.querySelector('#waMsgs'),fromBottom=null;if(old&&wa.drawn===wa.sel)fromBottom=old.scrollHeight-old.scrollTop;if(wa.drawn!==wa.sel){wa.lim=LIM0}wa.drawn=wa.sel;box.innerHTML=arBar()+lockBar()+U.renderWa(cs,{selected:wa.sel,query:wa.q,sendEnabled:sendOn(),canLock:!!(hist.loaded&&hPin()),now:Date.now(),limit:wa.lim||LIM0});var ms=box.querySelector&&box.querySelector('#waMsgs');if(ms){if(fromBottom===null||fromBottom-old.clientHeight<=40)ms.scrollTop=ms.scrollHeight;else ms.scrollTop=Math.max(0,ms.scrollHeight-fromBottom);latestBtn()}if(!box.hidden)focGo(fk)}
 box.addEventListener('scroll',function(e){if(e.target&&e.target.id==='waMsgs')latestBtn()},true);
 box.addEventListener('click',function(e){if(e.target.closest('#novaAutoReplyBtn')){arCall('POST',{enabled:!ar.on});return}if(e.target.closest('#waHistLock,[data-wa-lock]')){hForget();hist.err='';hist.code='';draw();return}var rt=e.target.closest('#waHistRetry');if(rt){if(rt.dataset.retry==='pin'){hist.err='';hist.code='';draw();var pe=box.querySelector('#waHistPin');if(pe)pe.focus()}else{hist.loaded=false;hLoad()}return}if(e.target.closest('[data-wa-back]')){wa.f=wa.sel?'chat:'+wa.sel:'';wa.sel=null;draw();return}if(e.target.closest('[data-wa-older]')){wa.lim=(wa.lim||LIM0)+LIMSTEP;draw();return}if(e.target.closest('[data-wa-latest]')){var m=box.querySelector('#waMsgs');if(m)m.scrollTop=m.scrollHeight;latestBtn();return}var b=e.target.closest('[data-conv]');if(b){wa.sel=b.dataset.conv;wa.f='open';draw();hOpen(wa.sel)}});
 box.addEventListener('keydown',function(e){if(e.key==='Escape'&&wa.sel){var t=e.target;if(t&&t.id==='waSearch'&&t.value)return;e.preventDefault();wa.f='chat:'+wa.sel;wa.sel=null;draw();return}if((e.key==='ArrowDown'||e.key==='ArrowUp')&&e.target&&e.target.closest&&e.target.closest('#waList')){var bs=Array.prototype.slice.call(box.querySelectorAll('#waList [data-conv]')),i=bs.indexOf(e.target.closest('[data-conv]'));if(i<0)return;e.preventDefault();var n=bs[e.key==='ArrowDown'?Math.min(i+1,bs.length-1):Math.max(i-1,0)];if(n)n.focus()}else if(e.key==='ArrowDown'&&e.target&&e.target.id==='waSearch'){var f=box.querySelector('#waList [data-conv]');if(f){e.preventDefault();f.focus()}}});
