@@ -16,6 +16,7 @@ import { registerReleasesRoutes } from './releases.js';
 import { registerMeteringRoutes } from './metering.js';
 import { registerInboxRoutes } from './inbox.js';
 import { registerCameraRoutes } from './cameras.js';
+import { registerBranchRoutes } from './branches.js';
 import { registerDeliveryRoutes } from './delivery.js';
 import { registerDeployRoutes } from './deploys.js';
 import { registerWhatsAppRoutes } from './whatsapp-intake.js';
@@ -83,6 +84,7 @@ registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerWhatsAppRoutes(route, { json, errorResponse });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
 registerCameraRoutes(route, { errorResponse }, { authenticate });
+registerBranchRoutes(route, { errorResponse }, { authenticate });
 registerDeliveryRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
