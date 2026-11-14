@@ -3216,11 +3216,12 @@
    "merged_at": "2026-11-14T11:52:17+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/393",
    "preview_deploy": {
-    "stage": "dry",
+    "stage": "real",
     "path": "worker/live/nova-rx-preview.qa-203.js",
     "sha256": "9d3e2ef74af193641a70b7b29e11ca5ad6a6f900797eda0fdd2c955fac392d0b",
-    "at": "2026-11-14T12:38:15+00:00",
-    "previous": null
+    "at": "2026-11-14T12:39:33+00:00",
+    "previous": null,
+    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43595813643"
    }
   },
   {
@@ -3468,13 +3469,23 @@
    "brief": "supplier-sessions.yml run (2026-11-14T11:35Z) : pharmaoverseas session saved; aumet failed with safe diagnostics {httpStatus:401, stillOnLogin:true, apiAuthorizationObserved:false, credentialsRejected:false, verificationRequired:false}. So supplier-health still shows aumet missing_credential after FIX44 (#376). Find why the Aumet browser login in tools/sessions/push-sessions.cjs does not complete (selectors/flow changed? submit not clicked? wrong login URL? API token not captured?). Use existing aumet-discovery/aumet-js-probe workflows for evidence. Read-only: login + search probe only, never carts/orders/POs; never print secret values. If the credentials themselves are wrong, say so clearly in the PR body (credentialsRejected must be detected). Tests required. No deploy.",
    "acceptance": "supplier-sessions saves an aumet session and supplier-health reports aumet connected, or the PR states clearly that the AUMET credentials are rejected; read-only; tests pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/fix-aumet-login.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T12:38:15+00:00"
+   "dispatched_at": "2026-11-14T12:38:15+00:00",
+   "pr": 394,
+   "ci_dispatched": {
+    "sha": "e68b0f66b107fba3e1bb937c604d76bb925c658f",
+    "wf": [
+     "playwright-smoke.yml",
+     "procurement-unit.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-14T12:39:33+00:00"
+   }
   }
  ],
- "updated": "2026-11-14T12:38:15+00:00"
+ "updated": "2026-11-14T12:39:33+00:00"
 }
