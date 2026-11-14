@@ -1,4 +1,4 @@
-# Manual, read-only smoke of the PIN-gated WhatsApp history API on staging (FIX46).
+# Manual, read-only smoke of the PIN-gated WhatsApp history API on staging (FIX46) + WA-SEND probes that never send.
 # Prints counts and status codes only: never chat text, names, phone numbers or the PIN.
 name: WA history smoke
 
@@ -28,4 +28,12 @@ jobs:
           curl -sf -H "X-Nova-Pin: $PIN" --get --data-urlencode "id=$id" "$BASE/conversation" > conv.json
           jq -r '"one old chat -> messages: \(.conversation.messages|length), kinds: \([.conversation.messages[].kind]|group_by(.)|map("\(.[0])=\(length)")|join(","))"' conv.json
           n=$(jq '.conversation.messages|length' conv.json); [ "$n" -gt 0 ]
+          # WA-SEND probes that can never deliver anything: no PIN -> 401; with PIN an empty text and an unknown chat are
+          # rejected before any bot call (proves the route, flag and bridge config are live without messaging a customer).
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{"id":"wa_x","text":"x"}' "$BASE/send")
+          echo "send without PIN -> HTTP $code"; [ "$code" = 401 ] || exit 1
+          r=$(curl -s -X POST -H "X-Nova-Pin: $PIN" -H 'Content-Type: application/json' --data "$(jq -nc --arg id "$id" '{id:$id,text:"   "}')" "$BASE/send" | jq -r .code)
+          echo "send empty text with PIN -> $r"; [ "$r" = SEND_EMPTY ] || exit 1
+          r=$(curl -s -X POST -H "X-Nova-Pin: $PIN" -H 'Content-Type: application/json' -d '{"id":"wa_TEST-NOVA-none","text":"x"}' "$BASE/send" | jq -r .code)
+          echo "send to unknown chat with PIN -> $r"; [ "$r" = SEND_UNKNOWN_CHAT ] || exit 1
           rm -f list.json conv.json
