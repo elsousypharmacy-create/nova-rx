@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "UX200",
+      "phase": "ux",
+      "after": [],
+      "title": "WhatsApp-identical conversations view with full history of all old chats",
+      "brief": "Ahmed: the in-app المحادثات (conversations) screen inside NOVA Rx must look exactly like real WhatsApp (WhatsApp Web layout): left chat list with avatar/initial, name or phone, last message preview, time, unread green badge, search box; right pane with WhatsApp chat header, beige patterned background, incoming white bubbles left and outgoing green (#d9fdd3) bubbles right with tails, time + tick marks inside the bubble, date separators (اليوم/أمس/date), RTL-correct Arabic, composer bar at the bottom, mobile layout switching list/chat. It must load the FULL history of ALL old chats, not only new bridge messages: find where the pharmacy WhatsApp bot already stores past messages (the Google Sheets log the pharmacy Apps Script bot writes, and/or staging D1 wa_inbound_queue / conversation tables) and import/backfill them read-only into the NOVA conversations store (additive inserts only, idempotent by message id, no DROP/TRUNCATE/DELETE). Reading the pharmacy repo is fine; do not modify the pharmacy repo or bot properties. Never send any message to real customers: the composer must stay draft/disabled unless the existing send flag is on. Keep it inside the system (SPA view opened by #novaWaBtn, no external page, no 404). Add tests: layout markers, bubble direction by sender, date separators, history backfill idempotency, badge count. No deploy.",
+      "acceptance": "Conversations view visually matches WhatsApp Web; all old chats with history appear; backfill is additive and idempotent; no messages sent; tests pass; no deploy."
+    },
+    {
+      "id": "UX201",
+      "phase": "ux",
+      "after": [],
+      "title": "Verify every supplier is connected, with live status kept up to date",
+      "brief": "Ahmed: make sure ALL suppliers are connected and stay connected continuously («اول باول»). Inventory every supplier the system knows (worker/procurement/connectors/*, aumet, pharmaoverseas, any others in config/D1/sheets). For each: run a real read-only connection/health check (login/session valid, catalog or offers fetch works) using only secrets already in GitHub Secrets/Worker; never place orders, never touch carts, never create POs. Add a scheduled GitHub Actions health check (e.g. every 30 min) that records per-supplier status (connected / auth failed / missing credential / down) and shows it in a موردين status panel in the app with last-checked time. If a supplier lacks credentials or a connector, list it by name in the PR body and in .nova/reports/suppliers-status.md (secret names only, never values). Tests for the status model. No deploy, no paid services.",
+      "acceptance": "Report lists every supplier with real check result; scheduled health check workflow added; status panel in app; missing credentials listed by name; no orders/carts; tests pass."
+    },
+    {
+      "id": "UX202",
+      "phase": "ux",
+      "after": ["UX200", "UX201"],
+      "title": "Build ux-pro6 artifact with WhatsApp chat view and supplier status",
+      "brief": "Rebuild the live artifact from the latest worker/live artifact (ux-pro5 or newer) as the next ux-pro name (ux-pro6 unless taken) the same way UX80/UX81 did (tools/build-worker-artifact.mjs, markers test, node --check), including UX200 and UX201 UI. Include a test that clicking #novaWaBtn lands on the conversations view. No deploy.",
+      "acceptance": "Next ux-pro artifact built with both features; tests pass; no deploy."
+    }
+  ]
+}
