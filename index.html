@@ -14,7 +14,7 @@
 @media(prefers-reduced-motion:reduce){#novaSplash .ns-bar i{animation:none;width:100%;opacity:.6}}
 </style>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>NOVA Rx | صيدلية السوسي</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#0A0B0E">
@@ -2056,7 +2056,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 #inputPercentDiscount,#inputFixedDiscount{min-height:44px;box-sizing:border-box}
 @media(min-width:769px) and (max-width:1100px){.nova-sale-actions{gap:var(--sp-1)!important}.nova-sale-actions .btn{padding-inline:8px!important}}
 </style>
-<link rel="stylesheet" href="/ux-tokens.css"><link rel="stylesheet" href="/nova-icons.css"><script src="/nova-icons.js" defer></script></head>
+<link rel="stylesheet" href="/ux-tokens.css"><link rel="stylesheet" href="/nova-icons.css"><script src="/nova-icons.js" defer></script><style id="NOVA_FIX50">@media (hover:none),(pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=color]):not([type=button]):not([type=submit]):not([type=image]),textarea,select{font-size:16px!important}}</style></head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;document.documentElement.classList.remove('nova-boot');try{var a=document.activeElement;if(!a||a===document.body){var m=document.getElementById('mainSearchInput');if(m&&m.offsetParent)m.focus()}}catch(e){}s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
   <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="products">المنتجات</button><button class="nova-tab" data-page="customers">العملاء</button><button class="nova-tab" data-page="reports">التقارير</button><a id="novaPurchasesNav" class="nova-tab" style="text-decoration:none;display:inline-flex;align-items:center" href="/purchases">المشتريات</a><button class="nova-tab" data-page="settings">الإعدادات</button>
@@ -6893,7 +6893,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  if(mq.addEventListener)mq.addEventListener('change',sync);
 })();
 </script>
-</body>
+<script id="NOVA_FIX50_VV">(function(){var vv=window.visualViewport,t=0;
+function root(){return document.querySelector('.wa-root[data-view=chat]')}
+function fit(){var r=root(),a=document.activeElement,foc=a&&a.id==='waInput';
+if(!r||!foc||innerWidth>700){if(r){r.style.removeProperty('height');r.style.removeProperty('min-height')}document.documentElement.style.removeProperty('--nova-vvh');return}
+var h=vv?vv.height:innerHeight;document.documentElement.style.setProperty('--nova-vvh',h+'px');
+window.scrollTo(0,0);var top=Math.max(0,r.getBoundingClientRect().top);if(top>0)window.scrollBy(0,top);
+top=Math.max(0,r.getBoundingClientRect().top);var H=Math.max(220,h-top);r.style.height=H+'px';r.style.minHeight='0';
+var m=document.getElementById('waMsgs');if(m)m.scrollTop=m.scrollHeight}
+function later(){clearTimeout(t);t=setTimeout(fit,60)}
+document.addEventListener('focusin',function(e){if(e.target&&e.target.id==='waInput'){fit();setTimeout(fit,300)}});
+document.addEventListener('focusout',function(e){if(e.target&&e.target.id==='waInput')setTimeout(fit,50)});
+if(vv){vv.addEventListener('resize',later);vv.addEventListener('scroll',later)}})();</script></body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
