@@ -3715,22 +3715,15 @@
    "brief": "Reproduced: with no PIN the list shows 'عميل تجريبي (عرض محلي)' (demo-1) under the lock bar (d/m-wa-locked.png) which looks like a real chat. Hide the demo chat unless the local-demo flag is on, otherwise label it clearly 'عرض تجريبي'; show a proper locked empty state (lock icon + short explanation) in the list pane instead, and when the main pane is empty show the same guidance. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Locked state shows no fake chat and a clear empty state; test updated.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:33:32+00:00",
    "pr": 407,
-   "ci_dispatched": {
-    "sha": "ea446e2f8c0474a9675c90c89c979f3daf94ac16",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:38:27+00:00"
-   }
+   "merged_at": "2026-11-14T14:43:54+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/407"
   },
   {
    "id": "UX234",
@@ -3917,5 +3910,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:42:35+00:00"
+ "updated": "2026-11-14T14:43:54+00:00"
 }
