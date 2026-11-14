@@ -1,0 +1,139 @@
+{
+  "tasks": [
+    {
+      "id": "UX204",
+      "phase": 10,
+      "title": "شعار «NOVA Rx» مقصوص عند حافة الهيدر (موبايل يظهر «VA Rx»، سطح المكتب ملاصق للحافة)",
+      "brief": "In index.html header brand block: add inline padding/safe-area so the 'NOVA Rx' wordmark is fully visible and not flush to the screen edge at 1366 and 390 widths; ensure brand does not shrink/overflow under the nav (flex-shrink, min-width, ellipsis none). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Full 'NOVA Rx' visible with >=12px margin on both viewports; screenshot test asserts bounding box inside viewport.",
+      "after": []
+    },
+    {
+      "id": "UX205",
+      "phase": 10,
+      "title": "تنقل الموبايل: تبويبات مخفية بلا إشارة تمرير + التبويب النشط مقطوع + صفحة المشتريات بلا البيع/الفواتير",
+      "brief": "On <=780px the .nova-nav hides tabs (التقارير/المشتريات/الإعدادات) with no scroll affordance and the active tab is cut (e.g. 'التقا…'). Add edge fade/scroll hint, scrollIntoView({inline:'center'}) for the active tab on click/load, scroll-snap; in purchases.html mobile nav scroll to start/active so البيع and الفواتير are reachable. Consider overflow 'المزيد' tab. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "All 7 tabs reachable on 390px; active tab fully visible after each click; test covers it.",
+      "after": []
+    },
+    {
+      "id": "UX206",
+      "phase": 10,
+      "title": "صف السلة على الموبايل مكسور: زر + مقطوع، السعر مكرر، اسم الصنف مقصوص",
+      "brief": "On 390px the cart row shows only '−' (plus button clipped), unit price duplicated ('144.00' twice), product name clipped at start ('i0ML UK)*'), no line total. Rework the mobile cart row into a 2-line grid: name (wrap/ellipsis end), then qty stepper (−/qty/+) with unit price and line total; delete button 44px. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Row fits 390px without clipping; − qty + all visible and tappable; no duplicated price; test asserts all controls inside viewport.",
+      "after": []
+    },
+    {
+      "id": "UX207",
+      "phase": 10,
+      "title": "زر «استيكرات الأدوية» العائم يغطي صفوف جدول المنتجات (السعر 320.00 مخفي)",
+      "brief": "Floating sticker FAB overlaps table rows on products (desktop bottom-left) and mobile (sparkle FAB over rows). Add bottom padding to the products list equal to FAB height, or move the FAB into the products toolbar; keep it from covering price/barcode columns. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "No overlap of FAB with table cells at 1366 and 390; test checks bounding boxes.",
+      "after": []
+    },
+    {
+      "id": "UX208",
+      "phase": 10,
+      "title": "شاشة المحادثات بسمة فاتحة (أبيض/بيج) داخل تطبيق Black Edition الداكن",
+      "brief": "The inbox tab (#novaInboxTab view) renders a white/beige WhatsApp-like light panel; restyle with Black Edition tokens (ux-tokens.css): dark surfaces, matching radius/borders, readable contrast, empty-state 'اختر محادثة لعرضها' with icon; keep RTL bubbles. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Inbox uses dark tokens, contrast >=4.5:1, desktop+mobile screenshots consistent; test asserts computed background is dark.",
+      "after": []
+    },
+    {
+      "id": "UX209",
+      "phase": 10,
+      "title": "أيقونة واتساب #novaWaBtn بحجم 24px على سطح المكتب (هدف نقر صغير) وبلا مسافة عن الحالة/التحديث",
+      "brief": "Make #novaWaBtn at least 36x36 (44 on touch) with aria-label, focus ring and consistent spacing with status dot and refresh button; align header icon group. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Button >=36px desktop/44px mobile; keyboard focus visible; test asserts size.",
+      "after": []
+    },
+    {
+      "id": "UX210",
+      "phase": 10,
+      "title": "ترويسة البيع على الموبايل تأخذ ~190px (3 صفوف) وشارة F1 بلا فائدة على اللمس",
+      "brief": "On 390px the sale header (shop, new sale, hold, held, customer, more, F1 chip, invoice no.) wraps to 3 rows. Compress to a single action row + overflow menu; hide the F1 shortcuts chip on touch/coarse pointer; keep 44px targets. Gives the cart more room. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Header block <=110px tall on 390x844; F1 chip hidden on hasTouch; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX211",
+      "phase": 10,
+      "title": "تبديل تبويب المنتجات 155ms ومهمة طويلة 115ms (رسم 300 صف دفعة واحدة)",
+      "brief": "Switching to المنتجات renders 300 rows synchronously (long task 115ms, tab latency 155ms, target <100ms). Render first ~40 rows then fill the rest in idle chunks (requestIdleCallback/rAF) or virtualize; keep search/scroll smooth at 60fps; avoid layout thrash. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Tab switch to products <100ms and no long task >50ms in Playwright measurement; row count and search results unchanged; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX212",
+      "phase": 10,
+      "title": "بطاقات المنتجات: تكرار «عدد الأصناف/نتيجة البحث»، نص «غير متوفر من مصدر الأسعار» ضخم، وأزرار الأعلى تلتف على 3 أسطر موبايل",
+      "brief": "Products header: merge duplicate count cards when search empty (show one 'N صنف' + results only when filtering), shrink the 'الرصيد غير متوفر' card to a compact notice chip, make the action buttons (طباعة الاستيكرات/استلام بضاعة/قراءة فاتورة) single-line with ellipsis or an icon row on mobile. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "KPI area <=90px tall on mobile; no 3-line button labels; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX213",
+      "phase": 10,
+      "title": "التقارير: حالة فارغة مجرد سطر وفراغ شاشة كاملة",
+      "brief": "Reports empty state is one text bar and ~500px of blank space. Add a designed empty state (icon, title, hint, primary CTA 'ابدأ بيع' linking to the sale tab) and make the demo-data disclosure clear with a skeleton preview, not blank. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Empty reports shows icon+CTA; CTA switches to sale tab; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX214",
+      "phase": 10,
+      "title": "إزاحة تخطيط CLS=0.0195 عند تحميل سطح المكتب",
+      "brief": "Layout shift measured 0.0195 on 1366 load (none on mobile). Find via PerformanceObserver layout-shift sources (likely header badge/nav or fonts) and reserve space (fixed min-height/width, font-display/size-adjust, preload fonts). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "CLS <=0.005 on desktop load in a Playwright measurement test.",
+      "after": []
+    },
+    {
+      "id": "UX215",
+      "phase": 10,
+      "title": "الإعدادات: نموذج الدخول بعرض كامل مع فراغ كبير وتسلسل بصري ضعيف",
+      "brief": "Settings 'الحسابات والجلسات' form inputs span the full width (~300px each, huge empty left). Constrain to max-width ~420px, group in a card with clear headings, align cards in a consistent 2-column grid, add helper/ error states, correct tab order. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Form max-width applied; both viewports screenshot clean; test asserts input width <=460px.",
+      "after": []
+    },
+    {
+      "id": "UX216",
+      "phase": 10,
+      "title": "زر «إتمام الدفع» المعطّل بتباين ضعيف وصندوق الإرشاد يكرر رسالة الفاتورة الفارغة",
+      "brief": "Disabled F9 pay button text has very low contrast (greyed on dark teal) and the empty-cart state shows both an empty message and a 3-step box with a separate 'إخفاء'. Raise disabled contrast to >=3:1 with clear disabled style; merge the empty state and tips into one concise block. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "Disabled pay button contrast >=3:1; single empty-state block; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX217",
+      "phase": 10,
+      "title": "404 لـ /favicon.ico في كل تحميل",
+      "brief": "Add <link rel=icon href=icon.svg> (and in purchases.html) so the browser stops requesting /favicon.ico; verify no 404 in the Playwright console log. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
+      "acceptance": "No /favicon.ico request or 404 on both pages; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX218",
+      "phase": 10,
+      "title": "Build worker/live/nova-rx-preview.qa-203.js (qa-loop, no deploy)",
+      "brief": "Rebuild the live Worker artifact like UX80 did: take the latest worker/live artifact (newest nova-rx-preview.*.js from the previous build tasks), extract the app HTML literal, apply the index.html, purchases.html and supplier-lookup.js diffs of UX204, UX205, UX206, UX207, UX208, UX209, UX210, UX211, UX212, UX213, UX214, UX215, UX216, UX217 in merge order, write back with tools/build-worker-artifact.mjs to worker/live/nova-rx-preview.qa-203.js. Worker code outside the HTML literal must stay byte-identical. Add a markers test asserting these fixes' markers plus earlier markers; run it, node --check on the artifact and the existing *-artifact checks. Must NOT deploy.",
+      "acceptance": "worker/live/nova-rx-preview.qa-203.js exists, markers test and node --check pass, no deploy.",
+      "after": [
+        "UX204",
+        "UX205",
+        "UX206",
+        "UX207",
+        "UX208",
+        "UX209",
+        "UX210",
+        "UX211",
+        "UX212",
+        "UX213",
+        "UX214",
+        "UX215",
+        "UX216",
+        "UX217"
+      ]
+    }
+  ]
+}
