@@ -1,0 +1,117 @@
+{
+  "quick sale & barcode": {
+    "score": 8.0,
+    "last_cycle": 203,
+    "open_findings": 2,
+    "refs": [
+      "UX206",
+      "UX216"
+    ]
+  },
+  "invoices": {
+    "score": 8.0,
+    "last_cycle": 203,
+    "open_findings": 1,
+    "refs": []
+  },
+  "returns & refunds": {
+    "score": 7.0,
+    "last_cycle": 203,
+    "open_findings": 0,
+    "refs": [
+      "not audited this cycle"
+    ]
+  },
+  "purchasing & receiving": {
+    "score": 7.5,
+    "last_cycle": 203,
+    "open_findings": 1,
+    "refs": [
+      "UX205"
+    ]
+  },
+  "inventory, expiry & shortages": {
+    "score": 7.5,
+    "last_cycle": 203,
+    "open_findings": 3,
+    "refs": [
+      "UX207",
+      "UX211",
+      "UX212"
+    ]
+  },
+  "customers, debts & chronic refill": {
+    "score": 8.0,
+    "last_cycle": 203,
+    "open_findings": 1,
+    "refs": []
+  },
+  "reports & shift close": {
+    "score": 7.0,
+    "last_cycle": 203,
+    "open_findings": 1,
+    "refs": [
+      "UX213"
+    ]
+  },
+  "conversations (WhatsApp inbox)": {
+    "score": 6.5,
+    "last_cycle": 203,
+    "open_findings": 2,
+    "refs": [
+      "UX208",
+      "UX209"
+    ]
+  },
+  "settings & permissions": {
+    "score": 7.5,
+    "last_cycle": 203,
+    "open_findings": 1,
+    "refs": [
+      "UX215"
+    ]
+  },
+  "mobile layout": {
+    "score": 6.0,
+    "last_cycle": 203,
+    "open_findings": 4,
+    "refs": [
+      "UX204",
+      "UX205",
+      "UX206",
+      "UX210"
+    ]
+  },
+  "keyboard & accessibility": {
+    "score": 7.5,
+    "last_cycle": 203,
+    "open_findings": 1,
+    "refs": [
+      "UX209"
+    ]
+  },
+  "performance": {
+    "score": 7.5,
+    "last_cycle": 203,
+    "open_findings": 3,
+    "refs": [
+      "UX211",
+      "UX214",
+      "UX217"
+    ]
+  },
+  "Arabic copy & RTL": {
+    "score": 8.0,
+    "last_cycle": 203,
+    "open_findings": 0,
+    "refs": []
+  },
+  "errors, offline & edge cases": {
+    "score": 7.0,
+    "last_cycle": 203,
+    "open_findings": 0,
+    "refs": [
+      "not audited this cycle"
+    ]
+  }
+}
