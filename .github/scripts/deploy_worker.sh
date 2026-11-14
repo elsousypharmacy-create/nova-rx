@@ -80,9 +80,14 @@ put_script(){ # $1 file, $2 module/legacy
   jq -e '.success==true' "$WORK/put.json" >/dev/null
 }
 verify(){ # $1 = file whose content must be live
-  cf "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME/settings" > "$WORK/after.json" || return 1
-  jq -e '.success==true' "$WORK/after.json" >/dev/null || return 1
-  local after; after="$(jq -c '[.result.bindings[]?|{name,type}]|sort_by(.name)' "$WORK/after.json")"
+  local after="" n
+  for n in 1 2 3 4 5 6; do # settings can briefly read empty right after upload
+    if cf "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME/settings" > "$WORK/after.json" && jq -e '.success==true' "$WORK/after.json" >/dev/null; then
+      after="$(jq -c '[.result.bindings[]?|{name,type}]|sort_by(.name)' "$WORK/after.json")"
+      [ "$after" = "$BEFORE" ] && break
+    fi
+    sleep 5
+  done
   [ "$after" = "$BEFORE" ] || { echo "bindings differ: $after"; return 1; }
   [ "$(jq -c '.result.compatibility_date' "$WORK/after.json")" = "$(jq -c '.result.compatibility_date' "$WORK/settings.json")" ] || { echo "compatibility_date differs"; return 1; }
   [ "$(jq -c '.result.compatibility_flags//[]' "$WORK/after.json")" = "$(jq -c '.result.compatibility_flags//[]' "$WORK/settings.json")" ] || { echo "compatibility_flags differ"; return 1; }
