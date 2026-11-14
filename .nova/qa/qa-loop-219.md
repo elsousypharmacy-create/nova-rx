@@ -42,3 +42,7 @@ UX204 (الشعار)، UX209 (أيقونة واتساب 36/44px)، UX208 (الم
 
 ## UX224 — return dialog cancel-invoice fields (2026-11-14)
 Fixed in index.html: cancel-box inputs/select styled like #novaRetReason, real `<label for>` (incl. reason label), per-qty `aria-label` with product name, disclosure summary with rotating chevron, danger-tone confirm button. Test: tests/ui-ux224-return-fields.mjs (9 cases PASS). Also PASS: ui-returns (10), ui-pos04-returns-cancel (8), ui-sales-ledger (8).
+
+## UX222 — return dialog validation (frontend only)
+- index.html return dialog: error #novaRetMsg clears on input/chip/return-all; per-row inline msg (`[data-ret-err]`) + aria-invalid for over-max ('الحد الأقصى N'), fraction, negative; clamp on blur; inputmode=numeric, step=1.
+- Tests (run from a temp dir with @playwright/test, CHROME_PATH=/usr/bin/chromium, python http.server :8765): ui-ux222-return-validation 8/8, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.
