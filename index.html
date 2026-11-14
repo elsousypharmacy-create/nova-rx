@@ -6477,6 +6477,8 @@ input,select,textarea{min-height:44px}
 }
 /* UX2: mobile nav edge fade */
 @media(max-width:780px){.nova-nav-row>.nova-nav,.nova-nav{overflow-x:auto!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-nav::-webkit-scrollbar{display:none}}
+/* UX205: mobile nav scroll-snap + scroll padding so the active tab is never clipped */
+@media(max-width:780px){.nova-nav-row>.nova-nav,.nova-nav{scroll-snap-type:x proximity;scroll-padding-inline:28px}.nova-nav .nova-tab{scroll-snap-align:center}}
 /* UX16: tap targets >=44px on nav, tables and settings (single-line nav keeps UX2 horizontal scroll) */
 .nova-nav-row{height:48px;min-height:48px}
 .nova-nav-row>.nova-nav{padding:2px 8px!important;flex-wrap:nowrap!important;align-items:center}
@@ -6819,7 +6821,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
-function init(){var n=document.querySelector('.nova-nav');if(!n)return;new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
+function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
 <style id="ux206-mobile-cart-row">
 /* UX206: 2-line mobile cart row. Line 1: name (wraps, ellipsis at end) + delete 44px. Line 2: - qty + unit | unit price | line total. */

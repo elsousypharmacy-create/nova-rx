@@ -60,3 +60,5 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:var(--sp-3);flex-wrap:nowr
 /* UX45: brand status dot + tab strip (active tab kept in view on mobile) */
 .nova-topbar .brand{display:inline-flex;align-items:center;gap:var(--sp-2)}.nova-topbar .brand .pharmacy-banner-live{display:inline-flex;width:8px;height:8px;border-radius:50%;background:#3ecf8e;box-shadow:0 0 0 3px #3ecf8e33}.nova-topbar .brand .pharmacy-banner-live b{display:none}
 @media(max-width:800px){.nova-topbar nav{scrollbar-width:none;scroll-padding-inline:var(--sp-4)}.nova-topbar nav::-webkit-scrollbar{display:none}}
+/* UX205: edge-fade scroll hint + scroll-snap on mobile nav */
+@media(max-width:800px){.nova-topbar nav{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-topbar nav a{scroll-snap-align:center}}
