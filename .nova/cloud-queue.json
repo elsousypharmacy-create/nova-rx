@@ -3557,6 +3557,18 @@
    }
   },
   {
+   "id": "FIX50",
+   "phase": "fix",
+   "title": "iOS Safari zooms in when typing in any input; keep screen fixed like WhatsApp everywhere",
+   "brief": "Ahmed (iPhone Safari, screenshot): tapping the conversations composer makes the page zoom in and the layout shifts; he wants the screen to stay exactly like WhatsApp when typing, and the same in EVERY input across the whole app (search, sale, barcode, PIN, settings, returns, forms). Root cause: iOS auto-zooms inputs/textarea/select with computed font-size < 16px. Fix globally: all input/textarea/select font-size >= 16px on touch devices (keep visual design, adjust padding), viewport meta with width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content (do NOT disable user pinch zoom unless needed for accessibility review; prefer the 16px fix). Conversations: composer pinned above the keyboard (visualViewport / dvh), message list stays scrolled to bottom, header stays visible, no page jump, like WhatsApp. Add a Playwright WebKit iPhone test asserting every input's computed font-size >= 16px and no scale change on focus. Build the next free worker/live artifact (tools/build-worker-artifact.mjs, markers test, node --check). No deploy.",
+   "acceptance": "No zoom on focus in any input on iPhone; composer stays above keyboard like WhatsApp; test covers all inputs; artifact built; no deploy.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/fix-ios-zoom.json"
+  },
+  {
    "id": "UX243",
    "phase": 10,
    "title": "Build worker/live/nova-rx-preview.qa-231.js (qa-loop, no deploy)",
@@ -3943,5 +3955,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:06:44+00:00"
+ "updated": "2026-11-14T15:08:20+00:00"
 }
