@@ -15,7 +15,7 @@ async function session(flag) {
     if (q.method() !== 'GET' && q.method() !== 'HEAD') { attempted.push(q.method() + ' ' + u); return r.abort(); }
     return u.startsWith(origin) || u.startsWith('data:') ? r.continue() : r.abort();
   });
-  if (flag) await ctx.addInitScript(() => { if (!sessionStorage.getItem('__seeded')) { localStorage.setItem('nova.flags.inbox', '1'); sessionStorage.setItem('__seeded', '1'); } });
+  if (flag) await ctx.addInitScript(() => { if (!sessionStorage.getItem('__seeded')) { localStorage.setItem('nova.flags.inbox', '1'); localStorage.setItem('nova.flags.localDemo', '1'); sessionStorage.setItem('__seeded', '1'); } });
   const page = await ctx.newPage(); const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
