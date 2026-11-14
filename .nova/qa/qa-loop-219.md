@@ -34,3 +34,6 @@ UX204 (الشعار)، UX209 (أيقونة واتساب 36/44px)، UX208 (الم
 
 ## UX225 — تذييل أزرار المرتجع
 الإصلاح (index.html فقط): نافذة المرتجع صارت flex عمودي؛ الجسم `.nova-ret-body` قابل للتمرير، والتذييل `.nova-ret-foot` (رسالة الخطأ + إغلاق + تأكيد المرتجع) ثابت دائمًا. الشرائح شبكة 2×2 على ≤600px؛ زر التأكيد أعرض (flex 2) وبعرض كامل على الموبايل. اختبار: tests/ui-ux225-returns-footer.mjs (1366×768 و390×844، الإلغاء مفتوح/مغلق).
+## UX226 — return confirmation toast (frontend only)
+- index.html: `novaReturnNotice` (role=status live region: "تم تسجيل مرتجع بقيمة X — ردّ المبلغ نقدًا/على البطاقة/خصم من الآجل"), row highlight (static outline when prefers-reduced-motion), 10s undo via new `novaSales.removeReturn(id)`. Undo not offered for credit returns (customer-ledger collect cannot be reversed from the UI).
+- Tests (run from a temp playwright install, chromium): ui-ux226-return-toast 6/6, ui-returns 10/10, ui-pos04-returns-cancel 8/8, ui-sales-ledger 8/8 — all PASS.
