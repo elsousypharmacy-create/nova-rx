@@ -3,6 +3,7 @@
 // Never prints tokens, cookies or passwords. Skips a supplier whose secrets are missing.
 // Env: NOVA_WORKER_URL, NOVA_INGEST_SECRET, PO_USERNAME/PO_PASSWORD, AUMET_USERNAME/AUMET_PASSWORD
 const { chromium } = require('playwright');
+const { classifyLogin } = require('./aumet-login-signals.cjs');
 const { guardAumetApi, captureAumetCart, verifyAumetCart } = require('./aumet-renewal.cjs');
 
 const WORKER = (process.env.NOVA_WORKER_URL || '').replace(/\/+$/, '');
@@ -124,12 +125,7 @@ async function aumet(browser) {
       loginStatus = response.status();
       loginResponseTask = response.text().then((body) => {
         // Emit fixed booleans only. Server messages can contain account data.
-        loginSignals = {
-          credentialsRejected: /invalid credentials|incorrect password|wrong password|invalid email|بيانات.*غير صحيحة|كلمة المرور.*غير صحيحة/i.test(body),
-          otherSession: /another device|other device|already logged|logout.others|log.out.other|جهاز آخر|جهاز اخر/i.test(body),
-          verificationRequired: /captcha|verification.code|one.time.password|two.factor|رمز التحقق/i.test(body),
-          rateLimited: /too many|rate.limit|محاولات كثيرة/i.test(body),
-        };
+        loginSignals = classifyLogin(loginStatus, body);
       }).catch(() => { loginSignals = { responseUnreadable: true }; });
     });
     page.on('request', (r) => {
@@ -170,7 +166,7 @@ async function aumet(browser) {
         ...loginSignals,
       };
       console.log('aumet login diagnostics: ' + JSON.stringify(diagnostics));
-      return { id: 'aumet', result: 'login failed (see safe diagnostics)' };
+      return { id: 'aumet', result: loginSignals.credentialsRejected ? 'login failed: AUMET credentials rejected by server (update AUMET_USERNAME/AUMET_PASSWORD)' : 'login failed (see safe diagnostics)' };
     }
     let searchQuery = 'Panadol';
     phase = 'inspect-search';
