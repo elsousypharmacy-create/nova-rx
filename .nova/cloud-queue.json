@@ -2283,22 +2283,15 @@
    "brief": "Files: backend/src/wa-sender.js (new), tests/unit/backend-wa-sender.check.mjs (new). Injected-fetch adapter that builds Cloud API payloads, requires msg-policy decision (opt-in, 24h service window via messaging.js, daily/monthly limits) before any call, reads secret NAMES WA_TOKEN and WA_PHONE_ID only from env, flag NOVA_WA_SEND default OFF => error WA_SEND_DISABLED; never calls the network in tests; maps provider errors to inbox status failed. No real keys, no paid calls.",
    "acceptance": "tests with a fake fetch: flag off -> no fetch call; closed window or missing opt-in -> blocked with Arabic message; allowed -> exactly one fetch with expected body and no token in logs/errors; failure -> status failed; node tests/unit/msg-policy.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T00:31:21+00:00",
    "pr": 338,
-   "ci_dispatched": {
-    "sha": "2edbc3eda05de39f668442b0db10664ad16c340c",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-14T00:32:39+00:00"
-   }
+   "merged_at": "2026-11-14T00:37:21+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/338"
   },
   {
    "id": "UX49",
@@ -2844,5 +2837,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:35:49+00:00"
+ "updated": "2026-11-14T00:37:21+00:00"
 }
