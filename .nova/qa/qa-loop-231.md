@@ -41,3 +41,7 @@ Screenshots: .nova/qa/qa-loop-231/ux242-*.png (mobile 390px).
 ## UX239 fix (chat header)
 - index.html: `.wa-head` now has subtitle (`N رسالة · آخر نشاط … · أرشيف للقراءة فقط`), 44x44 SVG chevron back button (right-pointing = RTL back), 44x44 header lock icon button (`data-wa-lock`, shown only when history unlocked) handled by the same click path as `#waHistLock`.
 - tests/ux/ux239-wa-head.mjs measured: mobile back 44x44, lock 44x44, desktop lock 44x44; subtitle present. Screenshots: ux239-mobile-head.png, ux239-desktop-head.png.
+
+# QA loop 231 — UX238 keyboard + screen reader in conversations
+Fixed (index.html inbox block): h1 heading; #waSearch aria-label; #waList role=group+label; #waMsgs role=log, aria-live=polite, label, tabindex=-1; aria-current on the active chat; lock button aria-label; role=status on the lock-bar text; PIN focused on open and after every error; focus to back button (mobile) or #waMsgs on open; Escape/back returns focus to the chat button; ArrowUp/Down in the list (and from search); focus kept across redraws.
+Tests (Playwright from /tmp, mocked history API, no real PIN): ux238-wa-keyboard OK (desktop+mobile), fix46-wa-history OK. Repro: node tools/qa/qa-loop-231.mjs. Screenshots in qa-loop-231/.

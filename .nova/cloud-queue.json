@@ -3597,19 +3597,19 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:10:17+00:00",
+   "dispatched_at": "2026-11-14T14:19:24+00:00",
    "pr": 402,
    "ci_dispatched": {
-    "sha": "46cf3f5e113763484e1856224f49c69e922c6cbf",
+    "sha": "b764270bb0b819c627da63904a4bbe0292d07cc7",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:13:05+00:00"
+    "at": "2026-11-14T14:20:45+00:00"
    }
   },
   {
@@ -3621,19 +3621,19 @@
    "after": [],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 1,
+   "fix_attempts": 2,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:16:47+00:00",
+   "dispatched_at": "2026-11-14T14:24:12+00:00",
    "pr": 403,
    "ci_dispatched": {
-    "sha": "b6f65ce95ebd04ea895945b72d349ef2f0b9dade",
+    "sha": "76a6c3b53d03fb0142a6e2a4d726377c90434adc",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T14:10:17+00:00"
+    "at": "2026-11-14T14:19:24+00:00"
    }
   },
   {
@@ -3643,22 +3643,15 @@
    "brief": "Reproduced (a11y step): #waSearch has no label/aria-label, active chat has no aria-current, #waList/#waMsgs have no role/aria-label, no aria-live for the loaded chat, lock button has no label; after a wrong PIN the field is cleared and focus goes to BODY, the PIN field is not focused on open, opening a chat leaves focus on BODY, Escape does not go back to the list on mobile, and the page has no heading. Add labels/roles, aria-current, focus the PIN field on open and after errors, move focus to the message pane/back button on open and back to the chat button on Escape/back, role=alert already on errors. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Keyboard-only flow works (Tab to PIN, Enter, arrow/Tab into list, Esc back); test asserts focus targets and aria attributes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:13:05+00:00",
    "pr": 404,
-   "ci_dispatched": {
-    "sha": "553faa871e10930f2df82fdcf9352d0072e48d20",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:16:47+00:00"
-   }
+   "merged_at": "2026-11-14T14:21:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/404"
   },
   {
    "id": "UX237",
@@ -3667,10 +3660,22 @@
    "brief": "Reproduced: chat list shows '2026/11/12' for any day older than yesterday and day separators scroll away (position:static) in a 300+ message chat with 27 days. Use weekday names for the last 6 days (الأحد…) and a localized date for older ones, make .wa-date sticky with a frosted background while scrolling, like WhatsApp. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Weekday labels and sticky separators verified in a test with fake dates.",
    "after": [],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:20:45+00:00",
+   "pr": 405,
+   "ci_dispatched": {
+    "sha": "82b59c625156df0a2a7cba3cd67de9b5c6fdc446",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T14:24:12+00:00"
+   }
   },
   {
    "id": "UX236",
@@ -3881,5 +3886,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:16:47+00:00"
+ "updated": "2026-11-14T14:24:12+00:00"
 }
