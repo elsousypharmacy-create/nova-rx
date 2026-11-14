@@ -43,3 +43,5 @@ UX204 (الشعار)، UX209 (أيقونة واتساب 36/44px)، UX208 (الم
 ## UX223 — return dialog focus trap (frontend only)
 - index.html: Tab/Shift+Tab trap, aria-labelledby on h3, focus restored to opener (or re-rendered same data-return button), body scroll locked while open.
 - Tests (http.server :8765): ui-ux223-return-focus PASS; ui-returns PASS 10; ui-pos04-returns-cancel PASS 8; ui-sales-ledger PASS 8.
+## UX224 — return dialog cancel-invoice fields (2026-11-14)
+Fixed in index.html: cancel-box inputs/select styled like #novaRetReason, real `<label for>` (incl. reason label), per-qty `aria-label` with product name, disclosure summary with rotating chevron, danger-tone confirm button. Test: tests/ui-ux224-return-fields.mjs (9 cases PASS). Also PASS: ui-returns (10), ui-pos04-returns-cancel (8), ui-sales-ledger (8).
