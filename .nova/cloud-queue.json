@@ -3578,7 +3578,7 @@
    "brief": "Reproduced: a 320-message chat renders 320 nodes in one draw (openBigChat ~480ms incl. mocked 250ms network) with scrollH 20k px; draw() always forces scrollTop to bottom, and after scrolling up there is no 'scroll to latest' button nor 'N new messages' marker. Render the latest ~80 messages with a 'رسائل أقدم' button that preserves scroll position, add a floating scroll-to-latest button when >1 screen away from the bottom, keep the bottom anchor on first open. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Big chat opens at the latest message with bounded DOM, older messages load on demand without jumping; test with 320 messages.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
@@ -3586,13 +3586,13 @@
    "dispatched_at": "2026-11-14T14:03:57+00:00",
    "pr": 401,
    "ci_dispatched": {
-    "sha": "e8c159e461cbe29563c4e5797eba36af807aafa0",
+    "sha": "3401c477ae9af094376e0ec44b89990ebcd9043b",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T13:58:47+00:00"
+    "at": "2026-11-14T14:06:35+00:00"
    }
   },
   {
@@ -3626,10 +3626,12 @@
    "brief": "Reproduced: .wa-head shows only avatar+name (headSubtitle false); the read-only/archive status is only in the composer placeholder, the lock button lives in a separate bar above, and the mobile back chevron is a bare › glyph (text button, no 44px target) (m-wa-chat-big.png). Add a subtitle (عدد الرسائل · آخر نشاط · أرشيف للقراءة فقط), a chevron icon button of 44x44 on touch, and a compact lock icon button in the header; RTL-correct arrow direction. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Header shows subtitle, 44px back target and lock button on mobile; test measures sizes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-231-fixes.json"
+   "source": "inbox/qa-loop-231-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T14:06:35+00:00"
   },
   {
    "id": "UX238",
@@ -3864,5 +3866,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:03:57+00:00"
+ "updated": "2026-11-14T14:06:35+00:00"
 }
