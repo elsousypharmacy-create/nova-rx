@@ -325,3 +325,6 @@ $('checkSupplierOrder').onclick=async()=>{
  catch(e){$('orderStatus').textContent=orderError(e.message);}finally{orderInFlight=false;orderControls();}
 };
 $('scopeChip').onclick=()=>openSettings();scopeView();
+
+// UX45: keep the active purchases tab fully visible in the scrollable mobile tab strip.
+(function(){try{const a=document.querySelector('.nova-topbar nav a[aria-current]');if(a&&a.scrollIntoView)a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}})();
