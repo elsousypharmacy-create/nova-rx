@@ -3422,12 +3422,12 @@
    "brief": "On <=780px the .nova-nav hides tabs (التقارير/المشتريات/الإعدادات) with no scroll affordance and the active tab is cut (e.g. 'التقا…'). Add edge fade/scroll hint, scrollIntoView({inline:'center'}) for the active tab on click/load, scroll-snap; in purchases.html mobile nav scroll to start/active so البيع and الفواتير are reachable. Consider overflow 'المزيد' tab. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "All 7 tabs reachable on 390px; active tab fully visible after each click; test covers it.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T11:32:44+00:00",
+   "dispatched_at": "2026-11-14T11:40:18+00:00",
    "pr": 392,
    "ci_dispatched": {
     "sha": "f0bdb0be630cd0d9911df0decb60f2341b678d0b",
@@ -3447,23 +3447,16 @@
    "brief": "In index.html header brand block: add inline padding/safe-area so the 'NOVA Rx' wordmark is fully visible and not flush to the screen edge at 1366 and 390 widths; ensure brand does not shrink/overflow under the nav (flex-shrink, min-width, ellipsis none). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "Full 'NOVA Rx' visible with >=12px margin on both viewports; screenshot test asserts bounding box inside viewport.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-203-fixes.json",
    "slot": "B",
    "dispatched_at": "2026-11-14T11:32:44+00:00",
    "pr": 391,
-   "ci_dispatched": {
-    "sha": "57f2443289629b0a951348114105f65616b11cc4",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T11:35:50+00:00"
-   }
+   "merged_at": "2026-11-14T11:40:18+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/391"
   }
  ],
- "updated": "2026-11-14T11:38:51+00:00"
+ "updated": "2026-11-14T11:40:18+00:00"
 }
