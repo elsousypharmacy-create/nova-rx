@@ -2006,6 +2006,18 @@ function label(rate){var r=rate===undefined?get():rate;return String(Math.round(
 return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
   <link rel="stylesheet" href="supplier-lookup.css">
 <style id="ux10-mobile-sale">
+/* UX210: compact single-row sale header on phones; F1 chip hidden on touch */
+@media (max-width:600px){
+ .top-header{padding:6px 9px!important;gap:4px!important}
+ .top-header .brand-section{flex:1 1 100%}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:nowrap!important;gap:4px!important;flex:1 1 100%;justify-content:flex-start}
+ .nova-sale-actions .nova-hold-action,.nova-sale-actions .nova-held-action{padding:0!important;width:44px!important;min-width:44px!important;justify-content:center;position:relative}
+ .nova-sale-actions .nova-hold-action>span,.nova-sale-actions .nova-held-action>span:not(.nova-held-count){display:none}
+ .nova-sale-actions .nova-held-action .nova-held-count{position:absolute;top:1px;inset-inline-end:2px;font-size:10px}
+ .nova-sale-actions .nova-sale-number{font-size:11px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+ .nova-sale-actions .nova-new-sale{padding:0 8px!important;flex:0 1 auto}
+}
+@media (hover:none),(pointer:coarse){.nova-help-chip{display:none!important}}
 /* UX10: mobile sale layout (toast/FAB/totals/table) */
 @media (max-width:600px){
  .toast-container{top:auto!important;bottom:calc(76px + env(safe-area-inset-bottom,0px))!important;left:50%!important;right:auto!important;transform:translateX(-50%);max-width:92vw;pointer-events:none;z-index:9000}
