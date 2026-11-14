@@ -1,4 +1,4 @@
-// UX300: worker/live/nova-rx-preview.ux300.js = fix46 Worker code + current index.html (WhatsApp response-time dashboard). No deploy.
+// UX300: worker/live/nova-rx-preview.ux300.js = wa-live2 Worker code + current index.html (WhatsApp response-time dashboard). No deploy.
 // Run: node tests/unit/ux300-artifact.check.mjs
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -6,7 +6,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-const ART = 'worker/live/nova-rx-preview.ux300.js', PREV = 'worker/live/nova-rx-preview.fix46.js';
+const ART = 'worker/live/nova-rx-preview.ux300.js', PREV = 'worker/live/nova-rx-preview.wa-live2.js';
 execFileSync('node', ['--check', ART], { stdio: 'pipe' });
 const out = path.join(mkdtempSync(path.join(tmpdir(), 'nova-ux300-')), 'app.html');
 execFileSync('node', ['tools/build-worker-artifact.mjs', '--extract', ART, out], { stdio: 'pipe' });

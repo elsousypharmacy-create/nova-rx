@@ -62,3 +62,4 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:var(--sp-3);flex-wrap:nowr
 @media(max-width:800px){.nova-topbar nav{scrollbar-width:none;scroll-padding-inline:var(--sp-4)}.nova-topbar nav::-webkit-scrollbar{display:none}}
 /* UX205: edge-fade scroll hint + scroll-snap on mobile nav */
 @media(max-width:800px){.nova-topbar nav{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-topbar nav a{scroll-snap-align:center}}
+@media (hover:none),(pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=color]):not([type=button]):not([type=submit]){font-size:16px!important}}
