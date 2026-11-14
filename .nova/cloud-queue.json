@@ -2334,7 +2334,7 @@
    "brief": "Files: integrations/whatsapp/inbox.html, supplier-compare.html, index.html (customers empty state), tests/ux/standalone-pages.mjs (new). Give inbox.html the Black Edition palette tokens, a header with a «رجوع للتطبيق» link, buttons >=44px, SVG instead of ◉, 12px minimum font; supplier-compare buttons >=44px; customers page with fewer than 8 rows shows an empty-state card with an «إضافة عميل» action instead of 230px blank. Inbox stays unpublished; no network/flag change.",
    "acceptance": "tests/ux/standalone-pages.mjs at both viewports: inbox.html buttons >=44px and min font >=12px, back link present, no emoji glyph; supplier-compare buttons >=44px; node tests/unit/whatsapp-bridge.check.mjs still passes; no live writes.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/ux-pro2b.json",
@@ -2342,13 +2342,13 @@
    "dispatched_at": "2026-11-14T00:40:34+00:00",
    "pr": 342,
    "ci_dispatched": {
-    "sha": "244826ea1c0a61a005852e29ff0e8d5477b516ad",
+    "sha": "ecd6ac0cb26429e66d59b31239e5a694cbf3c304",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T00:38:54+00:00"
+    "at": "2026-11-14T00:42:02+00:00"
    }
   },
   {
@@ -2358,12 +2358,22 @@
    "brief": "Files: index.html (#checkoutModal quick amounts, .nova-return-overlay reason chips and buttons, #novaPayAmt dialog), tests/ux/tap-targets.mjs (extend with dialogs). Raise quick cash amounts (50/100/200/500/بالضبط) and reason chips from 28-36px to 44px on touch; hide number-input spinner arrows; keep layout within the dialog without new scroll.",
    "acceptance": "Extended tests/ux/tap-targets.mjs covers checkout, return and debt dialogs at 390x844: every control >=44px high; no dialog body scroll at 1366x768; node tests/ux/checkout-polish.mjs and tests/ux/dialog-style.mjs pass.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/ux-pro2b.json",
    "slot": "B",
-   "dispatched_at": "2026-11-14T00:35:49+00:00"
+   "dispatched_at": "2026-11-14T00:35:49+00:00",
+   "pr": 343,
+   "ci_dispatched": {
+    "sha": "0883e7f297820bca538cf7a871645d68fc844a4e",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T00:42:02+00:00"
+   }
   },
   {
    "id": "UX45",
@@ -2386,10 +2396,12 @@
    "brief": "Files: index.html (totals panel / discount card CSS under max-width:640px), tests/ux/mobile-totals.mjs (new). Put the invoice discount inputs inside a collapsible row inside the totals block; no text clipped (the 0.98 VAT line is cut today); keep the pay button sticky and >=48px; keep UX33 compact rows.",
    "acceptance": "tests/ux/mobile-totals.mjs at 390x844 after adding two items: no element in the totals block overlaps another (bounding boxes), all totals text fully visible, pay bar does not cover the last cart row at scroll end; node tests/ux/mobile-cart.mjs and tests/ux/mobile-sale-layout.mjs pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T00:42:02+00:00"
   },
   {
    "id": "UX43",
@@ -2398,10 +2410,12 @@
    "brief": "Files: index.html (products page header/toolbar/table CSS), tests/ux/products-layout.mjs (new). Desktop: one toolbar row (search flex:1 + two buttons aligned on the same baseline) under the title; mobile <=640px: table rows become cards (name, barcode, price, balance, pack) so content width never exceeds its card (extends UX24).",
    "acceptance": "tests/ux/products-layout.mjs: at 390x844 products table scrollWidth <= clientWidth+2 and all columns readable; at 1366x768 search and buttons share one row with equal heights; node tests/ux/mobile-tables.mjs, tests/ux/low-stock-filter.mjs and tests/ux/products-empty-columns.check.mjs pass.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/ux-pro2b.json"
+   "source": "inbox/ux-pro2b.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-14T00:42:02+00:00"
   },
   {
    "id": "UX42",
@@ -2833,5 +2847,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-14T00:40:34+00:00"
+ "updated": "2026-11-14T00:42:02+00:00"
 }
