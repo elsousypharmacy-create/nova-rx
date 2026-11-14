@@ -3980,7 +3980,7 @@
    "brief": "In the return dialog the 44px close button is absolutely positioned over the h3, clipping the first letters of 'مرتجع / إلغاء — فاتورة S-1001' (d-dlg-open.png). Give the header a flex row (title + close) with proper gap, remove the 28px hack margin, keep close at 44px, and make the header sticky inside the scrollable dialog. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Title fully visible at 1366 and 390 with no overlap of the close button; bounding-box test.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-219-fixes.json",
@@ -3988,13 +3988,13 @@
    "dispatched_at": "2026-11-14T16:09:14+00:00",
    "pr": 423,
    "ci_dispatched": {
-    "sha": "8c546632c87ee41a23daf3efed7520b54ee97c0a",
+    "sha": "890c5693c6a023f547fd886f650aa182f3aa2bfd",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T16:01:45+00:00"
+    "at": "2026-11-14T16:11:45+00:00"
    }
   },
   {
@@ -4022,5 +4022,5 @@
    }
   }
  ],
- "updated": "2026-11-14T16:09:14+00:00"
+ "updated": "2026-11-14T16:11:45+00:00"
 }
