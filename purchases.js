@@ -71,17 +71,17 @@ function groupHtml(g){return `<section class="group"><h3>${esc(supplierName(g.su
 function configValid(){if(!prefs.suppliers.length){status('اختَر موردًا واحدًا على الأقل من الإعدادات',true);return false;}if(prefs.suppliers.includes('aumet')&&!prefs.aumetSellers.length){status('حدّد مخازن أوميت المسموح بها أولًا',true);openSettings(false);return false;}return true;}
 async function loadStock(){
  if(busy)return;
- if(!dashboardPin){pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();$('sourceState').textContent='STOCK LIVE · محتاج رقم الداشبورد';status('اكتب رقم دخول الداشبورد في الخانة المفتوحة ثم احفظ؛ هيبدأ تحميل النواقص تلقائيًا.',true);return;}
+ if(!dashboardPin){pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();$('sourceState').textContent='المخزون الحي · محتاج رقم الداشبورد';status('اكتب رقم دخول الداشبورد في الخانة المفتوحة ثم احفظ؛ هيبدأ تحميل النواقص تلقائيًا.',true);return;}
  pendingStockLoad=false;mockScenario=null;
  try{prefs.days=readDays($('days').value);}catch(e){status(e.message,true);return;}
  setBusy(true);status('جارٍ قراءة النواقص من STOCK LIVE…');
  try{
   const result=await provider().purchasingStock(dashboardPin);
   if(!result.ok||!Array.isArray(result.items))throw new Error(result.error==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين لقراءة المخزون':result.error==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر؛ لم يتم تحميل بيانات قديمة بدلًا منه':'تعذر قراءة مخزون الصيدلية');
-  rawItems=result.items;rebuild();$('sourceState').textContent='STOCK LIVE · متصل';$('sourceState').parentElement.classList.add('ready');
+  rawItems=result.items;rebuild();$('sourceState').textContent='المخزون الحي · متصل';$('sourceState').parentElement.classList.add('ready');
   const date=new Date(result.sourceUpdatedAt||result.generatedAt);$('sourceTime').textContent=Number.isNaN(date.getTime())?'وقت تحديث المصدر غير متاح':'آخر تحديث المصدر '+date.toLocaleString('en-GB',{timeZone:'Africa/Cairo'});
   status(`تمت قراءة ${fmt(rawItems.length)} صنف؛ ${fmt(items.length)} بحاجة للطلب. راجع الكميات قبل التوزيع.`);
- }catch(e){if(e.message==='source-auth-required'){dashboardPin='';pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();}const message=e.message==='pin-required'?'اكتب رقم موردين نوفا عند طلبه للاتصال':e.message==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين':e.message==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر':e.message==='source-unavailable'?'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة':e.message;status(message||'تعذر الاتصال بالمصدر',true);$('sourceState').textContent=e.message==='source-auth-required'?'STOCK LIVE · راجع رقم الداشبورد':e.message==='pin-required'?'STOCK LIVE · محتاج رقم موردين نوفا':'STOCK LIVE · تعذر التحديث';$('sourceState').parentElement.classList.remove('ready');}
+ }catch(e){if(e.message==='source-auth-required'){dashboardPin='';pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();}const message=e.message==='pin-required'?'اكتب رقم موردين نوفا عند طلبه للاتصال':e.message==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين':e.message==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر':e.message==='source-unavailable'?'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة':e.message;status(message||'تعذر الاتصال بالمصدر',true);$('sourceState').textContent=e.message==='source-auth-required'?'المخزون الحي · راجع رقم الداشبورد':e.message==='pin-required'?'المخزون الحي · محتاج رقم موردين نوفا':'المخزون الحي · تعذر التحديث';$('sourceState').parentElement.classList.remove('ready');}
  finally{setBusy(false);render();}
 }
 async function searchOffers(item){
