@@ -2610,6 +2610,28 @@ window.NovaFmt=(function(){
         }
         return prev[b.length];
       };
+      // UX63: small static Arabic generic-name / indication aliases -> Latin generic already in product records. Lower-ranked tier (score 5 < exact 10 / prefix 7).
+      const ALIAS_RAW = {
+        "اموكسيسيلين": "amoxicillin", "أموكسيسيللين": "amoxicillin", "اموكسيسللين": "amoxicillin", "اموكسيلين": "amoxicillin",
+        "ديكلوفيناك": "diclofenac", "ديكلوفينيك": "diclofenac",
+        "باراسيتامول": "paracetamol", "بارسيتامول": "paracetamol",
+        "ايبوبروفين": "ibuprofen", "اسبرين": "aspirin",
+        "ميتفورمين": "metformin", "ميتفورمن": "metformin",
+        "اتورفاستاتين": "atorvastatin", "اتورفاستاتن": "atorvastatin",
+        "كولسترول": "atorvastatin", "كوليسترول": "atorvastatin",
+        "سترزين": "cetirizine", "سيتيريزين": "cetirizine", "سيتريزين": "cetirizine",
+        "اوميبرازول": "omeprazole", "ايزوميبرازول": "esomeprazole",
+        "بيسوبرولول": "bisoprolol", "زيلوميتازولين": "xylometazoline",
+        "مسكن": "paracetamol", "مسكن صداع": "paracetamol", "صداع": "paracetamol", "مسكن الم": "paracetamol",
+        "بخاخ انف": "xylometazoline", "بخاخ الانف": "xylometazoline", "احتقان الانف": "xylometazoline", "زكام": "xylometazoline",
+        "حساسيه": "cetirizine", "مضاد حساسيه": "cetirizine", "مضاد حيوي": "amoxicillin", "سكر": "metformin", "ضغط": "bisoprolol"
+      };
+      const ALIASES = new Map(Object.entries(ALIAS_RAW).map(([k, v]) => [foldKey(k), v]));
+      const aliasFor = k => {
+        if (ALIASES.has(k)) return ALIASES.get(k);
+        if (k.length >= 5 && /[\u0600-\u06FF]/.test(k)) for (const [ak, v] of ALIASES) if (ak.length >= 5 && editDist(k, ak, 1) <= 1) return v;
+        return null;
+      };
       // CAT-05 instant search index: Arabic folding, Latin names, 1-2 edit typos, whole-number strength/pack, exact barcode.
       const createCatalogIndex = list => {
         const products = Array.isArray(list) ? list : [];
@@ -2672,8 +2694,14 @@ window.NovaFmt=(function(){
           const words = [...new Set(splitToks(q))].slice(0, 8);
           if (!words.length) return [];
           let scores = null;
-          for (const w of words) {
-            const m = matchWord(w, words.length === 1);
+          const lowTier = lat => { const r = matchWord(lat, true); for (const [i, v] of r) r.set(i, Math.min(v, 5)); return r; };
+          if (words.length > 1) {
+            const pa = aliasFor(words.join(" "));
+            if (pa) { const m = lowTier(pa); if (m.size) scores = m; }
+          }
+          for (const w of scores ? [] : words) {
+            let m = matchWord(w, words.length === 1);
+            if (!m.size) { const al = aliasFor(w); if (al) m = lowTier(al); }
             if (!m.size) return [];
             if (scores === null) { scores = new Map(m); continue; }
             const next = new Map();
