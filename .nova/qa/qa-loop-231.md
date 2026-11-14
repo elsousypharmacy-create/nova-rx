@@ -28,3 +28,8 @@ FIX46 يعمل وظيفيًا: بلا PIN لا طلب ولا نص، PIN خاطئ
 «المحادثات» 6.0 (11 مفتوحة)، «لوحة المفاتيح» 6.0، لا مجال ≥9.5. محدّث في `.nova/qa/scorecard.json`. المهام UX232–UX242 + بناء UX243 في `.nova/inbox/qa-loop-231-fixes.json`.
 
 لم يُختبر: أجهزة حقيقية، قارئ شاشة، استقبال رسائل حية، PIN حقيقي، شبكة بطيئة حقيقية.
+
+## UX242 fix — WhatsApp history error/empty/offline states
+Frontend only (index.html unified-inbox block). New panels `.wa-state[data-state=pin|error|network|offline|empty]` with Arabic copy and retry (`#waHistRetry`); PIN_INVALID/PIN_REQUIRED/network/offline/500 mapped to clear messages; typed PIN length hint kept (length only, PIN never stored). Remaining attempts are unknown (backend frozen), the hint says so.
+Tests (Playwright installed in /tmp/pw, system chromium): `node tests/ux/ux242-wa-error-states.mjs` OK; `node tests/ux/fix46-wa-history.mjs` OK; unit: unified-inbox, ux200-wa-chat, fix43, ux81 all pass.
+Screenshots: .nova/qa/qa-loop-231/ux242-*.png (mobile 390px).
