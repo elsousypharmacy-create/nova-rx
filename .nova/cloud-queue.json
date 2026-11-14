@@ -3743,22 +3743,15 @@
    "brief": "Reproduced: after clicking a chat the pane shows only the single last message (the preview) for the whole fetch, no spinner/skeleton/aria-busy (loadingState msgs:1, spinner:false), then 8-320 messages pop in (CLS + looks like the whole chat). Show a skeleton or 'جاري تحميل المحادثة…' with aria-busy until hist.full[id] arrives, and an inline error with 'إعادة المحاولة' if the fetch fails (currently only a global hist.err). Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Loading and error states are visible and accessible; test delays the mocked conversation response and asserts the placeholder, then the messages.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T14:53:13+00:00",
    "pr": 410,
-   "ci_dispatched": {
-    "sha": "6246b82c0bffa908d85779ee71c85149e579f644",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T14:56:51+00:00"
-   }
+   "merged_at": "2026-11-14T15:01:05+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/410"
   },
   {
    "id": "UX233",
@@ -3935,5 +3928,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T14:59:44+00:00"
+ "updated": "2026-11-14T15:01:05+00:00"
 }
