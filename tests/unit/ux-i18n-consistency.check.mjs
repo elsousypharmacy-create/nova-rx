@@ -25,5 +25,14 @@ for (const id of ['novaNewRole', 'novaNewOk'])
   if (!new RegExp(`id="${id}"[^>]*aria-label=`).test(auth)) fails.push(`${id} missing aria-label`);
 // 4. unified button tokens
 if (!/--nova-btn-radius/.test(html) || !/\.nova-page-btn\{[^}]*var\(--nova-btn-radius/.test(html)) fails.push('button radius token not used by .btn/.nova-page-btn');
+// UX28 (H7): leftover English display strings
+const pur = fs.readFileSync(new URL('../../purchases.html', import.meta.url), 'utf8') + fs.readFileSync(new URL('../../purchases.js', import.meta.url), 'utf8');
+if (!html.includes('لا توجد فواتير معلقة')) fails.push('held empty state not Arabic');
+if (!html.includes('Enter: إضافة')) fails.push('search hint not Arabic');
+for (const [k, v] of [['Topical', 'موضعي'], ['ENT', 'أنف وأذن وحنجرة']]) if (!new RegExp(`${k}:'${v}'`).test(html)) fails.push('category label missing ' + k);
+for (const [k, v] of [['VIP Gold', 'ذهبي'], ['Silver Member', 'فضي'], ['Bronze Member', 'برونزي']]) if (!html.includes(`'${k}':'${v}'`)) fails.push('tier label missing ' + k);
+if (/textContent='STOCK LIVE/.test(pur) || />STOCK LIVE ·/.test(pur)) fails.push('purchases STOCK LIVE label not Arabic');
+if (!html.includes("+'—</span>')+'</td>']);")) fails.push('packaging dash fallback must stay —');
+if (!/window\.novaDispName\(p\.name\)/.test(html) || !/dispName\(l\.name\)/.test(html)) fails.push('English name in parentheses not hidden in table/receipt');
 if (fails.length) { console.error('FAIL ux-i18n-consistency\n' + fails.join('\n')); process.exit(1); }
 console.log('PASS ux-i18n-consistency');

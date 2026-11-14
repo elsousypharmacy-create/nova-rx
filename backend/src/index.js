@@ -15,12 +15,15 @@ import { registerEntitlementRoutes } from './entitlements.js';
 import { registerReleasesRoutes } from './releases.js';
 import { registerMeteringRoutes } from './metering.js';
 import { registerInboxRoutes } from './inbox.js';
+import { registerTransferRoutes } from './transfers.js';
 import { registerCameraRoutes } from './cameras.js';
+import { registerBranchRoutes } from './branches.js';
 import { registerDeliveryRoutes } from './delivery.js';
 import { registerDeployRoutes } from './deploys.js';
 import { registerWhatsAppRoutes } from './whatsapp-intake.js';
 import { registerMsgMonitorRoutes } from './msg-monitor.js';
 import { scheduledBackup } from './backup.js';
+import { scheduledWaProcess } from './whatsapp-process.js';
 
 export function newRequestId() {
   const b = new Uint8Array(8);
@@ -82,7 +85,9 @@ registerMeteringRoutes(route, { json, errorResponse });
 registerDeployRoutes(route, { errorResponse }, { authenticate });
 registerWhatsAppRoutes(route, { json, errorResponse });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
+registerTransferRoutes(route, { errorResponse }, { authenticate });
 registerCameraRoutes(route, { errorResponse }, { authenticate });
+registerBranchRoutes(route, { errorResponse }, { authenticate });
 registerDeliveryRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
@@ -131,5 +136,5 @@ async function handleInner(request, env) {
 
 export default {
   fetch: (request, env) => handle(request, env),
-  scheduled: (event, env, ctx) => { const p = scheduledBackup(env); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; },
+  scheduled: (event, env, ctx) => { const p = Promise.all([scheduledBackup(env), scheduledWaProcess(env).catch(() => null)]).then((r) => r[0]); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; },
 };
