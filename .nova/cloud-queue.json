@@ -3216,12 +3216,13 @@
    "merged_at": "2026-11-14T11:52:17+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/393",
    "preview_deploy": {
-    "stage": "real",
+    "stage": "failed",
     "path": "worker/live/nova-rx-preview.qa-203.js",
     "sha256": "9d3e2ef74af193641a70b7b29e11ca5ad6a6f900797eda0fdd2c955fac392d0b",
     "at": "2026-11-14T12:39:33+00:00",
     "previous": null,
-    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43595813643"
+    "run_url": "https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43595925848",
+    "reason": "smoke error: HTTP Error 403: Forbidden (no previous artifact recorded; the deploy workflow restores the pre-deploy code itself on upload/verify failure)"
    }
   },
   {
@@ -3487,5 +3488,5 @@
    }
   }
  ],
- "updated": "2026-11-14T12:39:33+00:00"
+ "updated": "2026-11-14T12:40:56+00:00"
 }
