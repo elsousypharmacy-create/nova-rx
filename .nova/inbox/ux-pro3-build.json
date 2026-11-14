@@ -1,0 +1,12 @@
+{
+  "tasks": [
+    {
+      "id": "UX80",
+      "phase": 10,
+      "title": "Build worker/live/nova-rx-preview.ux-pro3.js (ux-pro2b + UX60-UX71 frontend, no deploy)",
+      "brief": "Rebuild the live Worker artifact exactly like UX54 did: base worker/live/nova-rx-preview.ux-pro2b.js, extract the app HTML literal, apply the index.html diffs of UX60, UX61, UX62, UX63, UX64, UX65, UX66, UX67, UX68, UX69, UX70, UX71 in merge order (git log), re-apply by hand any hunk that does not apply, write back with tools/build-worker-artifact.mjs to worker/live/nova-rx-preview.ux-pro3.js. Also check that any UX22-UX35 or UX40-UX53 change is not lost. Worker code outside the HTML literal must stay byte-identical to ux-pro2b. Add tests/unit/ux-pro3-artifact.check.mjs asserting markers of each UX60-UX71 change plus earlier markers; run node --check and all ux-pro*-artifact checks. Must NOT deploy.",
+      "acceptance": "worker/live/nova-rx-preview.ux-pro3.js exists with all UX1-UX71 frontend changes, artifact check tests pass, no deploy.",
+      "after": []
+    }
+  ]
+}
