@@ -1,0 +1,12 @@
+{
+ "tasks": [
+  {
+   "id": "FIX42",
+   "phase": "fix",
+   "after": [],
+   "title": "Persist staging cron trigger in backend/wrangler.toml",
+   "brief": "Add [env.staging.triggers] crons = [\"* * * * *\"] to backend/wrangler.toml so scheduledWaProcess (WhatsApp bridge queue processing) keeps running on nova-rx-api-staging after future deploys. Do not change production config. Cloud tasks never deploy.",
+   "acceptance": "wrangler.toml has the staging cron; existing tests pass."
+  }
+ ]
+}
