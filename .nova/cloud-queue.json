@@ -2188,22 +2188,15 @@
    "brief": "Files: index.html (settings screen, permissions matrix), tests/ux/settings-copy.mjs (new). Show role names in Arabic (المالك/المدير/الصيدلي/الكاشير/المخزن/المحاسب/المندوب) and permission keys with Arabic labels (sale.create → «إنشاء بيع»…), put the matrix inside a collapsed <details> «مصفوفة الصلاحيات (للمدير)», fix copy «Black Edition · خط Cairo · واجهة مخصصة للتابلت بالعرض» → «المظهر: Black Edition، خط Cairo، مناسب للتابلت» and use one register (فصحى مبسّطة) instead of «اختار لغة العرض». Frontend-only; preserve Black Edition Arabic RTL; backend frozen; no deploy; do not edit .nova/cloud-queue.json or workflows. Source: .nova/qa/ux-pro2-report.md. Do not touch the worker artifacts (UX36 rebuilds them). NOTE: previous PR conflicted with main after UX22-UX34 merged; start fresh from current main and keep the diff minimal.",
    "acceptance": "tests/ux/settings-copy.mjs asserts the visible settings text contains no /[a-z]+\\.[a-z]+/ permission keys, matrix collapsed by default, language switch journey still 3 clicks, node tests/unit/ux-i18n-consistency.check.mjs passes.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/ux-pro2.json",
    "slot": "A",
    "dispatched_at": "2026-11-13T23:54:40+00:00",
    "pr": 330,
-   "ci_dispatched": {
-    "sha": "10b3db32299599d373e7bf8743933a87e01cc0c1",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-13T23:55:56+00:00"
-   }
+   "merged_at": "2026-11-14T00:00:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/330"
   },
   {
    "id": "UX34",
@@ -2435,5 +2428,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/329"
   }
  ],
- "updated": "2026-11-13T23:58:18+00:00"
+ "updated": "2026-11-14T00:00:35+00:00"
 }
