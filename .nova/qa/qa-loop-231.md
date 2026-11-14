@@ -28,3 +28,7 @@ FIX46 يعمل وظيفيًا: بلا PIN لا طلب ولا نص، PIN خاطئ
 «المحادثات» 6.0 (11 مفتوحة)، «لوحة المفاتيح» 6.0، لا مجال ≥9.5. محدّث في `.nova/qa/scorecard.json`. المهام UX232–UX242 + بناء UX243 في `.nova/inbox/qa-loop-231-fixes.json`.
 
 لم يُختبر: أجهزة حقيقية، قارئ شاشة، استقبال رسائل حية، PIN حقيقي، شبكة بطيئة حقيقية.
+
+## UX241 fix (big chat, frontend only)
+index.html + unified-inbox.js: renderWa takes opts.limit (default 80); older messages behind a "رسائل أقدم (N)" button (+80 per click, anchor kept by distance-from-bottom); floating "انزل للأحدث" button when >1 screen from bottom; draw() only sticks to bottom on first open / when already near bottom.
+Tests: tests/ux/ux241-big-chat.mjs (320 msgs, desktop+mobile) OK; fix46-wa-history OK; unit unified-inbox, ux200-wa-chat, backend-inbox-history OK.

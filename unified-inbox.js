@@ -160,7 +160,9 @@
     '.wa-chat-body{flex:1;min-width:0}.wa-row{display:flex;justify-content:space-between;align-items:center;gap:8px}.wa-name{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.wa-ctime{font-size:12px;color:#9eacb9;flex:none}.wa-chat.unread .wa-ctime{color:#25d366}.wa-preview{font-size:14px;color:#9eacb9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.wa-badge{flex:none;min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:10px;background:#25d366;color:#06210f;font-size:12px;font-weight:700;text-align:center;line-height:20px}' +
-    '.wa-main{flex:1;display:flex;flex-direction:column;min-width:0;background:#0f1115}' +
+    '.wa-main{flex:1;display:flex;flex-direction:column;min-width:0;background:#0f1115;position:relative}' +
+    '.wa-older{align-self:center;flex:none;min-height:36px;margin:6px 0;padding:0 16px;border:1px solid #2a313a;border-radius:18px;background:#1a1e24;color:#79c9eb;font:inherit;font-size:13px;cursor:pointer}' +
+    '.wa-tolatest{position:absolute;inset-inline-start:16px;bottom:78px;z-index:2;min-height:40px;padding:0 14px;border:1px solid #2a313a;border-radius:20px;background:#0b7a63;color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}.wa-tolatest[hidden]{display:none}' +
     '.wa-head{background:#1a1e24;border-bottom:1px solid #2a313a}.wa-back{display:none;border:0;background:none;font-size:22px;cursor:pointer;color:#cfd8df}' +
     '.wa-msgs{flex:1;overflow:auto;padding:12px 7%;display:flex;flex-direction:column;gap:3px}.wa-date{text-align:center;margin:10px 0}.wa-date span{background:#1a1e24;color:#b5c0ca;font-size:12.5px;padding:5px 12px;border-radius:10px;border:1px solid #2a313a}' +
     '.wa-msg{display:flex}.wa-msg.wa-in{justify-content:flex-start}.wa-msg.wa-out{justify-content:flex-end}' +
@@ -193,9 +195,11 @@
     opts = opts || {}; var now = opts.now || Date.now(), sel = null;
     arr(convs).forEach(function (c) { if (c.id === opts.selected) sel = c; });
     var name = sel ? (sel.customer || sel.id) : '';
+    var allMs = sel ? arr(sel.messages) : [], lim = Math.max(1, Number(opts.limit) || 80), hid = Math.max(0, allMs.length - lim);
     var main = sel
       ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع">›</button><span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span>' + esc(name) + '</span></div>' +
-        '<div class="wa-msgs" id="waMsgs">' + bubbles(sel.messages, now) + '</div>'
+        '<div class="wa-msgs" id="waMsgs">' + (hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>' : '') + bubbles(hid ? allMs.slice(hid) : sel.messages, now) + '</div>' +
+        '<button type="button" class="wa-tolatest" data-wa-latest hidden aria-label="انزل للأحدث">⌄ انزل للأحدث</button>'
       : '<div class="wa-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>اختر محادثة لعرضها</span></div>';
     var en = !!opts.sendEnabled;
     return '<style>' + WA_CSS + '</style><div class="wa-root" dir="rtl" data-wa-root data-view="' + (sel ? 'chat' : 'list') + '">' +
