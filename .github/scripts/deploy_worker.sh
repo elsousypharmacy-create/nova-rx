@@ -91,8 +91,15 @@ verify(){ # $1 = file whose content must be live
   [ "$after" = "$BEFORE" ] || { echo "bindings differ: $after"; return 1; }
   [ "$(jq -c '.result.compatibility_date' "$WORK/after.json")" = "$(jq -c '.result.compatibility_date' "$WORK/settings.json")" ] || { echo "compatibility_date differs"; return 1; }
   [ "$(jq -c '.result.compatibility_flags//[]' "$WORK/after.json")" = "$(jq -c '.result.compatibility_flags//[]' "$WORK/settings.json")" ] || { echo "compatibility_flags differ"; return 1; }
-  cf -D "$WORK/live_now.headers" "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME" > "$WORK/live_now.raw" || return 1
-  python3 tools/worker-download-content.py "$WORK/live_now.headers" "$WORK/live_now.raw" "$WORK/live_now.js" >/dev/null || return 1
+  local got=0 n2
+  for n2 in 1 2 3 4 5 6; do
+    if cf -D "$WORK/live_now.headers" "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME" > "$WORK/live_now.raw" \
+      && python3 tools/worker-download-content.py "$WORK/live_now.headers" "$WORK/live_now.raw" "$WORK/live_now.js" >/dev/null; then
+      got=1; break
+    fi
+    sleep 5
+  done
+  [ "$got" = 1 ] || { echo "Worker code missing from download"; return 1; }
   local want have; want="$(wc -c < "$1")"; have="$(wc -c < "$WORK/live_now.js")"
   [ "$have" -gt $((want*995/1000)) ] && [ "$have" -lt $((want*1005/1000+1)) ] || { echo "live code size $have, expected about $want"; return 1; }
   [ "$(sha256sum "$1" | cut -d' ' -f1)" = "$(sha256sum "$WORK/live_now.js" | cut -d' ' -f1)" ] || { echo "live digest differs"; return 1; }
@@ -113,8 +120,16 @@ put_script "$WORK/new.js" "$NEW_FORMAT" || { say "upload failed: $(jq -c '.error
 V="$(verify "$WORK/new.js")" || { say "verification failed: $V"; false; }
 say "$V"
 if [ -n "${LIVE_URL:-}" ]; then
-  CODE="$(curl -sS -o "$WORK/live.html" -w '%{http_code}' --max-time 30 "$LIVE_URL/" || echo 000)"
+  CODE="$(curl -sS -o "$WORK/live.html" -w '%{http_code}' --max-time 30 -H "User-Agent: nova-smoke" -H "Cache-Control: no-cache" "$LIVE_URL/" || echo 000)"
   say "HTTP check $LIVE_URL/ -> $CODE (informational; the code check above is the real proof)"
+  [ "$CODE" = 200 ] || { say "SMOKE FAILED: $LIVE_URL/ -> $CODE"; false; }
+  for m in novaWaBtn hLoad inbox/history waHistPin NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed; do
+    grep -q "$m" "$WORK/live.html" || { say "SMOKE FAILED: live HTML missing marker $m"; false; }
+  done
+  curl -sS --max-time 60 -H "User-Agent: nova-smoke" -H "Accept: application/json" -o "$WORK/stock.json" "$LIVE_URL/emergency/stock.json" || { say "SMOKE FAILED: stock.json download"; false; }
+  jq -e '.items|length>0' "$WORK/stock.json" >/dev/null || { say "SMOKE FAILED: stock.json empty"; false; }
+  grep -q "جافيسكون" "$WORK/stock.json" || { say "SMOKE FAILED: stock.json has no جافيسكون"; false; }
+  say "SMOKE ok: markers + stock ($(jq '.items|length' "$WORK/stock.json") items, جافيسكون present)"
 fi
 trap - ERR
 say "DEPLOYED $SCRIPT_NAME: modified_on $(jq -r '.result.modified_on // "n/a"' "$WORK/put.json"), etag $(jq -r '.result.etag // "n/a"' "$WORK/put.json")"

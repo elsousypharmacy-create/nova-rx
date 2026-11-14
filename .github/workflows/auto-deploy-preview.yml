@@ -1,0 +1,58 @@
+# Auto-deploy the newest worker/live/nova-rx-preview.*.js artifact (by git commit time)
+# to nova-rx-preview when it lands on main. Preview only. Never production or api-staging.
+# Never deploys an older artifact over a newer one (guards the qa-219 race).
+# Manual deploys stay on "Deploy NOVA Worker". This workflow shares the same concurrency group.
+name: Auto-deploy preview artifact
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/live/**"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = check everything, upload nothing"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-nova-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Single attempt only
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: '[ "$RUN_ATTEMPT" = "1" ] || { echo "Re-runs are blocked. Start a new run."; exit 1; }'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check the token secret exists
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: '[ -n "$CF_API_TOKEN" ] || { echo "::error::Add the CLOUDFLARE_API_TOKEN secret (Settings > Secrets and variables > Actions)."; exit 1; }'
+      - name: Select newest artifact, verify markers, deploy (or skip)
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SCRIPT_NAME: nova-rx-preview
+          ARTIFACT_REF: ${{ github.sha }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+          CONFIRM: DEPLOY nova-rx-preview
+          LIVE_URL: https://nova-rx-preview.elsousypharmacy.workers.dev
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: bash .github/scripts/auto_deploy_preview.sh

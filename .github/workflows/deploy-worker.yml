@@ -1,6 +1,8 @@
 # Manual, guarded deploy of the NOVA Rx Cloudflare Worker (nova-rx-preview only).
 # Start it from Actions > "Deploy NOVA Worker" > Run workflow. The first run should be a dry run (default).
 # It never runs AI code, uses one secret (CLOUDFLARE_API_TOKEN) and keeps the Worker's existing bindings.
+# Automatic deploys of the newest worker/live artifact (by commit time) are in auto-deploy-preview.yml
+# and share this workflow's concurrency group (deploy-nova-worker, cancel-in-progress: false).
 name: Deploy NOVA Worker
 
 on:

@@ -39,43 +39,19 @@ assert open(qf).read() == before
 json.dump({"tasks": tasks + [{"id": "UX92", "source": "inbox/qa-loop-92.json", "status": "running"}]}, open(qf, "w"))
 assert Q.run({}, qf, inbox) is None
 
-# preview deploy trigger
+# preview deploy trigger is disabled (moved to auto-deploy-preview.yml; only newest artifact by commit time)
 calls = []; S.act = lambda *a: calls.append(a) or ""
-RUN = {"workflow_runs": []}; S.api = lambda path: RUN
 art = "worker/live/nova-rx-preview.qa-92.js"
-S._sha256 = lambda p: "a" * 64
 def mk(status="done"):
     items = [{"id": "UX101", "title": f"Build {art} (qa-loop, no deploy)", "status": status}]
     return items, {i["id"]: i for i in items}
-items, byid = mk("running"); S.preview_deploys(items, byid, exists=lambda p: True); assert not calls
-items, byid = mk(); S.preview_deploys(items, byid, exists=lambda p: False); assert not calls
-LM = "2026-11-14T16:48:11"; OK = lambda p: []
-S.preview_deploys(items, byid, exists=lambda p: True, live_modified=lambda: LM, markers=OK)
-c = calls[0]; assert f"expected_modified_on={LM}" in c and "expected_modified_on=20" not in c; assert c[:4] == ("gh", "workflow", "run", "deploy-worker.yml") and "dry_run=true" in c and f"artifact_path={art}" in c
-assert not any("production" in x or "staging" in x for x in c)
-d = items[0]["preview_deploy"]; assert d["stage"] == "dry" and d["live_modified_on"] == LM
-# FIX52: stale artifact lacking markers, or unknown live modified_on, is skipped and never dispatched
-calls.clear(); i2, b2 = mk(); S.preview_deploys(i2, b2, exists=lambda p: True, live_modified=lambda: LM, markers=lambda p: ["hLoad"])
-assert not calls and i2[0]["preview_deploy"]["stage"] == "skipped"
-calls.clear(); i2, b2 = mk(); S.preview_deploys(i2, b2, exists=lambda p: True, live_modified=lambda: None, markers=OK)
-assert not calls and i2[0]["preview_deploy"]["stage"] == "skipped"
-assert S.missing_markers("worker/live/nova-rx-preview.qa-219.js") and not S.missing_markers("worker/live/nova-rx-preview.qa-231.js")
-calls.clear()
-fresh = S.iso(S.NOW + 5)
-RUN["workflow_runs"] = [{"created_at": fresh, "status": "in_progress"}]
-calls.clear(); S.preview_deploys(items, byid, exists=lambda p: True); assert not calls and d["stage"] == "dry"
-RUN["workflow_runs"] = [{"created_at": fresh, "status": "completed", "conclusion": "success", "html_url": "u"}]
-S.preview_deploys(items, byid, exists=lambda p: True)
-assert d["stage"] == "real" and "dry_run=false" in calls[0] and "confirm=DEPLOY nova-rx-preview" in calls[0]
-S.preview_deploys(items, byid, smoke=lambda: (True, "ok"), exists=lambda p: True); assert d["stage"] == "deployed"
-# already deployed -> never again
-calls.clear(); S.preview_deploys(items, byid, exists=lambda p: True); assert not calls
-# smoke failure with a previous artifact -> rollback to it
-items, byid = mk(); items[0]["preview_deploy"] = {"stage": "real", "path": art, "sha256": "a" * 64, "at": fresh,
-    "previous": {"path": "worker/live/nova-rx-preview.qa-80.js", "sha256": "b" * 64}}
-S.preview_deploys(items, byid, smoke=lambda: (False, "boom"), exists=lambda p: True)
-d2 = items[0]["preview_deploy"]; assert d2["stage"] == "rollback" and "artifact_path=worker/live/nova-rx-preview.qa-80.js" in calls[-1]
-# non-qa build titles never deploy
-calls.clear(); items = [{"id": "UX80", "title": "Build worker/live/nova-rx-preview.ux-pro3.js (x)", "status": "done"}]
-S.preview_deploys(items, {"UX80": items[0]}, exists=lambda p: True); assert not calls
+for st in ("running", "done"):
+    items, byid = mk(st)
+    S.preview_deploys(items, byid, exists=lambda p: True, live_modified=lambda: "2026-11-14T16:48:11", markers=lambda p: [])
+    assert not calls and "preview_deploy" not in items[0]
+items = [{"id": "UX80", "title": "Build worker/live/nova-rx-preview.ux-pro3.js (x)", "status": "done"}]
+S.preview_deploys(items, {"UX80": items[0]}, exists=lambda p: True)
+assert not calls
+# marker helper still flags the stale qa-219 artifact that caused the incident
+assert S.missing_markers("worker/live/nova-rx-preview.qa-219.js") and not S.missing_markers("worker/live/nova-rx-preview.wa-live3.js")
 print("qa_loop tests ok")
