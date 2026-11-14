@@ -5688,8 +5688,11 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
       'Search product name or scan barcode...':lang==='ar'?'ابحث عن دواء أو امسح الباركود...':'Search product name or scan barcode...',
       'بحث بالاسم أو الرقم أو الباركود':lang==='en'?'Search by name, number, or barcode':'بحث بالاسم أو الرقم أو الباركود',
       'تحديث التطبيق':lang==='en'?'Refresh app':'تحديث التطبيق',
-      'التنقل الرئيسي':lang==='en'?'Main navigation':'التنقل الرئيسي'
+      'التنقل الرئيسي':lang==='en'?'Main navigation':'التنقل الرئيسي',
+      'المحادثات (واتساب)':lang==='en'?'Conversations (WhatsApp)':'المحادثات (واتساب)'
     };
+    const waM=/^المحادثات \(واتساب\) — (\d+) غير مقروء$/.exec(original);
+    if(waM)extra[original]=lang==='en'?'Conversations (WhatsApp) — '+waM[1]+' unread':original;
     el.setAttribute(attr,extra[original]||translateText(original,lang));
    }
   });
@@ -6499,7 +6502,7 @@ nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()</script><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="ux81-wa-badge">/* UX81: WhatsApp icon + unread badge. Unread = conversation whose last message is incoming. Flag/backend off => icon only. */
 (function(){var KEY='nova.inbox.v1',timer=null;
 function unread(cs){var n=0;(Array.isArray(cs)?cs:[]).forEach(function(c){var m=c&&Array.isArray(c.messages)?c.messages:[];if(m.length&&m[m.length-1]&&m[m.length-1].dir==='in')n++});return n}
-function paint(n){var b=document.getElementById('novaWaBadge');if(!b)return;n=Number(n)||0;if(n>0){b.textContent=n>99?'99+':String(n);b.hidden=false}else{b.textContent='';b.hidden=true}var t=document.getElementById('novaWaBtn');if(t)t.setAttribute('aria-label','المحادثات (واتساب)'+(n>0?' — '+n+' غير مقروء':''))}
+function paint(n){var b=document.getElementById('novaWaBadge');if(!b)return;n=Number(n)||0;if(n>0){b.textContent=n>99?'99+':String(n);b.hidden=false}else{b.textContent='';b.hidden=true}var t=document.getElementById('novaWaBtn');if(t){var l='المحادثات (واتساب)'+(n>0?' — '+n+' غير مقروء':'');t.setAttribute('aria-label',l);if(t.dataset)t.dataset.novaOriginalAriaLabel=l}}
 function cfg(){try{var u=localStorage.getItem('novaBackend.url'),k=sessionStorage.getItem('novaBackend.token');return localStorage.getItem('novaBackend.enabled')==='true'&&u&&k?{u:String(u).replace(/\/+$/,'')+'/api/v1/inbox/conversations',k:k}:null}catch(e){return null}}
 function local(){try{var raw=localStorage.getItem(KEY),p=raw?JSON.parse(raw):null;return p&&p.conversations?unread(p.conversations):0}catch(e){return 0}}
 function refresh(){var c=cfg();if(!c||typeof fetch!=='function'){paint(local());return Promise.resolve()}
