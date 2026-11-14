@@ -42,3 +42,5 @@
 - index.html: scroll-snap (x proximity) + scroll-padding + `scrollIntoView({inline:'center'})` عند النقر؛ القناع (fade) الموجود يبقى.
 - purchases.html/css: قناع حواف + snap + توسيط التبويب النشط عند التحميل؛ البيع والفواتير قابلان للوصول.
 - الاختبار: `tests/ui-ux205-mobile-nav.mjs` (7 تبويبات، النشط ظاهر بالكامل بعد كل نقر، المشتريات).
+## UX209 — حجم أيقونة واتساب
+`#novaWaBtn` و`#btnRefreshApp` ≥36×36 على سطح المكتب و44×44 على اللمس/الموبايل، مسافات متساوية مع نقطة الحالة (8px / 2px موبايل)، حلقة تركيز لوحة المفاتيح 2px، `aria-label` موجود. الاختبار: `tests/ui-ux209-wa-target.mjs`.
