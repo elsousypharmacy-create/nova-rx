@@ -4932,7 +4932,24 @@ window.NovaFmt=(function(){
           const { grandTotal } = recalculateFinancials();
           refreshChange();
         });
-        ["inputCardAmount", "inputCreditAmount"].forEach(id => document.getElementById(id).addEventListener("input", refreshChange));
+        // UX60: in split mode the cash field auto-fills with the remainder (total - card - credit); still editable.
+        ["inputCardAmount", "inputCreditAmount"].forEach(id => document.getElementById(id).addEventListener("input", () => {
+          if (state.checkoutPaymentMethod === "split") {
+            const { grandTotal } = recalculateFinancials();
+            const n = id2 => { const x = Number(document.getElementById(id2).value); return Number.isFinite(x) && x > 0 ? x : 0; };
+            const rest = Math.max(0, Math.round((grandTotal - n("inputCardAmount") - n("inputCreditAmount")) * 100) / 100);
+            elements.inputCashReceived.value = rest.toFixed(2);
+            state.cashReceived = rest;
+          }
+          refreshChange();
+        }));
+        // UX60: Enter in the card/credit field moves to cash only when a cash remainder is left, else to confirm.
+        ["inputCardAmount", "inputCreditAmount"].forEach(id => document.getElementById(id).addEventListener("keydown", e => {
+          if (e.key !== "Enter" || state.checkoutPaymentMethod !== "split") return;
+          e.preventDefault(); e.stopPropagation();
+          if ((Number(elements.inputCashReceived.value) || 0) > 0) { elements.inputCashReceived.focus(); elements.inputCashReceived.select?.(); }
+          else elements.btnConfirmPayment.focus();
+        }));
 
         document.querySelectorAll(".pay-method-btn").forEach(btn => {
           btn.addEventListener("click", () => {
