@@ -3563,7 +3563,7 @@
    "brief": "Ahmed (owner) just sent a WhatsApp message to the pharmacy number from his phone, but the NOVA conversations screen still shows the last inbound as yesterday 21:26 and blocks sending with 'آخر رسالة منه عدّى عليها أكتر من 24 ساعة'. So live inbound messages are not reaching staging D1 (the history only has the one-time backfill from sheet tab محادثات البوت; bot logged nothing after Oct 25). Diagnose end to end, read-only on the pharmacy repo/Apps Script: is the approved bridge (bot forwards copy of each message to NOVA ingest) merged/deployed and calling the ingest endpoint with NOVA_INGEST_SECRET? Does ingest write into the same tables the history/conversation and send endpoints read? Fix NOVA side so every new inbound/outbound appears in the chat within seconds (polling or SSE, like WhatsApp), and the 24h check uses the latest real inbound timestamp. If the bridge is missing on the bot side, prepare the PR for the pharmacy repo for Ahmed's review only (do not merge). Also make the composer behave like WhatsApp: clear 24h-window state instead of a red banner over messages, auto-refresh after new inbound, sent message shows instantly with ticks. Never send test messages to real customers; never touch WA_TOKEN or Script Properties; no deploy. Build the next worker/live artifact and report the exact root cause.",
    "acceptance": "Root cause stated; new inbound appears live; 24h window computed from latest inbound; tests added; artifact built; no deploy.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/fix-wa-live-inbound.json",
@@ -3571,14 +3571,14 @@
    "dispatched_at": "2026-11-14T15:19:13+00:00",
    "pr": 414,
    "ci_dispatched": {
-    "sha": "9d22850586246d27072952706919d733ba8d6729",
+    "sha": "91215fcb8e64065d175f05139044ef39d5ce3d02",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T15:15:24+00:00"
+    "at": "2026-11-14T15:20:43+00:00"
    }
   },
   {
@@ -3877,10 +3877,12 @@
    "brief": "The reason and refund method are saved (returns() has reason/method) but never shown: Invoices only shows the amount, Reports 'مرتجعات نقدية' without a breakdown. Add an expandable per-invoice return history row (date, items, qty, amount, method, reason) and a reasons breakdown (عيب/خطأ صرف/رجوع/صلاحية) in Reports; Arabic digits unchanged; empty state when none. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Return history visible per invoice; reports show reasons; test covers rendering and XSS-safe escaping.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:20:43+00:00"
   },
   {
    "id": "UX227",
@@ -3979,5 +3981,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:19:13+00:00"
+ "updated": "2026-11-14T15:20:43+00:00"
 }
