@@ -1,0 +1,31 @@
+# Manual, read-only smoke of the PIN-gated WhatsApp history API on staging (FIX46).
+# Prints counts and status codes only: never chat text, names, phone numbers or the PIN.
+name: WA history smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: PIN-gated history (counts only)
+        env:
+          PIN: ${{ secrets.NOVA_API_PIN }}
+          BASE: https://nova-rx-api-staging.elsousypharmacy.workers.dev/api/v1/inbox/history
+        run: |
+          set -euo pipefail
+          [ -n "$PIN" ] || { echo "::error::MISSING SECRET: NOVA_API_PIN"; exit 1; }
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/conversations")
+          echo "no PIN -> HTTP $code"; [ "$code" = 401 ] || exit 1
+          curl -sf -H "X-Nova-Pin: $PIN" "$BASE/conversations" > list.json
+          jq -r '"with PIN -> conversations: \(.conversations|length), messages: \([.conversations[].count]|add), backfilled: \([.conversations[]|select(.last.id|startswith("h_"))]|length)"' list.json
+          id=$(jq -r '[.conversations[]|select(.last.id|startswith("h_"))][0].id' list.json)
+          curl -sf -H "X-Nova-Pin: $PIN" --get --data-urlencode "id=$id" "$BASE/conversation" > conv.json
+          jq -r '"one old chat -> messages: \(.conversation.messages|length), kinds: \([.conversation.messages[].kind]|group_by(.)|map("\(.[0])=\(length)")|join(","))"' conv.json
+          n=$(jq '.conversation.messages|length' conv.json); [ "$n" -gt 0 ]
+          rm -f list.json conv.json
