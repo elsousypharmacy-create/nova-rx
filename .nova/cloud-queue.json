@@ -3422,7 +3422,7 @@
    "brief": "On <=780px the .nova-nav hides tabs (التقارير/المشتريات/الإعدادات) with no scroll affordance and the active tab is cut (e.g. 'التقا…'). Add edge fade/scroll hint, scrollIntoView({inline:'center'}) for the active tab on click/load, scroll-snap; in purchases.html mobile nav scroll to start/active so البيع and الفواتير are reachable. Consider overflow 'المزيد' tab. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ and run it plus nearest existing ui-pos01-sale-flow/ui-cat05-instant-search tests; record exact results). Evidence: .nova/qa/qa-loop-203.md.",
    "acceptance": "All 7 tabs reachable on 390px; active tab fully visible after each click; test covers it.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-203-fixes.json",
@@ -3430,14 +3430,14 @@
    "dispatched_at": "2026-11-14T11:40:18+00:00",
    "pr": 392,
    "ci_dispatched": {
-    "sha": "f0bdb0be630cd0d9911df0decb60f2341b678d0b",
+    "sha": "0e209f8f31a2b9c5b2ff9521bf7859cde1ce21cb",
     "wf": [
      "playwright-smoke.yml",
      "purchasing-checks.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T11:35:50+00:00"
+    "at": "2026-11-14T11:41:19+00:00"
    }
   },
   {
@@ -3458,5 +3458,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/391"
   }
  ],
- "updated": "2026-11-14T11:40:18+00:00"
+ "updated": "2026-11-14T11:41:19+00:00"
 }
