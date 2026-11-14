@@ -3753,12 +3753,12 @@
    "brief": "Reproduced: scrolling the chat list to 600px then clicking a chat resets #waList scrollTop to 0 on desktop and mobile; on mobile the back button also returns to scrollTop 0 and the chat just left is not highlighted (backScroll). draw() rebuilds the entire view on every click. Preserve list scrollTop across draw (or update only the active class and the main pane), restore on back, and scroll the previously opened chat into view. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "Scroll position of the list is kept on open and on back (desktop+mobile); test covers it with 22 chats.",
    "after": [],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T14:59:44+00:00",
+   "dispatched_at": "2026-11-14T15:06:44+00:00",
    "pr": 412,
    "ci_dispatched": {
     "sha": "9ba66e174747fa61ac0112b94455d4de4390779f",
@@ -3777,12 +3777,22 @@
    "brief": "Reproduced: .wa-root height is calc(100vh - 120px) but the view starts at top ~146px (desktop) / ~162px (mobile) because of the PIN lock bar, so root bottom = 794 > 768 (desktop) and 886 > 844 (mobile) and the composer is cut off (d-wa-chat-big.png, m-wa-chat-big.png). Make the inbox view a flex column filling the viewport under the header (dvh, min-height safe), with .wa-root flex:1 and the lock bar counted in the layout; no clipped composer on 1366x768, 390x844 and short landscape. Frontend-only (index.html inbox block ~lines 6660-6790: unified-inbox renderWa/WA_CSS/draw). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: extend tests/ux/fix46-wa-history.mjs pattern (mock history API, no real PIN) with a new Playwright test under tests/ux/ and run it plus tests/ux/fix46-wa-history.mjs and the existing unified-inbox unit tests; record exact results. Evidence: .nova/qa/qa-loop-231.md and screenshots in .nova/qa/qa-loop-231/; repro script tools/qa/qa-loop-231.mjs.",
    "acceptance": "On both viewports root bottom <= innerHeight and the composer is fully visible; test asserts it with the lock bar open and closed.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-231-fixes.json",
    "slot": "A",
-   "dispatched_at": "2026-11-14T15:02:31+00:00"
+   "dispatched_at": "2026-11-14T15:02:31+00:00",
+   "pr": 413,
+   "ci_dispatched": {
+    "sha": "207448e777e72221beec5b2433a6c28a8073b8e5",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T15:06:44+00:00"
+   }
   },
   {
    "id": "UX230",
@@ -3933,5 +3943,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:03:52+00:00"
+ "updated": "2026-11-14T15:06:44+00:00"
 }
