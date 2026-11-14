@@ -5308,7 +5308,7 @@ window.NovaFmt=(function(){
  const head=(title,subtitle,search=false)=>'<div class="nova-page-header"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div>'+(search?'<input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة">':'')+'</div>';
  const kpi=(label,val)=>'<div class="nova-kpi"><small>'+label+'</small><strong>'+val+'</strong></div>';
  const cards=(h,r)=>table(h,r).replace('<table class="nova-data-table">','<table class="nova-data-table nova-cards">');
- const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
+ const table=(headers,rows)=>'<div class="nova-panel"><div class="nova-panel-title">البيانات التجريبية</div><div class="nova-tbl-scroll" style="overflow:auto"><table class="nova-data-table"><thead><tr>'+headers.map(x=>{const m=/data-sort="(\w+)" data-sort-dir="(\w+)"/.exec(x);return m?'<th aria-sort="'+({asc:'ascending',desc:'descending'}[m[2]]||'none')+'">'+x+'</th>':'<th>'+x+'</th>'}).join('')+'</tr></thead><tbody id="novaRows">'+rows+'</tbody></table></div>'+(rows?'':'<div class="nova-empty" role="status">لا توجد نتائج مطابقة</div>')+'</div>';
  const rows=(items,fn)=>items.map(fn).join('');
 
  const ledger=()=>window.NovaCredit?window.NovaCredit.createCreditLedger(localStorage,'nova.credit'):null;
@@ -5390,7 +5390,9 @@ window.NovaFmt=(function(){
  +dupBlock+trfBlock+(()=>{const cols=[['الصنف',p=>'<td data-label="الصنف">'+esc(window.novaDispName(p.name))+'</td>'],['الباركود',p=>'<td dir="ltr" data-label="الباركود">'+esc(p.barcode)+'</td>'],['السعر',p=>'<td data-label="السعر">'+money(p.price)+'</td>']];
  if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
  if(!real){cols.push(['الرصيد',p=>p.stock<30?'<td data-low="1" data-label="الرصيد"><span class="nova-low-badge">'+esc(p.stock)+'</span></td>':'<td data-label="الرصيد">'+esc(p.stock)+'</td>'],['التصنيف',p=>'<td data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
- const rowFn=p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=shown.length>40?{items:shown.slice(40),fn:rowFn}:null;return cards(cols.map(c=>c[0]),rows(shown.slice(0,40),rowFn));})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ const SK={'الصنف':'name','السعر':'price','الرصيد':'stock'},ss=window.__novaSort||{},sh=ss.key?shown.slice().sort((a,b)=>{const x=a[ss.key],y=b[ss.key],r=ss.key==='name'?String(x).localeCompare(String(y),'ar'):(Number(x)||0)-(Number(y)||0);return ss.dir==='desc'?-r:r}):shown;
+ const hd=cols.map(c=>{const k=SK[c[0]];if(!k)return c[0];const on=ss.key===k,d=on?ss.dir:'none';return '<button type="button" class="nova-sort-btn" data-sort="'+k+'" data-sort-dir="'+d+'"><span>'+c[0]+'</span><svg class="nova-sort-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(d==='asc'?'<path d="M12 19V5M5 12l7-7 7 7"/>':d==='desc'?'<path d="M12 5v14M19 12l-7 7-7-7"/>':'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>')+'</svg></button>'});
+ const rowFn=p=>'<tr tabindex="0" class="nova-row-focus">'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=sh.length>40?{items:sh.slice(40),fn:rowFn}:null;return cards(hd,rows(sh.slice(0,40),rowFn));})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const list=filtered(customers,['name','phone','tier']);
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true)
@@ -5599,6 +5601,8 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   document.querySelectorAll('[data-trf-send]').forEach(b=>b.onclick=()=>{const t=get(b.dataset.trfSend);if(t)dlg('إرسال التحويل — '+esc(t.name||t.key),(t.direction==='out'?'<p style="margin:0;color:#9eacb9;font-size:13px">يُخصم من دفعات هذا الجهاز بالأقدم صلاحية أولًا.</p>':'')+'<label>الكمية المُرسلة<input id="trfSQty" type="number" min="1" step="1" value="'+esc(t.qty)+'" '+inp+'></label>','تأكيد الإرسال',bx=>T.send(t.id,{qty:Number(bx.querySelector('#trfSQty').value)}))});
   document.querySelectorAll('[data-trf-recv]').forEach(b=>b.onclick=()=>{const t=get(b.dataset.trfRecv);if(t)dlg('استلام التحويل — '+esc(t.name||t.key),'<p style="margin:0;color:#9eacb9;font-size:13px">المُرسل: '+esc(t.sentQty)+' — أي نقص أو زيادة يُسجَّل كفرق.</p><label>الكمية المستلمة فعليًا<input id="trfRQty" type="number" min="0" step="1" value="'+esc(t.sentQty)+'" '+inp+'></label>'+(t.direction==='in'?'<label>رقم التشغيلة<input id="trfRLot" maxlength="40" '+inp+'></label><label>تاريخ الانتهاء<input id="trfRExp" type="date" '+inp+'></label>':''),'تأكيد الاستلام',bx=>{const g=s=>bx.querySelector(s);return T.receive(t.id,Number(g('#trfRQty').value),t.direction==='in'?{lot:g('#trfRLot').value,expiry:g('#trfRExp').value}:undefined)})});
  }
+ document.querySelectorAll('th [data-sort]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.sort,c=window.__novaSort||{};window.__novaSort={key:k,dir:c.key===k&&c.dir==='asc'?'desc':'asc'};const f=document.getElementById('novaFilter');render(page,f?f.value:'');const nb=document.querySelector('th [data-sort="'+k+'"]');if(nb)nb.focus()}));
+ const nrows=document.getElementById('novaRows');if(nrows&&!nrows.__kb){nrows.__kb=1;nrows.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='TR'){e.preventDefault();e.target.click()}})}
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
@@ -6553,6 +6557,12 @@ input,select,textarea{min-height:44px}
 @media(max-width:780px){.nova-nav-row{height:48px;min-height:48px}}
 .nova-inventory-action,.nova-return-btn,.nova-page-btn,.nova-page-view button,.nova-page-view select,.nova-page-view input:not([type=checkbox]):not([type=radio]),#novaAuthName,#novaAuthPw,#novaAuthIn,#novaNewName,#novaNewPw,#novaNewRole,#novaNewOk,#novaNearExpiryDays{min-height:44px!important}
 /* UX24: card layout for invoices/customers tables on phones */
+.nova-tbl-scroll{max-height:70vh}
+.nova-data-table thead th{position:sticky;top:0;z-index:2}
+.nova-sort-btn{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:inherit;font:inherit;min-height:32px;padding:0 4px;border-radius:6px}
+.nova-sort-btn[data-sort-dir="asc"],.nova-sort-btn[data-sort-dir="desc"]{color:#76b8d5}
+.nova-sort-btn:focus-visible,.nova-row-focus:focus-visible{outline:2px solid #76b8d5;outline-offset:-2px}
+.nova-row-focus{cursor:pointer}
 .nova-data-table .nova-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap}
 @media(max-width:640px){
 .nova-page-view div[style*="overflow:auto"]{overflow:visible!important}
