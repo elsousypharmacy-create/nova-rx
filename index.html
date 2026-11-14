@@ -721,6 +721,13 @@
       box-shadow: none;
     }
 
+    /* UX216: one merged empty-state block; tips replace the sub line (no duplicate message). */
+    .empty-invoice-state .nova-first-run-hint{border:0;margin-top:2px;padding:0}
+    .empty-invoice-state .nova-first-run-hint:not([hidden]) + .empty-invoice-sub{display:none}
+    .empty-invoice-state .nova-first-run-hint ol{margin:0 0 6px;line-height:1.7}
+    /* UX216: disabled pay button, opaque, text >=4.5:1 on its bg, clearly "off" (dashed border). */
+    #btnCheckout.btn-checkout:disabled,#btnCheckout.btn-checkout:disabled:hover{opacity:1!important;background:#1d2730!important;border:1px dashed #6f8596!important;color:#c9d6de!important;box-shadow:none!important;cursor:not-allowed}
+    #btnCheckout.btn-checkout:disabled kbd{background:#10161b!important;color:#c9d6de!important}
     .btn-checkout kbd {
       background: rgba(0, 0, 0, 0.35);
       padding: 1px 6px;
@@ -2128,11 +2135,11 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             <path d="M16 10a4 4 0 0 1-8 0"></path>
           </svg>
           <div style="font-weight: 600; font-size: 14px;">Invoice is Empty</div>
-          <div style="font-size: 12px;">Scan product barcode or type medicine name in the search bar above.</div>
           <div id="novaFirstRunHint" class="nova-first-run-hint" role="note" dir="auto" hidden>
             <ol><li>امسح الباركود أو اكتب الاسم</li><li>Enter لإضافة</li><li>Enter للدفع</li></ol>
             <button type="button" id="novaHintHide" class="btn btn-secondary">إخفاء</button>
           </div>
+          <div id="emptyInvoiceSub" class="empty-invoice-sub" style="font-size: 12px;">Scan product barcode or type medicine name in the search bar above.</div>
         </div>
       </div>
 
