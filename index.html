@@ -2401,6 +2401,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>Enter</strong> (بدون تحديد بالأسهم)</td><td style="color:#38bdf8;">يضيف أول صنف في الاقتراحات</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>*3</strong> قبل الاسم أو <strong>3*</strong> بعده</td><td style="color:#38bdf8;">تحديد الكمية (مثال: *3 بانادول)</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F6 / F7</strong></td><td style="color:#38bdf8;">خصم بالنسبة % / خصم بمبلغ ثابت</td></tr>
+          <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F8</strong></td><td style="color:#38bdf8;">تبديل وحدة آخر صنف (علبة ← شريط ← حبة) ويُتذكّر لكل صنف</td></tr>
           <tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 0;"><strong>F10 / F11 / F12 (أو C)</strong> داخل الدفع</td><td style="color:#38bdf8;">بطاقة / آجل / نقدي</td></tr>
           <tr><td style="padding:6px 0;"><strong>Esc</strong></td><td style="color:#38bdf8;">إغلاق القوائم والنوافذ المفتوحة</td></tr>
         </table>
@@ -3502,7 +3503,22 @@ window.NovaFmt=(function(){
       }
 
       // --- INVOICE LINE ITEMS & RECALCULATION ---
-      function addProductToInvoice(product, unit = "box") {
+      const UNIT_PREF_KEY = "nova.unitPref";
+      function getUnitPref(productId) {
+        try { return (JSON.parse(localStorage.getItem(UNIT_PREF_KEY) || "{}") || {})[productId] || null; } catch { return null; }
+      }
+      function setUnitPref(productId, unit) {
+        try {
+          const m = JSON.parse(localStorage.getItem(UNIT_PREF_KEY) || "{}") || {};
+          m[productId] = unit;
+          localStorage.setItem(UNIT_PREF_KEY, JSON.stringify(m));
+        } catch {}
+      }
+      function addProductToInvoice(product, unit) {
+        if (!unit) {
+          const pref = getUnitPref(product.id);
+          unit = pref && window.novaUnits.availableUnits(product).includes(pref) ? pref : "box";
+        }
         const conv = window.novaUnits.convert(product, 1, unit);
         if (!conv.ok) {
           showToast("تحويل الوحدة غير متاح لهذا الصنف", "error");
@@ -3557,6 +3573,7 @@ window.NovaFmt=(function(){
           return conv;
         }
         line.unit = conv.unit;
+        setUnitPref(productId, conv.unit);
         line.unitFactor = conv.perBox;
         if (line.boxPrice === undefined && prod.price !== undefined) line.boxPrice = prod.price;
         line.price = conv.unitPrice;
@@ -5044,6 +5061,18 @@ window.NovaFmt=(function(){
             e.preventDefault();
             elements.inputPercentDiscount.focus();
             elements.inputPercentDiscount.select();
+          } else if (e.key === "F8" && !checkoutOpen) {
+            e.preventDefault();
+            const last = state.invoiceLines[state.invoiceLines.length - 1];
+            if (last) {
+              const prod = DEMO_PRODUCTS.find(p => p.id === last.productId || p.barcode === last.barcode) || last;
+              const units = window.novaUnits.availableUnits(prod);
+              if (units.length > 1) {
+                const next = units[(units.indexOf(last.unit || "box") + 1) % units.length];
+                updateLineUnit(last.productId, next);
+              }
+            }
+            elements.mainSearchInput.focus();
           } else if (e.key === "F7" && !checkoutOpen) {
             e.preventDefault();
             elements.inputFixedDiscount.focus();
@@ -5486,7 +5515,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   'Opens checkout; then Enter confirms payment and Enter starts a new sale':'فتح نافذة الدفع؛ ثم Enter لتأكيد الدفع وEnter لفاتورة جديدة',
   '(no arrow selection)':'(بدون تحديد بالأسهم)','Adds the first suggestion':'يضيف أول صنف في الاقتراحات',
   'before the name or':'قبل الاسم أو','after it':'بعده','Set quantity (e.g. *3 Panadol)':'تحديد الكمية (مثال: *3 بانادول)',
-  'Percent discount / fixed discount':'خصم بالنسبة % / خصم بمبلغ ثابت','(or C) inside checkout':'داخل الدفع',
+  'Switch last line unit (box → strip → tab), remembered per product':'تبديل وحدة آخر صنف (علبة ← شريط ← حبة) ويُتذكّر لكل صنف','Percent discount / fixed discount':'خصم بالنسبة % / خصم بمبلغ ثابت','(or C) inside checkout':'داخل الدفع',
   'Card / Credit / Cash':'بطاقة / آجل / نقدي',
   'Start New Sale (resets invoice & focuses search)':'فاتورة جديدة (تمسح الفاتورة وتركّز على البحث)',
   'Add Loyalty / Switch customer search without resetting items':'إضافة عميل / تبديل البحث عن عميل بدون مسح الأصناف',
