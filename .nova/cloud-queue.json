@@ -3878,7 +3878,7 @@
    "brief": "'إعادة طباعة نسخة' and 'مرتجع / إلغاء' are identical flat grey (rgb 107) blocks that look disabled on desktop (d-inv). Differentiate: ghost style for reprint, outlined/amber for return, add icons, consistent 36px desktop / 44px touch height, hover/focus/pressed states and tonal Black Edition tokens; on mobile cards keep them side by side. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Two distinct, enabled-looking action styles; focus ring visible; contrast >=4.5; screenshot test.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-219-fixes.json",
@@ -3886,13 +3886,13 @@
    "dispatched_at": "2026-11-14T15:37:41+00:00",
    "pr": 417,
    "ci_dispatched": {
-    "sha": "2bf686b0419e82e85a90dee376f3360f5a2a81e3",
+    "sha": "92555e8c3d53c0d1397dd35a7a7fd4a7958b2eba",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T15:30:01+00:00"
+    "at": "2026-11-14T15:40:34+00:00"
    }
   },
   {
@@ -3943,10 +3943,12 @@
    "brief": "Inside the 'إلغاء الفاتورة بالكامل' details the inputs/select are default grey (rgb 59/107) unlike the dark reason input, with no labels; the reason label has no for=, qty inputs have no aria-label (labelForReason:false, qtyAria empty). Style them with the same tokens as #novaRetReason, add real <label for>, aria-label per qty input with the product name, and style the details summary as a proper disclosure with a rotating chevron and a danger tone for the confirm-cancel button. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "All dialog fields share one style; every input has an accessible name; test asserts labels.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-219-fixes.json"
+   "source": "inbox/qa-loop-219-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T15:40:34+00:00"
   },
   {
    "id": "UX223",
@@ -3997,5 +3999,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:37:41+00:00"
+ "updated": "2026-11-14T15:40:34+00:00"
 }
