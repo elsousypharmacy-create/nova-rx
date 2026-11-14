@@ -76,7 +76,7 @@ await t('Products tab: real list, honest labels (prices only, no stock), capped 
   await real.page.locator('.nova-tab[data-page="products"]').click(); await real.page.waitForTimeout(400);
   const txt = await real.page.locator('#novaPageView').innerText();
   assert.ok(txt.includes('STOCK LIVE') && txt.includes('غير متوفر'), 'says prices only, stock unavailable');
-  const stockKpi = await real.page.locator('.nova-kpi', { hasText: 'الرصيد' }).first().innerText();
+  const stockKpi = await real.page.locator('#novaStockNotice').innerText(); // UX212: compact notice chip replaces the stock KPI card
   assert.ok(stockKpi.includes('غير متوفر'), 'the stock KPI says unavailable, not a number: ' + stockKpi.replace(/\n/g, ' '));
   const cells = await real.page.locator('#novaRows tr:first-child td').allInnerTexts();
   assert.ok(cells.length <= 4, 'empty stock/category columns are hidden, no made-up numbers: ' + cells.length);
