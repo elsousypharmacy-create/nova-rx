@@ -5760,6 +5760,8 @@ body:not([data-active-page="products"]) #novaAiLaunch{display:none!important}
 body[data-active-page="products"] #novaAiLaunch{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .nova-page-view{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 .totals-breakdown{margin-bottom:72px}
+/* UX207: products list ends above the floating stickers FAB (bottom offset 96px + FAB height + gap) so the last rows/prices are never covered */
+body[data-active-page="products"] .nova-page-view{padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))}
 @media(max-width:600px){#novaAiLaunch{width:44px;height:44px;padding:0;border-radius:50%;font-size:0;line-height:0;display:flex;align-items:center;justify-content:center}#novaAiLaunch::before{content:"✦";font-size:20px;line-height:1}}
 .discount-hint{font-size:12px;line-height:1.5;color:var(--accent-amber,#bba477);margin-top:6px}
 .input-grp input[aria-invalid="true"]{outline:1px solid var(--accent-red,#ef4444);border-color:var(--accent-red,#ef4444)}
