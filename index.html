@@ -5192,8 +5192,9 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const openReceive=(n=0)=>{const b=document.getElementById('novaInventoryPurchase'),pn=document.getElementById('novaAiPanel');if(b&&pn)pn.classList.add('open');else if(n<50)setTimeout(()=>openReceive(n+1),100)};
  window.addEventListener('hashchange',()=>{const r=wantReceive();switchPage(hashPage()||'sale');if(r)openReceive()});
  const initReceive=wantReceive();
- switchPage(hashPage()||(()=>{try{return localStorage.getItem('nova.activePage')}catch(e){return null}})()||'sale');
+ switchPage(hashPage()||'sale');
  if(initReceive)openReceive();
+ else if((hashPage()||'sale')==='sale'){const ms=document.getElementById('mainSearchInput');if(ms)try{ms.focus()}catch(e){}}
 })();
 </script>
 
