@@ -3878,22 +3878,15 @@
    "brief": "'إعادة طباعة نسخة' and 'مرتجع / إلغاء' are identical flat grey (rgb 107) blocks that look disabled on desktop (d-inv). Differentiate: ghost style for reprint, outlined/amber for return, add icons, consistent 36px desktop / 44px touch height, hover/focus/pressed states and tonal Black Edition tokens; on mobile cards keep them side by side. Frontend-only (index.html return dialog around the data-return handler, ~line 5444). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required (add a Playwright/node test under tests/ extending the ui-returns.mjs / ui-pos04-returns-cancel.mjs pattern and run it plus tests/ui-returns.mjs, tests/ui-pos04-returns-cancel.mjs, tests/ui-sales-ledger.mjs; record exact results). Evidence: .nova/qa/qa-loop-219.md.",
    "acceptance": "Two distinct, enabled-looking action styles; focus ring visible; contrast >=4.5; screenshot test.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-219-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T15:37:41+00:00",
    "pr": 417,
-   "ci_dispatched": {
-    "sha": "92555e8c3d53c0d1397dd35a7a7fd4a7958b2eba",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T15:40:34+00:00"
-   }
+   "merged_at": "2026-11-14T15:45:39+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/417"
   },
   {
    "id": "UX226",
@@ -4009,5 +4002,5 @@
    "source": "inbox/qa-loop-219-fixes.json"
   }
  ],
- "updated": "2026-11-14T15:44:18+00:00"
+ "updated": "2026-11-14T15:45:39+00:00"
 }
