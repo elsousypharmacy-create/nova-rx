@@ -49,6 +49,10 @@ jobs:
         run: node tests/ui-sales-ledger.mjs
       - name: WhatsApp-only link (/?app=whatsapp)
         run: node tests/ux/wa-app-mode.mjs
+      - name: UX409 conversations bell, iPhone flush, PWA name
+        run: |
+          node tests/ux/ux409-wa-bell.mjs
+          node tests/ux/ux409-wa-flush.mjs
       - name: POS-01 sale flow on one screen (N34)
         run: node tests/ui-pos01-sale-flow.mjs
       - name: POS-02 atomic invoice and payment (N35)

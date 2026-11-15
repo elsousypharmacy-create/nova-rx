@@ -26,6 +26,18 @@
   <link rel="manifest" href="/manifest.webmanifest?v=3">
   <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon.svg">
+  <script>
+  /* UX409: /?app=whatsapp Add to Home Screen uses the name and icon "NOVA WhatsApp". The main app keeps /manifest.webmanifest (NOVA Rx). */
+  (function(){try{if(new URLSearchParams(location.search).get('app')!=='whatsapp')return}catch(e){return}
+  document.title='NOVA WhatsApp';
+  function set(sel,a,v){var el=document.querySelector(sel);if(el)el.setAttribute(a,v)}
+  set('meta[name=apple-mobile-web-app-title]','content','NOVA WhatsApp');
+  set('meta[name=application-name]','content','NOVA WhatsApp');
+  set('link[rel=manifest]','href','/manifest-whatsapp.webmanifest?v=1');
+  set('link[rel="apple-touch-icon"]','href','/icons/nova-whatsapp-180.png');
+  var ic=document.querySelector('link[rel="icon"]');if(ic){ic.setAttribute('href','/icons/nova-whatsapp-192.png');ic.setAttribute('type','image/png')}
+  })();
+  </script>
   <style>
     :root {
       --bg-base: #08090b;
@@ -7248,7 +7260,8 @@ input,select,textarea{min-height:44px}
     '.wa-composer{gap:6px;padding:6px 8px calc(8px + var(--wa-sab,env(safe-area-inset-bottom,0px)))}.wa-composer>.wa-cbtn{width:40px;height:40px}.wa-composer .wa-c-attach{color:#53bdeb}.wa-composer .wa-c-attach svg{width:26px;height:26px}.wa-pill{min-height:38px;padding:0 12px;border-radius:20px}#waComposer .wa-pill input{height:36px;font-size:17px}' +
     '.wa-composer[data-has-text="0"] .wa-send{display:none}.wa-composer[data-has-text="1"] .wa-c-camera,.wa-composer[data-has-text="1"] .wa-c-mic{display:none}.wa-send{width:40px;height:40px}.wa-attmenu{inset-inline-end:auto;inset-inline-start:8px}' +
     '.wa-side,.wa-main{min-height:0}.wa-list{min-height:0;-webkit-overflow-scrolling:touch}' +
-    '@media(max-width:700px){body[data-active-page=inbox] .nova-nav-row{display:none!important}body[data-active-page=inbox] #novaInboxView{height:100vh;height:100dvh;min-height:0;box-sizing:border-box;overflow:hidden;margin:0}#novaInboxView>.wa-root{flex:1 1 0;min-height:0;height:auto;border:0;border-radius:0}' +
+    /* UX409: 100dvh, no spacer. List background reaches the bottom edge; padding-bottom: env(safe-area-inset-bottom) lives INSIDE the scroll area. Open chat: the composer sits flush on the bottom edge, only padding-bottom env(safe-area-inset-bottom) inside the bar (same #1a1e24 colour). UX407 zero keyboard gap kept (data-kbd drops the home-indicator padding). */
+    '@media(max-width:700px){body[data-active-page=inbox],html.app-whatsapp,html.app-whatsapp body{height:100dvh;min-height:100dvh;overflow:hidden;background:#14171c}body[data-active-page=inbox] .nova-nav-row{display:none!important}body[data-active-page=inbox] #novaInboxView,html.app-whatsapp #novaInboxView{position:fixed;inset:0;width:100%;height:100dvh;min-height:100dvh;max-height:100dvh;box-sizing:border-box;overflow:hidden;margin:0;padding:0;background:#14171c}#novaInboxView>.wa-root{flex:1 1 0;min-height:0;height:100%;border:0;border-radius:0;background:#14171c}.wa-side{height:100%;min-height:0;background:#14171c}.wa-main{height:100%;min-height:0}.wa-list{padding-bottom:var(--wa-sab,env(safe-area-inset-bottom,0px));background:#14171c}.wa-composer{margin:0;background:#1a1e24;padding-bottom:calc(8px + var(--wa-sab,env(safe-area-inset-bottom,0px)))}.wa-root[data-kbd] .wa-composer{padding-bottom:8px}' +
     '.wa-side-head,.wa-head{height:auto;min-height:calc(56px + var(--wa-sat,env(safe-area-inset-top,0px)));padding-top:var(--wa-sat,env(safe-area-inset-top,0px));background:#1a1e24}.wa-side-head{padding-inline:4px 14px}.wa-title{font-size:24px}.wa-home{display:inline-flex}}';
   var LB_CSS = '.wa-lb{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:2147483000;background:#000;display:flex;flex-direction:column;touch-action:none;transition:opacity .15s}' +
     '.wa-lb-bar{flex:none;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px;gap:8px}' +
@@ -7475,8 +7488,8 @@ window.addEventListener('load',function(){if(location.hash==='#wa')window.NovaOp
 /* WA-APP: /?app=whatsapp (the standalone WhatsApp link) = the conversations screen on its own: no POS and no other tabs, only the header
    and the conversations. Same code as the in-app «المحادثات» tab, so everything added there appears in both. */
 (function(){try{if(new URLSearchParams(location.search).get('app')!=='whatsapp')return}catch(e){return}
-window.NOVA_APP='whatsapp';document.documentElement.classList.add('app-whatsapp');document.title='واتساب الصيدلية | NOVA Rx';
-var mt=document.querySelector('meta[name=apple-mobile-web-app-title]');if(mt)mt.setAttribute('content','واتساب الصيدلية');
+window.NOVA_APP='whatsapp';document.documentElement.classList.add('app-whatsapp');document.title='NOVA WhatsApp';
+var mt=document.querySelector('meta[name=apple-mobile-web-app-title]');if(mt)mt.setAttribute('content','NOVA WhatsApp');
 function show(){if(location.hash!=='#wa'){try{history.replaceState(null,'','?app=whatsapp#wa')}catch(e){}}if(window.NovaOpenInbox)window.NovaOpenInbox()}
 window.addEventListener('load',function(){setTimeout(show,0)});
 window.addEventListener('hashchange',function(){if(location.hash!=='#wa')show()});
