@@ -50,18 +50,20 @@ assert.ok(labels.length >= 27, 'many separators');
 assert.ok(!labels.some((l) => /^\d{4}\/\d\d\/\d\d$/.test(l)), 'no dry YYYY/MM/DD');
 assert.equal(labels.slice(-3, -1).length, 2);
 assert.ok(labels.slice(-7, -2).every((l) => WD.includes(l)), 'days 2..6 are weekday names');
-const st = await view.locator('.wa-date').first().evaluate((el) => { const c = getComputedStyle(el), s = getComputedStyle(el.firstElementChild); return { pos: c.position, top: c.top, bf: s.backdropFilter || s.webkitBackdropFilter, bg: s.backgroundColor }; });
-assert.equal(st.pos, 'sticky'); assert.match(st.bf, /blur/); assert.match(st.bg, /rgba/);
-// scroll to middle: some separator must be pinned near top of the scroller
+// UX408: inline day separators scroll with the thread (never stacked); ONE floating sticky chip shows the current day while scrolling
+const st = await view.locator('[data-wa-dfloat]').evaluate((el) => ({ pos: getComputedStyle(el).position, n: document.querySelectorAll('[data-wa-dfloat]').length }));
+assert.equal(st.pos, 'sticky'); assert.equal(st.n, 1, 'a single floating date chip');
+assert.equal(await view.locator('.wa-date').first().evaluate((el) => getComputedStyle(el).position), 'static', 'inline separators are not sticky (no stacking)');
 const pinned = await page.evaluate(() => {
-  const sc = document.querySelector('#waMsgs'); sc.scrollTop = sc.scrollHeight / 2;
+  const sc = document.querySelector('#waMsgs'); sc.scrollTop = sc.scrollHeight / 2; sc.dispatchEvent(new Event('scroll'));
   return new Promise((res) => setTimeout(() => {
-    const top = sc.getBoundingClientRect().top;
-    const seps = [...sc.querySelectorAll('.wa-date')].map((e) => e.getBoundingClientRect().top - top);
-    res({ seps: seps.filter((y) => y >= 0 && y < 20).length, scrollTop: sc.scrollTop });
-  }, 150));
+    const f = sc.querySelector('[data-wa-dfloat]'), sp = f.querySelector('span'), top = sc.getBoundingClientRect().top;
+    const band = [...sc.querySelectorAll('[data-date-sep]')].filter((d) => { const r = d.getBoundingClientRect(); return r.bottom > top - 2 && r.top < top + 44; }).length;
+    res({ show: f.hasAttribute('data-show'), text: sp.textContent.trim(), y: Math.round(sp.getBoundingClientRect().top - top), band, scrollTop: sc.scrollTop });
+  }, 250));
 });
-assert.ok(pinned.scrollTop > 0 && pinned.seps >= 1, 'a separator stays pinned while scrolling: ' + JSON.stringify(pinned));
+// exactly one day chip at the top: the floating one, or (when a separator is already there) the inline one and the float hides
+assert.ok(pinned.scrollTop > 0 && (pinned.show ? pinned.text && pinned.y >= 0 && pinned.y < 20 && pinned.band === 0 : pinned.band >= 1), 'one day chip at the top while scrolling: ' + JSON.stringify(pinned));
 if (SHOTS) await page.screenshot({ path: `${SHOTS}/ux237-sticky.png` });
 assert.deepEqual(errors, [], errors.join('|'));
 await browser.close();
