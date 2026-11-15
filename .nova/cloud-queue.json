@@ -312,7 +312,7 @@
    "after": [
     "UX422"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -323,17 +323,8 @@
    "dispatched_at": "2026-11-15T15:03:54+00:00",
    "pr": 474,
    "last_failure": "fix attempts were slot A usage-limit quick fails (not counted)",
-   "ci_dispatched": {
-    "sha": "059a4297468b1d43489ee811ae8983bce8c6ef43",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T15:05:28+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-15T15:10:25+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/474"
   },
   {
    "id": "UX321",
@@ -5061,7 +5052,7 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T15:05:28+00:00",
+ "updated": "2026-11-15T15:10:25+00:00",
  "slot_cooldown": {
   "A": "2026-11-15T15:11:00+00:00"
  }
