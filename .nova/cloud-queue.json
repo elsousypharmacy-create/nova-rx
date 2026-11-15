@@ -13,7 +13,7 @@
    ],
    "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; starts after UX407 (prefix/alignment/keyboard/focus-ring, which follows running UX406). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
@@ -34,7 +34,8 @@
     ],
     "at": "2026-11-15T17:05:17+00:00",
     "na": []
-   }
+   },
+   "note_conflicts": "fix_attempts reset 2026-11-15 17:15Z: both fixes were artifact merge conflicts from other merges, not red CI"
   },
   {
    "id": "UX320",
