@@ -12,7 +12,7 @@ h = one(m('wa_1', 'image', { caption: 'روشتة' }, '[صورة] روشتة'));
 assert.match(h, /<img class="wa-mimg" data-wa-mimg data-wa-mid="wa_1" src="https:\/\/api\.test\/api\/v1\/inbox\/history\/media\?id=wa_1"/);
 assert.match(h, /data-wa-media-open="https:\/\/api\.test/); assert.match(h, /<span class="wa-text">روشتة<\/span>/); assert.ok(!h.includes('[صورة]'));
 h = one(m('wa_s', 'sticker', {}, '[ملصق]')); assert.match(h, /wa-m-sticker/); assert.match(h, /wa-mo-ov/); assert.ok(!h.includes('wa-text'));
-h = one(m('wa_a', 'audio', {}, '[رسالة صوتية]')); assert.match(h, /<audio class="wa-maudio" data-wa-mplay data-wa-mid="wa_a" controls preload="none"/);
+h = one(m('wa_a', 'audio', {}, '[رسالة صوتية]')); assert.match(h, /<audio class="wa-maudio" data-wa-mplay data-wa-mid="wa_a" preload="metadata"/); assert.match(h, /data-wa-voice><button type="button" class="wa-vplay" data-wa-vplay data-wa-mid="wa_a"/); assert.match(h, /data-wa-vdur>0:00</); /* UX401: WhatsApp voice player */
 h = one(m('wa_v', 'video', { caption: 'شوف' }, '[فيديو] شوف')); assert.match(h, /<video class="wa-mvideo"[^>]* controls playsinline/); assert.match(h, /wa-text">شوف</);
 h = one(m('wa_d', 'document', { filename: '<b>x".pdf', size: 3 * 1048576 }, '[مستند] x.pdf'));
 assert.match(h, /<a class="wa-media wa-mdoc"[^>]* target="_blank" rel="noopener noreferrer" download="&lt;b&gt;x&quot;\.pdf"/); assert.match(h, /3 ميجا/); assert.ok(!h.includes('<b>x"'), 'filename escaped');

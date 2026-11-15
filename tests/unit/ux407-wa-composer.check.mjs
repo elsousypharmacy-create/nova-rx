@@ -46,14 +46,14 @@ t('bubbles show only the real text, labelled الصيدلي; incoming untouched;
 });
 t('list preview strips the prefix too', () => {
   const h = U.chatListHtml([{ ...conv[0], messages: conv[0].messages.slice(0, 2) }], null, '', NOW);
-  assert.match(h, /class="wa-preview"><span class="wa-tick read" data-tick="read">✓✓<\/span> اهلا</);
+  assert.match(h, /class="wa-preview"><span class="wa-tick read" data-tick="read"[^>]*><svg[^]*?<\/svg><\/span> اهلا</ /* UX401: SVG ticks */);
 });
 t('WhatsApp sides under RTL: outgoing right (flex-start, green), incoming left (flex-end); tails on the edge side', () => {
   const h = U.renderWa(conv, { now: NOW, selected: 'a', sendEnabled: true });
   assert.ok(h.includes('.wa-msg.wa-in{justify-content:flex-end}.wa-msg.wa-out{justify-content:flex-start}'));
   assert.ok(h.includes('.wa-out .wa-bubble{background:#0f4a3c}'));
   assert.ok(h.includes('.wa-in.wa-first .wa-bubble:before{left:-8px') && h.includes('.wa-out.wa-first .wa-bubble:before{right:-8px'));
-  assert.match(msg(h, 'm3'), /data-tick="sent">✓</);
+  assert.match(msg(h, 'm3'), /data-tick="sent"[^>]*><svg viewBox="0 0 18 11"[^>]*><path d="[^"]+"\/><\/svg></ /* UX401: one SVG check */);
 });
 t('composer: plain div (no form), single text input, button send; no focus ring; tap highlight off; kbd padding', () => {
   const h = U.renderWa(conv, { now: NOW, selected: 'a', sendEnabled: true });

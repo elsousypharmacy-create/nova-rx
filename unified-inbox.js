@@ -137,12 +137,19 @@
   /* unread = trailing incoming messages after the last outgoing one */
   function unreadCount(c) { if (c && c.history) return 0; var n = 0, m = arr(c && c.messages); for (var i = m.length - 1; i >= 0 && m[i].dir === 'in'; i--) n++; return n; }
   function totalUnread(cs) { return arr(cs).reduce(function (a, c) { return a + (unreadCount(c) > 0 ? 1 : 0); }, 0); }
+  /* UX401: WhatsApp ticks as SVG (no emoji/glyph font differences): sending = clock, sent = one grey check, delivered = two grey
+     checks, read = two blue checks, failed = red «!» circle. An outgoing row with no/unknown status shows «delivered» (never a fake blue). */
+  var TICK_SVG = {
+    sending: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.6V8l2.3 1.6"/></svg>',
+    sent: '<svg viewBox="0 0 18 11" width="16" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.9l3 3.1 6.3-7.3"/></svg>',
+    two: '<svg viewBox="0 0 18 11" width="18" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.2 5.9l3 3.1 6.3-7.3"/><path d="M8.6 8.4l.6.6 6.3-7.3"/></svg>',
+    failed: '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M8 4.2v4.6" stroke="#1a0b0b" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.4" r="1.05" fill="#1a0b0b"/></svg>'
+  };
+  var TICK_AR = { sending: 'جاري الإرسال', sent: 'اتبعتت (علامة واحدة)', delivered: 'وصلت (علامتين)', read: 'اتقرت (علامتين زرق)', failed: 'ما اتبعتتش' };
   function tick(m) {
-    if (m.dir !== 'out') return '';
-    if (m.status === 'failed') return '<span class="wa-tick failed" data-tick="failed">!</span>';
-    if (m.status === 'sending') return '<span class="wa-tick sending" data-tick="sending" aria-label="جاري الإرسال">🕓</span>';
-    if (m.status === 'sent') return '<span class="wa-tick sent" data-tick="sent">✓</span>';
-    return '<span class="wa-tick ' + (m.status === 'delivered' ? 'delivered' : 'read') + '" data-tick="' + esc(m.status || 'delivered') + '">✓✓</span>';
+    if (!m || m.dir !== 'out') return '';
+    var k = m.status === 'failed' || m.status === 'sending' || m.status === 'sent' || m.status === 'read' ? m.status : 'delivered';
+    return '<span class="wa-tick ' + k + '" data-tick="' + k + '" role="img" aria-label="' + TICK_AR[k] + '" title="' + TICK_AR[k] + '">' + TICK_SVG[k === 'delivered' || k === 'read' ? 'two' : k] + '</span>';
   }
   function initial(name) { var s = String(name || '').trim(); return s ? Array.from(s)[0] : '؟'; }
   /* UX404: WhatsApp bubble anatomy. The first bubble of a same-direction run gets a tail (wa-first). The time + ticks sit in an
@@ -161,6 +168,11 @@
     document: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>'
   };
   IC_M.sticker = IC_M.image;
+  function durLabel(sec) { sec = Math.max(0, Math.round(Number(sec) || 0)); return Math.floor(sec / 60) + ':' + pad(sec % 60); }
+  var MIME_EXT = { 'application/pdf': 'PDF', 'application/msword': 'DOC', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX', 'application/vnd.ms-excel': 'XLS', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX', 'text/plain': 'TXT', 'application/zip': 'ZIP' };
+  function docExt(fn, mime) { var m = /\.([A-Za-z0-9]{1,5})$/.exec(String(fn || '')); return m ? m[1].toUpperCase() : (MIME_EXT[String(mime || '').toLowerCase()] || ''); }
+  var IC_PLAY = '<svg class="wa-i-play" viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M8 5.1v13.8a.8.8 0 0 0 1.2.7l10.6-6.9a.8.8 0 0 0 0-1.4L9.2 4.4A.8.8 0 0 0 8 5.1z"/></svg>';
+  var IC_PAUSE = '<svg class="wa-i-pause" viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>';
   function fmtSize(n) { n = Number(n); if (!(n > 0)) return ''; return n >= 1048576 ? (Math.round(n / 104857.6) / 10) + ' ميجا' : Math.max(1, Math.round(n / 1024)) + ' ك.ب'; }
   function mediaMiss(type, reason, filename) {
     var t = MT_AR[type] ? type : 'document';
@@ -174,10 +186,16 @@
     if (!src) return mediaMiss(t, md.skipped || (md.cached ? 'error' : 'missing'), md.filename);
     var a = ' data-wa-mid="' + esc(m.id) + '"';
     if (t === 'image' || t === 'sticker') return '<button type="button" class="wa-media wa-m-' + t + '" data-wa-media="' + t + '" data-wa-media-open="' + esc(src) + '"' + a + ' aria-label="عرض ال' + MT_AR[t] + ' بالحجم الكامل"><img class="wa-mimg" data-wa-mimg' + a + ' src="' + esc(src) + '" alt="' + MT_AR[t] + ' من العميل" loading="lazy" decoding="async"></button>';
-    if (t === 'audio') return '<div class="wa-media wa-m-audio" data-wa-media="audio"><span class="wa-mic">' + IC_M.audio + '</span><audio class="wa-maudio" data-wa-mplay' + a + ' controls preload="none" src="' + esc(src) + '" aria-label="رسالة صوتية من العميل"></audio></div>';
+    /* UX401: voice note like WhatsApp: round play/pause, progress track (tap to seek), duration (md.duration seconds when the API has it,
+       else read from the file metadata by the page), mic badge. The <audio> element is the real player (no controls UI). */
+    if (t === 'audio') return '<div class="wa-media wa-m-audio wa-voice" data-wa-media="audio" data-wa-voice><button type="button" class="wa-vplay" data-wa-vplay' + a + ' aria-label="تشغيل الرسالة الصوتية" aria-pressed="false">' + IC_PLAY + IC_PAUSE + '</button>' +
+      '<span class="wa-vtrack" data-wa-vtrack role="slider" aria-label="موضع التشغيل" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="wa-vfill" data-wa-vfill></span><span class="wa-vdot" data-wa-vdot></span></span>' +
+      '<span class="wa-vdur" data-wa-vdur>' + (Number(md.duration) > 0 ? durLabel(md.duration) : '0:00') + '</span><span class="wa-mic wa-vmic">' + IC_M.audio + '</span>' +
+      '<audio class="wa-maudio" data-wa-mplay' + a + ' preload="metadata" src="' + esc(src) + '" aria-label="رسالة صوتية من العميل"></audio></div>';
     if (t === 'video') return '<div class="wa-media wa-m-video" data-wa-media="video"><video class="wa-mvideo" data-wa-mplay' + a + ' controls playsinline preload="metadata" src="' + esc(src) + '" aria-label="فيديو من العميل"></video></div>';
     var fn = md.filename || 'مستند', sz = fmtSize(md.size);
-    return '<a class="wa-media wa-mdoc" data-wa-media="document" href="' + esc(src) + '" target="_blank" rel="noopener noreferrer" download="' + esc(fn) + '" aria-label="فتح المستند ' + esc(fn) + '"><span class="wa-mic">' + IC_M.document + '</span><span class="wa-mdoc-t"><b dir="auto">' + esc(fn) + '</b><span>' + esc([sz, 'اضغط للفتح أو التحميل'].filter(Boolean).join(' · ')) + '</span></span></a>';
+    var ext = docExt(fn, md.mime);
+    return '<a class="wa-media wa-mdoc" data-wa-media="document" href="' + esc(src) + '" target="_blank" rel="noopener noreferrer" download="' + esc(fn) + '" aria-label="فتح المستند ' + esc(fn) + '"><span class="wa-mic wa-mdoc-ic" data-wa-ext="' + esc(ext) + '">' + IC_M.document + (ext ? '<span class="wa-mext">' + esc(ext) + '</span>' : '') + '</span><span class="wa-mdoc-t"><b dir="auto">' + esc(fn) + '</b><span>' + esc([ext, sz, 'اضغط للفتح أو التحميل'].filter(Boolean).join(' · ')) + '</span></span></a>';
   }
   /* list preview: "صورة · caption" instead of the raw "[صورة] caption" placeholder */
   function previewText(m) {
@@ -199,17 +217,34 @@
   }
   function hasStaffPrefix(m) { return !!m && m.dir === 'out' && typeof m.text === 'string' && stripStaffPrefix(m.text) !== m.text; }
   function shownText(m) { return m && m.dir === 'out' ? stripStaffPrefix(m.text) : m ? m.text : ''; }
+  /* UX401: reply/quote like WhatsApp. A message quotes another via m.quote ({id, dir, text, media}), m.replyTo (id of a row in the same
+     thread) or mopts.quotes[m.id] (replies sent from this screen; the WhatsApp API context is not sent by the backend yet).
+     quoteHtml renders the coloured snippet used both above a bubble and in the composer bar. */
+  function quoteOf(m, byId, qs) {
+    var q = (qs && qs[m.id]) || (m.quote && typeof m.quote === 'object' ? m.quote : null) || (m.replyTo != null && byId[m.replyTo]) || null;
+    return q && (q.text != null || q.media) ? q : null;
+  }
+  function quoteSnippet(q) { var t = String(previewText(q) || '').replace(/\s+/g, ' ').trim(); return t.length > 140 ? t.slice(0, 139) + '…' : t; }
+  function quoteHtml(q, name, tag) {
+    var d = q.dir === 'out' ? 'out' : 'in', who = d === 'out' ? 'أنت' : (name || 'العميل'), sn = quoteSnippet(q), id = q.id != null ? String(q.id) : '';
+    var inner = '<span class="wa-q-who">' + esc(who) + '</span><span class="wa-q-txt" dir="auto">' + esc(sn) + '</span>';
+    if (tag === 'div') return '<div class="wa-quote wa-q-' + d + '" data-wa-quote="' + esc(id) + '">' + inner + '</div>';
+    return '<button type="button" class="wa-quote wa-q-' + d + '" data-wa-quote="' + esc(id) + '"' + (id ? ' data-wa-quote-jump="' + esc(id) + '"' : '') + ' aria-label="رد على: ' + esc(sn) + ' — اضغط للانتقال للرسالة">' + inner + '</button>';
+  }
+  var IC_REPLY = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8V4.5L3 11l7 6.5V14c5 0 8.3 1.4 11 5.5-1-5.6-4.2-10.4-11-11.5z"/></svg>';
   function bubbles(msgs, now, mopts) {
-    var out = '', last = null, prev = null;
+    var out = '', last = null, prev = null, byId = {}, qs = mopts && mopts.quotes, rep = !!(mopts && mopts.reply), nm = mopts && mopts.name;
+    arr(msgs).forEach(function (m) { if (m && m.id != null) byId[m.id] = m; });
     arr(msgs).forEach(function (m) {
       var ds = dayStart(m.at);
       if (ds !== last) { last = ds; prev = null; out += '<div class="wa-date" data-date-sep><span>' + esc(dateLabel(m.at, now)) + '</span></div>'; }
       if (m.kind === 'sys') { prev = null; out += '<div class="wa-sys" data-mid="' + esc(m.id) + '" data-kind="sys"><span dir="auto">' + esc(m.text) + ' · ' + timeLabel(m.at) + '</span></div>'; return; }
       var staff = hasStaffPrefix(m), who = staff || m.kind === 'pharm' ? '<span class="wa-who wa-who-ph">الصيدلي</span>' : m.kind === 'bot' ? '<span class="wa-who wa-who-bot">البوت</span>' : '';
       var d = m.dir === 'out' ? 'out' : 'in', first = prev !== d; prev = d;
-      var mh = mediaHtml(m, mopts), txt = mh ? (m.media.caption || '') : shownText(m);
-      out += '<div class="wa-msg wa-' + d + (first ? ' wa-first' : '') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"' + (m.kind ? ' data-kind="' + esc(m.kind) + '"' : '') + (m.status ? ' data-status="' + esc(m.status) + '"' : '') + (mh ? ' data-media="' + esc(m.media.type) + '"' : '') + '><div class="wa-bubble' + (mh ? ' wa-has-media' + (txt ? '' : ' wa-media-only' + (/class="wa-media wa-m-(image|sticker|video)"/.test(mh) ? ' wa-mo-ov' : '')) : '') + '" dir="auto">' + who + mh +
-        (mh && !txt ? '' : (mh ? '<span class="wa-cap">' : '') + '<span class="wa-text">' + esc(txt) + '</span><span class="wa-gap" aria-hidden="true"></span>' + (mh ? '</span>' : '')) + '<span class="wa-meta"><span class="wa-time">' + timeLabel(m.at) + '</span>' + tick(m) + '</span></div></div>';
+      var mh = mediaHtml(m, mopts), txt = mh ? (m.media.caption || '') : shownText(m), q = quoteOf(m, byId, qs), qh = q ? quoteHtml(q, nm) : '';
+      var rb = rep && !/^tmp_/.test(String(m.id)) ? '<button type="button" class="wa-rbtn" data-wa-reply="' + esc(m.id) + '" tabindex="-1" aria-label="رد على الرسالة" title="رد">' + IC_REPLY + '</button>' : '';
+      out += '<div class="wa-msg wa-' + d + (first ? ' wa-first' : '') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"' + (m.kind ? ' data-kind="' + esc(m.kind) + '"' : '') + (m.status ? ' data-status="' + esc(m.status) + '"' : '') + (mh ? ' data-media="' + esc(m.media.type) + '"' : '') + (q ? ' data-quoted' : '') + '>' + (d === 'in' ? rb : '') + '<div class="wa-bubble' + (mh ? ' wa-has-media' + (txt || qh ? '' : ' wa-media-only' + (/class="wa-media wa-m-(image|sticker|video)"/.test(mh) ? ' wa-mo-ov' : '')) : '') + (qh ? ' wa-has-quote' : '') + '" dir="auto">' + who + qh + mh +
+        (mh && !txt ? '' : (mh ? '<span class="wa-cap">' : '') + '<span class="wa-text">' + esc(txt) + '</span><span class="wa-gap" aria-hidden="true"></span>' + (mh ? '</span>' : '')) + '<span class="wa-meta"><span class="wa-time">' + timeLabel(m.at) + '</span>' + tick(m) + '</span></div>' + (d === 'out' ? rb : '') + '</div>';
     });
     return out;
   }
@@ -312,6 +347,32 @@
     '.wa-m-video{width:min(280px,64vw);background:#000}.wa-mvideo{display:block;width:100%;max-height:320px;background:#000}' +
     '.wa-mdoc{display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 10px;width:min(280px,64vw);background:rgba(0,0,0,.22);cursor:pointer}.wa-mdoc:hover{background:rgba(0,0,0,.32)}.wa-mdoc-t,.wa-mmiss-t{display:flex;flex-direction:column;min-width:0;gap:2px}.wa-mdoc-t b,.wa-mmiss-t b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa-mdoc-t span,.wa-mmiss-t span{font-size:12px;color:#b5c0ca;line-height:1.5;white-space:normal}' +
     '.wa-mmiss{display:flex;align-items:center;gap:10px;padding:8px 10px;width:min(280px,64vw);background:rgba(0,0,0,.22);border:1px dashed #3a4450}.wa-mmiss .wa-mic{color:#d7c27a}';
+  /* UX401: WhatsApp Web chat pane (Black Edition = WhatsApp dark): SVG ticks, reply/quote, swipe-to-reply, voice player, document type,
+     emoji picker, attach menu, quote bar, tap feedback. Only transform/opacity animate (compositor), all off with reduced motion. */
+  WA_CSS += '.wa-tick{display:inline-flex;align-items:center;color:#9eacb9}.wa-tick svg{display:block}.wa-tick.read{color:#53bdeb}.wa-tick.failed{color:#ff6b7a}.wa-preview .wa-tick{vertical-align:-2px;display:inline-flex}' +
+    '.wa-quote{display:flex;flex-direction:column;gap:1px;width:100%;min-width:140px;box-sizing:border-box;margin:0 0 4px;padding:5px 10px 6px;border:0;border-inline-start:4px solid #a5b4fc;border-radius:7px;background:rgba(0,0,0,.24);color:inherit;font:inherit;line-height:18px;text-align:start;white-space:normal;cursor:pointer;-webkit-tap-highlight-color:transparent}.wa-quote.wa-q-out{border-inline-start-color:#06cf9c}' +
+    '.wa-q-who{font-size:12.5px;font-weight:600;color:#a5b4fc}.wa-q-out .wa-q-who{color:#06cf9c}.wa-q-txt{font-size:13px;color:#c4ccd4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow-wrap:anywhere}.wa-quote:focus-visible{outline:2px solid #79c9eb;outline-offset:1px}.wa-has-media .wa-quote{margin:0 0 3px}' +
+    '.wa-rbtn{flex:none;align-self:center;width:30px;height:30px;margin:0 6px;padding:0;border:0;border-radius:50%;background:rgba(31,37,44,.92);color:#cfd8df;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .12s}.wa-msg:hover .wa-rbtn,.wa-rbtn:focus-visible{opacity:1}.wa-rbtn:hover{color:#fff;background:#2a313a}@media(hover:none),(pointer:coarse){.wa-rbtn{display:none}}' +
+    '.wa-msg{touch-action:pan-y}.wa-msg .wa-bubble{transition:transform .18s cubic-bezier(.2,.8,.2,1)}.wa-msg[data-swipe] .wa-bubble{transition:none}.wa-swipe-ic{position:absolute;top:50%;margin-top:-16px;width:32px;height:32px;border-radius:50%;background:#1f252c;color:#cfd8df;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}.wa-in .wa-swipe-ic{left:-44px}.wa-out .wa-swipe-ic{right:-44px}' +
+    '@media(pointer:coarse){.wa-bubble{-webkit-touch-callout:none}}' +
+    '.wa-msg.wa-flash .wa-bubble{animation:waFlash 1.4s ease-out}@keyframes waFlash{0%,35%{box-shadow:0 0 0 3px rgba(83,189,235,.6)}100%{box-shadow:0 0 0 0 rgba(83,189,235,0)}}' +
+    '.wa-msg[data-status=sending]{animation:waPop .18s cubic-bezier(.2,.8,.2,1) both}@keyframes waPop{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}' +
+    '.wa-qbar{flex:none;display:flex;align-items:center;gap:6px;padding:6px 10px 0;background:#1a1e24;border-top:1px solid #2a313a;animation:waUp .16s cubic-bezier(.2,.8,.2,1) both}.wa-qbar .wa-quote{flex:1;min-width:0;margin:0;cursor:default}.wa-qbar+.wa-composer{border-top:0}' +
+    '.wa-qx{flex:none;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:transparent;color:#9eacb9;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.wa-qx svg{width:20px;height:20px}.wa-qx:hover{color:#f2f3f5}.wa-qx:focus-visible{outline:2px solid #79c9eb}' +
+    '@keyframes waUp{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}' +
+    '.wa-composer{position:relative}.wa-composer[data-send=off] .wa-cbtn{opacity:.5}.wa-cbtn[aria-expanded=true]{color:#06cf9c}' +
+    '.wa-emoji,.wa-attmenu{position:absolute;bottom:100%;z-index:6;margin-bottom:6px;background:#1f252c;border:1px solid #2a313a;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.55);animation:waUp .14s cubic-bezier(.2,.8,.2,1) both}.wa-emoji[hidden],.wa-attmenu[hidden]{display:none}' +
+    '.wa-emoji{inset-inline:8px;max-width:420px;max-height:min(232px,36dvh);overflow:auto;overscroll-behavior:contain;padding:6px}.wa-emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:2px}' +
+    '.wa-emo{width:100%;height:44px;padding:0;border:0;border-radius:8px;background:transparent;font-size:24px;line-height:44px;cursor:pointer;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}.wa-emo:hover,.wa-emo:focus-visible{background:#2a313a;outline:none}' +
+    '.wa-attmenu{inset-inline-end:58px;width:min(270px,calc(100% - 24px));padding:6px 0;display:flex;flex-direction:column}.wa-att{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 16px;border:0;background:none;color:#f2f3f5;font:inherit;font-size:14.5px;text-align:start;cursor:not-allowed;opacity:.6}.wa-att svg{width:20px;height:20px;flex:none;color:#06cf9c}' +
+    '.wa-att-note{margin:4px 0 2px;padding:8px 16px 4px;border-top:1px solid #2a313a;font-size:12.5px;line-height:1.6;color:#b5c0ca}' +
+    '.wa-voice{display:flex;align-items:center;gap:8px;padding:6px 8px;width:min(300px,66vw)}.wa-voice .wa-maudio{display:none}.wa-vplay{flex:none;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:transparent;color:#cfd8df;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.wa-vplay:focus-visible{outline:2px solid #79c9eb}' +
+    '.wa-vplay .wa-i-pause,.wa-vplay[aria-pressed=true] .wa-i-play{display:none}.wa-vplay[aria-pressed=true] .wa-i-pause{display:block}' +
+    '.wa-vtrack{position:relative;flex:1;min-width:60px;height:24px;cursor:pointer;touch-action:none}.wa-vtrack:before{content:"";position:absolute;inset-inline:0;top:11px;height:3px;border-radius:2px;background:#4a5563}.wa-vfill{position:absolute;top:11px;inset-inline-start:0;height:3px;width:var(--p,0%);border-radius:2px;background:#53bdeb}.wa-vdot{position:absolute;top:5.5px;inset-inline-start:calc(var(--p,0%) - 6px);width:13px;height:13px;border-radius:50%;background:#53bdeb}' +
+    '.wa-vdur{flex:none;min-width:34px;font-size:12px;color:#b5c0ca;direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.wa-vmic{width:34px;height:34px;color:#06cf9c}.wa-vmic svg{width:18px;height:18px}' +
+    '.wa-mdoc-ic{position:relative}.wa-mext{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);padding:0 4px;border-radius:3px;background:#2f7de1;color:#fff;font-size:9px;font-weight:700;line-height:14px;letter-spacing:.3px}.wa-mdoc-ic[data-wa-ext=PDF] .wa-mext{background:#d9363e}' +
+    '.wa-cbtn,.wa-send,.wa-vplay,.wa-qx,.wa-emo,.wa-rbtn,.wa-tolatest{transition:transform .08s ease-out,opacity .12s}.wa-cbtn:active,.wa-send:active,.wa-vplay:active,.wa-qx:active,.wa-emo:active,.wa-rbtn:active,.wa-tolatest:active{transform:scale(.9)}.wa-chat:active{background:#232a32}' +
+    '@media(prefers-reduced-motion:reduce){.wa-msg[data-status=sending],.wa-qbar,.wa-emoji,.wa-attmenu,.wa-msg.wa-flash .wa-bubble{animation:none}.wa-msg .wa-bubble,.wa-cbtn,.wa-send,.wa-vplay,.wa-qx,.wa-emo,.wa-rbtn{transition:none}}';
   var LB_CSS = '.wa-lb{position:fixed;inset:0;z-index:2147483000;background:rgba(5,6,8,.96);display:flex;flex-direction:column;touch-action:none;transition:opacity .15s}' +
     '.wa-lb-bar{flex:none;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px;gap:8px}' +
     '.wa-lb-x,.wa-lb-dl{width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#f2f3f5;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.wa-lb-x:focus-visible,.wa-lb-dl:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}' +
@@ -363,14 +424,28 @@
           '<button type="button" role="menuitem" data-wa-arch="' + esc(c.id) + '">' + IC_ARCH + '<span>' + (isA ? 'إلغاء أرشفة المحادثة' : 'أرشفة المحادثة') + '</span></button></div>' : '') + '</div>';
     }).join('');
   }
-  /* UX404: composer affordances like WhatsApp. Emoji/attach/voice behaviour belongs to UX401: the buttons are visible but inert
-     (aria-disabled, «قريباً»), never send anything and never open a picker. */
+  /* UX404: composer affordances like WhatsApp. UX401: emoji opens a real picker (inserts into the text field, nothing is sent until the
+     pharmacist presses send); attach opens a menu that says plainly that files cannot be sent to customers from NOVA yet (text only, the
+     backend send is text-only); the mic stays inert («قريباً»). With sending off / 24h window closed every control is disabled. */
   var IC_EMOJI = '<svg' + SVGA + '><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
   var IC_CLIP = '<svg' + SVGA + '><path d="M20.5 11.5l-8.3 8.3a5 5 0 0 1-7-7l8.3-8.3a3.3 3.3 0 0 1 4.7 4.7l-8.4 8.3a1.7 1.7 0 0 1-2.3-2.3l7.7-7.7"/></svg>';
   var IC_MIC = '<svg' + SVGA + '><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>';
   var IC_SEND = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.4-7.5a1 1 0 0 0 0-1.8L3.4 3.6a.9.9 0 0 0-1.3 1l1.9 6.4 9 1-9 1-1.9 6.4a.9.9 0 0 0 1.3 1z"/></svg>';
   function cBtn(k, label, ic) { return '<button type="button" class="wa-cbtn wa-c-' + k + '" data-wa-' + k + ' aria-label="' + label + ' (قريباً)" title="قريباً" aria-disabled="true">' + ic + '</button>'; }
-  /* opts: { selected, query, now, sendEnabled, newCount (UX404 FAB badge), anim ('open'|'back', UX404 slide) } */
+  function cTog(k, label, ic, on, open, ctl, pop) { return on ? '<button type="button" class="wa-cbtn wa-c-' + k + '" data-wa-' + k + ' aria-label="' + label + '" title="' + label + '" aria-haspopup="' + pop + '" aria-expanded="' + (open ? 'true' : 'false') + '" aria-controls="' + ctl + '">' + ic + '</button>' : '<button type="button" class="wa-cbtn wa-c-' + k + '" data-wa-' + k + ' aria-label="' + label + ' (الإرسال متوقف)" aria-disabled="true">' + ic + '</button>'; }
+  var EMOJI = ['😀', '😂', '🙂', '😊', '😍', '🥰', '😉', '😅', '🤔', '😢', '😷', '🤒', '🤕', '🤧', '🙏', '🤲', '👍', '👌', '👏', '🤝', '👋', '✋', '💪', '❤️', '💚', '🌹', '🌸', '✨', '🎉', '💯', '✅', '❌', '⚠️', '⏰', '📞', '📍', '🚚', '🛵', '📦', '💊', '🩺', '💉', '🌡️', '🧴', '🏥', '💰', '🧾', '🌙'];
+  function emojiPanelHtml(open) { return '<div class="wa-emoji" id="waEmoji" data-wa-emoji-panel role="dialog" aria-label="اختر رمز تعبيري"' + (open ? '' : ' hidden') + '><div class="wa-emoji-grid" role="group" aria-label="الرموز التعبيرية">' + EMOJI.map(function (e) { return '<button type="button" class="wa-emo" data-wa-emo="' + e + '" aria-label="' + e + '">' + e + '</button>'; }).join('') + '</div></div>'; }
+  var IC_IMG2 = '<svg' + SVGA + '><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></svg>';
+  var IC_DOC2 = '<svg' + SVGA + '><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
+  var IC_CAM = '<svg' + SVGA + '><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  function attachMenuHtml(open) { return '<div class="wa-attmenu" id="waAttach" data-wa-attach-menu role="menu" aria-label="إرفاق"' + (open ? '' : ' hidden') + '>' +
+    [['image', 'صور وفيديو', IC_IMG2], ['document', 'مستند', IC_DOC2], ['camera', 'الكاميرا', IC_CAM]].map(function (x) { return '<button type="button" role="menuitem" class="wa-att wa-att-' + x[0] + '" data-wa-att="' + x[0] + '" aria-disabled="true">' + x[2] + '<span>' + x[1] + '</span></button>'; }).join('') +
+    '<p class="wa-att-note" data-wa-att-note>إرسال الملفات للعملاء من نوفا لسه مش متاح — النص بس. ابعت الصورة أو الملف من واتساب على الموبايل.</p></div>'; }
+  var IC_X = '<svg' + SVGA + '><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  /* composer quote bar (reply in progress); q = the quoted message, name = customer name */
+  function quoteBarHtml(q, name) { return q ? '<div class="wa-qbar" data-wa-qbar data-qid="' + esc(q.id) + '">' + quoteHtml(q, name, 'div') + '<button type="button" class="wa-qx" data-wa-qcancel aria-label="إلغاء الرد">' + IC_X + '</button></div>' : ''; }
+  /* opts: { selected, query, now, sendEnabled, newCount (UX404 FAB badge), anim ('open'|'back', UX404 slide),
+     UX401: quote (message being replied to), quotes ({mid: quoted message}), emojiOpen, attachOpen } */
   var CHAT_LOADING = '<div class="wa-chat-loading" data-chat-loading role="status"><span class="wa-chat-loading-txt">جاري تحميل المحادثة…</span><span class="wa-sk wa-sk-in"></span><span class="wa-sk wa-sk-out"></span><span class="wa-sk wa-sk-in w2"></span></div>';
   function renderWa(convs, opts) {
     opts = opts || {}; var now = opts.now || Date.now(), sel = null;
@@ -388,7 +463,7 @@
     var main = sel
       ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></button><span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-head-txt"><span class="wa-head-name">' + esc(name) + '</span><span class="wa-sub" data-wa-sub>' + esc(subtitle) + '</span></span>' +
         '</div>' +
-        '<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log" aria-live="polite"' + (opts.chatLoading ? ' aria-busy="true"' : '') + ' aria-label="رسائل المحادثة مع ' + esc(name) + '" tabindex="-1">' + (opts.chatLoading ? CHAT_LOADING : '') + (opts.chatError ? '<div class="wa-chat-err" role="alert" data-chat-error><span>' + esc(opts.chatError) + '</span><button type="button" data-wa-reload>إعادة المحاولة</button></div>' : '') + (hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>' : '') + (opts.chatLoading ? '' : bubbles(hid ? allMs.slice(hid) : sel.messages, now, { url: opts.mediaUrl, fail: opts.mediaFail })) + '</div>' +
+        '<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log" aria-live="polite"' + (opts.chatLoading ? ' aria-busy="true"' : '') + ' aria-label="رسائل المحادثة مع ' + esc(name) + '" tabindex="-1">' + (opts.chatLoading ? CHAT_LOADING : '') + (opts.chatError ? '<div class="wa-chat-err" role="alert" data-chat-error><span>' + esc(opts.chatError) + '</span><button type="button" data-wa-reload>إعادة المحاولة</button></div>' : '') + (hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>' : '') + (opts.chatLoading ? '' : bubbles(hid ? allMs.slice(hid) : sel.messages, now, { url: opts.mediaUrl, fail: opts.mediaFail, quotes: opts.quotes, reply: !!opts.sendEnabled, name: name })) + '</div>' +
         '<button type="button" class="wa-tolatest" data-wa-latest' + (opts.newCount ? '' : ' hidden') + ' aria-label="انزل للأحدث' + (opts.newCount ? ' (' + Number(opts.newCount) + ' رسالة جديدة)' : '') + '">' + IC_DOWN + '<span class="wa-fab-n" data-wa-fab-n' + (opts.newCount ? '>' + (opts.newCount > 99 ? '99+' : Number(opts.newCount)) : ' hidden>') + '</span></button>'
       : opts.loading && !arr(convs).length ? LIST_LOADING
       : '<div class="wa-empty wa-intro" data-wa-intro><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><h2>محادثات واتساب الصيدلية</h2><span>اختر محادثة لعرضها</span><p>الرسائل بتظهر هنا زي واتساب ويب. ابحث بالاسم أو الرقم أو نص الرسالة.</p></div>';
@@ -396,7 +471,7 @@
     return '<style>' + WA_CSS + (opts.notifHead ? NOTIF_CSS : '') + '</style><div class="wa-root" dir="rtl" data-wa-root data-wa-inbox-open data-view="' + (sel ? 'chat' : 'list') + '"' + (opts.anim === 'open' || opts.anim === 'back' ? ' data-anim="' + opts.anim + '"' : '') + '>' +
       '<aside class="wa-side"><div class="wa-side-head"><h1 style="font:inherit;margin:0">المحادثات</h1>'+(opts.histHead||'')+'</div>'+(opts.notifHead?'<div class="wa-notifbar" data-wa-notifbar>'+opts.notifHead+'</div>':'')+(opts.histPanel||'')+'<div class="wa-search"><input type="search" id="waSearch" aria-label="ابحث في المحادثات أو ابدأ محادثة جديدة" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"><button type="button" class="wa-sclear" id="waSearchClear" data-wa-sclear aria-label="\u0645\u0633\u062d \u0627\u0644\u0628\u062d\u062b"' + (opts.query ? '' : ' hidden') + '>\u00d7</button></div>' +
       '<div class="wa-list" id="waList" role="group" aria-label="قائمة المحادثات">' + chatListHtml(convs, opts.selected, opts.query, now, opts.loading, opts.list) + '</div></aside>' +
-      '<section class="wa-main' + (sel ? '' : ' wa-noselect') + '">' + main + (sel ? (opts.sendErr ? '<div class="wa-send-err" role="alert" data-send-err>' + esc(opts.sendErr) + '</div>' : '') + (opts.windowClosed ? '<div class="wa-window-note" data-wa-window role="status">عدّى أكتر من 24 ساعة على آخر رسالة من العميل. واتساب مش بيسمح بالرد لحد ما يبعت هو رسالة جديدة، وهتفتح الكتابة تلقائياً أول ما توصل.</div>' : '') + '<div class="wa-composer" id="waComposer" data-wa-composer role="group" aria-label="كتابة رسالة"' + (opts.windowClosed ? ' data-window="closed"' : '') + '><div class="wa-pill">' + cBtn('emoji', 'الرموز التعبيرية', IC_EMOJI) + '<input type="text" id="waInput" dir="auto" maxlength="1000" enterkeyhint="send" autocomplete="off" aria-label="اكتب رسالة للعميل" placeholder="' + (opts.windowClosed ? 'الرد متوقف: لازم العميل يبعت الأول' : en ? 'اكتب رسالة' : (opts.sendHint || 'الإرسال متوقف')) + '"' + (en ? '' : ' disabled') + '>' + cBtn('attach', 'إرفاق ملف', IC_CLIP) + cBtn('mic', 'رسالة صوتية', IC_MIC) + '</div><button type="button" class="wa-send" data-wa-send aria-label="إرسال"' + (en ? '' : ' disabled') + '>' + IC_SEND + '</button></div>' : '') + '</section></div>';
+      '<section class="wa-main' + (sel ? '' : ' wa-noselect') + '">' + main + (sel ? (opts.sendErr ? '<div class="wa-send-err" role="alert" data-send-err>' + esc(opts.sendErr) + '</div>' : '') + (opts.windowClosed ? '<div class="wa-window-note" data-wa-window role="status">عدّى أكتر من 24 ساعة على آخر رسالة من العميل. واتساب مش بيسمح بالرد لحد ما يبعت هو رسالة جديدة، وهتفتح الكتابة تلقائياً أول ما توصل.</div>' : '') + (en ? quoteBarHtml(opts.quote, name) : '') + '<div class="wa-composer" id="waComposer" data-wa-composer role="group" aria-label="كتابة رسالة"' + (opts.windowClosed ? ' data-window="closed"' : '') + (en ? '' : ' data-send="off"') + '>' + (en ? emojiPanelHtml(!!opts.emojiOpen) + attachMenuHtml(!!opts.attachOpen) : '') + '<div class="wa-pill">' + cTog('emoji', 'الرموز التعبيرية', IC_EMOJI, en, en && opts.emojiOpen, 'waEmoji', 'dialog') + '<input type="text" id="waInput" dir="auto" maxlength="1000" enterkeyhint="send" autocomplete="off" aria-label="اكتب رسالة للعميل" placeholder="' + (opts.windowClosed ? 'الرد متوقف: لازم العميل يبعت الأول' : en ? 'اكتب رسالة' : (opts.sendHint || 'الإرسال متوقف')) + '"' + (en ? '' : ' disabled') + '>' + cTog('attach', 'إرفاق', IC_CLIP, en, en && opts.attachOpen, 'waAttach', 'menu') + cBtn('mic', 'رسالة صوتية', IC_MIC) + '</div><button type="button" class="wa-send" data-wa-send aria-label="إرسال"' + (en ? '' : ' disabled') + '>' + IC_SEND + '</button></div>' : '') + '</section></div>';
   }
 
   /* UX406: new-message notifications. Unread tracker (per chat + total), document.title count, permission/mute controls.
@@ -465,7 +540,7 @@
   var NOTIF_CSS = '.wa-notifbar{flex:none;padding:6px 12px;border-bottom:1px solid #1f252c;background:#111418}.wa-notif{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.wa-nbtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border-radius:18px;border:1px solid #2a313a;background:#161a20;color:#f2f3f5;font:inherit;font-size:13px;cursor:pointer}.wa-nbtn svg{width:16px;height:16px;flex:none}.wa-nbtn[data-wa-notify=default]{border-color:#25d366;color:#25d366}.wa-nbtn[data-wa-notify=denied]{border-color:#b45309;color:#fbbf24}.wa-nbtn[aria-disabled=true]{opacity:.6;cursor:default}.wa-nbtn:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}.wa-nnote{flex-basis:100%;font-size:12px;color:#9aa4b0;line-height:1.5}@media(pointer:coarse),(max-width:780px){.wa-nbtn{min-height:44px}.wa-nmute-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}';
   /* tab badge style is inline (the tab lives outside the conversations view) */
   var TAB_BADGE_CSS = 'display:inline-block;min-width:18px;height:18px;margin-inline-start:6px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#25d366;color:#06210f;font-size:12px;font-weight:700;line-height:18px;text-align:center;vertical-align:middle';
-  var api = { stripStaffPrefix: stripStaffPrefix, createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+  var api = { tick: tick, quoteHtml: quoteHtml, quoteBarHtml: quoteBarHtml, emojiPanelHtml: emojiPanelHtml, EMOJI: EMOJI, docExt: docExt, durLabel: durLabel, stripStaffPrefix: stripStaffPrefix, createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -91,7 +91,7 @@ t('selected chat: header, wallpaper, composer shell; RTL root', () => {
   assert.match(h, /<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات">/);
   assert.match(h, /class="wa-head-name">أحمد</);
   assert.match(h, /<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log"/);
-  assert.match(h, /<div class="wa-composer" id="waComposer" data-wa-composer role="group" aria-label="كتابة رسالة"><div class="wa-pill">.*?<input type="text" id="waInput"/ /* UX404 pill; UX407: not a <form> (no iOS prev/next bar) */);
+  assert.match(h, /<div class="wa-composer" id="waComposer" data-wa-composer role="group" aria-label="كتابة رسالة">(?:<div class="wa-emoji"[^]*?<div class="wa-attmenu"[^]*?<\/p><\/div>)?<div class="wa-pill">.*?<input type="text" id="waInput"/ /* UX404 pill; UX407: not a <form> (no iOS prev/next bar); UX401: emoji panel + attach menu (hidden) precede the pill */);
   assert.ok(!/<form/.test(h), 'UX407: no <form> in the conversations frame');
   assert.match(h, /\.wa-msgs\{background-color:#0b0d10;background-image:url\("data:image\/svg\+xml,%3Csvg/);
 });
