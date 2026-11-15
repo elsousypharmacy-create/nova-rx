@@ -11,7 +11,7 @@
    "after": [
     "UX400b"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-smoothness",
@@ -20,7 +20,17 @@
    "max_turns": 120,
    "slot": "A",
    "dispatched_at": "2026-11-15T12:24:26+00:00",
-   "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867"
+   "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867",
+   "pr": 462,
+   "ci_dispatched": {
+    "sha": "732cba22338d72b213b964fdbc8608a047164ce0",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T12:48:00+00:00"
+   }
   },
   {
    "id": "UX405",
@@ -4952,5 +4962,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T12:42:42+00:00"
+ "updated": "2026-11-15T12:48:00+00:00"
 }
