@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { stripPwa } from '../../tools/inject-pwa-assets.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const ART = join(ROOT, 'worker/live/nova-rx-preview.ux-407.js');
@@ -27,7 +28,7 @@ ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.htm
 const SWK = '"/sw.js":{"body":';
 const swBody = (code) => { const j = code.indexOf(SWK) + SWK.length; let e = j + 1; while (code[e] !== '"') { if (code[e] === '\\') e++; e++; } return [code.slice(0, j) + code.slice(e + 1), JSON.parse(code.slice(j, e + 1))]; };
 const strip = (s) => swBody(s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n'))[0];
-ck('worker code outside the HTML literal and /sw.js body identical to ux-406', strip(raw) === strip(readFileSync(BASE, 'utf8')));
+ck('worker code outside the HTML literal, /sw.js body and PWA assets identical to ux-406', strip(stripPwa(raw)) === strip(readFileSync(BASE, 'utf8')));
 const sw = swBody(raw)[1];
 ck('embedded /sw.js identical to ux-406', sw === swBody(readFileSync(BASE, 'utf8'))[1]);
 ck('embedded /sw.js equals repo sw.js', sw === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
@@ -50,8 +51,11 @@ const M = {
   conversations: ['data-wa-inbox-open', 'function hOn()', 'function hLoad()', 'inbox/history', 'hPoll', 'winClosed', 'hSend', 'GATED', 'data-wa-older', 'data-wa-latest',
     'NOVA_FIX50', 'NOVA_FIX50_VV', 'wa-root', 'novaInboxView', 'novaWaBtn'],
   sw: ['/sw.js?v=4'],
+  UX409: ['NOVA WhatsApp', 'manifest-whatsapp.webmanifest', '/icons/nova-whatsapp-180.png', 'height:100dvh', '.wa-list{padding-bottom:var(--wa-sab,env(safe-area-inset-bottom,0px))', '.wa-composer{margin:0;background:#1a1e24'],
 };
 for (const [k, ms] of Object.entries(M)) for (const m of ms) ck(k + ' marker ' + m, app.includes(m));
+ck('PWA assets served by the preview worker', raw.includes('NOVA_PWA_ASSETS') && raw.includes('/icons/nova-whatsapp-180.png') && raw.includes('/manifest-whatsapp.webmanifest') && raw.includes('/manifest.webmanifest'));
+
 for (const s of ['wa-lockform', 'waHistPin', 'waHistForm', 'X-Nova-Pin', 'PIN_REQUIRED', 'PIN_INVALID', 'function hPin(', 'المحادثات مقفولة', 'محمية بـ PIN', 'اكتب رقم PIN'])
   ck('no PIN UI: ' + s, !app.includes(s));
 ck('worker /sw.js cache stays nova-rx-shell-v4', raw.includes("const CACHE='nova-rx-shell-v4'"));
