@@ -56,7 +56,7 @@
    "after": [
     "UX405"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
@@ -64,7 +64,18 @@
    "max_turns": 80,
    "source": "owner-request-2026-11-15-notifications",
    "slot": "A",
-   "dispatched_at": "2026-11-15T13:13:18+00:00"
+   "dispatched_at": "2026-11-15T13:13:18+00:00",
+   "pr": 466,
+   "ci_dispatched": {
+    "sha": "9e6933834f75f81ac89beb20fffa55bb2bf4840f",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T13:39:47+00:00"
+   }
   },
   {
    "id": "UX407",
@@ -4993,5 +5004,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:37:16+00:00"
+ "updated": "2026-11-15T13:39:47+00:00"
 }
