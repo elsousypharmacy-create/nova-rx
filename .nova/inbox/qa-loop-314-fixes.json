@@ -1,0 +1,139 @@
+{
+  "tasks": [
+    {
+      "id": "UX315",
+      "phase": 10,
+      "title": "الموبايل: السهم ‹ يغطي شعار «NOVA Rx» في رأس كل الشاشات (تراجع عن UX204)",
+      "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Wordmark fully visible at 390px on every tab; test asserts no bounding-box overlap between brand and nav arrows.",
+      "after": []
+    },
+    {
+      "id": "UX316",
+      "phase": 10,
+      "title": "العملاء: رسالة البحث الفارغ خاطئة «لا يوجد عملاء بعد» + لا زر مسح + «عبدالله» لا تطابق «عبد الله»",
+      "brief": "In customers, search 'zzz' shows 'لا يوجد عملاء بعد / أضف عميلًا' instead of 'لا توجد نتائج لـ «zzz»' with a clear-search action. Add × clear button (#novaFilterClear like products), normalise spaces/hamza/ya/ta-marbuta/Arabic digits so 'عبدالله' matches 'عبد الله'. Keep <100ms. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Zero-result search shows correct no-results copy + clear button; 'عبدالله' matches; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX317",
+      "phase": 10,
+      "title": "العملاء: مؤشرات المديونية — إجمالي المديونية وعدد المدينين وفلتر «عليهم مديونية»",
+      "brief": "KPIs show العملاء/الزيارات/النقاط/النشطون (active == total, redundant). Replace the redundant KPI with إجمالي المديونية + عدد المدينين (from NovaCredit.customers()), add filter chips (الكل / مدينون / متأخرون) and sort by debt desc; red debt value must meet AA contrast on dark. Seed NovaCredit in test via localStorage 'nova.credit'. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Debt KPI and debtor filter work with seeded ledger; test asserts totals.",
+      "after": []
+    },
+    {
+      "id": "UX318",
+      "phase": 10,
+      "title": "العملاء: بطاقة «عدد العملاء قليل / أضف عميلًا» تدفع الجدول للأسفل وتظهر مع 4 عملاء",
+      "brief": "Empty-state card renders above the table whenever <8 customers, pushing real data ~170px down (and between title and table). Show it only when there are 0 customers; otherwise a compact 'إضافة عميل' primary button in the page header. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "With >=1 customer no nag card; table starts right after KPIs; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX319",
+      "phase": 10,
+      "title": "العملاء: لا يوجد ملف/تفاصيل عميل ولا فرز ولا تركيز بلوحة المفاتيح على الصفوف",
+      "brief": "Clicking/Enter on a customer row does nothing. Add focusable rows (tabindex, Enter/Space) opening a detail panel (name, phone, tier, visits, points, debt, كشف حساب, سداد, WhatsApp link to inbox) with focus trap/restore; sortable headers with aria-sort (name, visits, points, debt) like the products table (UX305). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Row Enter opens detail; headers sort with aria-sort; test asserts keyboard flow.",
+      "after": []
+    },
+    {
+      "id": "UX320",
+      "phase": 10,
+      "title": "العملاء: «إضافة عميل» تنقل إلى شاشة البيع وتطلق F3 بدل نموذج مباشر",
+      "brief": "novaCustAdd does switchPage('sale') + synthetic F3: user loses context and no dialog appears on the customers screen. Add an inline add-customer dialog (name, phone with validation/Arabic-Indic digits, duplicate-phone warning) saved to local demo data, accessible, 44px targets. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Add customer from the customers screen without leaving it; test asserts new row.",
+      "after": []
+    },
+    {
+      "id": "UX321",
+      "phase": 10,
+      "title": "العملاء: نافذة سداد المديونية وكشف الحساب — وصولية وتحقق ومظهر",
+      "brief": "#novaPayDebt has no aria-labelledby, #novaPayAmt/#novaPayMethod have no labels, over-payment is only a toast ('أكبر من المديونية') while dialog stays open, no focus trap/restore; the statement dialog close ✕ overlaps the title on 390px. Add labels, inline validation with aria-invalid, trap+restore focus, scroll lock, no title overlap, remaining-balance preview after payment. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Dialogs labelled/trapped, inline error, no overlap at 390px; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX322",
+      "phase": 10,
+      "title": "العملاء: لا توجد واجهة لإعادة الصرف للأدوية المزمنة (rx-followup.js غير موصول)",
+      "brief": "Chronic refill has no UI: rx-followup.js (opt-in reminders, manual only) is not loaded in index.html. Add in the customer detail a 'أدوية مزمنة' section: list chronic meds with last dispense date and next refill due, a 'مستحقة للصرف' filter/badge on the customers list, and a 'إعادة صرف' button that adds the last items to the sale cart (existing 'إعادة صرف آخر فاتورة' logic) — no automatic messages, no therapy decisions. Local demo data only. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Due-refill badge + one-click reorder to cart; test asserts with fake data.",
+      "after": []
+    },
+    {
+      "id": "UX323",
+      "phase": 10,
+      "title": "استوديو الاستيكرات: شعار مكسور، تداخل نص المعاينة مع شارة «يتطلب مراجعة»، وخانة الموافقة 22px",
+      "brief": "/sticker-studio.html preview shows a broken-image icon in place of the logo, the draft line 'مسودة غير مكتملة — مراجعة الصيدلي...' collides with the 'يتطلب مراجعة' pill, and #pharmacistApproval is 22x22. Hide/replace broken logo with the pharmacy wordmark, reserve space for the pill, enlarge the checkbox target to >=44px touch. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "No broken image, no overlap in preview at 1366 and 390; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX324",
+      "phase": 10,
+      "title": "بيع الطوارئ: واجهة فاتحة خارج هوية Black Edition وحقول ملف/تاريخ افتراضية بالإنجليزية",
+      "brief": "/emergency-sales.html uses a light/green theme and native 'Choose File / No file chosen' and mm/dd/yyyy controls (English), 233x32 and 324x26 targets; the message says 'افتح تبويب الأسعار' while already on it. Restyle to Black Edition tokens (ux-tokens.css), styled file picker with Arabic label, locale-aware date, >=44px targets, corrected copy. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Page matches Black Edition, Arabic controls, 44px targets; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX325",
+      "phase": 10,
+      "title": "مقارنة الموردين: فيض أفقي على الموبايل (390px) وجدول مقصوص",
+      "brief": "/supplier-compare.html at 390px has horizontal overflow: table and notice are cut off on the left, product names truncated, pagination detached. Make the table a card list or contained scroller, wrap the notice, keep sticky header, no page-level horizontal scroll. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "scrollWidth<=innerWidth at 390px; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX326",
+      "phase": 10,
+      "title": "أهداف اللمس الصغيرة: selectAll (22px) في المشتريات وحقول الطوارئ والاستيكرات",
+      "brief": "Small controls measured: purchases #selectAll 22x22, sticker-studio #pharmacistApproval 22x22, emergency-sales inputs 32/26px high. Raise to >=44px hit area (padding/label wrapper) without changing layout visually. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "All listed targets >=36px desktop/44px touch; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX327",
+      "phase": 10,
+      "title": "العملاء: صقل الجدول — اسم عربي مع الإنجليزي بين قوسين، محاذاة الهاتف، والعناوين",
+      "brief": "Names render 'د. طارق المنصور (Dr. Tariq Al-Mansoor)' in one line (bidi reorders parentheses on mobile '(Dr. Tariq ...) د.'). Show Arabic as primary and Latin as muted secondary line, tabular numerals and consistent alignment for phone/visits/points/debt, tier as a coloured badge, group the table header cleanly (remove the redundant 'البيانات التجريبية' panel heading or turn into a demo chip like products). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Name cell bidi-correct at 390px; tier badges; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX328",
+      "phase": 10,
+      "title": "البيع (موبايل): رقم الفاتورة مقطوع «…00001» وحالة فارغة بزر «إخفاء» غير مفهوم",
+      "brief": "Mobile sale header shows invoice number truncated to '...00001' and the empty-cart hint has a stray 'إخفاء' button with no label/explanation. Show the full short number (tap to copy) and give the hide control a clear label/aria-label or remove it; reduce empty-state vertical dead space. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+      "acceptance": "Full invoice number readable at 390px; hide control labelled; test asserts.",
+      "after": []
+    },
+    {
+      "id": "UX329",
+      "phase": 10,
+      "title": "Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)",
+      "brief": "Rebuild the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs), embed the UX315-UX328 frontend changes, add a markers test (like tests/artifact-qa231-markers.mjs) and run node --check. NO deploy, backend untouched.",
+      "acceptance": "worker/live/nova-rx-preview.qa-314.js built; markers test passes; node --check passes; no deploy.",
+      "after": [
+        "UX315",
+        "UX316",
+        "UX317",
+        "UX318",
+        "UX319",
+        "UX320",
+        "UX321",
+        "UX322",
+        "UX323",
+        "UX324",
+        "UX325",
+        "UX326",
+        "UX327",
+        "UX328"
+      ]
+    }
+  ]
+}
