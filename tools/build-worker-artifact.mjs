@@ -2,6 +2,7 @@
 // Replace ONLY the app HTML string literal inside a Worker export. Routes and bindings are not touched.
 // Usage: node tools/build-worker-artifact.mjs BASE_WORKER.js NEW_APP.html OUT_WORKER.js
 //        node tools/build-worker-artifact.mjs --extract WORKER.js OUT_APP.html
+// UX406: optional trailing `--sw sw.js` also replaces the embedded "/sw.js" asset body (Service Worker) and nothing else.
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
@@ -16,7 +17,23 @@ function locate(code) {
   return { lines, idx, line, start, end: i + 1 };
 }
 
-const [a, b, c] = process.argv.slice(2);
+function replaceSw(code, swSrc) {
+  const k = '"/sw.js":{"body":';
+  const i = code.indexOf(k);
+  if (i < 0 || code.indexOf(k, i + 1) >= 0) throw new Error('exactly one /sw.js asset expected');
+  const j = i + k.length;
+  if (code[j] !== '"') throw new Error('/sw.js body is not a string literal');
+  let e = j + 1;
+  while (e < code.length) { if (code[e] === '\\') { e += 2; continue; } if (code[e] === '"') break; e++; }
+  const old = JSON.parse(code.slice(j, e + 1));
+  if (typeof old !== 'string') throw new Error('bad /sw.js body');
+  return code.slice(0, j) + JSON.stringify(swSrc) + code.slice(e + 1);
+}
+
+const argv = process.argv.slice(2);
+const swAt = argv.indexOf('--sw');
+const swPath = swAt >= 0 ? argv.splice(swAt, 2)[1] : null;
+const [a, b, c] = argv;
 if (a === '--extract') {
   const code = fs.readFileSync(b, 'utf8');
   const { line, start, end } = locate(code);
@@ -30,7 +47,8 @@ if (a === '--extract') {
   const html = fs.readFileSync(b, 'utf8');
   const { lines, idx, line, start, end } = locate(code);
   lines[idx] = line.slice(0, start) + JSON.stringify(html) + line.slice(end);
-  const out = lines.join('\n');
+  let out = lines.join('\n');
+  if (swPath) out = replaceSw(out, fs.readFileSync(swPath, 'utf8'));
   fs.writeFileSync(c, out);
   console.log('wrote', c, Buffer.byteLength(out), 'bytes, sha256', crypto.createHash('sha256').update(out).digest('hex'));
 }

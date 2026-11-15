@@ -7,6 +7,7 @@ import { inboxEnabled } from './inbox.js';
 import { messageText, tenantMap } from './whatsapp-process.js';
 import { mediaMeta, cacheMedia } from './inbox-media.js';
 import { historyTenant } from './inbox-history.js';
+import { schedulePush } from './inbox-push.js';
 
 export const MAX_ITEMS = 100;
 // UX405: media bytes arrive inline (GAS caps a file at 5 MB => ~6.7 MB of JSON), so this route accepts up to 10 MB.
@@ -48,7 +49,8 @@ const tsMs = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? 
 // Inbound id = wa_<wamid> (same as the Meta queue path), outbound (bot reply) id = wb_<wamid>.
 // UX405: media items (image/sticker/audio/video/document) are always stored, caption or not, with their media columns;
 // media_base64 (when present) is decoded and cached in KV under wamedia:<tenant>:<message id>.
-export async function ingestDirect(db, tenant, items, now = Date.now(), kv = null) {
+// UX406: fresh (optional array) collects the inbound messages actually written, for the push notification hook.
+export async function ingestDirect(db, tenant, items, now = Date.now(), kv = null, fresh = null) {
   let added = 0, duplicates = 0, skipped = 0, cached = 0;
   for (const it of items) {
     const out = it.direction === 'out';
@@ -71,6 +73,7 @@ export async function ingestDirect(db, tenant, items, now = Date.now(), kv = nul
         md ? md.type : null, md ? md.id : null, md ? md.mime : null, md ? md.filename : null, md ? md.size : null, md ? md.skipped : null, md ? md.caption : null, md ? (ok ? 1 : 0) : null).run();
     await db.prepare('UPDATE inbox_conversations SET updated_at = ? WHERE tenant_id = ? AND id = ? AND (CASE WHEN updated_at > 0 AND updated_at < 1000000000000 THEN updated_at * 1000 ELSE updated_at END) < ?').bind(at, tenant, cid, at).run();
     added++;
+    if (!out && Array.isArray(fresh)) fresh.push({ cid, name: s(it.name) || from, text: text.slice(0, 200), at });
   }
   return { added, duplicates, skipped, cached };
 }
@@ -95,7 +98,9 @@ export function registerWaBridgeRoutes(route, { json, errorResponse }, { authent
     if (!env.DB) return errorResponse('WA_NO_DB', 'قاعدة البيانات غير متاحة.', 503, requestId);
     if (waBridgeDirectEnabled(env)) {
       for (const it of body.messages) if (!it || typeof it !== 'object' || !s(it.id) || !s(it.from)) return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId);
-      const r = await ingestDirect(env.DB, historyTenant(env), body.messages, Date.now(), env.KV);
+      const fresh = [], tenant = historyTenant(env);
+      const r = await ingestDirect(env.DB, tenant, body.messages, Date.now(), env.KV, fresh);
+      schedulePush(ctx, env, tenant, fresh); // UX406: after the rows are written; never awaited, never fails the ingest
       return json({ ok: true, direct: true, ...r, requestId }, 200, { 'X-Request-Id': requestId });
     }
     const entries = [], pend = [];

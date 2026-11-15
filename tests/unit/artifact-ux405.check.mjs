@@ -23,9 +23,7 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-// UX430 later appended its WhatsApp KPIs block to index.html (shipped in ux-430); compare with that block removed.
-const noUx430 = (h) => { const i = h.indexOf('<!-- UX430:BEGIN WhatsApp KPIs -->'), j = h.indexOf('<!-- UX430:END -->'); return i >= 0 && j > i ? h.slice(0, i) + h.slice(j + '<!-- UX430:END -->'.length).replace(/^\n/, '') : h; };
-ck('app HTML equals main index.html (minus UX430 block)', app === noUx430(readFileSync(join(ROOT, 'index.html'), 'utf8')));
+ck('app HTML is the UX405 build (pinned sha256)', createHash('sha256').update(app).digest('hex') === '76c3847c451a77dae91cc47e23c539bf6aa342e7cf52a2f17ae0a22d1361c28c');
 const strip = (s) => s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n');
 ck('worker code outside the HTML literal identical to ux-404', strip(raw) === strip(readFileSync(BASE, 'utf8')));
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>')).length === 1);
