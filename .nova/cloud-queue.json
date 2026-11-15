@@ -4068,7 +4068,7 @@
    "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
@@ -4076,13 +4076,13 @@
    "dispatched_at": "2026-11-15T05:18:45+00:00",
    "pr": 435,
    "ci_dispatched": {
-    "sha": "b430e1eae13a9e2f71588e5908cfa979a9a38474",
+    "sha": "820daa7ddcc6e0928f8841e1b8e90ed9498e211e",
     "wf": [
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-14T23:24:19+00:00"
+    "at": "2026-11-15T05:20:12+00:00"
    },
    "note": "Retried 2026-11-15: failed after 2 fix attempts due to merge conflicts with main; PR #435 left open. Reset to pr_open with fix_attempts=0 so a Claude slot can merge main, resolve index.html conflicts, and land on green CI. Failed tasks go to the front."
   },
@@ -4294,5 +4294,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
   }
  ],
- "updated": "2026-11-15T05:18:45+00:00"
+ "updated": "2026-11-15T05:20:12+00:00"
 }
