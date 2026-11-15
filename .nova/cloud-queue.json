@@ -4184,13 +4184,13 @@
    "after": [
     "UX420"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-request-2026-11-15",
    "note": "Slot B track; starts after UX420. Does not edit index.html or conversations.",
    "slot": "B",
-   "dispatched_at": "2026-11-15T09:13:31+00:00",
+   "dispatched_at": "2026-11-15T09:22:40+00:00",
    "pr": 446,
    "ci_dispatched": {
     "sha": "1cecb6613228e2fb39c8a9107eeacd5244be76df",
@@ -4623,5 +4623,5 @@
    "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
   }
  ],
- "updated": "2026-11-15T09:17:45+00:00"
+ "updated": "2026-11-15T09:22:40+00:00"
 }
