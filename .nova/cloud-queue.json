@@ -99,7 +99,7 @@
    "after": [
     "SALE-06"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-wa-kpis",
@@ -107,8 +107,7 @@
    "model": "opus",
    "max_turns": 120,
    "slot": "B",
-   "dispatched_at": "2026-11-15T12:08:26+00:00",
-   "retry": true,
+   "dispatched_at": "2026-11-15T12:42:42+00:00",
    "not_before": "2026-11-15T12:42:00+00:00",
    "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585"
   },
@@ -4953,5 +4952,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T12:35:59+00:00"
+ "updated": "2026-11-15T12:42:42+00:00"
 }
