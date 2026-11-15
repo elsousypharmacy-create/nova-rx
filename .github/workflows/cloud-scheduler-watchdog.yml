@@ -1,0 +1,49 @@
+# Watchdog: re-dispatch the Cloud scheduler if it has not run for 30 minutes and
+# none is queued or running. GitHub cron is best-effort (the scheduler's own
+# */15 cron fired only a few times a day), so this also wakes on completion of
+# other scheduled workflows. Read-only except one workflow_dispatch; no secrets
+# beyond GITHUB_TOKEN; never deploys.
+name: Cloud scheduler watchdog
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+  workflow_run:
+    types: [completed]
+    workflows:
+      - "Supplier health (read-only)"
+      - "Supplier sessions"
+      - "QA loop"
+      - "D1 backup"
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: cloud-scheduler-watchdog
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Re-dispatch a stalled scheduler
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          busy=$(gh run list -R "$REPO" -w cloud-scheduler.yml -L 20 --json status \
+            -q '[.[] | select(.status != "completed")] | length')
+          last=$(gh run list -R "$REPO" -w cloud-scheduler.yml -L 20 --json createdAt,conclusion \
+            -q '[.[] | select(.conclusion != "skipped")][0].createdAt // ""')
+          age=999999
+          if [ -n "$last" ]; then age=$(( $(date -u +%s) - $(date -u -d "$last" +%s) )); fi
+          echo "scheduler: busy=$busy last_run=$last age=${age}s"
+          if [ "$busy" -eq 0 ] && [ "$age" -ge 1800 ]; then
+            echo "::warning::Cloud scheduler idle for ${age}s; re-dispatching"
+            gh workflow run cloud-scheduler.yml -R "$REPO" --ref main
+          fi
