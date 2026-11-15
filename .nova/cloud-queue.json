@@ -4258,7 +4258,7 @@
    "after": [
     "UX422"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
@@ -4266,7 +4266,17 @@
    "model": "opus",
    "max_turns": 80,
    "slot": "B",
-   "dispatched_at": "2026-11-15T09:45:39+00:00"
+   "dispatched_at": "2026-11-15T09:45:39+00:00",
+   "pr": 450,
+   "ci_dispatched": {
+    "sha": "6dc39288ebc998cf15f1858fac32dd2644a93811",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T10:03:23+00:00"
+   }
   },
   {
    "id": "UX313",
@@ -4644,13 +4654,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Standalone emergency sales; after UX422. Re-verify Black Edition / Arabic fields.",
    "model": "opus",
-   "max_turns": 60
+   "max_turns": 60,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T10:03:23+00:00"
   },
   {
    "id": "UX325",
@@ -4842,5 +4854,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:00:47+00:00"
+ "updated": "2026-11-15T10:03:23+00:00"
 }
