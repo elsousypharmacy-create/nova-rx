@@ -1,0 +1,81 @@
+/* UX421: modern design-system skin for STANDALONE pages (sticker studio, emergency sales, purchases, supplier compare).
+   Loaded AFTER each page's own CSS; maps page-local variables onto the UX420 --nx-* tokens so dark (Black Edition) and
+   light (data-theme=light) stay consistent. Additive: no index.html / conversations selectors. Logical properties, RTL-first. */
+html[data-nx-page]{color-scheme:dark}
+html[data-nx-page][data-theme=light]{color-scheme:light}
+html[data-nx-page] body{font-family:var(--nx-font);-webkit-font-smoothing:antialiased;overflow-wrap:anywhere}
+html[data-nx-page] :focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html[data-nx-page] *{transition-duration:0ms!important;animation-duration:0ms!important}}
+
+/* ---------- Sticker studio ---------- */
+html[data-nx-page=sticker]{--bg:var(--nx-bg-base);--panel:var(--nx-bg-panel);--panel2:var(--nx-bg-surface);--card:var(--nx-bg-surface);--field:var(--nx-bg-base);
+--line:var(--nx-border-subtle);--line2:var(--nx-border-subtle);--text:var(--nx-text-main);--muted:var(--nx-text-muted);--dim:var(--nx-text-dim);
+--blue:var(--nx-accent);--green:var(--nx-ok);--amber:var(--nx-warn);--red:var(--nx-danger);--radius:var(--nx-r-3);--font:var(--nx-font)}
+html[data-nx-page=sticker] .topbar{background:var(--nx-bg-panel);box-shadow:var(--nx-shadow-1)}
+html[data-nx-page=sticker] .panel{box-shadow:var(--nx-shadow-1);transition:border-color var(--nx-dur-base) var(--nx-ease)}
+html[data-nx-page=sticker] .card-head{background:var(--nx-bg-surface)}
+html[data-nx-page=sticker] .card-head h2{font-size:var(--nx-fs-md);font-weight:var(--nx-fw-bold)}
+html[data-nx-page=sticker] .btn{background:var(--nx-bg-surface);border-color:var(--nx-border-subtle);color:var(--nx-text-main);border-radius:var(--nx-r-2);font-weight:var(--nx-fw-semibold);transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),transform var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=sticker] .btn:hover{background:var(--nx-bg-elevated);border-color:var(--nx-border-focus)}
+html[data-nx-page=sticker] .btn.primary{background:var(--nx-accent);border-color:var(--nx-accent);color:var(--nx-on-accent)}
+html[data-nx-page=sticker] .btn.primary:hover{background:var(--nx-accent);filter:brightness(1.08)}
+html[data-nx-page=sticker] .btn.danger{background:transparent;border-color:var(--nx-danger);color:var(--nx-danger)}
+html[data-nx-page=sticker] .btn.ghost{background:transparent}
+html[data-nx-page=sticker] input:focus,html[data-nx-page=sticker] select:focus,html[data-nx-page=sticker] textarea:focus{border-color:var(--nx-border-focus)}
+html[data-nx-page=sticker] .btn.small{min-height:44px}
+
+/* ---------- Emergency sales ---------- */
+html[data-nx-page=emergency]{--bg:var(--nx-bg-base);--card:var(--nx-bg-panel);--ink:var(--nx-text-main);--dim:var(--nx-text-muted);--line:var(--nx-border-subtle);
+--pri:var(--nx-accent);--pri-ink:var(--nx-on-accent);--warn:#2d2610;--warn-ink:var(--nx-warn);--bad:#3a1c1c;--bad-ink:#ffa8a8;--ok:#12302a;--ok-ink:#7fd4b4}
+html[data-nx-page=emergency][data-theme=light]{--warn:#fff4d6;--warn-ink:var(--nx-warn);--bad:#fde4e1;--bad-ink:var(--nx-danger);--ok:#dff3ea;--ok-ink:var(--nx-ok)}
+html[data-nx-page=emergency] body{font-size:var(--nx-fs-md)}
+html[data-nx-page=emergency] header{background:var(--nx-bg-panel);color:var(--nx-text-main);border-block-end:2px solid var(--nx-accent);box-shadow:var(--nx-shadow-1)}
+html[data-nx-page=emergency] header h1{font-size:var(--nx-fs-lg);font-weight:var(--nx-fw-bold)}
+html[data-nx-page=emergency] .card{border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1);padding:var(--nx-sp-4)}
+html[data-nx-page=emergency] .banner{border-radius:var(--nx-r-2);border:1px solid var(--nx-border-subtle)}
+html[data-nx-page=emergency] input[type=text],html[data-nx-page=emergency] input[type=search],html[data-nx-page=emergency] input[type=number]{border-radius:var(--nx-r-2);background:var(--nx-bg-base);transition:border-color var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=emergency] input:focus{border-color:var(--nx-border-focus)}
+html[data-nx-page=emergency] button{border-radius:var(--nx-r-2);transition:filter var(--nx-dur-fast) var(--nx-ease),transform var(--nx-dur-fast) var(--nx-ease),background-color var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=emergency] button:hover:not(:disabled){filter:brightness(1.08)}
+html[data-nx-page=emergency] button:active:not(:disabled){transform:translateY(1px)}
+html[data-nx-page=emergency] button.ghost{background:transparent;border-color:var(--nx-border-subtle)}
+html[data-nx-page=emergency] button.danger{border:1px solid var(--nx-danger)}
+html[data-nx-page=emergency] nav{background:var(--nx-bg-panel);box-shadow:0 -4px 14px rgba(0,0,0,.35)}
+html[data-nx-page=emergency] nav button.on{background:var(--nx-accent);color:var(--nx-on-accent)}
+html[data-nx-page=emergency] .price{color:var(--nx-accent)}
+html[data-nx-page=emergency] .chip{font-size:var(--nx-fs-xs)}
+
+/* ---------- Purchases ---------- */
+html[data-nx-page=purchases]{--bg:var(--nx-bg-base);--panel:var(--nx-bg-panel);--field:var(--nx-bg-base);--line:var(--nx-border-subtle);--text:var(--nx-text-main);--muted:var(--nx-text-muted);--blue:var(--nx-accent);--light:var(--nx-border-focus)}
+html[data-nx-page=purchases] body{color:var(--nx-text-main)}
+html[data-nx-page=purchases] button{background:var(--nx-bg-surface);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-2);transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),transform var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=purchases] button:hover:not(:disabled){background:var(--nx-bg-elevated);border-color:var(--nx-border-focus)}
+html[data-nx-page=purchases] button:active:not(:disabled){transform:translateY(1px)}
+html[data-nx-page=purchases] button.primary,html[data-nx-page=purchases] .primary{background:var(--nx-accent);border-color:var(--nx-accent);color:var(--nx-on-accent);font-weight:var(--nx-fw-bold)}
+html[data-nx-page=purchases] input:not([type=checkbox]):not([type=radio]),html[data-nx-page=purchases] select{border-radius:var(--nx-r-2);transition:border-color var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=purchases] input:focus,html[data-nx-page=purchases] select:focus{border-color:var(--nx-border-focus)}
+html[data-nx-page=purchases] table{border-radius:var(--nx-r-3)}
+html[data-nx-page=purchases] #receiveInvoice{color:var(--nx-on-accent)}
+
+/* ---------- Supplier compare ---------- */
+html[data-nx-page=compare] body{background:var(--nx-bg-base);color:var(--nx-text-main);padding:var(--nx-sp-5) var(--nx-sp-4);font-size:var(--nx-fs-md);line-height:var(--nx-lh-base)}
+html[data-nx-page=compare] h1{font-size:var(--nx-fs-xl);font-weight:var(--nx-fw-bold);line-height:var(--nx-lh-tight)}
+html[data-nx-page=compare] .badge{background:var(--nx-bg-surface);color:var(--nx-warn);border:1px solid var(--nx-border-subtle);font-size:var(--nx-fs-xs);line-height:1.5;border-radius:var(--nx-r-pill);padding:var(--nx-sp-1) var(--nx-sp-3);max-inline-size:100%}
+html[data-nx-page=compare] .tbl-scroll{overflow-x:auto;border-radius:var(--nx-r-3);border:1px solid var(--nx-border-subtle);box-shadow:var(--nx-shadow-1)}
+html[data-nx-page=compare] table{background:var(--nx-bg-panel);border-radius:0;font-size:var(--nx-fs-sm);min-inline-size:720px}
+html[data-nx-page=compare] th,html[data-nx-page=compare] td{border-bottom:1px solid var(--nx-border-subtle);text-align:start;padding:var(--nx-sp-3)}
+html[data-nx-page=compare] th{background:var(--nx-bg-surface);color:var(--nx-text-muted);font-size:var(--nx-fs-xs);font-weight:var(--nx-fw-semibold);white-space:nowrap}
+html[data-nx-page=compare] tbody tr{transition:background-color var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=compare] tbody tr:hover td{background:var(--nx-bg-surface)}
+html[data-nx-page=compare] tr.best td{background:color-mix(in srgb,var(--nx-ok) 14%,var(--nx-bg-panel))}
+html[data-nx-page=compare] tr.best td:first-child{box-shadow:inset -3px 0 0 var(--nx-ok)}
+html[data-nx-page=compare] .best-tag{color:var(--nx-ok);font-size:var(--nx-fs-xs)}
+html[data-nx-page=compare] .miss{color:var(--nx-warn);font-size:var(--nx-fs-xs)}
+html[data-nx-page=compare] code{color:var(--nx-accent)}
+html[data-nx-page=compare] button{background:var(--nx-bg-surface);color:var(--nx-text-main);border:1px solid var(--nx-border-subtle);border-radius:var(--nx-r-2);font-weight:var(--nx-fw-semibold);transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease)}
+html[data-nx-page=compare] button:hover:not(:disabled){background:var(--nx-bg-elevated);border-color:var(--nx-border-focus)}
+@media (max-width:480px){html[data-nx-page=compare] body{padding:var(--nx-sp-4) var(--nx-sp-3)}}
+
+/* 44px touch targets (UX421) */
+html[data-nx-page=sticker] .med-tab,html[data-nx-page=sticker] [data-age-unit]{min-block-size:44px;min-inline-size:44px}
+html[data-nx-page=emergency] input[type=datetime-local],html[data-nx-page=emergency] input[type=date]{min-block-size:52px;inline-size:100%;border:1.5px solid var(--nx-border-subtle);border-radius:var(--nx-r-2);padding:var(--nx-sp-2) var(--nx-sp-3);background:var(--nx-bg-base);color:var(--nx-text-main);font:inherit}
