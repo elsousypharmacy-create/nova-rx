@@ -32,7 +32,7 @@ assert.equal(U.totalUnread(inbox.list()), 2);
 // layout markers + direction + separators
 const html = U.renderWa(inbox.list(), { selected: '201001', now: NOW, sendEnabled: false });
 for (const mk of ['wa-root', 'wa-side', 'wa-search', 'wa-list', 'wa-main', 'wa-head', 'wa-composer', 'wa-avatar', 'wa-badge', '#0f4a3c', 'dir="rtl"', 'max-width:700px']) assert.ok(html.includes(mk), 'marker ' + mk);
-const msgDirs = [...html.matchAll(/class="wa-msg wa-(in|out)(?: wa-first)?(?: wa-cv)?" data-dir="(in|out)" data-mid="(\w+)"/g  /* UX404: + tail/content-visibility classes */)].map((m) => [m[1], m[2], m[3]]);
+const msgDirs = [...html.matchAll(/class="wa-msg wa-(in|out)(?: wa-first)?" data-dir="(in|out)" data-mid="(\w+)"/g  /* UX404: + tail class */)].map((m) => [m[1], m[2], m[3]]);
 assert.deepEqual(msgDirs, [['in', 'in', 'a1'], ['out', 'out', 'a2'], ['in', 'in', 'a3']]);
 assert.deepEqual([...html.matchAll(/data-date-sep><span>([^<]+)</g)].map((m) => m[1]), ['الخميس', 'أمس', 'اليوم']);
 assert.ok(html.includes('data-tick="delivered"'), 'tick inside outgoing bubble');

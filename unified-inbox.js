@@ -147,17 +147,17 @@
   function initial(name) { var s = String(name || '').trim(); return s ? Array.from(s)[0] : '؟'; }
   /* UX404: WhatsApp bubble anatomy. The first bubble of a same-direction run gets a tail (wa-first). The time + ticks sit in an
      absolutely placed end slot (wa-meta) and an invisible inline spacer (wa-gap) reserves that room at the end of the last text
-     line, so the time never covers glyphs (Arabic, LTR "Bottest off", mixed). Bubbles older than the newest 40 get wa-cv
-     (content-visibility:auto) so off-screen history skips paint. */
+     line, so the time never covers glyphs (Arabic, LTR "Bottest off", mixed). The DOM is windowed by the caller (latest 80,
+     older batches on scroll-up); rows are layout-contained so a new bubble never relayouts the rest of the thread. */
   function bubbles(msgs, now) {
-    var out = '', last = null, prev = null, list = arr(msgs), cv = list.length - 40;
-    list.forEach(function (m, i) {
+    var out = '', last = null, prev = null;
+    arr(msgs).forEach(function (m) {
       var ds = dayStart(m.at);
       if (ds !== last) { last = ds; prev = null; out += '<div class="wa-date" data-date-sep><span>' + esc(dateLabel(m.at, now)) + '</span></div>'; }
       if (m.kind === 'sys') { prev = null; out += '<div class="wa-sys" data-mid="' + esc(m.id) + '" data-kind="sys"><span dir="auto">' + esc(m.text) + ' · ' + timeLabel(m.at) + '</span></div>'; return; }
       var who = m.kind === 'bot' ? '<span class="wa-who wa-who-bot">البوت</span>' : m.kind === 'pharm' ? '<span class="wa-who wa-who-ph">الصيدلي</span>' : '';
       var d = m.dir === 'out' ? 'out' : 'in', first = prev !== d; prev = d;
-      out += '<div class="wa-msg wa-' + d + (first ? ' wa-first' : '') + (i < cv ? ' wa-cv' : '') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"' + (m.kind ? ' data-kind="' + esc(m.kind) + '"' : '') + (m.status ? ' data-status="' + esc(m.status) + '"' : '') + '><div class="wa-bubble" dir="auto">' + who +
+      out += '<div class="wa-msg wa-' + d + (first ? ' wa-first' : '') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"' + (m.kind ? ' data-kind="' + esc(m.kind) + '"' : '') + (m.status ? ' data-status="' + esc(m.status) + '"' : '') + '><div class="wa-bubble" dir="auto">' + who +
         '<span class="wa-text">' + esc(m.text) + '</span><span class="wa-gap" aria-hidden="true"></span><span class="wa-meta"><span class="wa-time">' + timeLabel(m.at) + '</span>' + tick(m) + '</span></div></div>';
     });
     return out;
@@ -189,8 +189,8 @@
     '.wa-in .wa-bubble{background:#1f252c}.wa-out .wa-bubble{background:#0f4a3c}.wa-msg.wa-first{margin-top:6px}.wa-in.wa-first .wa-bubble{border-top-right-radius:0}.wa-out.wa-first .wa-bubble{border-top-left-radius:0}' +
     '.wa-first .wa-bubble:before{content:"";position:absolute;top:0;width:8px;height:13px}.wa-in.wa-first .wa-bubble:before{right:-8px;background:#1f252c;-webkit-clip-path:polygon(0 0,100% 0,0 100%);clip-path:polygon(0 0,100% 0,0 100%)}.wa-out.wa-first .wa-bubble:before{left:-8px;background:#0f4a3c;-webkit-clip-path:polygon(0 0,100% 0,100% 100%);clip-path:polygon(0 0,100% 0,100% 100%)}' +
     '.wa-gap{display:inline-block;width:44px;height:1px;vertical-align:baseline}.wa-out .wa-gap{width:64px}.wa-meta{position:absolute;bottom:3px;inset-inline-end:8px;font-size:11px;line-height:15px;color:#b5c0ca;display:inline-flex;align-items:center;gap:3px;direction:ltr;white-space:nowrap;pointer-events:none}.wa-tick{color:#b5c0ca}.wa-tick.read{color:#53bdeb}.wa-tick.failed{color:#ff9a9a;font-weight:700}.wa-msg[data-status=failed] .wa-bubble{box-shadow:inset 0 0 0 1px #b91c1c}' +
-    /* UX404: smooth scrolling: own compositor layer, isolated rows, off-screen history skips paint, no scroll chaining */
-    '.wa-msgs{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;overflow-anchor:none;contain:layout paint}.wa-msg{flex:none;contain:layout style}.wa-msg.wa-cv{content-visibility:auto;contain-intrinsic-size:auto 44px}' +
+    /* UX404: smooth scrolling: contained scroller, isolated rows, native scroll anchoring, no scroll chaining */
+    '.wa-msgs{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;contain:layout paint}.wa-msg{flex:none;contain:layout style}.wa-list{overscroll-behavior:contain}' +
     '.wa-composer{min-height:62px;box-sizing:border-box;background:#1a1e24;border-top:1px solid #2a313a;display:flex;align-items:center;gap:10px;padding:10px 16px}.wa-composer input{flex:1;height:42px;border:1px solid #2a313a;border-radius:10px;padding:0 14px;font:inherit;font-size:15px;background:#0d0f12;color:#f2f3f5}' +
     '.wa-window-note{margin:0;padding:8px 14px;font-size:13px;line-height:1.6;color:#b0bbc7;background:#141a21;border-top:1px solid #29323d;text-align:center}.wa-send-err{background:#3a1416;color:#ffd5d5;border-top:1px solid #7f1d1d;padding:8px 16px;font-size:13.5px;line-height:1.6}.wa-tick.sending{font-size:10px}' +
     '.wa-composer input:disabled{background:#14171c;color:#9eacb9;cursor:not-allowed}.wa-send{width:42px;height:42px;border:0;border-radius:50%;background:#0b7a63;color:#fff;font-size:18px;cursor:pointer}.wa-send:disabled{background:#2a313a;color:#9eacb9;cursor:not-allowed}' +
