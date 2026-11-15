@@ -56,7 +56,7 @@ async function bump(kv, key, max, ttl) {
   return true;
 }
 
-async function callBot(env, payload, ms) {
+export async function callBot(env, payload, ms) {
   const f = env.NOVA_FETCH || globalThis.fetch; // injectable (tests)
   const ac = typeof AbortController === 'function' ? new AbortController() : null;
   const t = ac ? setTimeout(() => ac.abort(), ms) : null;

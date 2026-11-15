@@ -156,6 +156,20 @@
     return '<span class="wa-tick ' + k + '" data-tick="' + k + '" role="img" aria-label="' + TICK_AR[k] + '" title="' + TICK_AR[k] + '">' + TICK_SVG[k === 'delivered' || k === 'read' ? 'two' : k] + '</span>';
   }
   function initial(name) { var s = String(name || '').trim(); return s ? Array.from(s)[0] : '؟'; }
+  /* WA-LINK: a conversation whose "name" is only a phone number (the customer is not registered and has no profile name) is shown as a
+     readable number, never as a bare 201142677350, and its avatar is a generic person instead of a digit. The registered pharmacy customer
+     name (set on the conversation by the server link) is shown as it is. */
+  function numberish(v) { return /^\+?\d[\d\s-]*$/.test(String(v == null ? '' : v).trim()); }
+  function localPhone(d) { d = String(d || '').replace(/\D/g, ''); if (/^20(1[0125]\d{8})$/.test(d)) d = '0' + d.slice(2); return /^01[0125]\d{8}$/.test(d) ? d.slice(0, 4) + ' ' + d.slice(4, 7) + ' ' + d.slice(7) : d; }
+  function dispName(c) {
+    var n = String((c && c.customer) || '').trim(), id = String((c && c.id) || '');
+    if (n && !numberish(n) && n !== id) return n;
+    var raw = id.replace(/^wa_/, '');
+    if (/^\+?\d{6,20}$/.test(raw)) return localPhone(raw);
+    return n && n !== id ? n : /^wa_/.test(id) ? 'يوزرنيم واتساب (من غير رقم)' : id;
+  }
+  var IC_PERSON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0 2.1c-3.6 0-7.2 1.8-7.2 4.5v1.8h14.4v-1.8c0-2.7-3.6-4.5-7.2-4.5z"/></svg>';
+  function avatarHtml(c) { var n = String((c && c.customer) || '').trim(); return !n || numberish(n) || n === String((c && c.id) || '') ? IC_PERSON : esc(initial(n)); }
   /* UX404: WhatsApp bubble anatomy. The first bubble of a same-direction run gets a tail (wa-first). The time + ticks sit in an
      absolutely placed end slot (wa-meta) and an invisible inline spacer (wa-gap) reserves that room at the end of the last text
      line, so the time never covers glyphs (Arabic, LTR "Bottest off", mixed). The DOM is windowed by the caller (latest 80,
@@ -451,14 +465,14 @@
     var more = moreHtml(meta.more);
     if (!items.length) return head + (loading && !rawQ ? LIST_LOADING : rawQ ? '<div class="wa-empty" data-wa-noresult>لا نتائج لـ “' + esc(rawQ) + '”</div>' : flt !== 'all' ? '<div class="wa-empty" data-wa-nofilter>' + FILTERS[flt][1] + '</div>' : '<div class="wa-empty">لا توجد محادثات</div>') + more;
     return head + items.map(function (c) {
-      var ms = arr(c.messages), last = ms[ms.length - 1], u = uOf(c), name = c.customer || c.id, pv = hits[c.id] || last, isP = !!pin[c.id], isA = !!ar[c.id], open = meta.menu === c.id, act = c.id === selId;
+      var ms = arr(c.messages), last = ms[ms.length - 1], u = uOf(c), name = dispName(c), pv = hits[c.id] || last, isP = !!pin[c.id], isA = !!ar[c.id], open = meta.menu === c.id, act = c.id === selId;
       /* UX408: row state like WhatsApp iOS. unread (unseen customer messages) or «لم يُرد» (last message from the customer) => green count
          badge + bold name + green time; replied (last message from the pharmacy/bot) => the grey ticks before the preview. The open chat
          itself shows no badge. No per-row ▾ button: the row is the control (pin/archive = long-press / right-click / context-menu key). */
       var wait = needsReply(c), n = typeof meta.unread === 'function' ? u : Math.max(u, wait && !act ? trailingIn(c) : 0), stt = u > 0 ? 'unread' : wait ? 'noreply' : last && last.dir === 'out' ? 'replied' : 'none';
       return '<div class="wa-item' + (isP ? ' pinned' : '') + (isA ? ' archived' : '') + '" data-wa-item' + (isP ? ' data-pinned' : '') + (isA ? ' data-archived' : '') + '>' +
         '<button type="button" class="wa-chat' + (act ? ' active' : '') + (n ? ' unread' : '') + '" data-conv="' + esc(c.id) + '" data-state="' + stt + '"' + (act ? ' aria-current="true"' : '') + (open ? ' aria-expanded="true"' : '') + ' aria-haspopup="menu" aria-label="' + esc(name + (n ? ' — ' + n + (stt === 'unread' ? ' رسالة غير مقروءة' : ' رسالة مستنية رد') : stt === 'replied' ? ' — اترد عليها' : stt === 'noreply' ? ' — لم يُرد' : '')) + '">' +
-        '<span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-chat-body" aria-hidden="true"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
+        '<span class="wa-avatar" aria-hidden="true">' + avatarHtml(c) + '</span><span class="wa-chat-body" aria-hidden="true"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
         '<span class="wa-ctime">' + (last ? esc(dateLabel(last.at, now) === 'اليوم' ? timeLabel(last.at) : dateLabel(last.at, now)) : '') + '</span></span>' +
         '<span class="wa-row"><span class="wa-preview">' + (pv ? (pv.dir === 'out' ? tick(pv) + ' ' : '') + esc(previewText(pv)) : '') + '</span>' +
         (isP ? '<span class="wa-pinic" data-wa-pinned title="مثبتة">' + IC_PIN + '</span>' : '') +
@@ -513,7 +527,7 @@
   function renderWa(convs, opts) {
     opts = opts || {}; var now = opts.now || Date.now(), sel = null;
     arr(convs).forEach(function (c) { if (c.id === opts.selected) sel = c; });
-    var name = sel ? (sel.customer || sel.id) : '';
+    var name = sel ? dispName(sel) : '';
     /* UX408: WhatsApp iOS status line: «آخر ظهور …» = the customer's last message (we have no live presence), never message counts */
     var subtitle = '';
     if (sel) {
@@ -522,14 +536,17 @@
       if (lastInM) { var dl = dateLabel(lastInM.at, now); subtitle = 'آخر ظهور ' + (dl === 'اليوم' ? 'اليوم ' : dl === 'أمس' ? 'أمس ' : dl + ' ') + timeLabel(lastInM.at); }
       else if (!opts.chatLoading) subtitle = 'واتساب';
     }
-    var tel = sel && /^(?:wa_)?\+?(\d{8,15})$/.exec(String(sel.id)), allMs = sel ? arr(sel.messages) : [], lim = Math.max(1, Number(opts.limit) || 80), hid = Math.max(0, allMs.length - lim);
+    var tel = sel && /^(?:wa_)?\+?(\d{8,15})$/.exec(String(sel.id));
+    /* WA-LINK: the registered customer's number under the name (hidden when the name already is the number) */
+    if (sel && tel && name !== localPhone(tel[1])) subtitle = (subtitle ? subtitle + ' · ' : '') + localPhone(tel[1]);
+    var allMs = sel ? arr(sel.messages) : [], lim = Math.max(1, Number(opts.limit) || 80), hid = Math.max(0, allMs.length - lim);
     /* UX408: older messages: the newest 80 are painted, «رسائل أقدم (N)» (or scrolling to the top) reveals 80 more; when the server holds
        more than it returned (thread cap 1000) opts.olderRemote = 'idle'|'busy'|'done' asks it for the previous page. */
     var olderBtn = hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>'
       : opts.olderRemote === 'idle' || opts.olderRemote === 'busy' ? '<button type="button" class="wa-older" data-wa-older-remote' + (opts.olderRemote === 'busy' ? ' aria-busy="true" disabled' : '') + '>' + (opts.olderRemote === 'busy' ? 'جاري تحميل رسائل أقدم…' : 'رسائل أقدم من السيرفر') + '</button>'
       : opts.olderRemote === 'done' ? '<div class="wa-note" data-wa-older-done>بداية المحادثة المتاحة</div>' : '';
     var main = sel
-      ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg></button><span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-head-txt"><span class="wa-head-name">' + esc(name) + '</span><span class="wa-sub" data-wa-sub>' + esc(subtitle) + '</span></span>' +
+      ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg></button><span class="wa-avatar" aria-hidden="true">' + (sel ? avatarHtml(sel) : '') + '</span><span class="wa-head-txt"><span class="wa-head-name">' + esc(name) + '</span><span class="wa-sub" data-wa-sub>' + esc(subtitle) + '</span></span>' +
         '<span class="wa-hact"><button type="button" class="wa-hbtn" data-wa-video aria-disabled="true" aria-label="مكالمة فيديو (غير متاحة من نوفا)" title="غير متاحة من نوفا">' + IC_VIDEO + '</button>' +
         (tel ? '<a class="wa-hbtn" data-wa-call href="tel:+' + esc(tel[1]) + '" aria-label="اتصال بالعميل">' + IC_CALL + '</a>' : '<button type="button" class="wa-hbtn" data-wa-call aria-disabled="true" aria-label="اتصال (الرقم غير معروف)">' + IC_CALL + '</button>') + '</span></div>' +
         '<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log" aria-live="polite"' + (opts.chatLoading ? ' aria-busy="true"' : '') + ' aria-label="رسائل المحادثة مع ' + esc(name) + '" tabindex="-1">' + (opts.chatLoading ? '' : '<div class="wa-dfloat" data-wa-dfloat aria-hidden="true"><span></span></div>') + (opts.chatLoading ? CHAT_LOADING : '') + (opts.chatError ? '<div class="wa-chat-err" role="alert" data-chat-error><span>' + esc(opts.chatError) + '</span><button type="button" data-wa-reload>إعادة المحاولة</button></div>' : '') + (opts.chatLoading ? '' : olderBtn) + (opts.chatLoading ? '' : bubbles(hid ? allMs.slice(hid) : sel.messages, now, { url: opts.mediaUrl, fail: opts.mediaFail, quotes: opts.quotes, reply: !!opts.sendEnabled, name: name, all: allMs })) + '</div>' +
