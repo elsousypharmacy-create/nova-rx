@@ -4896,7 +4896,7 @@
    "after": [
     "SALE-01"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
@@ -4906,16 +4906,8 @@
    "slot": "B",
    "dispatched_at": "2026-11-15T10:45:44+00:00",
    "pr": 458,
-   "ci_dispatched": {
-    "sha": "bdd9003b259bd42d2cfc4d227cf8eb5bd9b9e547",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T11:43:49+00:00"
-   }
+   "merged_at": "2026-11-15T11:48:47+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   },
   {
    "id": "UX430",
@@ -4926,13 +4918,15 @@
    "after": [
     "SALE-06"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-wa-kpis",
    "note": "Slot B track; Opus allowed (model opus, max_turns 80). Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T11:48:47+00:00"
   },
   {
    "id": "SALE-05",
@@ -4955,5 +4949,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T11:43:49+00:00"
+ "updated": "2026-11-15T11:48:47+00:00"
 }
