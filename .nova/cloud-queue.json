@@ -109,15 +109,15 @@
    "after": [
     "SALE-06"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-request-2026-11-15-wa-kpis",
    "note": "Slot B track; Sonnet per owner rule 2026-11-15. Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo. Requeued at front 2026-11-15 after turn cap + slot B usage limit; waits for limit reset; max_turns 120. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 120,
    "slot": "B",
-   "dispatched_at": "2026-11-15T12:42:42+00:00",
+   "dispatched_at": "2026-11-15T13:21:56+00:00",
    "not_before": "2026-11-15T12:42:00+00:00",
    "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585",
    "pr": 464,
@@ -4973,5 +4973,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:17:03+00:00"
+ "updated": "2026-11-15T13:21:56+00:00"
 }
