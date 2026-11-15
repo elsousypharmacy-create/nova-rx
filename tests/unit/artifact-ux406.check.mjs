@@ -23,7 +23,7 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+ck('app HTML is the UX406 build (pinned sha256 of the shipped HTML; index.html moved on: #467, UX407)', createHash('sha256').update(app).digest('hex') === '158b0fdc84c534e743a44771ab1d2d7025bd401efbf6045506d6858d3aeee2aa');
 const SWK = '"/sw.js":{"body":';
 const swBody = (code) => { const j = code.indexOf(SWK) + SWK.length; let e = j + 1; while (code[e] !== '"') { if (code[e] === '\\') e++; e++; } return [code.slice(0, j) + code.slice(e + 1), JSON.parse(code.slice(j, e + 1))]; };
 const strip = (s) => swBody(s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n'))[0];
