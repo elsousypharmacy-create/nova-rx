@@ -193,6 +193,48 @@ def ci_workflows():
     return res
 
 
+def wf_on_ref(w, ref, getter=None):
+    """True if .github/workflows/<w> exists on ref. A workflow added to main after the
+    branch was cut cannot be dispatched there (GitHub answers HTTP 422), so it is N/A."""
+    getter = getter or api
+    try:
+        return bool(getter(f"repos/{REPO}/contents/.github/workflows/{w}?ref={ref}"))
+    except RuntimeError as ex:
+        if "404" in str(ex) or "Not Found" in str(ex):
+            return False
+        raise
+
+
+def dispatch_ci(w, ref, run=None):
+    """Dispatch workflow w on ref. Returns False (N/A) instead of crashing when GitHub
+    rejects it (422: missing workflow_dispatch on that ref / 404: file absent there)."""
+    run = run or act
+    try:
+        run("gh", "workflow", "run", w, "-R", REPO, "--ref", ref)
+        return True
+    except RuntimeError as ex:
+        msg = str(ex)
+        if "HTTP 422" in msg or "HTTP 404" in msg or "could not find any workflows" in msg:
+            log(f"warn: {w} cannot be dispatched on {ref}; treating as N/A ({msg[-160:]})")
+            return False
+        raise
+
+
+def ci_need(need, ref, disp, exists=None):
+    """Drop workflows that do not exist on ref (remembered per head sha in disp['na'])."""
+    exists = exists or (lambda w: wf_on_ref(w, ref))
+    na = disp.setdefault("na", [])
+    out = []
+    for w in need:
+        if w in na:
+            continue
+        if not exists(w):
+            na.append(w); log(f"{ref}: {w} not on the branch -> N/A")
+            continue
+        out.append(w)
+    return out
+
+
 def applicable(wfs, files):
     out = []
     for fn, f in wfs.items():
@@ -487,10 +529,13 @@ def main():
         disp = t.setdefault("ci_dispatched", {})
         if disp.get("sha") != sha:
             disp.clear(); disp["sha"] = sha; disp["wf"] = []; disp["at"] = iso()
+        need = ci_need(need, f"cloud/{tid}", disp)
         missing = [w for w in need if w not in latest]
-        for w in missing:
+        for w in list(missing):
             if w not in disp["wf"] or age(disp.get("at", "")) > 1800:
-                act("gh", "workflow", "run", w, "-R", REPO, "--ref", f"cloud/{tid}")
+                if not dispatch_ci(w, f"cloud/{tid}"):
+                    disp["na"].append(w); need.remove(w); missing.remove(w)
+                    continue
                 if w not in disp["wf"]:
                     disp["wf"].append(w)
                 disp["at"] = iso()
