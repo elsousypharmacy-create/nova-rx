@@ -198,11 +198,19 @@
     return '<a class="wa-media wa-mdoc" data-wa-media="document" href="' + esc(src) + '" target="_blank" rel="noopener noreferrer" download="' + esc(fn) + '" aria-label="فتح المستند ' + esc(fn) + '"><span class="wa-mic wa-mdoc-ic" data-wa-ext="' + esc(ext) + '">' + IC_M.document + (ext ? '<span class="wa-mext">' + esc(ext) + '</span>' : '') + '</span><span class="wa-mdoc-t"><b dir="auto">' + esc(fn) + '</b><span>' + esc([ext, sz, 'اضغط للفتح أو التحميل'].filter(Boolean).join(' · ')) + '</span></span></a>';
   }
   /* list preview: "صورة · caption" instead of the raw "[صورة] caption" placeholder */
+  /* UX408: like WhatsApp iOS the list shows a glyph + the media word («📷 صورة»), plus the caption; stored bracket placeholders
+     («[صورة]», «[صورة] caption», «[رسالة صوتية]»…) from the bot sheet / webhook get the same treatment instead of the raw text. */
+  var MT_IC = { image: '📷', sticker: '🏷️', audio: '🎤', video: '🎥', document: '📄' };
+  var PH_TYPE = { 'صورة': 'image', 'صوره': 'image', 'ملصق': 'sticker', 'استيكر': 'sticker', 'رسالة صوتية': 'audio', 'رساله صوتيه': 'audio', 'صوت': 'audio', 'تسجيل صوتي': 'audio', 'فيديو': 'video', 'مستند': 'document', 'ملف': 'document' };
+  var PH_RE = /^[\s\u200f\u200e]*\[([^\]\n]{1,20})\][\s:\-–—·]*([\s\S]*)$/;
+  function mediaLine(type, cap) { return MT_IC[type] + ' ' + MT_AR[type] + (cap ? ' · ' + cap : ''); }
   function previewText(m) {
     var md = m && m.media;
-    if (!md || !MT_AR[md.type]) return shownText(m);
-    var cap = md.caption || (md.type === 'document' ? md.filename : '');
-    return MT_AR[md.type] + (cap ? ' · ' + cap : '');
+    if (!md || !MT_AR[md.type]) {
+      var t = shownText(m), ph = PH_RE.exec(String(t == null ? '' : t)), k = ph && PH_TYPE[ph[1].trim()];
+      return k ? mediaLine(k, ph[2].replace(/\s+/g, ' ').trim()) : t;
+    }
+    return mediaLine(md.type, md.caption || (md.type === 'document' ? md.filename : ''));
   }
   /* UX407: the GAS bot used to prepend «👨‍⚕️ رد الصيدلي:» (or «رد الدكتور:») to staff replies (pharmacy server/src/41_bot_chat_admin.js
      botReply). Old stored rows still carry it, so the prefix is removed for DISPLAY only (stored rows are never rewritten). Only a LEADING
