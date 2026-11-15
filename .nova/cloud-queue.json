@@ -4919,14 +4919,14 @@
     "SALE-06"
    ],
    "status": "running",
-   "attempts": 0,
+   "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-wa-kpis",
    "note": "Slot B track; Opus allowed (model opus, max_turns 80). Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo.",
    "model": "opus",
    "max_turns": 80,
    "slot": "B",
-   "dispatched_at": "2026-11-15T11:48:47+00:00"
+   "dispatched_at": "2026-11-15T12:08:26+00:00"
   },
   {
    "id": "SALE-05",
@@ -4949,5 +4949,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T11:48:47+00:00"
+ "updated": "2026-11-15T12:08:26+00:00"
 }
