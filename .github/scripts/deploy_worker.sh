@@ -123,7 +123,7 @@ if [ -n "${LIVE_URL:-}" ]; then
   CODE="$(curl -sS -o "$WORK/live.html" -w '%{http_code}' --max-time 30 -H "User-Agent: nova-smoke" -H "Cache-Control: no-cache" "$LIVE_URL/" || echo 000)"
   say "HTTP check $LIVE_URL/ -> $CODE (informational; the code check above is the real proof)"
   [ "$CODE" = 200 ] || { say "SMOKE FAILED: $LIVE_URL/ -> $CODE"; false; }
-  for m in novaWaBtn hLoad inbox/history waHistPin NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed; do
+  for m in novaWaBtn hLoad inbox/history data-wa-inbox-open NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed; do
     grep -q "$m" "$WORK/live.html" || { say "SMOKE FAILED: live HTML missing marker $m"; false; }
   done
   curl -sS --max-time 60 -H "User-Agent: nova-smoke" -H "Accept: application/json" -o "$WORK/stock.json" "$LIVE_URL/emergency/stock.json" || { say "SMOKE FAILED: stock.json download"; false; }
