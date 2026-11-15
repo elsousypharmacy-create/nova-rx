@@ -4231,7 +4231,7 @@
    "after": [
     "UX421"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -4241,15 +4241,8 @@
    "slot": "B",
    "dispatched_at": "2026-11-15T09:31:07+00:00",
    "pr": 447,
-   "ci_dispatched": {
-    "sha": "6b82676f235175d28e787e9a9db20eb645ead393",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T09:40:49+00:00"
-   }
+   "merged_at": "2026-11-15T09:45:39+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/447"
   },
   {
    "id": "SALE-02",
@@ -4260,13 +4253,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness. Do not merge PR #444. Port VAT + static assets only.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T09:45:39+00:00"
   },
   {
    "id": "UX313",
@@ -4830,5 +4825,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T09:40:49+00:00"
+ "updated": "2026-11-15T09:45:39+00:00"
 }
