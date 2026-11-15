@@ -10,12 +10,16 @@ const T0 = 1_000_000;
 const conv = (id, msgs, extra) => ({ id, customer: 'عميل ' + id, updatedAt: 0, history: true, messages: msgs, ...extra });
 const m = (id, dir, at, kind) => ({ id, dir, at, text: 'نص ' + id, kind: kind || (dir === 'in' ? 'in' : 'pharm') });
 
-t('messages older than the first open never count; new inbound counts per chat', () => {
+// UX408 (design review defect 1): the first-open baseline no longer hides chats that are WAITING for a reply. A history chat never opened on
+// this device counts its trailing customer messages (after the last staff/bot reply), even when they are older than the first open.
+t('UX408: never-opened chats count the waiting customer messages, also before the first open; replied chats count 0', () => {
   const u = U.createUnread(mem(), T0);
   const a = conv('wa_201', [m('1', 'in', T0 - 10), m('2', 'in', T0 + 5), m('3', 'in', T0 + 6)]);
   const b = conv('wa_202', [m('4', 'in', T0 - 5)]);
-  assert.equal(u.count(a), 2); assert.equal(u.count(b), 0);
-  assert.equal(u.chats([a, b]), 1); assert.equal(u.messages([a, b]), 2);
+  const r = conv('wa_203', [m('5', 'in', T0 - 9), m('6', 'out', T0 - 8)]);
+  assert.equal(u.count(a), 3); assert.equal(u.count(b), 1); assert.equal(u.count(r), 0);
+  assert.equal(u.chats([a, b, r]), 2); assert.equal(u.messages([a, b, r]), 4);
+  u.markSeen('wa_201', T0 + 6); assert.equal(u.count(a), 0, 'opened => only messages after the open count');
 });
 t('bot/pharmacist/system/outbound messages are not unread', () => {
   const u = U.createUnread(mem(), T0);
@@ -91,8 +95,12 @@ t('chat list uses the unread hook for per-chat badges; renderWa shows the contro
   const cs = [conv('a', [m('1', 'in', T0 + 1)]), conv('b', [m('2', 'in', T0 + 2)])];
   const html = U.chatListHtml(cs, null, '', T0 + 10, false, { unread: (c) => (c.id === 'a' ? 4 : 0) });
   assert.equal((html.match(/data-unread="4"/g) || []).length, 1);
-  assert.equal((html.match(/data-unread=/g) || []).length, 1);
-  assert.equal((U.chatListHtml(cs, null, '', T0 + 10).match(/data-unread=/g) || []).length, 0, 'history chats without hook stay 0 (old behaviour)');
+  // UX408: «لم يُرد» (last message from the customer) also gets the green badge (count of waiting messages), state noreply
+  assert.equal((html.match(/data-unread=/g) || []).length, 2);
+  assert.match(html, /data-conv="a" data-state="unread"/); assert.match(html, /data-conv="b" data-state="noreply"/);
+  assert.equal((U.chatListHtml(cs, null, '', T0 + 10).match(/data-unread="1"/g) || []).length, 2, 'history chats waiting for a reply show a badge without the hook too');
+  const rep = [conv('c', [m('1', 'in', T0 + 1), m('2', 'out', T0 + 2)])];
+  assert.ok(!/data-unread=/.test(U.chatListHtml(rep, null, '', T0 + 10, false, { unread: () => 0 })), 'replied chat: no badge');
   const w = U.renderWa(cs, { notifHead: U.notifyHtml('default', false) });
   assert.ok(w.indexOf('data-wa-notify') > w.indexOf('wa-side-head') && w.indexOf('data-wa-notify') < w.indexOf('id="waSearch"'));
   assert.ok(w.includes('.wa-nbtn{'));

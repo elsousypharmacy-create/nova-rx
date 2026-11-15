@@ -25,14 +25,13 @@ t('no meta => old behaviour (newest first, no archived row)', () => {
   assert.ok(!h.includes('data-wa-arch-open'));
   assert.ok(!h.includes('data-wa-pinned'));
 });
-t('each row: avatar, name, time, preview, unread badge, options button', () => {
+t('each row: avatar, name, time, preview, unread badge; UX408: no per-row ▾ options button (menu via long-press / right-click)', () => {
   const h = U.chatListHtml(C, 'a', '', NOW);
-  assert.match(h, /<div class="wa-item" data-wa-item><button type="button" class="wa-chat active unread" data-conv="a" aria-current="true">/);
+  assert.match(h, /<div class="wa-item" data-wa-item><button type="button" class="wa-chat active unread" data-conv="a" data-state="unread" aria-current="true" aria-haspopup="menu"/);
   assert.match(h, /class="wa-avatar" aria-hidden="true">أ</);
   assert.match(h, /class="wa-ctime">11:59</);
   assert.match(h, /data-unread="1"/);
-  assert.match(h, /data-wa-menu="a" aria-haspopup="menu" aria-expanded="false" aria-label="خيارات المحادثة مع أحمد"/);
-  assert.ok(!/<button[^>]*data-conv[^>]*>[^]*?<button[^>]*data-wa-menu[^>]*>[^]*?<\/button><\/button>/.test(h.split('data-wa-item')[1]), 'menu button is not nested in the chat button');
+  assert.ok(!/data-wa-menu=|wa-rowmenu/.test(h), 'UX408: no ▾ row button');
 });
 t('pinned chats sort first and show a pin icon', () => {
   const h = U.chatListHtml(C, null, '', NOW, false, { pinned: { 'c"<x': 1 } });
@@ -71,7 +70,7 @@ t('all archived => archived row + empty note', () => {
 });
 t('open menu: pin/archive menuitems with toggled labels, ids escaped', () => {
   let h = U.chatListHtml(C, null, '', NOW, false, { menu: 'c"<x' });
-  assert.match(h, /data-wa-menu="c&quot;&lt;x" aria-haspopup="menu" aria-expanded="true"/);
+  assert.match(h, /data-conv="c&quot;&lt;x" data-state="[a-z]+" aria-expanded="true" aria-haspopup="menu"/ /* UX408: the row itself owns the menu */);
   assert.match(h, /<div class="wa-menu" role="menu" data-wa-menu-for="c&quot;&lt;x"><button type="button" role="menuitem" data-wa-pin="c&quot;&lt;x">/);
   assert.match(h, />تثبيت المحادثة</); assert.match(h, />أرشفة المحادثة</);
   assert.equal((h.match(/role="menu"/g) || []).length, 1, 'only one menu open');
@@ -91,7 +90,7 @@ t('selected chat: header, wallpaper, composer shell; RTL root', () => {
   assert.match(h, /<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات">/);
   assert.match(h, /class="wa-head-name">أحمد</);
   assert.match(h, /<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log"/);
-  assert.match(h, /<div class="wa-composer" id="waComposer" data-wa-composer role="group" aria-label="كتابة رسالة">(?:<div class="wa-emoji"[^]*?<div class="wa-attmenu"[^]*?<\/p><\/div>)?<div class="wa-pill">.*?<input type="text" id="waInput"/ /* UX404 pill; UX407: not a <form> (no iOS prev/next bar); UX401: emoji panel + attach menu (hidden) precede the pill */);
+  assert.match(h, /<div class="wa-composer" id="waComposer" data-wa-composer role="group" aria-label="كتابة رسالة" data-has-text="0">(?:<div class="wa-attmenu"[^]*?<\/p><\/div>)?<button type="button" class="wa-cbtn wa-c-attach"[^>]*>.*?<\/button><div class="wa-pill"><input type="text" id="waInput"[^>]*><\/div>/ /* UX408: WhatsApp iOS [+][field][camera][mic|send]; UX407: not a <form> (no iOS prev/next bar) */);
   assert.ok(!/<form/.test(h), 'UX407: no <form> in the conversations frame');
   assert.match(h, /\.wa-msgs\{background-color:#0b0d10;background-image:url\("data:image\/svg\+xml,%3Csvg/);
 });
@@ -99,10 +98,10 @@ t('UX400 stays: no PIN UI anywhere in the frame', () => {
   const h = U.renderWa(C, { now: NOW, selected: 'a' }) + U.renderWa([], { now: NOW, loading: true });
   assert.ok(!/PIN|type="password"|waHistPin|data-wa-lock/.test(h));
 });
-t('touch: options button is a 44px target; desktop: hover-revealed', () => {
+t('UX408: no ▾ row button CSS; the row keeps full width; menu via contextmenu / long-press in the page', () => {
   const h = U.renderWa(C, { now: NOW });
-  assert.match(h, /@media\(pointer:coarse\),\(max-width:700px\)\{\.wa-item \.wa-chat\{padding-inline-end:56px\}[^@]*\.wa-rowmenu\{width:44px;height:44px;/);
-  assert.match(h, /@media\(hover:hover\) and \(pointer:fine\)\{\.wa-rowmenu\{opacity:0\}/);
+  assert.ok(!h.includes('wa-rowmenu') && !h.includes('padding-inline-end:56px'));
+  assert.ok(page.includes("box.addEventListener('contextmenu',function(e){var r=e.target&&e.target.closest&&e.target.closest('#waList [data-conv]')"));
 });
 t('controller keeps pin/archive in memory only (never storage)', () => {
   const ctl = page.slice(page.indexOf('var wa={sel:null'), page.indexOf("<style id=\"ux209-wa-target\">"));
