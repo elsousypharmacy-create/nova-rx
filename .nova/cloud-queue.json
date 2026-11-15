@@ -4148,13 +4148,15 @@
    "after": [
     "UX400b"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-smoothness",
    "note": "Slot A track; high-priority smoothness follow-up from owner phone test. Inserted after UX400b and ahead of UX401–UX403. Model opus, max_turns 80.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T10:24:02+00:00"
   },
   {
    "id": "UX401",
@@ -4706,7 +4708,7 @@
     "UX324",
     "UX325"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -4714,7 +4716,18 @@
    "model": "opus",
    "max_turns": 60,
    "slot": "A",
-   "dispatched_at": "2026-11-15T10:19:49+00:00"
+   "dispatched_at": "2026-11-15T10:19:49+00:00",
+   "pr": 456,
+   "ci_dispatched": {
+    "sha": "a308c59e3fa1fc4d5ee290dedc41e8b2f2eb50d5",
+    "wf": [
+     "playwright-smoke.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T10:24:02+00:00"
+   }
   },
   {
    "id": "UX327",
@@ -4882,5 +4895,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:22:53+00:00"
+ "updated": "2026-11-15T10:24:02+00:00"
 }
