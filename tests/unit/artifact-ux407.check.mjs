@@ -33,7 +33,7 @@ ck('worker code outside the HTML literal, /sw.js body, PWA assets and /whatsapp 
 const sw = swBody(raw)[1];
 ck('embedded /sw.js is UX412 v6 (network-first for /whatsapp and ?app=whatsapp, never falls back to cached /)', sw.includes("const CACHE='nova-rx-shell-v6'") && sw.includes("url.searchParams.get('app')==='whatsapp'") && sw.includes("path==='/whatsapp'") && !sw.includes("const CACHE='nova-rx-shell-v5'") && !sw.includes("const CACHE='nova-rx-shell-v4'"));
 ck('embedded /sw.js equals repo sw.js', sw === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
-for (const m of ["addEventListener('push'", "addEventListener('notificationclick'", 'showNotification(', "type:'nova-wa-push'", "type:'nova-wa-open'", "openWindow('/#wa')", "addEventListener('fetch'"]) ck('sw marker ' + m, sw.includes(m));
+for (const m of ["addEventListener('push'", "addEventListener('notificationclick'", 'showNotification(', "type:'nova-wa-push'", "type:'nova-wa-open'", "openWindow('/whatsapp?app=whatsapp#wa')", "addEventListener('fetch'"]) ck('sw marker ' + m, sw.includes(m));
 ck('no secrets in artifact', !/VAPID_PRIVATE_KEY\s*[:=]\s*["'][A-Za-z0-9_-]{20,}/.test(raw) && !/-----BEGIN/.test(raw));
 ck('UX407: no composer <form>', !app.includes('<form class="wa-composer"') && !app.includes("'<form class=\"wa-composer\""));
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>') || l.includes('novaWhatsAppSpaHtml(url.pathname,"<!DOCTYPE html>')).length === 1);
