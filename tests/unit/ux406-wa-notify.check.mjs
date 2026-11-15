@@ -81,15 +81,16 @@ t('titleBadge adds, replaces and removes the count', () => {
   assert.equal(U.titleBadge('NOVA Rx', 150), '(99+) NOVA Rx');
   assert.equal(U.titleBadge('(99+) NOVA Rx', 0), 'NOVA Rx');
 });
-t('notifyHtml: default/granted/denied/unsupported + mute', () => {
+t('notifyHtml: UX409 single bell, default/granted/denied/unsupported/muted', () => {
   const d = U.notifyHtml('default', false);
-  assert.match(d, /data-wa-notify="default"/); assert.match(d, /فعّل الإشعارات/); assert.match(d, /aria-pressed="false"/);
-  assert.match(U.notifyHtml('granted', false), /data-wa-notify="granted" aria-pressed="true"/);
-  assert.match(U.notifyHtml('granted', false), /الإشعارات شغّالة/);
-  const den = U.notifyHtml('denied', true);
-  assert.match(den, /الإشعارات مقفولة/); assert.match(den, /data-wa-mute aria-pressed="true" aria-label="تشغيل صوت الرسائل"/);
+  assert.match(d, /data-wa-notify="default"/); assert.match(d, /aria-label="تفعيل إشعارات/); assert.match(d, /aria-pressed="false"/);
+  assert.equal((d.match(/<button/g) || []).length, 1, 'one button only');
+  const g = U.notifyHtml('granted', false);
+  assert.match(g, /data-wa-notify="granted"[^>]*aria-pressed="true"/); assert.ok(!/الإشعارات شغّالة/.test(g));
+  assert.match(U.notifyHtml('granted', true), /aria-pressed="false"/);
+  assert.match(U.notifyHtml('denied', true), /الإشعارات مقفولة/);
   assert.match(U.notifyHtml('weird', false), /data-wa-notify="unsupported"[^>]*aria-disabled="true"/);
-  assert.match(U.notifyHtml('default', false, '<b>x</b>'), /&lt;b&gt;x&lt;\/b&gt;/, 'note escaped');
+  assert.match(U.noteHtml('<b>x</b>'), /&lt;b&gt;x&lt;\/b&gt;/, 'note escaped');
 });
 t('chat list uses the unread hook for per-chat badges; renderWa shows the controls', () => {
   const cs = [conv('a', [m('1', 'in', T0 + 1)]), conv('b', [m('2', 'in', T0 + 2)])];
@@ -103,7 +104,8 @@ t('chat list uses the unread hook for per-chat badges; renderWa shows the contro
   const rep = [conv('c', [m('1', 'in', T0 + 1), m('2', 'out', T0 + 2)])];
   assert.ok(!/data-unread=/.test(U.chatListHtml(rep, null, '', T0 + 10, false, { unread: () => 0 })), 'replied chat: no badge');
   const w = U.renderWa(cs, { notifHead: U.notifyHtml('default', false) });
-  assert.ok(w.indexOf('data-wa-notify') > w.indexOf('wa-side-head') && w.indexOf('data-wa-notify') < w.indexOf('id="waSearch"'));
+  assert.ok(w.indexOf('data-wa-notify="') > w.indexOf('class="wa-title"') && w.indexOf('data-wa-notify="') < w.indexOf('</div>', w.indexOf('class="wa-side-head"')), 'bell sits in the header after the title');
+  assert.ok(!w.includes('wa-notifbar'));
   assert.ok(w.includes('.wa-nbtn{'));
   assert.ok(!U.renderWa(cs, {}).includes('.wa-nbtn{'));
 });
@@ -112,7 +114,7 @@ t('index.html: permission only from the button, SW message hooks, title/tab wiri
   assert.equal((h.match(/Notification\.requestPermission\(/g) || []).length, 1);
   const ask = /function nAsk\(\)\{[\s\S]*?\nbox\.addEventListener/.exec(h)[0];
   assert.ok(ask.includes('requestPermission'));
-  assert.ok(!/nAsk\(\)(?!\{)/.test(h.replace(/data-wa-notify\]'\)\)\{nAsk\(\)/, '')), 'nAsk is called only from the button click');
+  assert.ok(!/nAsk\(\)(?!\{)/.test(h.replace(/return\}nAsk\(\);return\}/, '')), 'nAsk is called only from the button click');
   for (const s of ["d.type==='nova-wa-push'", "d.type==='nova-wa-open'", 'U.titleBadge(document.title', 'data-wa-tab-unread', 'nt.markSeen(wa.sel', 'window.NovaWaNotify', "'nova.wa.mute'"]) assert.ok(h.includes(s), s);
 });
 console.log('ux406-wa-notify.check:', n, 'passed');
