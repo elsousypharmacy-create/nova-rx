@@ -11,8 +11,8 @@
    "after": [
     "UX422"
    ],
-   "status": "failed",
-   "attempts": 3,
+   "status": "pending",
+   "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
@@ -20,7 +20,9 @@
    "max_turns": 60,
    "slot": "A",
    "dispatched_at": "2026-11-15T14:48:40+00:00",
-   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43726396668"
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43726396668",
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "retry": true
   },
   {
    "id": "UX401",
@@ -282,9 +284,9 @@
    "after": [
     "UX422"
    ],
-   "status": "failed",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 2,
+   "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
@@ -292,17 +294,7 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T14:44:42+00:00",
    "pr": 473,
-   "ci_dispatched": {
-    "sha": "f96a588a3f3e413c4cf67a4f5d9072982921b8be",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T14:39:22+00:00",
-    "na": []
-   }
+   "last_failure": "slot A usage-limit quick fails (not real fix attempts); conflict resolved by hand in d3b98cc"
   },
   {
    "id": "UX319",
