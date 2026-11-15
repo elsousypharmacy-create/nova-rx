@@ -134,11 +134,14 @@ button{touch-action:manipulation;cursor:pointer}
 .sticker-face .med{margin:.5mm 0;font-size:9pt;font-weight:900;color:#050505}
 .sticker-face .instruction{font-size:7pt;line-height:1.25;overflow-wrap:anywhere;white-space:pre-wrap}
 .sticker-face .warning{margin-top:auto;padding-top:1mm;border-top:.25mm dashed #9aa4ad;font-size:6.2pt;color:#444}
-.sticker-face .review{position:absolute;inset:auto 1.2mm 1.2mm auto;padding:.4mm 1mm;border:.25mm solid #d3aa43;border-radius:1mm;background:#fff4d6;color:#6b4b00;font-size:5.8pt}
+/* UX323: the review pill sits in the brand row (in flow), so it can never cover the draft/warning line. */
+.sticker-face .label-word{flex:1;min-width:0}
+.sticker-face .review{flex:none;align-self:center;white-space:nowrap;padding:.4mm 1mm;border:.25mm solid #d3aa43;border-radius:1mm;background:#fff4d6;color:#6b4b00;font-size:5.8pt;line-height:1.2}
 .sticker-hero{flex:none;border-radius:3px;box-shadow:0 14px 40px #000a}
 .preview-grid .sticker-preview{border-radius:3px;box-shadow:0 3px 10px #0006;cursor:pointer;transition:opacity .15s,box-shadow .15s}
 .preview-grid .sticker-preview .label-brand img{width:5mm;height:5mm}
 .preview-grid .sticker-preview .patient,.preview-grid .sticker-preview .warning{display:none}
+.preview-grid .sticker-preview .review{margin-inline-end:calc(24px/var(--z,1))}
 .preview-grid .sticker-preview.is-active{box-shadow:0 0 0 calc(3px/var(--z,1)) var(--blue),0 3px 10px #0006}
 .sticker-unselected{opacity:.4}
 .sticker-preview .pick{position:absolute;z-index:2;top:calc(4px/var(--z,1));left:calc(4px/var(--z,1));display:grid;place-items:center;width:calc(22px/var(--z,1));height:calc(22px/var(--z,1));border-radius:50%;background:var(--green);color:#06281d;font-size:calc(14px/var(--z,1));font-weight:900;line-height:1}
@@ -149,7 +152,10 @@ button{touch-action:manipulation;cursor:pointer}
 .action-bar{flex:none;position:sticky;bottom:0;z-index:25;display:flex;align-items:center;gap:16px;padding:10px 20px max(10px,env(safe-area-inset-bottom));background:#0f1319;border-top:1px solid var(--line)}
 .approval{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid #315642;border-radius:12px;background:#142019;color:#d8f3e8;font-size:13px;font-weight:700;cursor:pointer}
 .approval.pending{border-color:#6a5636;background:#241f15;color:#f0dcaa}
-.approval input{flex:none;width:22px;height:22px;accent-color:var(--green)}
+/* UX323: 44x44 touch target; the visible box stays ~24px (transparent 10px border = hit area). */
+.approval input{flex:none;box-sizing:border-box;width:44px;height:44px;margin:-6px 0;-webkit-appearance:none;appearance:none;border:10px solid transparent;border-radius:12px;background:#0f151c no-repeat center/16px 16px;background-clip:padding-box;box-shadow:inset 0 0 0 2px #8a96a3;cursor:pointer}
+.approval input:checked{background-color:var(--green);box-shadow:inset 0 0 0 2px var(--green);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3L13 4.5' fill='none' stroke='%2306281d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.approval input:focus-visible{outline:2px solid var(--blue);outline-offset:-8px}
 .print-actions{display:flex;flex:none;align-items:center;gap:10px}
 .copies{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;font-weight:700}
 .copies input{width:64px;min-height:44px;padding:0 6px;border:1px solid #36414d;border-radius:11px;background:var(--field);text-align:center}
