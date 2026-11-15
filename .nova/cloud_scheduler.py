@@ -308,9 +308,10 @@ def preview_smoke(url=PREVIEW_URL):
         return False, f"smoke error: {ex}"
 
 
-# FIX52: a candidate must carry these markers (PIN history UI + FIX50 + FIX51 + WA-SEND) or it is never auto-deployed
-REQUIRED_MARKERS = ("hLoad", "inbox/history", "waHistPin", "NOVA_FIX50", "NOVA_FIX50_VV", "hPoll", "winClosed",
-                    "data-wa-window", "hSend", "X-Nova-Pin")
+# FIX52: a candidate must carry these markers (history UI + FIX50 + FIX51 + WA-SEND) or it is never auto-deployed.
+# UX400: waHistPin / X-Nova-Pin (PIN lock UI) replaced by data-wa-inbox-open (PIN-free staging/preview inbox).
+REQUIRED_MARKERS = ("hLoad", "inbox/history", "data-wa-inbox-open", "NOVA_FIX50", "NOVA_FIX50_VV", "hPoll", "winClosed",
+                    "data-wa-window", "hSend")
 
 
 def missing_markers(path):
