@@ -4164,7 +4164,7 @@
    "brief": "Owner Ahmed: use SLOT B to modernize the app-wide look — modern, elegant, polished — while slot A turns the conversations screen into WhatsApp Web. This is task 1 of 3 on SLOT B (UX420 → UX421 → UX422). Do not start later tasks. Do NOT touch the conversations/WhatsApp screen.\n\nGoal: a shared design system upgrade (typography, spacing, color, cards, buttons, icons, transitions, dark/light consistency, Arabic RTL) that other pages can adopt without a messy one-off restyle.\n\nWork in this task ONLY on shared token/icon files: ux-tokens.css, ux-tokens.js, nova-icons.css, nova-icons.js, and a short doc of the token set if one already exists under docs/design or docs/DESIGN_SYSTEM.md (update, do not invent a new process). Define a coherent modern palette and type scale, spacing/grid, radius, elevation/cards, button hierarchy, icon sizing, focus/hover/active, motion (short, smooth, respect prefers-reduced-motion), and light/dark consistency that still fits NOVA Rx Black Edition (do not turn the app into a generic light admin theme). RTL must be first-class (logical properties, no hardcoded left/right that break Arabic).\n\nHARD EXCLUSIONS (slot A owns these; editing them will conflict): unified-inbox.js; integrations/whatsapp/; backend inbox/whatsapp/wa-* files; any WhatsApp/conversations DOM/CSS/JS in index.html (novaWa*, wa-*, waHist*, #novaWaBtn, chat list/pane/composer). Do NOT edit index.html in this task at all (reduces merge conflicts with UX400). Do not edit sticker-studio.html, emergency-sales.html, purchases.html, or supplier-compare.html yet (those are UX421). Do not edit .nova/cloud-queue.json, workflows, or secrets. No deploy, no merge, no production, no paid services.\n\nTests: unit/CSS token tests as they exist (including tests around ux-tokens / UX contrast); add or extend a check that new tokens exist and contrast stays >=4.5:1 for text/icons on backgrounds you define. Record exact results.",
    "acceptance": "Shared typography/spacing/color/card/button/icon/transition tokens live in ux-tokens (and icons) with RTL and dark/light consistency, Black Edition preserved; conversations/index.html/standalone pages untouched; contrast and token tests pass; no deploy.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -4172,14 +4172,8 @@
    "slot": "B",
    "dispatched_at": "2026-11-15T09:06:54+00:00",
    "pr": 445,
-   "ci_dispatched": {
-    "sha": "dd0b5d8387bf99135f5685c0b212c2eb5df4c082",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-15T09:08:34+00:00"
-   }
+   "merged_at": "2026-11-15T09:13:31+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/445"
   },
   {
    "id": "UX421",
@@ -4190,11 +4184,13 @@
    "after": [
     "UX420"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
-   "note": "Slot B track; starts after UX420. Does not edit index.html or conversations."
+   "note": "Slot B track; starts after UX420. Does not edit index.html or conversations.",
+   "slot": "B",
+   "dispatched_at": "2026-11-15T09:13:31+00:00"
   },
   {
    "id": "UX422",
@@ -4616,5 +4612,5 @@
    "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
   }
  ],
- "updated": "2026-11-15T09:08:34+00:00"
+ "updated": "2026-11-15T09:13:31+00:00"
 }
