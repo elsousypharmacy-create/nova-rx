@@ -7501,6 +7501,457 @@ function u(){var en=localStorage.getItem('nova-rx-language')==='en';p.setAttribu
 p.addEventListener('click',function(){n.scrollBy({left:n.clientWidth*.6,behavior:'smooth'})});x.addEventListener('click',function(){n.scrollBy({left:-n.clientWidth*.6,behavior:'smooth'})});
 n.addEventListener('scroll',u,{passive:true});window.addEventListener('resize',u);new MutationObserver(u).observe(document.documentElement,{attributes:true,attributeFilter:['lang','dir']});u();setTimeout(u,400);setTimeout(u,1200)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',w);else w()})();</script>
+<!-- UX430:BEGIN WhatsApp KPIs -->
+<style id="UX430_WA_KPI_CSS">
+/* UX430: WhatsApp KPIs — Home card (inside the sale/landing workspace) + dedicated full-screen page. Black Edition, UX420 tokens.
+   Scoped to #novaWaKpiCard / #novaWaKpiView only; conversations (#novaInboxView, wa-*, #novaWaBtn) are not targeted. */
+#novaWaKpiCard{flex:0 0 auto;display:block;width:auto;margin:8px 10px 4px;padding:10px 12px;direction:rtl;text-align:right;font-family:var(--nx-font,Cairo,Tahoma,Arial,sans-serif);color:var(--nx-text-main,#f1f3f5);background:linear-gradient(135deg,#10231b 0%,var(--nx-bg-panel,#111418) 55%);border:1px solid #23463a;border-radius:var(--nx-r-3,14px);box-shadow:var(--nx-shadow-1,0 1px 2px rgba(0,0,0,.5));cursor:pointer;min-height:44px;transition:border-color var(--nx-dur-fast,120ms) var(--nx-ease,ease),transform var(--nx-dur-fast,120ms) var(--nx-ease,ease);box-sizing:border-box;max-width:100%}
+#novaWaKpiCard:hover{border-color:#2f6b55}
+#novaWaKpiCard:active{transform:scale(.995)}
+#novaWaKpiCard:focus-visible{outline:2px solid var(--nx-border-focus,#76b8d5);outline-offset:2px}
+#novaWaKpiCard .wk-top{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13px;font-weight:700;color:#bfe8d6}
+#novaWaKpiCard .wk-top .wk-ico{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;background:#1f5c45;color:#e9fff5;flex:0 0 auto}
+#novaWaKpiCard .wk-top .wk-more{margin-inline-start:auto;font-weight:600;color:#9fd9c1;font-size:12.5px}
+#novaWaKpiCard .wk-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#novaWaKpiCard .wk-t{min-width:0;padding:6px 8px;border-radius:var(--nx-r-2,10px);background:rgba(8,9,11,.55);border:1px solid var(--nx-border-subtle,#2a313a)}
+#novaWaKpiCard .wk-t b{display:block;font-size:19px;line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#novaWaKpiCard .wk-t span{display:block;font-size:12px;color:var(--nx-text-muted,#a4adb7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#novaWaKpiCard .wk-t i{display:block;font-style:normal;font-size:12px;color:var(--nx-text-muted,#a4adb7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#novaWaKpiCard .wk-t.wk-warn b{color:var(--nx-warn,#d9bf86)}
+#novaWaKpiCard .wk-note{display:block;margin-top:4px;font-size:12px;color:var(--nx-text-muted,#a4adb7)}
+@media (max-width:780px){#novaWaKpiCard{margin:8px 8px 4px;padding:9px 10px}#novaWaKpiCard .wk-tiles{gap:6px}#novaWaKpiCard .wk-t{padding:5px 6px}#novaWaKpiCard .wk-t b{font-size:17px}}
+@media (max-width:360px){#novaWaKpiCard .wk-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+#novaWaKpiView{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;direction:rtl;background:var(--nx-bg-base,#08090b);color:var(--nx-text-main,#f1f3f5);font-family:var(--nx-font,Cairo,Tahoma,Arial,sans-serif);font-size:14px;line-height:1.55;-webkit-overflow-scrolling:touch}
+#novaWaKpiView[hidden]{display:none}
+#novaWaKpiView *{box-sizing:border-box}
+#novaWaKpiView .wkp{max-width:1180px;margin:0 auto;padding:0 12px calc(24px + env(safe-area-inset-bottom,0px))}
+#novaWaKpiView .wkp-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 0 8px;background:var(--nx-bg-base,#08090b);border-bottom:1px solid var(--nx-border-subtle,#2a313a)}
+#novaWaKpiView h1{flex:1;min-width:0;margin:0;font-size:20px;line-height:1.3}
+#novaWaKpiView h1 small{display:block;font-size:12px;font-weight:400;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView button,#novaWaKpiView input{font:inherit}
+#novaWaKpiView .wkp-btn{min-height:44px;min-width:44px;padding:0 14px;border-radius:var(--nx-r-2,10px);border:1px solid var(--nx-border-subtle,#2a313a);background:var(--nx-bg-surface,#1b2026);color:var(--nx-text-main,#f1f3f5);cursor:pointer}
+#novaWaKpiView .wkp-btn:hover{border-color:#3a4857}
+#novaWaKpiView button:focus-visible,#novaWaKpiView input:focus-visible{outline:2px solid var(--nx-border-focus,#76b8d5);outline-offset:2px}
+#novaWaKpiView .wkp-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+#novaWaKpiView .wkp-seg{display:flex;flex:1 1 auto;min-width:0;border:1px solid var(--nx-border-subtle,#2a313a);border-radius:var(--nx-r-2,10px);overflow:hidden;background:var(--nx-bg-panel,#111418)}
+#novaWaKpiView .wkp-seg button{flex:1 1 0;min-width:0;min-height:44px;padding:0 8px;border:0;background:transparent;color:var(--nx-text-muted,#a4adb7);cursor:pointer;white-space:nowrap}
+#novaWaKpiView .wkp-seg button+button{border-inline-start:1px solid var(--nx-border-subtle,#2a313a)}
+#novaWaKpiView .wkp-seg button[aria-pressed=true]{background:#1d3340;color:#bfe3f2;font-weight:700}
+#novaWaKpiView .wkp-dates{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+#novaWaKpiView .wkp-dates[hidden]{display:none}
+#novaWaKpiView .wkp-dates label{display:flex;flex:1 1 140px;align-items:center;gap:6px;color:var(--nx-text-muted,#a4adb7);min-width:0}
+#novaWaKpiView .wkp-dates input{flex:1;min-width:0;height:44px;padding:0 8px;border-radius:8px;border:1px solid var(--nx-border-subtle,#2a313a);background:var(--nx-bg-panel,#111418);color:var(--nx-text-main,#f1f3f5);color-scheme:dark}
+#novaWaKpiView .wkp-msg{margin:12px 0;padding:12px;border-radius:var(--nx-r-2,10px);background:var(--nx-bg-panel,#111418);border:1px solid var(--nx-border-subtle,#2a313a);color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-msg.err{border-color:#6b3434;color:#ffb4b4}
+#novaWaKpiView .wkp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px}
+#novaWaKpiView .wkp-k{padding:12px;border-radius:var(--nx-r-3,14px);background:linear-gradient(180deg,var(--nx-bg-surface,#1b2026),var(--nx-bg-panel,#111418));border:1px solid var(--nx-border-subtle,#2a313a);min-width:0}
+#novaWaKpiView .wkp-k span{display:block;font-size:13px;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-k b{display:block;margin:2px 0;font-size:24px;line-height:1.3;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#novaWaKpiView .wkp-k i{display:block;font-style:normal;font-size:12.5px;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-k i.up{color:var(--nx-ok,#60b99b)}#novaWaKpiView .wkp-k i.down{color:#f2a7a7}
+#novaWaKpiView .wkp-k.warn b{color:var(--nx-warn,#d9bf86)}#novaWaKpiView .wkp-k.ok b{color:var(--nx-ok,#60b99b)}#novaWaKpiView .wkp-k.acc b{color:#9fd3ea}
+#novaWaKpiView .wkp-sec{margin:0 0 12px;padding:12px;border-radius:var(--nx-r-3,14px);background:var(--nx-bg-panel,#111418);border:1px solid var(--nx-border-subtle,#2a313a);min-width:0}
+#novaWaKpiView .wkp-sec h2{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 10px;font-size:16px}
+#novaWaKpiView .wkp-sec h2 small{font-size:12.5px;font-weight:400;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin:0 0 12px}
+#novaWaKpiView .wkp-two>.wkp-sec{margin:0}
+#novaWaKpiView .wkp-tv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#novaWaKpiView .wkp-tv>div{padding:10px;border-radius:var(--nx-r-2,10px);background:var(--nx-bg-surface,#1b2026)}
+#novaWaKpiView .wkp-tv span{display:block;font-size:13px;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-tv b{font-size:22px;font-variant-numeric:tabular-nums}
+#novaWaKpiView .wkp-tv em{font-style:normal;font-size:13px;color:var(--nx-text-muted,#a4adb7);margin-inline-start:6px}
+#novaWaKpiView .wkp-seg.sm{flex:0 0 auto}
+#novaWaKpiView .wkp-seg.sm button{flex:0 0 auto;padding:0 12px}
+#novaWaKpiView .wkp-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:6px 0 0;direction:ltr;overflow:hidden}
+#novaWaKpiView .wkp-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;height:100%;gap:2px}
+#novaWaKpiView .wkp-col .m{background:#76b8d5;border-radius:3px 3px 0 0;min-height:2px}
+#novaWaKpiView .wkp-col .c{background:#60b99b;border-radius:3px 3px 0 0;min-height:2px}
+#novaWaKpiView .wkp-col.zero .m,#novaWaKpiView .wkp-col.zero .c{background:#2a313a}
+#novaWaKpiView .wkp-axis{display:flex;justify-content:space-between;direction:ltr;margin-top:4px;font-size:12px;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:12.5px;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px;vertical-align:middle}
+#novaWaKpiView .wkp-wait{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#novaWaKpiView .wkp-wait button{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;text-align:right;border-radius:var(--nx-r-2,10px);border:1px solid var(--nx-border-subtle,#2a313a);background:var(--nx-bg-surface,#1b2026);color:var(--nx-text-main,#f1f3f5);cursor:pointer}
+#novaWaKpiView .wkp-wait button:hover{border-color:#3a4857}
+#novaWaKpiView .wkp-wait .n{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#novaWaKpiView .wkp-wait .d{font-variant-numeric:tabular-nums;color:var(--nx-warn,#d9bf86);font-weight:700;white-space:nowrap}
+#novaWaKpiView .wkp-wait .s{display:block;font-size:12px;font-weight:400;color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-wait .closed .d{color:var(--nx-text-muted,#a4adb7)}
+#novaWaKpiView .wkp-heat{display:grid;grid-template-columns:44px repeat(24,minmax(0,1fr));gap:2px;direction:ltr;min-width:0}
+#novaWaKpiView .wkp-heat .hl{font-size:12px;color:var(--nx-text-muted,#a4adb7);text-align:center;line-height:16px;overflow:hidden}
+#novaWaKpiView .wkp-heat .dl{font-size:12px;color:var(--nx-text-muted,#a4adb7);direction:rtl;text-align:right;line-height:18px;white-space:nowrap;overflow:hidden}
+#novaWaKpiView .wkp-heat .cell{height:18px;border-radius:3px;background:#161b21}
+#novaWaKpiView .wkp-bars{display:grid;gap:8px}
+#novaWaKpiView .wkp-bar{display:grid;grid-template-columns:minmax(80px,32%) 1fr auto;align-items:center;gap:8px;min-width:0}
+#novaWaKpiView .wkp-bar .l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#novaWaKpiView .wkp-bar .t{height:12px;border-radius:999px;background:#1b2026;overflow:hidden}
+#novaWaKpiView .wkp-bar .t i{display:block;height:100%;border-radius:999px;background:#76b8d5}
+#novaWaKpiView .wkp-bar.bot .t i{background:#b8a6d7}
+#novaWaKpiView .wkp-bar .v{font-variant-numeric:tabular-nums;font-weight:700}
+#novaWaKpiView .wkp-split{display:flex;height:14px;border-radius:999px;overflow:hidden;background:#1b2026;margin:8px 0}
+#novaWaKpiView .wkp-split i{display:block;height:100%}
+#novaWaKpiView .wkp-chips{display:flex;flex-wrap:wrap;gap:8px}
+#novaWaKpiView .wkp-chip{padding:8px 12px;border-radius:999px;background:var(--nx-bg-surface,#1b2026);border:1px solid var(--nx-border-subtle,#2a313a)}
+#novaWaKpiView .wkp-chip b{font-variant-numeric:tabular-nums;margin-inline-start:6px}
+#novaWaKpiView .wkp-foot{font-size:12.5px;color:var(--nx-text-muted,#a4adb7);margin:4px 0 0}
+#novaWaKpiView .wkp-foot li{margin:2px 0}
+@media (max-width:520px){#novaWaKpiView .wkp{padding:0 10px 24px}#novaWaKpiView .wkp-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#novaWaKpiView .wkp-k{padding:10px}#novaWaKpiView .wkp-k b{font-size:20px}#novaWaKpiView .wkp-two{grid-template-columns:minmax(0,1fr)}#novaWaKpiView .wkp-heat{grid-template-columns:38px repeat(24,minmax(0,1fr));gap:1px}#novaWaKpiView .wkp-heat .cell{height:16px;border-radius:2px}#novaWaKpiView h1{font-size:18px}}
+@media (prefers-reduced-motion:reduce){#novaWaKpiCard{transition:none}}
+</style>
+<script id="UX430_WA_KPI">
+(function(){
+"use strict";
+// BEGIN-KPI-SHARED
+var KP_TZ = 'Africa/Cairo';
+var KP_DAY = 86400000;
+var _kpFmt = null;
+function kpTs(v) { var n = Number(v) || 0; return n > 0 && n < 1e12 ? n * 1000 : n; }
+function kpParts(t) {
+  if (!_kpFmt) _kpFmt = new Intl.DateTimeFormat('en-US', { timeZone: KP_TZ, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', weekday: 'short' });
+  var o = {};
+  _kpFmt.formatToParts(new Date(t)).forEach(function (p) { o[p.type] = p.value; });
+  return { y: +o.year, mo: +o.month, d: +o.day, h: (+o.hour) % 24, mi: +o.minute, s: +o.second, wd: { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[o.weekday] };
+}
+function kpOffset(t) { var p = kpParts(t); return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(t / 1000) * 1000; }
+function kpDayStart(t) { var p = kpParts(t), g = Date.UTC(p.y, p.mo - 1, p.d), s = g - kpOffset(g); return g - kpOffset(s); }
+function kpNextDay(t) { return kpDayStart(kpDayStart(t) + 30 * 3600000); }
+function kpPrevDay(t) { return kpDayStart(kpDayStart(t) - 12 * 3600000); }
+function kpPad(n) { return (n < 10 ? '0' : '') + n; }
+function kpDayKey(t) { var p = kpParts(t); return p.y + '-' + kpPad(p.mo) + '-' + kpPad(p.d); }
+function kpKeyStart(key) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || '')); return m ? kpDayStart(Date.UTC(+m[1], +m[2] - 1, +m[3], 12)) : null; }
+function kpDaysBack(now, n) { var s = kpDayStart(now); for (var i = 1; i < n; i++) s = kpPrevDay(s); return s; }
+// preset: 'today' | '7d' | '30d' | 'custom' (fromKey/toKey 'YYYY-MM-DD', inclusive). Returns {from, to} epoch ms, to exclusive.
+function kpRange(preset, now, fromKey, toKey) {
+  var s = kpDayStart(now);
+  if (preset === '7d') return { from: kpDaysBack(now, 7), to: kpNextDay(s) };
+  if (preset === '30d') return { from: kpDaysBack(now, 30), to: kpNextDay(s) };
+  if (preset === 'custom') {
+    var a = kpKeyStart(fromKey), b = kpKeyStart(toKey);
+    if (a == null && b == null) return { from: s, to: kpNextDay(s) };
+    if (a == null) a = b; if (b == null) b = a;
+    if (b < a) { var x = a; a = b; b = x; }
+    return { from: a, to: kpNextDay(b) };
+  }
+  return { from: s, to: kpNextDay(s) };
+}
+function kpIsStaff(k) { return k === 'pharm' || k === 'out'; }
+function kpStats(list) {
+  var n = list.length;
+  if (!n) return { n: 0, avg: null, median: null };
+  var a = list.slice().sort(function (x, y) { return x - y; }), sum = 0;
+  for (var i = 0; i < n; i++) sum += a[i];
+  return { n: n, avg: sum / n, median: n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2 };
+}
+function kpDur(ms) {
+  if (ms == null || isNaN(ms)) return '—';
+  if (ms < 1000) return 'أقل من ثانية';
+  var s = Math.round(ms / 1000), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  if (d) return d + ' يوم' + (h ? ' ' + h + ' س' : '');
+  if (h) return h + ' س' + (m ? ' ' + m + ' د' : '');
+  if (m) return m + ' د' + (r ? ' ' + r + ' ث' : '');
+  return r + ' ث';
+}
+// data = { customers:[{id,name}], events:[{c, k:'in'|'bot'|'pharm'|'out'|'sys', t, m?, s?}] }; o = { from, to, now }.
+// Definitions (documented on the page):
+//  chats    = distinct conversations with at least one customer/bot/staff message in the window (system notes ignored).
+//  messages = customer + bot + staff messages in the window.
+//  first response = for every customer message that opens a wait (no customer message already waiting since the last staff
+//                   reply; bot replies do not end a wait), the time until the next staff (pharmacist) reply. Counted when the
+//                   wait opened inside the window. Bot replies never count.
+//  waiting  = conversations whose latest non-system message is from the customer (current state at `now`); `open` = that
+//             wait started less than 24h ago (WhatsApp reply window still open).
+//  new customer = their first-ever message falls inside the window; returning = wrote before the window too.
+function kpCompute(data, o) {
+  o = o || {};
+  var now = o.now || Date.now(), from = o.from == null ? -Infinity : o.from, to = o.to == null ? Infinity : o.to;
+  var names = {}, byC = {}, ids = [];
+  (data && data.customers || []).forEach(function (c) { names[c.id] = c.name || c.id; });
+  (data && data.events || []).forEach(function (e, i) {
+    var t = kpTs(e.t);
+    if (!t || !e.c) return;
+    if (!byC[e.c]) { byC[e.c] = []; ids.push(e.c); }
+    byC[e.c].push({ k: e.k, t: t, m: e.m || null, s: e.s || null, i: i });
+  });
+  var heat = [], h, w;
+  for (w = 0; w < 7; w++) { heat.push([]); for (h = 0; h < 24; h++) heat[w].push(0); }
+  var hours = []; for (h = 0; h < 24; h++) hours.push(0);
+  var convs = {}, msgs = 0, inN = 0, botN = 0, staffN = 0, firstRt = [], staff = {}, media = { image: 0, audio: 0, video: 0, document: 0, sticker: 0, other: 0 };
+  var newC = 0, retC = 0, waiting = [], custs = {};
+  ids.forEach(function (c) {
+    var ev = byC[c].sort(function (a, b) { return a.t - b.t || a.i - b.i; }), i, e, waitFrom = null, firstIn = null, lastNs = null;
+    for (i = 0; i < ev.length; i++) {
+      e = ev[i];
+      if (e.k === 'sys') continue;
+      lastNs = e;
+      var inR = e.t >= from && e.t < to;
+      if (e.k === 'in' && firstIn === null) firstIn = e;
+      if (inR) {
+        convs[c] = 1; msgs++;
+        if (e.m && Object.prototype.hasOwnProperty.call(media, e.m)) media[e.m]++;
+        if (e.k === 'in') { inN++; custs[c] = 1; var p = kpParts(e.t); heat[p.wd][p.h]++; hours[p.h]++; }
+        else if (e.k === 'bot') botN++;
+        else if (kpIsStaff(e.k)) { staffN++; var nm = e.s || ''; staff[nm] = (staff[nm] || 0) + 1; }
+      }
+      if (e.k === 'in') { if (waitFrom === null) waitFrom = e; }
+      else if (kpIsStaff(e.k)) {
+        if (waitFrom !== null && waitFrom.t >= from && waitFrom.t < to) firstRt.push(e.t - waitFrom.t);
+        waitFrom = null;
+      }
+    }
+    if (custs[c]) { if (firstIn && firstIn.t >= from) newC++; else retC++; }
+    if (lastNs && lastNs.k === 'in') {
+      var ws = lastNs;
+      for (i = ev.length - 1; i >= 0; i--) { if (ev[i].k === 'sys') continue; if (ev[i].k === 'in') ws = ev[i]; else break; }
+      var d = Math.max(0, now - ws.t);
+      waiting.push({ c: c, name: names[c] || c, t: ws.t, d: d, open: d < KP_DAY });
+    }
+  });
+  waiting.sort(function (a, b) { return (b.open - a.open) || (a.open ? b.d - a.d : a.d - b.d); });
+  var staffList = Object.keys(staff).map(function (k) { return { name: k, n: staff[k] }; }).sort(function (a, b) { return b.n - a.n || (a.name < b.name ? -1 : 1); });
+  var st = kpStats(firstRt);
+  return {
+    from: from, to: to, now: now,
+    chats: Object.keys(convs).length, msgs: msgs, inMsgs: inN, botMsgs: botN, staffMsgs: staffN,
+    firstResponse: { n: st.n, avg: st.avg, median: st.median },
+    waitingOpen: waiting.filter(function (x) { return x.open; }).length, waiting: waiting,
+    customers: { total: newC + retC, newC: newC, returning: retC },
+    staff: staffList, media: media, mediaTotal: media.image + media.audio + media.video + media.document + media.sticker + media.other,
+    heat: heat, hours: hours
+  };
+}
+// Per-day chats/messages for the `n` days ending today (oldest first).
+function kpTrend(data, now, n) {
+  var start = kpDaysBack(now, n), out = [], idx = {}, cur = start, g = 0;
+  while (out.length < n && g++ < 400) { var k = kpDayKey(cur); idx[k] = out.length; out.push({ key: k, chats: 0, msgs: 0, _c: {} }); cur = kpNextDay(cur); }
+  var end = kpNextDay(kpDayStart(now));
+  (data && data.events || []).forEach(function (e) {
+    var t = kpTs(e.t);
+    if (!t || e.k === 'sys' || t < start || t >= end) return;
+    var j = idx[kpDayKey(t)];
+    if (j == null) return;
+    out[j].msgs++; if (!out[j]._c[e.c]) { out[j]._c[e.c] = 1; out[j].chats++; }
+  });
+  return out.map(function (d) { return { key: d.key, chats: d.chats, msgs: d.msgs }; });
+}
+// Headline numbers for the Home card: today vs yesterday.
+function kpHeadline(data, now) {
+  now = now || Date.now();
+  var s = kpDayStart(now), y = kpPrevDay(s), today = kpCompute(data, { from: s, to: kpNextDay(s), now: now }), yd = kpCompute(data, { from: y, to: s, now: now });
+  return { today: today, yesterday: yd };
+}
+// END-KPI-SHARED
+/* UX430 UI: Home card + dedicated WhatsApp KPIs page. Read-only: one GET to /api/v1/inbox/history/metrics (UX300 endpoint, same
+   gate as the conversations list since UX400, no PIN header). Data stays in memory only. Never sends a message: tapping a waiting
+   chat only opens it in المحادثات (the same click a pharmacist would make). Automated browsers (navigator.webdriver) do not
+   auto-load the Home numbers so unrelated offline smoke tests make no network call; localStorage nova.waKpi.autoload=1 opts in. */
+var KPW = { data: null, at: 0, busy: false, err: '', preset: 'today', fromKey: '', toKey: '', trendN: 7, open: false, wait: [] };
+var KP_WD = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+var KP_MEDIA = [['image', 'صور'], ['audio', 'صوت'], ['video', 'فيديو'], ['document', 'مستندات'], ['sticker', 'ملصقات'], ['other', 'وسائط أخرى']];
+function kpEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function kpNum(n) { return n == null ? '—' : String(Math.round(n)); }
+function kpUrl() {
+  var u = '';
+  try { u = localStorage.getItem('novaBackend.url') || ''; if (!u && localStorage.getItem('novaBackend.enabled') === 'true') u = 'https://nova-rx-api.elsousypharmacy.workers.dev'; } catch (e) { }
+  return String(u || 'https://nova-rx-api-staging.elsousypharmacy.workers.dev').replace(/\/+$/, '') + '/api/v1/inbox/history/metrics';
+}
+function kpAuto() {
+  try { if (localStorage.getItem('nova.waKpi.autoload') === '1') return true; } catch (e) { }
+  return !(typeof navigator !== 'undefined' && navigator.webdriver);
+}
+function kpLoad(force) {
+  if (KPW.busy || typeof fetch !== 'function') return;
+  if (!force && KPW.data && Date.now() - KPW.at < 60000) { kpPaint(); return; }
+  KPW.busy = true; KPW.err = ''; kpPaint();
+  fetch(kpUrl(), { method: 'GET', headers: { Accept: 'application/json' }, cache: 'no-store', credentials: 'omit' }).then(function (r) {
+    return r.json().catch(function () { return {}; }).then(function (j) {
+      if (r.status === 401 || r.status === 429) throw new Error('السيرفر ده لسه مش فاتح بيانات واتساب. افتح نسخة التجربة أو حاول تاني بعد شوية.');
+      if (!r.ok || !j || !j.ok || !j.data) throw new Error('السيرفر مش بيرد دلوقتي. حاول تاني بعد شوية.');
+      KPW.data = j.data; KPW.at = Date.now();
+    });
+  }, function () { throw new Error(typeof navigator !== 'undefined' && navigator.onLine === false ? 'أنت غير متصل بالإنترنت.' : 'تعذّر الاتصال بالسيرفر.'); })
+    .catch(function (e) { KPW.err = String((e && e.message) || e); })
+    .then(function () { KPW.busy = false; kpPaint(); });
+}
+function kpDelta(a, b) {
+  if (a == null || b == null) return '';
+  var d = a - b;
+  if (!d) return 'زي أمس';
+  return (d > 0 ? '▲ ' : '▼ ') + Math.abs(Math.round(d)) + ' عن أمس';
+}
+function kpCardHtml() {
+  var h = KPW.data ? kpHeadline(KPW.data, Date.now()) : null, t = h && h.today, y = h && h.yesterday;
+  var fr = t && t.firstResponse.avg != null ? kpDur(t.firstResponse.avg) : '—';
+  function tile(v, l, sub, cls, key) { return '<span class="wk-t' + (cls ? ' ' + cls : '') + '" data-wk="' + key + '"><b>' + kpEsc(v) + '</b><span>' + l + '</span><i>' + kpEsc(sub || ' ') + '</i></span>'; }
+  return '<span class="wk-top"><span class="wk-ico" aria-hidden="true">✆</span>واتساب النهارده<span class="wk-more">كل المؤشرات ‹</span></span>' +
+    '<span class="wk-tiles">' +
+    tile(t ? t.chats : '—', 'محادثات', t ? kpDelta(t.chats, y.chats) : '', '', 'chats') +
+    tile(t ? t.msgs : '—', 'رسائل', t ? kpDelta(t.msgs, y.msgs) : '', '', 'msgs') +
+    tile(t ? t.waitingOpen : '—', 'بانتظار الرد', t && t.waitingOpen ? 'محتاجين رد' : (t ? 'مفيش حد مستني' : ''), t && t.waitingOpen ? 'wk-warn' : '', 'waiting') +
+    tile(fr, 'متوسط أول رد', t && t.firstResponse.n ? 'من الصيدلي (' + t.firstResponse.n + ')' : (t ? 'لسه مفيش ردود' : ''), '', 'first') +
+    '</span>' + (KPW.err && !KPW.data ? '<span class="wk-note" role="status">' + kpEsc(KPW.err) + '</span>' : KPW.busy && !KPW.data ? '<span class="wk-note" role="status">جارٍ التحميل…</span>' : '');
+}
+function kpTrendHtml(n) {
+  var tr = kpTrend(KPW.data, Date.now(), n), mx = 1, i, s = '';
+  for (i = 0; i < tr.length; i++) mx = Math.max(mx, tr[i].msgs, tr[i].chats);
+  var sumM = 0, sumC = 0;
+  for (i = 0; i < tr.length; i++) {
+    var d = tr[i]; sumM += d.msgs; sumC += d.chats;
+    s += '<div class="wkp-col' + (d.msgs ? '' : ' zero') + '" title="' + d.key + ': ' + d.chats + ' محادثة، ' + d.msgs + ' رسالة" data-day="' + d.key + '"><span class="c" style="height:' + Math.round(d.chats / mx * 100) + '%"></span><span class="m" style="height:' + Math.round(d.msgs / mx * 100) + '%"></span></div>';
+  }
+  return '<div class="wkp-chart" role="img" aria-label="رسائل ومحادثات آخر ' + n + ' يوم">' + s + '</div>' +
+    '<div class="wkp-axis"><span>' + tr[0].key.slice(5) + '</span><span>' + tr[tr.length - 1].key.slice(5) + '</span></div>' +
+    '<div class="wkp-leg"><span><i style="background:#76b8d5"></i>رسائل: <b data-trend-msgs>' + sumM + '</b></span><span><i style="background:#60b99b"></i>محادثات (مجموع الأيام): <b data-trend-chats>' + sumC + '</b></span></div>';
+}
+function kpHeatHtml(r) {
+  var mx = 0, w, h, s = '<span></span>';
+  for (w = 0; w < 7; w++) for (h = 0; h < 24; h++) mx = Math.max(mx, r.heat[w][h]);
+  for (h = 0; h < 24; h++) s += '<span class="hl">' + (h % 3 === 0 ? h : '') + '</span>';
+  var order = [6, 0, 1, 2, 3, 4, 5];
+  for (var oi = 0; oi < 7; oi++) {
+    w = order[oi]; s += '<span class="dl">' + KP_WD[w] + '</span>';
+    for (h = 0; h < 24; h++) {
+      var v = r.heat[w][h], a = mx ? v / mx : 0;
+      s += '<span class="cell" data-heat="' + w + '-' + h + '" title="' + KP_WD[w] + ' ' + kpPad(h) + ':00 — ' + v + ' رسالة"' + (v ? ' style="background:rgba(118,184,213,' + (0.18 + a * 0.82).toFixed(2) + ')"' : '') + '></span>';
+    }
+  }
+  var top = r.hours.map(function (n, i) { return { h: i, n: n }; }).filter(function (x) { return x.n; }).sort(function (a, b) { return b.n - a.n || a.h - b.h; }).slice(0, 3);
+  return '<div class="wkp-heat" role="img" aria-label="أوقات الذروة حسب اليوم والساعة">' + s + '</div>' +
+    '<p class="wkp-foot" data-peak>' + (top.length ? 'أكتر ساعات زحمة: ' + top.map(function (x) { return kpPad(x.h) + ':00 (' + x.n + ')'; }).join('، ') : 'مفيش رسائل عملاء في الفترة دي.') + '</p>';
+}
+function kpPageHtml() {
+  var presets = [['today', 'اليوم'], ['7d', '7 أيام'], ['30d', '30 يوم'], ['custom', 'مخصص']], seg = '';
+  presets.forEach(function (p) { seg += '<button type="button" data-kp-preset="' + p[0] + '" aria-pressed="' + (KPW.preset === p[0]) + '">' + p[1] + '</button>'; });
+  var head = '<div class="wkp-head"><button type="button" class="wkp-btn" data-kp-back aria-label="رجوع">→ رجوع</button><h1>مؤشرات واتساب<small>بتوقيت القاهرة • قراءة فقط</small></h1><button type="button" class="wkp-btn" data-kp-reload aria-label="تحديث">↻</button></div>' +
+    '<div class="wkp-filter"><div class="wkp-seg" role="group" aria-label="الفترة">' + seg + '</div>' +
+    '<div class="wkp-dates"' + (KPW.preset === 'custom' ? '' : ' hidden') + '><label>من <input type="date" data-kp-from value="' + kpEsc(KPW.fromKey) + '"></label><label>إلى <input type="date" data-kp-to value="' + kpEsc(KPW.toKey) + '"></label></div></div>';
+  if (!KPW.data) return '<div class="wkp">' + head + '<div class="wkp-msg' + (KPW.err ? ' err' : '') + '" role="status">' + (KPW.err ? kpEsc(KPW.err) : 'جارٍ تحميل المؤشرات…') + '</div></div>';
+  var now = Date.now(), rg = kpRange(KPW.preset, now, KPW.fromKey, KPW.toKey), r = kpCompute(KPW.data, { from: rg.from, to: rg.to, now: now }), hl = kpHeadline(KPW.data, now);
+  var label = KPW.preset === 'today' ? 'اليوم' : KPW.preset === '7d' ? 'آخر 7 أيام' : KPW.preset === '30d' ? 'آخر 30 يوم' : (kpDayKey(rg.from) + ' ← ' + kpDayKey(rg.to - 1));
+  function k(cls, key, l, v, sub) { return '<div class="wkp-k' + (cls ? ' ' + cls : '') + '" data-kpi="' + key + '"><span>' + l + '</span><b>' + kpEsc(v) + '</b><i>' + kpEsc(sub || ' ') + '</i></div>'; }
+  var fr = r.firstResponse;
+  var out = '<div class="wkp">' + head + (KPW.err ? '<div class="wkp-msg err" role="status">' + kpEsc(KPW.err) + ' (المعروض آخر بيانات اتحملت)</div>' : '') +
+    '<div class="wkp-grid" aria-label="' + kpEsc(label) + '">' +
+    k('acc', 'chats', 'محادثات • ' + label, r.chats, r.inMsgs + ' رسالة من العملاء') +
+    k('', 'msgs', 'رسائل • ' + label, r.msgs, 'صيدلي ' + r.staffMsgs + ' • بوت ' + r.botMsgs) +
+    k(r.waitingOpen ? 'warn' : 'ok', 'waiting', 'بانتظار الرد الآن', r.waitingOpen, 'آخر 24 ساعة') +
+    k('', 'avg', 'متوسط أول رد للصيدلي', kpDur(fr.avg), fr.n ? fr.n + ' رد' : 'مفيش ردود') +
+    k('', 'median', 'وسيط أول رد للصيدلي', kpDur(fr.median), 'نص الردود أسرع من كده') +
+    k('', 'media', 'وسائط', r.mediaTotal, 'صور وصوت وملفات') + '</div>';
+  var t = hl.today, y = hl.yesterday;
+  out += '<div class="wkp-two"><section class="wkp-sec" data-sec="today"><h2>النهارده مقابل امبارح</h2><div class="wkp-tv">' +
+    '<div data-tv="chats"><span>محادثات</span><b>' + t.chats + '</b><em>أمس ' + y.chats + '</em></div>' +
+    '<div data-tv="msgs"><span>رسائل</span><b>' + t.msgs + '</b><em>أمس ' + y.msgs + '</em></div>' +
+    '<div data-tv="avg"><span>متوسط أول رد</span><b>' + kpDur(t.firstResponse.avg) + '</b><em>أمس ' + kpDur(y.firstResponse.avg) + '</em></div>' +
+    '<div data-tv="median"><span>وسيط أول رد</span><b>' + kpDur(t.firstResponse.median) + '</b><em>أمس ' + kpDur(y.firstResponse.median) + '</em></div></div></section>' +
+    '<section class="wkp-sec" data-sec="trend"><h2>الاتجاه<div class="wkp-seg sm" role="group" aria-label="مدة الاتجاه"><button type="button" data-kp-trend="7" aria-pressed="' + (KPW.trendN === 7) + '">7 أيام</button><button type="button" data-kp-trend="30" aria-pressed="' + (KPW.trendN === 30) + '">30 يوم</button></div></h2>' + kpTrendHtml(KPW.trendN) + '</section></div>';
+  KPW.wait = r.waiting;
+  var wl = r.waiting.slice(0, 50).map(function (w) {
+    return '<li><button type="button" class="' + (w.open ? 'open' : 'closed') + '" data-kp-chat="' + kpEsc(w.c) + '"><span class="n">' + kpEsc(w.name) + '<span class="s">' + (w.open ? 'مستني من ' + kpClockStr(w.t) : 'عدّت 24 ساعة — واتساب مش هيسمح بالرد لحد ما يكتب تاني') + '</span></span><span class="d" data-wait-dur>' + kpDur(w.d) + '</span></button></li>';
+  }).join('');
+  out += '<section class="wkp-sec" data-sec="waiting"><h2>بانتظار الرد<small>' + r.waitingOpen + ' مفتوحة • ' + (r.waiting.length - r.waitingOpen) + ' قديمة • اضغط لفتح المحادثة</small></h2>' +
+    (wl ? '<ul class="wkp-wait">' + wl + '</ul>' : '<p class="wkp-foot">مفيش عملاء مستنيين رد. 👏</p>') + '</section>';
+  out += '<section class="wkp-sec" data-sec="heat"><h2>أوقات الذروة<small>رسائل العملاء • ' + kpEsc(label) + '</small></h2>' + kpHeatHtml(r) + '</section>';
+  var c = r.customers, np = c.total ? Math.round(c.newC / c.total * 100) : 0;
+  var sMax = 1; r.staff.forEach(function (x) { sMax = Math.max(sMax, x.n); }); sMax = Math.max(sMax, r.botMsgs);
+  var staff = r.staff.map(function (x) { return '<div class="wkp-bar" data-staff="' + kpEsc(x.name) + '"><span class="l">' + kpEsc(x.name || 'صيدلي (بدون اسم)') + '</span><span class="t"><i style="width:' + Math.round(x.n / sMax * 100) + '%"></i></span><span class="v">' + x.n + '</span></div>'; }).join('');
+  if (r.botMsgs) staff += '<div class="wkp-bar bot" data-staff-bot><span class="l">البوت (للمقارنة)</span><span class="t"><i style="width:' + Math.round(r.botMsgs / sMax * 100) + '%"></i></span><span class="v">' + r.botMsgs + '</span></div>';
+  out += '<div class="wkp-two"><section class="wkp-sec" data-sec="customers"><h2>عملاء جدد وعائدين<small>' + kpEsc(label) + '</small></h2>' +
+    '<div class="wkp-tv"><div data-cust="new"><span>جدد</span><b>' + c.newC + '</b></div><div data-cust="ret"><span>عائدين</span><b>' + c.returning + '</b></div></div>' +
+    '<div class="wkp-split" role="img" aria-label="جدد ' + np + '٪"><i style="width:' + np + '%;background:#60b99b"></i><i style="width:' + (c.total ? 100 - np : 0) + '%;background:#76b8d5"></i></div>' +
+    '<p class="wkp-foot">جديد = أول رسالة ليه في الفترة دي. عائد = كتب قبل كده.</p></section>' +
+    '<section class="wkp-sec" data-sec="staff"><h2>ردود كل صيدلي<small>' + r.staffMsgs + ' رد</small></h2>' + (staff ? '<div class="wkp-bars">' + staff + '</div>' : '<p class="wkp-foot">مفيش ردود في الفترة دي.</p>') + '</section></div>';
+  out += '<section class="wkp-sec" data-sec="media"><h2>الوسائط<small>' + r.mediaTotal + ' • ' + kpEsc(label) + '</small></h2><div class="wkp-chips">' +
+    KP_MEDIA.map(function (m) { return '<span class="wkp-chip" data-media="' + m[0] + '">' + m[1] + '<b>' + (r.media[m[0]] || 0) + '</b></span>'; }).join('') + '</div></section>';
+  out += '<ul class="wkp-foot"><li>أول رد = الوقت من أول رسالة للعميل مستنية لحد أول رد من الصيدلي (ردود البوت مش محسوبة).</li><li>بانتظار الرد = آخر رسالة في المحادثة من العميل. المفتوحة = أقل من 24 ساعة.</li><li>آخر تحديث ' + kpClockStr(KPW.at) + '.</li></ul></div>';
+  return out;
+}
+function kpClockStr(t) { var p = kpParts(t); return kpPad(p.h) + ':' + kpPad(p.mi); }
+var kpCardEl = null, kpViewEl = null, kpLastFocus = null;
+function kpPaint() {
+  if (kpCardEl) kpCardEl.innerHTML = kpCardHtml();
+  if (kpViewEl && KPW.open) {
+    var f = document.activeElement, sel = f && kpViewEl.contains(f) ? (f.getAttribute('data-kp-preset') ? '[data-kp-preset="' + f.getAttribute('data-kp-preset') + '"]' : f.getAttribute('data-kp-trend') ? '[data-kp-trend="' + f.getAttribute('data-kp-trend') + '"]' : f.hasAttribute('data-kp-from') ? '[data-kp-from]' : f.hasAttribute('data-kp-to') ? '[data-kp-to]' : f.hasAttribute('data-kp-reload') ? '[data-kp-reload]' : null) : null;
+    var st = kpViewEl.scrollTop;
+    kpViewEl.innerHTML = kpPageHtml(); kpViewEl.scrollTop = st;
+    if (sel) { var n = kpViewEl.querySelector(sel); if (n) try { n.focus({ preventScroll: true }); } catch (e) { n.focus(); } }
+  }
+}
+function kpOpenPage() {
+  if (!kpViewEl) return;
+  kpLastFocus = document.activeElement;
+  KPW.open = true; kpViewEl.hidden = false; kpViewEl.scrollTop = 0;
+  try { document.documentElement.style.overflow = 'hidden'; } catch (e) { }
+  kpPaint(); kpLoad(true);
+  var b = kpViewEl.querySelector('[data-kp-back]'); if (b) b.focus();
+}
+function kpClosePage(noFocus) {
+  if (!kpViewEl) return;
+  KPW.open = false; kpViewEl.hidden = true;
+  try { document.documentElement.style.overflow = ''; } catch (e) { }
+  if (!noFocus && kpLastFocus && kpLastFocus.focus) try { kpLastFocus.focus(); } catch (e) { }
+  kpPaint();
+}
+// Open one chat in المحادثات exactly like a pharmacist tap: show the inbox, then click that row. Sends nothing.
+function kpOpenChat(id) {
+  kpClosePage(true);
+  var btn = document.getElementById('novaWaBtn') || document.querySelector('[data-wa-inbox-open]');
+  if (!btn) return;
+  btn.click();
+  var tries = 0;
+  (function look() {
+    var box = document.getElementById('novaInboxView'), row = null;
+    if (box) { var rows = box.querySelectorAll('[data-conv]'); for (var i = 0; i < rows.length; i++) if (rows[i].getAttribute('data-conv') === id) { row = rows[i]; break; } }
+    if (row) { row.click(); return; }
+    if (++tries < 60) setTimeout(look, 200);
+  })();
+}
+function kpInit() {
+  var ws = document.querySelector('.pos-root .main-workspace');
+  if (ws && !document.getElementById('novaWaKpiCard')) {
+    kpCardEl = document.createElement('button');
+    kpCardEl.type = 'button'; kpCardEl.id = 'novaWaKpiCard'; kpCardEl.dir = 'rtl';
+    kpCardEl.setAttribute('aria-label', 'مؤشرات واتساب النهارده — افتح صفحة المؤشرات');
+    var hdr = ws.querySelector('.top-header');
+    if (hdr && hdr.parentNode === ws) ws.insertBefore(kpCardEl, hdr.nextSibling); else ws.insertBefore(kpCardEl, ws.firstChild);
+    kpCardEl.addEventListener('click', kpOpenPage);
+  }
+  if (!document.getElementById('novaWaKpiView')) {
+    kpViewEl = document.createElement('div');
+    kpViewEl.id = 'novaWaKpiView'; kpViewEl.dir = 'rtl'; kpViewEl.hidden = true;
+    kpViewEl.setAttribute('role', 'dialog'); kpViewEl.setAttribute('aria-modal', 'true'); kpViewEl.setAttribute('aria-label', 'مؤشرات واتساب');
+    document.body.appendChild(kpViewEl);
+    kpViewEl.addEventListener('click', function (e) {
+      var t = e.target;
+      if (t.closest('[data-kp-back]')) { kpClosePage(); return; }
+      if (t.closest('[data-kp-reload]')) { kpLoad(true); return; }
+      var p = t.closest('[data-kp-preset]');
+      if (p) {
+        KPW.preset = p.getAttribute('data-kp-preset');
+        if (KPW.preset === 'custom' && !KPW.fromKey) { var tk = kpDayKey(Date.now()); KPW.fromKey = kpDayKey(kpDaysBack(Date.now(), 7)); KPW.toKey = tk; }
+        kpPaint(); return;
+      }
+      var tr = t.closest('[data-kp-trend]'); if (tr) { KPW.trendN = +tr.getAttribute('data-kp-trend') === 30 ? 30 : 7; kpPaint(); return; }
+      var ch = t.closest('[data-kp-chat]'); if (ch) { kpOpenChat(ch.getAttribute('data-kp-chat')); }
+    });
+    kpViewEl.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.hasAttribute('data-kp-from')) { KPW.fromKey = t.value; KPW.preset = 'custom'; kpPaint(); }
+      else if (t.hasAttribute('data-kp-to')) { KPW.toKey = t.value; KPW.preset = 'custom'; kpPaint(); }
+    });
+    kpViewEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); kpClosePage(); } });
+  }
+  kpPaint();
+  if (kpAuto()) {
+    setTimeout(function () { kpLoad(false); }, 1200);
+    setInterval(function () { if (document.visibilityState === 'visible' && kpCardEl && kpCardEl.offsetParent && !KPW.open) kpLoad(true); }, 300000);
+  }
+  window.novaWaKpis = { open: kpOpenPage, close: kpClosePage, reload: function () { kpLoad(true); } };
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kpInit); else kpInit();
+})();
+</script>
+<!-- UX430:END -->
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
