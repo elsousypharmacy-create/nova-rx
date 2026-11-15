@@ -531,7 +531,7 @@
     "UX327",
     "UX328"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -541,7 +541,18 @@
    "not_before": "2026-11-15T15:11:00+00:00",
    "pin_slot": "B",
    "slot": "B",
-   "dispatched_at": "2026-11-15T23:23:37+00:00"
+   "dispatched_at": "2026-11-15T23:23:37+00:00",
+   "pr": 499,
+   "ci_dispatched": {
+    "sha": "5181501e3fee7bf2f8182d501702c2e312d5d93e",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-15T23:24:52+00:00",
+    "na": []
+   }
   },
   {
    "id": "SALE-05",
@@ -4804,14 +4815,16 @@
     "UX310",
     "UX311"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "note": "Slot B (elsousypharmacy), Sonnet. qa-301 artifact may be superseded by later preview artifacts (UX403 / UX422 / UX329); still un-held because the owner resumed both slots. Owner 2026-11-16 02:17 Asia/Riyadh: resume both slots («خليهم يكملوا»).",
    "model": "sonnet",
    "max_turns": 40,
-   "pin_slot": "B"
+   "pin_slot": "B",
+   "slot": "B",
+   "dispatched_at": "2026-11-15T23:24:52+00:00"
   },
   {
    "id": "UX312",
@@ -5162,6 +5175,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T23:23:37+00:00",
+ "updated": "2026-11-15T23:24:52+00:00",
  "slot_cooldown": {}
 }
