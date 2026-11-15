@@ -40,7 +40,8 @@ assert.equal(j.added, 1);
 assert.deepEqual(j.conversation.messages.map((m) => [m.dir, m.kind]), [['out', 'bot'], ['in', 'in']]);
 // 4) bad input / disabled / unsupported
 assert.equal((await post([{ id: '', from: '1' }]))[0], 400);
-[s, j] = await post([item({ id: 'a1', type: 'audio', text: null })]); assert.deepEqual([j.added, j.skipped], [0, 1]);
+[s, j] = await post([item({ id: 'a1', type: 'audio', text: null })]); assert.deepEqual([j.added, j.skipped], [1, 0]); // UX405: caption-less audio is stored, not skipped
+[s, j] = await post([item({ id: 'l1', type: 'location', text: null })]); assert.deepEqual([j.added, j.skipped], [0, 1]);
 assert.equal((await post([item()], { ...env, NOVA_WA_BRIDGE_DIRECT: undefined }))[0], 200); // legacy queue path still works
 // 5) 24h window computed from the latest real inbound: a fresh inbound re-opens a chat whose backfill is old
 db.prepare("INSERT INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES ('default','wa_555','قديم',1)").run();

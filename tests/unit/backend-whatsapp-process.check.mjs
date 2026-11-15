@@ -41,7 +41,7 @@ s = await scheduledWaProcess(env, { now: 2000 });
 assert.equal(s.done, 1); assert.equal(count('t1'), 3);
 
 // bad payload + unknown phone id: retry then dead-letter; no cross-tenant write
-await q('bad1', { type: 'sticker' });
+await q('bad1', { type: 'location' }); // UX405: stickers are supported now; location is still unsupported
 await q('unk1', { type: 'text', text: { body: 'x' } }, 'NOPE');
 let t = 3000;
 s = await scheduledWaProcess(env, { now: t });
