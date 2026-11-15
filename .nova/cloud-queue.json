@@ -4148,8 +4148,8 @@
    "after": [
     "UX400b"
    ],
-   "status": "running",
-   "attempts": 1,
+   "status": "failed",
+   "attempts": 2,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-smoothness",
    "note": "Slot A track; high-priority smoothness follow-up from owner phone test. Inserted after UX400b and ahead of UX401–UX403. Model opus, max_turns 80.",
@@ -4949,5 +4949,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T12:08:26+00:00"
+ "updated": "2026-11-15T12:13:23+00:00"
 }
