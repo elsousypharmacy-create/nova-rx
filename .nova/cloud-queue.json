@@ -2,7 +2,7 @@
  "version": 1,
  "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
-    {
+  {
    "id": "UX414",
    "phase": 10,
    "title": "تفعيل إشعارات الخلفية للواتساب (Web Push) والأبلكيشن مقفول",
@@ -70,7 +70,7 @@
    "after": [
     "UX408"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -79,10 +79,9 @@
    "max_turns": 80,
    "not_before": "2026-11-15T15:11:00+00:00",
    "pin_slot": "A",
-   "slot": null,
-   "dispatched_at": "2026-11-15T19:54:44+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T23:23:37+00:00",
    "last_failure": "quick fail on slot A (likely usage limit; not counted) https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43755002526",
-   "retry": true,
    "pr": 491,
    "ci_dispatched": {
     "sha": "3d0ec24359b1e386ea217ccb54f4b1406166b3ed",
@@ -532,7 +531,7 @@
     "UX327",
     "UX328"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -540,7 +539,9 @@
    "model": "sonnet",
    "max_turns": 40,
    "not_before": "2026-11-15T15:11:00+00:00",
-   "pin_slot": "B"
+   "pin_slot": "B",
+   "slot": "B",
+   "dispatched_at": "2026-11-15T23:23:37+00:00"
   },
   {
    "id": "SALE-05",
@@ -5161,6 +5162,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T23:22:04+00:00",
+ "updated": "2026-11-15T23:23:37+00:00",
  "slot_cooldown": {}
 }
