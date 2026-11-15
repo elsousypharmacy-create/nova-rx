@@ -4093,12 +4093,20 @@
    "brief": "Continuous QA audit (focus: customers, debts & chronic refill). Audit the CURRENT repo frontend locally with Playwright (desktop 1366x768 + mobile 390x844, fake data, no live writes, no supplier/live sites), focusing on the focus area plus a quick smoke of all main journeys. Every cycle must cover every main screen (البيع، الفواتير، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات، and any other top-nav tab or link). Click every top-nav link/tab and every visible primary header button (including the WhatsApp #novaWaBtn icon). Flag any HTTP 404, blank page, 'Not found', failed navigation, or console error. Quality bar is EXCEPTIONAL (world-class pharmacy POS, Apple/Linear-level polish): judge as the strictest senior product designer + QA lead. TOP PRIORITY (owner): visual design and smoothness. Every cycle, besides the focus area, do a full design + smoothness pass on all screens: visual hierarchy, consistent spacing/grid, typography, icons, color/contrast, polish of every state; smooth 60fps transitions and scrolling, no jank/layout shift/flicker, instant feedback (<100ms) on every tap, fast screen switches, no extra clicks in common flows. Measure (Playwright traces, CLS, long tasks, interaction latency) and order fix tasks design/smoothness first. Report findings at every severity including low/polish (alignment, spacing, contrast, copy, empty/loading/error states, speed, keyboard flow). Score each of the 14 focus areas 0-10 and update .nova/qa/scorecard.json ({area: {score, last_cycle, open_findings}}); an area counts as exceptional only at >=9.5 with zero open findings. Never mark the product done; the loop continues. Read all previous .nova/qa/*report*.md and qa-loop-*.md first to avoid duplicates and to re-verify that earlier fixes really work. Write .nova/qa/qa-loop-314.md (Arabic, short) with screenshots in .nova/qa/qa-loop-314/ (max 15). Then write .nova/inbox/qa-loop-314-fixes.json ({\"tasks\":[...]}) with at most 15 frontend-only fix tasks (ids UX315..UX329; highest impact first, any severity; areas scoring <9.5 first; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)' with after = all its fix ids, which rebuilds the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs, markers test, node --check, no deploy). Fix ids available: UX315, UX316, UX317, UX318, UX319, UX320, UX321, UX322, UX323, UX324, UX325, UX326, UX327, UX328, UX329. If truly nothing is found, write the report only (no fixes file). Do not edit .nova/cloud-queue.json. Owner request this cycle: work page-by-page (البيع، الفواتير/المرتجعات، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات) and also audit screens that have no scorecard score yet (استوديو الاستيكرات /sticker-studio.html and the in-app sticker flow, بيع الطوارئ /emergency-sales.html, مقارنة الموردين /supplier-compare.html). Re-score every area after re-verifying already-merged fixes UX204–UX243 and UX302–UX312; close findings that actually landed, keep or re-open only what is still broken. UX309 (stock status chips) is in progress on open PR #435 (failed earlier due to merge conflicts with main; being retried). Do not file a new task that duplicates UX309. UX313 (qa-301 artifact build) is already pending and must not be reused or overwritten. Do not edit .nova/cloud-queue.json.",
    "acceptance": "Report .nova/qa/qa-loop-314.md exists; scorecard updated; fixes inbox file if any findings; no deploy; backend untouched.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314.json",
    "slot": "B",
-   "dispatched_at": "2026-11-15T05:18:45+00:00"
+   "dispatched_at": "2026-11-15T05:18:45+00:00",
+   "pr": 443,
+   "ci_dispatched": {
+    "sha": "25178ff22d52f0e7bb087d4c098b18e3444f9bf9",
+    "wf": [
+     "secret-scan.yml"
+    ],
+    "at": "2026-11-15T05:23:48+00:00"
+   }
   },
   {
    "id": "UX313",
@@ -4294,5 +4302,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
   }
  ],
- "updated": "2026-11-15T05:20:12+00:00"
+ "updated": "2026-11-15T05:23:48+00:00"
 }
