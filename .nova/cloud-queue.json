@@ -4816,7 +4816,7 @@
    "after": [
     "UX422"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
@@ -4826,13 +4826,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T10:18:23+00:00",
    "pr": 455,
-   "ci_dispatched": {
-    "sha": "75876f6f8eef69dc543cd64463088b24500bf3f9",
-    "wf": [
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-15T10:19:49+00:00"
-   }
+   "merged_at": "2026-11-15T10:21:24+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/455"
   },
   {
    "id": "SALE-01",
@@ -4890,5 +4885,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:21:18+00:00"
+ "updated": "2026-11-15T10:21:24+00:00"
 }
