@@ -7,6 +7,7 @@
 // and reply. Every other NOVA_ENV (production, dev, unset, anything unknown) stays PIN-gated exactly as before.
 import { sha256Hex } from './auth/auth.js';
 import { waIsHandoff, waTopics } from './wa-metrics.js';
+import { mediaKind } from './wa-kpis.js';
 import { mediaOfRow, mediaResponse } from './inbox-media.js';
 
 const FAIL_MAX = 10;
@@ -83,12 +84,30 @@ export async function getHistory(db, t, id) {
 // UX300: slim, text-free events for the response-time dashboard (SELECT only). Message text is read only to tag
 // handoffs/topics server-side and is never returned.
 export async function metricsData(db, t) {
-  const cs = await db.prepare('SELECT id, customer FROM inbox_conversations WHERE tenant_id = ? LIMIT 5000').bind(t).all();
+  const cs = await db.prepare('SELECT id, customer, assignee FROM inbox_conversations WHERE tenant_id = ? LIMIT 5000').bind(t).all();
   const ms = await db.prepare('SELECT id, conversation_id AS c, dir, text, at FROM inbox_messages WHERE tenant_id = ? ORDER BY ' + MS('at') + ' ASC, rowid ASC LIMIT 60000').bind(t).all();
+  // UX430: staff name for pharmacist replies sent from NOVA (wa_send_log.sent_by, matched by chat + time), else the chat's
+  // assignee. SELECT only; an older DB without wa_send_log simply yields no names.
+  let sends = [];
+  try {
+    const sl = await db.prepare("SELECT conversation_id AS c, sent_by AS by, finished_at AS f FROM wa_send_log WHERE tenant_id = ? AND status = 'sent' AND sent_by IS NOT NULL LIMIT 20000").bind(t).all();
+    sends = sl.results || [];
+  } catch { sends = []; }
+  const sendsBy = {};
+  for (const x of sends) (sendsBy[x.c] = sendsBy[x.c] || []).push(x);
+  const assignee = {};
+  for (const c of cs.results || []) if (c.assignee) assignee[c.id] = String(c.assignee).slice(0, 60);
+  const staffOf = (c, at) => {
+    let best = null, bd = 120001;
+    for (const s of sendsBy[c] || []) { const d = Math.abs(atMs(s.f) - at); if (d < bd) { bd = d; best = s.by; } }
+    return best ? String(best).slice(0, 60) : (assignee[c] || null);
+  };
   const events = (ms.results || []).map((r) => {
     const k = kindOf(r.id, r.dir), e = { c: r.c, k, t: atMs(r.at) };
     if (k === 'sys' && waIsHandoff(r.text)) e.h = 1;
     if (k === 'in') { const tp = waTopics(r.text); if (tp.length) e.tp = tp; }
+    if (k !== 'sys') { const m = mediaKind(r.text); if (m) e.m = m; }
+    if (k === 'pharm' || k === 'out') { const s = staffOf(r.c, e.t); if (s) e.s = s; }
     return e;
   });
   return { customers: (cs.results || []).map((c) => ({ id: c.id, name: c.customer || c.id })), events };

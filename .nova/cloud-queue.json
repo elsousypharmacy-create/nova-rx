@@ -56,15 +56,43 @@
    "after": [
     "UX405"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
    "source": "owner-request-2026-11-15-notifications",
    "slot": "A",
-   "dispatched_at": "2026-11-15T13:13:18+00:00"
+   "dispatched_at": "2026-11-15T13:43:45+00:00",
+   "pr": 466,
+   "ci_dispatched": {
+    "sha": "9e6933834f75f81ac89beb20fffa55bb2bf4840f",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T13:39:47+00:00"
+   }
+  },
+  {
+   "id": "UX407",
+   "phase": 10,
+   "title": "شاشة المحادثات: شيل بادئة رد الصيدلي، محاذاة اليمين، فجوة الكيبورد، ومربع التركيز الأزرق",
+   "brief": "Continue SLOT A WhatsApp Web work, model Opus, up to 80 turns. High-priority follow-up from owner Ahmed's iPhone tests (16:18–16:24 Asia/Riyadh) of the NOVA Rx preview conversations screen. Slot A is preferred (conversations screen). Depends on UX406. Do not reopen the PIN gate. Do not start UX401–UX403. Stay inside the conversations screen to avoid conflicts with slot B.\n\nTreat these screenshots as the source of visual bugs:\n- .nova/inbox/ux407-whatsapp-real-keyboard.png — real WhatsApp: the composer row sits directly on top of the keyboard with no gap and no iOS accessory bar. The customer's WhatsApp also shows staff replies as incoming bubbles that start with «👨‍⚕️ رد الصيدلي:».\n- .nova/inbox/ux407-nova-keyboard-gap.png — NOVA at 16:22 Asia/Riyadh: an empty band of about 60px under the composer, plus the iOS form accessory bar (∧ ∨ ✓), plus a strange blue focus rectangle around the composer text input. Outgoing staff bubbles sit on the LEFT in dark green.\n\nAhmed clarified that messages are NOT duplicated. The «البوت» and «الصيدلي» bubbles in the NOVA screenshot were a misread; do NOT implement dedupe or merge/filter of those bubbles.\n\nImplement:\n\n1) Prefix «👨‍⚕️ رد الصيدلي:»: Ahmed does not want this prefix on replies that reach the customer, and NOVA must not show it inside bubbles. In the conversations UI, strip that prefix (the emoji, «رد الصيدلي:», and surrounding whitespace/newlines) from displayed bubble text so only the real message (e.g. «اهلا») is shown, labeled as the pharmacist/staff. Strip on render (and if a stored copy still has the prefix, strip for display). No destructive DB ops (no DROP/TRUNCATE/DELETE FROM).\n\n   Read-only finding (do NOT edit the pharmacy repo or GAS in this task): the prefix is prepended in pharmacy server/src/41_bot_chat_admin.js function botReply, which calls tgApi_('sendMessage', { chat_id: id, text: '👨‍⚕️ رد الصيدلي:\\n\\n' + text }). The NOVA bridge server/src/42_nova_whatsapp_bridge.js function novaWaBridge_, operation reply, calls botReply(id, message). tgApi_ routes WhatsApp chats to waSend_. Mention this file and function in the PR report only. Removing the prefix from the customer's WhatsApp is a pharmacy/GAS change handled outside this task (pharmacy PR 'nova/wa-plain-staff-reply', 2026-11-15 ~16:40 Asia/Riyadh). New messages will arrive WITHOUT the prefix, but OLD stored bubbles in D1 still start with it, so the display-time strip is REQUIRED: strip a LEADING «👨‍⚕️ رد الصيدلي:» or «👨‍⚕️ رد الدكتور:» (emoji optional, also without emoji, colon optional, plus following spaces/newlines) only at the start of the text; never strip that phrase mid-text; never rewrite stored rows.\n\n2) Alignment under RTL: outgoing pharmacy/staff messages currently appear on the LEFT in dark green. Match WhatsApp: the business's own outgoing messages go on the RIGHT (green, with ticks); the customer's incoming messages go on the LEFT (white/grey). Fix alignment in RTL.\n\n3) Keyboard gap and iOS accessory bar: make NOVA match .nova/inbox/ux407-whatsapp-real-keyboard.png. Pin the composer to the visualViewport bottom so it sits directly on top of the keyboard with no gap (the empty ~60px band in .nova/inbox/ux407-nova-keyboard-gap.png must go). Hide the iOS form accessory bar (∧ ∨ ✓) if at all possible: use a single input that is not inside a <form>, and while the composer is focused there must be no other focusable inputs on the page so iOS hides prev/next.\n\n4) Blue focus box: while typing, a strange blue rectangle (focus outline/ring) appears around the composer text input on iPhone (visible in .nova/inbox/ux407-nova-keyboard-gap.png). Remove it, matching WhatsApp: outline: none, box-shadow: none, no :focus / :focus-visible ring on the composer field, and -webkit-tap-highlight-color: transparent.\n\n5) Build worker/live/nova-rx-preview.ux-407.js from the latest worker/live artifact using tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only, no admin bypass; auto-deploy runs on main).\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html, plus their tests and the new preview artifact. Do not edit ux-tokens.css/js, other pages, the cloud queue, workflows, or secrets. No production, no live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN. No destructive DB operations.\n\nTests (CI must pass): Playwright tests/ux at 390x844 (mobile emulation) with fake data (block non-GET / no live writes) covering:\n- displayed staff bubbles do not contain «رد الصيدلي:» or the 👨‍⚕️ prefix (only the real message text);\n- outgoing staff bubbles are on the RIGHT and incoming customer bubbles on the LEFT under RTL;\n- with a mocked visualViewport keyboard, the composer sits flush against the visualViewport bottom (no ~60px gap);\n- the focused composer has no outline and no box-shadow.\nAlso run existing conversations Playwright coverage at 1366x768 if present. Add unit tests as needed.\n",
+   "acceptance": "NOVA conversations do not show the «👨‍⚕️ رد الصيدلي:» prefix inside bubbles (only the real message, labeled pharmacist/staff); outgoing staff bubbles sit on the RIGHT (green, ticks) and incoming customer bubbles on the LEFT under RTL; the composer sits flush on the visualViewport / keyboard with no ~60px gap and no iOS accessory bar if at all possible (single input, not inside a <form>, no other focusable inputs while focused); the focused composer has no outline, box-shadow, or focus-visible ring and uses -webkit-tap-highlight-color: transparent; Playwright at 390x844 covers prefix, alignment, keyboard gap, and focused-composer outline/box-shadow; preview artifact nova-rx-preview.ux-407.js built (markers + node --check); no self-deploy or merge; no pharmacy/GAS edits; no WhatsApp sends; no secrets printed; no destructive DB ops; PR report notes that pharmacy botReply in server/src/41_bot_chat_admin.js adds the prefix.",
+   "after": [
+    "UX406"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15-composer-fixes",
+   "note": "Slot A preferred (conversations). High-priority follow-up from owner iPhone tests at 16:18–16:24 Asia/Riyadh. Inserted after running UX406 and ahead of UX401–UX403. Model opus, max_turns 80. Messages are not duplicates — do not implement dedupe. Screenshots in .nova/inbox/ux407-whatsapp-real-keyboard.png and .nova/inbox/ux407-nova-keyboard-gap.png. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits. Re-queued 2026-11-15 ~16:40 Asia/Riyadh: the 16:25 scheduler state commit dropped it.",
+   "model": "opus",
+   "max_turns": 80
   },
   {
    "id": "UX401",
@@ -73,13 +101,13 @@
    "brief": "Continue SLOT A WhatsApp Web work (task 6 of 8). Depends on UX406 (PIN already removed; list+pane chrome from UX400b; smoothness from UX404; incoming media display from UX405; notifications from UX406). Do not reopen the PIN gate. Do not start UX402/UX403. Incoming media display and web-push are already in UX405/UX406 — build on them, do not rip them out. Model Opus. Slot B is modernizing other pages — stay inside the conversations screen to avoid conflicts.\n\nMake the chat pane look and behave like WhatsApp Web:\n- Incoming (white/light) and outgoing (WhatsApp green) bubbles, WhatsApp-like wallpaper, date separators between days, per-message time on every bubble.\n- Ticks from message status: one check when sent, two checks when delivered, two blue checks when read; failed state visible.\n- Reply/quote: swipe or long-press/context to reply; quoted snippet above the bubble and in the composer; can cancel the quote.\n- Media, voice notes, stickers, and documents render inside the thread like WhatsApp (images in-bubble, voice with duration/play, sticker size, document name/type). Use existing history data; fake attachments in tests. Do not send media to real customers.\n- Composer: emoji picker, attachments control, text field (Arabic RTL / dir=auto), send control. Keep NOVA_INBOX_SEND kill switch (composer disabled/draft-only when send is off). Keep the 24-hour window: cannot send when the window is closed, with a clear Arabic explanation. Auto-scroll to latest on open and on send; do not rip the user away if they have scrolled up (WhatsApp-like 'jump to latest' control).\n- Smooth animations, 60fps scrolling, no layout jank, instant feedback (<100ms) on tap. RTL Arabic correct. Responsive: 1366x768 split view and 390x844 stacked list/chat.\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html only (plus their tests). Do not edit ux-tokens.css/js, other pages, queue, workflows, secrets. No deploy, no merge, no production, no live customer messages.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering bubbles, ticks, date separators, reply/quote, media/voice/sticker/doc rendering, composer, 24h-window closed state, auto-scroll; plus nearest unit tests. Record exact results.",
    "acceptance": "Chat pane matches WhatsApp Web: wallpaper, green/white bubbles, date separators, per-message time, single/double/blue ticks from status, reply/quote, media/voice/sticker/doc rendering, emoji+attachments composer, auto-scroll; 24h window and NOVA_INBOX_SEND still enforced; RTL + desktop/mobile; Playwright + unit tests pass; no live customer messages.",
    "after": [
-    "UX406"
+    "UX407"
    ],
    "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX406 (media UX405 + notifications UX406, which follow UX404). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "note": "Slot A track; starts after UX407 (prefix/alignment/keyboard/focus-ring, which follows running UX406). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80
   },
@@ -109,17 +137,20 @@
    "after": [
     "SALE-06"
    ],
-   "status": "running",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-request-2026-11-15-wa-kpis",
    "note": "Slot B track; Sonnet per owner rule 2026-11-15. Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo. Requeued at front 2026-11-15 after turn cap + slot B usage limit; waits for limit reset; max_turns 120. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 120,
    "slot": "B",
-   "dispatched_at": "2026-11-15T12:42:42+00:00",
+   "dispatched_at": "2026-11-15T13:21:56+00:00",
    "not_before": "2026-11-15T12:42:00+00:00",
-   "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585"
+   "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585",
+   "pr": 464,
+   "merged_at": "2026-11-15T13:30:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/464"
   },
   {
    "id": "UX403",
@@ -142,19 +173,23 @@
    "id": "UX315",
    "phase": 10,
    "title": "الموبايل: السهم ‹ يغطي شعار «NOVA Rx» في رأس كل الشاشات (تراجع عن UX204)",
-   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.\n\nSlot B may run this in parallel with slot A's WhatsApp work (UX406 then UX407, UX401–UX403). Do NOT edit unified-inbox.js, the WhatsApp/conversations regions of index.html (composer, bubbles, #wa* / data-wa-*), or any worker/live/nova-rx-preview.ux-40*.js / ux-430.js artifacts. Touch only the shared app header / wordmark / #novaNavPrev / #novaNavNext (and tests for those). If a change would overlap the conversations screen, stop and leave a note.",
    "acceptance": "Wordmark fully visible at 390px on every tab; test asserts no bounding-box overlap between brand and nav arrows.",
    "after": [
-    "UX403",
     "UX422"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 16:34 Asia/Riyadh: after UX403 was relaxed so slot B can work while WhatsApp stays serialized on slot A. Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
-   "max_turns": 60
+   "max_turns": 60,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T13:34:53+00:00",
+   "pr": 465,
+   "merged_at": "2026-11-15T13:42:22+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/465"
   },
   {
    "id": "UX316",
@@ -4962,5 +4997,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:13:18+00:00"
+ "updated": "2026-11-15T13:43:45+00:00"
 }
