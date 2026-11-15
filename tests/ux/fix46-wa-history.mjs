@@ -1,6 +1,6 @@
-// FIX46: old WhatsApp chats behind the pharmacy PIN. No PIN => lock form, no history request, no chat text.
-// Wrong PIN => error, PIN forgotten. Right PIN => old chats (system notes centred, bot/pharmacist labels), composer stays disabled,
-// chats never written to localStorage, "قفل المحادثات" clears them. Backend is mocked; no network, no sends.
+// FIX46 + UX400: old WhatsApp chats load on open with NO PIN (staging/preview); the UI never sends X-Nova-Pin
+// (the mock answers 401 if it does). Old chats: system notes centred, bot/pharmacist labels, composer disabled for a
+// closed 24h window, chats never written to localStorage. Backend is mocked; no network, no sends.
 // Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/fix46-wa-history.mjs
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
@@ -28,7 +28,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
       hist.push(u);
       const pin = q.headers()['x-nova-pin'];
       const cors = { 'Access-Control-Allow-Origin': origin };
-      if (pin !== PIN) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: pin ? 'PIN_INVALID' : 'PIN_REQUIRED', message_ar: 'رقم PIN غير صحيح.' }) });
+      if (pin !== undefined) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: pin ? 'PIN_INVALID' : 'PIN_REQUIRED', message_ar: 'رقم PIN غير صحيح.' }) });
       const body = u.includes('/conversations') ? { ok: true, conversations: CONVS } : { ok: true, conversation: FULL };
       return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
     }
@@ -42,20 +42,10 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   await page.locator('#novaWaBtn').click();
   const view = page.locator('#novaInboxView');
   await view.waitFor({ state: 'visible' });
-  await view.locator('#waHistForm').waitFor();
-  assert.equal(hist.length, 0, 'no history request without a PIN');
-  assert.ok(!(await view.innerText()).includes('منى التجريبية'), 'no chat text before PIN');
-  if (SHOTS) await page.screenshot({ path: `${SHOTS}/fix46-${vp.name}-locked.png` });
-  // wrong PIN
-  await view.locator('#waHistPin').fill('wrong-pin-000000');
-  await view.locator('#waHistForm button[type=submit]').click();
-  await view.locator('.wa-lock-err').waitFor();
-  assert.equal(await page.evaluate(() => sessionStorage.getItem('novaHistPin')), null, 'wrong PIN forgotten');
-  assert.ok(!(await view.innerText()).includes('منى التجريبية'));
-  // right PIN
-  await view.locator('#waHistPin').fill(PIN);
-  await view.locator('#waHistForm button[type=submit]').click();
+  // UX400: no PIN on staging/preview. The list loads on open; no PIN form, no lock bar, no X-Nova-Pin header.
   await view.locator('[data-conv="wa_201000000001"]').waitFor();
+  assert.ok(hist.length > 0, 'history requested on open without a PIN');
+  for (const sel of ['#waHistPin', '#waHistForm', '#waHistLock', '[data-wa-lock]']) assert.equal(await view.locator(sel).count(), 0, 'no PIN UI: ' + sel);
   assert.equal(await page.evaluate(() => localStorage.getItem('novaHistPin')), null, 'PIN never in localStorage');
   await view.locator('[data-conv="wa_201000000001"]').click();
   await view.locator('[data-mid="h_u_1"]').waitFor();
@@ -68,9 +58,6 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   assert.ok(!ls.includes('بنادول') && !ls.includes('منى التجريبية'), 'chats never stored in localStorage');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/fix46-${vp.name}-open.png` });
   if (vp.name === 'mobile') { await view.locator('[data-wa-back]').click(); }
-  await view.locator('#waHistLock').click();
-  await view.locator('#waHistForm').waitFor();
-  assert.ok(!(await view.innerText()).includes('منى التجريبية'), 'lock clears chats');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('novaHistPin')), null);
   assert.deepEqual(posts, [], 'no non-GET requests');
   assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));

@@ -53,5 +53,8 @@ items = [{"id": "UX80", "title": "Build worker/live/nova-rx-preview.ux-pro3.js (
 S.preview_deploys(items, {"UX80": items[0]}, exists=lambda p: True)
 assert not calls
 # marker helper still flags the stale qa-219 artifact that caused the incident
-assert S.missing_markers("worker/live/nova-rx-preview.qa-219.js") and not S.missing_markers("worker/live/nova-rx-preview.wa-live3.js")
+assert S.missing_markers("worker/live/nova-rx-preview.qa-219.js")
+# UX400: wa-live3 is the PIN-gated UI; it now lacks only the PIN-free inbox marker. index.html (the next artifact) has all.
+assert S.missing_markers("worker/live/nova-rx-preview.wa-live3.js") == ["data-wa-inbox-open"]
+assert not S.missing_markers("index.html") and "waHistPin" not in S.REQUIRED_MARKERS and "X-Nova-Pin" not in S.REQUIRED_MARKERS
 print("qa_loop tests ok")

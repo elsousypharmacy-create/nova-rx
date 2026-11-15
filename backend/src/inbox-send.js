@@ -1,6 +1,7 @@
 // WA-SEND: pharmacist replies from the in-app conversations screen to the REAL customer on WhatsApp
 // (owner approved 2026-11-14 «افتح الإرسال من شاشة المحادثات للعملاء الحقيقيين").
-// Route: POST /api/v1/inbox/history/send, PIN-gated exactly like the history (X-Nova-Pin == NOVA_API_PIN).
+// Route: POST /api/v1/inbox/history/send, gated exactly like the history by checkPin: X-Nova-Pin == NOVA_API_PIN,
+// except on the staging/preview backend (UX400, NOVA_ENV 'staging'|'preview') where no PIN is needed. Production stays PIN-gated.
 // Delivery reuses the pharmacy bot's EXISTING Apps Script op novaWhatsAppBridge/reply (same WA_BACKEND_URL +
 // NOVA_WA_BRIDGE_TOKEN as the auto-reply toggle). NOVA never holds the WhatsApp token; secrets by NAME only.
 // Safety: flag NOVA_INBOX_SEND === '1'; text only; 1..1000 chars; target = the conversation's own chat id

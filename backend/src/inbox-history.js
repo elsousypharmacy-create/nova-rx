@@ -2,6 +2,9 @@
 // Guarded by the pharmacy PIN (X-Nova-Pin == env.NOVA_API_PIN, >= 12 chars), independent of NOVA_AUTH,
 // so the public preview never gets chat data without the PIN. SELECT only: never writes, deletes or sends.
 // Failed PIN attempts are rate limited per client IP in KV (10 per 15 minutes).
+// UX400 (owner approved 2026-11-15): on the STAGING/PREVIEW backend only (NOVA_ENV 'staging' or 'preview') the
+// read and send routes no longer require the PIN; the owner accepted that anyone with the preview link can read
+// and reply. Every other NOVA_ENV (production, dev, unset, anything unknown) stays PIN-gated exactly as before.
 import { sha256Hex } from './auth/auth.js';
 import { waIsHandoff, waTopics } from './wa-metrics.js';
 
@@ -30,9 +33,14 @@ async function safeEq(a, b) {
   return d === 0 && x.length === y.length;
 }
 
+const PINLESS_ENVS = Object.freeze(['staging', 'preview']);
+export const historyPinless = (env) => !!env && PINLESS_ENVS.includes(String(env.NOVA_ENV || ''));
+
 export async function checkPin(request, env) {
-  const pin = env && env.NOVA_API_PIN;
-  if (!env || !env.DB || !pin || String(pin).length < 12) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
+  if (!env || !env.DB) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
+  if (historyPinless(env)) return null;
+  const pin = env.NOVA_API_PIN;
+  if (!pin || String(pin).length < 12) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
   const ip = request.headers.get('CF-Connecting-IP') || 'anon';
   const key = 'histfail:' + (await sha256Hex(ip)).slice(0, 32);
   let fails = 0;

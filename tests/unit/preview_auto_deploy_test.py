@@ -36,23 +36,33 @@ def test_skip_older_push_and_origin_newer():
     assert why and "origin/main has a newer artifact" in why
 
 def test_markers_and_no_regression():
-    required = "novaWaBtn hLoad inbox/history waHistPin NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed"
+    required = "novaWaBtn hLoad inbox/history data-wa-inbox-open NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed"
     good = required + " hSend"
     qa219 = "novaWaBtn search only, no history"
     assert "hLoad" in P.missing_markers(qa219)
     assert P.missing_markers(good) == []
     # live already has FIX50; new must keep it
     live = good
-    dropped = "novaWaBtn hLoad inbox/history waHistPin hPoll winClosed hSend"  # dropped FIX50
+    dropped = "novaWaBtn hLoad inbox/history data-wa-inbox-open hPoll winClosed hSend"  # dropped FIX50
     miss = P.regression_markers(live, dropped)
     assert "NOVA_FIX50" in miss and "NOVA_FIX50_VV" in miss
     assert P.regression_markers(qa219, good) == []  # upgrading from stale live is ok if required markers present
+    # UX400: the old PIN lock-form marker no longer counts; a PIN-gated candidate lacks the PIN-free inbox marker
+    assert "waHistPin" not in P.REQUIRED_MARKERS
+    pin_gated = good.replace("data-wa-inbox-open", "waHistPin")
+    assert P.missing_markers(pin_gated) == ["data-wa-inbox-open"]
+    for keep in ("novaWaBtn", "hLoad", "inbox/history", "NOVA_FIX50", "NOVA_FIX50_VV", "hPoll", "winClosed"):
+        assert keep in P.REQUIRED_MARKERS
 
 def test_real_artifacts():
     miss219 = P.missing_markers(Path(ROOT, "worker/live/nova-rx-preview.qa-219.js").read_text(encoding="utf-8", errors="replace"))
     miss3 = P.missing_markers(Path(ROOT, "worker/live/nova-rx-preview.wa-live3.js").read_text(encoding="utf-8", errors="replace"))
     assert "hLoad" in miss219 and "NOVA_FIX50" in miss219
-    assert miss3 == []
+    assert miss3 == ["data-wa-inbox-open"]  # wa-live3 is the PIN-gated UI (pre-UX400)
+    # the next artifact is built from index.html, which must carry every marker and no PIN UI
+    app = Path(ROOT, "index.html").read_text(encoding="utf-8")
+    assert P.missing_markers(app) == []
+    assert "waHistPin" not in app and "X-Nova-Pin" not in app
 
 if __name__ == "__main__":
     test_newest_by_commit_time()

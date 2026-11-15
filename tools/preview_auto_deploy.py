@@ -15,7 +15,7 @@ REQUIRED_MARKERS = (
     "novaWaBtn",
     "hLoad",
     "inbox/history",
-    "waHistPin",
+    "data-wa-inbox-open",  # UX400: PIN-free conversations UI (replaces the old waHistPin lock-form marker)
     "NOVA_FIX50",
     "NOVA_FIX50_VV",
     "hPoll",
