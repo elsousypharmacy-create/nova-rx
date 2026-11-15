@@ -1,0 +1,288 @@
+{
+ "d": {
+  "pages": {
+   "sale": {
+    "ms": 42,
+    "hs": false,
+    "len": 507,
+    "nf": false,
+    "small": []
+   },
+   "invoices": {
+    "ms": 215,
+    "hs": false,
+    "len": 816,
+    "nf": false,
+    "small": []
+   },
+   "products": {
+    "ms": 76,
+    "hs": false,
+    "len": 1188,
+    "nf": false,
+    "small": []
+   },
+   "customers": {
+    "ms": 55,
+    "hs": false,
+    "len": 648,
+    "nf": false,
+    "small": []
+   },
+   "reports": {
+    "ms": 129,
+    "hs": false,
+    "len": 321,
+    "nf": false,
+    "small": []
+   },
+   "settings": {
+    "ms": 86,
+    "hs": false,
+    "len": 1189,
+    "nf": false,
+    "small": []
+   }
+  },
+  "header": [
+   "novaWaBtn|المحادثات (واتساب)|36x36"
+  ],
+  "cust": {
+   "rootId": "",
+   "text": "البيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nنسخة تجريبية\nNOVA Rx\nالعملاء\n\nدليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات\n\nالعملاء\n4\nإجمالي الزيارات\n59\nنقاط الولاء\n1295\nالعملاء النشطون\n4\nالبيانات التجريبية\nعدد العملاء قليل\nأضف عميلًا لتتبّع الزيارات والنقاط والمديونية.\nإضافة عميل\nالاسم\tالهاتف\tالمستوى\tالزيارات\tالنقاط\tالمديونية\nد. طارق المنصور (Dr. Tariq Al-Mansoor)\t0501234567\tذهبي\t24\t480\t0.00 ج.م\nسارة عبد الله العتيبي (Sara Al-Otaibi)\t0559876543\tفضي\t11\t210\t0.00 ج.م\nفهد محمد الشهري (Fahad Al-Shehri)\t0543219876\tبرونزي\t5\t85\t0.00 ج.م\nنورة إبراهيم الدوسري (Noura Al-Dossari)\t0561122334\tذهبي\t19\t520\t0.00 ج.م",
+   "controls": [
+    "|البيع|41x44|NOLABEL",
+    "|الفواتير|56x44|NOLABEL",
+    "|المنتجات|64x44|NOLABEL",
+    "|العملاء|53x44|NOLABEL",
+    "|التقارير|56x44|NOLABEL",
+    "novaPurchasesNav|المشتريات|73x44|NOLABEL",
+    "|الإعدادات|67x44|NOLABEL",
+    "novaWaBtn|المحادثات (واتساب)|36x36",
+    "btnRefreshApp|إعادة تحميل الصفحة|36x36",
+    "novaFilter|بحث بالاسم أو الرقم أو الباركو|380x44",
+    "novaCustAdd|إضافة عميل|93x44|NOLABEL",
+    "btnCloseCheckout|إغلاق|44x44",
+    "checkoutAddCustomer|إضافة رقم العميل (اختياري)|156x44|NOLABEL",
+    "|نقدي (F12)|161x44|NOLABEL",
+    "|مدى / بطاقة (F10)|161x44|NOLABEL",
+    "|آجل (F11)|161x44|NOLABEL",
+    "|مختلط|161x44|NOLABEL",
+    "inputCashReceived|0.00|666x44|NOLABEL",
+    "|بالضبط|127x44|NOLABEL",
+    "|50|127x44|NOLABEL",
+    "|100|127x44|NOLABEL",
+    "|200|127x44|NOLABEL",
+    "|500|127x44|NOLABEL",
+    "btnConfirmPayment|تأكيد وطباعة الإيصال (Enter)|194x44|NOLABEL",
+    "btnCancelCheckout|إلغاء (Esc)|79x44|NOLABEL",
+    "btnCloseReceipt|إغلاق|44x44",
+    "btnReceiptWidth80|80mm|61x44|NOLABEL",
+    "btnReceiptWidth58|58mm|59x44|NOLABEL",
+    "btnPrinterStatus|الطابعة غير معروفة|122x44|NOLABEL",
+    "btnPrintReceiptBtn|طباعة|54x40|NOLABEL",
+    "btnReprintReceipt|إعادة طباعة نسخة|115x40|NOLABEL",
+    "btnExportReceiptPdf|تحميل PDF|82x40|NOLABEL",
+    "btnReceiptNewSale|فاتورة جديدة (F2 / Enter)|154x40|NOLABEL",
+    "btnCloseHelp|إغلاق|44x44",
+    "btnDismissHelp|تمام (Esc)|78x40|NOLABEL"
+   ],
+   "rows": 33
+  },
+  "standalone": {
+   "purchases": {
+    "status": 200,
+    "len": 711,
+    "hs": false,
+    "small": [
+     "selectAll:22x22"
+    ],
+    "text": "NOVA\nRx\nالبيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nالمشتريات\nمدة التغطية بالأيام\nالحد الأدنى\nالمثالي\nأوميت: لا مخازن مختارة · فارما أوفرسيز\nتحديث النواقص\nتوزيع تلقائي\nسلال الموردين\nاستلام فاتورة\nأوامر الشراء المحلية\nإعدادات الموردين\nالمخزون الحي · اضغط تحديث النواقص\n\nاختَر إعدادات الموردين، ثم حدّث النواقص.\n\nالأصناف المطلوبة (0)\nاقتراح تلقائي\nوضع يدوي\nبيانات تجريبية\n\tالصنف\tالرصيد\tالمستهدف\tمعدل البيع / التوريد\tأدنى / أقصى\tالمطلوب\tالعرض والخصم\tتعديل\nحدّث النواقص لقراءة مخزون الصي"
+   },
+   "sticker-studio.html": {
+    "status": 200,
+    "len": 841,
+    "hs": false,
+    "small": [
+     "pharmacistApproval:22x22"
+    ],
+    "text": "صيدلية السوسي\nلصاحبها ومديرها د. أحمد السوسي · 01143404023\nاستيكرات الأدوية\n١\nالمريض\n٢\nالأدوية\n٣\nمراجعة\n٤\nطباعة\nالعودة لنقطة البيع\nالمريض والأدوية\nمسح المسودة\nفواتير سابقة\nاسم المريض\nرقم الهاتف\nالعمر\nسنة\nشهر\nالوزن (كجم)\nحامل؟ *\nنعم\nلا\nرضاعة؟ *\nنعم\nلا\n1 / 6\n1\nدواء بدون اسم\n+ دواء\nيحتاج مراجعة\nإعادة توليد AI\nتكرار\nحذف\nاسم الدواء\nالجرعة\nالتكرار\nالمدة\nتعليمات الاستعمال\nناقص: الجرعة\nناقص: التكرار\nناقص: المدة\nناقص: التعليمات\nمعاينة الاستيكر\n50 × 30 مم · ملصق فردي · كامل\nإعدادات الطباعة\nالاستيكر 1 من 1"
+   },
+   "emergency-sales.html": {
+    "status": 200,
+    "len": 401,
+    "hs": false,
+    "small": [
+     "exp:233x32",
+     "file:324x26"
+    ],
+    "text": "بيع طوارئ — صيدلية د. أحمد السوسي\nأسعار للقراءة فقط · فواتير مؤقتة\nلا توجد أسعار محمّلة على هذا الجهاز. افتح تبويب «الأسعار» وحمّل ملف STOCK LIVE.\nأسعار الأصناف\n\nالأسعار هنا نسخة للقراءة فقط من شيت STOCK LIVE (عمود price = سعر الجمهور). حمّل الملف وأنت عليك إنترنت، وبعدها يشتغل الجهاز بدون المخزن.\n\nوقت تصدير الملف من الشيت (مهم لتحذير الأسعار القديمة)\nملف الأسعار (CSV أو JSON)\n\nبيع\nالفواتير\nالأسعار"
+   },
+   "supplier-compare.html": {
+    "status": 200,
+    "len": 546,
+    "hs": false,
+    "small": [],
+    "text": "مقارنة أسعار الموردين\nنموذج تجريبي للقراءة فقط — بيانات تركيبية، بدون أي اتصال أو طلب شراء\nالمورد\tكود الصنف\tالصنف\tالسعر (ج.م)\tالخصم\tالسعر بعد الخصم\tالمخزون\tآخر تحديث\nEl Motawakel الأفضل سعرًا\tPCM-500\tParacetamol 500mg 20 tab\t١٩٫٠٠\t8%\t١٧٫٤٨\t90\t٠٢‏/١١‏/٢٠٢٦\nUnited Pharma\tPCM-500\tParacetamol 500mg 20 tab\t١٨٫٥٠\t5%\t١٧٫٥٨\t240\t٠١‏/١١‏/٢٠٢٦\nCairo Drug Store\tPCM-500\tParacetamol 500mg 20 tab\t١٨٫٠٠\t0%\t١٨٫٠٠\tنفد\t٠٣‏/١١‏/٢٠٢٦\nCairo Drug Store الأفضل سعرًا\tIBU-400\tIbuprofen 400mg 20 tab\t٢٤٫٢٥\t10%\t٢١٫٨٣\t300\t٠٣"
+   }
+  },
+  "wa": {
+   "view": true,
+   "len": 276
+  },
+  "cls": 0,
+  "longtasks": [],
+  "errors": [
+   "Failed to load resource: net::ERR_FAILED",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 http://127.0.0.1:8765/emergency/stock.json"
+  ],
+  "blocked": []
+ },
+ "m": {
+  "pages": {
+   "sale": {
+    "ms": 47,
+    "hs": false,
+    "len": 405,
+    "nf": false,
+    "small": []
+   },
+   "invoices": {
+    "ms": 59,
+    "hs": false,
+    "len": 762,
+    "nf": false,
+    "small": []
+   },
+   "products": {
+    "ms": 70,
+    "hs": false,
+    "len": 978,
+    "nf": false,
+    "small": []
+   },
+   "customers": {
+    "ms": 52,
+    "hs": false,
+    "len": 592,
+    "nf": false,
+    "small": []
+   },
+   "reports": {
+    "ms": 53,
+    "hs": false,
+    "len": 312,
+    "nf": false,
+    "small": []
+   },
+   "settings": {
+    "ms": 79,
+    "hs": false,
+    "len": 1178,
+    "nf": false,
+    "small": []
+   }
+  },
+  "header": [
+   "novaWaBtn|المحادثات (واتساب)|44x44"
+  ],
+  "cust": {
+   "rootId": "",
+   "text": "البيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\n›\n‹\nNOVA Rx\nالعملاء\n\nدليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات\n\nالعملاء\n4\nإجمالي الزيارات\n59\nنقاط الولاء\n1295\nالعملاء النشطون\n4\nالبيانات التجريبية\nعدد العملاء قليل\nأضف عميلًا لتتبّع الزيارات والنقاط والمديونية.\nإضافة عميل\nد. طارق المنصور (Dr. Tariq Al-Mansoor)\n0501234567\nذهبي\n24\n480\n0.00 ج.م\nسارة عبد الله العتيبي (Sara Al-Otaibi)\n0559876543\nفضي\n11\n210\n0.00 ج.م\nفهد محمد الشهري (Fahad Al-Shehri)\n0543219876\nبرونزي\n5\n85\n0.00 ج.م\nنورة إبراهيم الدوسري (Noura Al-Dossari)\n0561122334\nذهبي\n19\n520\n0.00 ج.م",
+   "controls": [
+    "|البيع|44x44|NOLABEL",
+    "|الفواتير|56x44|NOLABEL",
+    "|المنتجات|64x44|NOLABEL",
+    "|العملاء|53x44|NOLABEL",
+    "|التقارير|56x44|NOLABEL",
+    "novaPurchasesNav|المشتريات|73x44|NOLABEL",
+    "|الإعدادات|67x44|NOLABEL",
+    "novaNavPrev|›|44x47",
+    "novaNavNext|‹|44x47",
+    "novaWaBtn|المحادثات (واتساب)|44x44",
+    "btnRefreshApp|إعادة تحميل الصفحة|44x44",
+    "novaFilter|بحث بالاسم أو الرقم أو الباركو|366x44",
+    "novaCustAdd|إضافة عميل|87x44|NOLABEL",
+    "btnCloseCheckout|إغلاق|44x44",
+    "checkoutAddCustomer|إضافة رقم العميل (اختياري)|156x44|NOLABEL",
+    "|نقدي (F12)|144x44|NOLABEL",
+    "|مدى / بطاقة (F10)|144x44|NOLABEL",
+    "|آجل (F11)|144x44|NOLABEL",
+    "|مختلط|144x44|NOLABEL",
+    "inputCashReceived|0.00|295x44|NOLABEL",
+    "|بالضبط|53x44|NOLABEL",
+    "|50|53x44|NOLABEL",
+    "|100|53x44|NOLABEL",
+    "|200|53x44|NOLABEL",
+    "|500|53x44|NOLABEL",
+    "btnConfirmPayment|تأكيد وطباعة الإيصال (Enter)|194x44|NOLABEL",
+    "btnCancelCheckout|إلغاء (Esc)|73x44|NOLABEL",
+    "btnCloseReceipt|إغلاق|44x44",
+    "btnReceiptWidth80|80mm|61x44|NOLABEL",
+    "btnReceiptWidth58|58mm|59x44|NOLABEL",
+    "btnPrinterStatus|الطابعة غير معروفة|122x44|NOLABEL",
+    "btnPrintReceiptBtn|طباعة|48x44|NOLABEL",
+    "btnReprintReceipt|إعادة طباعة نسخة|109x44|NOLABEL",
+    "btnExportReceiptPdf|تحميل PDF|76x44|NOLABEL",
+    "btnReceiptNewSale|فاتورة جديدة (F2 / Enter)|148x44|NOLABEL",
+    "btnCloseHelp|إغلاق|44x44",
+    "btnDismissHelp|تمام (Esc)|72x44|NOLABEL"
+   ],
+   "rows": 33
+  },
+  "standalone": {
+   "purchases": {
+    "status": 200,
+    "len": 628,
+    "hs": false,
+    "small": [
+     "selectAll:22x22"
+    ],
+    "text": "NOVA\nRx\nالبيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nالمشتريات\nمدة التغطية بالأيام\nالحد الأدنى\nالمثالي\nأوميت: لا مخازن مختارة · فارما أوفرسيز\nتحديث النواقص\nتوزيع تلقائي\nسلال الموردين\nاستلام فاتورة\nأوامر الشراء المحلية\nإعدادات الموردين\nالمخزون الحي · اضغط تحديث النواقص\n\nاختَر إعدادات الموردين، ثم حدّث النواقص.\n\nالأصناف المطلوبة (0)\nاقتراح تلقائي\nوضع يدوي\nبيانات تجريبية\nحدّث النواقص لقراءة مخزون الصيدلية.\nاختيار المخازن يحدد العروض المسموح بها في التوزيع.\nتوزيع الطلب\n0 مجموعات\n\nلم "
+   },
+   "sticker-studio.html": {
+    "status": 200,
+    "len": 731,
+    "hs": false,
+    "small": [
+     "pharmacistApproval:22x22"
+    ],
+    "text": "صيدلية السوسي\nالعودة لنقطة البيع\nالمريض والأدوية\nمسح المسودة\nفواتير سابقة\nاسم المريض\nرقم الهاتف\nالعمر\nسنة\nشهر\nالوزن (كجم)\nحامل؟ *\nنعم\nلا\nرضاعة؟ *\nنعم\nلا\n1\nدواء بدون اسم\n+ دواء\nيحتاج مراجعة\nإعادة توليد AI\nتكرار\nحذف\nاسم الدواء\nالجرعة\nالتكرار\nالمدة\nتعليمات الاستعمال\nناقص: الجرعة\nناقص: التكرار\nناقص: المدة\nناقص: التعليمات\nمعاينة الاستيكر\n50 × 30 مم · ملصق فردي · كامل\nإعدادات الطباعة\nالاستيكر 1 من 1\nصيدلية السوسي\nاسم الدواء\nتعليمات الاستعمال تُراجع هنا\nمسودة غير مكتملة — مراجعة الصيدلي إلزامية · 01143"
+   },
+   "emergency-sales.html": {
+    "status": 200,
+    "len": 401,
+    "hs": false,
+    "small": [
+     "exp:220x30",
+     "file:324x26"
+    ],
+    "text": "بيع طوارئ — صيدلية د. أحمد السوسي\nأسعار للقراءة فقط · فواتير مؤقتة\nلا توجد أسعار محمّلة على هذا الجهاز. افتح تبويب «الأسعار» وحمّل ملف STOCK LIVE.\nأسعار الأصناف\n\nالأسعار هنا نسخة للقراءة فقط من شيت STOCK LIVE (عمود price = سعر الجمهور). حمّل الملف وأنت عليك إنترنت، وبعدها يشتغل الجهاز بدون المخزن.\n\nوقت تصدير الملف من الشيت (مهم لتحذير الأسعار القديمة)\nملف الأسعار (CSV أو JSON)\n\nبيع\nالفواتير\nالأسعار"
+   },
+   "supplier-compare.html": {
+    "status": 200,
+    "len": 546,
+    "hs": true,
+    "small": [],
+    "text": "مقارنة أسعار الموردين\nنموذج تجريبي للقراءة فقط — بيانات تركيبية، بدون أي اتصال أو طلب شراء\nالمورد\tكود الصنف\tالصنف\tالسعر (ج.م)\tالخصم\tالسعر بعد الخصم\tالمخزون\tآخر تحديث\nEl Motawakel الأفضل سعرًا\tPCM-500\tParacetamol 500mg 20 tab\t١٩٫٠٠\t8%\t١٧٫٤٨\t90\t٠٢‏/١١‏/٢٠٢٦\nUnited Pharma\tPCM-500\tParacetamol 500mg 20 tab\t١٨٫٥٠\t5%\t١٧٫٥٨\t240\t٠١‏/١١‏/٢٠٢٦\nCairo Drug Store\tPCM-500\tParacetamol 500mg 20 tab\t١٨٫٠٠\t0%\t١٨٫٠٠\tنفد\t٠٣‏/١١‏/٢٠٢٦\nCairo Drug Store الأفضل سعرًا\tIBU-400\tIbuprofen 400mg 20 tab\t٢٤٫٢٥\t10%\t٢١٫٨٣\t300\t٠٣"
+   }
+  },
+  "wa": {
+   "view": true,
+   "len": 186
+  },
+  "cls": 0,
+  "longtasks": [],
+  "errors": [
+   "Failed to load resource: net::ERR_FAILED",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 http://127.0.0.1:8765/emergency/stock.json"
+  ],
+  "blocked": []
+ }
+}
