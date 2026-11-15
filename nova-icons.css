@@ -5,3 +5,9 @@ button:empty .nova-ico,button>.nova-ico:only-child{margin-inline-end:0}
 [dir=rtl] .nova-ico-dir{transform:scaleX(-1)}
 button svg:not(.receipt-barcode-svg),a.btn svg,summary svg,.btn svg,.nova-tab svg{width:16px;height:16px}
 h1 svg,h2 svg,h3 svg,h4 svg{width:20px;height:20px}
+/* UX420: icon sizing modifiers (opt-in, logical, follow currentColor so dark/light stay consistent) */
+.nova-ico.nova-ico-sm{width:var(--nx-icon-sm,14px);height:var(--nx-icon-sm,14px)}
+.nova-ico.nova-ico-lg{width:var(--nx-icon-lg,20px);height:var(--nx-icon-lg,20px)}
+.nova-ico.nova-ico-xl{width:var(--nx-icon-xl,24px);height:var(--nx-icon-xl,24px)}
+.nova-ico{stroke-linecap:round;stroke-linejoin:round;transition:color var(--nx-dur-fast,120ms) var(--nx-ease,ease)}
+@media (prefers-reduced-motion:reduce){.nova-ico{transition:none}}
