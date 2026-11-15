@@ -2,16 +2,30 @@
 // Tenant comes ONLY from the non-secret config var WA_TENANT_MAP (JSON {"<phone_number_id>":"<tenantId>"}).
 import { waIntakeEnabled, processQueue } from './whatsapp-intake.js';
 import { openConversation, receiveMessage } from './inbox.js';
+import { isMediaType, PLACEHOLDER, cleanMime, SKIP_REASONS } from './inbox-media.js';
 
 export function tenantMap(env) {
   try { const m = JSON.parse((env && env.WA_TENANT_MAP) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; }
 }
 
+// UX405: every media type gets a text placeholder (never skipped, caption optional); the media columns carry the rest.
 export function messageText(m) {
   if (m.type === 'text' || (!m.type && m.text)) { const b = m.text && m.text.body; if (typeof b === 'string' && b) return b; }
-  if (m.type === 'image' && m.image) return '[صورة]' + (m.image.caption ? ' ' + m.image.caption : '');
-  if (m.type === 'document' && m.document) return '[مستند]' + (m.document.filename ? ' ' + m.document.filename : '') + (m.document.caption ? ' ' + m.document.caption : '');
+  if (isMediaType(m.type)) {
+    const o = (m[m.type] && typeof m[m.type] === 'object') ? m[m.type] : {};
+    return PLACEHOLDER[m.type] + (m.type === 'document' && o.filename ? ' ' + o.filename : '') + (o.caption ? ' ' + o.caption : '');
+  }
   return null;
+}
+
+// Meta-shaped message (m.image / m.sticker / ...) -> media columns, or null.
+export function messageMedia(m) {
+  if (!m || !isMediaType(m.type)) return null;
+  const o = (m[m.type] && typeof m[m.type] === 'object') ? m[m.type] : {};
+  const st = (v, n) => (typeof v === 'string' && v ? v.slice(0, n) : null);
+  const size = Number(o.size);
+  return { type: m.type, id: st(o.id, 200), mime: cleanMime(o.mime_type), filename: st(o.filename, 200), size: Number.isFinite(size) && size >= 0 && o.size != null ? Math.round(size) : null,
+    skipped: SKIP_REASONS.includes(o.skipped) ? o.skipped : null, caption: st(o.caption, 3000), cached: o.cached === true ? 1 : 0 };
 }
 
 export function makeProcessor(db, env, now = () => Math.floor(Date.now() / 1000)) {
@@ -33,6 +47,9 @@ export function makeProcessor(db, env, now = () => Math.floor(Date.now() / 1000)
     await openConversation(db, tenant, { id: cid, customer: typeof name === 'string' ? name : m.from, now: at });
     const r = await receiveMessage(db, tenant, { id: cid, text, now: at });
     await db.prepare('UPDATE inbox_messages SET id = ? WHERE tenant_id = ? AND id = ?').bind(mid, tenant, r.id).run();
+    const md = messageMedia(m);
+    if (md) await db.prepare('UPDATE inbox_messages SET media_type = ?, media_id = ?, media_mime = ?, media_filename = ?, media_size = ?, media_skipped = ?, media_caption = ?, media_cached = ? WHERE tenant_id = ? AND id = ?')
+      .bind(md.type, md.id, md.mime, md.filename, md.size, md.skipped, md.caption, md.cached, tenant, mid).run();
     return { duplicate: false };
   };
 }
