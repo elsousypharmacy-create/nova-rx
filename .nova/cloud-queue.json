@@ -11,7 +11,7 @@
    "after": [
     "UX407"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -22,7 +22,19 @@
    "dispatched_at": "2026-11-15T16:51:03+00:00",
    "run_id": 43724106887,
    "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pr": 481,
+   "ci_dispatched": {
+    "sha": "d4f5ceb9c228351ecf8f77f010edbbc514e6859b",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T16:57:48+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX320",
@@ -421,14 +433,16 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
    "max_turns": 60,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T16:57:48+00:00"
   },
   {
    "id": "UX329",
@@ -5076,6 +5090,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T16:56:25+00:00",
+ "updated": "2026-11-15T16:57:48+00:00",
  "slot_cooldown": {}
 }
