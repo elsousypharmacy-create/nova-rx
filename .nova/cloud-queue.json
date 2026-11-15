@@ -11,7 +11,7 @@
    "after": [
     "UX407"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -19,7 +19,7 @@
    "model": "opus",
    "max_turns": 80,
    "slot": "A",
-   "dispatched_at": "2026-11-15T17:19:21+00:00",
+   "dispatched_at": "2026-11-15T17:27:10+00:00",
    "run_id": 43724106887,
    "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
    "not_before": "2026-11-15T15:11:00+00:00",
@@ -36,7 +36,7 @@
     "na": []
    },
    "note_conflicts": "fix_attempts reset 2026-11-15 17:15Z: both fixes were artifact merge conflicts from other merges, not red CI",
-   "conflict_fixes": 1
+   "conflict_fixes": 2
   },
   {
    "id": "UX320",
@@ -5086,6 +5086,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:25:40+00:00",
+ "updated": "2026-11-15T17:27:10+00:00",
  "slot_cooldown": {}
 }
