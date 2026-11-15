@@ -20,9 +20,21 @@
    "dispatched_at": "2026-11-15T19:48:46+00:00",
    "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43743713663",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/487",
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
-   "slot": "B"
+   "slot": "B",
+   "pr": 492,
+   "ci_dispatched": {
+    "sha": "d2c7b01901bfb79266d1e44a26dd6eb5bd2dc3ab",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T19:54:44+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX402",
@@ -42,9 +54,9 @@
    "max_turns": 80,
    "not_before": "2026-11-15T15:11:00+00:00",
    "pin_slot": "A",
-   "slot": "A",
-   "dispatched_at": "2026-11-15T19:53:54+00:00",
-   "last_failure": "quick fail on slot A (likely usage limit; not counted) https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43748235270",
+   "slot": "B",
+   "dispatched_at": "2026-11-15T19:54:44+00:00",
+   "last_failure": "quick fail on slot A (likely usage limit; not counted) https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43755002526",
    "retry": true,
    "pr": 491,
    "ci_dispatched": {
@@ -58,7 +70,7 @@
     "at": "2026-11-15T19:48:46+00:00",
     "na": []
    },
-   "conflict_fixes": 1
+   "conflict_fixes": 2
   },
   {
    "id": "UX408",
@@ -5121,6 +5133,8 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T19:53:54+00:00",
- "slot_cooldown": {}
+ "updated": "2026-11-15T19:54:44+00:00",
+ "slot_cooldown": {
+  "A": "2026-11-15T20:24:44+00:00"
+ }
 }
