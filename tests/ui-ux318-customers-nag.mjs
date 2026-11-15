@@ -26,7 +26,9 @@ for (const vp of [{ width: 1366, height: 768 }, { width: 390, height: 844 }]) {
     const add = p.locator('.nova-page-header #novaCustAdd');
     assert.equal(await add.count(), 1, 'header add button');
     assert.ok((await add.boundingBox()).height >= 40, 'tap target');
-    const kpiB = await p.locator('.nova-kpis').boundingBox(), tblB = await p.locator('.nova-kpis + .nova-panel').boundingBox();
+    // UX317 put the debtor filter chips (#novaCustChips) between the KPIs and the table: measure from the last row above the table.
+    const above = (await p.locator('.nova-kpis + #novaCustChips').count()) ? '#novaCustChips' : '.nova-kpis';
+    const kpiB = await p.locator(above).boundingBox(), tblB = await p.locator(above + ' + .nova-panel').boundingBox();
     assert.ok(tblB.y - (kpiB.y + kpiB.height) < 40, `table right after KPIs (gap ${tblB.y - kpiB.y - kpiB.height})`);
     assert.equal(await p.locator('html').evaluate(e => getComputedStyle(e).direction === 'rtl' || document.dir === 'rtl' || e.dir === 'rtl'), true, 'RTL kept');
   }
