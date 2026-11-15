@@ -7351,5 +7351,67 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .invoice-table td.col-total{grid-area:total;justify-self:end;white-space:nowrap;font-size:14px;color:#f1f3f5;padding-inline-start:0!important;text-align:end}
 }
 </style>
+<style id="UX422_APP_SKIN">
+/* UX422: UX420 design-system skin for the main SPA pages (البيع، الفواتير، المنتجات، العملاء، التقارير، الإعدادات).
+   Scope: top nav tabs, .pos-root (sale) and #novaPageView only. The conversations view (#novaInboxView, wa-*, novaWa*, #novaWaBtn,
+   .nova-nav-brand icons) is deliberately NOT targeted. Black Edition dark stays the default; every colour is an --nx-* token so a
+   [data-theme=light] root follows ux-tokens.css. Motion is opacity/transform/colour only (compositor-friendly) and off under reduced motion. */
+body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
+::selection{background:rgba(118,184,213,.32);color:var(--nx-text-main)}
+/* --- top navigation tabs --- */
+.nova-nav{background:var(--nx-bg-panel);border-bottom-color:var(--nx-border-subtle)}
+.nova-nav .nova-tab{position:relative;font-size:var(--nx-fs-sm);font-weight:var(--nx-fw-bold);letter-spacing:.1px;border-radius:var(--nx-r-2);transition:background-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
+.nova-nav .nova-tab::after{content:"";position:absolute;inset-inline:22%;inset-block-end:2px;height:2px;border-radius:var(--nx-r-pill);background:var(--nx-accent);transform:scaleX(0);opacity:0;transition:transform var(--nx-dur-base) var(--nx-ease),opacity var(--nx-dur-base) var(--nx-ease)}
+.nova-nav .nova-tab.active{background:#1d3340;color:#bfe3f2;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)}
+.nova-nav .nova-tab.active::after{transform:scaleX(1);opacity:1}
+.nova-nav .nova-tab:hover:not(.active){background:var(--nx-bg-surface);color:var(--nx-text-main)}
+.nova-nav .nova-tab:focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:-2px}
+@media (pointer:coarse){.nova-nav .nova-tab{min-height:44px}}
+/* --- page canvas + enter transition --- */
+#novaPageView{background:var(--nx-bg-base);scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#2f3741 transparent}
+#novaPageView:not([hidden]){animation:nx422-in var(--nx-dur-slow) var(--nx-ease)}
+@keyframes nx422-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#novaPageView .nova-page-header{margin-bottom:var(--nx-sp-5)}
+#novaPageView .nova-page-header h1{font-weight:800;letter-spacing:-.2px;color:var(--nx-text-main)}
+#novaPageView .nova-page-header p{font-size:var(--nx-fs-sm);color:var(--nx-text-muted);margin-top:var(--nx-sp-1)}
+/* --- cards: KPI, panels, settings --- */
+#novaPageView .nova-kpis{gap:var(--nx-sp-3)}
+#novaPageView .nova-kpi,#novaPageView .nova-panel,#novaPageView .nova-setting-card{background:linear-gradient(180deg,#191e24 0%,var(--nx-bg-panel) 100%);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1);transition:border-color var(--nx-dur-base) var(--nx-ease),box-shadow var(--nx-dur-base) var(--nx-ease),transform var(--nx-dur-base) var(--nx-ease)}
+#novaPageView .nova-kpi:hover,#novaPageView .nova-setting-card:hover{border-color:#3a4652;box-shadow:var(--nx-shadow-2)}
+#novaPageView button.nova-kpi-btn:hover{transform:translateY(-1px)}
+#novaPageView button.nova-kpi-btn:active{transform:none}
+#novaPageView .nova-kpi small{font-size:var(--nx-fs-xs);font-weight:var(--nx-fw-semibold);color:var(--nx-text-muted);letter-spacing:.2px}
+#novaPageView .nova-kpi strong{font-variant-numeric:tabular-nums;color:var(--nx-text-main)}
+#novaPageView .nova-panel-title{font-size:var(--nx-fs-md);font-weight:var(--nx-fw-bold);color:var(--nx-text-main);border-bottom-color:var(--nx-border-subtle)}
+#novaPageView .nova-setting-card h3{font-size:var(--nx-fs-md);font-weight:var(--nx-fw-bold)}
+#novaPageView .nova-setting-card p{font-size:var(--nx-fs-sm);color:var(--nx-text-muted)}
+/* --- tables --- */
+#novaPageView .nova-data-table th{background:#181d23;color:var(--nx-text-muted);font-size:var(--nx-fs-xs);font-weight:var(--nx-fw-bold);letter-spacing:.2px}
+#novaPageView .nova-data-table td{font-size:var(--nx-fs-sm);border-top-color:#232a31;font-variant-numeric:tabular-nums;transition:background-color var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-data-table tbody tr:hover td{background:#1a2027}
+#novaPageView .nova-data-table tbody tr:focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:-2px}
+/* --- buttons, chips, inputs --- */
+#novaPageView .nova-page-btn,#novaPageView .btn,.pos-root .btn{border-radius:var(--nx-r-2);font-weight:var(--nx-fw-bold);transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease),transform var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-page-btn{background:#1f3a4a;border-color:#3f6a80;color:#e3f2f9;box-shadow:var(--nx-shadow-1)}
+#novaPageView .nova-page-btn:hover{background:#28495c;border-color:var(--nx-accent)}
+#novaPageView .nova-page-btn:active,#novaPageView .btn:active,.pos-root .btn:active{transform:translateY(1px)}
+#novaPageView .nova-page-btn:disabled,#novaPageView .btn:disabled,.pos-root .btn:disabled{transform:none}
+#novaPageView :is(.nova-page-btn,.btn,button,a,input,select,textarea,summary):focus-visible,.pos-root :is(.btn,button,input,select,textarea):focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:2px}
+#novaPageView .nova-tag{border-radius:var(--nx-r-pill);padding-inline:var(--nx-sp-3)}
+#novaPageView .nova-chip,#novaPageView .nova-stock-chip{transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-page-search,#novaPageView .nova-field{border-radius:var(--nx-r-2);background:var(--nx-bg-panel);border-color:#333c46;transition:border-color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-page-search:hover{border-color:#3f4a55}
+#novaPageView .nova-page-search:focus,#novaPageView .nova-field:focus{outline:none;border-color:var(--nx-border-focus);box-shadow:0 0 0 3px rgba(118,184,213,.18)}
+#novaPageView .nova-empty{color:var(--nx-text-muted);line-height:var(--nx-lh-base)}
+#novaPageView .nova-lang-switch{border-radius:var(--nx-r-2)}
+#novaPageView .nova-lang-btn{transition:background-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
+/* --- sale screen (.pos-root): same tokens, layout untouched --- */
+.pos-root .top-header,.pos-root .sidebar-header,.pos-root .invoice-footer{background:var(--nx-bg-panel);border-color:var(--nx-border-subtle)}
+.pos-root .customer-sidebar{background:var(--nx-bg-base)}
+.pos-root .invoice-table th{font-weight:var(--nx-fw-bold);letter-spacing:.2px}
+.pos-root .invoice-table tbody tr{transition:background-color var(--nx-dur-fast) var(--nx-ease)}
+.pos-root .main-search-input{transition:border-color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease)}
+@media (prefers-reduced-motion:reduce){#novaPageView:not([hidden]){animation:none}#novaPageView{scroll-behavior:auto}.nova-nav .nova-tab::after{transition:none}#novaPageView .nova-page-btn:active,#novaPageView .btn:active,.pos-root .btn:active,#novaPageView button.nova-kpi-btn:hover{transform:none}}
+</style>
 </html>
 
