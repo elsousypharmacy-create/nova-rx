@@ -132,6 +132,7 @@ const subs = () => [...kvm.keys()].filter((k) => k.startsWith(SUB_PREFIX));
   [s, j] = await api('subscribe', { subscription: SUB('https://fcm.googleapis.com/fcm/send/over') });
   assert.deepEqual([s, j.code], [409, 'PUSH_LIMIT']);
   for (const k of subs()) if (!kvm.get(k).includes('abc123')) kvm.delete(k);
+  db.prepare("DELETE FROM push_subscriptions WHERE endpoint NOT LIKE '%abc123'").run(); // UX414: D1 mirror of the KV cleanup
   assert.equal(subs().length, 1);
   ok('push routes: key, subscribe (validated, idempotent, capped), unsubscribe, gate');
 }
@@ -184,5 +185,39 @@ const item = (o) => ({ id: 'wamid.p1', from: '201001', timestamp: String(Math.fl
   assert.equal(sent.length, before + 1);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM inbox_messages WHERE id LIKE 'wa_wamid.p%'").get().n, 8);
   ok('push errors/500/410/not-configured/no-ctx never block message writes');
+}
+
+// UX414: D1 push_subscriptions (migration 0025) is the primary store; KV is the fallback
+{
+  const rows = () => db.prepare('SELECT * FROM push_subscriptions').all();
+  db.prepare('DELETE FROM push_subscriptions').run(); kvm.clear(); sent.length = 0; pushStatus = 201;
+  let [s, j] = await api('subscribe', { subscription: SUB() });
+  assert.deepEqual([s, j.subscribed, rows().length], [200, true, 1]);
+  assert.equal(rows()[0].endpoint, SUB().endpoint); assert.ok(!rows()[0].id.includes('abc123'), 'id is a hash');
+  await api('subscribe', { subscription: SUB() }); assert.equal(rows().length, 1, 'idempotent');
+  await api('subscribe', { subscription: SUB('https://fcm.googleapis.com/fcm/send/two') });
+  assert.equal(rows().length, 2);
+  await api('unsubscribe', { endpoint: 'https://fcm.googleapis.com/fcm/send/two' });
+  assert.deepEqual([rows().length, subs().length], [1, 1], 'unsubscribe removes from D1 and KV');
+  // D1-only (no KV binding) still subscribes, notifies, and deletes on 410
+  const noKv = { ...env, KV: undefined };
+  let r = await post([item({ id: 'wamid.d1a' })], noKv);
+  assert.deepEqual([r[0], r[1].added, sent.length], [200, 1, 1]);
+  assert.equal(JSON.parse(await decrypt(sent[0].o.body)).title, 'منى');
+  pushStatus = 404; r = await post([item({ id: 'wamid.d1b' })], noKv);
+  assert.deepEqual([rows().length], [0], '404 deletes the D1 row');
+  // KV-only fallback (no DB binding)
+  pushStatus = 201; sent.length = 0;
+  await api('subscribe', { subscription: SUB() }, { ...env, DB: undefined });
+  assert.deepEqual([rows().length, subs().length], [0, 1]);
+  r = await post([item({ id: 'wamid.d1c' })], env); // env has DB: KV subscription is still found
+  assert.equal(sent.length, 1);
+  pushStatus = 410; await post([item({ id: 'wamid.d1d' })], env);
+  assert.deepEqual([rows().length, subs().length], [0, 0], '410 deletes KV-only subscriptions too');
+  // DB without the migrated table never breaks subscribe (falls back to KV)
+  const badDb = { prepare: () => { throw new Error('no such table'); } };
+  [s, j] = await api('subscribe', { subscription: SUB() }, { ...env, DB: badDb });
+  assert.deepEqual([s, j.subscribed, subs().length], [200, true, 1]);
+  ok('UX414 D1 storage: subscribe/unsubscribe, D1-only notify, 404/410 deletion, KV fallback, unmigrated D1 safe');
 }
 console.log('ALL PASS', n);

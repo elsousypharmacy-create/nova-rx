@@ -1,5 +1,5 @@
 // UX406: Web Push notifications for new inbound WhatsApp customer messages (free: Web Push + VAPID, no push vendor).
-// Subscriptions live in KV (wapush:<tenant>:<sha256(endpoint)[0..32]>), one per browser/device, 90-day TTL.
+// Subscriptions live in D1 push_subscriptions (UX414, migration 0025) and KV (wapush:<tenant>:<sha256(endpoint)[0..32]>, 90-day TTL, fallback).
 // Routes share the history gate (checkPin: pinless on staging/preview, PIN elsewhere):
 //   GET  /api/v1/inbox/history/push/key          -> { enabled, publicKey }
 //   POST /api/v1/inbox/history/push/subscribe    -> store { endpoint, keys:{p256dh, auth} }
@@ -58,21 +58,41 @@ export function cleanSubscription(sub) {
 
 export const subKey = async (tenant, endpoint) => SUB_PREFIX + tenant + ':' + (await sha256Hex(endpoint)).slice(0, 32);
 
-export async function saveSubscription(kv, tenant, sub, now = Date.now()) {
-  const key = await subKey(tenant, sub.endpoint);
-  if (!(await kv.get(key))) {
-    const l = await kv.list({ prefix: SUB_PREFIX + tenant + ':', limit: MAX_SUBS + 1 });
-    if ((l.keys || []).length >= MAX_SUBS) return { ok: false, code: 'PUSH_LIMIT' };
+// Storage: D1 push_subscriptions (primary, migration 0025) + KV wapush:* (fallback / legacy). Writes go to both when
+// available; reads merge both (deduped by endpoint). D1 errors (e.g. table not migrated yet) fall back to KV only.
+const d1 = async (env, fn) => { if (!env || !env.DB) return null; try { return await fn(env.DB); } catch { return null; } };
+export async function saveSubscription(env, tenant, sub, now = Date.now()) {
+  const key = await subKey(tenant, sub.endpoint), id = key.slice(key.lastIndexOf(':') + 1);
+  const kv = env.KV;
+  const exists = (kv && await kv.get(key)) || await d1(env, async (db) => db.prepare('SELECT id FROM push_subscriptions WHERE tenant_id = ? AND id = ?').bind(tenant, id).first());
+  if (!exists) {
+    const all = await listSubscriptions(env, tenant);
+    if (all.length >= MAX_SUBS) return { ok: false, code: 'PUSH_LIMIT' };
   }
-  await kv.put(key, JSON.stringify({ ...sub, at: now }), { expirationTtl: SUB_TTL_S });
+  await d1(env, async (db) => db.prepare('INSERT INTO push_subscriptions (tenant_id, id, endpoint, p256dh, auth, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (tenant_id, id) DO UPDATE SET endpoint = excluded.endpoint, p256dh = excluded.p256dh, auth = excluded.auth, updated_at = excluded.updated_at')
+    .bind(tenant, id, sub.endpoint, sub.keys.p256dh, sub.keys.auth, now, now).run());
+  if (kv) await kv.put(key, JSON.stringify({ ...sub, at: now }), { expirationTtl: SUB_TTL_S });
   return { ok: true };
 }
-export async function removeSubscription(kv, tenant, endpoint) { await kv.delete(await subKey(tenant, endpoint)); return { ok: true }; }
-export async function listSubscriptions(kv, tenant) {
-  const l = await kv.list({ prefix: SUB_PREFIX + tenant + ':', limit: MAX_SUBS + 10 });
-  const out = [];
-  for (const k of l.keys || []) {
-    try { const v = JSON.parse((await kv.get(k.name)) || 'null'); if (v && cleanSubscription(v)) out.push({ key: k.name, sub: v }); } catch { /* skip corrupt */ }
+export async function removeSubscriptionKey(env, tenant, key) {
+  const id = key.slice(key.lastIndexOf(':') + 1);
+  await d1(env, async (db) => db.prepare('DELETE FROM push_subscriptions WHERE tenant_id = ? AND id = ?').bind(tenant, id).run());
+  if (env.KV) await env.KV.delete(key);
+}
+export async function removeSubscription(env, tenant, endpoint) { await removeSubscriptionKey(env, tenant, await subKey(tenant, endpoint)); return { ok: true }; }
+export async function listSubscriptions(env, tenant) {
+  const out = [], seen = new Set();
+  const rows = await d1(env, async (db) => (await db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE tenant_id = ? ORDER BY updated_at DESC LIMIT ?').bind(tenant, MAX_SUBS + 10).all()).results);
+  for (const r of rows || []) {
+    const sub = cleanSubscription({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } });
+    if (sub && !seen.has(sub.endpoint)) { seen.add(sub.endpoint); out.push({ key: await subKey(tenant, sub.endpoint), sub }); }
+  }
+  const kv = env.KV;
+  if (kv) {
+    const l = await kv.list({ prefix: SUB_PREFIX + tenant + ':', limit: MAX_SUBS + 10 });
+    for (const k of l.keys || []) {
+      try { const v = JSON.parse((await kv.get(k.name)) || 'null'); if (v && cleanSubscription(v) && !seen.has(v.endpoint)) { seen.add(v.endpoint); out.push({ key: k.name, sub: v }); } } catch { /* skip corrupt */ }
+    }
   }
   return out;
 }
@@ -135,19 +155,19 @@ export async function vapidAuth(env, endpoint, now = Date.now()) {
 export async function notifyInbound(env, tenant, fresh, now = Date.now()) {
   const res = { sent: 0, failed: 0, removed: 0 };
   try {
-    if (!env || !env.KV || !pushConfigured(env)) return { ...res, skipped: 'not_configured' };
+    if (!env || !(env.KV || env.DB) || !pushConfigured(env)) return { ...res, skipped: 'not_configured' };
     const p = pushPayload(fresh);
     if (!p) return { ...res, skipped: 'empty' };
     const f = env.NOVA_PUSH_FETCH || globalThis.fetch; // injectable (tests)
     const body = JSON.stringify(p);
-    for (const { key, sub } of await listSubscriptions(env.KV, tenant)) {
+    for (const { key, sub } of await listSubscriptions(env, tenant)) {
       try {
         const r = await f(sub.endpoint, {
           method: 'POST',
           headers: { 'Content-Encoding': 'aes128gcm', 'Content-Type': 'application/octet-stream', TTL: String(PUSH_TTL_S), Urgency: 'high', Topic: 'nova-wa', Authorization: await vapidAuth(env, sub.endpoint, now) },
           body: await encryptPayload(sub, body),
         });
-        if (r.status === 404 || r.status === 410) { await env.KV.delete(key); res.removed++; } else if (r.status >= 200 && r.status < 300) res.sent++; else res.failed++;
+        if (r.status === 404 || r.status === 410) { await removeSubscriptionKey(env, tenant, key); res.removed++; } else if (r.status >= 200 && r.status < 300) res.sent++; else res.failed++;
       } catch { res.failed++; }
     }
   } catch { res.failed++; }
@@ -171,20 +191,20 @@ export function registerInboxPushRoutes(route, { errorResponse }) {
   };
   const body = async (request) => { try { return await request.json(); } catch { return null; } };
   route('GET', '/api/v1/inbox/history/push/key', gate(async ({ env, requestId }) => (
-    pushConfigured(env) && env.KV ? { ok: true, enabled: true, publicKey: env.VAPID_PUBLIC_KEY, requestId } : { ok: true, enabled: false, publicKey: null, requestId })));
+    pushConfigured(env) && (env.KV || env.DB) ? { ok: true, enabled: true, publicKey: env.VAPID_PUBLIC_KEY, requestId } : { ok: true, enabled: false, publicKey: null, requestId })));
   route('POST', '/api/v1/inbox/history/push/subscribe', gate(async ({ env, requestId, request }) => {
-    if (!pushConfigured(env) || !env.KV) return errorResponse('PUSH_NOT_CONFIGURED', 'إشعارات المتصفح غير مفعّلة على السيرفر.', 503, requestId);
+    if (!pushConfigured(env) || !(env.KV || env.DB)) return errorResponse('PUSH_NOT_CONFIGURED', 'إشعارات المتصفح غير مفعّلة على السيرفر.', 503, requestId);
     const b = await body(request), sub = cleanSubscription(b && b.subscription);
     if (!sub) return errorResponse('PUSH_BAD_SUBSCRIPTION', 'بيانات الاشتراك غير صالحة.', 400, requestId);
-    const r = await saveSubscription(env.KV, historyTenant(env), sub);
+    const r = await saveSubscription(env, historyTenant(env), sub);
     if (!r.ok) return errorResponse(r.code, 'عدد الأجهزة المشتركة كبير. ألغِ الإشعارات من جهاز قديم.', 409, requestId);
     return { ok: true, subscribed: true, requestId };
   }));
   route('POST', '/api/v1/inbox/history/push/unsubscribe', gate(async ({ env, requestId, request }) => {
-    if (!env.KV) return errorResponse('PUSH_NOT_CONFIGURED', 'إشعارات المتصفح غير مفعّلة على السيرفر.', 503, requestId);
+    if (!(env.KV || env.DB)) return errorResponse('PUSH_NOT_CONFIGURED', 'إشعارات المتصفح غير مفعّلة على السيرفر.', 503, requestId);
     const b = await body(request), ep = b && typeof b.endpoint === 'string' && b.endpoint.length <= MAX_ENDPOINT ? b.endpoint : '';
     if (!ep) return errorResponse('PUSH_BAD_SUBSCRIPTION', 'بيانات الاشتراك غير صالحة.', 400, requestId);
-    await removeSubscription(env.KV, historyTenant(env), ep);
+    await removeSubscription(env, historyTenant(env), ep);
     return { ok: true, subscribed: false, requestId };
   }));
 }
