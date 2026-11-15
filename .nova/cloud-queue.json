@@ -4062,6 +4062,45 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/431"
   },
   {
+   "id": "UX309",
+   "phase": 10,
+   "title": "حالة المخزون لا تُميَّز بشكل متسق: شارة واحدة فقط وتباين ضعيف لنصوص KPI",
+   "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
+   "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
+   "after": [],
+   "status": "fixing",
+   "attempts": 0,
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T05:18:45+00:00",
+   "pr": 435,
+   "ci_dispatched": {
+    "sha": "b430e1eae13a9e2f71588e5908cfa979a9a38474",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-14T23:24:19+00:00"
+   },
+   "note": "Retried 2026-11-15: failed after 2 fix attempts due to merge conflicts with main; PR #435 left open. Reset to pr_open with fix_attempts=0 so a Claude slot can merge main, resolve index.html conflicts, and land on green CI. Failed tasks go to the front."
+  },
+  {
+   "id": "UX314",
+   "phase": 10,
+   "title": "QA loop audit 314: customers, debts & chronic refill",
+   "brief": "Continuous QA audit (focus: customers, debts & chronic refill). Audit the CURRENT repo frontend locally with Playwright (desktop 1366x768 + mobile 390x844, fake data, no live writes, no supplier/live sites), focusing on the focus area plus a quick smoke of all main journeys. Every cycle must cover every main screen (البيع، الفواتير، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات، and any other top-nav tab or link). Click every top-nav link/tab and every visible primary header button (including the WhatsApp #novaWaBtn icon). Flag any HTTP 404, blank page, 'Not found', failed navigation, or console error. Quality bar is EXCEPTIONAL (world-class pharmacy POS, Apple/Linear-level polish): judge as the strictest senior product designer + QA lead. TOP PRIORITY (owner): visual design and smoothness. Every cycle, besides the focus area, do a full design + smoothness pass on all screens: visual hierarchy, consistent spacing/grid, typography, icons, color/contrast, polish of every state; smooth 60fps transitions and scrolling, no jank/layout shift/flicker, instant feedback (<100ms) on every tap, fast screen switches, no extra clicks in common flows. Measure (Playwright traces, CLS, long tasks, interaction latency) and order fix tasks design/smoothness first. Report findings at every severity including low/polish (alignment, spacing, contrast, copy, empty/loading/error states, speed, keyboard flow). Score each of the 14 focus areas 0-10 and update .nova/qa/scorecard.json ({area: {score, last_cycle, open_findings}}); an area counts as exceptional only at >=9.5 with zero open findings. Never mark the product done; the loop continues. Read all previous .nova/qa/*report*.md and qa-loop-*.md first to avoid duplicates and to re-verify that earlier fixes really work. Write .nova/qa/qa-loop-314.md (Arabic, short) with screenshots in .nova/qa/qa-loop-314/ (max 15). Then write .nova/inbox/qa-loop-314-fixes.json ({\"tasks\":[...]}) with at most 15 frontend-only fix tasks (ids UX315..UX329; highest impact first, any severity; areas scoring <9.5 first; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)' with after = all its fix ids, which rebuilds the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs, markers test, node --check, no deploy). Fix ids available: UX315, UX316, UX317, UX318, UX319, UX320, UX321, UX322, UX323, UX324, UX325, UX326, UX327, UX328, UX329. If truly nothing is found, write the report only (no fixes file). Do not edit .nova/cloud-queue.json. Owner request this cycle: work page-by-page (البيع، الفواتير/المرتجعات، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات) and also audit screens that have no scorecard score yet (استوديو الاستيكرات /sticker-studio.html and the in-app sticker flow, بيع الطوارئ /emergency-sales.html, مقارنة الموردين /supplier-compare.html). Re-score every area after re-verifying already-merged fixes UX204–UX243 and UX302–UX312; close findings that actually landed, keep or re-open only what is still broken. UX309 (stock status chips) is in progress on open PR #435 (failed earlier due to merge conflicts with main; being retried). Do not file a new task that duplicates UX309. UX313 (qa-301 artifact build) is already pending and must not be reused or overwritten. Do not edit .nova/cloud-queue.json.",
+   "acceptance": "Report .nova/qa/qa-loop-314.md exists; scorecard updated; fixes inbox file if any findings; no deploy; backend untouched.",
+   "after": [],
+   "status": "running",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314.json",
+   "slot": "B",
+   "dispatched_at": "2026-11-15T05:18:45+00:00"
+  },
+  {
    "id": "UX313",
    "phase": 10,
    "title": "Build worker/live/nova-rx-preview.qa-301.js (qa-loop, no deploy)",
@@ -4136,52 +4175,21 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/434"
   },
   {
-   "id": "UX309",
-   "phase": 10,
-   "title": "حالة المخزون لا تُميَّز بشكل متسق: شارة واحدة فقط وتباين ضعيف لنصوص KPI",
-   "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
-   "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
-   "after": [],
-   "status": "fixing",
-   "attempts": 0,
-   "fix_attempts": 2,
-   "source": "inbox/qa-loop-301-fixes.json",
-   "slot": "A",
-   "dispatched_at": "2026-11-14T23:22:53+00:00",
-   "pr": 435,
-   "ci_dispatched": {
-    "sha": "548389fcca0f775f6afdcc99c1eaae02654351a8",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:17:53+00:00"
-   }
-  },
-  {
    "id": "UX308",
    "phase": 10,
    "title": "شريط التنقل العلوي على الموبايل يخفي 4 من 7 تبويبات بلا أي دلالة تمرير",
    "brief": "Mobile nav scrollWidth 473 vs clientWidth 197: only البيع/الفواتير/المنتجات/العملاء partly visible, التقارير/المشتريات/الإعدادات unreachable without discovering horizontal scroll. Add edge fade/chevron affordance, scrollIntoView for the active tab, or a bottom tab bar with the 5 main screens; keep RTL. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "All 7 destinations reachable in <=1 gesture with visible affordance; active tab always visible; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:17:53+00:00",
    "pr": 436,
-   "ci_dispatched": {
-    "sha": "61c24cc30b8ba366d3be703ac0cb4eb6819985ff",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:20:20+00:00"
-   }
+   "merged_at": "2026-11-14T23:25:36+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/436"
   },
   {
    "id": "UX307",
@@ -4190,22 +4198,15 @@
    "brief": "m-products.png: each product is a 6-row label/value card. Redesign nova-cards for products: name + price on the first line, barcode small, stock badge + category chip on the second (<=84px), keep 44px tap target; no horizontal overflow. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "At least 6 products visible in 390x844 first fold; tap target >=44px; test asserts card height.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-14T23:20:20+00:00",
    "pr": 437,
-   "ci_dispatched": {
-    "sha": "229218019735ee7ed796fdc413e90b0a78bda620",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-14T23:22:53+00:00"
-   }
+   "merged_at": "2026-11-14T23:28:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/437"
   },
   {
    "id": "UX306",
@@ -4214,10 +4215,15 @@
    "brief": "d-products.png: fixed 151x48 FAB at x18,y624 covers the category cell; m-products.png: 44px FAB at y704 covers row content (unchanged since UX207 / qa-loop-203 finding 4, so the earlier fix is not verified). Remove the floating overlay on the products page (header button already exists) or dock it outside the scroll content with bottom padding reserved. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "FAB does not intersect any table cell on either viewport; test measures intersection.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:24:19+00:00",
+   "pr": 438,
+   "merged_at": "2026-11-14T23:31:13+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/438"
   },
   {
    "id": "UX305",
@@ -4226,10 +4232,15 @@
    "brief": "All 21 th have no aria-sort, no sort handler; rows tabIndex=-1 and cursor:auto although clicking opens a modal. Add sortable columns (الصنف، السعر، الرصيد، الصلاحية) with aria-sort and arrow icon, sticky header inside the scroller, rows focusable (tabindex 0, Enter opens), visible focus ring. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Sort toggles asc/desc with aria-sort; Tab reaches rows; Enter opens details; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:37:42+00:00",
+   "pr": 439,
+   "merged_at": "2026-11-14T23:43:17+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/439"
   },
   {
    "id": "UX304",
@@ -4238,10 +4249,15 @@
    "brief": "KPI 'مخزون منخفض (أقل من 30)' is static, threshold hard-coded and not explained; only one amber/red pill shows. Add filter chips (الكل، نواقص، نفد، قريب الانتهاء) where the KPI cards are clickable shortcuts, show the count per chip, an empty state per filter, and keep chips in the search state; threshold shown in a tooltip/legend. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Clicking KPI/chip filters rows instantly (<100ms) and chip counts match; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:29:55+00:00",
+   "pr": 440,
+   "merged_at": "2026-11-14T23:37:42+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/440"
   },
   {
    "id": "UX303",
@@ -4250,10 +4266,15 @@
    "brief": "Inventory table has no expiry column, no near-expiry/expired badges and no lot count although FEFO lots exist (INV02 lots store, index.html ~3589-3729). Add an 'أقرب صلاحية' column + badge states (منتهي أحمر، <=30 يوم أصفر، <=90 كهرماني) with text not colour only, and a KPI card 'قريب الانتهاء' using the existing lots store; fake lots in the test. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Column + badges render from lots data on desktop and mobile; badges carry text; test seeds lots.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "fix_attempts": 2,
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:51:36+00:00",
+   "pr": 441,
+   "merged_at": "2026-11-14T23:57:31+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/441"
   },
   {
    "id": "UX302",
@@ -4262,11 +4283,16 @@
    "brief": "Reproduced: search 'اوجمنتين' (vs أوجمنتين) and Arabic-Indic barcode digits return 0 rows ('لا توجد نتائج مطابقة'). Normalise query and haystack (hamza/alef forms, ya/alef-maqsura, ta-marbuta, tashkeel, tatweel, Arabic-Indic digits) like normAr() in unified-inbox.js; keep <100ms; highlight match; add × clear button. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "'اوجمنتين' returns Augmentin row; Hindi digit barcode returns the row; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "fix_attempts": 1,
+   "source": "inbox/qa-loop-301-fixes.json",
+   "slot": "A",
+   "dispatched_at": "2026-11-14T23:43:17+00:00",
+   "pr": 442,
+   "merged_at": "2026-11-14T23:50:02+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
   }
  ],
- "updated": "2026-11-14T23:22:53+00:00"
+ "updated": "2026-11-15T05:18:45+00:00"
 }
