@@ -70,7 +70,7 @@
    "after": [
     "UX408"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -83,18 +83,9 @@
    "dispatched_at": "2026-11-15T23:23:37+00:00",
    "last_failure": "quick fail on slot A (likely usage limit; not counted) https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43755002526",
    "pr": 491,
-   "ci_dispatched": {
-    "sha": "32190dc3c21c26ff23eae3db4a5d8992fc5cda3d",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T23:34:23+00:00",
-    "na": []
-   },
-   "conflict_fixes": 2
+   "conflict_fixes": 2,
+   "merged_at": "2026-11-15T23:39:31+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/491"
   },
   {
    "id": "UX408",
@@ -294,7 +285,7 @@
    "after": [
     "UX402"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -302,7 +293,9 @@
    "model": "sonnet",
    "max_turns": 80,
    "not_before": "2026-11-15T15:11:00+00:00",
-   "pin_slot": "A"
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T23:39:31+00:00"
   },
   {
    "id": "UX315",
@@ -5182,6 +5175,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T23:38:09+00:00",
+ "updated": "2026-11-15T23:39:31+00:00",
  "slot_cooldown": {}
 }
