@@ -9,6 +9,7 @@ on:
       - "sw.js"
       - "tools/build-worker-artifact.mjs"
       - "tests/unit/artifact-ux406*.check.mjs"
+      - "tests/unit/artifact-ux407*.check.mjs"
       - "tests/unit/ux430-*-artifact.check.mjs"
       - ".github/workflows/preview-artifact-unit.yml"
   workflow_dispatch:
@@ -25,5 +26,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Check ux-406b artifact (flag-gated KPIs + UX404/405/406)
-        run: node --no-warnings tests/unit/artifact-ux406b.check.mjs
+      - name: Check ux-407 artifact (flag-gated KPIs + UX404/405/406/407)
+        run: node --no-warnings tests/unit/artifact-ux407.check.mjs

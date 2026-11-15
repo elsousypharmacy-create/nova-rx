@@ -1,5 +1,5 @@
 // UX407 preview artifact: worker/live/nova-rx-preview.ux-407.js = ux-406 Worker code (byte-identical outside the app HTML literal; /sw.js unchanged)
-// + current index.html (conversations: staff-reply prefix stripped on display, WhatsApp bubble sides, composer flush on the keyboard, no focus box).
+// + current index.html (PR #467/#468 Home WhatsApp KPIs flag gate: localStorage nova.flags.waKpis==='1', default off; conversations: staff-reply prefix stripped on display, WhatsApp bubble sides, composer flush on the keyboard, no focus box).
 // Checks node --check, UX407 + UX406 + UX405 + UX404 + conversations markers, PIN stays removed, SW cache v4 kept. No deploy, never prints secrets.
 // Run: node tests/unit/artifact-ux407.check.mjs
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
@@ -37,6 +37,7 @@ ck('UX407: no composer <form>', !app.includes('<form class="wa-composer"') && !a
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>')).length === 1);
 
 const M = {
+  KPI: ['function kpFlagOn()', "localStorage.getItem('nova.flags.waKpis') === '1'", 'if (!kpFlagOn())', "Hidden unless localStorage nova.flags.waKpis==='1' (default OFF)"],
   UX407: ['function stripStaffPrefix(', 'function shownText(', '.wa-msg.wa-in{justify-content:flex-end}.wa-msg.wa-out{justify-content:flex-start}', 'data-wa-send', 'function waSubmit(){', '#waComposer #waInput:focus-visible', '-webkit-tap-highlight-color:transparent', '.wa-root[data-kbd] .wa-composer{padding-bottom:8px}', '(Number(vv.offsetTop)||0)+vv.height', 'function lock(on)', 'data-wa-kbd-off'],
   UX406: ['function createUnread(', 'function titleBadge(', 'function notifyHtml(', 'data-wa-notify', 'data-wa-mute', 'data-wa-tab-unread', 'window.NovaWaNotify', 'push/subscribe', 'push/key', 'Notification.requestPermission', 'nova.wa.seen.v1', "location.hash==='#wa'", 'notifHead:nHead()'],
   UX405: ['function mediaHtml(', 'function openLightbox(', 'data-wa-media-open', 'data-wa-lightbox', 'data-wa-mimg', 'data-wa-mplay', 'wa-mdoc', 'data-wa-media-miss', "media?id='", 'mediaUrl:mUrl,mediaFail:wa.mfail', 'function previewText('],
