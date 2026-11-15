@@ -45,7 +45,7 @@ for (const vp of [{ width: 390, height: 844, touch: true }, { width: 1366, heigh
   const { ctx, page, view, other, errors } = await open(vp);
   await page.waitForFunction(() => /محمد السيد/.test(document.querySelector('#novaInboxView').innerText), null, { timeout: 8000 });
   assert.equal(await nameOf(view, 'wa_201142677350'), 'محمد السيد'); assert.equal(await nameOf(view, 'wa_201222333444'), 'سارة أحمد'); ok(vp.width + ': registered names replace the number and the profile name in the list, without a reload');
-  assert.equal(await nameOf(view, 'wa_201555000111'), '0155 500 0111'); assert.match(await nameOf(view, 'wa_US.1349xyz'), /يوزرنيم واتساب/); ok(vp.width + ': unregistered chats show a readable number / a clear label, never bare digits');
+  assert.equal(await nameOf(view, 'wa_201555000111'), '0155 500 0111'); assert.equal(await view.locator('[data-conv="wa_201555000111"] .wa-name bdi[dir=ltr]').count(), 1); assert.match(await nameOf(view, 'wa_US.1349xyz'), /يوزرنيم واتساب/); ok(vp.width + ': unregistered chats show a readable number / a clear label, never bare digits');
   assert.equal(await view.locator('[data-conv="wa_201555000111"] .wa-avatar svg').count(), 1); assert.equal(await view.locator('[data-conv="wa_201142677350"] .wa-avatar svg').count(), 0); ok(vp.width + ': number-only chats get the person avatar, named ones a letter');
   await view.locator('[data-conv="wa_201142677350"]').click(); await view.locator('.wa-head-name').waitFor();
   assert.equal(await view.locator('.wa-head-name').innerText(), 'محمد السيد'); assert.match(await view.locator('[data-wa-sub]').innerText(), /0114 267 7350/);

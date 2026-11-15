@@ -17,16 +17,16 @@ t('registered name is shown as the row name and avatar letter; the number is not
 t('number-only conversation: readable local number + person icon, never the bare 20… digits', () => {
   for (const nm of ['201142677350', '+201142677350', '01142677350']) {
     const r = rowOf(U.chatListHtml([conv('wa_201142677350', nm)], null, '', NOW), 'wa_201142677350');
-    assert.match(r, /<span class="wa-name">0114 267 7350<\/span>/, nm); assert.match(r, /<svg viewBox="0 0 24 24" width="26"/); assert.ok(!r.includes('>201142677350<'));
+    assert.match(r, /<span class="wa-name"><bdi dir="ltr">0114 267 7350<\/bdi><\/span>/, nm); assert.match(r, /<svg viewBox="0 0 24 24" width="26"/); assert.ok(!r.includes('>201142677350<'));
   }
 });
 t('customer name equal to the chat id (server fallback) counts as no name', () => {
   const r = rowOf(U.chatListHtml([conv('wa_201142677350', 'wa_201142677350')], null, '', NOW), 'wa_201142677350');
-  assert.match(r, /0114 267 7350/);
+  assert.match(r, /<bdi dir="ltr">0114 267 7350<\/bdi>/);
 });
 t('non-Egyptian / BSUID ids still render something readable and never throw', () => {
   const h = U.chatListHtml([conv('wa_966501234567', '966501234567'), conv('wa_US.1349xyz', ''), conv('wa_x', 'سامي')], null, '', NOW);
-  assert.match(rowOf(h, 'wa_966501234567'), /wa-name">966501234567</); assert.match(rowOf(h, 'wa_US.1349xyz'), /wa-name">يوزرنيم واتساب \(من غير رقم\)</); assert.match(rowOf(h, 'wa_x'), /wa-name">سامي</);
+  assert.match(rowOf(h, 'wa_966501234567'), /wa-name"><bdi dir="ltr">966501234567<\/bdi></); assert.match(rowOf(h, 'wa_US.1349xyz'), /wa-name">يوزرنيم واتساب \(من غير رقم\)</); assert.match(rowOf(h, 'wa_x'), /wa-name">سامي</);
 });
 t('a hostile name is escaped', () => {
   const r = rowOf(U.chatListHtml([conv('wa_201111111111', '<img src=x onerror=1>')], null, '', NOW), 'wa_201111111111');
@@ -38,11 +38,11 @@ t('search finds a registered name and the number', () => {
 });
 t('chat header: registered name, number under it, call link', () => {
   const h = U.renderWa([conv('wa_201142677350', 'محمد السيد')], { selected: 'wa_201142677350', now: NOW });
-  assert.match(h, /wa-head-name">محمد السيد</); assert.match(h, /data-wa-sub>[^<]*0114 267 7350</); assert.match(h, /href="tel:\+201142677350"/);
+  assert.match(h, /wa-head-name">محمد السيد</); assert.match(h, /data-wa-sub>[^<]*<bdi dir="ltr">0114 267 7350<\/bdi>/); assert.match(h, /href="tel:\+201142677350"/);
 });
 t('chat header of a number-only chat shows the number once (as the name), not twice', () => {
   const h = U.renderWa([conv('wa_201142677350', '201142677350')], { selected: 'wa_201142677350', now: NOW });
-  assert.match(h, /wa-head-name">0114 267 7350</); assert.ok(!/data-wa-sub>[^<]*0114 267 7350/.test(h));
+  assert.match(h, /wa-head-name"><bdi dir="ltr">0114 267 7350<\/bdi></); assert.ok(!/data-wa-sub>[^<]*(<bdi[^>]*>)?0114 267 7350/.test(h));
 });
 t('the page runs the same code (inline copy is byte-identical) and redraws when only a name changes', () => {
   assert.equal(page.match(/<script id="fix43-inbox-lib">([\s\S]*?)<\/script>/)[1], readFileSync(new URL('../../unified-inbox.js', import.meta.url), 'utf8'));
