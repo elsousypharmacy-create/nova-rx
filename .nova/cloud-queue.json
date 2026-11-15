@@ -11,18 +11,30 @@
    "after": [
     "UX407"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; starts after UX407 (prefix/alignment/keyboard/focus-ring, which follows running UX406). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
    "slot": "A",
-   "dispatched_at": "2026-11-15T16:51:03+00:00",
+   "dispatched_at": "2026-11-15T17:02:27+00:00",
    "run_id": 43724106887,
    "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pr": 481,
+   "ci_dispatched": {
+    "sha": "d4f5ceb9c228351ecf8f77f010edbbc514e6859b",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T16:57:48+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX320",
@@ -33,7 +45,7 @@
    "after": [
     "UX422"
    ],
-   "status": "running",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -43,7 +55,10 @@
    "slot": "B",
    "dispatched_at": "2026-11-15T16:51:03+00:00",
    "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pr": 479,
+   "merged_at": "2026-11-15T16:59:14+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/479"
   },
   {
    "id": "UX404",
@@ -151,7 +166,8 @@
    "model": "opus",
    "max_turns": 80,
    "slot": "A",
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pin_slot": "A"
   },
   {
    "id": "UX402",
@@ -169,7 +185,8 @@
    "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pin_slot": "A"
   },
   {
    "id": "UX430",
@@ -211,7 +228,8 @@
    "note": "Slot A track; starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pin_slot": "A"
   },
   {
    "id": "UX315",
@@ -356,18 +374,29 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
    "max_turns": 60,
    "slot": "A",
-   "dispatched_at": "2026-11-15T14:49:55+00:00",
-   "retry": true,
+   "dispatched_at": "2026-11-15T17:00:53+00:00",
    "not_before": "2026-11-15T15:11:00+00:00",
-   "last_failure": "slot A 5-hour usage limit quick fails (not counted)"
+   "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
+   "pr": 480,
+   "ci_dispatched": {
+    "sha": "1258718802eb9ee297fcdc7f5bf4ab8263b39caf",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T17:02:27+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX327",
@@ -378,14 +407,28 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
    "max_turns": 60,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "slot": "B",
+   "dispatched_at": "2026-11-15T16:56:25+00:00",
+   "pr": 482,
+   "ci_dispatched": {
+    "sha": "4a724bfdc0d586f132e7d12e2e418c7f8bcd8054",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T16:59:14+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX328",
@@ -396,14 +439,28 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
    "max_turns": 60,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T16:57:48+00:00",
+   "pr": 483,
+   "ci_dispatched": {
+    "sha": "c1c3a4356b7303e5dfb8c2c17c8b8d98890bfd6c",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T17:00:53+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX329",
@@ -427,14 +484,15 @@
     "UX327",
     "UX328"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held for sale-readiness. Build preview artifact only after UX315–UX328; no deploy (auto-deploy-preview.yml). 2026-11-15 17:00 Asia/Riyadh: when this starts, build from current main (include the #467 / ux-406b flag gate) and do not drop conversations markers. Stay off editing the conversations screen except as required to copy already-landed HTML into the new qa-314 artifact. No deploy.",
    "model": "sonnet",
    "max_turns": 40,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "hold_reason": "owner 2026-11-15: WhatsApp chain first (UX401->UX408->UX402->UX403); resume after UX403"
   },
   {
    "id": "SALE-05",
@@ -448,14 +506,15 @@
     "SALE-02",
     "UX430"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness end-to-end pass after UX and VAT land.",
    "model": "sonnet",
    "max_turns": 80,
-   "not_before": "2026-11-15T15:11:00+00:00"
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "hold_reason": "owner 2026-11-15: WhatsApp chain first (UX401->UX408->UX402->UX403); resume after UX403"
   },
   {
    "id": "N60",
@@ -5051,6 +5110,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T16:51:03+00:00",
+ "updated": "2026-11-15T17:02:27+00:00",
  "slot_cooldown": {}
 }

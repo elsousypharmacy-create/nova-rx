@@ -11,8 +11,8 @@
 # workflow_run of a non-token workflow (e.g. a human PR). Agent-task does
 # dispatch this workflow when it finishes, but that is too early: the
 # scheduler opens the PR, starts CI, and would otherwise exit before CI
-# goes green. This job polls while cloud PRs are waiting on CI (up to
-# ~5h50m), merges and starts the next task, then re-dispatches itself
+# goes green. This job polls while cloud PRs are waiting on CI or
+# pending work waits on a slot cooldown (up to 25m per job), merges and starts the next task, then re-dispatches itself
 # before the job timeout if work remains. When the only remaining work is
 # an in-progress agent run, it exits and relies on that run's dispatch.
 name: Cloud scheduler
@@ -91,8 +91,8 @@ jobs:
             exit 1
           }
 
-          # 5h50m; leave a margin before the 355m job timeout to self-dispatch
-          deadline=$((SECONDS + 350 * 60))
+          # 25m: hand off by self-dispatch before the 30m job timeout kills the job
+          deadline=$((SECONDS + 25 * 60))
           while true; do
             git fetch -q origin main
             git reset -q --hard origin/main
