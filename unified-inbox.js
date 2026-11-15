@@ -620,11 +620,12 @@
   var TAB_BADGE_CSS = 'display:inline-block;min-width:18px;height:18px;margin-inline-start:6px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#25d366;color:#06210f;font-size:12px;font-weight:700;line-height:18px;text-align:center;vertical-align:middle';
   /* UX402: realtime like WhatsApp Web (pure helpers; the page wires them to the existing history poll hPoll).
      pollDelay: 4s while the conversations screen is visible, 15s while the user is on another screen (badges + toast still update),
-     paused (null) while the browser tab is hidden (a visibilitychange resumes it), exponential backoff on errors capped at 60s. */
-  var POLL_FG = 4000, POLL_BG = 15000, POLL_MAX = 60000;
+     paused (null) while the browser tab is hidden (a visibilitychange resumes it) unless o.notifyBg (system notifications allowed but
+     no Web Push subscription => a slow 30s poll is the only way to raise the browser Notification), exponential backoff on errors capped at 60s. */
+  var POLL_FG = 4000, POLL_BG = 15000, POLL_HIDDEN = 30000, POLL_MAX = 60000;
   function pollDelay(o) {
-    o = o || {}; if (o.docHidden) return null;
-    var d = o.screenHidden ? POLL_BG : POLL_FG, f = Math.min(6, Math.max(0, Number(o.fails) || 0));
+    o = o || {}; if (o.docHidden && !o.notifyBg) return null;
+    var d = o.docHidden ? POLL_HIDDEN : o.screenHidden ? POLL_BG : POLL_FG, f = Math.min(6, Math.max(0, Number(o.fails) || 0));
     return Math.min(POLL_MAX, d * Math.pow(2, f));
   }
   /* server thread + local bubbles (tmp_ sending/failed): a local bubble whose clientId/id the server already has is dropped => no duplicate bubble */
@@ -663,7 +664,7 @@
     '.wa-toast-x{flex:none;width:44px;min-height:44px;border:0;background:none;color:#9aa4b0;font-size:20px;cursor:pointer}.wa-toast-open:focus-visible,.wa-toast-x:focus-visible{outline:2px solid #79c9eb;outline-offset:-2px}' +
     '@media(max-width:780px){#novaWaToast{top:8px;left:12px;right:12px;max-width:none}}@media(prefers-reduced-motion:reduce){#novaWaToast{animation:none}}' +
     '@keyframes waUp{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}';
-  var api = { pollDelay: pollDelay, mergeLive: mergeLive, newIds: newIds, toastFor: toastFor, toastHtml: toastHtml, notifContent: notifContent, TOAST_CSS: TOAST_CSS, POLL_FG: POLL_FG, POLL_BG: POLL_BG, chipsHtml: chipsHtml, needsReply: needsReply, trailingIn: trailingIn, moreHtml: moreHtml, tick: tick, quoteHtml: quoteHtml, quoteBarHtml: quoteBarHtml, emojiPanelHtml: emojiPanelHtml, EMOJI: EMOJI, docExt: docExt, durLabel: durLabel, stripStaffPrefix: stripStaffPrefix, createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+  var api = { pollDelay: pollDelay, mergeLive: mergeLive, newIds: newIds, toastFor: toastFor, toastHtml: toastHtml, notifContent: notifContent, TOAST_CSS: TOAST_CSS, POLL_FG: POLL_FG, POLL_BG: POLL_BG, POLL_HIDDEN: POLL_HIDDEN, chipsHtml: chipsHtml, needsReply: needsReply, trailingIn: trailingIn, moreHtml: moreHtml, tick: tick, quoteHtml: quoteHtml, quoteBarHtml: quoteBarHtml, emojiPanelHtml: emojiPanelHtml, EMOJI: EMOJI, docExt: docExt, durLabel: durLabel, stripStaffPrefix: stripStaffPrefix, createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);
