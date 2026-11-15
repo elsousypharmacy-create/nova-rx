@@ -11,7 +11,7 @@
    "after": [
     "UX408"
    ],
-   "status": "running",
+   "status": "pending",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -22,7 +22,8 @@
    "pin_slot": "A",
    "slot": "A",
    "dispatched_at": "2026-11-15T18:41:59+00:00",
-   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43747450875"
+   "last_failure": "quick fail on slot A (likely usage limit; not counted) https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43748235270",
+   "retry": true
   },
   {
    "id": "UX408",
@@ -5085,6 +5086,8 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T18:41:59+00:00",
- "slot_cooldown": {}
+ "updated": "2026-11-15T18:42:49+00:00",
+ "slot_cooldown": {
+  "A": "2026-11-15T19:12:49+00:00"
+ }
 }
