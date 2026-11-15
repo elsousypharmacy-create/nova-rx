@@ -29,6 +29,7 @@
   <script>
   /* UX409: /?app=whatsapp Add to Home Screen uses the name and icon "NOVA WhatsApp". The main app keeps /manifest.webmanifest (NOVA Rx). */
   (function(){try{if(new URLSearchParams(location.search).get('app')!=='whatsapp')return}catch(e){return}
+  document.documentElement.classList.add('app-whatsapp');window.NOVA_APP='whatsapp';
   document.title='NOVA WhatsApp';
   function set(sel,a,v){var el=document.querySelector(sel);if(el)el.setAttribute(a,v)}
   set('meta[name=apple-mobile-web-app-title]','content','NOVA WhatsApp');
@@ -2083,7 +2084,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 .nova-nav-chev.prev{right:0;background:linear-gradient(to left,#111418 55%,transparent)}
 .nova-nav-chev.next{left:var(--nova-brand-w,0px);background:linear-gradient(to right,#111418 55%,transparent)}}
 </style>
-<style>html.app-whatsapp .nova-nav-row{display:none!important}html.app-whatsapp #novaPageView{display:none!important}</style>
+<style>html.app-whatsapp .nova-nav-row,html.app-whatsapp .pos-root,html.app-whatsapp #novaPageView{display:none!important}html.app-whatsapp .wa-home,html.app-whatsapp [data-wa-home]{display:none!important}</style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;document.documentElement.classList.remove('nova-boot');try{var a=document.activeElement;if(!a||a===document.body){var m=document.getElementById('mainSearchInput');if(m&&m.offsetParent)m.focus()}}catch(e){}s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
@@ -5339,7 +5340,7 @@ window.NovaFmt=(function(){
 
     })();
   </script>
-<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=4'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=5'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
 <script>
 (function(){
   const btn=document.getElementById('btnRefreshApp');
@@ -7490,9 +7491,17 @@ window.addEventListener('load',function(){if(location.hash==='#wa')window.NovaOp
 (function(){try{if(new URLSearchParams(location.search).get('app')!=='whatsapp')return}catch(e){return}
 window.NOVA_APP='whatsapp';document.documentElement.classList.add('app-whatsapp');document.title='NOVA WhatsApp';
 var mt=document.querySelector('meta[name=apple-mobile-web-app-title]');if(mt)mt.setAttribute('content','NOVA WhatsApp');
-function show(){if(location.hash!=='#wa'){try{history.replaceState(null,'','?app=whatsapp#wa')}catch(e){}}if(window.NovaOpenInbox)window.NovaOpenInbox()}
-window.addEventListener('load',function(){setTimeout(show,0)});
+/* UX411: stay on the conversations list. The house button and switchPage use history.replaceState('#sale')
+   (no hashchange), which left the POS home visible under /?app=whatsapp. */
+var showing=false;
+function show(){if(showing)return;showing=true;try{if(location.hash!=='#wa'){try{history.replaceState(null,'','?app=whatsapp#wa')}catch(e){}}if(window.NovaOpenInbox)window.NovaOpenInbox();var box=document.getElementById('novaInboxView'),pos=document.querySelector('.pos-root'),host=document.getElementById('novaPageView');if(box)box.hidden=false;if(pos){pos.hidden=true;pos.style.display='none'}if(host)host.hidden=true;try{document.body.dataset.activePage='inbox'}catch(e){}}finally{showing=false}}
+function arm(){setTimeout(show,0)}
+window.addEventListener('DOMContentLoaded',arm);
+window.addEventListener('load',arm);
+window.addEventListener('pageshow',arm);
+window.addEventListener('popstate',arm);
 window.addEventListener('hashchange',function(){if(location.hash!=='#wa')show()});
+try{var _rs=history.replaceState.bind(history),_ps=history.pushState.bind(history);function wrap(fn){return function(s,t,u){fn(s,t,u);if(location.hash!=='#wa'||(document.getElementById('novaInboxView')&&document.getElementById('novaInboxView').hidden))show()}};history.replaceState=wrap(_rs);history.pushState=wrap(_ps)}catch(e){}
 })();
 function init(nav){var U=window.NovaUnifiedInbox;if(!U)return;var remote={enabled:function(){return localStorage.getItem('novaBackend.enabled')==='true'},baseUrl:function(){return localStorage.getItem('novaBackend.url')||'https://nova-rx-api.elsousypharmacy.workers.dev'},fetch:function(u,o){return fetch(u,o)},getToken:function(){return sessionStorage.getItem('novaBackend.token')}};var inbox=U.create(localStorage,remote).load();var wa={sel:null,q:'',err:'',draft:'',pin:{},arch:{},showArch:false,menu:null,mfail:{},quote:null,qmap:{},emo:false,att:false,filt:'all'}/* UX408: list filter chip (all|noreply|unread) *//* UX401: reply quote, quotes of replies sent here (memory only), emoji/attach popovers *//* UX400b: pin/archive/menu state in memory only (chat ids can be phone numbers; never localStorage, same rule as FIX46) */
 function listMeta(){return{pinned:wa.pin,archived:wa.arch,showArchived:wa.showArch,menu:wa.menu,unread:nU,filter:wa.filt,more:hMoreState()}};function localSendOn(){try{return localStorage.getItem('nova.flags.inboxSend')==='1'}catch(e){return false}}
@@ -7839,7 +7848,7 @@ box.addEventListener('load',function(e){var t=e.target;if(!t||t.tagName!=='IMG'|
 function waHasText(){var c=box.querySelector('[data-wa-composer]'),i=box.querySelector('#waInput');if(c)c.setAttribute('data-has-text',i&&!i.disabled&&i.value.trim()?'1':'0')}
 box.addEventListener('input',function(e){if(e.target&&e.target.id==='waInput')waHasText()});
 box.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var x;
-if(t.closest('[data-wa-home]')){var hb=document.querySelector('.nova-nav [data-page="sale"]')||document.querySelector('[data-page="sale"]');if(hb)hb.click();return}
+if(t.closest('[data-wa-home]')){if(document.documentElement.classList.contains('app-whatsapp'))return;var hb=document.querySelector('.nova-nav [data-page="sale"]')||document.querySelector('[data-page="sale"]');if(hb)hb.click();return}
 if((x=t.closest('[data-wa-filter]'))){wa.filt=x.dataset.waFilter;wa.menu=null;wa.top=0;wa.f='[data-wa-filter="'+wa.filt+'"]';draw();return}
 if(t.closest('[data-wa-more-chats]')){hMore();return}
 if(t.closest('[data-wa-older-remote]')){if(wa.sel)tOlder(wa.sel);return}
@@ -7921,7 +7930,7 @@ if(typeof navigator!=='undefined'&&navigator.serviceWorker&&navigator.serviceWor
 window.NovaWaNotify={unread:function(id){var c=null;convs().forEach(function(x){if(x.id===id)c=x});return nU(c||{id:id,messages:[]})},total:nTotal,observe:nObserve,bump:function(id,k){nt.bump(id,k);nPaint()},markSeen:function(id){nt.markSeen(id,Date.now());nPaint()},sound:nBeep,paint:nPaint,permission:nPerm,muted:nMuted,stats:nStat};
 if(!hist.timer)hist.timer=setInterval(hPoll,4000);document.addEventListener('visibilitychange',function(){if(!document.hidden)hPoll()});
 tab.addEventListener('click',function(){box.hidden=false;wa.f='';draw();if(!hist.loaded)hLoad();if(nPerm()==='granted'&&!nPushOn)nSub();inbox.pullRemote().then(function(r){if(r&&r.count!=null)draw()});arCall('GET');var pos=document.querySelector('.pos-root');if(pos){pos.hidden=true;pos.style.display='none'}host.hidden=true;box.hidden=false;nav.querySelectorAll('.nova-tab').forEach(function(t){t.classList.toggle('active',t===tab)});document.body.dataset.activePage='inbox'});
-nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){box.hidden=true;tab.classList.remove('active')}},true)}
+nav.addEventListener('click',function(e){if(e.target.closest('[data-page]')){if(document.documentElement.classList.contains('app-whatsapp')){e.stopPropagation();return}box.hidden=true;tab.classList.remove('active')}},true)}
 if(on){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()}})()</script><style id="ux209-wa-target">/* UX209: header icon group (WhatsApp, status, refresh): >=36px desktop, 44px touch/tablet, even spacing, visible focus ring */.nova-nav-row>.nova-nav-brand .pharmacy-banner-right{gap:var(--sp-2)!important}.nova-nav-row>.nova-nav-brand #novaWaBtn,.nova-nav-row>.nova-nav-brand #btnRefreshApp{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;margin:0!important;flex:none}.nova-nav-row>.nova-nav-brand .pharmacy-banner-live{width:20px!important;height:36px!important}.nova-nav-row>.nova-nav-brand #novaWaBtn svg,.nova-nav-row>.nova-nav-brand #btnRefreshApp svg{width:18px;height:18px}.nova-nav-row>.nova-nav-brand #novaWaBtn:focus-visible,.nova-nav-row>.nova-nav-brand #btnRefreshApp:focus-visible{outline:2px solid #79c9eb!important;outline-offset:2px!important;background:#242b33!important;color:#f2f3f5!important}@media(pointer:coarse),(max-width:1280px){.nova-nav-row>.nova-nav-brand #novaWaBtn,.nova-nav-row>.nova-nav-brand #btnRefreshApp{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}.nova-nav-row>.nova-nav-brand .pharmacy-banner-live{height:44px!important}}@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:auto!important;width:auto!important;min-width:132px;gap:var(--sp-1)!important}.nova-nav-row>.nova-nav-brand .pharmacy-banner-right{gap:2px!important}.nova-nav-row>.nova-nav-brand #novaWaBtn,.nova-nav-row>.nova-nav-brand #btnRefreshApp{width:44px!important;height:44px!important}}</style><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="sale01-backend-flag">
 /* SALE-01: one-device switch for the production backend (nova-rx-api). DEFAULT OFF. The flag is per device
    (localStorage novaBackend.enabled); nothing in the HTML turns it on. OFF => the app stays fully local and this card makes
