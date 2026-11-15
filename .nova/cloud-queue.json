@@ -4874,7 +4874,7 @@
    "after": [
     "UX422"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "owner-sale-readiness-2026-11-15",
@@ -4885,14 +4885,14 @@
    "dispatched_at": "2026-11-15T10:38:20+00:00",
    "pr": 457,
    "ci_dispatched": {
-    "sha": "9a5d20a5a77d572826f1452a3a5b943dde87c377",
+    "sha": "87404e8c243bbad3ad16befedede3a3cebcc71b9",
     "wf": [
      "backend-unit.yml",
      "playwright-smoke.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-15T10:33:24+00:00"
+    "at": "2026-11-15T10:40:51+00:00"
    }
   },
   {
@@ -4932,5 +4932,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:39:35+00:00"
+ "updated": "2026-11-15T10:40:51+00:00"
 }
