@@ -7,20 +7,21 @@
 <title>بيع طوارئ — صيدلية د. أحمد السوسي</title>
 <style>
 @font-face{font-family:Cairo;src:url(fonts/cairo.woff) format('woff');font-weight:200 1000;font-display:swap}
-:root{--bg:#f4f6f8;--card:#fff;--ink:#15202b;--dim:#5b6b7a;--line:#d9e0e6;--pri:#0b6b5c;--pri-ink:#fff;--warn:#fff4d6;--warn-ink:#6b4a00;--bad:#fde4e1;--bad-ink:#8a1c10;--ok:#dff3ea;--ok-ink:#0a5a3b}
-@media (prefers-color-scheme:dark){:root{--bg:#11171c;--card:#1a232b;--ink:#e8eef2;--dim:#98a8b5;--line:#2c3945;--pri:#2aa58f;--pri-ink:#07201b;--warn:#3a2f10;--warn-ink:#f1d27a;--bad:#3a1c18;--bad-ink:#f4a79d;--ok:#12372a;--ok-ink:#8fe0bd}}
+:root{color-scheme:dark;--bg:#08090b;--card:#111418;--field:var(--bg);--ink:#f1f3f5;--dim:#a4adb7;--line:#2a313a;--focus:var(--pri);--pri:#76b8d5;--pri-ink:#08090b;--warn:#2d2610;--warn-ink:#d9bf86;--bad:#3a1c1c;--bad-ink:#ffa8a8;--ok:#12302a;--ok-ink:#7fd4b4}
+/* UX324: Black Edition is the inline default (same values as ux-tokens.css/ux-standalone.css) so the page stays dark even offline/file:// when /ux-*.css cannot load. Light only via data-theme=light. */
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Cairo,system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
-header{position:sticky;top:0;z-index:5;background:var(--pri);color:var(--pri-ink);padding:10px 16px}
+header{position:sticky;top:0;z-index:5;background:var(--card);color:var(--ink);border-bottom:2px solid var(--pri);padding:10px 16px}
 header h1{margin:0;font-size:19px}
-header small{opacity:.9}
+header small{color:var(--dim)}
 main{max-width:720px;margin:0 auto;padding:12px 16px}
 .banner{border-radius:12px;padding:10px 14px;margin:0 0 10px;font-size:15px}
 .banner.ok{background:var(--ok);color:var(--ok-ink)}.banner.stale,.banner.unknown{background:var(--warn);color:var(--warn-ink)}.banner.old,.banner.none,.banner.err{background:var(--bad);color:var(--bad-ink)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px}
 label{display:block;font-size:14px;color:var(--dim);margin:8px 0 4px}
 input,button,textarea{font:inherit;font-family:inherit}
-input[type=text],input[type=search],input[type=number]{width:100%;min-height:52px;border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--card);color:var(--ink)}
+input[type=text],input[type=search],input[type=number],input[type=datetime-local]{width:100%;min-height:52px;border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--field);color:var(--ink)}
+input:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 button{min-height:52px;min-width:52px;border:0;border-radius:12px;padding:8px 16px;background:var(--pri);color:var(--pri-ink);font-weight:700;cursor:pointer}
 button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
 button.danger{background:var(--bad);color:var(--bad-ink)}
@@ -41,6 +42,23 @@ nav button.on{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)
 .chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
 .chip.pending{background:var(--warn);color:var(--warn-ink)}.chip.synced{background:var(--ok);color:var(--ok-ink)}.chip.needs-review{background:var(--bad);color:var(--bad-ink)}
 .mono{direction:ltr;unicode-bidi:embed;font-variant-numeric:tabular-nums}
+/* UX324: Arabic file picker + Arabic date readout (native controls render English chrome: «Choose File», «mm/dd/yyyy»). */
+.sr-only{position:absolute!important;inline-size:1px!important;block-size:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
+.pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0}
+.pick-btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;min-width:52px;padding:8px 18px;border-radius:12px;background:var(--pri);color:var(--pri-ink);font-weight:700;font-size:inherit;cursor:pointer;margin:0}
+.pick-btn:hover{filter:brightness(1.08)}
+.pick:focus-within .pick-btn{outline:2px solid var(--focus);outline-offset:2px}
+.pick-name{color:var(--dim);font-size:14px;overflow-wrap:anywhere;flex:1 1 160px}
+.pick-name.has{color:var(--ink);font-weight:700}
+.dt{position:relative}
+html[data-nx-page] .dt input[type=datetime-local]{color:transparent;cursor:pointer} /* beats ux-standalone.css colour */
+html[data-nx-page] .dt.kb input[type=datetime-local]{color:var(--ink)}
+.dt input[type=datetime-local]::-webkit-calendar-picker-indicator{opacity:.85;cursor:pointer}
+.dt-view{position:absolute;inset-block:0;inset-inline-start:48px;inset-inline-end:14px;display:flex;align-items:center;pointer-events:none;color:var(--dim);overflow:hidden;white-space:nowrap}
+.dt-view.has{color:var(--ink);font-weight:700}
+.dt.kb .dt-view{visibility:hidden}
+.dt-row{display:flex;gap:10px;align-items:center}.dt-row .dt{flex:1}
+.hint{color:var(--dim);font-size:13px;margin:4px 0 0}
 </style>
 <link rel="stylesheet" href="/ux-tokens.css"><link rel="stylesheet" href="/ux-standalone.css"><style id="NOVA_FIX50">@media (hover:none),(pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=color]):not([type=button]):not([type=submit]):not([type=image]),textarea,select{font-size:16px!important}}</style></head>
 <body>
@@ -89,9 +107,17 @@ nav button.on{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)
     <div class="card"><strong>أسعار الأصناف</strong>
       <p style="color:var(--dim);margin:6px 0">الأسعار هنا نسخة للقراءة فقط من شيت STOCK LIVE (عمود price = سعر الجمهور). حمّل الملف وأنت عليك إنترنت، وبعدها يشتغل الجهاز بدون المخزن.</p>
       <label for="exp">وقت تصدير الملف من الشيت (مهم لتحذير الأسعار القديمة)</label>
-      <input id="exp" type="datetime-local">
+      <div class="dt-row">
+        <div class="dt"><input id="exp" type="datetime-local" lang="ar" aria-describedby="expView expHint"><span id="expView" class="dt-view" aria-hidden="true">اختر التاريخ والوقت</span></div>
+        <button id="bExpNow" type="button" class="ghost">الآن</button>
+      </div>
+      <p id="expHint" class="hint">لو تركته فاضي يظهر تحذير «وقت التصدير غير معروف».</p>
       <label for="file">ملف الأسعار (CSV أو JSON)</label>
-      <input id="file" type="file" accept=".csv,.json,text/csv,application/json">
+      <div class="pick">
+        <input id="file" class="sr-only" type="file" accept=".csv,.json,text/csv,application/json" aria-describedby="fileName">
+        <label for="file" class="pick-btn" id="filePick" aria-hidden="true">اختر ملف الأسعار</label>
+        <span id="fileName" class="pick-name" aria-live="polite">لم يتم اختيار ملف بعد</span>
+      </div>
       <p id="dataMsg" role="status"></p>
     </div>
   </section>
@@ -108,7 +134,7 @@ nav button.on{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)
 var E = window.NovaEmergency, $ = function(i){return document.getElementById(i)};
 var SNAP_KEY='novaEmergencySnapshot', WHO_KEY='novaEmergencyStaff';
 var store = (function(){ try{ var s=window.localStorage; s.setItem('__t','1'); s.removeItem('__t'); return s; }catch(e){ var m={}; return {getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},_mem:true}; } })();
-var queue = E.createQueue(store), basket = E.emptyBasket(), snap = null, lastHits = [];
+var queue = E.createQueue(store), basket = E.emptyBasket(), snap = null, lastHits = [], curTab = 'Sell';
 
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
 function money(n){ return (Number(n)||0).toFixed(2); }
@@ -124,7 +150,7 @@ function saveSnap(parsed){
 }
 function renderBanner(){
   var b=$('srcBanner');
-  if(!snap){ b.className='banner none'; b.textContent='لا توجد أسعار محمّلة على هذا الجهاز. افتح تبويب «الأسعار» وحمّل ملف STOCK LIVE.'; return; }
+  if(!snap){ b.className='banner none'; b.textContent='لا توجد أسعار محمّلة على هذا الجهاز. '+(curTab==='Data'?'اختر ملف STOCK LIVE من الأسفل لتحميل الأسعار.':'افتح تبويب «الأسعار» وحمّل ملف STOCK LIVE.'); return; }
   var f=E.freshness(snap.exportedAt);
   b.className='banner '+f.level;
   b.textContent=f.label+' · المصدر: '+(snap.source||'STOCK LIVE')+' · '+snap.items.length+' صنف'+(snap.exportedAt?' · '+new Date(snap.exportedAt).toLocaleString('ar-EG'):'')+' · نسخة محفوظة (قد تختلف عن النظام الآن). الرصيد تقريبي وليس لحظي.';
@@ -273,8 +299,22 @@ $('queue').addEventListener('click',function(e){
 $('bExport').addEventListener('click',function(){ download(new Blob([queue.exportForImport()],{type:'application/json'}),'nova-emergency-'+new Date().toISOString().slice(0,10)+'.json'); });
 
 /* ---- data import ---- */
+/* UX324: Arabic readouts for the native file/date controls. */
+function renderExp(){
+  var v=$('exp').value, el=$('expView'), d=v?new Date(v):null;
+  if(d&&!isNaN(d)){ el.textContent=d.toLocaleString('ar-EG',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'}); el.classList.add('has'); }
+  else { el.textContent='اختر التاريخ والوقت'; el.classList.remove('has'); }
+}
+$('exp').addEventListener('input',renderExp); $('exp').addEventListener('change',renderExp);
+$('exp').addEventListener('click',function(){ try{ if(this.showPicker) this.showPicker(); }catch(e){} });
+/* keyboard editing shows the native segments (otherwise hidden behind the Arabic readout) */
+$('exp').addEventListener('keydown',function(e){ if(e.key!=='Tab') this.parentNode.classList.add('kb'); });
+$('exp').addEventListener('blur',function(){ this.parentNode.classList.remove('kb'); });
+$('bExpNow').addEventListener('click',function(){ var n=new Date(), p=function(x){return String(x).padStart(2,'0')}; $('exp').value=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+'T'+p(n.getHours())+':'+p(n.getMinutes()); renderExp(); });
 $('file').addEventListener('change',function(){
-  var f=this.files[0]; if(!f) return;
+  var f=this.files[0], fn=$('fileName');
+  if(f){ fn.textContent='الملف المختار: '+f.name; fn.classList.add('has'); } else { fn.textContent='لم يتم اختيار ملف بعد'; fn.classList.remove('has'); }
+  if(!f) return;
   if(f.size && f.size > E.MAX_SNAPSHOT_BYTES){ $('dataMsg').textContent='حجم الملف يتجاوز الحد المسموح للتخزين المحلي'; return; }
   f.text().then(function(t){
     var ev=$('exp').value, p=E.parseSnapshot(t,{exportedAt:ev?new Date(ev).toISOString():null});
@@ -288,12 +328,12 @@ $('file').addEventListener('change',function(){
 });
 
 /* ---- tabs ---- */
-function tab(n){ ['Sell','Queue','Data'].forEach(function(k){ $('v'+k).classList.toggle('hide',k!==n); $('n'+k).classList.toggle('on',k===n); }); if(n==='Queue') renderQueue(); }
+function tab(n){ ['Sell','Queue','Data'].forEach(function(k){ $('v'+k).classList.toggle('hide',k!==n); $('n'+k).classList.toggle('on',k===n); }); curTab=n; renderBanner(); if(n==='Queue') renderQueue(); }
 $('nSell').onclick=function(){tab('Sell')}; $('nQueue').onclick=function(){tab('Queue')}; $('nData').onclick=function(){tab('Data')};
 
 /* ---- boot / recovery ---- */
 try{ $('who').value=store.getItem(WHO_KEY)||''; }catch(e){}
-loadSnap(); renderBanner();
+loadSnap(); renderBanner(); renderExp();
 var d=E.loadDraft(store); if(d){ basket=d.basket; $('disc').value=basket.discount||''; $('discBy').value=basket.discountBy||''; $('cust').value=d.customer||''; $('msg').textContent='تم استرجاع مسودة محفوظة من '+new Date(d.savedAt).toLocaleString('ar-EG'); }
 renderBasket(); renderQueue(); if(!snap) tab('Data');
 /* Auto-sync: same-origin price list built from STOCK LIVE (public prices only, no stock). Falls back to the saved copy. */

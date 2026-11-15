@@ -137,6 +137,7 @@ for (const f of ['emergency-core.js', 'emergency-sales.html']) {
   const fetches = src.match(/\bfetch\(/g) || [];
   assert.equal(/XMLHttpRequest|WebSocket|sendBeacon/.test(src) || fetches.length > (f.endsWith('.html') ? 1 : 0), false, f + ' network use limited to one same-origin fetch');
   if (f.endsWith('.html')) assert.ok(src.includes("fetch('/emergency/stock.json'"), 'only the same-origin price list is fetched');
-  assert.equal(/password|api[_-]?key|token|secret/i.test(src), false, f + ' must not mention credentials');
+  // UX324: the design-token stylesheet name (ux-tokens.css, UX421) is not a credential.
+  assert.equal(/password|api[_-]?key|token|secret/i.test(src.replace(/ux-tokens\.css/g, '')), false, f + ' must not mention credentials');
 }
 console.log('emergency-core checks passed');
