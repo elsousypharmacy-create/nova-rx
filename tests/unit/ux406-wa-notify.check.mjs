@@ -108,6 +108,10 @@ t('chat list uses the unread hook for per-chat badges; renderWa shows the contro
   assert.ok(!w.includes('wa-notifbar'));
   assert.ok(w.includes('.wa-nbtn{'));
   assert.ok(!U.renderWa(cs, {}).includes('.wa-nbtn{'));
+  const hinted = U.renderWa(cs, { notifHead: U.notifyHtml('granted', false), notifNote: 'إشعارات الخلفية لسه مش متفعلة على السيرفر. الصوت والعداد شغالين والصفحة مفتوحة.' });
+  assert.ok(!hinted.includes('إشعارات الخلفية لسه مش متفعلة على السيرفر'), 'hint is not baked into the list as a row');
+  assert.ok(!hinted.includes('wa-nnote-row'));
+  assert.match(U.noteHtml('إشعارات الخلفية لسه مش متفعلة على السيرفر'), /wa-nnote-toast/);
 });
 t('index.html: permission only from the button, SW message hooks, title/tab wiring', () => {
   const h = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
@@ -115,6 +119,8 @@ t('index.html: permission only from the button, SW message hooks, title/tab wiri
   const ask = /function nAsk\(\)\{[\s\S]*?\nbox\.addEventListener/.exec(h)[0];
   assert.ok(ask.includes('requestPermission'));
   assert.ok(!/nAsk\(\)(?!\{)/.test(h.replace(/return\}nAsk\(\);return\}/, '')), 'nAsk is called only from the button click');
-  for (const s of ["d.type==='nova-wa-push'", "d.type==='nova-wa-open'", 'U.titleBadge(document.title', 'data-wa-tab-unread', 'nt.markSeen(wa.sel', 'window.NovaWaNotify', "'nova.wa.mute'"]) assert.ok(h.includes(s), s);
+  for (const s of ["d.type==='nova-wa-push'", "d.type==='nova-wa-open'", 'U.titleBadge(document.title', 'data-wa-tab-unread', 'nt.markSeen(wa.sel', 'window.NovaWaNotify', "'nova.wa.mute'", 'function nShowToast(', 'wa-nnote-toast']) assert.ok(h.includes(s), s);
+  assert.ok(!h.includes('notifNote:nNote'), 'draw no longer mounts a persistent hint row');
+  assert.ok(!h.includes('wa-nnote-row'));
 });
 console.log('ux406-wa-notify.check:', n, 'passed');

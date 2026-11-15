@@ -1,4 +1,5 @@
-// UX409: conversations list header = home + «المحادثات» + ONE bell button; no notifications row, no pill text.
+// UX409/UX410: conversations list header = home + «المحادثات» + ONE bell button; no notifications row, no pill text.
+// UX410: the permission/push explanation is a short toast on bell tap only, never a persistent hint row.
 // 390x844, fake data only (history API via page.route, Notification faked). Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/ux409-wa-bell.mjs
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
@@ -26,6 +27,11 @@ await page.addInitScript(() => {
   function N() {} Object.defineProperty(N, 'permission', { get: () => w.__t.perm });
   N.requestPermission = () => { w.__t.ask++; w.__t.perm = 'granted'; return Promise.resolve('granted'); };
   w.Notification = N;
+  // Fake SW/Push so nSub can finish (serviceWorkers are blocked in this test). push/key is answered by page.route, no real vendor.
+  w.PushManager = function () {};
+  const reg = { pushManager: { getSubscription: async () => null, subscribe: async () => { throw new Error('no key'); } } };
+  const sw = { ready: Promise.resolve(reg), register: async () => reg, getRegistration: async () => reg, addEventListener() {}, removeEventListener() {} };
+  Object.defineProperty(navigator, 'serviceWorker', { value: sw, configurable: true });
 });
 page.on('pageerror', (e) => errors.push(e.message));
 await page.route('**/emergency/stock.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
@@ -50,19 +56,31 @@ assert.ok(bb.width >= 44 && bb.height >= 44, 'touch target');
 assert.ok(sb.y - (hb.y + hb.height) < 40, 'search directly under the header: gap ' + (sb.y - (hb.y + hb.height)));
 assert.equal(await view.locator('[data-wa-chips]').count(), 1, 'UX408 chips intact');
 assert.equal((await page.evaluate(() => window.__t)).ask, 0, 'never asks without a tap');
+assert.equal(await view.locator('[data-wa-notif-note]').count(), 0, 'no hint before a bell tap');
+assert.equal(await view.locator('.wa-nnote-row').count(), 0, 'no persistent hint row');
 
-// off state: bell-slash (aria-pressed=false); tap requests permission, then is on; tap again mutes, again unmutes
+// off state: bell-slash (aria-pressed=false); tap requests permission, then is on; explanation is a ~3s toast, not a row
 assert.equal(await bell.getAttribute('aria-pressed'), 'false');
 await bell.click();
 await page.waitForFunction(() => document.querySelector('[data-wa-notify]')?.dataset.waNotify === 'granted');
 assert.equal((await page.evaluate(() => window.__t)).ask, 1);
 assert.equal(await view.locator('[data-wa-notify]').getAttribute('aria-pressed'), 'true');
+const toast = view.locator('[data-wa-notif-note]');
+await toast.waitFor();
+assert.match(await toast.textContent(), /إشعارات الخلفية لسه مش متفعلة على السيرفر|تعذّر تفعيل إشعارات الخلفية|المتصفح مش بيدعم إشعارات الخلفية/);
+assert.equal(await view.locator('.wa-nnote-row').count(), 0, 'explanation is not a layout row');
+assert.equal(await view.locator('.wa-nnote-toast').count(), 1);
+const [hb2, sb2] = await Promise.all([view.locator('.wa-side-head').boundingBox(), view.locator('#waSearch').boundingBox()]);
+assert.ok(sb2.y - (hb2.y + hb2.height) < 40, 'search still directly under the header while the toast is up: gap ' + (sb2.y - (hb2.y + hb2.height)));
 await view.locator('[data-wa-notify]').click();
 assert.equal(await page.evaluate(() => localStorage.getItem('nova.wa.mute')), '1');
 assert.equal(await view.locator('[data-wa-notify]').getAttribute('aria-pressed'), 'false');
 await view.locator('[data-wa-notify]').click();
 assert.equal(await page.evaluate(() => localStorage.getItem('nova.wa.mute')), '0');
 assert.equal(await view.locator('[data-wa-notify]').getAttribute('aria-pressed'), 'true');
+await toast.waitFor();
+await page.waitForFunction(() => !document.querySelector('[data-wa-notif-note]'), { timeout: 4500 });
+assert.equal(await view.locator('[data-wa-notif-note]').count(), 0, 'toast lasts about 3 seconds');
 assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'no horizontal overflow');
 assert.deepEqual(errors, []);
 await browser.close();
