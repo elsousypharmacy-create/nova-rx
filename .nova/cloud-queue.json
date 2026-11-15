@@ -34,7 +34,7 @@
    "after": [
     "UX404"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "note": "Slot A track; high-priority media follow-up from owner phone test. Inserted after running UX404 and ahead of UX406/UX401–UX403. Model opus, max_turns 80. GAS pharmacy PR #73 will attach media_base64 (≤5MB) after Ahmed merges and updates the script; accept that payload and store bytes in KV. Do not bind WA_TOKEN or enable R2. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
@@ -44,16 +44,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T12:53:03+00:00",
    "pr": 463,
-   "ci_dispatched": {
-    "sha": "c448409d8895715345436b4d03c1e9100f95fd80",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T13:08:18+00:00"
-   }
+   "merged_at": "2026-11-15T13:13:18+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/463"
   },
   {
    "id": "UX406",
@@ -64,13 +56,15 @@
    "after": [
     "UX405"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
-   "source": "owner-request-2026-11-15-notifications"
+   "source": "owner-request-2026-11-15-notifications",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T13:13:18+00:00"
   },
   {
    "id": "UX401",
@@ -4968,5 +4962,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:08:18+00:00"
+ "updated": "2026-11-15T13:13:18+00:00"
 }
