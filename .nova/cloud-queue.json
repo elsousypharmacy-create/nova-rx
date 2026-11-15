@@ -2,7 +2,7 @@
  "version": 1,
  "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
-  {
+    {
    "id": "UX414",
    "phase": 10,
    "title": "تفعيل إشعارات الخلفية للواتساب (Web Push) والأبلكيشن مقفول",
@@ -11,7 +11,7 @@
    "after": [
     "UX406"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-16-web-push",
@@ -33,7 +33,9 @@
     ],
     "at": "2026-11-15T22:18:06+00:00",
     "na": []
-   }
+   },
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/498",
+   "merged_at": "2026-11-15T22:23:24+00:00"
   },
   {
    "id": "UX409",
