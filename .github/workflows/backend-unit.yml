@@ -17,6 +17,9 @@ on:
       - '.github/scripts/deploy_backend_staging.sh'
       - 'tests/unit/scheduler_gates_test.py'
       - 'tests/unit/scheduler_requeue_test.py'
+      - 'tests/unit/scheduler_missing_workflow_test.py'
+      - 'tests/unit/scheduler_cooldown_test.py'
+      - '.github/scripts/pick_artifact_check.py'
       - '.github/workflows/agent-task.yml'
   push:
     branches: [main]
@@ -31,6 +34,9 @@ on:
       - '.github/scripts/deploy_backend_staging.sh'
       - 'tests/unit/scheduler_gates_test.py'
       - 'tests/unit/scheduler_requeue_test.py'
+      - 'tests/unit/scheduler_missing_workflow_test.py'
+      - 'tests/unit/scheduler_cooldown_test.py'
+      - '.github/scripts/pick_artifact_check.py'
       - '.github/workflows/agent-task.yml'
   workflow_dispatch:
 
@@ -58,6 +64,8 @@ jobs:
           set -euo pipefail
           python3 tests/unit/scheduler_gates_test.py
           python3 tests/unit/scheduler_requeue_test.py
+          python3 tests/unit/scheduler_missing_workflow_test.py
+          python3 tests/unit/scheduler_cooldown_test.py
       - name: Guard migrations are additive only
         run: |
           set -euo pipefail

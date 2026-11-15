@@ -193,6 +193,48 @@ def ci_workflows():
     return res
 
 
+def wf_on_ref(w, ref, getter=None):
+    """True if .github/workflows/<w> exists on ref. A workflow added to main after the
+    branch was cut cannot be dispatched there (GitHub answers HTTP 422), so it is N/A."""
+    getter = getter or api
+    try:
+        return bool(getter(f"repos/{REPO}/contents/.github/workflows/{w}?ref={ref}"))
+    except RuntimeError as ex:
+        if "404" in str(ex) or "Not Found" in str(ex):
+            return False
+        raise
+
+
+def dispatch_ci(w, ref, run=None):
+    """Dispatch workflow w on ref. Returns False (N/A) instead of crashing when GitHub
+    rejects it (422: missing workflow_dispatch on that ref / 404: file absent there)."""
+    run = run or act
+    try:
+        run("gh", "workflow", "run", w, "-R", REPO, "--ref", ref)
+        return True
+    except RuntimeError as ex:
+        msg = str(ex)
+        if "HTTP 422" in msg or "HTTP 404" in msg or "could not find any workflows" in msg:
+            log(f"warn: {w} cannot be dispatched on {ref}; treating as N/A ({msg[-160:]})")
+            return False
+        raise
+
+
+def ci_need(need, ref, disp, exists=None):
+    """Drop workflows that do not exist on ref (remembered per head sha in disp['na'])."""
+    exists = exists or (lambda w: wf_on_ref(w, ref))
+    na = disp.setdefault("na", [])
+    out = []
+    for w in need:
+        if w in na:
+            continue
+        if not exists(w):
+            na.append(w); log(f"{ref}: {w} not on the branch -> N/A")
+            continue
+        out.append(w)
+    return out
+
+
 def applicable(wfs, files):
     out = []
     for fn, f in wfs.items():
@@ -362,7 +404,31 @@ def preview_deploys(items, byid, smoke=None, exists=os.path.exists, live_modifie
 
 # ---------- main ----------
 
-def reconcile_finished(items, active, latest, open_pr, branches, ahead_by):
+QUICK_FAIL, COOLDOWN = 240, 1800  # seconds
+
+
+def run_secs(r):
+    """Wall time of a completed agent run (run_started_at/created_at -> updated_at); None if unknown."""
+    try:
+        a = r.get("run_started_at") or r.get("created_at")
+        return age(a) - age(r.get("updated_at"))
+    except Exception:
+        return None
+
+
+def quick_fail(r):
+    """A red agent run that ended within QUICK_FAIL seconds never did real work: almost always
+    the slot's Claude subscription usage limit (HTTP 429 five_hour) or a missing slot token."""
+    d = run_secs(r) if r else None
+    return bool(r) and r.get("status") == "completed" and r.get("conclusion") in RUN_FAILED and d is not None and 0 <= d < QUICK_FAIL
+
+
+def free_slots(active, cooldown):
+    """Slots with no active agent run and no usage-limit cooldown in force."""
+    return [s for s in SLOTS if s not in active.values() and age((cooldown or {}).get(s, "")) >= 0]
+
+
+def reconcile_finished(items, active, latest, open_pr, branches, ahead_by, cooldown=None):
     """Settle tasks still marked running/fixing whose agent run is no longer active.
 
     A run that completed red (turn cap, usage limit, cancel, timeout) never leaves
@@ -371,12 +437,26 @@ def reconcile_finished(items, active, latest, open_pr, branches, ahead_by):
     retry run continues from it), until MAX_ATTEMPTS, then failed.
     """
     requeued = []
+    cooldown = {} if cooldown is None else cooldown
     for t in items:
         if t["status"] not in ("running", "fixing") or t["id"] in active:
             continue
         r = latest.get(t["id"]) or {}
         fresh = r and age(r.get("created_at", "")) <= age(t.get("dispatched_at", "")) + 60
         red = bool(fresh and r.get("status") == "completed" and r.get("conclusion") in RUN_FAILED)
+        if red and quick_fail(r):
+            # usage limit / slot problem: do not burn an attempt; cool the slot down instead
+            slot = t.get("slot") or "A"
+            cooldown[slot] = iso(NOW + COOLDOWN)
+            t["last_failure"] = f"quick fail on slot {slot} (likely usage limit; not counted) {r.get('html_url', '')}".strip()
+            log(f"{t['id']}: run on slot {slot} failed after {int(run_secs(r))}s -> not counted, slot {slot} cooldown until {cooldown[slot]}")
+            if t["status"] == "fixing":
+                t["fix_attempts"] = max(0, t.get("fix_attempts", 0) - 1)
+                t["status"] = "pr_open"
+                continue
+            t["status"] = "pending"; t["retry"] = True
+            requeued.append(t)
+            continue
         if t["status"] == "fixing" or (t["id"] in open_pr and not red):
             t["status"] = "pr_open"
             continue
@@ -424,8 +504,14 @@ def main():
     branches = [b["name"][6:] for b in (api(f"repos/{REPO}/branches?per_page=100") or []) if b["name"].startswith("cloud/")]
 
     # finished agent runs
+    cooldown = q.setdefault("slot_cooldown", {})
+    for s_ in list(cooldown):
+        if age(cooldown[s_]) >= 0:
+            cooldown.pop(s_)  # expired
     reconcile_finished(items, active, latest, open_pr, branches,
-                       lambda tid: (api(f"repos/{REPO}/compare/main...cloud/{tid}") or {}).get("ahead_by", 0))
+                       lambda tid: (api(f"repos/{REPO}/compare/main...cloud/{tid}") or {}).get("ahead_by", 0), cooldown)
+    if cooldown:
+        log(f"slot cooldown: {cooldown}")
 
     # open PRs for branches without one
     for tid in branches:
@@ -487,10 +573,13 @@ def main():
         disp = t.setdefault("ci_dispatched", {})
         if disp.get("sha") != sha:
             disp.clear(); disp["sha"] = sha; disp["wf"] = []; disp["at"] = iso()
+        need = ci_need(need, f"cloud/{tid}", disp)
         missing = [w for w in need if w not in latest]
-        for w in missing:
+        for w in list(missing):
             if w not in disp["wf"] or age(disp.get("at", "")) > 1800:
-                act("gh", "workflow", "run", w, "-R", REPO, "--ref", f"cloud/{tid}")
+                if not dispatch_ci(w, f"cloud/{tid}"):
+                    disp["na"].append(w); need.remove(w); missing.remove(w)
+                    continue
                 if w not in disp["wf"]:
                     disp["wf"].append(w)
                 disp["at"] = iso()
@@ -522,7 +611,7 @@ def main():
             t["status"] = "failed"; log(f"{tid}: failed after {MAX_FIX} fix attempts")
             act("gh", "pr", "comment", str(p["number"]), "-R", REPO, "--body", f"cloud-scheduler: giving up after {MAX_FIX} fix attempts; {why}. Left open for a human.")
             continue
-        slot = next((s for s in SLOTS if s not in active.values()), None)
+        slot = next(iter(free_slots(active, cooldown)), None)
         if not slot:
             log(f"{tid}: needs fix but no free slot"); continue
         t["fix_attempts"] = t.get("fix_attempts", 0) + 1
@@ -536,7 +625,7 @@ def main():
 
     # start next pending tasks
     for t in items:
-        free = [s for s in SLOTS if s not in active.values()]
+        free = free_slots(active, cooldown)
         if not free:
             break
         if t["status"] != "pending" or t["id"] in active:
