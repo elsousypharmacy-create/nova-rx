@@ -3,6 +3,28 @@
  "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
   {
+   "id": "UX402",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: الرسايل الجديدة بدون تحديث وإشعارات",
+   "brief": "Web-push, in-app sound, tab/title badges, and unread counts were implemented in UX406. This task owns realtime appearance (new messages in the open chat and list without a full refresh) and should use UX406 hooks. Continue SLOT A WhatsApp Web work (task 7 of 8). Depends on UX401. Do not reopen the PIN gate. Do not start UX403. Stay inside the conversations screen (unified-inbox.js + WhatsApp/conversations regions of index.html + related tests/backend poll endpoints). Avoid conflicts with slot B.\n\nRealtime and notifications, like WhatsApp Web:\n- New inbound and outbound messages appear in the open chat and in the list (preview, time, unread badge) without a full page refresh. Use the existing history poll (hPoll) and/or a safer short poll; do not hammer the API. If a lighter push/path already exists in staging, use it; otherwise improve polling (pause when the tab is hidden, backoff, no duplicate bubbles).\n- Unread counts and the #novaWaBtn badge update live.\n- In-app notification for a new customer message when the user is on another screen or another chat (Arabic, not noisy, respects a simple mute-if-already-viewing rule). Browser Notification API only with a graceful fallback; do not require a new paid service.\n- Keep 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND. No test messages to real customers; fake/local data only.\n- Smooth insert of new bubbles (no flash/flicker), list row updates, scroll-to-latest only when the user is already at the bottom.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) that inject or mock a new message and assert it appears in the open chat and list without location.reload; badge updates; notification hook/fallback is present. Plus nearest unit tests. Record exact results. No deploy, no merge, no secrets, no production.\n\nPREVIEW ARTIFACT (required when index.html or sw.js changes): after your change (and after merging origin/main), rebuild the deployed artifact from the current source: `node tools/build-worker-artifact.mjs worker/live/nova-rx-preview.ux-407.js index.html worker/live/nova-rx-preview.ux-407.js` and run `node tests/unit/artifact-ux407.check.mjs` (all PASS). Commit the artifact with the change. On an artifact merge conflict, take either side and rebuild.",
+   "acceptance": "New messages appear in the open chat and list without a full refresh; unread badge updates; in-app/browser notification path exists with a fallback; poll is well-behaved; 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND kept; Playwright + unit tests pass; no live customer messages.",
+   "after": [
+    "UX408"
+   ],
+   "status": "running",
+   "attempts": 1,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
+   "max_turns": 80,
+   "not_before": "2026-11-15T15:11:00+00:00",
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T18:41:59+00:00",
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43747450875"
+  },
+  {
    "id": "UX408",
    "phase": 10,
    "title": "شاشة المحادثات: إصلاح عيوب التصميم بعد مراجعة واتساب iOS",
@@ -166,27 +188,6 @@
    "pr": 471,
    "merged_at": "2026-11-15T14:17:47+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/471"
-  },
-  {
-   "id": "UX402",
-   "phase": 10,
-   "title": "شاشة المحادثات زي واتساب ويب: الرسايل الجديدة بدون تحديث وإشعارات",
-   "brief": "Web-push, in-app sound, tab/title badges, and unread counts were implemented in UX406. This task owns realtime appearance (new messages in the open chat and list without a full refresh) and should use UX406 hooks. Continue SLOT A WhatsApp Web work (task 7 of 8). Depends on UX401. Do not reopen the PIN gate. Do not start UX403. Stay inside the conversations screen (unified-inbox.js + WhatsApp/conversations regions of index.html + related tests/backend poll endpoints). Avoid conflicts with slot B.\n\nRealtime and notifications, like WhatsApp Web:\n- New inbound and outbound messages appear in the open chat and in the list (preview, time, unread badge) without a full page refresh. Use the existing history poll (hPoll) and/or a safer short poll; do not hammer the API. If a lighter push/path already exists in staging, use it; otherwise improve polling (pause when the tab is hidden, backoff, no duplicate bubbles).\n- Unread counts and the #novaWaBtn badge update live.\n- In-app notification for a new customer message when the user is on another screen or another chat (Arabic, not noisy, respects a simple mute-if-already-viewing rule). Browser Notification API only with a graceful fallback; do not require a new paid service.\n- Keep 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND. No test messages to real customers; fake/local data only.\n- Smooth insert of new bubbles (no flash/flicker), list row updates, scroll-to-latest only when the user is already at the bottom.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) that inject or mock a new message and assert it appears in the open chat and list without location.reload; badge updates; notification hook/fallback is present. Plus nearest unit tests. Record exact results. No deploy, no merge, no secrets, no production.\n\nPREVIEW ARTIFACT (required when index.html or sw.js changes): after your change (and after merging origin/main), rebuild the deployed artifact from the current source: `node tools/build-worker-artifact.mjs worker/live/nova-rx-preview.ux-407.js index.html worker/live/nova-rx-preview.ux-407.js` and run `node tests/unit/artifact-ux407.check.mjs` (all PASS). Commit the artifact with the change. On an artifact merge conflict, take either side and rebuild.",
-   "acceptance": "New messages appear in the open chat and list without a full refresh; unread badge updates; in-app/browser notification path exists with a fallback; poll is well-behaved; 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND kept; Playwright + unit tests pass; no live customer messages.",
-   "after": [
-    "UX408"
-   ],
-   "status": "running",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
-   "model": "opus",
-   "max_turns": 80,
-   "not_before": "2026-11-15T15:11:00+00:00",
-   "pin_slot": "A",
-   "slot": "A",
-   "dispatched_at": "2026-11-15T18:33:20+00:00"
   },
   {
    "id": "UX430",
@@ -5084,6 +5085,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T18:33:20+00:00",
+ "updated": "2026-11-15T18:41:59+00:00",
  "slot_cooldown": {}
 }
