@@ -1,6 +1,6 @@
 /* UX430: WhatsApp KPIs — Home card (inside the sale/landing workspace) + dedicated full-screen page. Black Edition, UX420 tokens.
    Scoped to #novaWaKpiCard / #novaWaKpiView only; conversations (#novaInboxView, wa-*, #novaWaBtn) are not targeted. */
-#novaWaKpiCard{flex:0 0 auto;display:block;width:auto;margin:8px 10px 4px;padding:10px 12px;direction:rtl;text-align:right;font-family:var(--nx-font,Cairo,Tahoma,Arial,sans-serif);color:var(--nx-text-main,#f1f3f5);background:linear-gradient(135deg,#10231b 0%,var(--nx-bg-panel,#111418) 55%);border:1px solid #23463a;border-radius:var(--nx-r-3,14px);box-shadow:var(--nx-shadow-1,0 1px 2px rgba(0,0,0,.5));cursor:pointer;min-height:44px;transition:border-color var(--nx-dur-fast,120ms) var(--nx-ease,ease),transform var(--nx-dur-fast,120ms) var(--nx-ease,ease);box-sizing:border-box;max-width:100%}
+#novaWaKpiCard{flex:0 0 auto;display:block;width:auto;margin:8px 10px 4px;padding:10px 12px;direction:rtl;text-align:start;font-family:var(--nx-font,Cairo,Tahoma,Arial,sans-serif);color:var(--nx-text-main,#f1f3f5);background:linear-gradient(135deg,#10231b 0%,var(--nx-bg-panel,#111418) 55%);border:1px solid #23463a;border-radius:var(--nx-r-3,14px);box-shadow:var(--nx-shadow-1,0 1px 2px rgba(0,0,0,.5));cursor:pointer;min-height:44px;transition:border-color var(--nx-dur-fast,120ms) var(--nx-ease,ease),transform var(--nx-dur-fast,120ms) var(--nx-ease,ease);box-sizing:border-box;max-width:100%}
 #novaWaKpiCard:hover{border-color:#2f6b55}
 #novaWaKpiCard:active{transform:scale(.995)}
 #novaWaKpiCard:focus-visible{outline:2px solid var(--nx-border-focus,#76b8d5);outline-offset:2px}
@@ -69,7 +69,7 @@
 #novaWaKpiView .wkp-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px;vertical-align:middle}
 #novaWaKpiView .wkp-wait{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
 #novaWaKpiView .wkp-wait li{min-width:0}
-#novaWaKpiView .wkp-wait button{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;text-align:right;border-radius:var(--nx-r-2,10px);border:1px solid var(--nx-border-subtle,#2a313a);background:var(--nx-bg-surface,#1b2026);color:var(--nx-text-main,#f1f3f5);cursor:pointer}
+#novaWaKpiView .wkp-wait button{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;text-align:start;border-radius:var(--nx-r-2,10px);border:1px solid var(--nx-border-subtle,#2a313a);background:var(--nx-bg-surface,#1b2026);color:var(--nx-text-main,#f1f3f5);cursor:pointer}
 #novaWaKpiView .wkp-wait button:hover{border-color:#3a4857}
 #novaWaKpiView .wkp-wait .n{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #novaWaKpiView .wkp-wait .d{font-variant-numeric:tabular-nums;color:var(--nx-warn,#d9bf86);font-weight:700;white-space:nowrap}
@@ -77,7 +77,7 @@
 #novaWaKpiView .wkp-wait .closed .d{color:var(--nx-text-muted,#a4adb7)}
 #novaWaKpiView .wkp-heat{display:grid;grid-template-columns:44px repeat(24,minmax(0,1fr));gap:2px;direction:ltr;min-width:0}
 #novaWaKpiView .wkp-heat .hl{font-size:12px;color:var(--nx-text-muted,#a4adb7);text-align:center;line-height:16px;overflow:hidden}
-#novaWaKpiView .wkp-heat .dl{font-size:12px;color:var(--nx-text-muted,#a4adb7);direction:rtl;text-align:right;line-height:18px;white-space:nowrap;overflow:hidden}
+#novaWaKpiView .wkp-heat .dl{font-size:12px;color:var(--nx-text-muted,#a4adb7);text-align:start;line-height:18px;white-space:nowrap;overflow:hidden}
 #novaWaKpiView .wkp-heat .cell{height:18px;border-radius:3px;background:#161b21}
 #novaWaKpiView .wkp-bars{display:grid;gap:8px}
 #novaWaKpiView .wkp-bar{display:grid;grid-template-columns:minmax(80px,32%) 1fr auto;align-items:center;gap:8px;min-width:0}

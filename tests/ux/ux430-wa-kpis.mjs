@@ -140,5 +140,34 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop' }, { width: 390, h
   console.log('  ok', vp.name);
   await ctx.close();
 }
+// English UI: card + page follow the app language (no Arabic UI text), LTR.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  await ctx.route('**/*', (r) => {
+    const q = r.request(), u = q.url();
+    if (q.method() !== 'GET' && q.method() !== 'HEAD' && q.method() !== 'OPTIONS') return r.abort();
+    if (u.includes('/inbox/history/metrics')) return r.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': origin }, contentType: 'application/json', body: JSON.stringify({ ok: true, data: DATA }) });
+    return u.startsWith(origin) || u.startsWith('data:') ? r.continue() : r.abort();
+  });
+  const page = await ctx.newPage();
+  await page.clock.setFixedTime(NOW);
+  await page.addInitScript(() => { try { localStorage.setItem('nova.waKpi.autoload', '1'); localStorage.setItem('nova-rx-language', 'en'); } catch (e) { } });
+  await page.route('**/emergency/stock.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+  await page.goto(BASE, { waitUntil: 'load' });
+  const card = page.locator('#novaWaKpiCard');
+  await page.waitForFunction(() => /^3$/.test((document.querySelector('#novaWaKpiCard [data-wk="chats"] b') || {}).textContent || ''), null, { timeout: 8000 });
+  assert.equal(await card.getAttribute('dir'), 'ltr');
+  assert.match(await card.innerText(), /WhatsApp today/); assert.match(await card.locator('[data-wk="first"] b').innerText(), /3 min/);
+  await card.click();
+  const view = page.locator('#novaWaKpiView'); await view.locator('[data-kpi="chats"]').waitFor();
+  const AR = /[\u0600-\u06FF]/;
+  const strip = (t) => t.replace(/[^\n]*(التجريبي|أحمد|سارة)[^\n]*/g, ''); // customer and staff names are data
+  assert.ok(!AR.test(strip(await card.innerText())), 'no Arabic on the English card');
+  { const vt = strip(await view.innerText()); assert.ok(!AR.test(vt), 'no Arabic UI on the English KPIs page: ' + vt.split('\n').filter((l) => AR.test(l)).slice(0, 4).join(' | ')); }
+  assert.ok(await view.evaluate((n) => n.scrollWidth <= n.clientWidth), 'no horizontal overflow (en)');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/ux430-mobile-en-page.png` });
+  console.log('  ok english');
+  await ctx.close();
+}
 await browser.close();
 console.log('ux430-wa-kpis OK');
