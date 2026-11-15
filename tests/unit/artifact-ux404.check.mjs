@@ -23,7 +23,8 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+// UX405 moved main index.html on; the UX404 artifact stays pinned to the exact app HTML it shipped.
+ck('app HTML is the UX404 build (pinned sha256)', createHash('sha256').update(app).digest('hex') === 'ea288d23a570ea4af0e20a79f8eec551f49f151942bf507c1a4ae90f9defcbf4');
 const strip = (s) => s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n');
 ck('worker code outside the HTML literal identical to ux400', strip(raw) === strip(readFileSync(BASE, 'utf8')));
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>')).length === 1);
