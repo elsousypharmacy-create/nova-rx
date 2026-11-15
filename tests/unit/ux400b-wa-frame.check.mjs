@@ -91,7 +91,7 @@ t('selected chat: header, wallpaper, composer shell; RTL root', () => {
   assert.match(h, /<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات">/);
   assert.match(h, /class="wa-head-name">أحمد</);
   assert.match(h, /<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log"/);
-  assert.match(h, /<form class="wa-composer" id="waComposer" data-wa-composer><input type="text" id="waInput"/);
+  assert.match(h, /<form class="wa-composer" id="waComposer" data-wa-composer><div class="wa-pill">.*?<input type="text" id="waInput"/ /* UX404: WhatsApp pill with emoji/attach/mic */);
   assert.match(h, /\.wa-msgs\{background-color:#0b0d10;background-image:url\("data:image\/svg\+xml,%3Csvg/);
 });
 t('UX400 stays: no PIN UI anywhere in the frame', () => {

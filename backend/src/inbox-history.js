@@ -8,6 +8,7 @@
 import { sha256Hex } from './auth/auth.js';
 import { waIsHandoff, waTopics } from './wa-metrics.js';
 import { mediaKind } from './wa-kpis.js';
+import { mediaOfRow, mediaResponse } from './inbox-media.js';
 
 const FAIL_MAX = 10;
 const FAIL_WINDOW_S = 900;
@@ -25,7 +26,7 @@ export function kindOf(id, dir) {
   if (/^ps_/.test(String(id || ''))) return 'pharm'; // WA-SEND: pharmacist reply sent from NOVA
   return dir === 'out' ? 'out' : 'in';
 }
-const toMsg = (r) => ({ id: r.id, dir: r.dir, kind: kindOf(r.id, r.dir), text: r.text, at: atMs(r.at), status: r.status || null });
+const toMsg = (r) => { const o = { id: r.id, dir: r.dir, kind: kindOf(r.id, r.dir), text: r.text, at: atMs(r.at), status: r.status || null }; const md = mediaOfRow(r); if (md) o.media = md; return o; };
 
 async function safeEq(a, b) {
   const [x, y] = await Promise.all([sha256Hex(String(a)), sha256Hex(String(b))]);
@@ -125,6 +126,14 @@ export function registerInboxHistoryRoutes(route, { errorResponse }) {
   };
   route('GET', '/api/v1/inbox/history/conversations', guard(async ({ db, t }) => ({ conversations: await listHistory(db, t) })));
   route('GET', '/api/v1/inbox/history/metrics', guard(async ({ db, t }) => ({ data: await metricsData(db, t) })));
+  // UX405: cached media bytes (KV) for one message; same gate as the chat history. Arabic JSON fallback when absent.
+  route('GET', '/api/v1/inbox/history/media', async (ctx) => {
+    const { env, requestId, request, url } = ctx;
+    const bad = await checkPin(request, env);
+    if (bad) return errorResponse(bad.code, bad.message_ar, bad.status, requestId);
+    try { return await mediaResponse(env, historyTenant(env), url.searchParams.get('id') || '', errorResponse, requestId); }
+    catch { return errorResponse('MEDIA_FAILED', 'تعذّر تحميل الملف. حاول مرة أخرى.', 503, requestId); }
+  });
   route('GET', '/api/v1/inbox/history/conversation', guard(async ({ db, t, url }) => {
     const c = await getHistory(db, t, url.searchParams.get('id') || '');
     return c ? { conversation: c } : { conversation: null };

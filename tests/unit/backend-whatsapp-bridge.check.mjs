@@ -44,11 +44,12 @@ assert.equal(queued(), 0);
 [s] = await post('{"messages":"x"}'); assert.equal(s, 400);
 [s] = await post(payload(item({ id: '' }))); assert.equal(s, 400);
 [s] = await post(payload(item({ from: 5 }))); assert.equal(s, 400);
-[s] = await post('x'.repeat(1024 * 1024 + 1)); assert.equal(s, 413);
+[s] = await post('x'.repeat(10 * 1024 * 1024 + 1)); assert.equal(s, 413); // UX405: bridge cap raised to 10 MB
+[s] = await post('x'.repeat(1024 * 1024 + 1)); assert.equal(s, 400); // >1 MB is no longer 413 on the bridge
 [s] = await post(payload(item()), TOK, { ...env, DB: undefined }); assert.equal(s, 503);
 assert.equal(queued(), 0);
 
-// intake: text + image + document, out skipped, unrepresentable (audio, no text) skipped, dedupe
+// intake: text + image + document + caption-less audio (UX405: stored), out skipped, dedupe
 const batch = payload(
   item(),
   item({ id: 'wamid.2', type: 'image', text: 'صورة روشتة', media_id: 'M1' }),
@@ -57,18 +58,19 @@ const batch = payload(
   item({ id: 'wamid.5', type: 'audio', text: null, media_id: 'M3' }),
 );
 [s, j] = await post(batch);
-assert.deepEqual([s, j.ok, j.queued, j.duplicates, j.skipped], [200, true, 3, 0, 2]);
+assert.deepEqual([s, j.ok, j.queued, j.duplicates, j.skipped], [200, true, 4, 0, 1]);
 assert.match(j.requestId, /^req_/);
-[s, j] = await post(batch); assert.deepEqual([j.queued, j.duplicates, j.skipped], [0, 3, 2]);
-assert.equal(queued(), 3);
+[s, j] = await post(batch); assert.deepEqual([j.queued, j.duplicates, j.skipped], [0, 4, 1]);
+assert.equal(queued(), 4);
 const stored = JSON.parse(db.prepare("SELECT payload_json p FROM wa_inbound_queue WHERE wa_message_id='wamid.1'").get().p);
 assert.deepEqual(stored, { message: { id: 'wamid.1', from: '201001', timestamp: '1700000000', type: 'text', text: { body: 'عايز بنادول' } }, metadata: { phone_number_id: 'P1', contacts: [{ profile: { name: 'منى' } }] } });
 
 // end-to-end: existing processor turns the queue into inbox messages (tenant from WA_TENANT_MAP)
 const st = await processQueue(D1, makeProcessor(D1, env), { now: 5000 });
-assert.deepEqual(st, { done: 3, retried: 0, dead: 0 });
+assert.deepEqual(st, { done: 4, retried: 0, dead: 0 });
 const rows = db.prepare("SELECT id, dir, text, at FROM inbox_messages WHERE tenant_id='t1' ORDER BY id").all();
-assert.deepEqual(rows.map((r) => [r.id, r.dir, r.text]), [['wa_wamid.1', 'in', 'عايز بنادول'], ['wa_wamid.2', 'in', '[صورة] صورة روشتة'], ['wa_wamid.3', 'in', '[مستند] rx.pdf']]);
+assert.deepEqual(rows.map((r) => [r.id, r.dir, r.text]), [['wa_wamid.1', 'in', 'عايز بنادول'], ['wa_wamid.2', 'in', '[صورة] صورة روشتة'], ['wa_wamid.3', 'in', '[مستند] rx.pdf'], ['wa_wamid.5', 'in', '[رسالة صوتية]']]);
+assert.deepEqual({ ...db.prepare("SELECT media_type t, media_id i, media_caption c FROM inbox_messages WHERE id='wa_wamid.2'").get() }, { t: 'image', i: 'M1', c: 'صورة روشتة' });
 assert.equal(rows[0].at, 1700000000);
 assert.equal(db.prepare("SELECT customer FROM inbox_conversations WHERE id='wa_201001'").get().customer, 'منى');
 

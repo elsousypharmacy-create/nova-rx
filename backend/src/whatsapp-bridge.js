@@ -2,12 +2,16 @@
 // Intake only enqueues (same queue + shape as the Meta path); processing still needs NOVA_WA_INTAKE=1 and WA_TENANT_MAP.
 // Auto-reply toggle proxies the Apps Script action novaWhatsAppBridge (autoReplyGet / autoReplySet) behind the inbox flag + session.
 // Secrets by NAME only: NOVA_WA_BRIDGE_TOKEN, WA_BACKEND_URL. No network unless the injected fetch is called.
-import { timingSafeEqual, enqueue, MAX_BODY } from './whatsapp-intake.js';
+import { timingSafeEqual, enqueue } from './whatsapp-intake.js';
 import { inboxEnabled } from './inbox.js';
-import { messageText } from './whatsapp-process.js';
+import { messageText, tenantMap } from './whatsapp-process.js';
+import { mediaMeta, cacheMedia } from './inbox-media.js';
 import { historyTenant } from './inbox-history.js';
 
 export const MAX_ITEMS = 100;
+// UX405: media bytes arrive inline (GAS caps a file at 5 MB => ~6.7 MB of JSON), so this route accepts up to 10 MB.
+// The Meta webhook keeps its own 1 MB limit (whatsapp-intake.js MAX_BODY).
+export const MAX_BRIDGE_BODY = 10 * 1024 * 1024;
 const MIN_TOKEN = 32;
 
 export function waBridgeIntakeEnabled(env) { return !!env && env.NOVA_WA_BRIDGE_INTAKE === '1'; }
@@ -20,8 +24,13 @@ export function toQueueEntry(it) {
   if (!id || !from) return { bad: true };
   const text = s(it.text), type = s(it.type) || 'text';
   const message = { id, from, timestamp: s(it.timestamp) || (Number.isFinite(it.timestamp) ? String(it.timestamp) : undefined) };
-  if (type === 'image') { message.type = 'image'; message.image = { id: s(it.media_id) || undefined, caption: text || undefined }; }
-  else if (type === 'document') { message.type = 'document'; message.document = { id: s(it.media_id) || undefined, filename: s(it.filename) || undefined, caption: text || undefined }; }
+  const md = mediaMeta({ ...it, type });
+  if (md) {
+    // Meta-shaped part; bytes are NOT queued (D1 rows stay small): the route caches them in KV and sets cached.
+    message.type = type;
+    message[type] = { id: md.id || undefined, mime_type: md.mime || undefined, filename: md.filename || undefined, caption: md.caption || undefined,
+      size: md.size == null ? undefined : md.size, skipped: md.skipped || undefined };
+  }
   else if (text) { message.type = 'text'; message.text = { body: text }; }
   else return null;
   const name = s(it.name);
@@ -37,26 +46,33 @@ const tsMs = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? 
 // FIX51: direct, synchronous write of the bot's forwarded copy into the SAME tables the history/send routes read
 // (inbox_conversations / inbox_messages, tenant = historyTenant). Idempotent by message id; additive only.
 // Inbound id = wa_<wamid> (same as the Meta queue path), outbound (bot reply) id = wb_<wamid>.
-export async function ingestDirect(db, tenant, items, now = Date.now()) {
-  let added = 0, duplicates = 0, skipped = 0;
+// UX405: media items (image/sticker/audio/video/document) are always stored, caption or not, with their media columns;
+// media_base64 (when present) is decoded and cached in KV under wamedia:<tenant>:<message id>.
+export async function ingestDirect(db, tenant, items, now = Date.now(), kv = null) {
+  let added = 0, duplicates = 0, skipped = 0, cached = 0;
   for (const it of items) {
     const out = it.direction === 'out';
     const from = String(it.from).replace(/\D/g, '');
-    const text = messageText({ type: it.type || 'text', text: it.text ? { body: it.text } : undefined,
-      image: it.type === 'image' ? { caption: it.text || undefined } : undefined,
-      document: it.type === 'document' ? { filename: it.filename || undefined, caption: it.text || undefined } : undefined });
+    const type = s(it.type) || 'text';
+    const md = mediaMeta({ ...it, type });
+    const m = { type, text: it.text ? { body: it.text } : undefined };
+    if (md) m[type] = { filename: md.filename || undefined, caption: md.caption || undefined };
+    const text = messageText(m);
     if (!from || !text) { skipped++; continue; }
     const mid = (out ? 'wb_' : 'wa_') + it.id, cid = 'wa_' + from;
     const at = Math.min(tsMs(it.timestamp) || now, now + 5 * 60 * 1000);
     const dup = await db.prepare('SELECT id FROM inbox_messages WHERE tenant_id = ? AND id = ?').bind(tenant, mid).first();
     if (dup) { duplicates++; continue; }
+    const ok = md && !md.skipped && it.media_base64 ? await cacheMedia(kv, tenant, mid, it.media_base64) : false;
+    if (ok) cached++;
     await db.prepare('INSERT OR IGNORE INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES (?,?,?,?)').bind(tenant, cid, (!out && s(it.name)) || from, at).run();
-    await db.prepare('INSERT OR IGNORE INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at) VALUES (?,?,?,?,?,?,?)')
-      .bind(tenant, mid, cid, out ? 'out' : 'in', text.slice(0, 4000), out ? 'sent' : null, at).run();
+    await db.prepare('INSERT OR IGNORE INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at, media_type, media_id, media_mime, media_filename, media_size, media_skipped, media_caption, media_cached) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+      .bind(tenant, mid, cid, out ? 'out' : 'in', text.slice(0, 4000), out ? 'sent' : null, at,
+        md ? md.type : null, md ? md.id : null, md ? md.mime : null, md ? md.filename : null, md ? md.size : null, md ? md.skipped : null, md ? md.caption : null, md ? (ok ? 1 : 0) : null).run();
     await db.prepare('UPDATE inbox_conversations SET updated_at = ? WHERE tenant_id = ? AND id = ? AND (CASE WHEN updated_at > 0 AND updated_at < 1000000000000 THEN updated_at * 1000 ELSE updated_at END) < ?').bind(at, tenant, cid, at).run();
     added++;
   }
-  return { added, duplicates, skipped };
+  return { added, duplicates, skipped, cached };
 }
 
 export function registerWaBridgeRoutes(route, { json, errorResponse }, { authenticate }) {
@@ -67,8 +83,10 @@ export function registerWaBridgeRoutes(route, { json, errorResponse }, { authent
     if (typeof secret !== 'string' || secret.length < MIN_TOKEN) return errorResponse('WA_BRIDGE_NOT_CONFIGURED', 'إعدادات الجسر غير مكتملة.', 503, requestId);
     const m = /^Bearer (.+)$/.exec(request.headers.get('Authorization') || '');
     if (!m || !timingSafeEqual(m[1], secret)) return errorResponse('WA_BRIDGE_UNAUTHORIZED', 'غير مصرّح.', 401, requestId);
+    const cl = Number(request.headers.get('Content-Length'));
+    if (Number.isFinite(cl) && cl > MAX_BRIDGE_BODY) return errorResponse('WA_PAYLOAD_TOO_LARGE', 'حجم الطلب كبير جداً.', 413, requestId);
     const raw = await request.text();
-    if (raw.length > MAX_BODY) return errorResponse('WA_PAYLOAD_TOO_LARGE', 'حجم الطلب كبير جداً.', 413, requestId);
+    if (raw.length > MAX_BRIDGE_BODY) return errorResponse('WA_PAYLOAD_TOO_LARGE', 'حجم الطلب كبير جداً.', 413, requestId);
     let body;
     try { body = JSON.parse(raw); } catch { return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId); }
     if (!body || typeof body !== 'object' || !Array.isArray(body.messages) || body.messages.length > MAX_ITEMS) {
@@ -77,17 +95,26 @@ export function registerWaBridgeRoutes(route, { json, errorResponse }, { authent
     if (!env.DB) return errorResponse('WA_NO_DB', 'قاعدة البيانات غير متاحة.', 503, requestId);
     if (waBridgeDirectEnabled(env)) {
       for (const it of body.messages) if (!it || typeof it !== 'object' || !s(it.id) || !s(it.from)) return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId);
-      const r = await ingestDirect(env.DB, historyTenant(env), body.messages);
+      const r = await ingestDirect(env.DB, historyTenant(env), body.messages, Date.now(), env.KV);
       return json({ ok: true, direct: true, ...r, requestId }, 200, { 'X-Request-Id': requestId });
     }
-    const entries = [];
+    const entries = [], pend = [];
     let skipped = 0;
     for (const it of body.messages) {
       if (it && it.direction === 'out') { skipped++; continue; }
       const e = it && typeof it === 'object' ? toQueueEntry(it) : { bad: true };
       if (e && e.bad) return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId);
       if (!e) { skipped++; continue; }
+      const part = e.message[e.message.type];
+      if (part && !part.skipped && typeof it.media_base64 === 'string' && it.media_base64) pend.push([e, part, it.media_base64]);
       entries.push(e);
+    }
+    // Queue path: tenant comes from WA_TENANT_MAP (same as the processor), so the KV key matches the final message id.
+    const map = tenantMap(env);
+    for (const [e, part, b64] of pend) {
+      const pid = e.metadata.phone_number_id;
+      const t = typeof pid === 'string' && Object.prototype.hasOwnProperty.call(map, pid) ? map[pid] : null;
+      if (typeof t === 'string' && t && await cacheMedia(env.KV, t, 'wa_' + e.id, b64)) part.cached = true;
     }
     const res = await enqueue(env.DB, entries);
     return json({ ok: true, ...res, skipped, requestId }, 200, { 'X-Request-Id': requestId });

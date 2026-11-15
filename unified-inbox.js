@@ -145,17 +145,86 @@
     return '<span class="wa-tick ' + (m.status === 'delivered' ? 'delivered' : 'read') + '" data-tick="' + esc(m.status || 'delivered') + '">✓✓</span>';
   }
   function initial(name) { var s = String(name || '').trim(); return s ? Array.from(s)[0] : '؟'; }
-  function bubbles(msgs, now) {
-    var out = '', last = null;
+  /* UX404: WhatsApp bubble anatomy. The first bubble of a same-direction run gets a tail (wa-first). The time + ticks sit in an
+     absolutely placed end slot (wa-meta) and an invisible inline spacer (wa-gap) reserves that room at the end of the last text
+     line, so the time never covers glyphs (Arabic, LTR "Bottest off", mixed). The DOM is windowed by the caller (latest 80,
+     older batches on scroll-up); rows are layout-contained so a new bubble never relayouts the rest of the thread. */
+  /* UX405: incoming WhatsApp media like WhatsApp. mopts = { url(id) -> media URL or '', fail: { <message id>: 1 } }.
+     image/sticker -> thumbnail (tap = fullscreen lightbox), audio/video -> native players, document -> chip (open/download).
+     Without cached bytes (too_large / fetch_failed / KV miss / load error) a clear Arabic fallback replaces the media. */
+  var MT_AR = { image: 'صورة', sticker: 'ملصق', audio: 'رسالة صوتية', video: 'فيديو', document: 'مستند' };
+  var MISS_AR = { too_large: 'الملف أكبر من 5 ميجا ومش متاح هنا — افتحه من واتساب على الموبايل', fetch_failed: 'تعذّر تحميل الملف من واتساب — افتحه من واتساب على الموبايل' };
+  var IC_M = {
+    image: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></svg>',
+    audio: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+    video: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>',
+    document: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>'
+  };
+  IC_M.sticker = IC_M.image;
+  function fmtSize(n) { n = Number(n); if (!(n > 0)) return ''; return n >= 1048576 ? (Math.round(n / 104857.6) / 10) + ' ميجا' : Math.max(1, Math.round(n / 1024)) + ' ك.ب'; }
+  function mediaMiss(type, reason, filename) {
+    var t = MT_AR[type] ? type : 'document';
+    return '<div class="wa-media wa-mmiss" data-wa-media="' + t + '" data-wa-media-miss data-reason="' + esc(reason || 'missing') + '" role="note">' +
+      '<span class="wa-mic">' + IC_M[t] + '</span><span class="wa-mmiss-t"><b>' + esc(t === 'document' && filename ? filename : MT_AR[t]) + '</b><span>' + esc(MISS_AR[reason] || 'الملف مش متاح هنا دلوقتي — افتحه من واتساب على الموبايل') + '</span></span></div>';
+  }
+  function mediaHtml(m, mopts) {
+    var md = m && m.media, t = md && MT_AR[md.type] ? md.type : null;
+    if (!t) return '';
+    var src = md.cached && !md.skipped && mopts && typeof mopts.url === 'function' && !(mopts.fail && mopts.fail[m.id]) ? String(mopts.url(m.id) || '') : '';
+    if (!src) return mediaMiss(t, md.skipped || (md.cached ? 'error' : 'missing'), md.filename);
+    var a = ' data-wa-mid="' + esc(m.id) + '"';
+    if (t === 'image' || t === 'sticker') return '<button type="button" class="wa-media wa-m-' + t + '" data-wa-media="' + t + '" data-wa-media-open="' + esc(src) + '"' + a + ' aria-label="عرض ال' + MT_AR[t] + ' بالحجم الكامل"><img class="wa-mimg" data-wa-mimg' + a + ' src="' + esc(src) + '" alt="' + MT_AR[t] + ' من العميل" loading="lazy" decoding="async"></button>';
+    if (t === 'audio') return '<div class="wa-media wa-m-audio" data-wa-media="audio"><span class="wa-mic">' + IC_M.audio + '</span><audio class="wa-maudio" data-wa-mplay' + a + ' controls preload="none" src="' + esc(src) + '" aria-label="رسالة صوتية من العميل"></audio></div>';
+    if (t === 'video') return '<div class="wa-media wa-m-video" data-wa-media="video"><video class="wa-mvideo" data-wa-mplay' + a + ' controls playsinline preload="metadata" src="' + esc(src) + '" aria-label="فيديو من العميل"></video></div>';
+    var fn = md.filename || 'مستند', sz = fmtSize(md.size);
+    return '<a class="wa-media wa-mdoc" data-wa-media="document" href="' + esc(src) + '" target="_blank" rel="noopener noreferrer" download="' + esc(fn) + '" aria-label="فتح المستند ' + esc(fn) + '"><span class="wa-mic">' + IC_M.document + '</span><span class="wa-mdoc-t"><b dir="auto">' + esc(fn) + '</b><span>' + esc([sz, 'اضغط للفتح أو التحميل'].filter(Boolean).join(' · ')) + '</span></span></a>';
+  }
+  /* list preview: "صورة · caption" instead of the raw "[صورة] caption" placeholder */
+  function previewText(m) {
+    var md = m && m.media;
+    if (!md || !MT_AR[md.type]) return m ? m.text : '';
+    var cap = md.caption || (md.type === 'document' ? md.filename : '');
+    return MT_AR[md.type] + (cap ? ' · ' + cap : '');
+  }
+  function bubbles(msgs, now, mopts) {
+    var out = '', last = null, prev = null;
     arr(msgs).forEach(function (m) {
       var ds = dayStart(m.at);
-      if (ds !== last) { last = ds; out += '<div class="wa-date" data-date-sep><span>' + esc(dateLabel(m.at, now)) + '</span></div>'; }
-      if (m.kind === 'sys') { out += '<div class="wa-sys" data-mid="' + esc(m.id) + '" data-kind="sys"><span dir="auto">' + esc(m.text) + ' · ' + timeLabel(m.at) + '</span></div>'; return; }
+      if (ds !== last) { last = ds; prev = null; out += '<div class="wa-date" data-date-sep><span>' + esc(dateLabel(m.at, now)) + '</span></div>'; }
+      if (m.kind === 'sys') { prev = null; out += '<div class="wa-sys" data-mid="' + esc(m.id) + '" data-kind="sys"><span dir="auto">' + esc(m.text) + ' · ' + timeLabel(m.at) + '</span></div>'; return; }
       var who = m.kind === 'bot' ? '<span class="wa-who wa-who-bot">البوت</span>' : m.kind === 'pharm' ? '<span class="wa-who wa-who-ph">الصيدلي</span>' : '';
-      out += '<div class="wa-msg wa-' + (m.dir === 'out' ? 'out' : 'in') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"' + (m.kind ? ' data-kind="' + esc(m.kind) + '"' : '') + '><div class="wa-bubble" dir="auto">' + who +
-        '<span class="wa-text">' + esc(m.text) + '</span><span class="wa-meta"><span class="wa-time">' + timeLabel(m.at) + '</span>' + tick(m) + '</span></div></div>';
+      var d = m.dir === 'out' ? 'out' : 'in', first = prev !== d; prev = d;
+      var mh = mediaHtml(m, mopts), txt = mh ? (m.media.caption || '') : m.text;
+      out += '<div class="wa-msg wa-' + d + (first ? ' wa-first' : '') + '" data-dir="' + esc(m.dir) + '" data-mid="' + esc(m.id) + '"' + (m.kind ? ' data-kind="' + esc(m.kind) + '"' : '') + (m.status ? ' data-status="' + esc(m.status) + '"' : '') + (mh ? ' data-media="' + esc(m.media.type) + '"' : '') + '><div class="wa-bubble' + (mh ? ' wa-has-media' + (txt ? '' : ' wa-media-only' + (/class="wa-media wa-m-(image|sticker|video)"/.test(mh) ? ' wa-mo-ov' : '')) : '') + '" dir="auto">' + who + mh +
+        (mh && !txt ? '' : (mh ? '<span class="wa-cap">' : '') + '<span class="wa-text">' + esc(txt) + '</span><span class="wa-gap" aria-hidden="true"></span>' + (mh ? '</span>' : '')) + '<span class="wa-meta"><span class="wa-time">' + timeLabel(m.at) + '</span>' + tick(m) + '</span></div></div>';
     });
     return out;
+  }
+  /* UX405: fullscreen viewer (tap image/sticker). Close: X, Esc, tap the backdrop, or swipe down. Zoom: pinch (touch-action),
+     double-tap / double-click toggles 2.5x, wheel zooms. Focus moves to the close button and returns to the thumbnail. */
+  function openLightbox(doc, src, back) {
+    if (!doc || !src) return null;
+    var old = doc.querySelector('[data-wa-lightbox]'); if (old && old.parentNode) old.parentNode.removeChild(old);
+    var lb = doc.createElement('div');
+    lb.className = 'wa-lb'; lb.setAttribute('data-wa-lightbox', ''); lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', 'عرض الصورة'); lb.dir = 'rtl';
+    lb.innerHTML = '<style>' + LB_CSS + '</style><div class="wa-lb-bar"><button type="button" class="wa-lb-x" data-wa-lb-close aria-label="إغلاق">' +
+      '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+      '<a class="wa-lb-dl" data-wa-lb-dl href="' + esc(src) + '" target="_blank" rel="noopener noreferrer" download aria-label="تحميل الصورة"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></a></div>' +
+      '<div class="wa-lb-stage" data-wa-lb-stage><img class="wa-lb-img" data-wa-lb-img src="' + esc(src) + '" alt="صورة من العميل بالحجم الكامل"></div>';
+    (doc.body || doc.documentElement).appendChild(lb);
+    var img = lb.querySelector('[data-wa-lb-img]'), z = 1, y0 = null, dy = 0, lastTap = 0;
+    function setZ(v) { z = v; img.style.transform = z > 1 ? 'scale(' + z + ')' : ''; lb.dataset.zoom = z > 1 ? '1' : '0'; }
+    function close() { if (!lb.parentNode) return; lb.parentNode.removeChild(lb); doc.removeEventListener('keydown', key, true); if (back && back.focus) try { back.focus(); } catch (e) {} }
+    function key(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Tab') { e.preventDefault(); var f = lb.querySelectorAll('button,a'), i = Array.prototype.indexOf.call(f, doc.activeElement); f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus(); } }
+    doc.addEventListener('keydown', key, true);
+    lb.addEventListener('click', function (e) { if (e.target.closest('[data-wa-lb-close]') || (e.target === lb.querySelector('[data-wa-lb-stage]') && z === 1)) close(); });
+    img.addEventListener('dblclick', function () { setZ(z > 1 ? 1 : 2.5); });
+    lb.addEventListener('wheel', function (e) { e.preventDefault(); setZ(Math.min(4, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2)))); }, { passive: false });
+    lb.addEventListener('touchstart', function (e) { if (e.touches.length === 1) { var t = Date.now(); if (t - lastTap < 300) { setZ(z > 1 ? 1 : 2.5); lastTap = 0; } else lastTap = t; y0 = z === 1 ? e.touches[0].clientY : null; dy = 0; } else y0 = null; }, { passive: true });
+    lb.addEventListener('touchmove', function (e) { if (y0 === null || e.touches.length !== 1) return; dy = Math.max(0, e.touches[0].clientY - y0); img.style.transform = 'translateY(' + dy + 'px)'; lb.style.opacity = String(Math.max(0.4, 1 - dy / 400)); }, { passive: true });
+    lb.addEventListener('touchend', function () { if (y0 === null) return; y0 = null; if (dy > 90) close(); else { img.style.transform = ''; lb.style.opacity = ''; } dy = 0; });
+    var x = lb.querySelector('[data-wa-lb-close]'); if (x) x.focus();
+    return { el: lb, close: close };
   }
   /* UX400b: chat wallpaper = faint pharmacy doodle tile (inline SVG, no network), like the WhatsApp Web dark wallpaper */
   var WP_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180"><g fill="none" stroke="#c8d3dc" stroke-opacity=".045" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
@@ -175,18 +244,28 @@
     '.wa-badge{flex:none;min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:10px;background:#25d366;color:#06210f;font-size:12px;font-weight:700;text-align:center;line-height:20px}' +
     '.wa-main{flex:1;display:flex;flex-direction:column;min-width:0;background:#0f1115;position:relative}' +
     '.wa-older{align-self:center;flex:none;min-height:36px;margin:6px 0;padding:0 16px;border:1px solid #2a313a;border-radius:18px;background:#1a1e24;color:#79c9eb;font:inherit;font-size:13px;cursor:pointer}' +
-    '.wa-tolatest{position:absolute;inset-inline-start:16px;bottom:78px;z-index:2;min-height:40px;padding:0 14px;border:1px solid #2a313a;border-radius:20px;background:#0b7a63;color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}.wa-tolatest[hidden]{display:none}' +
+    '.wa-tolatest{position:absolute;inset-inline-start:14px;bottom:76px;z-index:3;width:42px;height:42px;padding:0;border:1px solid #2a313a;border-radius:50%;background:#1f252c;color:#cfd8df;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s ease-out,opacity .15s}.wa-tolatest svg{width:24px;height:24px}.wa-tolatest[hidden]{display:none}.wa-fab-n{position:absolute;top:-7px;inset-inline-end:-4px;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:10px;background:#25d366;color:#06210f;font-size:11.5px;font-weight:700;line-height:20px;text-align:center}.wa-fab-n[hidden]{display:none}' +
     '.wa-head{background:#1a1e24;border-bottom:1px solid #2a313a}.wa-back{border:0;background:none;cursor:pointer;color:#cfd8df;align-items:center;justify-content:center;padding:0;flex:none;border-radius:50%}.wa-back{display:none;width:44px;height:44px}.wa-back:focus-visible{outline:2px solid #79c9eb}.wa-head-txt{display:flex;flex-direction:column;min-width:0;flex:1}.wa-head-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa-sub{font-size:12px;font-weight:400;color:#9eacb9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.wa-msgs{flex:1;overflow:auto;padding:12px 7%;display:flex;flex-direction:column;gap:3px}.wa-date{text-align:center;margin:10px 0;position:sticky;top:6px;z-index:2;pointer-events:none}.wa-date span{background:rgba(26,30,36,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#b5c0ca;font-size:12.5px;padding:5px 12px;border-radius:10px;border:1px solid #2a313a}' +
     '.wa-msg{display:flex}.wa-msg.wa-in{justify-content:flex-start}.wa-msg.wa-out{justify-content:flex-end}' +
     '.wa-bubble{position:relative;max-width:65%;padding:6px 9px 8px;border-radius:10px;font-size:14.2px;line-height:19px;color:#f2f3f5;overflow-wrap:anywhere;white-space:pre-wrap}' +
-    '.wa-in .wa-bubble{background:#1f252c;border-top-left-radius:0}.wa-out .wa-bubble{background:#0f4a3c;border-top-right-radius:0}' +
-    '.wa-in .wa-bubble:before{content:"";position:absolute;top:0;left:-8px;border:8px solid transparent;border-top-color:#1f252c;border-right-color:#1f252c}' +
-    '.wa-out .wa-bubble:before{content:"";position:absolute;top:0;right:-8px;border:8px solid transparent;border-top-color:#0f4a3c;border-left-color:#0f4a3c}' +
-    '.wa-meta{float:left;margin:6px 8px -4px 0;font-size:11px;color:#b5c0ca;display:inline-flex;gap:3px;direction:ltr}.wa-tick{color:#b5c0ca}.wa-tick.read{color:#53bdeb}.wa-tick.failed{color:#ff9a9a;font-weight:700}' +
+    /* UX404: tails on the screen-edge side (root is RTL: incoming right, outgoing left), only on the first bubble of a run */
+    '.wa-in .wa-bubble{background:#1f252c}.wa-out .wa-bubble{background:#0f4a3c}.wa-msg.wa-first{margin-top:6px}.wa-in.wa-first .wa-bubble{border-top-right-radius:0}.wa-out.wa-first .wa-bubble{border-top-left-radius:0}' +
+    '.wa-first .wa-bubble:before{content:"";position:absolute;top:0;width:8px;height:13px}.wa-in.wa-first .wa-bubble:before{right:-8px;background:#1f252c;-webkit-clip-path:polygon(0 0,100% 0,0 100%);clip-path:polygon(0 0,100% 0,0 100%)}.wa-out.wa-first .wa-bubble:before{left:-8px;background:#0f4a3c;-webkit-clip-path:polygon(0 0,100% 0,100% 100%);clip-path:polygon(0 0,100% 0,100% 100%)}' +
+    '.wa-gap{display:inline-block;width:44px;height:1px;vertical-align:baseline}.wa-out .wa-gap{width:64px}.wa-meta{position:absolute;bottom:3px;inset-inline-end:8px;font-size:11px;line-height:15px;color:#b5c0ca;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;pointer-events:none}.wa-meta>*{direction:ltr;unicode-bidi:isolate}.wa-tick{color:#b5c0ca}.wa-tick.read{color:#53bdeb}.wa-tick.failed{color:#ff9a9a;font-weight:700}.wa-msg[data-status=failed] .wa-bubble{box-shadow:inset 0 0 0 1px #b91c1c}' +
+    /* UX404: smooth scrolling: contained scroller, isolated rows, native scroll anchoring, no scroll chaining */
+    '.wa-msgs{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;contain:layout paint}.wa-msg{flex:none;contain:layout style}.wa-list{overscroll-behavior:contain}' +
     '.wa-composer{min-height:62px;box-sizing:border-box;background:#1a1e24;border-top:1px solid #2a313a;display:flex;align-items:center;gap:10px;padding:10px 16px}.wa-composer input{flex:1;height:42px;border:1px solid #2a313a;border-radius:10px;padding:0 14px;font:inherit;font-size:15px;background:#0d0f12;color:#f2f3f5}' +
     '.wa-window-note{margin:0;padding:8px 14px;font-size:13px;line-height:1.6;color:#b0bbc7;background:#141a21;border-top:1px solid #29323d;text-align:center}.wa-send-err{background:#3a1416;color:#ffd5d5;border-top:1px solid #7f1d1d;padding:8px 16px;font-size:13.5px;line-height:1.6}.wa-tick.sending{font-size:10px}' +
     '.wa-composer input:disabled{background:#14171c;color:#9eacb9;cursor:not-allowed}.wa-send{width:42px;height:42px;border:0;border-radius:50%;background:#0b7a63;color:#fff;font-size:18px;cursor:pointer}.wa-send:disabled{background:#2a313a;color:#9eacb9;cursor:not-allowed}' +
+    /* UX404: WhatsApp composer shell: pill [emoji][input][attach][mic] + round send; safe-area bottom; slide open/back; safe-area top while inbox is open */
+    '.wa-pill{flex:1;min-width:0;display:flex;align-items:center;gap:2px;background:#0d0f12;border:1px solid #2a313a;border-radius:24px;padding:0 4px}.wa-pill input{flex:1;min-width:0;border:0!important;background:transparent!important;border-radius:0!important;padding:0 6px!important;outline:none}.wa-pill:focus-within{border-color:#3d6f63}' +
+    '.wa-cbtn{flex:none;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:transparent;color:#9eacb9;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.wa-cbtn svg{width:22px;height:22px}.wa-cbtn:hover{color:#f2f3f5}.wa-cbtn:focus-visible{outline:2px solid #79c9eb}.wa-cbtn[aria-disabled=true]{cursor:default}' +
+    '.wa-composer{gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}.wa-send{flex:none;display:inline-flex;align-items:center;justify-content:center}.wa-send svg{width:22px;height:22px;transform:scaleX(-1)}' +
+    '@keyframes waOpen{from{transform:translate3d(-100%,0,0)}to{transform:none}}@keyframes waBack{from{transform:translate3d(28%,0,0);opacity:.6}to{transform:none;opacity:1}}' +
+    '@media(max-width:700px){.wa-root[data-anim=open] .wa-main{animation:waOpen .2s cubic-bezier(.2,.8,.2,1) var(--wa-ad,0s) both}.wa-root[data-anim=back] .wa-side{animation:waBack .2s cubic-bezier(.2,.8,.2,1) var(--wa-ad,0s) both}.wa-root{border-radius:0;border-inline:0}}' +
+    '@media(prefers-reduced-motion:reduce){.wa-root[data-anim] .wa-main,.wa-root[data-anim] .wa-side{animation:none}.wa-tolatest{transition:none}}' +
+    'body[data-active-page=inbox] .nova-nav-row{box-sizing:content-box;padding-top:var(--wa-sat,env(safe-area-inset-top,0px))}body[data-active-page=inbox] #novaInboxView{padding-inline:env(safe-area-inset-left,0px) env(safe-area-inset-right,0px)}@media(max-width:700px){body[data-active-page=inbox] #novaInboxView{padding-block:0}}' +
     '.wa-empty{margin:auto;color:#b5c0ca;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;font-size:16px}.wa-empty svg{color:#76b8d5;opacity:.9}.wa-note{font-size:12px;color:#9eacb9;text-align:center;padding:4px}' +
     '.wa-sys{text-align:center;margin:6px 0}.wa-sys span{display:inline-block;max-width:80%;background:#1a1e24;color:#d7c27a;font-size:12.5px;line-height:18px;padding:5px 12px;border-radius:8px;border:1px solid #2a313a;white-space:pre-wrap;overflow-wrap:anywhere}' +
     '.wa-who{display:block;font-size:12px;font-weight:600;margin-bottom:2px}.wa-who-bot{color:#7fd1b9}.wa-who-ph{color:#79c9eb}' +
@@ -205,6 +284,20 @@
   /* UX400: no PIN on staging/preview; while the first list loads the empty list says so (no lock state). */
   var LIST_LOADING = '<div class="wa-empty" data-wa-list-loading role="status"><span>جاري تحميل المحادثات…</span></div>';
   /* UX236: Arabic-insensitive search key: tashkeel/tatweel removed, hamza/alef forms, ya/alef-maqsura, ta-marbuta, Arabic-Indic digits folded */
+  /* UX405: media bubbles (Black Edition) */
+  WA_CSS += '.wa-has-media{padding:3px 3px 6px}.wa-cap{display:block;padding:5px 6px 0}.wa-media-only{padding:3px 3px 20px}.wa-mo-ov{padding:3px}.wa-mo-ov .wa-meta{bottom:7px;inset-inline-end:10px;padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.45);color:#f2f3f5}' +
+    '.wa-media{display:block;box-sizing:border-box;border-radius:8px;overflow:hidden;color:#f2f3f5;font:inherit;text-decoration:none}button.wa-media{padding:0;border:0;background:#0d0f12;cursor:zoom-in}.wa-media:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}' +
+    '.wa-m-image,.wa-m-image .wa-mimg{display:block;width:min(260px,62vw);height:min(260px,62vw);max-height:300px}.wa-mimg{object-fit:cover;background:#0d0f12;color:transparent}' +
+    'button.wa-m-sticker{background:none;width:150px;height:150px}.wa-m-sticker .wa-mimg{display:block;width:150px;height:150px;object-fit:contain}.wa-bubble.wa-mo-ov:has(.wa-m-sticker){background:none!important;box-shadow:none}.wa-bubble.wa-mo-ov:has(.wa-m-sticker):before{display:none}' +
+    '.wa-m-audio{display:flex;align-items:center;gap:8px;padding:6px 8px;width:min(300px,66vw);background:rgba(0,0,0,.18)}.wa-maudio{flex:1;min-width:0;height:40px;color-scheme:dark}.wa-mic{flex:none;display:inline-flex;width:40px;height:40px;border-radius:50%;align-items:center;justify-content:center;background:#2a313a;color:#cfd8df}' +
+    '.wa-m-video{width:min(280px,64vw);background:#000}.wa-mvideo{display:block;width:100%;max-height:320px;background:#000}' +
+    '.wa-mdoc{display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 10px;width:min(280px,64vw);background:rgba(0,0,0,.22);cursor:pointer}.wa-mdoc:hover{background:rgba(0,0,0,.32)}.wa-mdoc-t,.wa-mmiss-t{display:flex;flex-direction:column;min-width:0;gap:2px}.wa-mdoc-t b,.wa-mmiss-t b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wa-mdoc-t span,.wa-mmiss-t span{font-size:12px;color:#b5c0ca;line-height:1.5;white-space:normal}' +
+    '.wa-mmiss{display:flex;align-items:center;gap:10px;padding:8px 10px;width:min(280px,64vw);background:rgba(0,0,0,.22);border:1px dashed #3a4450}.wa-mmiss .wa-mic{color:#d7c27a}';
+  var LB_CSS = '.wa-lb{position:fixed;inset:0;z-index:2147483000;background:rgba(5,6,8,.96);display:flex;flex-direction:column;touch-action:none;transition:opacity .15s}' +
+    '.wa-lb-bar{flex:none;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px;gap:8px}' +
+    '.wa-lb-x,.wa-lb-dl{width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#f2f3f5;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.wa-lb-x:focus-visible,.wa-lb-dl:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}' +
+    '.wa-lb-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;padding:0 0 env(safe-area-inset-bottom,0px)}.wa-lb[data-zoom="1"] .wa-lb-stage{touch-action:pan-x pan-y pinch-zoom}' +
+    '.wa-lb-img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .15s ease-out;transform-origin:center;touch-action:pinch-zoom;user-select:none;-webkit-user-select:none}@media(prefers-reduced-motion:reduce){.wa-lb,.wa-lb-img{transition:none}}';
   function normAr(s) {
     return String(s == null ? '' : s).toLowerCase()
       .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
@@ -243,7 +336,7 @@
         '<button type="button" class="wa-chat' + (c.id === selId ? ' active' : '') + (u ? ' unread' : '') + '" data-conv="' + esc(c.id) + '"' + (c.id === selId ? ' aria-current="true"' : '') + '>' +
         '<span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-chat-body"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
         '<span class="wa-ctime">' + (last ? esc(dateLabel(last.at, now) === 'اليوم' ? timeLabel(last.at) : dateLabel(last.at, now)) : '') + '</span></span>' +
-        '<span class="wa-row"><span class="wa-preview">' + (pv ? (pv.dir === 'out' ? tick(pv) + ' ' : '') + esc(pv.text) : '') + '</span>' +
+        '<span class="wa-row"><span class="wa-preview">' + (pv ? (pv.dir === 'out' ? tick(pv) + ' ' : '') + esc(previewText(pv)) : '') + '</span>' +
         (isP ? '<span class="wa-pinic" data-wa-pinned title="مثبتة">' + IC_PIN + '</span>' : '') +
         (u ? '<span class="wa-badge" data-unread="' + u + '">' + (u > 99 ? '99+' : u) + '</span>' : '') + '</span></span></button>' +
         '<button type="button" class="wa-rowmenu" data-wa-menu="' + esc(c.id) + '" aria-haspopup="menu" aria-expanded="' + (open ? 'true' : 'false') + '" aria-label="خيارات المحادثة مع ' + esc(name) + '">' + IC_DOWN + '</button>' +
@@ -251,7 +344,14 @@
           '<button type="button" role="menuitem" data-wa-arch="' + esc(c.id) + '">' + IC_ARCH + '<span>' + (isA ? 'إلغاء أرشفة المحادثة' : 'أرشفة المحادثة') + '</span></button></div>' : '') + '</div>';
     }).join('');
   }
-  /* opts: { selected, query, now, sendEnabled } */
+  /* UX404: composer affordances like WhatsApp. Emoji/attach/voice behaviour belongs to UX401: the buttons are visible but inert
+     (aria-disabled, «قريباً»), never send anything and never open a picker. */
+  var IC_EMOJI = '<svg' + SVGA + '><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>';
+  var IC_CLIP = '<svg' + SVGA + '><path d="M20.5 11.5l-8.3 8.3a5 5 0 0 1-7-7l8.3-8.3a3.3 3.3 0 0 1 4.7 4.7l-8.4 8.3a1.7 1.7 0 0 1-2.3-2.3l7.7-7.7"/></svg>';
+  var IC_MIC = '<svg' + SVGA + '><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>';
+  var IC_SEND = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4l17.4-7.5a1 1 0 0 0 0-1.8L3.4 3.6a.9.9 0 0 0-1.3 1l1.9 6.4 9 1-9 1-1.9 6.4a.9.9 0 0 0 1.3 1z"/></svg>';
+  function cBtn(k, label, ic) { return '<button type="button" class="wa-cbtn wa-c-' + k + '" data-wa-' + k + ' aria-label="' + label + ' (قريباً)" title="قريباً" aria-disabled="true">' + ic + '</button>'; }
+  /* opts: { selected, query, now, sendEnabled, newCount (UX404 FAB badge), anim ('open'|'back', UX404 slide) } */
   var CHAT_LOADING = '<div class="wa-chat-loading" data-chat-loading role="status"><span class="wa-chat-loading-txt">جاري تحميل المحادثة…</span><span class="wa-sk wa-sk-in"></span><span class="wa-sk wa-sk-out"></span><span class="wa-sk wa-sk-in w2"></span></div>';
   function renderWa(convs, opts) {
     opts = opts || {}; var now = opts.now || Date.now(), sel = null;
@@ -269,18 +369,18 @@
     var main = sel
       ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></button><span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-head-txt"><span class="wa-head-name">' + esc(name) + '</span><span class="wa-sub" data-wa-sub>' + esc(subtitle) + '</span></span>' +
         '</div>' +
-        '<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log" aria-live="polite"' + (opts.chatLoading ? ' aria-busy="true"' : '') + ' aria-label="رسائل المحادثة مع ' + esc(name) + '" tabindex="-1">' + (opts.chatLoading ? CHAT_LOADING : '') + (opts.chatError ? '<div class="wa-chat-err" role="alert" data-chat-error><span>' + esc(opts.chatError) + '</span><button type="button" data-wa-reload>إعادة المحاولة</button></div>' : '') + (hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>' : '') + (opts.chatLoading ? '' : bubbles(hid ? allMs.slice(hid) : sel.messages, now)) + '</div>' +
-        '<button type="button" class="wa-tolatest" data-wa-latest hidden aria-label="انزل للأحدث">⌄ انزل للأحدث</button>'
+        '<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log" aria-live="polite"' + (opts.chatLoading ? ' aria-busy="true"' : '') + ' aria-label="رسائل المحادثة مع ' + esc(name) + '" tabindex="-1">' + (opts.chatLoading ? CHAT_LOADING : '') + (opts.chatError ? '<div class="wa-chat-err" role="alert" data-chat-error><span>' + esc(opts.chatError) + '</span><button type="button" data-wa-reload>إعادة المحاولة</button></div>' : '') + (hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>' : '') + (opts.chatLoading ? '' : bubbles(hid ? allMs.slice(hid) : sel.messages, now, { url: opts.mediaUrl, fail: opts.mediaFail })) + '</div>' +
+        '<button type="button" class="wa-tolatest" data-wa-latest' + (opts.newCount ? '' : ' hidden') + ' aria-label="انزل للأحدث' + (opts.newCount ? ' (' + Number(opts.newCount) + ' رسالة جديدة)' : '') + '">' + IC_DOWN + '<span class="wa-fab-n" data-wa-fab-n' + (opts.newCount ? '>' + (opts.newCount > 99 ? '99+' : Number(opts.newCount)) : ' hidden>') + '</span></button>'
       : opts.loading && !arr(convs).length ? LIST_LOADING
       : '<div class="wa-empty wa-intro" data-wa-intro><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><h2>محادثات واتساب الصيدلية</h2><span>اختر محادثة لعرضها</span><p>الرسائل بتظهر هنا زي واتساب ويب. ابحث بالاسم أو الرقم أو نص الرسالة.</p></div>';
     var en = !!opts.sendEnabled;
-    return '<style>' + WA_CSS + '</style><div class="wa-root" dir="rtl" data-wa-root data-wa-inbox-open data-view="' + (sel ? 'chat' : 'list') + '">' +
+    return '<style>' + WA_CSS + '</style><div class="wa-root" dir="rtl" data-wa-root data-wa-inbox-open data-view="' + (sel ? 'chat' : 'list') + '"' + (opts.anim === 'open' || opts.anim === 'back' ? ' data-anim="' + opts.anim + '"' : '') + '>' +
       '<aside class="wa-side"><div class="wa-side-head"><h1 style="font:inherit;margin:0">المحادثات</h1>'+(opts.histHead||'')+'</div>'+(opts.histPanel||'')+'<div class="wa-search"><input type="search" id="waSearch" aria-label="ابحث في المحادثات أو ابدأ محادثة جديدة" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"><button type="button" class="wa-sclear" id="waSearchClear" data-wa-sclear aria-label="\u0645\u0633\u062d \u0627\u0644\u0628\u062d\u062b"' + (opts.query ? '' : ' hidden') + '>\u00d7</button></div>' +
       '<div class="wa-list" id="waList" role="group" aria-label="قائمة المحادثات">' + chatListHtml(convs, opts.selected, opts.query, now, opts.loading, opts.list) + '</div></aside>' +
-      '<section class="wa-main' + (sel ? '' : ' wa-noselect') + '">' + main + (sel ? (opts.sendErr ? '<div class="wa-send-err" role="alert" data-send-err>' + esc(opts.sendErr) + '</div>' : '') + (opts.windowClosed ? '<div class="wa-window-note" data-wa-window role="status">عدّى أكتر من 24 ساعة على آخر رسالة من العميل. واتساب مش بيسمح بالرد لحد ما يبعت هو رسالة جديدة، وهتفتح الكتابة تلقائياً أول ما توصل.</div>' : '') + '<form class="wa-composer" id="waComposer" data-wa-composer' + (opts.windowClosed ? ' data-window="closed"' : '') + '><input type="text" id="waInput" dir="auto" maxlength="1000" enterkeyhint="send" autocomplete="off" aria-label="اكتب رسالة للعميل" placeholder="' + (opts.windowClosed ? 'الرد متوقف: لازم العميل يبعت الأول' : en ? 'اكتب رسالة' : (opts.sendHint || 'الإرسال متوقف')) + '"' + (en ? '' : ' disabled') + '><button type="submit" class="wa-send" aria-label="إرسال"' + (en ? '' : ' disabled') + '>➤</button></form>' : '') + '</section></div>';
+      '<section class="wa-main' + (sel ? '' : ' wa-noselect') + '">' + main + (sel ? (opts.sendErr ? '<div class="wa-send-err" role="alert" data-send-err>' + esc(opts.sendErr) + '</div>' : '') + (opts.windowClosed ? '<div class="wa-window-note" data-wa-window role="status">عدّى أكتر من 24 ساعة على آخر رسالة من العميل. واتساب مش بيسمح بالرد لحد ما يبعت هو رسالة جديدة، وهتفتح الكتابة تلقائياً أول ما توصل.</div>' : '') + '<form class="wa-composer" id="waComposer" data-wa-composer' + (opts.windowClosed ? ' data-window="closed"' : '') + '><div class="wa-pill">' + cBtn('emoji', 'الرموز التعبيرية', IC_EMOJI) + '<input type="text" id="waInput" dir="auto" maxlength="1000" enterkeyhint="send" autocomplete="off" aria-label="اكتب رسالة للعميل" placeholder="' + (opts.windowClosed ? 'الرد متوقف: لازم العميل يبعت الأول' : en ? 'اكتب رسالة' : (opts.sendHint || 'الإرسال متوقف')) + '"' + (en ? '' : ' disabled') + '>' + cBtn('attach', 'إرفاق ملف', IC_CLIP) + cBtn('mic', 'رسالة صوتية', IC_MIC) + '</div><button type="submit" class="wa-send" aria-label="إرسال"' + (en ? '' : ' disabled') + '>' + IC_SEND + '</button></form>' : '') + '</section></div>';
   }
 
-  var api = { normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+  var api = { normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);

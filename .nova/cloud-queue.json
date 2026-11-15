@@ -11,7 +11,7 @@
    "after": [
     "UX400b"
    ],
-   "status": "running",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-smoothness",
@@ -20,7 +20,10 @@
    "max_turns": 120,
    "slot": "A",
    "dispatched_at": "2026-11-15T12:24:26+00:00",
-   "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867"
+   "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867",
+   "pr": 462,
+   "merged_at": "2026-11-15T12:53:03+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/462"
   },
   {
    "id": "UX405",
@@ -31,13 +34,18 @@
    "after": [
     "UX404"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "note": "Slot A track; high-priority media follow-up from owner phone test. Inserted after running UX404 and ahead of UX406/UX401–UX403. Model opus, max_turns 80. GAS pharmacy PR #73 will attach media_base64 (≤5MB) after Ahmed merges and updates the script; accept that payload and store bytes in KV. Do not bind WA_TOKEN or enable R2. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
-   "source": "owner-request-2026-11-15-media"
+   "source": "owner-request-2026-11-15-media",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T12:53:03+00:00",
+   "pr": 463,
+   "merged_at": "2026-11-15T13:13:18+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/463"
   },
   {
    "id": "UX406",
@@ -48,13 +56,15 @@
    "after": [
     "UX405"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
-   "source": "owner-request-2026-11-15-notifications"
+   "source": "owner-request-2026-11-15-notifications",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T13:13:18+00:00"
   },
   {
    "id": "UX401",
@@ -99,17 +109,28 @@
    "after": [
     "SALE-06"
    ],
-   "status": "running",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-request-2026-11-15-wa-kpis",
    "note": "Slot B track; Sonnet per owner rule 2026-11-15. Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo. Requeued at front 2026-11-15 after turn cap + slot B usage limit; waits for limit reset; max_turns 120. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 120,
    "slot": "B",
-   "dispatched_at": "2026-11-15T12:42:42+00:00",
+   "dispatched_at": "2026-11-15T13:21:56+00:00",
    "not_before": "2026-11-15T12:42:00+00:00",
-   "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585"
+   "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585",
+   "pr": 464,
+   "ci_dispatched": {
+    "sha": "b46827199a2b4ff354e1ce10f082e4922346f960",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T13:17:03+00:00"
+   }
   },
   {
    "id": "UX403",
@@ -4952,5 +4973,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T12:42:42+00:00"
+ "updated": "2026-11-15T13:21:56+00:00"
 }

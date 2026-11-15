@@ -26,7 +26,8 @@ const LOCAL = { seq: 3, conversations: [{ id: 'loc-1', customer: 'هالة ال�
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
 const origin = new URL(BASE).origin;
 const out = {};
-const noOverflow = (page) => page.evaluate(() => {
+const noOverflow = (page) => page.evaluate(async () => {
+  await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))); // UX404: let the 200ms slide finish
   const d = document.documentElement, r = document.querySelector('#novaInboxView .wa-root');
   return { doc: d.scrollWidth - d.clientWidth, root: r ? r.scrollWidth - r.clientWidth : -1 };
 });
