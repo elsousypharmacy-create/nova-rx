@@ -4640,7 +4640,7 @@
    "after": [
     "UX422"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -4648,7 +4648,17 @@
    "model": "opus",
    "max_turns": 60,
    "slot": "B",
-   "dispatched_at": "2026-11-15T10:03:23+00:00"
+   "dispatched_at": "2026-11-15T10:03:23+00:00",
+   "pr": 451,
+   "ci_dispatched": {
+    "sha": "a94c27a0b12a51cef51d59cfaeafb07872e65b65",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T10:10:07+00:00"
+   }
   },
   {
    "id": "UX325",
@@ -4659,13 +4669,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Standalone supplier-compare; UX421 already claimed 390px overflow fix — re-verify first.",
    "model": "opus",
-   "max_turns": 60
+   "max_turns": 60,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T10:10:07+00:00"
   },
   {
    "id": "UX326",
@@ -4840,5 +4852,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:08:42+00:00"
+ "updated": "2026-11-15T10:10:07+00:00"
 }
