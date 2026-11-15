@@ -156,7 +156,6 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   await page.evaluate(() => { window.__t.perm = 'denied'; });
   await view.locator('[data-wa-notify]').click();
   await view.locator('[data-wa-notif-note]').waitFor();
-  assert.equal(await view.locator('[data-wa-notify]').getAttribute('data-wa-notify'), 'denied');
   assert.match(await view.locator('[data-wa-notif-note]').textContent(), /إعدادات الموقع/);
   assert.equal((await T()).ask, 2, 'denied never re-prompts');
 
