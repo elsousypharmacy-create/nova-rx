@@ -1,10 +1,24 @@
 /* NOVA Rx — N104 optional backend client. Flag novaBackend.enabled (default OFF) + novaBackend.url setting.
    OFF: zero fetches, nothing changes. ON: pushes the offline outbox (POST /api/v1/sync/push) and pulls the feed
    (GET /api/v1/sync/feed?since=). Any error keeps the app local; outbox entries stay queued (backoff by NovaOutbox).
-   Not wired to any screen. Works as <script> (window.NovaBackendClient) and in Node (module.exports). */
+   SALE-01: when ON and no (https) novaBackend.url override is set, the base URL is production nova-rx-api
+   (PRODUCTION_URL). The flag is per device (localStorage); the token lives in sessionStorage only and is never logged.
+   Works as <script> (window.NovaBackendClient) and in Node (module.exports). */
 (function (root) {
   'use strict';
   var K_ENABLED = 'novaBackend.enabled', K_URL = 'novaBackend.url', K_CURSOR = 'novaBackend.cursor', K_FEED = 'novaBackend.feed';
+  var K_TOKEN = 'novaBackend.token';
+  var PRODUCTION_URL = 'https://nova-rx-api.elsousypharmacy.workers.dev';
+
+  /* Pure resolution of the device flag: OFF => no base URL at all (callers make zero calls). ON => https override or production. */
+  function resolveBaseUrl(storage) {
+    var on = false, u = '';
+    try { on = storage.getItem(K_ENABLED) === 'true'; } catch (e) { on = false; }
+    if (!on) return '';
+    try { u = String(storage.getItem(K_URL) || '').trim(); } catch (e) { u = ''; }
+    if (!/^https:\/\/[^\s/]+/i.test(u)) u = PRODUCTION_URL;
+    return u.replace(/\/+$/, '');
+  }
 
   function readJson(storage, k, d) { try { var r = storage.getItem(k); return r ? JSON.parse(r) : d; } catch (e) { return d; } }
 
@@ -14,7 +28,7 @@
     var getToken = deps.getToken || function () { return null; };
 
     function enabled() { try { return storage.getItem(K_ENABLED) === 'true'; } catch (e) { return false; } }
-    function baseUrl() { try { var u = storage.getItem(K_URL); return u ? String(u).replace(/\/+$/, '') : ''; } catch (e) { return ''; } }
+    function baseUrl() { return resolveBaseUrl(storage); }
     function active() { return enabled() && !!baseUrl() && typeof doFetch === 'function'; }
     function setEnabled(v) { storage.setItem(K_ENABLED, v ? 'true' : 'false'); }
     function setUrl(u) { storage.setItem(K_URL, String(u || '')); }
@@ -66,6 +80,6 @@
     return { enabled: enabled, baseUrl: baseUrl, setEnabled: setEnabled, setUrl: setUrl, push: push, pull: pull, syncAll: syncAll, feed: function () { return readJson(storage, K_FEED, []); } };
   }
 
-  var api = { createBackendClient: createBackendClient, KEYS: { enabled: K_ENABLED, url: K_URL } };
+  var api = { createBackendClient: createBackendClient, resolveBaseUrl: resolveBaseUrl, PRODUCTION_URL: PRODUCTION_URL, KEYS: { enabled: K_ENABLED, url: K_URL, token: K_TOKEN } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NovaBackendClient = api;
 })(typeof window !== 'undefined' ? window : this);

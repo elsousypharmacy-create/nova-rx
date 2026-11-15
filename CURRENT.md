@@ -8,7 +8,7 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 ## Priorities (newest first)
 1. **Sale readiness (2026-11-15): sell today from preview/app.** Operator guide: docs/ops/SALE_DAY.md (Arabic). Cloud queue tasks SALE-01–06 and UX3xx/UX4xx run via the cloud scheduler (state: .nova/cloud-queue.json; scheduler opens PRs and squash-merges on green CI).
 2. Merged on main (not necessarily deployed to preview): UX420 design tokens, UX421/UX422 Black Edition pages, UX400 conversations without PIN on staging/preview (production PIN still required), SALE-02 VAT default 14% + static assets + demo text hidden, UX323/UX324 sticker and emergency-sales fixes.
-3. Backend: production backend exists; the frontend flag stays OFF until the owner enables it on one device. SAAS-01–05 exist behind flags OFF; billing is a mock. Not a ready multi-tenant SaaS.
+3. Backend: production backend exists; the frontend flag (novaBackend.enabled) stays OFF until the owner enables it on one device (SALE-01: Settings card, flag ON -> production nova-rx-api; docs/ops/BACKEND_ONE_DEVICE.md). SAAS-01–05 exist behind flags OFF; billing is a mock. Not a ready multi-tenant SaaS.
 4. P0 pharmacy#59 (blank mobile dashboard): pharmacy PR #60 fixed, NOT live-verified; close only after the owner confirms on his phone.
 
 ## Who is on what

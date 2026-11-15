@@ -22,9 +22,11 @@ const res = (body, status = 200) => ({ ok: status < 400, status, json: async () 
   assert.equal((await c.syncAll()).skipped, true, 'url alone does not enable');
   assert.equal(f.calls.length, 0);
   assert.equal(ob.pending().length, 1);
+  // SALE-01: ON with no override now targets production nova-rx-api (mocked fetch here, never the network)
   c.setEnabled(true); c.setUrl('');
-  assert.equal((await c.syncAll()).skipped, true, 'no url -> off');
-  assert.equal(f.calls.length, 0);
+  assert.equal(c.baseUrl(), 'https://nova-rx-api.elsousypharmacy.workers.dev', 'no url -> production default');
+  await c.pull();
+  assert.match(f.calls[0].url, /^https:\/\/nova-rx-api\.elsousypharmacy\.workers\.dev\/api\/v1\/sync\/feed/);
 }
 // ON: push + pull
 {
