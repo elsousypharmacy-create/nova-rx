@@ -4126,7 +4126,7 @@
    "after": [
     "UX400"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -4136,11 +4136,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T10:00:47+00:00",
    "pr": 454,
-   "ci_dispatched": {
-    "sha": "899ac0a79832ddd4b80478fb313acc6c0088a0f0",
-    "wf": [],
-    "at": "2026-11-15T10:18:23+00:00"
-   }
+   "merged_at": "2026-11-15T10:22:53+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/454"
   },
   {
    "id": "UX404",
@@ -4885,5 +4882,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:21:24+00:00"
+ "updated": "2026-11-15T10:22:53+00:00"
 }
