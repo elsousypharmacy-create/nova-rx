@@ -3,6 +3,49 @@
  "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
   {
+   "id": "UX404",
+   "phase": 10,
+   "title": "شاشة المحادثات: سلاسة بمستوى واتساب (60fps ولوحة المفاتيح والمنطقة الآمنة)",
+   "brief": "Continue SLOT A WhatsApp Web work (task 3 of 6), model Opus, up to 80 turns. Depends on UX400b (PIN already removed; list+pane chrome in place). Do not reopen the PIN gate. Do not start UX401–UX403. Slot B may be on other pages — stay inside the conversations screen to avoid conflicts.\n\nOwner Ahmed tested the conversations screen on his phone (Asia/Riyadh) after UX400b and said: «الشكل احسن لكن لسه مش زي الواتس الحقيقي في السلاسه» (looks better but not as smooth as real WhatsApp). Screenshot of that phone session is at .nova/inbox/ux404-ahmed-phone-2026-11-15.png — treat it as the source of visual bugs.\n\nGoals — WhatsApp-level smoothness and the phone bugs, not a new visual redesign of other pages:\n\n1) 60fps scrolling: virtualized/windowed message list (only nearby bubbles in the layout/paint tree), content-visibility, no layout thrash, passive listeners, GPU transforms only (no top/left animation). Opening a chat lands at the bottom instantly with no jump or flash. Smooth infinite scroll-up to load older messages while keeping scroll position (no jump when prepending).\n\n2) Instant open/back transitions: slide like WhatsApp (~200ms, respect prefers-reduced-motion). Optimistic send: show the outgoing bubble immediately with a clock, then ✓ / ✓✓ as status arrives (failed state visible). Keyboard: use visualViewport so the composer sticks above the on-screen keyboard without jank or a gap. Scroll-to-bottom FAB with unread count when the user has scrolled up. Safe-area insets: the screenshot shows the app header / «المحادثات» tab colliding with the phone status bar — pad with env(safe-area-inset-*).\n\n3) Visual bugs from the screenshot (must fix, even if some overlap UX401):\n- Timestamp overlapping text in short or LTR bubbles (e.g. «Bottest off» with 11:22 on top of «off»). Time (and ticks) must sit in a reserved inline or end-of-bubble slot and never cover glyphs, for Arabic, LTR, and mixed short messages.\n- WhatsApp-style bubble tails (incoming and outgoing).\n- Composer currently has only a send arrow and «اكتب رسالة»; add emoji, attach, and mic icon affordances in the composer shell like WhatsApp (UX401 still owns picker/attach/voice *behavior* if not finished here). Keep NOVA_INBOX_SEND and the 24-hour window.\n\n4) Build worker/live/nova-rx-preview.ux-404.js from the latest worker/live artifact using tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main).\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html, plus their tests and the new preview artifact. Do not edit ux-tokens.css/js, other pages, queue, workflows, or secrets. No production, no live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN.\n\nTests (CI must pass):\n- Playwright tests/ux at 1366x768 and 390x844 (mobile emulation) with fake data (block non-GET / no live writes).\n- Perf: a thread of 500 messages; scroll the list and assert no long tasks / excessive frame drops, CLS ≈ 0; open-chat lands at bottom with no layout jump; prepend older messages without losing scroll position; composer stays above a simulated visualViewport keyboard; safe-area padding is present; scroll-to-bottom FAB with unread count.\n- Visual regression screenshots (chat open, short LTR bubble «Bottest off», composer icons, header vs status-bar/safe area, tails) compared at 390x844.\n- Nearest unit tests. Record exact commands and results.",
+   "acceptance": "Conversations scroll at ~60fps with a virtualized/windowed list (500-message Playwright perf: no long tasks / excessive frame drops, CLS≈0); open chat lands at the bottom instantly with no jump; infinite scroll-up keeps position; open/back slides ~200ms; optimistic send with clock→✓ ticks; composer stays above the visualViewport keyboard without jank; scroll-to-bottom FAB shows unread count; safe-area insets so the header/tab no longer collide with the phone status bar; short/LTR bubble timestamps never overlap text; bubble tails present; composer shows emoji/attach/mic icons; Playwright mobile visual-regression screenshots + unit tests green in CI; worker/live/nova-rx-preview.ux-404.js built (markers + node --check); no deploy/merge by the agent; PIN stays removed on staging/preview; no live customer messages.",
+   "after": [
+    "UX400b"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15-smoothness",
+   "note": "Slot A track; high-priority smoothness follow-up from owner phone test. Inserted after UX400b and ahead of UX401–UX403. Model opus, max_turns 80. Requeued at front 2026-11-15 after 80-turn cap lost uncommitted work; max_turns 120, WIP auto-save on.",
+   "model": "opus",
+   "max_turns": 120,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T11:43:49+00:00",
+   "retry": true,
+   "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867"
+  },
+  {
+   "id": "UX430",
+   "phase": 10,
+   "title": "WhatsApp KPIs on Home",
+   "brief": "Slot B track (Opus, up to 80 turns). Owner request: a WhatsApp KPIs card on the Home page that opens a dedicated WhatsApp KPIs page. Starts after SALE-06 and ahead of SALE-05. Stay off the conversations screen — slot A owns unified-inbox / WhatsApp Web work (UX404–UX406, UX401–UX403). Do not start until SALE-06 is done.\n\nAdd a Home-page card (Arabic RTL, mobile-first, modern style from UX420–UX422) showing today's headline numbers (at least: chats today, messages today, waiting/unanswered count, and average staff first-response time). Tapping the card opens a dedicated in-app WhatsApp KPIs page (not a conversations rewrite, not buried only inside reports).\n\nBuild the page and APIs from staging D1 conversation data. Reuse existing UX300 work (PR #409 — لوحة الأداء, metrics endpoint, tests) if present: extend or wrap those read-only endpoints rather than inventing a second source of truth. If something is missing, add only what is needed.\n\nKPIs (timezone = the app's existing pharmacy timezone if one is already used, otherwise Asia/Riyadh; be consistent for 'today' / 'yesterday'):\n- Chats and messages today vs yesterday, plus 7-day and 30-day trend\n- Average and median staff first-response time (human/pharmacist, not the bot)\n- Waiting (unanswered) chats with wait duration; tapping a waiting chat opens that conversation (do not send any message)\n- Busiest hours heatmap\n- New vs returning customers\n- Replies per staff member\n- Media count (images/audio/video/documents/stickers as data allows)\nDate-range filter (today / 7d / 30d / custom range) applies across the page.\n\nRead-only GET endpoints only, authenticated the same way as other inbox/session APIs after UX400 (no PIN gate revival). Never return secrets. No writes to D1 beyond an additive migration if a read model is strictly required (prefer computing from existing inbox tables). No live WhatsApp Graph calls.\n\nUI: Arabic RTL, mobile-first (390x844) and desktop (1366x768), modern Home/card style, no horizontal overflow, tap targets usable on a phone.\n\nBuild worker/live/nova-rx-preview.ux-430.js from the latest worker/live artifact with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge (scheduler runs preview smoke + rollback). Preserve all conversations markers (PIN-free marker, novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main). If slot A has a newer conversations artifact or an open cloud/UX404–UX406 branch, merge/rebase carefully and leave conversations regions intact.\n\nTests (CI must pass): unit tests for the KPI calculations (today vs yesterday, 7/30 trends, avg and median first-response, waiting duration, new vs returning, replies per staff, media count, busiest hours) with fixture/fake D1 data. Playwright tests/ux at 1366x768 and 390x844 with fake/local data (block non-GET / no live writes), including screenshots of the Home card and the KPIs page (headlines, trends, waiting list, heatmap, filters). Record exact commands and results.\n\nHARD RULES: Do not spend money or add payment methods. Do not roll, print, or rotate secrets or tokens (NOVA_API_PIN, NOVA_INGEST_SECRET, WA_TOKEN, Cloudflare, Aumet). Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to anyone. Do not call /{phone_id}/register or /deregister. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore). Do not deploy production or staging (Nova handles production via deploy-backend-production.yml). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only. Tests with fake/local data; block non-GET / no live writes in Playwright. Preserve Arabic RTL.\n",
+   "acceptance": "Home shows a WhatsApp KPIs card with today's headline numbers; the card opens a dedicated Arabic RTL mobile-first KPIs page covering today vs yesterday and 7/30-day chat/message trends, avg and median staff first-response time, waiting chats with wait duration (tap opens the chat), busiest-hours heatmap, new vs returning customers, replies per staff member, media count, and a date-range filter; computed from staging D1 (reusing UX300 endpoints if present); read-only auth-gated endpoints; unit + Playwright tests with screenshots pass; preview artifact nova-rx-preview.ux-430.js built; conversations regions left intact; no WhatsApp sends; no secrets printed; no pharmacy/GAS changes; no paid services; no self-deploy or merge.",
+   "after": [
+    "SALE-06"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15-wa-kpis",
+   "note": "Slot B track; Sonnet per owner rule 2026-11-15. Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo. Requeued at front 2026-11-15 after turn cap + slot B usage limit; waits for limit reset; max_turns 120.",
+   "model": "sonnet",
+   "max_turns": 120,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T12:08:26+00:00",
+   "retry": true,
+   "not_before": "2026-11-15T12:42:00+00:00",
+   "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585"
+  },
+  {
    "id": "N60",
    "phase": 8,
    "title": "FIN-01 chart of accounts and opening balances",
@@ -4140,25 +4183,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/454"
   },
   {
-   "id": "UX404",
-   "phase": 10,
-   "title": "شاشة المحادثات: سلاسة بمستوى واتساب (60fps ولوحة المفاتيح والمنطقة الآمنة)",
-   "brief": "Continue SLOT A WhatsApp Web work (task 3 of 6), model Opus, up to 80 turns. Depends on UX400b (PIN already removed; list+pane chrome in place). Do not reopen the PIN gate. Do not start UX401–UX403. Slot B may be on other pages — stay inside the conversations screen to avoid conflicts.\n\nOwner Ahmed tested the conversations screen on his phone (Asia/Riyadh) after UX400b and said: «الشكل احسن لكن لسه مش زي الواتس الحقيقي في السلاسه» (looks better but not as smooth as real WhatsApp). Screenshot of that phone session is at .nova/inbox/ux404-ahmed-phone-2026-11-15.png — treat it as the source of visual bugs.\n\nGoals — WhatsApp-level smoothness and the phone bugs, not a new visual redesign of other pages:\n\n1) 60fps scrolling: virtualized/windowed message list (only nearby bubbles in the layout/paint tree), content-visibility, no layout thrash, passive listeners, GPU transforms only (no top/left animation). Opening a chat lands at the bottom instantly with no jump or flash. Smooth infinite scroll-up to load older messages while keeping scroll position (no jump when prepending).\n\n2) Instant open/back transitions: slide like WhatsApp (~200ms, respect prefers-reduced-motion). Optimistic send: show the outgoing bubble immediately with a clock, then ✓ / ✓✓ as status arrives (failed state visible). Keyboard: use visualViewport so the composer sticks above the on-screen keyboard without jank or a gap. Scroll-to-bottom FAB with unread count when the user has scrolled up. Safe-area insets: the screenshot shows the app header / «المحادثات» tab colliding with the phone status bar — pad with env(safe-area-inset-*).\n\n3) Visual bugs from the screenshot (must fix, even if some overlap UX401):\n- Timestamp overlapping text in short or LTR bubbles (e.g. «Bottest off» with 11:22 on top of «off»). Time (and ticks) must sit in a reserved inline or end-of-bubble slot and never cover glyphs, for Arabic, LTR, and mixed short messages.\n- WhatsApp-style bubble tails (incoming and outgoing).\n- Composer currently has only a send arrow and «اكتب رسالة»; add emoji, attach, and mic icon affordances in the composer shell like WhatsApp (UX401 still owns picker/attach/voice *behavior* if not finished here). Keep NOVA_INBOX_SEND and the 24-hour window.\n\n4) Build worker/live/nova-rx-preview.ux-404.js from the latest worker/live artifact using tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main).\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html, plus their tests and the new preview artifact. Do not edit ux-tokens.css/js, other pages, queue, workflows, or secrets. No production, no live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN.\n\nTests (CI must pass):\n- Playwright tests/ux at 1366x768 and 390x844 (mobile emulation) with fake data (block non-GET / no live writes).\n- Perf: a thread of 500 messages; scroll the list and assert no long tasks / excessive frame drops, CLS ≈ 0; open-chat lands at bottom with no layout jump; prepend older messages without losing scroll position; composer stays above a simulated visualViewport keyboard; safe-area padding is present; scroll-to-bottom FAB with unread count.\n- Visual regression screenshots (chat open, short LTR bubble «Bottest off», composer icons, header vs status-bar/safe area, tails) compared at 390x844.\n- Nearest unit tests. Record exact commands and results.",
-   "acceptance": "Conversations scroll at ~60fps with a virtualized/windowed list (500-message Playwright perf: no long tasks / excessive frame drops, CLS≈0); open chat lands at the bottom instantly with no jump; infinite scroll-up keeps position; open/back slides ~200ms; optimistic send with clock→✓ ticks; composer stays above the visualViewport keyboard without jank; scroll-to-bottom FAB shows unread count; safe-area insets so the header/tab no longer collide with the phone status bar; short/LTR bubble timestamps never overlap text; bubble tails present; composer shows emoji/attach/mic icons; Playwright mobile visual-regression screenshots + unit tests green in CI; worker/live/nova-rx-preview.ux-404.js built (markers + node --check); no deploy/merge by the agent; PIN stays removed on staging/preview; no live customer messages.",
-   "after": [
-    "UX400b"
-   ],
-   "status": "failed",
-   "attempts": 2,
-   "fix_attempts": 0,
-   "source": "owner-request-2026-11-15-smoothness",
-   "note": "Slot A track; high-priority smoothness follow-up from owner phone test. Inserted after UX400b and ahead of UX401–UX403. Model opus, max_turns 80.",
-   "model": "opus",
-   "max_turns": 80,
-   "slot": "A",
-   "dispatched_at": "2026-11-15T11:43:49+00:00"
-  },
-  {
    "id": "UX405",
    "phase": 10,
    "title": "شاشة المحادثات: عرض الصور والوسائط الواردة زي واتساب",
@@ -4187,8 +4211,8 @@
    "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
-   "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model opus, max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push.",
-   "model": "opus",
+   "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push.",
+   "model": "sonnet",
    "max_turns": 80,
    "source": "owner-request-2026-11-15-notifications"
   },
@@ -4206,7 +4230,7 @@
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; starts after UX406 (media UX405 + notifications UX406, which follow UX404).",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 80
   },
   {
@@ -4223,7 +4247,7 @@
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 80
   },
   {
@@ -4240,7 +4264,7 @@
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 80
   },
   {
@@ -4536,7 +4560,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4554,7 +4578,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4572,7 +4596,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4590,7 +4614,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4608,7 +4632,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4626,7 +4650,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4644,7 +4668,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4662,7 +4686,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4770,7 +4794,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4788,7 +4812,7 @@
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 60
   },
   {
@@ -4910,25 +4934,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   },
   {
-   "id": "UX430",
-   "phase": 10,
-   "title": "WhatsApp KPIs on Home",
-   "brief": "Slot B track (Opus, up to 80 turns). Owner request: a WhatsApp KPIs card on the Home page that opens a dedicated WhatsApp KPIs page. Starts after SALE-06 and ahead of SALE-05. Stay off the conversations screen — slot A owns unified-inbox / WhatsApp Web work (UX404–UX406, UX401–UX403). Do not start until SALE-06 is done.\n\nAdd a Home-page card (Arabic RTL, mobile-first, modern style from UX420–UX422) showing today's headline numbers (at least: chats today, messages today, waiting/unanswered count, and average staff first-response time). Tapping the card opens a dedicated in-app WhatsApp KPIs page (not a conversations rewrite, not buried only inside reports).\n\nBuild the page and APIs from staging D1 conversation data. Reuse existing UX300 work (PR #409 — لوحة الأداء, metrics endpoint, tests) if present: extend or wrap those read-only endpoints rather than inventing a second source of truth. If something is missing, add only what is needed.\n\nKPIs (timezone = the app's existing pharmacy timezone if one is already used, otherwise Asia/Riyadh; be consistent for 'today' / 'yesterday'):\n- Chats and messages today vs yesterday, plus 7-day and 30-day trend\n- Average and median staff first-response time (human/pharmacist, not the bot)\n- Waiting (unanswered) chats with wait duration; tapping a waiting chat opens that conversation (do not send any message)\n- Busiest hours heatmap\n- New vs returning customers\n- Replies per staff member\n- Media count (images/audio/video/documents/stickers as data allows)\nDate-range filter (today / 7d / 30d / custom range) applies across the page.\n\nRead-only GET endpoints only, authenticated the same way as other inbox/session APIs after UX400 (no PIN gate revival). Never return secrets. No writes to D1 beyond an additive migration if a read model is strictly required (prefer computing from existing inbox tables). No live WhatsApp Graph calls.\n\nUI: Arabic RTL, mobile-first (390x844) and desktop (1366x768), modern Home/card style, no horizontal overflow, tap targets usable on a phone.\n\nBuild worker/live/nova-rx-preview.ux-430.js from the latest worker/live artifact with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge (scheduler runs preview smoke + rollback). Preserve all conversations markers (PIN-free marker, novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main). If slot A has a newer conversations artifact or an open cloud/UX404–UX406 branch, merge/rebase carefully and leave conversations regions intact.\n\nTests (CI must pass): unit tests for the KPI calculations (today vs yesterday, 7/30 trends, avg and median first-response, waiting duration, new vs returning, replies per staff, media count, busiest hours) with fixture/fake D1 data. Playwright tests/ux at 1366x768 and 390x844 with fake/local data (block non-GET / no live writes), including screenshots of the Home card and the KPIs page (headlines, trends, waiting list, heatmap, filters). Record exact commands and results.\n\nHARD RULES: Do not spend money or add payment methods. Do not roll, print, or rotate secrets or tokens (NOVA_API_PIN, NOVA_INGEST_SECRET, WA_TOKEN, Cloudflare, Aumet). Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to anyone. Do not call /{phone_id}/register or /deregister. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore). Do not deploy production or staging (Nova handles production via deploy-backend-production.yml). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only. Tests with fake/local data; block non-GET / no live writes in Playwright. Preserve Arabic RTL.\n",
-   "acceptance": "Home shows a WhatsApp KPIs card with today's headline numbers; the card opens a dedicated Arabic RTL mobile-first KPIs page covering today vs yesterday and 7/30-day chat/message trends, avg and median staff first-response time, waiting chats with wait duration (tap opens the chat), busiest-hours heatmap, new vs returning customers, replies per staff member, media count, and a date-range filter; computed from staging D1 (reusing UX300 endpoints if present); read-only auth-gated endpoints; unit + Playwright tests with screenshots pass; preview artifact nova-rx-preview.ux-430.js built; conversations regions left intact; no WhatsApp sends; no secrets printed; no pharmacy/GAS changes; no paid services; no self-deploy or merge.",
-   "after": [
-    "SALE-06"
-   ],
-   "status": "failed",
-   "attempts": 2,
-   "fix_attempts": 0,
-   "source": "owner-request-2026-11-15-wa-kpis",
-   "note": "Slot B track; Opus allowed (model opus, max_turns 80). Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo.",
-   "model": "opus",
-   "max_turns": 80,
-   "slot": "B",
-   "dispatched_at": "2026-11-15T12:08:26+00:00"
-  },
-  {
    "id": "SALE-05",
    "phase": 11,
    "title": "اختبار يوم بيع كامل (بيع، فاتورة، مرتجع، استيكر، ضريبة، موبايل)",
@@ -4945,7 +4950,7 @@
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness end-to-end pass after UX and VAT land.",
-   "model": "opus",
+   "model": "sonnet",
    "max_turns": 80
   }
  ],

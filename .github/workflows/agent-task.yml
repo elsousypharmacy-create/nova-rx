@@ -119,6 +119,7 @@ jobs:
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Implement with Claude
+        id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ inputs.slot == 'B' && secrets.CLAUDE_CODE_OAUTH_TOKEN_B || secrets.CLAUDE_CODE_OAUTH_TOKEN_A || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -137,6 +138,7 @@ jobs:
             - Do exactly this brief's scope. Do not start other tasks.
             - Stay on branch ${{ steps.branch.outputs.branch }}. Commit and push there (git push origin HEAD). Do NOT open a pull request: the cloud scheduler opens it, runs CI and merges on green. Put changed files, exact test commands and results, and remaining work in your final commit message. Never claim untested success.
             - If the branch already has commits (retry or fix mode), continue from them; in fix mode fix only what the brief says failed.
+            - Commit and push progress early and often (after each working step, at least every ~15 turns). The run has a hard turn cap; uncommitted work at the cap is only auto-saved as WIP and the task is retried.
             - The model is already pinned to ${{ inputs.model }}. Do not switch to a different model.
             - Do not edit .nova/cloud-queue.json or .github/workflows, secrets, env files, or node_modules. Do not deploy. Do not merge. Do not call paid APIs or supplier live sites. Do not print secrets.
             - If you touch UI, preserve Black Edition Arabic RTL UX.
@@ -151,8 +153,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ steps.branch.outputs.branch }}
+          TASK_ID: ${{ inputs.task_id }}
+          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
         run: |
           set -uo pipefail
+          # Auto-save uncommitted work (e.g. the agent hit --max-turns or a usage
+          # limit mid-task) so the scheduler's retry run continues from it instead
+          # of starting over. The scheduler never opens a PR for a red run's WIP.
+          if [ -n "${BRANCH:-}" ]; then
+            rm -f tests/.probe*.mjs
+            git add -A -- . ':(exclude).github/workflows' ':(exclude).nova/cloud-queue.json' 2>/dev/null || true
+            if ! git diff --cached --quiet 2>/dev/null; then
+              git commit -q -m "WIP [${TASK_ID}] auto-save: agent stopped before committing (claude step: ${CLAUDE_OUTCOME})" \
+                && echo "auto-saved uncommitted work to $BRANCH"
+            fi
+          fi
           if [ -n "${BRANCH:-}" ] && [ -n "$(git log origin/main..HEAD --oneline 2>/dev/null)" ]; then
             git push origin "HEAD:$BRANCH" || echo "::warning::push failed"
           fi
