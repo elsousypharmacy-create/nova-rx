@@ -4126,13 +4126,15 @@
    "after": [
     "UX400"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; split out of UX400 after max-turns failures. Starts after UX400. Model opus, max_turns 80.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T10:00:47+00:00"
   },
   {
    "id": "UX401",
@@ -4613,7 +4615,7 @@
    "after": [
     "UX422"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -4621,7 +4623,17 @@
    "model": "opus",
    "max_turns": 60,
    "slot": "A",
-   "dispatched_at": "2026-11-15T09:54:09+00:00"
+   "dispatched_at": "2026-11-15T09:54:09+00:00",
+   "pr": 449,
+   "ci_dispatched": {
+    "sha": "443f4e99e838baa8a184f66daa024b11f016c919",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T10:00:47+00:00"
+   }
   },
   {
    "id": "UX324",
@@ -4830,5 +4842,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T09:57:53+00:00"
+ "updated": "2026-11-15T10:00:47+00:00"
 }
