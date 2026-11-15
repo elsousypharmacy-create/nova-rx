@@ -126,7 +126,7 @@
    "after": [
     "SALE-06"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "owner-request-2026-11-15-wa-kpis",
@@ -138,16 +138,8 @@
    "not_before": "2026-11-15T12:42:00+00:00",
    "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585",
    "pr": 464,
-   "ci_dispatched": {
-    "sha": "5f4b7909cd10d69e1882bbc41a719be0cf28c2ca",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T13:25:28+00:00"
-   }
+   "merged_at": "2026-11-15T13:30:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/464"
   },
   {
    "id": "UX403",
@@ -4990,5 +4982,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:25:28+00:00"
+ "updated": "2026-11-15T13:30:23+00:00"
 }
