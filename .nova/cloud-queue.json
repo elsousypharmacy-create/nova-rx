@@ -4874,15 +4874,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness. After UX422. Do not enable the production backend flag globally.",
    "model": "opus",
    "max_turns": 80,
    "slot": "B",
-   "dispatched_at": "2026-11-15T10:18:23+00:00",
+   "dispatched_at": "2026-11-15T10:38:20+00:00",
    "pr": 457,
    "ci_dispatched": {
     "sha": "9a5d20a5a77d572826f1452a3a5b943dde87c377",
@@ -4932,5 +4932,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:33:24+00:00"
+ "updated": "2026-11-15T10:38:20+00:00"
 }
