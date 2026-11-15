@@ -100,13 +100,16 @@
    "after": [
     "UX407"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track; starts after UX407 (prefix/alignment/keyboard/focus-ring, which follows running UX406). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T14:23:34+00:00",
+   "run_id": 43724106887
   },
   {
    "id": "UX402",
@@ -5000,5 +5003,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T14:22:30+00:00"
+ "updated": "2026-11-15T14:30:00+00:00"
 }
