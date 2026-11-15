@@ -11,6 +11,8 @@ const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.
 const NOW = Date.parse('2026-11-15T12:00:00+03:00');
 const CID = 'wa_201000000405';
 // 2x2 PNG (fixture bytes, not a customer file)
+// UX401: the voice player preloads metadata, so the audio fixture must be a real (tiny) file: 1 s of 8 kHz 8-bit mono silence (WAV)
+const WAV = (() => { const n = 8000, b = Buffer.alloc(44 + n, 0x80); b.write('RIFF', 0); b.writeUInt32LE(36 + n, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(8000, 24); b.writeUInt32LE(8000, 28); b.writeUInt16LE(1, 32); b.writeUInt16LE(8, 34); b.write('data', 36); b.writeUInt32LE(n, 40); return b; })();
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
 const M = (id, type, extra, text, k = 0) => ({ id, dir: 'in', kind: 'in', text, at: NOW - (20 - k) * 60000, status: null, media: { type, mime: null, filename: null, size: null, skipped: null, caption: null, cached: true, ...extra } });
 const msgs = [
@@ -42,10 +44,10 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
       const id = new URL(u).searchParams.get('id');
       if (u.includes('/history/media')) {
         media.push(id);
-        const ok = { wa_img1: 'image/png', wa_img2: 'image/png', wa_stk1: 'image/png', wa_aud1: 'audio/ogg', wa_vid1: 'video/mp4', wa_doc1: 'application/pdf' }[id];
+        const ok = { wa_img1: 'image/png', wa_img2: 'image/png', wa_stk1: 'image/png', wa_aud1: 'audio/wav', wa_vid1: 'video/mp4', wa_doc1: 'application/pdf' }[id];
         if (id === 'wa_vid1') return new Promise(() => {}); // fixture has no real mp4: keep the metadata request pending (a broken file would show the fallback)
         if (!ok) return r.fulfill({ status: 404, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'MEDIA_UNAVAILABLE', message_ar: 'الملف مش متاح هنا.' }) });
-        return r.fulfill({ status: 200, headers: cors, contentType: ok, body: ok.startsWith('image/') ? PNG : Buffer.from([0, 0, 0]) });
+        return r.fulfill({ status: 200, headers: cors, contentType: ok, body: ok.startsWith('image/') ? PNG : ok.startsWith('audio/') ? WAV : Buffer.from([0, 0, 0]) });
       }
       const body = u.includes('/conversations') ? { ok: true, conversations: [conv] } : { ok: true, conversation: { id, customer: conv.customer, updatedAt: NOW, messages: msgs } };
       return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
@@ -74,7 +76,7 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
       img1: box('[data-mid="wa_img1"] .wa-m-image'), img1Cap: q('[data-mid="wa_img1"] .wa-text') && q('[data-mid="wa_img1"] .wa-text').textContent,
       img2Only: !!q('[data-mid="wa_img2"] .wa-bubble.wa-mo-ov') && !q('[data-mid="wa_img2"] .wa-text'),
       sticker: box('[data-mid="wa_stk1"] .wa-m-sticker img'), stickerBg: getComputedStyle(q('[data-mid="wa_stk1"] .wa-bubble')).backgroundColor,
-      audio: !!q('[data-mid="wa_aud1"] audio[controls]'), video: !!q('[data-mid="wa_vid1"] video[controls]'),
+      audio: !!q('[data-mid="wa_aud1"] [data-wa-voice] [data-wa-vplay]') && !!q('[data-mid="wa_aud1"] [data-wa-voice] audio[data-wa-mplay]'), video: !!q('[data-mid="wa_vid1"] video[controls]'),
       doc: q('[data-mid="wa_doc1"] a.wa-mdoc') && { name: q('[data-mid="wa_doc1"] .wa-mdoc-t b').textContent, sub: q('[data-mid="wa_doc1"] .wa-mdoc-t span').textContent, href: q('[data-mid="wa_doc1"] a.wa-mdoc').getAttribute('href'), dl: q('[data-mid="wa_doc1"] a.wa-mdoc').getAttribute('download') },
       big: q('[data-mid="wa_big1"] [data-wa-media-miss]') && q('[data-mid="wa_big1"] [data-wa-media-miss]').textContent, bigImg: !!q('[data-mid="wa_big1"] img'),
       ff: q('[data-mid="wa_ff1"] [data-wa-media-miss]') && q('[data-mid="wa_ff1"] [data-wa-media-miss]').dataset.reason,

@@ -179,10 +179,10 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   await page.evaluate(() => { const e = document.querySelector('#waInput'); e.value = ''; });
   r.send = 'clock -> ✓, failed visible';
 
-  // --- composer: WhatsApp icons (inert until UX401), send kept
+  // --- composer: WhatsApp icons (UX401: emoji + attach open popovers, mic stays inert), send kept
   for (const k of ['emoji', 'attach', 'mic']) {
     const b = view.locator(`[data-wa-composer] [data-wa-${k}]`); assert.ok(await b.isVisible(), k + ' icon'); const bb = await b.boundingBox();
-    assert.ok(bb.width >= 40 && bb.height >= 40, k + ' touch target'); assert.equal(await b.getAttribute('aria-disabled'), 'true');
+    assert.ok(bb.width >= 40 && bb.height >= 40, k + ' touch target'); assert.equal(await b.getAttribute('aria-disabled'), k === 'mic' ? 'true' : null);
   }
   const nBefore = st.sends.length; await view.locator('[data-wa-mic]').click({ force: true }); await view.locator('[data-wa-emoji]').click({ force: true }); assert.equal(st.sends.length, nBefore, 'icons never send');
 
