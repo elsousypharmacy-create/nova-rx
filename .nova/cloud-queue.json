@@ -11,7 +11,7 @@
    "after": [
     "UX407"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -25,14 +25,14 @@
    "not_before": "2026-11-15T15:11:00+00:00",
    "pr": 481,
    "ci_dispatched": {
-    "sha": "812c56366c30cbc576ce77606eeeb4a2fd650990",
+    "sha": "872ffde0b8bf814625106e702de8fa49d255c487",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-15T17:23:06+00:00",
+    "at": "2026-11-15T17:29:07+00:00",
     "na": []
    },
    "note_conflicts": "fix_attempts reset 2026-11-15 17:15Z: both fixes were artifact merge conflicts from other merges, not red CI",
@@ -5086,6 +5086,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:27:10+00:00",
+ "updated": "2026-11-15T17:29:07+00:00",
  "slot_cooldown": {}
 }
