@@ -2008,8 +2008,8 @@ html body .invoice-footer{position:sticky;bottom:0;z-index:20}
 }
 </style>
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script><style id="ux214-boot">/* UX214: app content stays hidden (splash covers it) until first-load i18n/layout settles, so load-time text swaps cause no layout shift. */html.nova-boot body>*:not(#novaSplash){opacity:0}</style><script>document.documentElement.classList.add('nova-boot');setTimeout(function(){document.documentElement.classList.remove('nova-boot')},4000)</script>
-<script>/* UX29: single VAT-rate source (percent, tax-included). Default 15 = current behaviour; owner/accountant decides. */
-window.novaVat=(function(){var K='nova-rx-vat-rate',D=15;function get(){try{var v=localStorage.getItem(K);if(v===null||v==='')return D;var n=Number(v);return isFinite(n)&&n>=0&&n<=100?n:D}catch(e){return D}}
+<script>/* UX29: single VAT-rate source (percent, tax-included). SALE-02: default 14 = Egypt VAT (ضريبة القيمة المضافة 14%); owner/accountant can change it in Settings. */
+window.novaVat=(function(){var K='nova-rx-vat-rate',D=14;function get(){try{var v=localStorage.getItem(K);if(v===null||v==='')return D;var n=Number(v);return isFinite(n)&&n>=0&&n<=100?n:D}catch(e){return D}}
 function set(n){n=Number(n);if(!isFinite(n)||n<0||n>100)return false;try{localStorage.setItem(K,String(n));return true}catch(e){return false}}
 function calc(total,rate){var r=rate===undefined?get():Number(rate);return Math.round(((Number(total)||0)*r/(100+r)+Number.EPSILON)*100)/100}
 function label(rate){var r=rate===undefined?get():rate;return String(Math.round(r*100)/100)}
@@ -2087,7 +2087,6 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
         <div class="brand-section">
           <div class="pharmacy-banner-identity"><img class="elsousy-brand-mark" src="icon.svg" alt="" aria-hidden="true" width="30" height="30" loading="eager" decoding="async" onerror="this.style.display='none'"><div class="pharmacy-banner-copy"><strong>صيدلية السوسي</strong><span>د. أحمد السوسي</span></div></div>
           <span id="offlineChip" class="offline-chip" role="status" aria-live="polite" hidden></span>
-          <span class="task-badge">TASK-001</span>
           <div id="modePill" class="status-pill customer-mode">
             <span class="dot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
             <span id="modePillText">Customer Search Mode</span>
@@ -2208,7 +2207,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             <span id="displayDiscount">-0.00 EGP</span>
           </div>
           <div class="tot-row">
-            <span id="displayVatLabel">VAT (15% Included)</span>
+            <span id="displayVatLabel">VAT (14% Included)</span>
             <span id="displayVat">0.00 EGP</span>
           </div>
           <div class="tot-row grand-total">
@@ -2593,6 +2592,19 @@ window.NovaFmt=(function(){
           ]
         }
       ];
+
+      // SALE-02: demo customers (and their demo invoices) are for development only. A real pharmacy starts
+      // with an empty customer list; customers saved on this device are added back below. Dev = file://,
+      // localhost/127.0.0.1/[::1], or localStorage 'nova-rx-demo-mode' = '1'.
+      (function () {
+        let demo = false;
+        try {
+          const h = location.hostname;
+          demo = location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || localStorage.getItem('nova-rx-demo-mode') === '1';
+        } catch (e) { demo = false; }
+        window.NOVA_DEMO_MODE = demo;
+        if (!demo) DEMO_CUSTOMERS.length = 0;
+      })();
 
       // --- APPLICATION STATE ---
       window.NOVA_DEMO = { products: DEMO_PRODUCTS, customers: DEMO_CUSTOMERS };
@@ -3838,7 +3850,7 @@ window.NovaFmt=(function(){
           elements.inputFixedDiscount.setAttribute('aria-invalid', String(badF));
         }
         const grandTotal = Math.max(0, subtotal - actualDiscount);
-        const vatIncluded = window.novaVat.calc(grandTotal); // configurable tax-included VAT (Settings), default 15%
+        const vatIncluded = window.novaVat.calc(grandTotal); // configurable tax-included VAT (Settings), default 14%
 
         elements.totalItemsCount.textContent = totalQty;
         elements.displaySubtotal.textContent = formatMoney(subtotal);
@@ -3853,7 +3865,7 @@ window.NovaFmt=(function(){
         elements.displayVat.textContent = formatMoney(vatIncluded);
         { const vl = document.getElementById('displayVatLabel'), vr = window.novaVat.get();
           if (vl && vr !== window.novaVat.DEFAULT) vl.textContent = document.documentElement.lang === 'en' ? 'VAT (' + window.novaVat.label(vr) + '% Included)' : 'ضريبة القيمة المضافة (' + window.novaVat.label(vr) + '% متضمنة)';
-          else if (vl && vl.dataset.vatCustom) vl.textContent = document.documentElement.lang === 'en' ? 'VAT (15% Included)' : 'ضريبة القيمة المضافة (15% متضمنة)';
+          else if (vl && vl.dataset.vatCustom) vl.textContent = document.documentElement.lang === 'en' ? 'VAT (' + window.novaVat.label(window.novaVat.DEFAULT) + '% Included)' : 'ضريبة القيمة المضافة (' + window.novaVat.label(window.novaVat.DEFAULT) + '% متضمنة)';
           if (vl) vl.dataset.vatCustom = vr !== window.novaVat.DEFAULT ? '1' : ''; }
         elements.displayGrandTotal.textContent = formatMoney(grandTotal);
 
@@ -5455,9 +5467,9 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   +'<div class="nova-panel"><div class="nova-panel-title">الأكثر مبيعًا (من فواتير هذا الجهاز)</div>'+rows(top,t=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(t[0])+'</span><strong>'+esc(t[1])+'</strong></div>')+'</div>'
   :'<div class="nova-panel nova-empty-card" id="novaRepEmpty" role="status"><svg class="nova-empty-ico" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><strong>'+tr('لا توجد مبيعات محفوظة بعد','No saved sales yet')+'</strong><span>'+tr('التقارير الحقيقية تظهر بعد أول عملية بيع.','Real reports appear after the first sale.')+'</span><button type="button" class="btn btn-primary nova-return-btn" id="novaRepStartSale" style="min-height:44px">'+tr('ابدأ بيع','Start a sale')+'</button></div>'
   +'<div class="nova-rep-skel" id="novaRepSkeleton" aria-hidden="true"><span class="nova-rep-skel-tag">'+tr('معاينة شكل التقرير — بيانات غير حقيقية','Report preview — not real data')+'</span><div class="nova-kpis">'+[1,2,3,4].map(()=>'<div class="nova-skel-card"><i></i><b></b></div>').join('')+'</div></div>';
- content=head(title,'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض')+realBlock+'<details id="novaDemoData" style="margin-top:18px"><summary style="cursor:pointer;min-height:44px;font-size:15px;color:#9eacb9">'+tr('بيانات تجريبية (للعرض فقط) — ليست مبيعاتك الفعلية','Demo data (display only) — not your actual sales')+'</summary>'
+ content=head(title,window.NOVA_DEMO_MODE?'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض':'مبيعات هذا الجهاز')+realBlock+(window.NOVA_DEMO_MODE?'<details id="novaDemoData" style="margin-top:18px"><summary style="cursor:pointer;min-height:44px;font-size:15px;color:#9eacb9">'+tr('بيانات تجريبية (للعرض فقط) — ليست مبيعاتك الفعلية','Demo data (display only) — not your actual sales')+'</summary>'
  +'<div class="nova-kpis">'+kpi('مبيعات تجريبية',money(sum))+kpi('فواتير تجريبية',inv.length)+kpi('متوسط الفاتورة',money(inv.length?sum/inv.length:0))+kpi('العملاء',customers.length)+'</div>'
- +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:var(--sp-2);font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:var(--r-1);overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div></details>';
+ +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:var(--sp-2);font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:var(--r-1);overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div></details>':'');
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
  +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide"><h3>المزامنة والصلاحيات</h3><p>لم يتم ربط قاعدة بيانات أو نظام مستخدمين أو صلاحيات موظفين بعد.</p></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
@@ -5666,7 +5678,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)':'This device\'s invoices first, then sample invoices (demo data)',
  'فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)':'Invoices saved on this device (not synced to other devices)',
  'لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا':'No saved invoices yet — complete a sale and it will appear here',
- 'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض':'This device\'s sales first, then illustrative metrics from demo data',
+ 'مبيعات هذا الجهاز':'This device\'s sales', 'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض':'This device\'s sales first, then illustrative metrics from demo data',
  'لا توجد مبيعات محفوظة بعد — التقارير الحقيقية تظهر بعد أول عملية بيع':'No saved sales yet — real reports appear after the first sale',
  'الأكثر مبيعًا (من فواتير هذا الجهاز)':'Top sellers (from this device\'s invoices)',
  'بيانات العرض التجريبية':'Demo data',
@@ -5679,8 +5691,8 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  'New Sale':'فاتورة جديدة','Clear Invoice':'مسح الفاتورة','Keyboard Shortcuts':'اختصارات الكيبورد','Held Invoices':'الفواتير المعلقة','Held':'معلقة','Hold Current Invoice':'تعليق الفاتورة الحالية','Add Loyalty':'إضافة عميل','Clear':'مسح الفاتورة','Help':'مساعدة','Refresh':'تحديث',
  'Customer':'عميل','Product':'منتج','Product & Description':'المنتج والوصف','Barcode':'الباركود','Price':'السعر','Quantity':'الكمية','Discount':'الخصم','Total':'الإجمالي',
  'Invoice is Empty':'الفاتورة فارغة','Scan product barcode or type medicine name in the search bar above.':'امسح الباركود أو ابحث باسم الدواء في الأعلى.',
- 'Overall Invoice Discount':'خصم الفاتورة','Subtotal':'المجموع الفرعي','Discount Applied':'الخصم المطبق',
- 'VAT (15% Included)':'ضريبة القيمة المضافة (15% متضمنة)','Complete Sale':'إتمام البيع',
+ 'Overall Invoice Discount':'خصم الفاتورة','No negative total floor':'الإجمالي لا يقل عن صفر','Subtotal':'المجموع الفرعي','Discount Applied':'الخصم المطبق',
+ 'VAT (14% Included)':'ضريبة القيمة المضافة (14% متضمنة)','Complete Sale':'إتمام البيع',
  'Add / Switch Customer':'إضافة أو تغيير العميل','Search History':'بحث في السجل',
  'Payment Method':'طريقة الدفع','Cash':'نقدي','Card':'بطاقة','Split':'مختلط',
  'Amount Due':'المبلغ المستحق','Cash Received':'المبلغ المستلم','Change Due':'الباقي',
