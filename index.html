@@ -7715,7 +7715,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    prev/next targets for its form accessory bar. */
 function root(){return document.querySelector('.wa-root[data-view=chat]')}
 var LOCK='input,textarea,select,[contenteditable]:not([contenteditable=false])';
-function lock(on){var els=document.querySelectorAll(on?LOCK:'[data-wa-kbd-off]');for(var i=0;i<els.length;i++){var el=els[i];
+var mo=null;/* while locked: if the focused composer is removed (back, re-render) no focusout fires, so watch the DOM and release */
+function watch(on){if(on&&!mo&&window.MutationObserver){mo=new MutationObserver(function(){var a=document.activeElement;if(!a||a.id!=='waInput'){lock(false)}});mo.observe(document.body,{childList:true,subtree:true})}else if(!on&&mo){mo.disconnect();mo=null}}
+function lock(on){watch(on);var els=document.querySelectorAll(on?LOCK:'[data-wa-kbd-off]');for(var i=0;i<els.length;i++){var el=els[i];
 if(on){if(el.id==='waInput'||el.hasAttribute('data-wa-kbd-off'))continue;el.setAttribute('data-wa-kbd-off',(el.hasAttribute('tabindex')?'t'+el.getAttribute('tabindex'):'-')+(el.inert?'1':'0'));el.setAttribute('tabindex','-1');el.inert=true}
 else{var v=el.getAttribute('data-wa-kbd-off')||'-0';el.removeAttribute('data-wa-kbd-off');if(v.charAt(0)==='t')el.setAttribute('tabindex',v.slice(1,-1));else el.removeAttribute('tabindex');el.inert=v.slice(-1)==='1'}}}
 function fit(){var r=root(),a=document.activeElement,foc=a&&a.id==='waInput';
@@ -7728,7 +7730,7 @@ top=r.getBoundingClientRect().top;var H=Math.max(220,bot()-Math.max(0,top));r.st
 var c=r.querySelector('[data-wa-composer]');if(c){var d=bot()-c.getBoundingClientRect().bottom;if(Math.abs(d)>0.5&&H+d>=220)r.style.height=(H+d)+'px'}/* UX407: flush, whatever sits around the root */
 var m=document.getElementById('waMsgs');if(m)m.scrollTop=m.scrollHeight}
 function later(){cancelAnimationFrame(t);t=requestAnimationFrame(fit)}/* UX404: follow the keyboard in the same frame (no 60ms lag/gap) */
-document.addEventListener('focusin',function(e){if(e.target&&e.target.id==='waInput'){lock(true);fit();setTimeout(fit,300)}});
+document.addEventListener('focusin',function(e){if(e.target&&e.target.id==='waInput'){if(innerWidth<=700)lock(true);/* phone layout only: on desktop the list/search stay usable beside the chat */fit();setTimeout(fit,300)}});
 document.addEventListener('focusout',function(e){if(e.target&&e.target.id==='waInput'){setTimeout(function(){var a=document.activeElement;if(!a||a.id!=='waInput')lock(false);fit()},50)}});
 document.addEventListener('pointerdown',function(){var a=document.activeElement;if((!a||a.id!=='waInput')&&document.querySelector('[data-wa-kbd-off]'))lock(false)},true);
 if(vv){vv.addEventListener('resize',later);vv.addEventListener('scroll',later)}})();</script><script>(function(){function w(){var n=document.querySelector('.nova-nav'),p=document.getElementById('novaNavPrev'),x=document.getElementById('novaNavNext');if(!n||!p||!x)return;
