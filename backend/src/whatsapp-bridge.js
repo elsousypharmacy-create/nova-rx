@@ -68,6 +68,10 @@ export async function ingestDirect(db, tenant, items, now = Date.now(), kv = nul
     const ok = md && !md.skipped && it.media_base64 ? await cacheMedia(kv, tenant, mid, it.media_base64) : false;
     if (ok) cached++;
     await db.prepare('INSERT OR IGNORE INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES (?,?,?,?)').bind(tenant, cid, (!out && s(it.name)) || from, at).run();
+    // The name follows what the bot forwards (the pharmacy's customer name when the number is in its database, else the WhatsApp profile name):
+    // a real name replaces the stored one; a bare number / phone-formatted text, an empty name or an outgoing message never does.
+    const nm = !out ? s(it.name) : '';
+    if (nm && !/^\+?\d[\d\s-]*$/.test(nm)) await db.prepare('UPDATE inbox_conversations SET customer = ? WHERE tenant_id = ? AND id = ? AND customer <> ?').bind(nm, tenant, cid, nm).run();
     await db.prepare('INSERT OR IGNORE INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at, media_type, media_id, media_mime, media_filename, media_size, media_skipped, media_caption, media_cached) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
       .bind(tenant, mid, cid, out ? 'out' : 'in', text.slice(0, 4000), out ? 'sent' : null, at,
         md ? md.type : null, md ? md.id : null, md ? md.mime : null, md ? md.filename : null, md ? md.size : null, md ? md.skipped : null, md ? md.caption : null, md ? (ok ? 1 : 0) : null).run();

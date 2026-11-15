@@ -51,4 +51,15 @@ assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED'); assert.equal(c
 [s, j] = await post([item({ id: 'wamid.9', from: '555' })]);
 [s, j] = await api('/api/v1/inbox/history/send', { method: 'POST', body: JSON.stringify({ id: 'wa_555', text: 'اتفضل' }) });
 assert.equal(s, 200, JSON.stringify(j)); assert.equal(calls.filter((c) => c.operation === 'reply').length, 1);
+// 6) the conversation name follows the pharmacy's customer name: a bare-number row is upgraded by the next real name, a name is updated when
+//    the bot forwards a different one (the pharmacy's customer database name wins on its side), but a bare number or an empty name never overwrites a name
+const nameOf = async (id) => (await api('/api/v1/inbox/history/conversations'))[1].conversations.find((c) => c.id === id)?.customer;
+await post([item({ id: 'n1', from: '2010099', name: null, text: 'a1' })]); assert.equal(await nameOf('wa_2010099'), '2010099', 'no name known: the number');
+await post([item({ id: 'n2', from: '2010099', name: 'أحمد علي', text: 'a2' })]); assert.equal(await nameOf('wa_2010099'), 'أحمد علي', 'a bare-number conversation takes the real name');
+await post([item({ id: 'n3', from: '2010099', name: null, text: 'a3' })]); assert.equal(await nameOf('wa_2010099'), 'أحمد علي', 'a message without a name keeps the name');
+await post([item({ id: 'n4', from: '2010099', name: '2010099', text: 'a4' })]); assert.equal(await nameOf('wa_2010099'), 'أحمد علي', 'a bare number never overwrites a name');
+await post([item({ id: 'n5', from: '2010099', name: '+20 100 99', text: 'a5' })]); assert.equal(await nameOf('wa_2010099'), 'أحمد علي', 'a phone-formatted name is not a name');
+await post([item({ id: 'n6', from: '2010099', name: 'أحمد السوسي', text: 'a6' })]); assert.equal(await nameOf('wa_2010099'), 'أحمد السوسي', 'a newer real name replaces the old one');
+await post([item({ id: 'n7', from: '2010099', name: 'ملف جديد', text: 'a7', direction: 'out' })]); assert.equal(await nameOf('wa_2010099'), 'أحمد السوسي', 'an outgoing (bot) message never changes the name');
+await post([item({ id: 'n8', from: '2010100', name: 'سعيد', text: 'b1' })]); assert.equal(await nameOf('wa_2010100'), 'سعيد'); assert.equal(await nameOf('wa_2010099'), 'أحمد السوسي', 'only that conversation changed');
 console.log('backend-wa-direct check OK');
