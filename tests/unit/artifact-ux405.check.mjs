@@ -23,7 +23,7 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+ck('app HTML is the UX405 build (pinned sha256)', createHash('sha256').update(app).digest('hex') === '76c3847c451a77dae91cc47e23c539bf6aa342e7cf52a2f17ae0a22d1361c28c');
 const strip = (s) => s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n');
 ck('worker code outside the HTML literal identical to ux-404', strip(raw) === strip(readFileSync(BASE, 'utf8')));
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>')).length === 1);

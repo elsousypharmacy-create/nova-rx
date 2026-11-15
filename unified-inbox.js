@@ -331,7 +331,7 @@
       : nArch ? '<button type="button" class="wa-archrow" data-wa-arch-open>' + IC_ARCH + '<span class="wa-archrow-t">المؤرشفة</span><span class="wa-archrow-n" data-arch-count="' + nArch + '">' + nArch + '</span></button>' : '';
     if (!items.length) return head + (loading && !rawQ ? LIST_LOADING : rawQ ? '<div class="wa-empty" data-wa-noresult>لا نتائج لـ “' + esc(rawQ) + '”</div>' : '<div class="wa-empty">لا توجد محادثات</div>');
     return head + items.map(function (c) {
-      var ms = arr(c.messages), last = ms[ms.length - 1], u = unreadCount(c), name = c.customer || c.id, pv = hits[c.id] || last, isP = !!pin[c.id], isA = !!ar[c.id], open = meta.menu === c.id;
+      var ms = arr(c.messages), last = ms[ms.length - 1], u = typeof meta.unread === 'function' ? meta.unread(c) : unreadCount(c), name = c.customer || c.id, pv = hits[c.id] || last, isP = !!pin[c.id], isA = !!ar[c.id], open = meta.menu === c.id;
       return '<div class="wa-item' + (isP ? ' pinned' : '') + (isA ? ' archived' : '') + '" data-wa-item' + (isP ? ' data-pinned' : '') + (isA ? ' data-archived' : '') + '>' +
         '<button type="button" class="wa-chat' + (c.id === selId ? ' active' : '') + (u ? ' unread' : '') + '" data-conv="' + esc(c.id) + '"' + (c.id === selId ? ' aria-current="true"' : '') + '>' +
         '<span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-chat-body"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
@@ -374,13 +374,77 @@
       : opts.loading && !arr(convs).length ? LIST_LOADING
       : '<div class="wa-empty wa-intro" data-wa-intro><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><h2>محادثات واتساب الصيدلية</h2><span>اختر محادثة لعرضها</span><p>الرسائل بتظهر هنا زي واتساب ويب. ابحث بالاسم أو الرقم أو نص الرسالة.</p></div>';
     var en = !!opts.sendEnabled;
-    return '<style>' + WA_CSS + '</style><div class="wa-root" dir="rtl" data-wa-root data-wa-inbox-open data-view="' + (sel ? 'chat' : 'list') + '"' + (opts.anim === 'open' || opts.anim === 'back' ? ' data-anim="' + opts.anim + '"' : '') + '>' +
-      '<aside class="wa-side"><div class="wa-side-head"><h1 style="font:inherit;margin:0">المحادثات</h1>'+(opts.histHead||'')+'</div>'+(opts.histPanel||'')+'<div class="wa-search"><input type="search" id="waSearch" aria-label="ابحث في المحادثات أو ابدأ محادثة جديدة" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"><button type="button" class="wa-sclear" id="waSearchClear" data-wa-sclear aria-label="\u0645\u0633\u062d \u0627\u0644\u0628\u062d\u062b"' + (opts.query ? '' : ' hidden') + '>\u00d7</button></div>' +
+    return '<style>' + WA_CSS + (opts.notifHead ? NOTIF_CSS : '') + '</style><div class="wa-root" dir="rtl" data-wa-root data-wa-inbox-open data-view="' + (sel ? 'chat' : 'list') + '"' + (opts.anim === 'open' || opts.anim === 'back' ? ' data-anim="' + opts.anim + '"' : '') + '>' +
+      '<aside class="wa-side"><div class="wa-side-head"><h1 style="font:inherit;margin:0">المحادثات</h1>'+(opts.histHead||'')+(opts.notifHead||'')+'</div>'+(opts.histPanel||'')+'<div class="wa-search"><input type="search" id="waSearch" aria-label="ابحث في المحادثات أو ابدأ محادثة جديدة" placeholder="ابحث أو ابدأ محادثة جديدة" value="' + esc(opts.query || '') + '" autocomplete="off"><button type="button" class="wa-sclear" id="waSearchClear" data-wa-sclear aria-label="\u0645\u0633\u062d \u0627\u0644\u0628\u062d\u062b"' + (opts.query ? '' : ' hidden') + '>\u00d7</button></div>' +
       '<div class="wa-list" id="waList" role="group" aria-label="قائمة المحادثات">' + chatListHtml(convs, opts.selected, opts.query, now, opts.loading, opts.list) + '</div></aside>' +
       '<section class="wa-main' + (sel ? '' : ' wa-noselect') + '">' + main + (sel ? (opts.sendErr ? '<div class="wa-send-err" role="alert" data-send-err>' + esc(opts.sendErr) + '</div>' : '') + (opts.windowClosed ? '<div class="wa-window-note" data-wa-window role="status">عدّى أكتر من 24 ساعة على آخر رسالة من العميل. واتساب مش بيسمح بالرد لحد ما يبعت هو رسالة جديدة، وهتفتح الكتابة تلقائياً أول ما توصل.</div>' : '') + '<form class="wa-composer" id="waComposer" data-wa-composer' + (opts.windowClosed ? ' data-window="closed"' : '') + '><div class="wa-pill">' + cBtn('emoji', 'الرموز التعبيرية', IC_EMOJI) + '<input type="text" id="waInput" dir="auto" maxlength="1000" enterkeyhint="send" autocomplete="off" aria-label="اكتب رسالة للعميل" placeholder="' + (opts.windowClosed ? 'الرد متوقف: لازم العميل يبعت الأول' : en ? 'اكتب رسالة' : (opts.sendHint || 'الإرسال متوقف')) + '"' + (en ? '' : ' disabled') + '>' + cBtn('attach', 'إرفاق ملف', IC_CLIP) + cBtn('mic', 'رسالة صوتية', IC_MIC) + '</div><button type="submit" class="wa-send" aria-label="إرسال"' + (en ? '' : ' disabled') + '>' + IC_SEND + '</button></form>' : '') + '</section></div>';
   }
 
-  var api = { normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+  /* UX406: new-message notifications. Unread tracker (per chat + total), document.title count, permission/mute controls.
+     Seen times are persisted under nova.wa.seen.v1 keyed by a short FNV hash of the chat id (never the id/phone itself, FIX46 rule).
+     base = first time this device opened the conversations screen: older messages never count as unread.
+     Hooks for UX402 (live insert): observe(convs) after any refresh -> { fresh: [...] }; bump(id) on a push; markSeen(id). */
+  var SEEN_KEY = 'nova.wa.seen.v1', SEEN_MAX = 500;
+  function hashId(s) { s = String(s); var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+  function isInbound(m) { return !!m && m.dir === 'in' && (!m.kind || m.kind === 'in'); }
+  function createUnread(storage, now0) {
+    var st = { base: 0, seen: {} }, acc = {}, prevAt = {}, ready = false;
+    try { var p = JSON.parse((storage && storage.getItem(SEEN_KEY)) || 'null'); if (p && Number(p.base) > 0) st = { base: Number(p.base), seen: p.seen && typeof p.seen === 'object' ? p.seen : {} }; } catch (e) { /* corrupt: start fresh */ }
+    function save() {
+      var ks = Object.keys(st.seen);
+      if (ks.length > SEEN_MAX) ks.sort(function (a, b) { return st.seen[a] - st.seen[b]; }).slice(0, ks.length - SEEN_MAX).forEach(function (k) { delete st.seen[k]; });
+      try { if (storage) storage.setItem(SEEN_KEY, JSON.stringify(st)); } catch (e) { /* quota: memory only */ }
+    }
+    if (!st.base) { st.base = Number(now0) || Date.now(); save(); }
+    function seenAt(id) { return Math.max(st.base, Number(st.seen[hashId(id)]) || 0); }
+    function lastInAt(c) { var a = 0, ms = arr(c && c.messages); for (var i = 0; i < ms.length; i++) if (isInbound(ms[i]) && Number(ms[i].at) > a) a = Number(ms[i].at); return a; }
+    function count(c) {
+      if (!c) return 0; var s = seenAt(c.id), ms = arr(c.messages), n = 0;
+      for (var i = 0; i < ms.length; i++) if (isInbound(ms[i]) && Number(ms[i].at) > s) n++;
+      return Math.max(n, acc[c.id] || 0);
+    }
+    function chats(convs) { var ids = {}, n = 0; arr(convs).forEach(function (c) { ids[c.id] = 1; if (count(c) > 0) n++; }); Object.keys(acc).forEach(function (k) { if (acc[k] > 0 && !ids[k]) n++; }); return n; }
+    function messages(convs) { var ids = {}, n = 0; arr(convs).forEach(function (c) { ids[c.id] = 1; n += count(c); }); Object.keys(acc).forEach(function (k) { if (!ids[k]) n += acc[k] || 0; }); return n; }
+    /* Call after each data refresh. The first call only records a baseline (no sound for what is already on screen). */
+    function observe(convs) {
+      var fresh = [];
+      arr(convs).forEach(function (c) {
+        var a = lastInAt(c), had = Object.prototype.hasOwnProperty.call(prevAt, c.id), was = prevAt[c.id] || 0;
+        if (ready && a > was && a > seenAt(c.id) && (had || a > st.base)) {
+          var ms = arr(c.messages), m = null; for (var i = ms.length - 1; i >= 0; i--) if (isInbound(ms[i])) { m = ms[i]; break; }
+          if (c.history && Number(c.count) > ms.length && had) acc[c.id] = (acc[c.id] || 0) + 1; // partial chat (only last loaded): count each new arrival
+          fresh.push({ id: c.id, customer: c.customer || c.id, text: m ? previewText(m) : '', at: a });
+        }
+        prevAt[c.id] = Math.max(was, a);
+      });
+      ready = true; return { fresh: fresh };
+    }
+    function markSeen(id, t) { if (id == null) return; st.seen[hashId(id)] = Math.max(Number(t) || Date.now(), seenAt(id)); delete acc[id]; save(); }
+    function bump(id, k) { if (id == null) return; acc[id] = (acc[id] || 0) + (Number(k) > 0 ? Number(k) : 1); }
+    return { count: count, chats: chats, messages: messages, observe: observe, markSeen: markSeen, bump: bump, seenAt: seenAt, base: function () { return st.base; } };
+  }
+  /* «(3) NOVA Rx» while there is unread; the original title otherwise. Idempotent (an old prefix is replaced). */
+  function titleBadge(title, n) { var t = String(title || '').replace(/^\(\d+\+?\)\s/, ''); n = Number(n) || 0; return n > 0 ? '(' + (n > 99 ? '99+' : n) + ') ' + t : t; }
+  var IC_BELL = '<svg' + ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + '><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
+  var IC_BELL_OFF = '<svg' + ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + '><path d="M8.7 3A6 6 0 0 1 18 8c0 2.6.4 4.5.9 5.8"/><path d="M17 17H3s3-1 3-8c0-.6.1-1.2.3-1.8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/><path d="M2 2l20 20"/></svg>';
+  var PERM_AR = {
+    'default': ['فعّل الإشعارات', 'اسمح بإشعارات الرسائل الجديدة حتى لو الصفحة مش قدامك'],
+    granted: ['الإشعارات شغّالة', 'هيوصلك إشعار مع كل رسالة جديدة من عميل'],
+    denied: ['الإشعارات مقفولة', 'المتصفح قافل الإشعارات للموقع ده. افتح إعدادات الموقع (علامة القفل جنب العنوان) واسمح بالإشعارات'],
+    unsupported: ['الإشعارات غير مدعومة', 'المتصفح ده مش بيدعم إشعارات الويب. الصوت والعداد شغالين عادي']
+  };
+  /* state: 'default'|'granted'|'denied'|'unsupported'; muted: bool; note: optional Arabic status line */
+  function notifyHtml(state, muted, note) {
+    var k = PERM_AR[state] ? state : 'unsupported', l = PERM_AR[k];
+    return '<span class="wa-notif" data-wa-notif data-perm="' + k + '">' +
+      '<button type="button" class="wa-nbtn" data-wa-notify="' + k + '" aria-pressed="' + (k === 'granted') + '" title="' + esc(l[1]) + '"' + (k === 'unsupported' ? ' aria-disabled="true"' : '') + '>' + (k === 'granted' ? IC_BELL : IC_BELL_OFF) + '<span>' + l[0] + '</span></button>' +
+      '<button type="button" class="wa-nbtn wa-mute" data-wa-mute aria-pressed="' + !!muted + '" aria-label="' + (muted ? 'تشغيل صوت الرسائل' : 'كتم صوت الرسائل') + '" title="' + (muted ? 'الصوت مكتوم' : 'الصوت شغّال') + '">' + (muted ? IC_BELL_OFF : IC_BELL) + '<span class="wa-nmute-t">' + (muted ? 'الصوت مكتوم' : 'الصوت') + '</span></button>' +
+      (note ? '<span class="wa-nnote" data-wa-notif-note role="status">' + esc(note) + '</span>' : '') + '</span>';
+  }
+  var NOTIF_CSS = '.wa-notif{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-inline-start:auto}.wa-nbtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border-radius:18px;border:1px solid #2a313a;background:#161a20;color:#f2f3f5;font:inherit;font-size:13px;cursor:pointer}.wa-nbtn svg{width:16px;height:16px;flex:none}.wa-nbtn[data-wa-notify=default]{border-color:#25d366;color:#25d366}.wa-nbtn[data-wa-notify=denied]{border-color:#b45309;color:#fbbf24}.wa-nbtn[aria-disabled=true]{opacity:.6;cursor:default}.wa-nbtn:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}.wa-nnote{flex-basis:100%;font-size:12px;color:#9aa4b0;line-height:1.5}@media(pointer:coarse),(max-width:780px){.wa-nbtn{min-height:44px}.wa-nmute-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}';
+  /* tab badge style is inline (the tab lives outside the conversations view) */
+  var TAB_BADGE_CSS = 'display:inline-block;min-width:18px;height:18px;margin-inline-start:6px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#25d366;color:#06210f;font-size:11px;font-weight:700;line-height:18px;text-align:center;vertical-align:middle';
+  var api = { createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);
