@@ -16,6 +16,8 @@ on:
       - '.github/workflows/deploy-backend-staging.yml'
       - '.github/scripts/deploy_backend_staging.sh'
       - 'tests/unit/scheduler_gates_test.py'
+      - 'tests/unit/scheduler_requeue_test.py'
+      - '.github/workflows/agent-task.yml'
   push:
     branches: [main]
     paths:
@@ -28,6 +30,8 @@ on:
       - '.github/workflows/deploy-backend-staging.yml'
       - '.github/scripts/deploy_backend_staging.sh'
       - 'tests/unit/scheduler_gates_test.py'
+      - 'tests/unit/scheduler_requeue_test.py'
+      - '.github/workflows/agent-task.yml'
   workflow_dispatch:
 
 permissions:
@@ -49,6 +53,11 @@ jobs:
           files=(tests/unit/backend-*.check.mjs)
           if [ ${#files[@]} -eq 0 ]; then echo "no backend checks yet"; exit 0; fi
           for f in "${files[@]}"; do echo "== $f"; node --no-warnings "$f"; done
+      - name: Cloud scheduler checks (no network)
+        run: |
+          set -euo pipefail
+          python3 tests/unit/scheduler_gates_test.py
+          python3 tests/unit/scheduler_requeue_test.py
       - name: Guard migrations are additive only
         run: |
           set -euo pipefail

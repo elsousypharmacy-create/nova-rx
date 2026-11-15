@@ -26,25 +26,19 @@ DEPLOY_WF = "deploy-backend-staging.yml"
 AUTO_GATES = ("GATE-14", "GATE-15", "GATE-16")
 DEPLOY_STALE = 2700  # seconds; deploy job 25m + mark-gate 5m, plus margin
 SLOTS = ["A"] + (["B"] if os.environ.get("HAS_B") == "true" else [])
-MAX_FIX, MAX_ATTEMPTS, GRACE = 2, 2, 600
+MAX_FIX, MAX_ATTEMPTS, GRACE = 2, 3, 600
+RUN_FAILED = ("failure", "cancelled", "timed_out", "startup_failure")
 DRY = "--dry-run" in sys.argv
 DONE = ("done", "done_noop")
 NOW = time.time()
-# Heavy visual / WhatsApp-rebuild tasks use Opus even on slot B.
-OPUS_PREFIXES = ("UX400", "UX401", "UX402", "UX403", "UX404", "UX420", "UX421", "UX422")
+# Owner rule 2026-11-15: Sonnet by default; Opus only when a task sets model "opus"
+# (genuinely complex work) because Opus uses far more subscription quota.
 
 
 def pick_model(t, slot, mode="new"):
-    """Per-task model if set; else Opus for slot A, fix retries, and heavy design tasks; Sonnet otherwise."""
+    """Per-task model if set ("opus" or "sonnet"); otherwise Sonnet."""
     raw = str(t.get("model") or "").strip().lower()
-    if raw in ("opus", "sonnet"):
-        return raw
-    if slot == "A" or mode == "fix":
-        return "opus"
-    tid = str(t.get("id") or "")
-    if tid.startswith(OPUS_PREFIXES):
-        return "opus"
-    return "sonnet"
+    return raw if raw in ("opus", "sonnet") else "sonnet"
 
 
 def pick_max_turns(t):
@@ -368,18 +362,54 @@ def preview_deploys(items, byid, smoke=None, exists=os.path.exists, live_modifie
 
 # ---------- main ----------
 
+def reconcile_finished(items, active, latest, open_pr, branches, ahead_by):
+    """Settle tasks still marked running/fixing whose agent run is no longer active.
+
+    A run that completed red (turn cap, usage limit, cancel, timeout) never leaves
+    the task stuck on "running": it goes back to pending at the FRONT of the queue
+    with retry=True (agent-task auto-saves uncommitted work to cloud/<id>, and the
+    retry run continues from it), until MAX_ATTEMPTS, then failed.
+    """
+    requeued = []
+    for t in items:
+        if t["status"] not in ("running", "fixing") or t["id"] in active:
+            continue
+        r = latest.get(t["id"]) or {}
+        fresh = r and age(r.get("created_at", "")) <= age(t.get("dispatched_at", "")) + 60
+        red = bool(fresh and r.get("status") == "completed" and r.get("conclusion") in RUN_FAILED)
+        if t["status"] == "fixing" or (t["id"] in open_pr and not red):
+            t["status"] = "pr_open"
+            continue
+        has_commits = t["id"] in branches and ahead_by(t["id"]) > 0
+        if red or not has_commits:
+            t["attempts"] = t.get("attempts", 0) + 1
+            t["status"] = "failed" if t["attempts"] >= MAX_ATTEMPTS else "pending"
+            why = f"run {r.get('conclusion')}" if red else "no commits"
+            t["last_failure"] = f"{why} {r.get('html_url', '')}".strip()
+            if t["status"] == "pending":
+                t["retry"] = True
+                requeued.append(t)
+            log(f"{t['id']}: agent run finished red ({why}) -> {t['status']}")
+    for t in requeued:  # failed tasks go to the front of the queue
+        items.remove(t)
+        items.insert(0, t)
+    return requeued
+
+
 def main():
     q = json.load(open(QF)); items = q["tasks"]; byid = {t["id"]: t for t in items}
     before = json.dumps(q, sort_keys=True)
     ingest_followups(items, byid)
 
     runs = (api(f"repos/{REPO}/actions/workflows/{AGENT_WF}/runs?per_page=50") or {}).get("workflow_runs", [])[:50]
-    active, seen = {}, {}  # task id -> slot for queued/in-progress agent runs; newest run start per task
+    active, seen, latest = {}, {}, {}  # task id -> slot for queued/in-progress agent runs; newest run start; newest run
     for r in runs:
         m = re.match(r"cloud (\S+) (new|fix) ([AB])$", r.get("display_title") or r.get("name") or "")
         if not m:
             continue
         seen[m.group(1)] = max(seen.get(m.group(1), ""), r.get("created_at", ""))
+        if r.get("created_at", "") >= latest.get(m.group(1), {}).get("created_at", ""):
+            latest[m.group(1)] = r
         if r["status"] != "completed":
             active[m.group(1)] = m.group(3)
     for t in items:  # just-dispatched runs may not be listed yet
@@ -394,20 +424,16 @@ def main():
     branches = [b["name"][6:] for b in (api(f"repos/{REPO}/branches?per_page=100") or []) if b["name"].startswith("cloud/")]
 
     # finished agent runs
-    for t in items:
-        if t["status"] in ("running", "fixing") and t["id"] not in active:
-            if t["status"] == "fixing" or t["id"] in open_pr:
-                t["status"] = "pr_open"
-            elif t["id"] not in branches or (api(f"repos/{REPO}/compare/main...cloud/{t['id']}") or {}).get("ahead_by", 0) == 0:
-                t["attempts"] = t.get("attempts", 0) + 1
-                t["status"] = "failed" if t["attempts"] >= MAX_ATTEMPTS else "pending"
-                log(f"{t['id']}: agent run produced no commits -> {t['status']}")
+    reconcile_finished(items, active, latest, open_pr, branches,
+                       lambda tid: (api(f"repos/{REPO}/compare/main...cloud/{tid}") or {}).get("ahead_by", 0))
 
     # open PRs for branches without one
     for tid in branches:
         t = byid.get(tid)
         if tid in open_pr or tid in active or not t or t["status"] in DONE + ("failed",):
             continue
+        if t["status"] == "pending" and t.get("retry"):
+            continue  # WIP from a failed run; the retry run continues it before a PR opens
         if (api(f"repos/{REPO}/compare/main...cloud/{tid}") or {}).get("ahead_by", 0) == 0:
             continue
         body = (f"Cloud task {tid} (Claude {pick_model(t, t.get('slot') or 'A')} via GitHub Actions).\n\n{t['brief']}\n\nAcceptance: {t.get('acceptance','')}\n\n"
@@ -428,6 +454,8 @@ def main():
         t["pr"] = p["number"]
         if tid in active or t["status"] in DONE + ("failed",):
             continue
+        if t["status"] == "pending" and t.get("retry"):
+            continue  # a red agent run is being retried; do not merge its partial work
         t["status"] = "pr_open"
         if p.get("draft"):
             act("gh", "pr", "ready", str(p["number"]), "-R", REPO)
@@ -515,7 +543,14 @@ def main():
             continue
         if not all(byid.get(a, {}).get("status") in DONE for a in t.get("after", [])):
             continue
+        if t.get("not_before") and age(t["not_before"]) < 0:
+            continue  # e.g. account usage limit resets later
         brief = f"{t['title']}\n{t['brief']}\nAcceptance: {t.get('acceptance','')}"
+        if t.pop("retry", None):
+            brief = (f"RETRY (attempt {t.get('attempts', 0) + 1}): a previous run stopped before finishing "
+                     f"({t.get('last_failure') or 'failed'}). Branch cloud/{t['id']} may already hold WIP auto-save "
+                     "commits: review them with git log/diff, keep what is good, finish the rest. Commit and push "
+                     "after every meaningful step so a turn cap never loses work.\n\n" + brief)
         model, turns = pick_model(t, free[0], "new"), pick_max_turns(t)
         act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={t['id']}", "-f", "mode=new", "-f", f"slot={free[0]}", "-f", f"model={model}", "-f", f"max_turns={turns}", "-f", f"brief={brief[:20000]}")
         t.update(status="running", slot=free[0], dispatched_at=iso(), model=t.get("model") or model); active[t["id"]] = free[0]
