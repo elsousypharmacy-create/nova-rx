@@ -3545,6 +3545,35 @@ window.NovaFmt=(function(){
         elements.mainSearchInput.focus();
       }
 
+      // UX322: chronic refill view (local demo data only; no messages, no therapy decisions)
+      const CHRONIC_CYCLE_DAYS = 30;
+      window.novaChronic = {
+        cycleDays: CHRONIC_CYCLE_DAYS,
+        list(customer) {
+          const m = new Map();
+          ((customer && customer.pastInvoices) || []).forEach(inv => (inv.items || []).forEach(it => {
+            const p = DEMO_PRODUCTS.find(x => x.id === it.productId);
+            if (!p || p.category !== "Chronic") return;
+            const d = String(inv.date).slice(0, 10), e = m.get(p.id);
+            if (!e || d > e.lastDate) m.set(p.id, { productId: p.id, name: p.name.replace(/\s*\(.*\)\s*$/, ""), lastDate: d });
+          }));
+          return [...m.values()].map(e => {
+            const n = daysSinceDate(e.lastDate), dt = new Date(e.lastDate + "T00:00:00Z");
+            dt.setUTCDate(dt.getUTCDate() + CHRONIC_CYCLE_DAYS);
+            return { ...e, nextDue: dt.toISOString().slice(0, 10), daysSince: n, due: n !== null && n >= CHRONIC_CYCLE_DAYS };
+          }).sort((a, b) => a.nextDue.localeCompare(b.nextDue));
+        },
+        dueList(customer) { return this.list(customer).filter(x => x.due); },
+        refill(customerId) {
+          const c = DEMO_CUSTOMERS.find(x => String(x.id) === String(customerId));
+          if (!c) return false;
+          attachCustomer(c);
+          const tab = document.querySelector('[data-page="sale"]'); if (tab) tab.click();
+          refillLastInvoice();
+          return true;
+        }
+      };
+
       function renderPastInvoices(invoices, filterText = "") {
         // Group repeat purchases into one clean row per product, newest first.
         const grouped = new Map();
@@ -5367,6 +5396,7 @@ window.NovaFmt=(function(){
   const row=(l,v,x)=>'<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #2a3139"><span style="color:#9eacb9">'+l+'</span><strong'+(x||'')+'>'+v+'</strong></div>';
   ov.innerHTML='<div style="background:#14181d;border:1px solid #2a3139;border-radius:12px;padding:20px;width:min(420px,94vw);max-height:90vh;overflow:auto;color:#e8eef3;position:relative"><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button><h2 id="novaCustDetailT" style="margin:0 0 12px;font-size:18px;padding-inline-end:36px">'+esc(c.name)+'</h2>'
    +row('الهاتف',esc(c.phone),' dir="ltr"')+row('المستوى',esc(window.novaTierAr?window.novaTierAr(c.tier):c.tier))+row('الزيارات',esc(c.visits))+row('النقاط',esc(c.points))+row('المديونية',money(d),d>0?' style="color:#ff5d5d"':'')
+   +(()=>{const ch=window.novaChronic?window.novaChronic.list(c):[];if(!ch.length)return '';return '<section id="novaCustChronic" aria-label="أدوية مزمنة" style="margin-top:12px"><h3 style="margin:0 0 6px;font-size:15px">أدوية مزمنة</h3>'+ch.map(x=>'<div data-chronic-row="'+esc(x.productId)+'" style="padding:6px 0;border-bottom:1px solid #2a3139;font-size:13px"><strong dir="auto">'+esc(x.name)+'</strong> <span style="color:#9eacb9">— آخر صرف: <bdi dir="ltr">'+esc(x.lastDate)+'</bdi> · الصرف القادم: <bdi dir="ltr">'+esc(x.nextDue)+'</bdi></span>'+(x.due?' <span class="nova-chip" style="color:#ffcf6b">مستحقة للصرف</span>':'')+'</div>').join('')+'<p style="color:#9eacb9;font-size:12px;margin:6px 0 0">تذكير يدوي فقط — بدون رسائل تلقائية.</p><button type="button" class="nova-return-btn" style="min-height:44px;margin-top:8px" data-cd-refill>إعادة صرف</button></section>'})()
    +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">'+(hasStmt(c.id)?'<button type="button" class="nova-return-btn" style="min-height:44px" data-cd-stmt>كشف حساب</button>':'')+(d>0?'<button type="button" class="nova-return-btn" style="min-height:44px" data-cd-pay>سداد</button>':'')+'<button type="button" class="nova-return-btn" style="min-height:44px" data-cd-wa>واتساب</button></div></div>';
   document.body.appendChild(ov);
   const close=(restore=true)=>{ov.remove();document.removeEventListener('keydown',key,true);if(restore){const r=document.querySelector('tr[data-cust-row="'+String(id).replace(/"/g,'')+'"]')||prev;if(r&&r.focus)r.focus()}};
@@ -5375,6 +5405,7 @@ window.NovaFmt=(function(){
   document.addEventListener('keydown',key,true);
   ov.querySelector('[data-dlg-close]').addEventListener('click',()=>close());ov.addEventListener('mousedown',e=>{if(e.target===ov)close()});
   const sb=ov.querySelector('[data-cd-stmt]');if(sb)sb.addEventListener('click',()=>{close(false);openStatement(c.id)});
+  const rb=ov.querySelector('[data-cd-refill]');if(rb)rb.addEventListener('click',()=>{close(false);window.novaChronic.refill(c.id)});
   const pb=ov.querySelector('[data-cd-pay]');if(pb)pb.addEventListener('click',()=>{close(false);openPayDebt(c.id)});
   ov.querySelector('[data-cd-wa]').addEventListener('click',()=>{close(false);const w=document.getElementById('novaWaBtn');if(w)w.click()});
   const first=foc();(first[1]||first[0]).focus();
@@ -5461,15 +5492,15 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
  const qNs=q.replace(/\s+/g,''),custAll=qNs?customers.filter(x=>['name','phone','tier'].some(k=>nAr(x[k]).replace(/\s+/g,'').includes(qNs))):customers;
  const debtMap={},overdueMap={};let ledgerCust=[];try{const l=ledger();if(l){ledgerCust=l.customers();ledgerCust.forEach(x=>{debtMap[x.customerId]=x.balance;try{const g=l.aging(x.customerId);overdueMap[x.customerId]=(g.total-g.current)>0.005}catch(e){}})}}catch(e){}
  const debtors=ledgerCust.filter(x=>x.balance>0);const debtTotal=Math.round(debtors.reduce((t,x)=>t+x.balance,0)*100)/100;
- const cf=window.__novaCustFilter||'all',cfTests={all:()=>true,debtors:c=>(debtMap[String(c.id)]||0)>0,late:c=>(debtMap[String(c.id)]||0)>0&&overdueMap[String(c.id)]};
- const cfLbl={all:tr('الكل','All'),debtors:tr('مدينون','Debtors'),late:tr('متأخرون','Overdue')};
+ const cf=window.__novaCustFilter||'all',cfTests={all:()=>true,debtors:c=>(debtMap[String(c.id)]||0)>0,late:c=>(debtMap[String(c.id)]||0)>0&&overdueMap[String(c.id)],refill:c=>!!(window.novaChronic&&window.novaChronic.dueList(c).length)};
+ const cfLbl={all:tr('الكل','All'),debtors:tr('مدينون','Debtors'),late:tr('متأخرون','Overdue'),refill:tr('مستحقة للصرف','Refill due')};
  const list=custAll.filter(cfTests[cf]||cfTests.all).sort((x,y)=>(debtMap[String(y.id)]||0)-(debtMap[String(x.id)]||0));
  const cs=(window.__novaSort&&window.__novaSort.page==='customers')?window.__novaSort:{},cv={name:c=>c.name,visits:c=>c.visits,points:c=>c.points,debt:c=>debtOf(c.id)},csl=cs.key&&cv[cs.key]?list.slice().sort((a,b)=>{const x=cv[cs.key](a),y=cv[cs.key](b),r=cs.key==='name'?String(x).localeCompare(String(y),'ar'):(Number(x)||0)-(Number(y)||0);return cs.dir==='desc'?-r:r}):list,csb=(l,k)=>{const d=cs.key===k?cs.dir:'none';return '<button type="button" class="nova-sort-btn" data-sort="'+k+'" data-sort-dir="'+d+'"><span>'+l+'</span><svg class="nova-sort-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(d==='asc'?'<path d="M12 19V5M5 12l7-7 7 7"/>':d==='desc'?'<path d="M12 5v14M19 12l-7 7-7-7"/>':'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>')+'</svg></button>'};
- const custChips='<div class="nova-stock-chips" id="novaCustChips" role="group" aria-label="'+tr('تصفية العملاء','Customer filter')+'">'+['all','debtors','late'].map(k=>'<button type="button" class="nova-stock-chip'+(cf===k?' active':'')+'" data-cust-filter="'+k+'" aria-pressed="'+(cf===k)+'">'+cfLbl[k]+' <b data-cust-count="'+k+'">'+custAll.filter(cfTests[k]).length+'</b></button>').join('')+'</div>';
+ const custChips='<div class="nova-stock-chips" id="novaCustChips" role="group" aria-label="'+tr('تصفية العملاء','Customer filter')+'">'+['all','debtors','late','refill'].map(k=>'<button type="button" class="nova-stock-chip'+(cf===k?' active':'')+'" data-cust-filter="'+k+'" aria-pressed="'+(cf===k)+'">'+cfLbl[k]+' <b data-cust-count="'+k+'">'+custAll.filter(cfTests[k]).length+'</b></button>').join('')+'</div>';
  content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true).replace(/<input class="nova-page-search" id="novaFilter"[^>]*>/,m=>'<span class="nova-search-wrap">'+m+'<button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span>')
  .replace(/<\/div>$/,(customers.length?'<button type="button" class="btn btn-primary" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button>':'')+'</div>')
  +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi(tr('إجمالي المديونية','Total debt'),'<span id="novaDebtTotal" style="color:#ff8a8f">'+money(debtTotal)+'</span>')+kpi(tr('عدد المدينين','Debtors'),'<span id="novaDebtorCount">'+debtors.length+'</span>')+'</div>'+custChips
- +cards([csb('الاسم','name'),'الهاتف','المستوى',csb('الزيارات','visits'),csb('النقاط','points'),csb('المديونية','debt')],rows(csl,c=>{const d=debtOf(c.id);return '<tr tabindex="0" class="nova-row-focus" data-cust-row="'+esc(c.id)+'" aria-haspopup="dialog"><td data-label="الاسم">'+esc(c.name)+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(window.novaTierAr(c.tier))+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff8a8f;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+(hasStmt(c.id)?' <button type="button" class="nova-return-btn" style="min-height:44px" data-stmt="'+esc(c.id)+'">كشف حساب</button>':'')+'</td></tr>'})+(!list.length&&filter.trim()?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا توجد نتائج لـ «','No results for “')+esc(filter.trim())+tr('»','”')+'</strong><span>'+tr('جرّب اسمًا أو رقم هاتف آخر.','Try a different name or phone number.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustClear" style="min-height:44px">'+tr('مسح البحث','Clear search')+'</button></div>':(!customers.length?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا يوجد عملاء بعد','No customers yet')+'</strong><span>'+tr('أضف عميلًا لتتبّع الزيارات والنقاط والمديونية.','Add a customer to track visits, points and balance due.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button></div>':'')));
+ +cards([csb('الاسم','name'),'الهاتف','المستوى',csb('الزيارات','visits'),csb('النقاط','points'),csb('المديونية','debt')],rows(csl,c=>{const d=debtOf(c.id);return '<tr tabindex="0" class="nova-row-focus" data-cust-row="'+esc(c.id)+'" aria-haspopup="dialog"><td data-label="الاسم">'+esc(c.name)+((window.novaChronic&&window.novaChronic.dueList(c).length)?' <span class="nova-chip" data-refill-badge="'+esc(c.id)+'" style="color:#ffcf6b">'+tr('مستحقة للصرف','Refill due')+'</span>':'')+'</td><td dir="ltr" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى">'+esc(window.novaTierAr(c.tier))+'</td><td data-label="الزيارات">'+esc(c.visits)+'</td><td data-label="النقاط">'+esc(c.points)+'</td><td data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff8a8f;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+(hasStmt(c.id)?' <button type="button" class="nova-return-btn" style="min-height:44px" data-stmt="'+esc(c.id)+'">كشف حساب</button>':'')+'</td></tr>'})+(!list.length&&filter.trim()?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا توجد نتائج لـ «','No results for “')+esc(filter.trim())+tr('»','”')+'</strong><span>'+tr('جرّب اسمًا أو رقم هاتف آخر.','Try a different name or phone number.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustClear" style="min-height:44px">'+tr('مسح البحث','Clear search')+'</button></div>':(!customers.length?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا يوجد عملاء بعد','No customers yet')+'</strong><span>'+tr('أضف عميلًا لتتبّع الزيارات والنقاط والمديونية.','Add a customer to track visits, points and balance due.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button></div>':'')));
  }else if(page==='invoices'){
  const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، '),hist:retHistory(x.id,x.lines),full:(()=>{const d=window.novaSales.returnedQty(x.id);return x.lines.length>0&&x.lines.every((l,k)=>l.qty-(d[k]||0)<=0)})()}));
  const sl=filtered(saved,['id','customer','date','items']);
