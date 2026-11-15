@@ -27,6 +27,7 @@ AUTO_GATES = ("GATE-14", "GATE-15", "GATE-16")
 DEPLOY_STALE = 2700  # seconds; deploy job 25m + mark-gate 5m, plus margin
 SLOTS = ["A"] + (["B"] if os.environ.get("HAS_B") == "true" else [])
 MAX_FIX, MAX_ATTEMPTS, GRACE = 2, 3, 600
+MAX_CONFLICT_FIX = 4
 RUN_FAILED = ("failure", "cancelled", "timed_out", "startup_failure")
 DRY = "--dry-run" in sys.argv
 DONE = ("done", "done_noop")
@@ -552,7 +553,10 @@ def main():
 
     # evaluate PRs
     wfs = None
-    for tid, p in open_pr.items():
+    # Queue order first (front = owner priority, e.g. the WhatsApp chain): when PRs share a
+    # rebuilt artifact, the first merge forces the others into a conflict fix.
+    order = {t["id"]: i for i, t in enumerate(items)}
+    for tid, p in sorted(open_pr.items(), key=lambda kv: order.get(kv[0], len(order))):
         t = byid.get(tid)
         if not t:
             t = {"id": tid, "title": p["title"], "brief": p.get("body") or "", "after": [], "status": "pr_open", "attempts": 1, "fix_attempts": 0}
@@ -627,14 +631,20 @@ def main():
             why = "the PR has merge conflicts with main: merge origin/main into the branch and resolve them"
         else:
             why = "these CI workflows failed: " + ", ".join(f"{w} ({latest[w]['html_url']})" for w in bad)
-        if t.get("fix_attempts", 0) >= MAX_FIX:
+        conflict = why.startswith("the PR has merge conflicts")
+        if conflict and t.get("conflict_fixes", 0) < MAX_CONFLICT_FIX:
+            pass  # conflicts come from other merges, not red CI: do not burn fix attempts
+        elif t.get("fix_attempts", 0) >= MAX_FIX:
             t["status"] = "failed"; log(f"{tid}: failed after {MAX_FIX} fix attempts")
             act("gh", "pr", "comment", str(p["number"]), "-R", REPO, "--body", f"cloud-scheduler: giving up after {MAX_FIX} fix attempts; {why}. Left open for a human.")
             continue
         slot = next(iter(free_slots(active, cooldown)), None)
         if not slot:
             log(f"{tid}: needs fix but no free slot"); continue
-        t["fix_attempts"] = t.get("fix_attempts", 0) + 1
+        if conflict and t.get("conflict_fixes", 0) < MAX_CONFLICT_FIX:
+            t["conflict_fixes"] = t.get("conflict_fixes", 0) + 1
+        else:
+            t["fix_attempts"] = t.get("fix_attempts", 0) + 1
         brief = f"FIX MODE for PR #{p['number']} (attempt {t['fix_attempts']}/{MAX_FIX}): {why}. Inspect with `gh run view <id> --log-failed` if needed, fix on this branch, rerun the tests, commit and push.\n\nOriginal task: {t['title']}\n{t['brief']}"
         model, turns = pick_model(t, slot, "fix"), pick_max_turns(t)
         act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={tid}", "-f", "mode=fix", "-f", f"slot={slot}", "-f", f"model={model}", "-f", f"max_turns={turns}", "-f", f"brief={brief[:20000]}")
