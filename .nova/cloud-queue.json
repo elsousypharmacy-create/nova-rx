@@ -11,7 +11,7 @@
    "after": [
     "UX407"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "owner-request-2026-11-15",
@@ -25,14 +25,14 @@
    "not_before": "2026-11-15T15:11:00+00:00",
    "pr": 481,
    "ci_dispatched": {
-    "sha": "d4f5ceb9c228351ecf8f77f010edbbc514e6859b",
+    "sha": "5ac9de04876cd94832493a8f47a3c226614408b3",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-15T16:57:48+00:00",
+    "at": "2026-11-15T17:05:17+00:00",
     "na": []
    }
   },
@@ -407,16 +407,16 @@
    "after": [
     "UX422"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 17:00 Asia/Riyadh: after UX403 was relaxed so slot B (Sonnet) can run this one at a time while WhatsApp stays serialized on slot A (UX407 → UX401–UX403, Opus). Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
    "max_turns": 60,
    "not_before": "2026-11-15T15:11:00+00:00",
-   "slot": "B",
-   "dispatched_at": "2026-11-15T16:56:25+00:00",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T17:05:17+00:00",
    "pr": 482,
    "ci_dispatched": {
     "sha": "4a724bfdc0d586f132e7d12e2e418c7f8bcd8054",
@@ -439,7 +439,7 @@
    "after": [
     "UX422"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -451,14 +451,14 @@
    "dispatched_at": "2026-11-15T17:03:59+00:00",
    "pr": 483,
    "ci_dispatched": {
-    "sha": "c1c3a4356b7303e5dfb8c2c17c8b8d98890bfd6c",
+    "sha": "0c50d455611fe3614976cbbee3b64a31ee83bd62",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-15T17:00:53+00:00",
+    "at": "2026-11-15T17:05:17+00:00",
     "na": []
    }
   },
@@ -5110,6 +5110,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:03:59+00:00",
+ "updated": "2026-11-15T17:05:17+00:00",
  "slot_cooldown": {}
 }
