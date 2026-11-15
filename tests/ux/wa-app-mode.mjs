@@ -37,7 +37,11 @@ const shown = (page, sel) => page.evaluate(s => { const e = document.querySelect
 await t('/?app=whatsapp: only the conversations screen (no tab strip, no POS), own title, list from the API, hash #wa', async () => {
   const { ctx, page, errs, bad } = await open(BASE + '?app=whatsapp');
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('app-whatsapp')), true);
-  assert.equal(await page.title(), 'واتساب الصيدلية | NOVA Rx');
+  assert.equal(await page.title(), 'NOVA WhatsApp');
+  assert.equal(await page.locator('meta[name=apple-mobile-web-app-title]').getAttribute('content'), 'NOVA WhatsApp');
+  assert.equal(await page.locator('meta[name=application-name]').getAttribute('content'), 'NOVA WhatsApp');
+  assert.match(await page.locator('link[rel=manifest]').getAttribute('href'), /manifest-whatsapp\.webmanifest/);
+  assert.match(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'), /nova-whatsapp-180\.png/);
   assert.equal(await shown(page, '.nova-nav-row'), false, 'tab strip hidden');
   assert.equal(await shown(page, '.pos-root'), false, 'POS hidden');
   assert.equal(await shown(page, '#novaInboxView'), true, 'conversations shown');
@@ -62,6 +66,9 @@ await t('the normal app is unchanged: tab strip and POS visible, own title, no a
   const { ctx, page, errs } = await open(BASE);
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('app-whatsapp')), false);
   assert.equal(await page.title(), 'NOVA Rx | صيدلية السوسي');
+  assert.equal(await page.locator('meta[name=apple-mobile-web-app-title]').getAttribute('content'), 'NOVA Rx');
+  assert.match(await page.locator('link[rel=manifest]').getAttribute('href'), /manifest\.webmanifest\?v=3/);
+  assert.ok(!(await page.locator('link[rel=manifest]').getAttribute('href')||'').includes('whatsapp'), 'main app keeps NOVA Rx manifest');
   assert.equal(await shown(page, '.nova-nav-row'), true); assert.equal(await shown(page, '#novaInboxView'), false);
   assert.deepEqual(errs, []); await ctx.close();
 });
