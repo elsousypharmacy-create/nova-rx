@@ -1,6 +1,6 @@
-// UX407 preview artifact: worker/live/nova-rx-preview.ux-407.js = ux-406 Worker code (byte-identical outside the app HTML literal and /sw.js body; UX411 bumps SW to v5)
+// UX407 preview artifact: worker/live/nova-rx-preview.ux-407.js = ux-406 Worker code (byte-identical outside the app HTML literal, /sw.js body, PWA assets and the UX412 /whatsapp SPA route; UX412 bumps SW to v6)
 // + current index.html (PR #467/#468 Home WhatsApp KPIs flag gate: localStorage nova.flags.waKpis==='1', default off; conversations: staff-reply prefix stripped on display, WhatsApp bubble sides, composer flush on the keyboard, no focus box).
-// Checks node --check, UX408 + UX401 + UX407 + UX406 + UX405 + UX404 + conversations markers, PIN stays removed, SW cache v5. No deploy, never prints secrets.
+// Checks node --check, UX408 + UX401 + UX407 + UX406 + UX405 + UX404 + conversations markers, PIN stays removed, SW cache v6, /whatsapp route. No deploy, never prints secrets.
 // Run: node tests/unit/artifact-ux407.check.mjs
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -9,6 +9,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { stripPwa } from '../../tools/inject-pwa-assets.mjs';
+import { stripWaSpa } from '../../tools/whatsapp-spa.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const ART = join(ROOT, 'worker/live/nova-rx-preview.ux-407.js');
@@ -27,15 +28,15 @@ const raw = readFileSync(ART, 'utf8');
 ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
 const SWK = '"/sw.js":{"body":';
 const swBody = (code) => { const j = code.indexOf(SWK) + SWK.length; let e = j + 1; while (code[e] !== '"') { if (code[e] === '\\') e++; e++; } return [code.slice(0, j) + code.slice(e + 1), JSON.parse(code.slice(j, e + 1))]; };
-const strip = (s) => swBody(s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n'))[0];
-ck('worker code outside the HTML literal, /sw.js body and PWA assets identical to ux-406', strip(stripPwa(raw)) === strip(readFileSync(BASE, 'utf8')));
+const strip = (s) => swBody(s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>')).join('\n'))[0];
+ck('worker code outside the HTML literal, /sw.js body, PWA assets and /whatsapp route identical to ux-406', strip(stripWaSpa(stripPwa(raw))) === strip(readFileSync(BASE, 'utf8')));
 const sw = swBody(raw)[1];
-ck('embedded /sw.js is UX411 v5 (network-first for ?app=whatsapp, not the ux-406 v4 shell)', sw.includes("const CACHE='nova-rx-shell-v5'") && sw.includes("url.searchParams.get('app')==='whatsapp'") && !sw.includes("const CACHE='nova-rx-shell-v4'"));
+ck('embedded /sw.js is UX412 v6 (network-first for /whatsapp and ?app=whatsapp, never falls back to cached /)', sw.includes("const CACHE='nova-rx-shell-v6'") && sw.includes("url.searchParams.get('app')==='whatsapp'") && sw.includes("path==='/whatsapp'") && !sw.includes("const CACHE='nova-rx-shell-v5'") && !sw.includes("const CACHE='nova-rx-shell-v4'"));
 ck('embedded /sw.js equals repo sw.js', sw === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
 for (const m of ["addEventListener('push'", "addEventListener('notificationclick'", 'showNotification(', "type:'nova-wa-push'", "type:'nova-wa-open'", "openWindow('/#wa')", "addEventListener('fetch'"]) ck('sw marker ' + m, sw.includes(m));
 ck('no secrets in artifact', !/VAPID_PRIVATE_KEY\s*[:=]\s*["'][A-Za-z0-9_-]{20,}/.test(raw) && !/-----BEGIN/.test(raw));
 ck('UX407: no composer <form>', !app.includes('<form class="wa-composer"') && !app.includes("'<form class=\"wa-composer\""));
-ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>')).length === 1);
+ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>') || l.includes('novaWhatsAppSpaHtml(url.pathname,"<!DOCTYPE html>')).length === 1);
 
 const M = {
   KPI: ['function kpFlagOn()', "localStorage.getItem('nova.flags.waKpis') === '1'", 'if (!kpFlagOn())', "Hidden unless localStorage nova.flags.waKpis==='1' (default OFF)"],
@@ -50,16 +51,18 @@ const M = {
     'env(safe-area-inset-top', 'function msgAnchor(', 'function olderAuto(', 'wa-first', 'passive:true', 'requestAnimationFrame(fit)'],
   conversations: ['data-wa-inbox-open', 'function hOn()', 'function hLoad()', 'inbox/history', 'hPoll', 'winClosed', 'hSend', 'GATED', 'data-wa-older', 'data-wa-latest',
     'NOVA_FIX50', 'NOVA_FIX50_VV', 'wa-root', 'novaInboxView', 'novaWaBtn'],
-  sw: ['/sw.js?v=5'],
+  sw: ['/sw.js?v=6'],
   UX409: ['NOVA WhatsApp', 'manifest-whatsapp.webmanifest', '/icons/nova-whatsapp-180.png', 'height:100dvh', '.wa-list{padding-bottom:var(--wa-sab,env(safe-area-inset-bottom,0px))', '.wa-composer{margin:0;background:#1a1e24'],
-  UX411: ['html.app-whatsapp .pos-root', "html.app-whatsapp .wa-home", 'UX411: stay on the conversations list', "var swUrl = '/sw.js?v=5';"],
+  UX411: ['html.app-whatsapp .pos-root', "html.app-whatsapp .wa-home", 'UX411: stay on the conversations list'],
+  UX412: ['function waKeepUrl()', "path==='/whatsapp'||path==='/wa'", "var swUrl = '/sw.js?v=6';", 'UX412: /whatsapp (and /wa) is the dedicated install path', "sessionStorage.setItem('nova.wa.standalone','1')"],
 };
 for (const [k, ms] of Object.entries(M)) for (const m of ms) ck(k + ' marker ' + m, app.includes(m));
 ck('PWA assets served by the preview worker', raw.includes('NOVA_PWA_ASSETS') && raw.includes('/icons/nova-whatsapp-180.png') && raw.includes('/manifest-whatsapp.webmanifest') && raw.includes('/manifest.webmanifest'));
 
 for (const s of ['wa-lockform', 'waHistPin', 'waHistForm', 'X-Nova-Pin', 'PIN_REQUIRED', 'PIN_INVALID', 'function hPin(', 'المحادثات مقفولة', 'محمية بـ PIN', 'اكتب رقم PIN'])
   ck('no PIN UI: ' + s, !app.includes(s));
-ck('worker /sw.js cache is nova-rx-shell-v5', raw.includes("const CACHE='nova-rx-shell-v5'"));
+ck('worker /sw.js cache is nova-rx-shell-v6', raw.includes("const CACHE='nova-rx-shell-v6'"));
+ck('worker serves /whatsapp with rewritten WhatsApp head', raw.includes('function novaWhatsAppSpaHtml') && raw.includes("/whatsapp") && raw.includes('novaWhatsAppSpaHtml(url.pathname,') && raw.includes('/manifest-whatsapp.webmanifest?v=2'));
 ck('no user-scalable=no', !/user-scalable\s*=\s*no/.test(app));
 ck('artifact size sane', raw.length > 1_000_000);
 console.log('sha256', createHash('sha256').update(raw).digest('hex'), raw.length, 'bytes');
