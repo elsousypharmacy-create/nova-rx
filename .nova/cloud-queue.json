@@ -11,7 +11,7 @@
    "after": [
     "UX407"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -24,19 +24,10 @@
    "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
    "not_before": "2026-11-15T15:11:00+00:00",
    "pr": 481,
-   "ci_dispatched": {
-    "sha": "872ffde0b8bf814625106e702de8fa49d255c487",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T17:29:07+00:00",
-    "na": []
-   },
    "note_conflicts": "fix_attempts reset 2026-11-15 17:15Z: both fixes were artifact merge conflicts from other merges, not red CI",
-   "conflict_fixes": 2
+   "conflict_fixes": 2,
+   "merged_at": "2026-11-15T17:34:09+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/481"
   },
   {
    "id": "UX320",
@@ -160,7 +151,7 @@
    "after": [
     "UX401"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-design-review",
@@ -169,7 +160,8 @@
    "max_turns": 80,
    "slot": "A",
    "not_before": "2026-11-15T15:11:00+00:00",
-   "pin_slot": "A"
+   "pin_slot": "A",
+   "dispatched_at": "2026-11-15T17:34:09+00:00"
   },
   {
    "id": "UX402",
@@ -5086,6 +5078,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:29:07+00:00",
+ "updated": "2026-11-15T17:34:09+00:00",
  "slot_cooldown": {}
 }
