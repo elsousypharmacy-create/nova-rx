@@ -1,6 +1,6 @@
 // UX407 preview artifact: worker/live/nova-rx-preview.ux-407.js = ux-406 Worker code (byte-identical outside the app HTML literal; /sw.js unchanged)
 // + current index.html (PR #467/#468 Home WhatsApp KPIs flag gate: localStorage nova.flags.waKpis==='1', default off; conversations: staff-reply prefix stripped on display, WhatsApp bubble sides, composer flush on the keyboard, no focus box).
-// Checks node --check, UX401 + UX407 + UX406 + UX405 + UX404 + conversations markers, PIN stays removed, SW cache v4 kept. No deploy, never prints secrets.
+// Checks node --check, UX408 + UX401 + UX407 + UX406 + UX405 + UX404 + conversations markers, PIN stays removed, SW cache v4 kept. No deploy, never prints secrets.
 // Run: node tests/unit/artifact-ux407.check.mjs
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -42,7 +42,10 @@ const M = {
   UX406: ['function createUnread(', 'function titleBadge(', 'function notifyHtml(', 'data-wa-notify', 'data-wa-mute', 'data-wa-tab-unread', 'window.NovaWaNotify', 'push/subscribe', 'push/key', 'Notification.requestPermission', 'nova.wa.seen.v1', "location.hash==='#wa'", 'notifHead:nHead()'],
   UX405: ['function mediaHtml(', 'function openLightbox(', 'data-wa-media-open', 'data-wa-lightbox', 'data-wa-mimg', 'data-wa-mplay', 'wa-mdoc', 'data-wa-media-miss', "media?id='", 'mediaUrl:mUrl,mediaFail:wa.mfail', 'function previewText('],
   UX401: ['function quoteBarHtml(', 'function quoteHtml(', 'function tick(', 'data-wa-quote-jump', 'data-wa-reply', 'data-wa-vplay', 'data-wa-emoji-panel', 'data-wa-attach-menu'],
-  UX404: ['class="wa-gap"', 'data-wa-fab-n', "cTog('emoji'", "cTog('attach'", "cBtn('mic'", '@keyframes waOpen', 'prefers-reduced-motion:reduce){.wa-root[data-anim]',
+  // UX408 replaced the UX404 inline time spacer (wa-gap) with the wa-tl flex line and removed the emoji button from the composer
+  UX408: ['class="wa-tl', 'wa-last', 'data-wa-dfloat', 'data-wa-filter', 'function chipsHtml(', 'data-wa-more-chats', 'data-wa-older-remote', 'data-has-text', 'data-wa-home',
+    'body[data-active-page=inbox] .nova-nav-row{display:none!important}', 'padding-top:var(--wa-sat,env(safe-area-inset-top,0px))', 'var(--wa-sab,env(safe-area-inset-bottom,0px))', 'background:#000', 'function hMore(', 'function tOlder(', '📷'],
+  UX404: ['data-wa-fab-n', "cTog('attach'", "cBtn('mic'", '@keyframes waOpen', 'prefers-reduced-motion:reduce){.wa-root[data-anim]',
     'env(safe-area-inset-top', 'function msgAnchor(', 'function olderAuto(', 'wa-first', 'passive:true', 'requestAnimationFrame(fit)'],
   conversations: ['data-wa-inbox-open', 'function hOn()', 'function hLoad()', 'inbox/history', 'hPoll', 'winClosed', 'hSend', 'GATED', 'data-wa-older', 'data-wa-latest',
     'NOVA_FIX50', 'NOVA_FIX50_VV', 'wa-root', 'novaInboxView', 'novaWaBtn'],
