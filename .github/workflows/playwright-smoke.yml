@@ -53,6 +53,8 @@ jobs:
         run: |
           node tests/ux/ux409-wa-bell.mjs
           node tests/ux/ux409-wa-flush.mjs
+      - name: UX411 /?app=whatsapp opens conversations (fresh + service worker)
+        run: node tests/ux/ux411-wa-app-open.mjs
       - name: POS-01 sale flow on one screen (N34)
         run: node tests/ui-pos01-sale-flow.mjs
       - name: POS-02 atomic invoice and payment (N35)
