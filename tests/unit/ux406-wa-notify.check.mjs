@@ -35,6 +35,12 @@ t('markSeen clears one chat and survives reload; storage holds hashes only', () 
   const a2 = conv('wa_201555', [m('1', 'in', T0 + 5), m('9', 'in', T0 + 20)]);
   assert.equal(u2.count(a2), 1, 'a newer message after seen is unread again');
 });
+t('local (non-history) chats keep the trailing-inbound rule until opened', () => {
+  const u = U.createUnread(mem(), T0);
+  const c = { id: 'loc-1', customer: 'x', messages: [m('1', 'in', 1), m('2', 'out', 2), m('3', 'in', 3), m('4', 'in', 4)] };
+  assert.equal(u.count(c), 2);
+  u.markSeen('loc-1', 5); assert.equal(u.count(c), 0);
+});
 t('corrupt storage starts fresh', () => { const s = mem(); s.setItem('nova.wa.seen.v1', '{bad'); const u = U.createUnread(s, T0); assert.equal(u.base(), T0); });
 t('bump (push hook) counts before data arrives; markSeen resets it', () => {
   const u = U.createUnread(mem(), T0);

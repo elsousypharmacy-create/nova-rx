@@ -161,6 +161,7 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   await view.locator('[data-mid="a4"]').waitFor();
   assert.equal(await page.evaluate(() => document.querySelector('[data-wa-root]').dataset.view), 'chat');
 
+  await page.waitForTimeout(400);
   await page.screenshot({ path: `tests/ux/__screenshots__/ux406-${vp.name}.png` });
   assert.deepEqual(other, [], 'no non-GET except the faked push/subscribe');
   assert.deepEqual(errors, [], 'no page errors');
