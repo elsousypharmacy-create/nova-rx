@@ -57,6 +57,8 @@ jobs:
         run: node tests/ux/ux411-wa-app-open.mjs
       - name: UX412 /whatsapp dedicated path opens conversations
         run: node tests/ux/ux412-wa-path.mjs
+      - name: UX413 standalone list flush + 16px edge inset
+        run: node tests/ux/ux413-wa-bottom.mjs
       - name: POS-01 sale flow on one screen (N34)
         run: node tests/ui-pos01-sale-flow.mjs
       - name: POS-02 atomic invoice and payment (N35)
