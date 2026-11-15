@@ -5387,6 +5387,40 @@ window.NovaFmt=(function(){
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pay-debt]');if(b)openPayDebt(b.getAttribute('data-pay-debt'))});
 
 
+
+ function openCustAdd(){
+  const old=document.getElementById('novaCustAddDlg');if(old)old.remove();
+  const ov=document.createElement('div');ov.id='novaCustAddDlg';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','novaCustAddT');ov.dir='rtl';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Cairo,sans-serif';
+  const inp='width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;background:#0d1014;border:1px solid #2a3139;border-radius:8px;color:#e8eef3;font:inherit';
+  ov.innerHTML='<div style="max-width:94vw;box-sizing:border-box;background:#14181d;border:1px solid #2a3139;border-radius:12px;padding:20px;width:min(400px,94vw);max-height:90vh;overflow:auto;color:#e8eef3;position:relative"><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button><h2 id="novaCustAddT" style="margin:0 0 12px;font-size:18px;padding-inline-start:52px;min-height:44px;box-sizing:border-box">إضافة عميل</h2>'
+   +'<label for="novaCaName" style="display:block;margin-bottom:4px">الاسم</label><input id="novaCaName" autocomplete="off" aria-describedby="novaCaNameErr" style="'+inp+'"><div id="novaCaNameErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>'
+   +'<label for="novaCaPhone" style="display:block;margin:8px 0 4px">رقم الهاتف</label><input id="novaCaPhone" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" aria-describedby="novaCaPhoneErr" style="'+inp+';text-align:left"><div id="novaCaPhoneErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>'
+   +'<div style="display:flex;gap:8px;margin-top:14px"><button type="button" class="btn btn-primary" id="novaCaOk" style="min-height:44px;flex:1">حفظ العميل</button><button type="button" class="nova-return-btn" id="novaCaCancel" style="min-height:44px">إلغاء</button></div></div>';
+  document.body.appendChild(ov);
+  const nm=ov.querySelector('#novaCaName'),ph=ov.querySelector('#novaCaPhone'),ne=ov.querySelector('#novaCaNameErr'),pe=ov.querySelector('#novaCaPhoneErr');
+  const rel=dlgA11y(ov);const close=()=>{rel();document.removeEventListener('keydown',key,true)};
+  const digits=v=>String(v||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[^0-9]/g,'');
+  const dup=()=>{const p=digits(ph.value);return p?data().customers.find(c=>digits(c.phone)===p):null};
+  const check=(strict)=>{let ok=true;const n=nm.value.trim(),p=digits(ph.value);
+   if(!n){if(strict)ne.textContent='اكتب اسم العميل';nm.setAttribute('aria-invalid','true');ok=false}else{ne.textContent='';nm.removeAttribute('aria-invalid')}
+   const d=dup();
+   if(!p||p.length<9||p.length>15){if(strict||p)pe.textContent='رقم الهاتف من 9 إلى 15 رقمًا';ph.setAttribute('aria-invalid','true');ok=false}
+   else if(d){pe.textContent='هذا الرقم مسجّل بالفعل للعميل: '+d.name;ph.setAttribute('aria-invalid','true');ok=false}
+   else{pe.textContent='';ph.removeAttribute('aria-invalid')}
+   return ok};
+  nm.addEventListener('input',()=>{if(nm.value.trim())check(false)});ph.addEventListener('input',()=>check(false));
+  const ok=()=>{if(!check(true)){(nm.getAttribute('aria-invalid')?nm:ph).focus();return}
+   const c={id:'DEMO-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name:nm.value.trim(),phone:digits(ph.value),tier:'جديد',points:0,visits:0,pastInvoices:[]};
+   const list=data().customers;list.push(c);
+   try{localStorage.setItem('nova-rx-demo-customers-v1',JSON.stringify(list.filter(x=>String(x.id).startsWith('DEMO-'))))}catch(e){list.pop();pe.textContent='تعذر حفظ العميل على هذا المتصفح.';return}
+   close();const f=document.getElementById('novaFilter');render('customers',f?f.value:'');
+   if(typeof window.novaToast==='function')window.novaToast('تمت إضافة العميل '+c.name)};
+  function key(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}else if(e.key==='Enter'&&e.target.tagName!=='BUTTON'){e.preventDefault();e.stopPropagation();ok()}}
+  document.addEventListener('keydown',key,true);
+  ov.querySelector('#novaCaOk').addEventListener('click',ok);ov.querySelector('#novaCaCancel').addEventListener('click',close);ov.querySelector('[data-dlg-close]').addEventListener('click',close);ov.addEventListener('mousedown',e=>{if(e.target===ov)close()});
+  nm.focus();
+ }
  function openCustDetail(id){
   const c=data().customers.find(x=>String(x.id)===String(id));if(!c)return;
   const prev=document.activeElement,d=debtOf(c.id);
@@ -5690,7 +5724,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
  const repStart=document.getElementById('novaRepStartSale');if(repStart)repStart.onclick=()=>switchPage('sale');
  document.querySelectorAll('[data-cust-filter]').forEach(b=>{b.onclick=()=>{const k=b.getAttribute('data-cust-filter');window.__novaCustFilter=k;const f=document.getElementById('novaFilter');render(page,f?f.value:'');const n=document.querySelector('[data-cust-filter="'+k+'"]');if(n)n.focus()}});
- const custAdd=document.getElementById('novaCustAdd');if(custAdd)custAdd.onclick=()=>{switchPage('sale');document.dispatchEvent(new KeyboardEvent('keydown',{key:'F3',bubbles:true}))};
+ document.querySelectorAll('#novaCustAdd').forEach(b=>{b.onclick=()=>openCustAdd()});
  const setStockFilter=(k,focusSel)=>{novaStockFilter=k;const f=document.getElementById('novaFilter');render(page,f?f.value:'');const b=document.querySelector(focusSel);if(b)b.focus()};
  const lowBtn=document.getElementById('novaLowKpi');if(lowBtn)lowBtn.onclick=()=>setStockFilter(novaStockFilter==='low'?'all':'low','#novaLowKpi');
  document.querySelectorAll('[data-stock-filter]').forEach(b=>{b.onclick=()=>{const k=b.getAttribute('data-stock-filter');setStockFilter(k,'[data-stock-filter="'+k+'"]')}});

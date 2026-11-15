@@ -428,6 +428,26 @@ def free_slots(active, cooldown):
     return [s for s in SLOTS if s not in active.values() and age((cooldown or {}).get(s, "")) >= 0]
 
 
+def should_stay(items, byid, active, cooldown=None, horizon=2100):
+    """Keep polling while CI is in flight, or while startable pending work waits only on a
+    short timer (slot cooldown / not_before within `horizon` s) with no agent run left to wake
+    the scheduler. Exiting in that state stalled the queue on 2026-11-15 (cron barely fires)."""
+    if any(t["status"] == "pr_open" for t in items):
+        return True
+    if active:
+        return False  # the agent run dispatches the scheduler when it finishes
+    cooldown = cooldown or {}
+    for t in items:
+        if t["status"] != "pending" or not all(byid.get(a, {}).get("status") in DONE for a in t.get("after", [])):
+            continue
+        slots = [t["pin_slot"]] if t.get("pin_slot") in SLOTS else SLOTS
+        wait = max(-age(t["not_before"]) if t.get("not_before") else 0,
+                   min((max(0, -age(cooldown.get(s_, ""))) for s_ in slots), default=1e9))
+        if wait <= horizon:
+            return True
+    return False
+
+
 def reconcile_finished(items, active, latest, open_pr, branches, ahead_by, cooldown=None):
     """Settle tasks still marked running/fixing whose agent run is no longer active.
 
@@ -630,6 +650,10 @@ def main():
             break
         if t["status"] != "pending" or t["id"] in active:
             continue
+        if t.get("pin_slot") in SLOTS:  # e.g. owner keeps the WhatsApp chain on slot A
+            free = [s_ for s_ in free if s_ == t["pin_slot"]]
+            if not free:
+                continue
         if not all(byid.get(a, {}).get("status") in DONE for a in t.get("after", [])):
             continue
         if t.get("not_before") and age(t["not_before"]) < 0:
@@ -649,7 +673,7 @@ def main():
         q["updated"] = iso()
         json.dump(q, open(QF, "w"), ensure_ascii=False, indent=1); open(QF, "a").write("\n")
         log("queue changed")
-    stay = any(t["status"] == "pr_open" for t in items)
+    stay = should_stay(items, byid, active, cooldown)
     stay_path = os.environ.get("SCHEDULER_STAY_FILE", "/tmp/cloud-scheduler-stay")
     try:
         open(stay_path, "w").write("true" if stay else "false")
