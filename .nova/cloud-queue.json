@@ -4105,12 +4105,12 @@
    "acceptance": "Conversations open with no PIN on staging/preview (read and send UI); production code path still PIN-gated; 24h window, rate limits, wa_send_log, and NOVA_INBOX_SEND still enforced; WhatsApp Web–like list+pane layout on desktop and mobile, RTL correct; REQUIRED_MARKERS updated (waHistPin replaced, other markers kept); unit + Playwright tests pass; no live customer messages; no production deploy.",
    "after": [],
    "status": "running",
-   "attempts": 0,
+   "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
    "note": "Slot A track (WhatsApp). Scheduler should dispatch this first among pending tasks so it gets slot A.",
    "slot": "A",
-   "dispatched_at": "2026-11-15T09:06:54+00:00"
+   "dispatched_at": "2026-11-15T09:16:31+00:00"
   },
   {
    "id": "UX401",
@@ -4612,5 +4612,5 @@
    "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
   }
  ],
- "updated": "2026-11-15T09:13:31+00:00"
+ "updated": "2026-11-15T09:16:31+00:00"
 }
