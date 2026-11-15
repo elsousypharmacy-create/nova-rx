@@ -55,6 +55,7 @@ html[data-nx-page=purchases] button.primary,html[data-nx-page=purchases] .primar
 html[data-nx-page=purchases] input:not([type=checkbox]):not([type=radio]),html[data-nx-page=purchases] select{border-radius:var(--nx-r-2);transition:border-color var(--nx-dur-fast) var(--nx-ease)}
 html[data-nx-page=purchases] input:focus,html[data-nx-page=purchases] select:focus{border-color:var(--nx-border-focus)}
 html[data-nx-page=purchases] table{border-radius:var(--nx-r-3)}
+html[data-nx-page=purchases] #receiveInvoice{color:var(--nx-on-accent)}
 
 /* ---------- Supplier compare ---------- */
 html[data-nx-page=compare] body{background:var(--nx-bg-base);color:var(--nx-text-main);padding:var(--nx-sp-5) var(--nx-sp-4);font-size:var(--nx-fs-md);line-height:var(--nx-lh-base)}
