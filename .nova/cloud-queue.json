@@ -23,6 +23,74 @@
    "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867"
   },
   {
+   "id": "UX405",
+   "phase": 10,
+   "title": "شاشة المحادثات: عرض الصور والوسائط الواردة زي واتساب",
+   "brief": "Continue SLOT A WhatsApp Web work, model Opus, up to 80 turns. High-priority follow-up from owner Ahmed's phone test (Asia/Riyadh, chat wa_201152484952). Incoming images render only as the text «[صورة]»; they must display like WhatsApp (thumbnail, tap to open fullscreen). Depends on UX404 (smoothness run already in progress — do not start until it is done). Do not reopen the PIN gate. Do not start UX406/UX401–UX403. Slot B may be on other pages — stay inside conversations + the staging media endpoint to avoid conflicts.\n\nPAYLOAD CONTRACT UPDATE (pharmacy PR https://github.com/elsousypharmacy-create/pharmacy/pull/73 — review-only, Ahmed merges; do not merge or touch that repo). After GAS is updated, inbound image/sticker/audio/video/document POSTs to /api/v1/webhooks/whatsapp-bridge may include bytes. Do not wait for a Worker-side WA_TOKEN. Accept and persist this shape (v: 1, source: pharmacy-bot):\n- existing fields unchanged: id, from, timestamp, type, text (caption or null), media_id, filename, name, phone_number_id, direction\n- new optional fields on media messages only: media_base64 (standard base64, no data: prefix), mime_type, media_size (bytes), media_skipped ('too_large' | 'fetch_failed' | 'no_url' | 'no_token' | 'bad_id')\n- text-only messages stay in the previous shape (no new fields)\n- cap on the GAS side is 5 MB; larger or failed fetches send metadata only (media_id + mime_type + media_size + media_skipped, no media_base64)\n- never log or store Graph download URLs; WA_TOKEN stays in GAS only\n\nThe webhook MAX_BODY is currently 1 MB (whatsapp-intake.js, shared by this route). A 5 MB file becomes ~6.7 MB JSON and would get 413. Raise the limit on the pharmacy-bot whatsapp-bridge path to at least 8 MB (do not enable paid services). Keep a sensible cap.\n\nInvestigation already done (do not repeat as a research-only task; implement):\n- Staging ingestDirect / messageText drop the media_id and persist only text: images become «[صورة]» (+ caption); documents become «[مستند]». sticker / audio / video currently have no messageText mapping, so caption-less items are skipped entirely.\n- inbox_messages has no media columns (only tenant_id, id, conversation_id, dir, text, status, at).\n- Staging Worker secrets (names only) are NOVA_API_PIN, NOVA_INGEST_SECRET, NOVA_WA_BRIDGE_TOKEN, WA_BACKEND_URL. Production has no WA token either. NOVA does not currently have WA_TOKEN bound. Do NOT add, copy, print, or rotate WA_TOKEN or any other secret. Do not touch the pharmacy repo, GAS, or WA_TOKEN.\n- R2 is not available (requires a Cloudflare billing/payment profile). Cache media in KV only.\n\nImplement:\n1) Additive D1 migration: store media_type (image/sticker/audio/video/document), media_id, mime, filename, media_size, media_skipped, and optional caption alongside text placeholders. Keep old rows working. Extend ingestDirect + messageText / toQueueEntry so all those types are stored (never skipped) even without caption, with media_id and the new fields when present.\n2) When the webhook item has media_base64, decode and store the bytes in KV (keyed by tenant + message/media id, short-to-medium TTL is fine; 5 MB fits KV). Do not use R2. Auth-gated media endpoint (same inbox/session auth as conversations), e.g. GET /api/v1/inbox/media/:id, returns the cached file (plus a small thumbnail for images/stickers when practical). If there is no base64 / media_skipped is set / KV miss, return a clear Arabic fallback (and a text placeholder in the UI) — do not fail the whole inbox. Do not require or bind WA_TOKEN; do not fetch Graph from the Worker unless a token is already bound (it is not today). Never log or return secrets.\n3) Conversations UI like WhatsApp: image/sticker thumbnail in the bubble, tap to open a fullscreen lightbox (pinch/zoom or at least close/swipe); audio player; video player; document chip with filename and open/download. Outgoing media can wait if not in scope. Incoming must work with fixtures (inject media_base64 / KV) in tests, with a fallback when only metadata is present (too_large / fetch_failed).\n4) Build worker/live/nova-rx-preview.ux-405.js with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main).\n\nScope: unified-inbox.js + WhatsApp/conversations regions of index.html, backend inbox/bridge/process + additive migration + tests, and the new preview artifact. Do not edit ux-tokens, other pages, the cloud queue, workflows, or secrets. No production deploy required unless a staging Worker deploy is the documented path for the new endpoint (if you need one, leave a note for the scheduler; do not deploy production). No live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN.\n\nTests (CI must pass): unit tests for ingest of image/sticker/audio/video/document with media_id preserved and media_base64 stored in KV; metadata-only (media_skipped=too_large) still stored and not dropped; skipped-type regression gone; media route 200 from KV fixture; Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) asserting thumbnails, lightbox, audio/video/document chips, and no raw-only «[صورة]» for fixture image messages.",
+   "acceptance": "Incoming image/sticker/audio/video/document messages display in the conversations screen like WhatsApp (thumbnail or player, tap image/sticker to fullscreen) instead of only «[صورة]»; media_id/type persisted; webhook accepts media_base64 + mime_type + filename + media_size + media_id + caption/text + media_skipped; bytes cached in KV (not R2); pharmacy-bot body limit raised to ≥8 MB; UI fallback when bytes are absent; unit + Playwright tests pass with fixtures and no live customer messages; preview artifact built; no secrets printed; no GAS/WA_TOKEN changes; no paid services.",
+   "after": [
+    "UX404"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "note": "Slot A track; high-priority media follow-up from owner phone test. Inserted after running UX404 and ahead of UX406/UX401–UX403. Model opus, max_turns 80. GAS pharmacy PR #73 will attach media_base64 (≤5MB) after Ahmed merges and updates the script; accept that payload and store bytes in KV. Do not bind WA_TOKEN or enable R2. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
+   "max_turns": 80,
+   "source": "owner-request-2026-11-15-media"
+  },
+  {
+   "id": "UX406",
+   "phase": 10,
+   "title": "شاشة المحادثات: إشعارات الرسائل الجديدة (Web Push وصوت وشارة)",
+   "brief": "Continue SLOT A WhatsApp Web work, model Opus, up to 80 turns. High-priority follow-up from owner Ahmed: a new customer WhatsApp arrived on the preview conversations screen and he got no notification. Slot A is the right slot (conversations screen). Depends on UX405. Do not reopen the PIN gate. Do not start UX401–UX403. Stay inside the conversations screen + notification worker endpoints to avoid conflicts with slot B.\n\nUX402 still owns realtime in-chat appearance without a full refresh. This task owns notifications so Ahmed is alerted even when the chat is in the background. Do not duplicate UX402's polling/live-insert work; expose hooks UX402 can use (unread counts, badge API).\n\nImplement:\n1) Web Push: a Service Worker that shows a notification for a new inbound customer message when the tab is in the background or the screen is not focused. Generate VAPID keys freely and store them as staging Worker secrets (names e.g. VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY). NEVER print, log, or commit the private key or any secret value. If you cannot write Worker secrets from the agent, generate the keys in the Actions environment or a local uncommitted file, document the secret NAMES, and leave a short note in the PR for the scheduler/owner to bind them — do not paste values in the PR, chat, or repo.\n2) Permission prompt: a clear in-app button in the conversations header/settings (Arabic) to request Notification permission; handle denied/default/granted; never nag in a loop.\n3) In-app: play a short notification sound on a new inbound message (respect a mute toggle and the document visibility state); unread count per chat in the list; total unread on the «المحادثات» tab badge; document.title count while the tab is in the background, restored when focused.\n4) Backend: store push subscriptions per session/device in KV or an additive D1 table; send a push on new inbound ingest (ingestDirect / inbox receive) without blocking message writes. No paid push vendors — Web Push + VAPID only (free).\n5) Build worker/live/nova-rx-preview.ux-406.js with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only).\n\nScope: unified-inbox.js, sw.js / conversations service worker, conversations regions of index.html, backend inbox/bridge notification hooks + tests, preview artifact. Do not edit other pages, the cloud queue, workflows, or unrelated secrets. No production unless a staging Worker deploy is required for the push endpoint (leave a note; do not deploy production). No live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN.\n\nTests (CI must pass): unit tests for unread counts, title badge, subscription register/unregister, and push payload shaping (no real push vendor); Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering the permission button, in-app sound hook (mocked), per-chat and tab unread badges, and document.title count.",
+   "acceptance": "New inbound messages can notify via Web Push (VAPID secrets stored, never printed) plus in-app sound, per-chat unread, tab badge, and document.title count; a permission button exists and handles denied/granted; unit + Playwright tests pass with fakes; preview artifact built; no secrets printed; no paid services; no live customer messages.",
+   "after": [
+    "UX405"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
+   "max_turns": 80,
+   "source": "owner-request-2026-11-15-notifications"
+  },
+  {
+   "id": "UX401",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: الفقاعات والعلامات والرد والوسائط وخانة الكتابة",
+   "brief": "Continue SLOT A WhatsApp Web work (task 6 of 8). Depends on UX406 (PIN already removed; list+pane chrome from UX400b; smoothness from UX404; incoming media display from UX405; notifications from UX406). Do not reopen the PIN gate. Do not start UX402/UX403. Incoming media display and web-push are already in UX405/UX406 — build on them, do not rip them out. Model Opus. Slot B is modernizing other pages — stay inside the conversations screen to avoid conflicts.\n\nMake the chat pane look and behave like WhatsApp Web:\n- Incoming (white/light) and outgoing (WhatsApp green) bubbles, WhatsApp-like wallpaper, date separators between days, per-message time on every bubble.\n- Ticks from message status: one check when sent, two checks when delivered, two blue checks when read; failed state visible.\n- Reply/quote: swipe or long-press/context to reply; quoted snippet above the bubble and in the composer; can cancel the quote.\n- Media, voice notes, stickers, and documents render inside the thread like WhatsApp (images in-bubble, voice with duration/play, sticker size, document name/type). Use existing history data; fake attachments in tests. Do not send media to real customers.\n- Composer: emoji picker, attachments control, text field (Arabic RTL / dir=auto), send control. Keep NOVA_INBOX_SEND kill switch (composer disabled/draft-only when send is off). Keep the 24-hour window: cannot send when the window is closed, with a clear Arabic explanation. Auto-scroll to latest on open and on send; do not rip the user away if they have scrolled up (WhatsApp-like 'jump to latest' control).\n- Smooth animations, 60fps scrolling, no layout jank, instant feedback (<100ms) on tap. RTL Arabic correct. Responsive: 1366x768 split view and 390x844 stacked list/chat.\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html only (plus their tests). Do not edit ux-tokens.css/js, other pages, queue, workflows, secrets. No deploy, no merge, no production, no live customer messages.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering bubbles, ticks, date separators, reply/quote, media/voice/sticker/doc rendering, composer, 24h-window closed state, auto-scroll; plus nearest unit tests. Record exact results.",
+   "acceptance": "Chat pane matches WhatsApp Web: wallpaper, green/white bubbles, date separators, per-message time, single/double/blue ticks from status, reply/quote, media/voice/sticker/doc rendering, emoji+attachments composer, auto-scroll; 24h window and NOVA_INBOX_SEND still enforced; RTL + desktop/mobile; Playwright + unit tests pass; no live customer messages.",
+   "after": [
+    "UX406"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX406 (media UX405 + notifications UX406, which follow UX404). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
+   "max_turns": 80
+  },
+  {
+   "id": "UX402",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: الرسايل الجديدة بدون تحديث وإشعارات",
+   "brief": "Web-push, in-app sound, tab/title badges, and unread counts were implemented in UX406. This task owns realtime appearance (new messages in the open chat and list without a full refresh) and should use UX406 hooks. Continue SLOT A WhatsApp Web work (task 7 of 8). Depends on UX401. Do not reopen the PIN gate. Do not start UX403. Stay inside the conversations screen (unified-inbox.js + WhatsApp/conversations regions of index.html + related tests/backend poll endpoints). Avoid conflicts with slot B.\n\nRealtime and notifications, like WhatsApp Web:\n- New inbound and outbound messages appear in the open chat and in the list (preview, time, unread badge) without a full page refresh. Use the existing history poll (hPoll) and/or a safer short poll; do not hammer the API. If a lighter push/path already exists in staging, use it; otherwise improve polling (pause when the tab is hidden, backoff, no duplicate bubbles).\n- Unread counts and the #novaWaBtn badge update live.\n- In-app notification for a new customer message when the user is on another screen or another chat (Arabic, not noisy, respects a simple mute-if-already-viewing rule). Browser Notification API only with a graceful fallback; do not require a new paid service.\n- Keep 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND. No test messages to real customers; fake/local data only.\n- Smooth insert of new bubbles (no flash/flicker), list row updates, scroll-to-latest only when the user is already at the bottom.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) that inject or mock a new message and assert it appears in the open chat and list without location.reload; badge updates; notification hook/fallback is present. Plus nearest unit tests. Record exact results. No deploy, no merge, no secrets, no production.",
+   "acceptance": "New messages appear in the open chat and list without a full refresh; unread badge updates; in-app/browser notification path exists with a fallback; poll is well-behaved; 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND kept; Playwright + unit tests pass; no live customer messages.",
+   "after": [
+    "UX401"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
+   "max_turns": 80
+  },
+  {
    "id": "UX430",
    "phase": 10,
    "title": "WhatsApp KPIs on Home",
@@ -35,14 +103,261 @@
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-wa-kpis",
-   "note": "Slot B track; Sonnet per owner rule 2026-11-15. Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo. Requeued at front 2026-11-15 after turn cap + slot B usage limit; waits for limit reset; max_turns 120.",
-   "model": "sonnet",
+   "note": "Slot B track; Sonnet per owner rule 2026-11-15. Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo. Requeued at front 2026-11-15 after turn cap + slot B usage limit; waits for limit reset; max_turns 120. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
    "max_turns": 120,
    "slot": "B",
    "dispatched_at": "2026-11-15T12:08:26+00:00",
    "retry": true,
    "not_before": "2026-11-15T12:42:00+00:00",
    "last_failure": "run failure: slot B 5-hour usage limit (resets 12:40 UTC); earlier run hit 80-turn cap; https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43712331585"
+  },
+  {
+   "id": "UX403",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: اختبار Playwright كامل وصقل وبناء أثر الـ preview",
+   "brief": "Final SLOT A WhatsApp Web task (8 of 8). Depends on UX402. Thoroughly test and polish the conversations screen so it is indistinguishable from WhatsApp Web in look and behavior, then build the preview artifact.\n\n1) Thorough Playwright pass of the conversations screen only (tests/ux, 1366x768 and 390x844, fake data, block non-GET / no live writes, no messages to real customers): open inbox with no PIN; list (avatar, last message, time, unread, search, pin/archive); open a chat; wallpaper, bubbles, date separators, times, ticks; reply/quote; media/voice/sticker/doc; composer (emoji, attachments, send disabled when NOVA_INBOX_SEND is off, 24h window closed); auto-scroll; new message appears without refresh; RTL Arabic; mobile back navigation; reduced-motion / no major jank. Fix every failure and any visual/UX gap you still see (spacing, contrast, typography, empty/loading/error, smoothness). Quality bar is exceptional; design and smoothness first.\n2) Build worker/live/nova-rx-preview.ux-403.js from the latest worker/live artifact using tools/build-worker-artifact.mjs so preview auto-deploy can pick it up. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Add/update a markers test (PIN-free marker from UX400 plus novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). Run the markers test and node --check on the artifact. Do NOT deploy (auto-deploy-preview.yml deploys the newest artifact on main). Do not touch production.\n\nScope remains the conversations screen + the new artifact and its tests. Do not edit other pages, queue, workflows, or secrets. Do not merge. Record exact test commands and results.",
+   "acceptance": "Full Playwright conversations pass green on desktop and mobile with fake data; remaining polish done; worker/live/nova-rx-preview.ux-403.js built; markers test and node --check pass; no deploy; no live customer messages.",
+   "after": [
+    "UX402"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "model": "opus",
+   "max_turns": 80
+  },
+  {
+   "id": "UX315",
+   "phase": 10,
+   "title": "الموبايل: السهم ‹ يغطي شعار «NOVA Rx» في رأس كل الشاشات (تراجع عن UX204)",
+   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Wordmark fully visible at 390px on every tab; test asserts no bounding-box overlap between brand and nav arrows.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX316",
+   "phase": 10,
+   "title": "العملاء: رسالة البحث الفارغ خاطئة «لا يوجد عملاء بعد» + لا زر مسح + «عبدالله» لا تطابق «عبد الله»",
+   "brief": "In customers, search 'zzz' shows 'لا يوجد عملاء بعد / أضف عميلًا' instead of 'لا توجد نتائج لـ «zzz»' with a clear-search action. Add × clear button (#novaFilterClear like products), normalise spaces/hamza/ya/ta-marbuta/Arabic digits so 'عبدالله' matches 'عبد الله'. Keep <100ms. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Zero-result search shows correct no-results copy + clear button; 'عبدالله' matches; test asserts.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX317",
+   "phase": 10,
+   "title": "العملاء: مؤشرات المديونية — إجمالي المديونية وعدد المدينين وفلتر «عليهم مديونية»",
+   "brief": "KPIs show العملاء/الزيارات/النقاط/النشطون (active == total, redundant). Replace the redundant KPI with إجمالي المديونية + عدد المدينين (from NovaCredit.customers()), add filter chips (الكل / مدينون / متأخرون) and sort by debt desc; red debt value must meet AA contrast on dark. Seed NovaCredit in test via localStorage 'nova.credit'. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Debt KPI and debtor filter work with seeded ledger; test asserts totals.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX318",
+   "phase": 10,
+   "title": "العملاء: بطاقة «عدد العملاء قليل / أضف عميلًا» تدفع الجدول للأسفل وتظهر مع 4 عملاء",
+   "brief": "Empty-state card renders above the table whenever <8 customers, pushing real data ~170px down (and between title and table). Show it only when there are 0 customers; otherwise a compact 'إضافة عميل' primary button in the page header. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "With >=1 customer no nag card; table starts right after KPIs; test asserts.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX319",
+   "phase": 10,
+   "title": "العملاء: لا يوجد ملف/تفاصيل عميل ولا فرز ولا تركيز بلوحة المفاتيح على الصفوف",
+   "brief": "Clicking/Enter on a customer row does nothing. Add focusable rows (tabindex, Enter/Space) opening a detail panel (name, phone, tier, visits, points, debt, كشف حساب, سداد, WhatsApp link to inbox) with focus trap/restore; sortable headers with aria-sort (name, visits, points, debt) like the products table (UX305). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Row Enter opens detail; headers sort with aria-sort; test asserts keyboard flow.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX320",
+   "phase": 10,
+   "title": "العملاء: «إضافة عميل» تنقل إلى شاشة البيع وتطلق F3 بدل نموذج مباشر",
+   "brief": "novaCustAdd does switchPage('sale') + synthetic F3: user loses context and no dialog appears on the customers screen. Add an inline add-customer dialog (name, phone with validation/Arabic-Indic digits, duplicate-phone warning) saved to local demo data, accessible, 44px targets. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Add customer from the customers screen without leaving it; test asserts new row.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX321",
+   "phase": 10,
+   "title": "العملاء: نافذة سداد المديونية وكشف الحساب — وصولية وتحقق ومظهر",
+   "brief": "#novaPayDebt has no aria-labelledby, #novaPayAmt/#novaPayMethod have no labels, over-payment is only a toast ('أكبر من المديونية') while dialog stays open, no focus trap/restore; the statement dialog close ✕ overlaps the title on 390px. Add labels, inline validation with aria-invalid, trap+restore focus, scroll lock, no title overlap, remaining-balance preview after payment. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Dialogs labelled/trapped, inline error, no overlap at 390px; test asserts.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX322",
+   "phase": 10,
+   "title": "العملاء: لا توجد واجهة لإعادة الصرف للأدوية المزمنة (rx-followup.js غير موصول)",
+   "brief": "Chronic refill has no UI: rx-followup.js (opt-in reminders, manual only) is not loaded in index.html. Add in the customer detail a 'أدوية مزمنة' section: list chronic meds with last dispense date and next refill due, a 'مستحقة للصرف' filter/badge on the customers list, and a 'إعادة صرف' button that adds the last items to the sale cart (existing 'إعادة صرف آخر فاتورة' logic) — no automatic messages, no therapy decisions. Local demo data only. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Due-refill badge + one-click reorder to cart; test asserts with fake data.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX327",
+   "phase": 10,
+   "title": "العملاء: صقل الجدول — اسم عربي مع الإنجليزي بين قوسين، محاذاة الهاتف، والعناوين",
+   "brief": "Names render 'د. طارق المنصور (Dr. Tariq Al-Mansoor)' in one line (bidi reorders parentheses on mobile '(Dr. Tariq ...) د.'). Show Arabic as primary and Latin as muted secondary line, tabular numerals and consistent alignment for phone/visits/points/debt, tier as a coloured badge, group the table header cleanly (remove the redundant 'البيانات التجريبية' panel heading or turn into a demo chip like products). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Name cell bidi-correct at 390px; tier badges; test asserts.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX328",
+   "phase": 10,
+   "title": "البيع (موبايل): رقم الفاتورة مقطوع «…00001» وحالة فارغة بزر «إخفاء» غير مفهوم",
+   "brief": "Mobile sale header shows invoice number truncated to '...00001' and the empty-cart hint has a stray 'إخفاء' button with no label/explanation. Show the full short number (tap to copy) and give the hide control a clear label/aria-label or remove it; reduce empty-state vertical dead space. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Full invoice number readable at 390px; hide control labelled; test asserts.",
+   "after": [
+    "UX403",
+    "UX422"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "model": "sonnet",
+   "max_turns": 60
+  },
+  {
+   "id": "UX329",
+   "phase": 10,
+   "title": "Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)",
+   "brief": "Rebuild the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs), embed the UX315-UX328 frontend changes, add a markers test (like tests/artifact-qa231-markers.mjs) and run node --check. NO deploy, backend untouched.",
+   "acceptance": "worker/live/nova-rx-preview.qa-314.js built; markers test passes; node --check passes; no deploy.",
+   "after": [
+    "UX315",
+    "UX316",
+    "UX317",
+    "UX318",
+    "UX319",
+    "UX320",
+    "UX321",
+    "UX322",
+    "UX323",
+    "UX324",
+    "UX325",
+    "UX326",
+    "UX327",
+    "UX328"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Un-held for sale-readiness. Build preview artifact only after UX315–UX328; no deploy (auto-deploy-preview.yml).",
+   "model": "sonnet",
+   "max_turns": 40
+  },
+  {
+   "id": "SALE-05",
+   "phase": 11,
+   "title": "اختبار يوم بيع كامل (بيع، فاتورة، مرتجع، استيكر، ضريبة، موبايل)",
+   "brief": "Final sale-readiness Playwright pass for selling medicines today. Depends on the sale/VAT and customer/mobile fixes.\n\nCover at 1366x768 and 390x844 with fake data (block non-GET / no live writes), Arabic RTL:\n- New sale: search, add item, quantity, discount, VAT 14%, checkout, invoice number fully visible on mobile\n- Invoices list + open invoice\n- Return / void of a just-created invoice (safe states)\n- Customers: add or select, debt KPIs if UX317 landed\n- Sticker studio open + no broken logo if UX323 landed\n- Emergency sales page loads without English-only defaults if UX324 landed\n- No horizontal overflow on supplier-compare if UX325 landed\n- Conversations open with no PIN on the preview path if UX400 landed (do not send messages)\n\nFix any failure you find that is in scope of the sale day (small, targeted). Record exact commands and results. Do not deploy. Do not claim untested success.\n\nHARD RULES: Do not spend money or add payment methods. Do not roll, print, or rotate secrets or tokens (NOVA_API_PIN, NOVA_INGEST_SECRET, WA_TOKEN, Cloudflare, Aumet). Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers. Do not call /{phone_id}/register or /deregister. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore). Do not deploy production or staging (Nova handles production via deploy-backend-production.yml). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only. Tests with fake/local data; block non-GET / no live writes in Playwright. Preserve Arabic RTL.\n",
+   "acceptance": "Playwright sale-day suite passes on desktop and mobile with fake data; failures found in-scope are fixed or listed with evidence; no live customer messages; no deploy.",
+   "after": [
+    "UX328",
+    "UX329",
+    "SALE-02",
+    "UX430"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-sale-readiness-2026-11-15",
+   "note": "Sale-readiness end-to-end pass after UX and VAT land.",
+   "model": "sonnet",
+   "max_turns": 80
   },
   {
    "id": "N60",
@@ -4182,91 +4497,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/454"
   },
   {
-   "id": "UX405",
-   "phase": 10,
-   "title": "شاشة المحادثات: عرض الصور والوسائط الواردة زي واتساب",
-   "brief": "Continue SLOT A WhatsApp Web work, model Opus, up to 80 turns. High-priority follow-up from owner Ahmed's phone test (Asia/Riyadh, chat wa_201152484952). Incoming images render only as the text «[صورة]»; they must display like WhatsApp (thumbnail, tap to open fullscreen). Depends on UX404 (smoothness run already in progress — do not start until it is done). Do not reopen the PIN gate. Do not start UX406/UX401–UX403. Slot B may be on other pages — stay inside conversations + the staging media endpoint to avoid conflicts.\n\nPAYLOAD CONTRACT UPDATE (pharmacy PR https://github.com/elsousypharmacy-create/pharmacy/pull/73 — review-only, Ahmed merges; do not merge or touch that repo). After GAS is updated, inbound image/sticker/audio/video/document POSTs to /api/v1/webhooks/whatsapp-bridge may include bytes. Do not wait for a Worker-side WA_TOKEN. Accept and persist this shape (v: 1, source: pharmacy-bot):\n- existing fields unchanged: id, from, timestamp, type, text (caption or null), media_id, filename, name, phone_number_id, direction\n- new optional fields on media messages only: media_base64 (standard base64, no data: prefix), mime_type, media_size (bytes), media_skipped ('too_large' | 'fetch_failed' | 'no_url' | 'no_token' | 'bad_id')\n- text-only messages stay in the previous shape (no new fields)\n- cap on the GAS side is 5 MB; larger or failed fetches send metadata only (media_id + mime_type + media_size + media_skipped, no media_base64)\n- never log or store Graph download URLs; WA_TOKEN stays in GAS only\n\nThe webhook MAX_BODY is currently 1 MB (whatsapp-intake.js, shared by this route). A 5 MB file becomes ~6.7 MB JSON and would get 413. Raise the limit on the pharmacy-bot whatsapp-bridge path to at least 8 MB (do not enable paid services). Keep a sensible cap.\n\nInvestigation already done (do not repeat as a research-only task; implement):\n- Staging ingestDirect / messageText drop the media_id and persist only text: images become «[صورة]» (+ caption); documents become «[مستند]». sticker / audio / video currently have no messageText mapping, so caption-less items are skipped entirely.\n- inbox_messages has no media columns (only tenant_id, id, conversation_id, dir, text, status, at).\n- Staging Worker secrets (names only) are NOVA_API_PIN, NOVA_INGEST_SECRET, NOVA_WA_BRIDGE_TOKEN, WA_BACKEND_URL. Production has no WA token either. NOVA does not currently have WA_TOKEN bound. Do NOT add, copy, print, or rotate WA_TOKEN or any other secret. Do not touch the pharmacy repo, GAS, or WA_TOKEN.\n- R2 is not available (requires a Cloudflare billing/payment profile). Cache media in KV only.\n\nImplement:\n1) Additive D1 migration: store media_type (image/sticker/audio/video/document), media_id, mime, filename, media_size, media_skipped, and optional caption alongside text placeholders. Keep old rows working. Extend ingestDirect + messageText / toQueueEntry so all those types are stored (never skipped) even without caption, with media_id and the new fields when present.\n2) When the webhook item has media_base64, decode and store the bytes in KV (keyed by tenant + message/media id, short-to-medium TTL is fine; 5 MB fits KV). Do not use R2. Auth-gated media endpoint (same inbox/session auth as conversations), e.g. GET /api/v1/inbox/media/:id, returns the cached file (plus a small thumbnail for images/stickers when practical). If there is no base64 / media_skipped is set / KV miss, return a clear Arabic fallback (and a text placeholder in the UI) — do not fail the whole inbox. Do not require or bind WA_TOKEN; do not fetch Graph from the Worker unless a token is already bound (it is not today). Never log or return secrets.\n3) Conversations UI like WhatsApp: image/sticker thumbnail in the bubble, tap to open a fullscreen lightbox (pinch/zoom or at least close/swipe); audio player; video player; document chip with filename and open/download. Outgoing media can wait if not in scope. Incoming must work with fixtures (inject media_base64 / KV) in tests, with a fallback when only metadata is present (too_large / fetch_failed).\n4) Build worker/live/nova-rx-preview.ux-405.js with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main).\n\nScope: unified-inbox.js + WhatsApp/conversations regions of index.html, backend inbox/bridge/process + additive migration + tests, and the new preview artifact. Do not edit ux-tokens, other pages, the cloud queue, workflows, or secrets. No production deploy required unless a staging Worker deploy is the documented path for the new endpoint (if you need one, leave a note for the scheduler; do not deploy production). No live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN.\n\nTests (CI must pass): unit tests for ingest of image/sticker/audio/video/document with media_id preserved and media_base64 stored in KV; metadata-only (media_skipped=too_large) still stored and not dropped; skipped-type regression gone; media route 200 from KV fixture; Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) asserting thumbnails, lightbox, audio/video/document chips, and no raw-only «[صورة]» for fixture image messages.",
-   "acceptance": "Incoming image/sticker/audio/video/document messages display in the conversations screen like WhatsApp (thumbnail or player, tap image/sticker to fullscreen) instead of only «[صورة]»; media_id/type persisted; webhook accepts media_base64 + mime_type + filename + media_size + media_id + caption/text + media_skipped; bytes cached in KV (not R2); pharmacy-bot body limit raised to ≥8 MB; UI fallback when bytes are absent; unit + Playwright tests pass with fixtures and no live customer messages; preview artifact built; no secrets printed; no GAS/WA_TOKEN changes; no paid services.",
-   "after": [
-    "UX404"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "note": "Slot A track; high-priority media follow-up from owner phone test. Inserted after running UX404 and ahead of UX406/UX401–UX403. Model opus, max_turns 80. GAS pharmacy PR #73 will attach media_base64 (≤5MB) after Ahmed merges and updates the script; accept that payload and store bytes in KV. Do not bind WA_TOKEN or enable R2.",
-   "model": "opus",
-   "max_turns": 80,
-   "source": "owner-request-2026-11-15-media"
-  },
-  {
-   "id": "UX406",
-   "phase": 10,
-   "title": "شاشة المحادثات: إشعارات الرسائل الجديدة (Web Push وصوت وشارة)",
-   "brief": "Continue SLOT A WhatsApp Web work, model Opus, up to 80 turns. High-priority follow-up from owner Ahmed: a new customer WhatsApp arrived on the preview conversations screen and he got no notification. Slot A is the right slot (conversations screen). Depends on UX405. Do not reopen the PIN gate. Do not start UX401–UX403. Stay inside the conversations screen + notification worker endpoints to avoid conflicts with slot B.\n\nUX402 still owns realtime in-chat appearance without a full refresh. This task owns notifications so Ahmed is alerted even when the chat is in the background. Do not duplicate UX402's polling/live-insert work; expose hooks UX402 can use (unread counts, badge API).\n\nImplement:\n1) Web Push: a Service Worker that shows a notification for a new inbound customer message when the tab is in the background or the screen is not focused. Generate VAPID keys freely and store them as staging Worker secrets (names e.g. VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY). NEVER print, log, or commit the private key or any secret value. If you cannot write Worker secrets from the agent, generate the keys in the Actions environment or a local uncommitted file, document the secret NAMES, and leave a short note in the PR for the scheduler/owner to bind them — do not paste values in the PR, chat, or repo.\n2) Permission prompt: a clear in-app button in the conversations header/settings (Arabic) to request Notification permission; handle denied/default/granted; never nag in a loop.\n3) In-app: play a short notification sound on a new inbound message (respect a mute toggle and the document visibility state); unread count per chat in the list; total unread on the «المحادثات» tab badge; document.title count while the tab is in the background, restored when focused.\n4) Backend: store push subscriptions per session/device in KV or an additive D1 table; send a push on new inbound ingest (ingestDirect / inbox receive) without blocking message writes. No paid push vendors — Web Push + VAPID only (free).\n5) Build worker/live/nova-rx-preview.ux-406.js with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge. Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only).\n\nScope: unified-inbox.js, sw.js / conversations service worker, conversations regions of index.html, backend inbox/bridge notification hooks + tests, preview artifact. Do not edit other pages, the cloud queue, workflows, or unrelated secrets. No production unless a staging Worker deploy is required for the push endpoint (leave a note; do not deploy production). No live customer messages, no WhatsApp sends, no GAS/WA_TOKEN/pharmacy-repo changes, nothing that costs money. Never print or rotate secrets or the PIN.\n\nTests (CI must pass): unit tests for unread counts, title badge, subscription register/unregister, and push payload shaping (no real push vendor); Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering the permission button, in-app sound hook (mocked), per-chat and tab unread badges, and document.title count.",
-   "acceptance": "New inbound messages can notify via Web Push (VAPID secrets stored, never printed) plus in-app sound, per-chat unread, tab badge, and document.title count; a permission button exists and handles denied/granted; unit + Playwright tests pass with fakes; preview artifact built; no secrets printed; no paid services; no live customer messages.",
-   "after": [
-    "UX405"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push.",
-   "model": "sonnet",
-   "max_turns": 80,
-   "source": "owner-request-2026-11-15-notifications"
-  },
-  {
-   "id": "UX401",
-   "phase": 10,
-   "title": "شاشة المحادثات زي واتساب ويب: الفقاعات والعلامات والرد والوسائط وخانة الكتابة",
-   "brief": "Continue SLOT A WhatsApp Web work (task 6 of 8). Depends on UX406 (PIN already removed; list+pane chrome from UX400b; smoothness from UX404; incoming media display from UX405; notifications from UX406). Do not reopen the PIN gate. Do not start UX402/UX403. Incoming media display and web-push are already in UX405/UX406 — build on them, do not rip them out. Model Opus. Slot B is modernizing other pages — stay inside the conversations screen to avoid conflicts.\n\nMake the chat pane look and behave like WhatsApp Web:\n- Incoming (white/light) and outgoing (WhatsApp green) bubbles, WhatsApp-like wallpaper, date separators between days, per-message time on every bubble.\n- Ticks from message status: one check when sent, two checks when delivered, two blue checks when read; failed state visible.\n- Reply/quote: swipe or long-press/context to reply; quoted snippet above the bubble and in the composer; can cancel the quote.\n- Media, voice notes, stickers, and documents render inside the thread like WhatsApp (images in-bubble, voice with duration/play, sticker size, document name/type). Use existing history data; fake attachments in tests. Do not send media to real customers.\n- Composer: emoji picker, attachments control, text field (Arabic RTL / dir=auto), send control. Keep NOVA_INBOX_SEND kill switch (composer disabled/draft-only when send is off). Keep the 24-hour window: cannot send when the window is closed, with a clear Arabic explanation. Auto-scroll to latest on open and on send; do not rip the user away if they have scrolled up (WhatsApp-like 'jump to latest' control).\n- Smooth animations, 60fps scrolling, no layout jank, instant feedback (<100ms) on tap. RTL Arabic correct. Responsive: 1366x768 split view and 390x844 stacked list/chat.\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html only (plus their tests). Do not edit ux-tokens.css/js, other pages, queue, workflows, secrets. No deploy, no merge, no production, no live customer messages.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering bubbles, ticks, date separators, reply/quote, media/voice/sticker/doc rendering, composer, 24h-window closed state, auto-scroll; plus nearest unit tests. Record exact results.",
-   "acceptance": "Chat pane matches WhatsApp Web: wallpaper, green/white bubbles, date separators, per-message time, single/double/blue ticks from status, reply/quote, media/voice/sticker/doc rendering, emoji+attachments composer, auto-scroll; 24h window and NOVA_INBOX_SEND still enforced; RTL + desktop/mobile; Playwright + unit tests pass; no live customer messages.",
-   "after": [
-    "UX406"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX406 (media UX405 + notifications UX406, which follow UX404).",
-   "model": "sonnet",
-   "max_turns": 80
-  },
-  {
-   "id": "UX402",
-   "phase": 10,
-   "title": "شاشة المحادثات زي واتساب ويب: الرسايل الجديدة بدون تحديث وإشعارات",
-   "brief": "Web-push, in-app sound, tab/title badges, and unread counts were implemented in UX406. This task owns realtime appearance (new messages in the open chat and list without a full refresh) and should use UX406 hooks. Continue SLOT A WhatsApp Web work (task 7 of 8). Depends on UX401. Do not reopen the PIN gate. Do not start UX403. Stay inside the conversations screen (unified-inbox.js + WhatsApp/conversations regions of index.html + related tests/backend poll endpoints). Avoid conflicts with slot B.\n\nRealtime and notifications, like WhatsApp Web:\n- New inbound and outbound messages appear in the open chat and in the list (preview, time, unread badge) without a full page refresh. Use the existing history poll (hPoll) and/or a safer short poll; do not hammer the API. If a lighter push/path already exists in staging, use it; otherwise improve polling (pause when the tab is hidden, backoff, no duplicate bubbles).\n- Unread counts and the #novaWaBtn badge update live.\n- In-app notification for a new customer message when the user is on another screen or another chat (Arabic, not noisy, respects a simple mute-if-already-viewing rule). Browser Notification API only with a graceful fallback; do not require a new paid service.\n- Keep 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND. No test messages to real customers; fake/local data only.\n- Smooth insert of new bubbles (no flash/flicker), list row updates, scroll-to-latest only when the user is already at the bottom.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) that inject or mock a new message and assert it appears in the open chat and list without location.reload; badge updates; notification hook/fallback is present. Plus nearest unit tests. Record exact results. No deploy, no merge, no secrets, no production.",
-   "acceptance": "New messages appear in the open chat and list without a full refresh; unread badge updates; in-app/browser notification path exists with a fallback; poll is well-behaved; 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND kept; Playwright + unit tests pass; no live customer messages.",
-   "after": [
-    "UX401"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch.",
-   "model": "sonnet",
-   "max_turns": 80
-  },
-  {
-   "id": "UX403",
-   "phase": 10,
-   "title": "شاشة المحادثات زي واتساب ويب: اختبار Playwright كامل وصقل وبناء أثر الـ preview",
-   "brief": "Final SLOT A WhatsApp Web task (8 of 8). Depends on UX402. Thoroughly test and polish the conversations screen so it is indistinguishable from WhatsApp Web in look and behavior, then build the preview artifact.\n\n1) Thorough Playwright pass of the conversations screen only (tests/ux, 1366x768 and 390x844, fake data, block non-GET / no live writes, no messages to real customers): open inbox with no PIN; list (avatar, last message, time, unread, search, pin/archive); open a chat; wallpaper, bubbles, date separators, times, ticks; reply/quote; media/voice/sticker/doc; composer (emoji, attachments, send disabled when NOVA_INBOX_SEND is off, 24h window closed); auto-scroll; new message appears without refresh; RTL Arabic; mobile back navigation; reduced-motion / no major jank. Fix every failure and any visual/UX gap you still see (spacing, contrast, typography, empty/loading/error, smoothness). Quality bar is exceptional; design and smoothness first.\n2) Build worker/live/nova-rx-preview.ux-403.js from the latest worker/live artifact using tools/build-worker-artifact.mjs so preview auto-deploy can pick it up. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Add/update a markers test (PIN-free marker from UX400 plus novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). Run the markers test and node --check on the artifact. Do NOT deploy (auto-deploy-preview.yml deploys the newest artifact on main). Do not touch production.\n\nScope remains the conversations screen + the new artifact and its tests. Do not edit other pages, queue, workflows, or secrets. Do not merge. Record exact test commands and results.",
-   "acceptance": "Full Playwright conversations pass green on desktop and mobile with fake data; remaining polish done; worker/live/nova-rx-preview.ux-403.js built; markers test and node --check pass; no deploy; no live customer messages.",
-   "after": [
-    "UX402"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy.",
-   "model": "sonnet",
-   "max_turns": 80
-  },
-  {
    "id": "UX420",
    "phase": 10,
    "title": "تحديث الهوية البصرية: نظام تصميم حديث وأنيق (التوكنات المشتركة، من غير شاشة المحادثات)",
@@ -4545,150 +4775,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
   },
   {
-   "id": "UX315",
-   "phase": 10,
-   "title": "الموبايل: السهم ‹ يغطي شعار «NOVA Rx» في رأس كل الشاشات (تراجع عن UX204)",
-   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Wordmark fully visible at 390px on every tab; test asserts no bounding-box overlap between brand and nav arrows.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX316",
-   "phase": 10,
-   "title": "العملاء: رسالة البحث الفارغ خاطئة «لا يوجد عملاء بعد» + لا زر مسح + «عبدالله» لا تطابق «عبد الله»",
-   "brief": "In customers, search 'zzz' shows 'لا يوجد عملاء بعد / أضف عميلًا' instead of 'لا توجد نتائج لـ «zzz»' with a clear-search action. Add × clear button (#novaFilterClear like products), normalise spaces/hamza/ya/ta-marbuta/Arabic digits so 'عبدالله' matches 'عبد الله'. Keep <100ms. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Zero-result search shows correct no-results copy + clear button; 'عبدالله' matches; test asserts.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX317",
-   "phase": 10,
-   "title": "العملاء: مؤشرات المديونية — إجمالي المديونية وعدد المدينين وفلتر «عليهم مديونية»",
-   "brief": "KPIs show العملاء/الزيارات/النقاط/النشطون (active == total, redundant). Replace the redundant KPI with إجمالي المديونية + عدد المدينين (from NovaCredit.customers()), add filter chips (الكل / مدينون / متأخرون) and sort by debt desc; red debt value must meet AA contrast on dark. Seed NovaCredit in test via localStorage 'nova.credit'. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Debt KPI and debtor filter work with seeded ledger; test asserts totals.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX318",
-   "phase": 10,
-   "title": "العملاء: بطاقة «عدد العملاء قليل / أضف عميلًا» تدفع الجدول للأسفل وتظهر مع 4 عملاء",
-   "brief": "Empty-state card renders above the table whenever <8 customers, pushing real data ~170px down (and between title and table). Show it only when there are 0 customers; otherwise a compact 'إضافة عميل' primary button in the page header. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "With >=1 customer no nag card; table starts right after KPIs; test asserts.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX319",
-   "phase": 10,
-   "title": "العملاء: لا يوجد ملف/تفاصيل عميل ولا فرز ولا تركيز بلوحة المفاتيح على الصفوف",
-   "brief": "Clicking/Enter on a customer row does nothing. Add focusable rows (tabindex, Enter/Space) opening a detail panel (name, phone, tier, visits, points, debt, كشف حساب, سداد, WhatsApp link to inbox) with focus trap/restore; sortable headers with aria-sort (name, visits, points, debt) like the products table (UX305). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Row Enter opens detail; headers sort with aria-sort; test asserts keyboard flow.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX320",
-   "phase": 10,
-   "title": "العملاء: «إضافة عميل» تنقل إلى شاشة البيع وتطلق F3 بدل نموذج مباشر",
-   "brief": "novaCustAdd does switchPage('sale') + synthetic F3: user loses context and no dialog appears on the customers screen. Add an inline add-customer dialog (name, phone with validation/Arabic-Indic digits, duplicate-phone warning) saved to local demo data, accessible, 44px targets. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Add customer from the customers screen without leaving it; test asserts new row.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX321",
-   "phase": 10,
-   "title": "العملاء: نافذة سداد المديونية وكشف الحساب — وصولية وتحقق ومظهر",
-   "brief": "#novaPayDebt has no aria-labelledby, #novaPayAmt/#novaPayMethod have no labels, over-payment is only a toast ('أكبر من المديونية') while dialog stays open, no focus trap/restore; the statement dialog close ✕ overlaps the title on 390px. Add labels, inline validation with aria-invalid, trap+restore focus, scroll lock, no title overlap, remaining-balance preview after payment. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Dialogs labelled/trapped, inline error, no overlap at 390px; test asserts.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX322",
-   "phase": 10,
-   "title": "العملاء: لا توجد واجهة لإعادة الصرف للأدوية المزمنة (rx-followup.js غير موصول)",
-   "brief": "Chronic refill has no UI: rx-followup.js (opt-in reminders, manual only) is not loaded in index.html. Add in the customer detail a 'أدوية مزمنة' section: list chronic meds with last dispense date and next refill due, a 'مستحقة للصرف' filter/badge on the customers list, and a 'إعادة صرف' button that adds the last items to the sale cart (existing 'إعادة صرف آخر فاتورة' logic) — no automatic messages, no therapy decisions. Local demo data only. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Due-refill badge + one-click reorder to cart; test asserts with fake data.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
    "id": "UX323",
    "phase": 10,
    "title": "استوديو الاستيكرات: شعار مكسور، تداخل نص المعاينة مع شارة «يتطلب مراجعة»، وخانة الموافقة 22px",
@@ -4779,72 +4865,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/456"
   },
   {
-   "id": "UX327",
-   "phase": 10,
-   "title": "العملاء: صقل الجدول — اسم عربي مع الإنجليزي بين قوسين، محاذاة الهاتف، والعناوين",
-   "brief": "Names render 'د. طارق المنصور (Dr. Tariq Al-Mansoor)' in one line (bidi reorders parentheses on mobile '(Dr. Tariq ...) د.'). Show Arabic as primary and Latin as muted secondary line, tabular numerals and consistent alignment for phone/visits/points/debt, tier as a coloured badge, group the table header cleanly (remove the redundant 'البيانات التجريبية' panel heading or turn into a demo chip like products). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Name cell bidi-correct at 390px; tier badges; test asserts.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX328",
-   "phase": 10,
-   "title": "البيع (موبايل): رقم الفاتورة مقطوع «…00001» وحالة فارغة بزر «إخفاء» غير مفهوم",
-   "brief": "Mobile sale header shows invoice number truncated to '...00001' and the empty-cart hint has a stray 'إخفاء' button with no label/explanation. Show the full short number (tap to copy) and give the hide control a clear label/aria-label or remove it; reduce empty-state vertical dead space. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Full invoice number readable at 390px; hide control labelled; test asserts.",
-   "after": [
-    "UX403",
-    "UX422"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
-   "model": "sonnet",
-   "max_turns": 60
-  },
-  {
-   "id": "UX329",
-   "phase": 10,
-   "title": "Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)",
-   "brief": "Rebuild the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs), embed the UX315-UX328 frontend changes, add a markers test (like tests/artifact-qa231-markers.mjs) and run node --check. NO deploy, backend untouched.",
-   "acceptance": "worker/live/nova-rx-preview.qa-314.js built; markers test passes; node --check passes; no deploy.",
-   "after": [
-    "UX315",
-    "UX316",
-    "UX317",
-    "UX318",
-    "UX319",
-    "UX320",
-    "UX321",
-    "UX322",
-    "UX323",
-    "UX324",
-    "UX325",
-    "UX326",
-    "UX327",
-    "UX328"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held for sale-readiness. Build preview artifact only after UX315–UX328; no deploy (auto-deploy-preview.yml).",
-   "model": "sonnet",
-   "max_turns": 40
-  },
-  {
    "id": "SALE-04",
    "phase": 11,
    "title": "دليل تشغيل يوم البيع + تحديث CURRENT.md",
@@ -4931,27 +4951,7 @@
    "pr": 458,
    "merged_at": "2026-11-15T11:48:47+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
-  },
-  {
-   "id": "SALE-05",
-   "phase": 11,
-   "title": "اختبار يوم بيع كامل (بيع، فاتورة، مرتجع، استيكر، ضريبة، موبايل)",
-   "brief": "Final sale-readiness Playwright pass for selling medicines today. Depends on the sale/VAT and customer/mobile fixes.\n\nCover at 1366x768 and 390x844 with fake data (block non-GET / no live writes), Arabic RTL:\n- New sale: search, add item, quantity, discount, VAT 14%, checkout, invoice number fully visible on mobile\n- Invoices list + open invoice\n- Return / void of a just-created invoice (safe states)\n- Customers: add or select, debt KPIs if UX317 landed\n- Sticker studio open + no broken logo if UX323 landed\n- Emergency sales page loads without English-only defaults if UX324 landed\n- No horizontal overflow on supplier-compare if UX325 landed\n- Conversations open with no PIN on the preview path if UX400 landed (do not send messages)\n\nFix any failure you find that is in scope of the sale day (small, targeted). Record exact commands and results. Do not deploy. Do not claim untested success.\n\nHARD RULES: Do not spend money or add payment methods. Do not roll, print, or rotate secrets or tokens (NOVA_API_PIN, NOVA_INGEST_SECRET, WA_TOKEN, Cloudflare, Aumet). Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers. Do not call /{phone_id}/register or /deregister. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore). Do not deploy production or staging (Nova handles production via deploy-backend-production.yml). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only. Tests with fake/local data; block non-GET / no live writes in Playwright. Preserve Arabic RTL.\n",
-   "acceptance": "Playwright sale-day suite passes on desktop and mobile with fake data; failures found in-scope are fixed or listed with evidence; no live customer messages; no deploy.",
-   "after": [
-    "UX328",
-    "UX329",
-    "SALE-02",
-    "UX430"
-   ],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "owner-sale-readiness-2026-11-15",
-   "note": "Sale-readiness end-to-end pass after UX and VAT land.",
-   "model": "sonnet",
-   "max_turns": 80
   }
  ],
- "updated": "2026-11-15T12:24:26+00:00"
+ "updated": "2026-11-15T12:35:59+00:00"
 }
