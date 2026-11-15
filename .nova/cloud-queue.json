@@ -19,24 +19,24 @@
    "model": "opus",
    "max_turns": 80,
    "slot": "A",
-   "dispatched_at": "2026-11-15T17:19:21+00:00",
+   "dispatched_at": "2026-11-15T17:27:10+00:00",
    "run_id": 43724106887,
    "last_failure": "slot A 5-hour usage limit quick fails (not counted)",
    "not_before": "2026-11-15T15:11:00+00:00",
    "pr": 481,
    "ci_dispatched": {
-    "sha": "20ebaaf9a861fb26209ac5ec6650133bda51c276",
+    "sha": "812c56366c30cbc576ce77606eeeb4a2fd650990",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-15T17:13:59+00:00",
+    "at": "2026-11-15T17:23:06+00:00",
     "na": []
    },
    "note_conflicts": "fix_attempts reset 2026-11-15 17:15Z: both fixes were artifact merge conflicts from other merges, not red CI",
-   "conflict_fixes": 1
+   "conflict_fixes": 2
   },
   {
    "id": "UX320",
@@ -400,7 +400,7 @@
    "after": [
     "UX422"
    ],
-   "status": "fixing",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -411,18 +411,9 @@
    "slot": "B",
    "dispatched_at": "2026-11-15T17:19:21+00:00",
    "pr": 482,
-   "ci_dispatched": {
-    "sha": "efbb69a92fcbe08b435d0c88ba20f62aa2ba1c1c",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T17:13:59+00:00",
-    "na": []
-   },
-   "conflict_fixes": 1
+   "conflict_fixes": 1,
+   "merged_at": "2026-11-15T17:25:40+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/482"
   },
   {
    "id": "UX328",
@@ -5095,6 +5086,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:19:21+00:00",
+ "updated": "2026-11-15T17:27:10+00:00",
  "slot_cooldown": {}
 }
