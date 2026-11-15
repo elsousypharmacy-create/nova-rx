@@ -6981,6 +6981,20 @@ input,select,textarea{min-height:44px}
     return '<span class="wa-tick ' + k + '" data-tick="' + k + '" role="img" aria-label="' + TICK_AR[k] + '" title="' + TICK_AR[k] + '">' + TICK_SVG[k === 'delivered' || k === 'read' ? 'two' : k] + '</span>';
   }
   function initial(name) { var s = String(name || '').trim(); return s ? Array.from(s)[0] : '؟'; }
+  /* WA-LINK: a conversation whose "name" is only a phone number (the customer is not registered and has no profile name) is shown as a
+     readable number, never as a bare 201142677350, and its avatar is a generic person instead of a digit. The registered pharmacy customer
+     name (set on the conversation by the server link) is shown as it is. */
+  function numberish(v) { return /^\+?\d[\d\s-]*$/.test(String(v == null ? '' : v).trim()); }
+  function localPhone(d) { d = String(d || '').replace(/\D/g, ''); if (/^20(1[0125]\d{8})$/.test(d)) d = '0' + d.slice(2); return /^01[0125]\d{8}$/.test(d) ? d.slice(0, 4) + ' ' + d.slice(4, 7) + ' ' + d.slice(7) : d; }
+  function dispName(c) {
+    var n = String((c && c.customer) || '').trim(), id = String((c && c.id) || '');
+    if (n && !numberish(n) && n !== id) return n;
+    var raw = id.replace(/^wa_/, '');
+    if (/^\+?\d{6,20}$/.test(raw)) return localPhone(raw);
+    return n && n !== id ? n : /^wa_/.test(id) ? 'يوزرنيم واتساب (من غير رقم)' : id;
+  }
+  var IC_PERSON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0 2.1c-3.6 0-7.2 1.8-7.2 4.5v1.8h14.4v-1.8c0-2.7-3.6-4.5-7.2-4.5z"/></svg>';
+  function avatarHtml(c) { var n = String((c && c.customer) || '').trim(); return !n || numberish(n) || n === String((c && c.id) || '') ? IC_PERSON : esc(initial(n)); }
   /* UX404: WhatsApp bubble anatomy. The first bubble of a same-direction run gets a tail (wa-first). The time + ticks sit in an
      absolutely placed end slot (wa-meta) and an invisible inline spacer (wa-gap) reserves that room at the end of the last text
      line, so the time never covers glyphs (Arabic, LTR "Bottest off", mixed). The DOM is windowed by the caller (latest 80,
@@ -7276,14 +7290,14 @@ input,select,textarea{min-height:44px}
     var more = moreHtml(meta.more);
     if (!items.length) return head + (loading && !rawQ ? LIST_LOADING : rawQ ? '<div class="wa-empty" data-wa-noresult>لا نتائج لـ “' + esc(rawQ) + '”</div>' : flt !== 'all' ? '<div class="wa-empty" data-wa-nofilter>' + FILTERS[flt][1] + '</div>' : '<div class="wa-empty">لا توجد محادثات</div>') + more;
     return head + items.map(function (c) {
-      var ms = arr(c.messages), last = ms[ms.length - 1], u = uOf(c), name = c.customer || c.id, pv = hits[c.id] || last, isP = !!pin[c.id], isA = !!ar[c.id], open = meta.menu === c.id, act = c.id === selId;
+      var ms = arr(c.messages), last = ms[ms.length - 1], u = uOf(c), name = dispName(c), pv = hits[c.id] || last, isP = !!pin[c.id], isA = !!ar[c.id], open = meta.menu === c.id, act = c.id === selId;
       /* UX408: row state like WhatsApp iOS. unread (unseen customer messages) or «لم يُرد» (last message from the customer) => green count
          badge + bold name + green time; replied (last message from the pharmacy/bot) => the grey ticks before the preview. The open chat
          itself shows no badge. No per-row ▾ button: the row is the control (pin/archive = long-press / right-click / context-menu key). */
       var wait = needsReply(c), n = typeof meta.unread === 'function' ? u : Math.max(u, wait && !act ? trailingIn(c) : 0), stt = u > 0 ? 'unread' : wait ? 'noreply' : last && last.dir === 'out' ? 'replied' : 'none';
       return '<div class="wa-item' + (isP ? ' pinned' : '') + (isA ? ' archived' : '') + '" data-wa-item' + (isP ? ' data-pinned' : '') + (isA ? ' data-archived' : '') + '>' +
         '<button type="button" class="wa-chat' + (act ? ' active' : '') + (n ? ' unread' : '') + '" data-conv="' + esc(c.id) + '" data-state="' + stt + '"' + (act ? ' aria-current="true"' : '') + (open ? ' aria-expanded="true"' : '') + ' aria-haspopup="menu" aria-label="' + esc(name + (n ? ' — ' + n + (stt === 'unread' ? ' رسالة غير مقروءة' : ' رسالة مستنية رد') : stt === 'replied' ? ' — اترد عليها' : stt === 'noreply' ? ' — لم يُرد' : '')) + '">' +
-        '<span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-chat-body" aria-hidden="true"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
+        '<span class="wa-avatar" aria-hidden="true">' + avatarHtml(c) + '</span><span class="wa-chat-body" aria-hidden="true"><span class="wa-row"><span class="wa-name">' + esc(name) + '</span>' +
         '<span class="wa-ctime">' + (last ? esc(dateLabel(last.at, now) === 'اليوم' ? timeLabel(last.at) : dateLabel(last.at, now)) : '') + '</span></span>' +
         '<span class="wa-row"><span class="wa-preview">' + (pv ? (pv.dir === 'out' ? tick(pv) + ' ' : '') + esc(previewText(pv)) : '') + '</span>' +
         (isP ? '<span class="wa-pinic" data-wa-pinned title="مثبتة">' + IC_PIN + '</span>' : '') +
@@ -7338,7 +7352,7 @@ input,select,textarea{min-height:44px}
   function renderWa(convs, opts) {
     opts = opts || {}; var now = opts.now || Date.now(), sel = null;
     arr(convs).forEach(function (c) { if (c.id === opts.selected) sel = c; });
-    var name = sel ? (sel.customer || sel.id) : '';
+    var name = sel ? dispName(sel) : '';
     /* UX408: WhatsApp iOS status line: «آخر ظهور …» = the customer's last message (we have no live presence), never message counts */
     var subtitle = '';
     if (sel) {
@@ -7347,14 +7361,17 @@ input,select,textarea{min-height:44px}
       if (lastInM) { var dl = dateLabel(lastInM.at, now); subtitle = 'آخر ظهور ' + (dl === 'اليوم' ? 'اليوم ' : dl === 'أمس' ? 'أمس ' : dl + ' ') + timeLabel(lastInM.at); }
       else if (!opts.chatLoading) subtitle = 'واتساب';
     }
-    var tel = sel && /^(?:wa_)?\+?(\d{8,15})$/.exec(String(sel.id)), allMs = sel ? arr(sel.messages) : [], lim = Math.max(1, Number(opts.limit) || 80), hid = Math.max(0, allMs.length - lim);
+    var tel = sel && /^(?:wa_)?\+?(\d{8,15})$/.exec(String(sel.id));
+    /* WA-LINK: the registered customer's number under the name (hidden when the name already is the number) */
+    if (sel && tel && name !== localPhone(tel[1])) subtitle = (subtitle ? subtitle + ' · ' : '') + localPhone(tel[1]);
+    var allMs = sel ? arr(sel.messages) : [], lim = Math.max(1, Number(opts.limit) || 80), hid = Math.max(0, allMs.length - lim);
     /* UX408: older messages: the newest 80 are painted, «رسائل أقدم (N)» (or scrolling to the top) reveals 80 more; when the server holds
        more than it returned (thread cap 1000) opts.olderRemote = 'idle'|'busy'|'done' asks it for the previous page. */
     var olderBtn = hid ? '<button type="button" class="wa-older" data-wa-older>رسائل أقدم (' + hid + ')</button>'
       : opts.olderRemote === 'idle' || opts.olderRemote === 'busy' ? '<button type="button" class="wa-older" data-wa-older-remote' + (opts.olderRemote === 'busy' ? ' aria-busy="true" disabled' : '') + '>' + (opts.olderRemote === 'busy' ? 'جاري تحميل رسائل أقدم…' : 'رسائل أقدم من السيرفر') + '</button>'
       : opts.olderRemote === 'done' ? '<div class="wa-note" data-wa-older-done>بداية المحادثة المتاحة</div>' : '';
     var main = sel
-      ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg></button><span class="wa-avatar" aria-hidden="true">' + esc(initial(name)) + '</span><span class="wa-head-txt"><span class="wa-head-name">' + esc(name) + '</span><span class="wa-sub" data-wa-sub>' + esc(subtitle) + '</span></span>' +
+      ? '<div class="wa-head"><button type="button" class="wa-back" data-wa-back aria-label="رجوع إلى المحادثات"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg></button><span class="wa-avatar" aria-hidden="true">' + (sel ? avatarHtml(sel) : '') + '</span><span class="wa-head-txt"><span class="wa-head-name">' + esc(name) + '</span><span class="wa-sub" data-wa-sub>' + esc(subtitle) + '</span></span>' +
         '<span class="wa-hact"><button type="button" class="wa-hbtn" data-wa-video aria-disabled="true" aria-label="مكالمة فيديو (غير متاحة من نوفا)" title="غير متاحة من نوفا">' + IC_VIDEO + '</button>' +
         (tel ? '<a class="wa-hbtn" data-wa-call href="tel:+' + esc(tel[1]) + '" aria-label="اتصال بالعميل">' + IC_CALL + '</a>' : '<button type="button" class="wa-hbtn" data-wa-call aria-disabled="true" aria-label="اتصال (الرقم غير معروف)">' + IC_CALL + '</button>') + '</span></div>' +
         '<div class="wa-msgs" id="waMsgs" data-wa-wallpaper role="log" aria-live="polite"' + (opts.chatLoading ? ' aria-busy="true"' : '') + ' aria-label="رسائل المحادثة مع ' + esc(name) + '" tabindex="-1">' + (opts.chatLoading ? '' : '<div class="wa-dfloat" data-wa-dfloat aria-hidden="true"><span></span></div>') + (opts.chatLoading ? CHAT_LOADING : '') + (opts.chatError ? '<div class="wa-chat-err" role="alert" data-chat-error><span>' + esc(opts.chatError) + '</span><button type="button" data-wa-reload>إعادة المحاولة</button></div>' : '') + (opts.chatLoading ? '' : olderBtn) + (opts.chatLoading ? '' : bubbles(hid ? allMs.slice(hid) : sel.messages, now, { url: opts.mediaUrl, fail: opts.mediaFail, quotes: opts.quotes, reply: !!opts.sendEnabled, name: name, all: allMs })) + '</div>' +
@@ -7490,7 +7507,11 @@ function hUrl(){var u='';try{u=localStorage.getItem('novaBackend.url')||'';if(!u
 function hOn(){return typeof fetch==='function'}
 function hSetErr(e){wa.f='#waHistRetry';hist.code=(e&&e.code)||'SERVER';hist.err=String((e&&e.message)||e)}
 function hGet(path){if(!hOn())return Promise.reject(hErr('NETWORK'));return fetch(hUrl()+path,{method:'GET',headers:{Accept:'application/json'},cache:'no-store',credentials:'omit'}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(r.status===401||r.status===429)throw hErr('GATED');if(!r.ok||!j||!j.ok)throw hErr('SERVER');return j})},function(){throw hErr(typeof navigator!=='undefined'&&navigator.onLine===false?'OFFLINE':'NETWORK')})}
-function hLoad(){if(!hOn()||hist.busy)return;hist.busy=true;hist.err='';hist.code='';draw();hGet('conversations').then(function(j){hist.convs=Array.isArray(j.conversations)?j.conversations:[];hist.extra={};hist.moreDone=false;hist.more=hist.convs.length>=H_CAP;hist.loaded=true;nObserve();if(wa.sel)hOpen(wa.sel)}).catch(hSetErr).then(function(){hist.busy=false;draw()})}
+/* WA-LINK: the server attaches the registered pharmacy customer name (by phone number) to the conversations. GET, idempotent, throttled by the
+   server (2 min) and here (3 min); on any change the names are updated in place, no reload of messages. Errors are silent: the list still works. */
+var linkAt=0;
+function hLink(){if(!hOn()||Date.now()-linkAt<180000)return;linkAt=Date.now();hGet('link-names').then(function(j){if(!(j&&j.ok&&j.linked>0))return;return hGet('conversations').then(function(r){var m={};(Array.isArray(r.conversations)?r.conversations:[]).forEach(function(c){if(c&&c.id!=null&&c.customer)m[c.id]=c.customer});var ch=0;hist.convs.forEach(function(c){if(m[c.id]&&c.customer!==m[c.id]){c.customer=m[c.id];ch=1}});Object.keys(hist.extra||{}).forEach(function(k){var c=hist.extra[k];if(c&&m[c.id]&&c.customer!==m[c.id]){c.customer=m[c.id];ch=1}});if(ch)draw()})}).catch(function(){})}
+function hLoad(){if(!hOn()||hist.busy)return;hist.busy=true;hist.err='';hist.code='';draw();hGet('conversations').then(function(j){hist.convs=Array.isArray(j.conversations)?j.conversations:[];hist.extra={};hist.moreDone=false;hist.more=hist.convs.length>=H_CAP;hist.loaded=true;nObserve();if(wa.sel)hOpen(wa.sel);hLink()}).catch(hSetErr).then(function(){hist.busy=false;draw()})}
 /* UX408: pagination before the API caps drop anything. The history list returns at most 300 chats (LIMIT 300) and a thread its newest
    1000 messages. When a page comes back full, «تحميل محادثات أقدم» / «رسائل أقدم من السيرفر» (or scrolling to the end) asks for the
    page before the oldest row (before=<ms>). A server that ignores the cursor returns rows we already have => marked done, nothing duplicated. GET only. */
@@ -7503,8 +7524,8 @@ function tOlder(id){var f=hist.full[id],o=hist.old[id]=hist.old[id]||{};if(!f||o
 hGet('conversation?id='+encodeURIComponent(id)+'&before='+encodeURIComponent(String(Number(first.at)||0))+'&limit='+T_CAP).then(function(j){var got=j.conversation&&Array.isArray(j.conversation.messages)?j.conversation.messages:[],have={},add=[];(f.messages||[]).forEach(function(m){have[m.id]=1});got.forEach(function(m){if(m&&!have[m.id]&&Number(m.at)<=Number(first.at)){have[m.id]=1;add.push(m)}});if(add.length){add.sort(function(a,b){return a.at-b.at});f.messages=add.concat(f.messages||[]);wa.lim=(wa.lim||LIM0)+add.length}if(!add.length||got.length<T_CAP)o.done=1}).catch(function(){}).then(function(){o.busy=0;draw()})}
 function hOpen(id){if(!hOn()||hist.full[id]||hist.pend[id]||!hist.convs.some(function(c){return c.id===id}))return;hist.pend[id]=1;delete hist.oerr[id];hGet('conversation?id='+encodeURIComponent(id)).then(function(j){delete hist.pend[id];if(j.conversation){hist.full[id]=j.conversation}else hist.oerr[id]='تعذّر تحميل المحادثة.';if(wa.sel===id)draw()}).catch(function(e){delete hist.pend[id];if(e&&e.code==='GATED'){hSetErr(e)}else hist.oerr[id]=String((e&&e.message)||'تعذّر تحميل المحادثة.');draw()})}
 /* FIX51: live refresh like WhatsApp: every 4s while the chat screen is visible, silent (no spinner), redraw only when something changed; local sending/failed bubbles are kept. */
-function hSig(c){var l=c&&c.last;return c?[c.id,c.count,c.updatedAt,l&&l.id,l&&l.status].join('|'):''}
-function hPoll(){if(box.hidden||document.hidden||!hOn()||!hist.loaded||hist.busy||hist.polling)return;hist.polling=1;var sel=wa.sel;
+function hSig(c){var l=c&&c.last;return c?[c.id,c.customer,c.count,c.updatedAt,l&&l.id,l&&l.status].join('|'):''}
+function hPoll(){if(box.hidden||document.hidden||!hOn()||!hist.loaded||hist.busy||hist.polling)return;hLink();hist.polling=1;var sel=wa.sel;
 hGet('conversations').then(function(j){var nl=Array.isArray(j.conversations)?j.conversations:[],ch=nl.length!==hist.convs.length||nl.some(function(c,i){return hSig(c)!==hSig(hist.convs[i])});var old={};hist.convs.forEach(function(c){old[c.id]=c});var chg=nl.filter(function(c){return hSig(c)!==hSig(old[c.id])}).map(function(c){return c.id});
 var keep={};hist.convs.forEach(function(c){var f=hist.full[c.id];if(f&&(f.messages||[]).some(function(m){return m.status==='sending'}))keep[c.id]=1});
 if(ch){var nid={};nl.forEach(function(c){nid[c.id]=1});hist.convs=nl.map(function(c){return keep[c.id]?old[c.id]:c}).concat(Object.keys(hist.extra).filter(function(id){return !nid[id]&&old[id]}).map(function(id){return old[id]}))}/* UX408: chats loaded with «تحميل محادثات أقدم» survive the 4s refresh (it only returns the newest 300) */
