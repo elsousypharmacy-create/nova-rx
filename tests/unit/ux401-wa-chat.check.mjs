@@ -34,7 +34,7 @@ const C = [{ id: 'a', customer: 'سارة', updatedAt: NOW, messages: [
 
 t('quote above the bubble: replyTo resolves in-thread, m.quote object, opts.quotes map; escaped; «أنت» for own, customer name otherwise', () => {
   const h = U.renderWa(C, { now: NOW, selected: 'a', sendEnabled: true, quotes: { q5: { id: 'q4', dir: 'in', text: 'شكرا' } } });
-  assert.match(msg(h, 'q2'), /data-quoted><div class="wa-bubble wa-has-quote" dir="auto"><span class="wa-who wa-who-ph">الصيدلي<\/span><button type="button" class="wa-quote wa-q-in" data-wa-quote="q1" data-wa-quote-jump="q1"[^>]*><span class="wa-q-who">سارة<\/span><span class="wa-q-txt" dir="auto">عندكم &lt;بانادول&gt;؟<\/span><\/button><span class="wa-text">أيوه/);
+  assert.match(msg(h, 'q2'), /data-quoted><div class="wa-bubble wa-has-quote" dir="auto"><button type="button" class="wa-quote wa-q-in" data-wa-quote="q1" data-wa-quote-jump="q1"[^>]*><span class="wa-q-who">سارة<\/span><span class="wa-q-txt" dir="auto">عندكم &lt;بانادول&gt;؟<\/span><\/button><span class="wa-tl"><span class="wa-text" dir="auto">أيوه/ /* UX408: no «الصيدلي» sender label in a 1-to-1 chat */);
   assert.match(msg(h, 'q3'), /class="wa-quote wa-q-out" data-wa-quote="q2"[^>]*><span class="wa-q-who">أنت</);
   assert.match(msg(h, 'q5'), /data-wa-quote-jump="q4"/);
   assert.ok(!msg(h, 'q4').includes('wa-quote'), 'no quote without a reference');
@@ -57,20 +57,19 @@ t('composer quote bar (only when sending is on) with cancel', () => {
   assert.ok(h.indexOf('data-wa-qbar') < h.indexOf('data-wa-composer'), 'bar above the composer');
   assert.ok(!U.renderWa(C, { now: NOW, selected: 'a', sendEnabled: false, quote: q }).includes('data-wa-qbar'), 'no quote bar when sending is off');
   const long = U.quoteHtml({ id: 'l', dir: 'in', text: 'ا'.repeat(400) }, 'x'); assert.ok(long.includes('…') && long.length < 1200, 'long quote clipped');
-  assert.match(U.quoteHtml({ id: 'm', dir: 'in', text: '[صورة]', media: { type: 'image', caption: 'روشتة' } }, 'x'), /q-txt" dir="auto">صورة · روشتة</);
+  assert.match(U.quoteHtml({ id: 'm', dir: 'in', text: '[صورة]', media: { type: 'image', caption: 'روشتة' } }, 'x'), /q-txt" dir="auto">📷 صورة · روشتة</ /* UX408 glyph */);
 });
 
-t('emoji picker + attach menu: real controls when sending is on, disabled otherwise; attach never offers a file input', () => {
+t('UX408 composer: no emoji button/panel in the field (iOS keyboard has emoji); + attach menu when sending is on, disabled otherwise; attach never offers a file input', () => {
   const on = U.renderWa(C, { now: NOW, selected: 'a', sendEnabled: true }), off = U.renderWa(C, { now: NOW, selected: 'a', sendEnabled: false, windowClosed: true });
-  assert.match(on, /<button type="button" class="wa-cbtn wa-c-emoji" data-wa-emoji aria-label="الرموز التعبيرية" title="الرموز التعبيرية" aria-haspopup="dialog" aria-expanded="false" aria-controls="waEmoji">/);
-  assert.match(on, /<div class="wa-emoji" id="waEmoji" data-wa-emoji-panel role="dialog" aria-label="اختر رمز تعبيري" hidden>/);
-  assert.ok(U.EMOJI.length >= 40 && U.EMOJI.every((e) => on.includes(`data-wa-emo="${e}"`)));
+  assert.ok(!on.includes('data-wa-emoji') && !on.includes('data-wa-emo='), 'no emoji clutter in the composer');
+  assert.match(U.emojiPanelHtml(false), /<div class="wa-emoji" id="waEmoji" data-wa-emoji-panel role="dialog" aria-label="اختر رمز تعبيري" hidden>/);
+  assert.ok(U.EMOJI.length >= 40);
   assert.match(on, /data-wa-attach aria-label="إرفاق" title="إرفاق" aria-haspopup="menu" aria-expanded="false" aria-controls="waAttach">/);
   assert.match(on, /<div class="wa-attmenu" id="waAttach" data-wa-attach-menu role="menu" aria-label="إرفاق" hidden>/);
   assert.equal((on.match(/data-wa-att="[a-z]+" aria-disabled="true"/g) || []).length, 3); assert.ok(!/type="file"/.test(on), 'no file input');
   assert.match(on, /data-wa-att-note>إرسال الملفات للعملاء من نوفا لسه مش متاح — النص بس/);
-  assert.match(U.renderWa(C, { now: NOW, selected: 'a', sendEnabled: true, emojiOpen: true }), /data-wa-emoji-panel role="dialog" aria-label="اختر رمز تعبيري"><div/);
-  assert.match(off, /data-wa-emoji aria-label="الرموز التعبيرية \(الإرسال متوقف\)" aria-disabled="true"/); assert.match(off, /data-wa-attach aria-label="إرفاق \(الإرسال متوقف\)" aria-disabled="true"/);
+  assert.match(off, /data-wa-attach aria-label="إرفاق \(الإرسال متوقف\)" aria-disabled="true"/);
   assert.ok(!off.includes('data-wa-emoji-panel') && !off.includes('data-wa-attach-menu'));
   assert.match(off, /data-send="off"/); assert.match(off, /<input type="text" id="waInput" dir="auto"[^>]* disabled>/); assert.match(off, /data-wa-send aria-label="إرسال" disabled>/);
   assert.match(off, /data-wa-window role="status">عدّى أكتر من 24 ساعة/);
@@ -92,7 +91,7 @@ t('voice note player + document type', () => {
 t('index.html controller: quote/emoji/attach state passed to renderWa; send carries replyTo + keeps quote on failure; stick to bottom on send', () => {
   const ctl = page.slice(page.indexOf('var wa={sel:null'), page.indexOf('<style id="ux209-wa-target">'));
   assert.ok(ctl.includes('quote:null,qmap:{},emo:false,att:false'));
-  assert.ok(ctl.includes('mediaUrl:mUrl,mediaFail:wa.mfail,quote:wa.quote,quotes:wa.qmap,emojiOpen:wa.emo,attachOpen:wa.att});vKeep(pa);'));
+  assert.ok(ctl.includes('mediaUrl:mUrl,mediaFail:wa.mfail,quote:wa.quote,quotes:wa.qmap,emojiOpen:wa.emo,attachOpen:wa.att,hasText:!!dv,olderRemote:wa.sel?tOlderState(wa.sel):null});vKeep(pa);'));
   assert.ok(ctl.includes('function hSend(id,text,q){'));
   assert.ok(ctl.includes("q&&q.id!=null?{id:id,text:text,clientId:cl,replyTo:String(q.id)}:{id:id,text:text,clientId:cl}"));
   assert.ok(ctl.includes('(wa.draft=text,wa.quote=wa.quote||q||null)'), 'draft + quote restored when the server refuses');

@@ -84,21 +84,15 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
     assert.ok(main.width > side.width, 'pane wider than list');
     assert.ok(await view.locator('[data-wa-intro]').isVisible(), 'intro pane');
     assert.match(await view.locator('.wa-main .wa-empty').innerText(), /اختر محادثة لعرضها/);
-    // row menu is hover-revealed on desktop (opacity), never shifts the layout
-    const mb = view.locator('[data-wa-menu="wa_201000000002"]');
-    assert.equal(await mb.evaluate((e) => getComputedStyle(e).opacity), '0', 'menu hidden until hover');
-    await view.locator('[data-conv="wa_201000000002"]').hover();
-    await page.waitForTimeout(200);
-    assert.equal(await mb.evaluate((e) => getComputedStyle(e).opacity), '1', 'menu shows on hover');
+    // UX408: no per-row ▾ menu button (the row itself is the control; pin/archive via right-click / long-press)
+    assert.equal(await view.locator('[data-wa-menu]').count(), 0, 'no ▾ row chevron');
     info.side = Math.round(side.width);
   } else {
     // mobile: list only
     assert.equal(await view.locator('.wa-main').isVisible(), false, 'mobile list view hides pane');
     const sb = await view.locator('.wa-side').boundingBox();
     assert.ok(Math.abs(sb.width - (await root.boundingBox()).width) <= 2, 'list is full width');
-    const mb = await view.locator('[data-wa-menu="wa_201000000002"]').boundingBox();
-    assert.ok(mb.width >= 44 && mb.height >= 44, `touch menu ${mb.width}x${mb.height}`);
-    assert.equal(await view.locator('[data-wa-menu="wa_201000000002"]').evaluate((e) => getComputedStyle(e).opacity), '1');
+    assert.equal(await view.locator('[data-wa-menu]').count(), 0, 'UX408: no ▾ row chevron');
   }
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/ux400b-${vp.name}-list.png` });
 
@@ -109,20 +103,20 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   assert.equal(await view.locator('#waList [data-conv]').count(), 4);
 
   // pin: options menu -> «تثبيت المحادثة» moves the chat to the top with a pin icon
-  await view.locator('[data-wa-menu="wa_201000000003"]').click();
+  await view.locator('[data-conv="wa_201000000003"]').click({ button: 'right' });
   const menu = view.locator('[data-wa-menu-for="wa_201000000003"]');
   assert.ok(await menu.isVisible(), 'menu open');
-  assert.equal(await view.locator('[data-wa-menu="wa_201000000003"]').getAttribute('aria-expanded'), 'true');
+  assert.equal(await view.locator('[data-conv="wa_201000000003"]').getAttribute('aria-expanded'), 'true');
   const mbox = await menu.boundingBox(), lbox = await view.locator('#waList').boundingBox();
   assert.ok(mbox.x >= lbox.x - 1 && mbox.x + mbox.width <= lbox.x + lbox.width + 1, 'menu inside the list horizontally');
   await page.keyboard.press('Escape');
   assert.equal(await menu.count(), 0, 'Escape closes menu');
-  await view.locator('[data-wa-menu="wa_201000000003"]').click();
+  await view.locator('[data-conv="wa_201000000003"]').click({ button: 'right' });
   await view.locator('[data-wa-pin="wa_201000000003"]').click();
   assert.equal(await view.locator('#waList [data-conv]').first().getAttribute('data-conv'), 'wa_201000000003', 'pinned first');
   assert.equal(await view.locator('[data-wa-item][data-pinned] [data-wa-pinned]').count(), 1, 'pin icon');
   // archive: chat leaves the main list, «المؤرشفة» row appears with a count; open/close the archived view
-  await view.locator('[data-wa-menu="wa_201000000001"]').click();
+  await view.locator('[data-conv="wa_201000000001"]').click({ button: 'right' });
   await view.locator('[data-wa-arch="wa_201000000001"]').click();
   assert.equal(await view.locator('#waList [data-conv="wa_201000000001"]').count(), 0, 'archived chat hidden');
   assert.equal(await view.locator('[data-wa-arch-open] [data-arch-count]').innerText(), '1');
@@ -152,8 +146,14 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   assert.ok(cb.y + cb.height <= vp.height + 1, 'composer inside the viewport');
   assert.equal(await comp.locator('#waInput').count(), 1);
   assert.equal(await comp.locator('.wa-send').count(), 1);
-  const ib = await comp.locator('#waInput').boundingBox(), sbtn = await comp.locator('.wa-send').boundingBox();
-  assert.ok(ib.x > sbtn.x, 'RTL composer: input then send on the left');
+  // UX408 (WhatsApp iOS): empty field => mic at the trailing end, no Send; Send replaces the mic only once there is text
+  assert.equal(await comp.locator('.wa-send').isVisible(), false, 'no always-on Send');
+  const ib = await comp.locator('#waInput').boundingBox(), micb = await comp.locator('[data-wa-mic]').boundingBox();
+  assert.ok(micb && ib.x > micb.x, 'RTL composer: input then mic on the left');
+  await comp.locator('#waInput').fill('تجربة');
+  const sbtn = await comp.locator('.wa-send').boundingBox();
+  assert.ok(sbtn && ib.x > sbtn.x, 'RTL composer: input then send on the left');
+  await comp.locator('#waInput').fill('');
   if (!vp.touch) {
     const sideAfter = await view.locator('.wa-side').boundingBox();
     assert.deepEqual([sideAfter.x, sideAfter.width], [sideBefore.x, sideBefore.width], 'frame stable on select (no jump)');

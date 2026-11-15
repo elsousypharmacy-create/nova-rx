@@ -110,9 +110,14 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   // --- safe area: the app header / المحادثات tab clears the phone status bar
   await page.evaluate(() => document.documentElement.style.setProperty('--wa-sat', '47px'));
   const sa = await page.evaluate(() => { const row = document.querySelector('.nova-nav-row'), tab = document.getElementById('novaInboxTab');
-    return { pad: getComputedStyle(row).paddingTop, tabTop: tab.getBoundingClientRect().top, page: document.body.dataset.activePage,
+    const hd = document.querySelector('.wa-root .wa-side-head');
+    return { pad: getComputedStyle(row).paddingTop, rowShown: getComputedStyle(row).display !== 'none', tabTop: tab.getBoundingClientRect().top, headPad: hd ? getComputedStyle(hd).paddingTop : '', headTop: hd ? hd.getBoundingClientRect().top : -1, page: document.body.dataset.activePage,
       rule: [...document.querySelectorAll('#novaInboxView style')].some((s) => /body\[data-active-page=inbox\] \.nova-nav-row\{[^}]*env\(safe-area-inset-top/.test(s.textContent)) }; });
-  assert.equal(sa.page, 'inbox'); assert.equal(sa.pad, '47px', 'safe-area top padding applied'); assert.ok(sa.tabTop >= 47, 'tab below the status bar ' + sa.tabTop); assert.ok(sa.rule, 'rule uses env(safe-area-inset-top)');
+  assert.equal(sa.page, 'inbox'); assert.equal(sa.pad, '47px', 'safe-area top padding applied');
+  // UX408 (owner H): on the phone the app tabs strip is hidden on the conversations screen (no double bar under the clock); the single
+  // WhatsApp header carries the safe-area padding instead. On desktop the tab row stays and clears the inset.
+  if (sa.rowShown) assert.ok(sa.tabTop >= 47, 'tab below the status bar ' + sa.tabTop);
+  else { assert.ok(vp.touch, 'tab row only hidden on the phone'); assert.equal(sa.headPad, '47px', 'WhatsApp header carries the safe area'); assert.ok(sa.headTop >= 0 && sa.headTop < 2, 'single header at the top ' + sa.headTop); } assert.ok(sa.rule, 'rule uses env(safe-area-inset-top)');
   await page.evaluate(() => document.documentElement.style.removeProperty('--wa-sat'));
   r.safeArea = sa;
 
@@ -179,12 +184,14 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   await page.evaluate(() => { const e = document.querySelector('#waInput'); e.value = ''; });
   r.send = 'clock -> ✓, failed visible';
 
-  // --- composer: WhatsApp icons (UX401: emoji + attach open popovers, mic stays inert), send kept
-  for (const k of ['emoji', 'attach', 'mic']) {
+  // --- composer: WhatsApp iOS icons (UX408: + attach outside the field, camera + mic inert while empty, no emoji button), send only with text
+  await input.fill(''); await view.locator('[data-wa-composer][data-has-text="0"]').waitFor();
+  for (const k of ['attach', 'camera', 'mic']) {
     const b = view.locator(`[data-wa-composer] [data-wa-${k}]`); assert.ok(await b.isVisible(), k + ' icon'); const bb = await b.boundingBox();
-    assert.ok(bb.width >= 40 && bb.height >= 40, k + ' touch target'); assert.equal(await b.getAttribute('aria-disabled'), k === 'mic' ? 'true' : null);
+    assert.ok(bb.width >= 40 && bb.height >= 40, k + ' touch target'); assert.equal(await b.getAttribute('aria-disabled'), k === 'attach' ? null : 'true');
   }
-  const nBefore = st.sends.length; await view.locator('[data-wa-mic]').click({ force: true }); await view.locator('[data-wa-emoji]').click({ force: true }); assert.equal(st.sends.length, nBefore, 'icons never send');
+  assert.equal(await view.locator('[data-wa-composer] [data-wa-emoji]').count(), 0, 'UX408: no emoji button in the field');
+  const nBefore = st.sends.length; await view.locator('[data-wa-mic]').click({ force: true }); await view.locator('[data-wa-camera]').click({ force: true }); assert.equal(st.sends.length, nBefore, 'icons never send');
 
   // --- simulated on-screen keyboard (mobile): composer stays above it, no gap
   if (vp.touch) {
@@ -196,7 +203,7 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
     r.keyboard = kb;
   }
 
-  // --- short / LTR / mixed bubbles: time + ticks never overlap the glyphs; tails on the first bubble of a run
+  // --- short / LTR / mixed bubbles: time + ticks never overlap the glyphs; UX408: tails at the bottom of the LAST bubble of a run
   if (vp.touch) { await view.locator('[data-wa-back]').click(); const ba = await page.evaluate(() => document.getAnimations().map((a) => a.animationName)); assert.ok(ba.includes('waBack'), 'back slide'); await settle(page); }
   await view.locator(`[data-conv="${SHORT}"]`).click();
   await view.locator('[data-mid="s6"]').waitFor(); await settle(page);
@@ -205,11 +212,11 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
     const hit = [...rg.getClientRects()].some((c) => c.width > 0 && c.left < meta.right - 0.5 && c.right > meta.left + 0.5 && c.top < meta.bottom - 0.5 && c.bottom > meta.top + 0.5);
     const b = m.querySelector('.wa-bubble').getBoundingClientRect(), inside = meta.left >= b.left - 0.5 && meta.right <= b.right + 0.5 && meta.bottom <= b.bottom + 0.5;
     const pb = getComputedStyle(m.querySelector('.wa-bubble'), '::before');
-    return { id: m.dataset.mid, text: t.textContent, hit, inside, first: m.classList.contains('wa-first'), tail: pb.content !== 'none' && pb.content !== '' ? (pb.right === '-8px' ? 'right' : pb.left === '-8px' ? 'left' : '?') : '', side: b.left + b.width / 2 > innerWidth / 2 ? 'right' : 'left', dir: m.dataset.dir };
+    return { id: m.dataset.mid, text: t.textContent, hit, inside, first: m.classList.contains('wa-last'), tb: pb.bottom, tail: pb.content !== 'none' && pb.content !== '' ? (pb.right === '-8px' ? 'right' : pb.left === '-8px' ? 'left' : '?') : '', side: b.left + b.width / 2 > innerWidth / 2 ? 'right' : 'left', dir: m.dataset.dir };
   }));
   for (const o of ov) { assert.equal(o.hit, false, `time overlaps text in «${o.text}»`); assert.ok(o.inside, `time inside bubble «${o.text}»`); }
-  for (const o of ov.filter((x) => x.first)) assert.equal(o.tail, o.dir === 'in' ? 'left' : 'right', 'tail on the screen-edge side ' + o.id); // UX407: WhatsApp sides
-  assert.ok(ov.filter((x) => !x.first).every((x) => x.tail === ''), 'tail only on the first bubble of a run');
+  for (const o of ov.filter((x) => x.first)) { assert.equal(o.tail, o.dir === 'in' ? 'left' : 'right', 'tail on the screen-edge side ' + o.id); assert.equal(o.tb, '0px', 'tail at the bottom ' + o.id); } // UX407: WhatsApp sides
+  assert.ok(ov.filter((x) => !x.first).every((x) => x.tail === ''), 'tail only on the last bubble of a run');
   assert.ok(ov.filter((x) => x.dir === 'in').every((x) => x.side === 'left') && ov.filter((x) => x.dir === 'out').every((x) => x.side === 'right'), 'UX407 (like WhatsApp): incoming left, outgoing right');
   r.bubbles = ov.map((o) => o.id + (o.first ? '*' : '')).join(' ');
 

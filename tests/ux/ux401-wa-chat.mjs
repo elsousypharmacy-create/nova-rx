@@ -143,7 +143,7 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   const mdv = await page.evaluate(() => { const q = (s) => document.querySelector(s), bx = (s) => { const e = q(s); return e ? Math.round(e.getBoundingClientRect().width) : 0; };
     return { img: bx('[data-mid="b1"] .wa-m-image'), imgInBubble: !!q('[data-mid="b1"] .wa-bubble img.wa-mimg'), stk: bx('[data-mid="b3"] .wa-m-sticker img'), stkBg: getComputedStyle(q('[data-mid="b3"] .wa-bubble')).backgroundColor,
       voice: !!q('[data-mid="c1"] [data-wa-voice] [data-wa-vplay]'), docName: q('[data-mid="c2"] .wa-mdoc-t b').textContent, docExt: q('[data-mid="c2"] .wa-mext').textContent, docSub: q('[data-mid="c2"] .wa-mdoc-t span').textContent }; });
-  assert.ok(mdv.img >= 200 && mdv.imgInBubble, 'image inside the bubble'); assert.equal(mdv.stk, 150); assert.equal(mdv.stkBg, 'rgba(0, 0, 0, 0)', 'sticker without bubble');
+  assert.ok(mdv.img >= 96 && mdv.imgInBubble, 'image inside the bubble ' + JSON.stringify(mdv)); // UX408: natural aspect ratio, no forced 260px square assert.equal(mdv.stk, 150); assert.equal(mdv.stkBg, 'rgba(0, 0, 0, 0)', 'sticker without bubble');
   assert.ok(mdv.voice); assert.equal(mdv.docName, 'روشتة.pdf'); assert.equal(mdv.docExt, 'PDF'); assert.match(mdv.docSub, /PDF · 240 ك\.ب/);
   await page.waitForFunction(() => document.querySelector('[data-mid="c1"] [data-wa-vdur]').textContent === '0:01', null, { timeout: 5000 });
   await view.locator('[data-mid="c1"] [data-wa-vplay]').click();
@@ -200,13 +200,9 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
 
   // 7) composer: emoji picker, attach menu, dir=auto; send with the quote lands at the bottom with the quote shown
   assert.equal(await input.getAttribute('dir'), 'auto');
-  const emo = await page.evaluate(() => { const t0 = performance.now(); document.querySelector('[data-wa-emoji]').click(); const p = document.querySelector('[data-wa-emoji-panel]'); return { dt: performance.now() - t0, open: !p.hidden, exp: document.querySelector('[data-wa-emoji]').getAttribute('aria-expanded'), n: p.querySelectorAll('[data-wa-emo]').length }; });
-  assert.ok(emo.open && emo.exp === 'true' && emo.n >= 40 && emo.dt < 100, 'emoji picker opens instantly ' + JSON.stringify(emo)); r.emojiMs = Math.round(emo.dt);
-  await input.fill('تمام ');
-  await view.locator('[data-wa-emo="👍"]').click();
-  assert.equal(await input.inputValue(), 'تمام 👍', 'emoji inserted into the field');
-  await page.keyboard.press('Escape');
-  assert.equal(await view.locator('[data-wa-emoji-panel]').isHidden(), true, 'Esc closes the picker');
+  // UX408 (WhatsApp iOS): no emoji button inside the field (the iOS keyboard has its own emoji key)
+  assert.equal(await view.locator('[data-wa-emoji]').count(), 0, 'no emoji clutter in the composer');
+  await input.fill('تمام 👍');
   await view.locator('[data-wa-attach]').click();
   const att = await page.evaluate(() => { const m = document.querySelector('[data-wa-attach-menu]'); return { open: !m.hidden, items: [...m.querySelectorAll('[data-wa-att]')].map((b) => b.getAttribute('aria-disabled')), note: m.querySelector('[data-wa-att-note]').textContent }; });
   assert.ok(att.open && att.items.length === 3 && att.items.every((x) => x === 'true') && att.note.includes('النص بس'), 'attach menu: no file sending, explained ' + JSON.stringify(att));
@@ -232,10 +228,10 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   // 8) 24h window closed: everything disabled with the Arabic explanation, no reply affordance
   await openChat(page, view, ID2, 'x2');
   const cl = await page.evaluate(() => ({ dis: document.getElementById('waInput').disabled, send: document.querySelector('[data-wa-send]').disabled, note: (document.querySelector('[data-wa-window]') || {}).textContent || '',
-    emoji: document.querySelector('[data-wa-emoji]').getAttribute('aria-disabled'), attach: document.querySelector('[data-wa-attach]').getAttribute('aria-disabled'), panel: !!document.querySelector('[data-wa-emoji-panel]'), reply: document.querySelectorAll('[data-wa-reply]').length }));
-  assert.ok(cl.dis && cl.send, 'field + send disabled'); assert.match(cl.note, /24 ساعة/); assert.equal(cl.emoji, 'true'); assert.equal(cl.attach, 'true'); assert.equal(cl.panel, false); assert.equal(cl.reply, 0);
+    emoji: document.querySelector('[data-wa-emoji]') ? 'present' : 'none', attach: document.querySelector('[data-wa-attach]').getAttribute('aria-disabled'), panel: !!document.querySelector('[data-wa-emoji-panel]'), reply: document.querySelectorAll('[data-wa-reply]').length }));
+  assert.ok(cl.dis && cl.send, 'field + send disabled'); assert.match(cl.note, /24 ساعة/); assert.equal(cl.emoji, 'none', 'UX408: no emoji button'); assert.equal(cl.attach, 'true'); assert.equal(cl.panel, false); assert.equal(cl.reply, 0);
   if (vp.touch) { await touch(page, '[data-mid="x1"] .wa-bubble', [14, 30, 50, 70], 0); assert.equal(await view.locator('[data-wa-qbar]').count(), 0, 'no swipe reply when the window is closed'); }
-  const n1 = st.sends.length; await view.locator('[data-wa-send]').click({ force: true }); assert.equal(st.sends.length, n1, 'nothing sent when closed');
+  const n1 = st.sends.length; await page.evaluate(() => document.querySelector('[data-wa-send]').click()); /* UX408: Send is hidden while the field is empty */ assert.equal(st.sends.length, n1, 'nothing sent when closed');
   r.window = 'closed: disabled + note';
 
   // 9) NOVA_INBOX_SEND off on the server: failed tick, Arabic error, text + quote restored for a retry

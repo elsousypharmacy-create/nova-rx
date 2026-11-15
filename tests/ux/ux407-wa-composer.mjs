@@ -80,7 +80,7 @@ for (const vp of [{ width: 390, height: 844, name: 'mobile', touch: true }, { wi
   assert.deepEqual(bub.map((b) => b.id), msgs.map((m) => m.id), 'every stored row rendered once (no dedupe/merge)');
   for (const b of bub) { assert.ok(!b.all.includes('رد الصيدلي') && !b.all.includes('رد الدكتور') && !b.all.includes('\u{1F468}') && !b.all.includes('⚕'), 'no prefix in bubble ' + b.id + ': ' + JSON.stringify(b.all)); }
   const by = Object.fromEntries(bub.map((b) => [b.id, b]));
-  assert.equal(by.k2.text, 'اهلا'); assert.equal(by.k4.text, 'اهلا'); assert.equal(by.k6.text, 'تمام'); assert.equal(by.k2.who, 'الصيدلي'); assert.equal(by.k4.who, 'الصيدلي', 'prefixed bot-path reply labelled pharmacist');
+  assert.equal(by.k2.text, 'اهلا'); assert.equal(by.k4.text, 'اهلا'); assert.equal(by.k6.text, 'تمام'); assert.equal(by.k2.who, ''); assert.equal(by.k4.who, '', 'UX408: no «الصيدلي» sender label on own 1:1 bubbles'); assert.equal(by.k4.dir, 'out', 'prefixed bot-path reply is outgoing');
   const pv = await view.locator(`[data-conv="${ID}"] .wa-preview`).textContent();
   assert.ok(!pv.includes('رد الصيدلي'), 'list preview without prefix');
 

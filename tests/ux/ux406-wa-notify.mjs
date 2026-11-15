@@ -76,9 +76,10 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   const tabBadge = () => page.evaluate(() => { const b = document.querySelector('#novaInboxTab [data-wa-tab-unread]'); return b ? { hidden: b.hidden, n: b.textContent } : null; });
   const unreadOf = (id) => page.evaluate((id) => { const b = document.querySelector(`[data-conv="${id}"] [data-unread]`); return b ? b.dataset.unread : null; }, id);
 
-  // 1) old history is never "unread"; permission button in the header, default state
-  assert.deepEqual([await unreadOf(A), await unreadOf(B)], [null, null]);
-  assert.deepEqual(await tabBadge(), { hidden: true, n: '' });
+  // 1) UX408: a history chat whose last message is from the customer (never opened) shows as unread / needs-reply (B);
+  //    a replied chat (A, last message from staff) does not. Permission button in the header, default state
+  assert.deepEqual([await unreadOf(A), await unreadOf(B)], [null, '1']);
+  assert.deepEqual(await tabBadge(), { hidden: false, n: '1' }, 'tab badge counts the one chat waiting for a reply');
   const nb = view.locator('[data-wa-notify]');
   assert.equal(await nb.getAttribute('data-wa-notify'), 'default');
   assert.match(await nb.textContent(), /فعّل الإشعارات/);
@@ -89,9 +90,10 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
 
   // 2) a new customer message arrives (poll) while visible: sound, per-chat badge, tab badge; title untouched while visible
   data[B].messages.push(M('b2', 'in', NOW + 60e3, 'محتاج روشتة'));
-  await page.waitForFunction((id) => document.querySelector(`[data-conv="${id}"] [data-unread]`), B, { timeout: 9000 });
-  assert.equal(await unreadOf(B), '1');
-  assert.deepEqual(await tabBadge(), { hidden: false, n: '1' });
+  // UX408: B already showed as waiting for a reply; wait for the poll to bring the new message (the list row only carries the last message)
+  await page.waitForFunction((id) => { const r = document.querySelector(`[data-conv="${id}"]`); return r && r.textContent.includes('محتاج روشتة') && r.querySelector('[data-unread]'); }, B, { timeout: 9000 });
+  assert.ok(Number(await unreadOf(B)) >= 1, 'B still has an unread badge');
+  assert.deepEqual(await tabBadge(), { hidden: false, n: '1' }, 'tab badge counts chats, B is still one chat');
   assert.equal((await T()).snd, 1, 'in-app sound once');
   assert.equal(await page.title(), title0);
   // a bot reply is not unread and makes no sound

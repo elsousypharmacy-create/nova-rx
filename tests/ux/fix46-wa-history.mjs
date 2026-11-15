@@ -50,8 +50,10 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   await view.locator('[data-conv="wa_201000000001"]').click();
   await view.locator('[data-mid="h_u_1"]').waitFor();
   assert.equal(await view.locator('.wa-sys[data-kind="sys"]').count(), 1, 'system note centred');
-  assert.equal(await view.locator('[data-mid="h_b_3"] .wa-who-bot').count(), 1, 'bot label');
-  assert.equal(await view.locator('[data-mid="h_p_4"] .wa-who-ph').count(), 1, 'pharmacist label');
+  // UX408: own (outgoing) 1:1 bubbles carry no «البوت»/«الصيدلي» sender label (WhatsApp iOS); the rows still render.
+  assert.equal(await view.locator('[data-mid="h_b_3"]').count(), 1, 'bot row rendered');
+  assert.equal(await view.locator('[data-mid="h_p_4"]').count(), 1, 'pharmacist row rendered');
+  assert.equal(await view.locator('[data-mid="h_b_3"] .wa-who, [data-mid="h_p_4"] .wa-who').count(), 0, 'no sender label on outgoing bubbles');
   assert.equal(await view.locator('#waInput').isDisabled(), true, 'composer stays a disabled draft');
   assert.equal(await view.locator('.wa-chat.unread').count(), 0, 'archived chats are not unread');
   const ls = await page.evaluate(() => JSON.stringify(localStorage));

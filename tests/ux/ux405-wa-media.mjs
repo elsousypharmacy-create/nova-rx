@@ -84,7 +84,8 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
       overflow: [...document.querySelectorAll('#waMsgs .wa-bubble')].some((b) => b.getBoundingClientRect().width > document.getElementById('waMsgs').clientWidth),
     };
   });
-  assert.ok(st.img1 && st.img1.w >= 200 && st.img1.h >= 200, 'image thumbnail ' + JSON.stringify(st.img1));
+  // UX408: the in-bubble image keeps its own aspect ratio (no forced 260px square crop); the fixture PNG is square and tiny
+  assert.ok(st.img1 && st.img1.w >= 96 && Math.abs(st.img1.w - st.img1.h) <= 2, 'image thumbnail keeps aspect ' + JSON.stringify(st.img1));
   assert.equal(st.img1Cap, 'دي الروشتة', 'caption under the image, without the [صورة] placeholder');
   assert.ok(st.img2Only, 'caption-less image = media-only bubble with the time over the image');
   assert.ok(st.sticker && st.sticker.w === 150 && st.sticker.h === 150, 'sticker 150x150'); assert.equal(st.stickerBg, 'rgba(0, 0, 0, 0)', 'sticker has no bubble background');

@@ -41,7 +41,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop', touch: false }, {
   await view.locator('[data-conv="wa_201000000001"]').click();
   await view.locator('[data-mid="h_u_1"]').waitFor();
   const sub = await view.locator('.wa-head [data-wa-sub]').innerText();
-  assert.match(sub, /4 رسالة/, 'message count'); assert.match(sub, /آخر نشاط/, 'last activity'); assert.doesNotMatch(sub, /أرشيف للقراءة فقط/, 'no PIN needed => replies enabled (WA-SEND), not read-only');
+  assert.match(sub, /^(متصل|آخر ظهور)/, 'UX408: WhatsApp iOS status line (متصل / آخر ظهور), no message count'); assert.doesNotMatch(sub, /رسالة/, 'no message count'); assert.doesNotMatch(sub, /أرشيف للقراءة فقط/, 'no PIN needed => replies enabled (WA-SEND), not read-only');
   assert.equal(await view.locator('.wa-head [data-wa-lock], .wa-head-lock').count(), 0, 'UX400: no header lock button');
   const info = { sub };
   if (vp.touch) {
