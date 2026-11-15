@@ -11,7 +11,7 @@
    "after": [
     "UX400b"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-smoothness",
@@ -22,15 +22,8 @@
    "dispatched_at": "2026-11-15T12:24:26+00:00",
    "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867",
    "pr": 462,
-   "ci_dispatched": {
-    "sha": "732cba22338d72b213b964fdbc8608a047164ce0",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T12:48:00+00:00"
-   }
+   "merged_at": "2026-11-15T12:53:03+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/462"
   },
   {
    "id": "UX405",
@@ -41,13 +34,15 @@
    "after": [
     "UX404"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "note": "Slot A track; high-priority media follow-up from owner phone test. Inserted after running UX404 and ahead of UX406/UX401–UX403. Model opus, max_turns 80. GAS pharmacy PR #73 will attach media_base64 (≤5MB) after Ahmed merges and updates the script; accept that payload and store bytes in KV. Do not bind WA_TOKEN or enable R2. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80,
-   "source": "owner-request-2026-11-15-media"
+   "source": "owner-request-2026-11-15-media",
+   "slot": "A",
+   "dispatched_at": "2026-11-15T12:53:03+00:00"
   },
   {
    "id": "UX406",
@@ -4962,5 +4957,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T12:48:00+00:00"
+ "updated": "2026-11-15T12:53:03+00:00"
 }
