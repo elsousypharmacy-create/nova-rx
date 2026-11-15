@@ -82,9 +82,9 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   assert.deepEqual(await tabBadge(), { hidden: false, n: '1' }, 'tab badge counts the one chat waiting for a reply');
   const nb = view.locator('[data-wa-notify]');
   assert.equal(await nb.getAttribute('data-wa-notify'), 'default');
-  assert.match(await nb.textContent(), /فعّل الإشعارات/);
+  assert.match(await nb.getAttribute('aria-label'), /تفعيل إشعارات/);
   const box = await nb.boundingBox();
-  assert.ok(box && box.x >= 0 && box.x + box.width <= vp.width + 0.5 && box.height >= (vp.touch ? 44 : 36), vp.name + ' notify button visible + target ' + JSON.stringify(box));
+  assert.ok(box && box.x >= 0 && box.x + box.width <= vp.width + 0.5 && box.height >= 44, vp.name + ' notify button visible + target ' + JSON.stringify(box));
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'no horizontal overflow');
   assert.equal((await T()).ask, 0, 'never asks without a click');
 
@@ -119,15 +119,18 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   await page.waitForFunction(() => document.querySelector('#novaInboxTab [data-wa-tab-unread]').textContent === '1');
   assert.equal(await unreadOf(B), null);
 
+  await page.evaluate(() => { window.__t.perm = 'granted'; });
   // 5) mute: next message => badge but no sound; unmute restores
-  await view.locator('[data-wa-mute]').click();
+  await view.locator('[data-wa-notify]').click();
   assert.equal(await page.evaluate(() => localStorage.getItem('nova.wa.mute')), '1');
-  assert.equal(await view.locator('[data-wa-mute]').getAttribute('aria-pressed'), 'true');
+  assert.equal(await view.locator('[data-wa-notify]').getAttribute('aria-pressed'), 'false');
   data[A].messages.push(M('a4', 'in', NOW + 120e3, 'لو سمحت'));
   await page.waitForFunction((id) => document.querySelector(`[data-conv="${id}"] [data-unread]`), A, { timeout: 9000 });
   assert.equal((await T()).snd, 1, 'muted => silent');
-  await view.locator('[data-wa-mute]').click();
+  await view.locator('[data-wa-notify]').click();
   assert.equal(await page.evaluate(() => localStorage.getItem('nova.wa.mute')), '0');
+  await page.evaluate(() => { window.__t.perm = 'default'; });
+  await view.locator('[data-wa-notify]').evaluate((b) => b.dispatchEvent(new Event('x')));
 
   // 6) permission: dismissed => one ask, Arabic note, no re-prompt loop
   await page.evaluate(() => { window.__t.answer = 'default'; });
@@ -147,14 +150,13 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   assert.deepEqual(t6.subOpts, { uvo: true, keyLen: 65 });
   assert.equal(subscribed.length, 1);
   assert.equal(subscribed[0].subscription.endpoint, 'https://fcm.googleapis.com/fcm/send/fake-ux406');
-  assert.match(await view.locator('[data-wa-notify]').textContent(), /الإشعارات شغّالة/);
+  assert.equal(await view.locator('[data-wa-notify]').getAttribute('aria-pressed'), 'true');
   assert.equal(await view.locator('[data-wa-notif-note]').count(), 0);
   // denied => help text, requestPermission is NOT called again
   await page.evaluate(() => { window.__t.perm = 'denied'; });
-  await view.locator('[data-wa-mute]').click(); await view.locator('[data-wa-mute]').click(); // redraw
-  assert.equal(await view.locator('[data-wa-notify]').getAttribute('data-wa-notify'), 'denied');
   await view.locator('[data-wa-notify]').click();
   await view.locator('[data-wa-notif-note]').waitFor();
+  assert.equal(await view.locator('[data-wa-notify]').getAttribute('data-wa-notify'), 'denied');
   assert.match(await view.locator('[data-wa-notif-note]').textContent(), /إعدادات الموقع/);
   assert.equal((await T()).ask, 2, 'denied never re-prompts');
 
