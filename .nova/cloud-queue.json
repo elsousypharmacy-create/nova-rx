@@ -4640,7 +4640,7 @@
    "after": [
     "UX422"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -4650,15 +4650,8 @@
    "slot": "B",
    "dispatched_at": "2026-11-15T10:03:23+00:00",
    "pr": 451,
-   "ci_dispatched": {
-    "sha": "a94c27a0b12a51cef51d59cfaeafb07872e65b65",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T10:10:07+00:00"
-   }
+   "merged_at": "2026-11-15T10:15:02+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/451"
   },
   {
    "id": "UX325",
@@ -4669,7 +4662,7 @@
    "after": [
     "UX422"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -4677,7 +4670,17 @@
    "model": "opus",
    "max_turns": 60,
    "slot": "B",
-   "dispatched_at": "2026-11-15T10:10:07+00:00"
+   "dispatched_at": "2026-11-15T10:10:07+00:00",
+   "pr": 452,
+   "ci_dispatched": {
+    "sha": "7de58454b094575c83f1e47161e2579be83df76b",
+    "wf": [
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T10:15:02+00:00"
+   }
   },
   {
    "id": "UX326",
@@ -4773,13 +4776,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness docs. Sonnet is enough.",
    "model": "sonnet",
-   "max_turns": 40
+   "max_turns": 40,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T10:15:02+00:00"
   },
   {
    "id": "SALE-03",
@@ -4852,5 +4857,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:10:07+00:00"
+ "updated": "2026-11-15T10:15:02+00:00"
 }
