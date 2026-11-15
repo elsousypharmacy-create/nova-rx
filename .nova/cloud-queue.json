@@ -4907,6 +4907,23 @@
    "dispatched_at": "2026-11-15T10:45:44+00:00"
   },
   {
+   "id": "UX430",
+   "phase": 10,
+   "title": "WhatsApp KPIs on Home",
+   "brief": "Slot B track (Opus, up to 80 turns). Owner request: a WhatsApp KPIs card on the Home page that opens a dedicated WhatsApp KPIs page. Starts after SALE-06 and ahead of SALE-05. Stay off the conversations screen — slot A owns unified-inbox / WhatsApp Web work (UX404–UX406, UX401–UX403). Do not start until SALE-06 is done.\n\nAdd a Home-page card (Arabic RTL, mobile-first, modern style from UX420–UX422) showing today's headline numbers (at least: chats today, messages today, waiting/unanswered count, and average staff first-response time). Tapping the card opens a dedicated in-app WhatsApp KPIs page (not a conversations rewrite, not buried only inside reports).\n\nBuild the page and APIs from staging D1 conversation data. Reuse existing UX300 work (PR #409 — لوحة الأداء, metrics endpoint, tests) if present: extend or wrap those read-only endpoints rather than inventing a second source of truth. If something is missing, add only what is needed.\n\nKPIs (timezone = the app's existing pharmacy timezone if one is already used, otherwise Asia/Riyadh; be consistent for 'today' / 'yesterday'):\n- Chats and messages today vs yesterday, plus 7-day and 30-day trend\n- Average and median staff first-response time (human/pharmacist, not the bot)\n- Waiting (unanswered) chats with wait duration; tapping a waiting chat opens that conversation (do not send any message)\n- Busiest hours heatmap\n- New vs returning customers\n- Replies per staff member\n- Media count (images/audio/video/documents/stickers as data allows)\nDate-range filter (today / 7d / 30d / custom range) applies across the page.\n\nRead-only GET endpoints only, authenticated the same way as other inbox/session APIs after UX400 (no PIN gate revival). Never return secrets. No writes to D1 beyond an additive migration if a read model is strictly required (prefer computing from existing inbox tables). No live WhatsApp Graph calls.\n\nUI: Arabic RTL, mobile-first (390x844) and desktop (1366x768), modern Home/card style, no horizontal overflow, tap targets usable on a phone.\n\nBuild worker/live/nova-rx-preview.ux-430.js from the latest worker/live artifact with tools/build-worker-artifact.mjs so auto-deploy-preview.yml can ship it after merge (scheduler runs preview smoke + rollback). Preserve all conversations markers (PIN-free marker, novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). Markers test + node --check must pass. Do NOT deploy yourself and do not merge (scheduler squash-merges on green CI only; auto-deploy runs on main). If slot A has a newer conversations artifact or an open cloud/UX404–UX406 branch, merge/rebase carefully and leave conversations regions intact.\n\nTests (CI must pass): unit tests for the KPI calculations (today vs yesterday, 7/30 trends, avg and median first-response, waiting duration, new vs returning, replies per staff, media count, busiest hours) with fixture/fake D1 data. Playwright tests/ux at 1366x768 and 390x844 with fake/local data (block non-GET / no live writes), including screenshots of the Home card and the KPIs page (headlines, trends, waiting list, heatmap, filters). Record exact commands and results.\n\nHARD RULES: Do not spend money or add payment methods. Do not roll, print, or rotate secrets or tokens (NOVA_API_PIN, NOVA_INGEST_SECRET, WA_TOKEN, Cloudflare, Aumet). Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to anyone. Do not call /{phone_id}/register or /deregister. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore). Do not deploy production or staging (Nova handles production via deploy-backend-production.yml). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only. Tests with fake/local data; block non-GET / no live writes in Playwright. Preserve Arabic RTL.\n",
+   "acceptance": "Home shows a WhatsApp KPIs card with today's headline numbers; the card opens a dedicated Arabic RTL mobile-first KPIs page covering today vs yesterday and 7/30-day chat/message trends, avg and median staff first-response time, waiting chats with wait duration (tap opens the chat), busiest-hours heatmap, new vs returning customers, replies per staff member, media count, and a date-range filter; computed from staging D1 (reusing UX300 endpoints if present); read-only auth-gated endpoints; unit + Playwright tests with screenshots pass; preview artifact nova-rx-preview.ux-430.js built; conversations regions left intact; no WhatsApp sends; no secrets printed; no pharmacy/GAS changes; no paid services; no self-deploy or merge.",
+   "after": [
+    "SALE-06"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15-wa-kpis",
+   "note": "Slot B track; Opus allowed (model opus, max_turns 80). Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo.",
+   "model": "opus",
+   "max_turns": 80
+  },
+  {
    "id": "SALE-05",
    "phase": 11,
    "title": "اختبار يوم بيع كامل (بيع، فاتورة، مرتجع، استيكر، ضريبة، موبايل)",
@@ -4915,7 +4932,8 @@
    "after": [
     "UX328",
     "UX329",
-    "SALE-02"
+    "SALE-02",
+    "UX430"
    ],
    "status": "pending",
    "attempts": 0,
@@ -4926,5 +4944,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:45:44+00:00"
+ "updated": "2026-11-15T10:51:04+00:00"
 }
