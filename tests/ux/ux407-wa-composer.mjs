@@ -113,6 +113,10 @@ for (const vp of [{ width: 390, height: 844, name: 'mobile', touch: true }, { wi
 
   // 3) mocked iOS keyboard: composer flush on the visual viewport bottom (also with offsetTop > 0), no other focusable field
   if (vp.touch) {
+    // headless Chrome has env(safe-area-inset-bottom)=0: simulate the iPhone home-indicator padding (8px + 34px) the way the CSS adds it
+    await input.blur(); await page.waitForTimeout(120);
+    await page.addStyleTag({ content: '.wa-main>.wa-composer{padding-bottom:42px}' });
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('[data-wa-composer]')).paddingBottom), '42px');
     await input.focus();
     for (const [kb, off] of [[336, 0], [336, 60], [300, 120]]) {
       await page.evaluate(([a, b]) => window.__kb(a, b), [kb, off]); await page.waitForTimeout(120);
