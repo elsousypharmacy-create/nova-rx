@@ -23,9 +23,8 @@ const blk = app.slice(i, j);
 for (const m of ['id="UX430_WA_KPI"', 'novaWaKpiCard', 'novaWaKpiView', '/api/v1/inbox/history/metrics', 'function kpCompute(', 'function kpTrend(', 'data-kp-chat', 'data-kp-preset']) assert.ok(blk.includes(m), 'block marker ' + m);
 assert.ok(!/method:\s*'(POST|PUT|DELETE|PATCH)'|X-Nova-Pin|sessionStorage\.setItem/.test(blk), 'KPI block is GET-only, PIN-free and never persists chat data');
 assert.ok(!/localStorage\.setItem/.test(blk), 'KPI block never writes localStorage');
-// the same block is in index.html
-const idx = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-assert.equal(idx.slice(idx.indexOf(BEGIN), idx.indexOf(END)), blk, 'index.html carries the identical UX430 block');
+// Historical ux-430 artifact keeps the original (always-on) UX430 block. The later flag-gated
+// copy lives in index.html + worker/live/nova-rx-preview.ux-430-hidden.js (see ux430-hidden-artifact.check.mjs).
 // conversations + deploy markers (tools/preview_auto_deploy.py REQUIRED_MARKERS) and UX400 PIN-free state
 for (const m of ['novaWaBtn', 'hLoad', 'inbox/history', 'data-wa-inbox-open', 'NOVA_FIX50', 'NOVA_FIX50_VV', 'hPoll', 'winClosed', 'function hOn()', 'hSend', '/sw.js?v=4']) assert.ok(app.includes(m), 'marker ' + m);
 for (const m of ['wa-lockform', 'waHistPin', 'X-Nova-Pin', 'PIN_REQUIRED', 'function hPin(']) assert.ok(!app.includes(m), 'PIN leftover ' + m);

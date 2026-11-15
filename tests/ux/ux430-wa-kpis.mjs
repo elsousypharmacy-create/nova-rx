@@ -27,6 +27,30 @@ const WD = new Date(Date.UTC(2026, 10, 15, 12)).getUTCDay();
 
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
 const origin = new URL(BASE).origin;
+
+// Default OFF: no Home card, no KPIs page, no metrics request.
+{
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, locale: 'ar-EG', serviceWorkers: 'block' });
+  const metricsOff = [];
+  await ctx.route('**/*', (r) => {
+    const q = r.request(), u = q.url();
+    if (q.method() !== 'GET' && q.method() !== 'HEAD' && q.method() !== 'OPTIONS') return r.abort();
+    if (u.includes('/api/v1/inbox/history/metrics')) { metricsOff.push(u); return r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"data":{"customers":[],"events":[]}}' }); }
+    if (u.startsWith(origin) || u.startsWith('data:')) return r.continue();
+    return r.abort();
+  });
+  await ctx.addInitScript(() => { try { localStorage.setItem('nova.waKpi.autoload', '1'); } catch (e) { } });
+  const page = await ctx.newPage();
+  await page.route('**/emergency/stock.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
+  await page.goto(BASE, { waitUntil: 'load' });
+  await page.waitForTimeout(1500);
+  assert.equal(await page.locator('#novaWaKpiCard').count(), 0, 'no Home KPIs card when flag is off');
+  assert.equal(await page.locator('#novaWaKpiView').count(), 0, 'no KPIs page when flag is off');
+  assert.equal(metricsOff.length, 0, 'no metrics request when flag is off');
+  assert.equal(await page.evaluate(() => window.novaWaKpis && window.novaWaKpis.enabled), false, 'API reports disabled');
+  await ctx.close();
+}
+
 for (const vp of [{ width: 1366, height: 768, name: 'desktop' }, { width: 390, height: 844, name: 'mobile', isMobile: true, hasTouch: true }]) {
   const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: !!vp.isMobile, hasTouch: !!vp.hasTouch, locale: 'ar-EG', serviceWorkers: 'block' });
   const metricsReq = [], convReq = [], posts = [];
@@ -46,7 +70,7 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop' }, { width: 390, h
   const page = await ctx.newPage(); const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.clock.setFixedTime(NOW);
-  await page.addInitScript(() => { try { localStorage.setItem('nova.waKpi.autoload', '1'); } catch (e) { } });
+  await page.addInitScript(() => { try { localStorage.setItem('nova.flags.waKpis', '1'); localStorage.setItem('nova.waKpi.autoload', '1'); } catch (e) { } });
   await page.route('**/emergency/stock.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
   await page.goto(BASE, { waitUntil: 'load' });
   const card = page.locator('#novaWaKpiCard');

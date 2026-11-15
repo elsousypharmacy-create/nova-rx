@@ -7852,11 +7852,13 @@ function kpHeadline(data, now) {
   return { today: today, yesterday: yd };
 }
 // END-KPI-SHARED
-/* UX430 UI: Home card + dedicated WhatsApp KPIs page. Read-only: one GET to /api/v1/inbox/history/metrics (UX300 endpoint, same
+/* UX430 UI: Home card + dedicated WhatsApp KPIs page. Hidden unless localStorage nova.flags.waKpis==='1' (default OFF) so the
+   code can come back later without showing on Home. Read-only: one GET to /api/v1/inbox/history/metrics (UX300 endpoint, same
    gate as the conversations list since UX400, no PIN header). Data stays in memory only. Never sends a message: tapping a waiting
    chat only opens it in المحادثات (the same click a pharmacist would make). Automated browsers (navigator.webdriver) do not
    auto-load the Home numbers so unrelated offline smoke tests make no network call; localStorage nova.waKpi.autoload=1 opts in. */
 var KPW = { data: null, at: 0, busy: false, err: '', preset: 'today', fromKey: '', toKey: '', trendN: 7, open: false, wait: [] };
+function kpFlagOn() { try { return localStorage.getItem('nova.flags.waKpis') === '1'; } catch (e) { return false; } }
 function kpWdList() { return [T('الأحد', 'Sun'), T('الاثنين', 'Mon'), T('الثلاثاء', 'Tue'), T('الأربعاء', 'Wed'), T('الخميس', 'Thu'), T('الجمعة', 'Fri'), T('السبت', 'Sat')]; }
 function kpMediaList() { return [['image', T('صور', 'Images')], ['audio', T('صوت', 'Audio')], ['video', T('فيديو', 'Video')], ['document', T('مستندات', 'Documents')], ['sticker', T('ملصقات', 'Stickers')], ['other', T('وسائط أخرى', 'Other media')]]; }
 function kpEn() { var l = document.documentElement.getAttribute('lang'); if (l === 'en') return true; if (l === 'ar') return false; try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; } }
@@ -8030,6 +8032,10 @@ function kpOpenChat(id) {
   })();
 }
 function kpInit() {
+  if (!kpFlagOn()) {
+    window.novaWaKpis = { open: function () {}, close: function () {}, reload: function () {}, enabled: false };
+    return;
+  }
   var ws = document.querySelector('.pos-root .main-workspace');
   if (ws && !document.getElementById('novaWaKpiCard')) {
     kpCardEl = document.createElement('button');
@@ -8071,7 +8077,7 @@ function kpInit() {
     setTimeout(function () { kpLoad(false); }, 1200);
     setInterval(function () { if (document.visibilityState === 'visible' && kpCardEl && kpCardEl.offsetParent && !KPW.open) kpLoad(true); }, 300000);
   }
-  window.novaWaKpis = { open: kpOpenPage, close: kpClosePage, reload: function () { kpLoad(true); } };
+  window.novaWaKpis = { open: kpOpenPage, close: kpClosePage, reload: function () { kpLoad(true); }, enabled: true };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kpInit); else kpInit();
 })();
