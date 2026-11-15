@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed.",
+ "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
   {
    "id": "N60",
@@ -4068,23 +4068,16 @@
    "brief": "Only one pill (nova-low-badge) with no title/aria text; 'نفد' state absent; KPI sublabel '(أقل من 30)' ~12px grey on dark. Define stock status tokens (ok/low/out) with icon + text + >=4.5:1 contrast, apply to table and cards, add aria-label. Frontend-only (index.html products page, nova-data-table block). Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ux/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results. Evidence: .nova/qa/qa-loop-301.md, screenshots .nova/qa/qa-loop-301/, repro tools/qa/qa-loop-301.mjs.",
    "acceptance": "Status chips have text/aria, contrast >=4.5:1 verified in test.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-301-fixes.json",
    "slot": "A",
    "dispatched_at": "2026-11-15T05:18:45+00:00",
    "pr": 435,
-   "ci_dispatched": {
-    "sha": "820daa7ddcc6e0928f8841e1b8e90ed9498e211e",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T05:20:12+00:00"
-   },
-   "note": "Retried 2026-11-15: failed after 2 fix attempts due to merge conflicts with main; PR #435 left open. Reset to pr_open with fix_attempts=0 so a Claude slot can merge main, resolve index.html conflicts, and land on green CI. Failed tasks go to the front."
+   "note": "Merged to main as PR #435 at 2026-11-15T05:25:49Z (08:25 Asia/Riyadh) while the queue was being paused. Queue status was still pr_open; marked done from the merged PR. Not deferred.",
+   "merged_at": "2026-11-15T05:25:49+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/435"
   },
   {
    "id": "UX314",
@@ -4093,20 +4086,117 @@
    "brief": "Continuous QA audit (focus: customers, debts & chronic refill). Audit the CURRENT repo frontend locally with Playwright (desktop 1366x768 + mobile 390x844, fake data, no live writes, no supplier/live sites), focusing on the focus area plus a quick smoke of all main journeys. Every cycle must cover every main screen (البيع، الفواتير، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات، and any other top-nav tab or link). Click every top-nav link/tab and every visible primary header button (including the WhatsApp #novaWaBtn icon). Flag any HTTP 404, blank page, 'Not found', failed navigation, or console error. Quality bar is EXCEPTIONAL (world-class pharmacy POS, Apple/Linear-level polish): judge as the strictest senior product designer + QA lead. TOP PRIORITY (owner): visual design and smoothness. Every cycle, besides the focus area, do a full design + smoothness pass on all screens: visual hierarchy, consistent spacing/grid, typography, icons, color/contrast, polish of every state; smooth 60fps transitions and scrolling, no jank/layout shift/flicker, instant feedback (<100ms) on every tap, fast screen switches, no extra clicks in common flows. Measure (Playwright traces, CLS, long tasks, interaction latency) and order fix tasks design/smoothness first. Report findings at every severity including low/polish (alignment, spacing, contrast, copy, empty/loading/error states, speed, keyboard flow). Score each of the 14 focus areas 0-10 and update .nova/qa/scorecard.json ({area: {score, last_cycle, open_findings}}); an area counts as exceptional only at >=9.5 with zero open findings. Never mark the product done; the loop continues. Read all previous .nova/qa/*report*.md and qa-loop-*.md first to avoid duplicates and to re-verify that earlier fixes really work. Write .nova/qa/qa-loop-314.md (Arabic, short) with screenshots in .nova/qa/qa-loop-314/ (max 15). Then write .nova/inbox/qa-loop-314-fixes.json ({\"tasks\":[...]}) with at most 15 frontend-only fix tasks (ids UX315..UX329; highest impact first, any severity; areas scoring <9.5 first; tests required; Black Edition Arabic RTL preserved; backend frozen; no deploy), plus, ONLY if there are fixes, a final task titled exactly 'Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)' with after = all its fix ids, which rebuilds the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs, markers test, node --check, no deploy). Fix ids available: UX315, UX316, UX317, UX318, UX319, UX320, UX321, UX322, UX323, UX324, UX325, UX326, UX327, UX328, UX329. If truly nothing is found, write the report only (no fixes file). Do not edit .nova/cloud-queue.json. Owner request this cycle: work page-by-page (البيع، الفواتير/المرتجعات، المنتجات، العملاء، التقارير، المشتريات، الإعدادات، المحادثات) and also audit screens that have no scorecard score yet (استوديو الاستيكرات /sticker-studio.html and the in-app sticker flow, بيع الطوارئ /emergency-sales.html, مقارنة الموردين /supplier-compare.html). Re-score every area after re-verifying already-merged fixes UX204–UX243 and UX302–UX312; close findings that actually landed, keep or re-open only what is still broken. UX309 (stock status chips) is in progress on open PR #435 (failed earlier due to merge conflicts with main; being retried). Do not file a new task that duplicates UX309. UX313 (qa-301 artifact build) is already pending and must not be reused or overwritten. Do not edit .nova/cloud-queue.json.",
    "acceptance": "Report .nova/qa/qa-loop-314.md exists; scorecard updated; fixes inbox file if any findings; no deploy; backend untouched.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314.json",
    "slot": "B",
    "dispatched_at": "2026-11-15T05:18:45+00:00",
    "pr": 443,
-   "ci_dispatched": {
-    "sha": "25178ff22d52f0e7bb087d4c098b18e3444f9bf9",
-    "wf": [
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-15T05:23:48+00:00"
-   }
+   "merged_at": "2026-11-15T05:25:38+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/443",
+   "note": "Merged to main as PR #443 at 2026-11-15T05:25:38Z (08:25 Asia/Riyadh) while the queue was being paused. Queue status was still pr_open; marked done from the merged PR. Follow-up inbox tasks UX315–UX329 were placed on hold so they do not jump ahead of UX400/UX420."
+  },
+  {
+   "id": "UX400",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: الشكل وإزالة PIN من القراءة والإرسال (staging/preview)",
+   "brief": "Owner Ahmed approved removing the PIN (he knows anyone with the preview link can then read and reply) and wants the in-app WhatsApp conversations screen to look and behave exactly like WhatsApp Web, thoroughly tested, with a better UX.\n\nThis is task 1 of 4 on SLOT A (Claude account ahmed m / ahmedmelsousy). Sequential: UX400 → UX401 → UX402 → UX403. Do not start later tasks. Slot B owns a separate visual-modernization track (UX420+) on every page EXCEPT conversations — avoid file conflicts (see Scope).\n\nGoals for this task:\n1) REMOVE the PIN gate on both reading and sending for staging/preview. Opening المحادثات must show the chat list immediately: no PIN prompt, no lock bar, no «المحادثات مقفولة», no X-Nova-Pin from the UI. Remove waHistPin / PIN lock empty/error states from the conversations UI (index.html WhatsApp/conversations blocks and related CSS/JS).\n2) Staging/preview API only: stop requiring X-Nova-Pin == NOVA_API_PIN on the inbox history read and send endpoints (backend/src/inbox-history.js checkPin, backend/src/inbox-send.js). Implement this behind an environment/env-flag check so the PRODUCTION backend path STILL requires the PIN until Ahmed explicitly approves a production deploy. Do not run Deploy backend production. Do not change production env, Worker, or secrets. Never print, log, or rotate secrets or the PIN. If staging backend code changes belong in this PR, leave actual staging deploy to the existing 'Deploy backend staging' workflow; do not deploy yourself.\n3) KEEP all of these exactly: WhatsApp 24-hour customer-service window (winClosed / WINDOW_MS), rate limits, wa_send_log, and the NOVA_INBOX_SEND kill switch (send stays disabled unless that flag is '1'). No test messages to real customers. Tests must use fake/local data and must not call live WhatsApp send against real numbers. Block non-GET / no live writes in Playwright.\n4) WhatsApp Web–identical chrome, RTL Arabic correct, desktop + mobile: chat list with avatar, name, last message, time, unread badge; search; pin and archive affordances; chat pane with WhatsApp-like wallpaper and header; composer shell. Desktop is a split list+pane; mobile is list or chat with a back control. Smooth, no jank. (Green/white bubbles, ticks, reply/quote, media, emoji/attachments, realtime, and the deep Playwright pass are UX401–UX403; this task must already feel like WhatsApp Web's frame.)\n5) Auto-deploy markers: tools/preview_auto_deploy.py REQUIRED_MARKERS currently includes waHistPin. Replace waHistPin with a new stable marker that the PIN-free inbox is present (e.g. a data attribute in the conversations UI). Keep novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed. Update tests that asserted the PIN lock (including tests/ux/ux240-wa-lock-bar.mjs, tests/ux/ux242-wa-error-states.mjs, and any unit tests of checkPin) so they expect the unlocked staging/preview path and still-gated production path.\n\nScope (you OWN the conversations screen): unified-inbox.js; the WhatsApp/conversations regions of index.html (novaWa*, wa-*, waHist*, #novaWaBtn, chat list/pane/composer); backend/src/inbox-history.js, inbox-send.js and their unit tests; related tests under tests/ux and tests/unit; tools/preview_auto_deploy.py markers as above. Do NOT edit other app pages, ux-tokens.css/js (slot B), sticker-studio/emergency-sales/purchases/supplier-compare pages, .nova/cloud-queue.json, .github/workflows, or secrets. Do not deploy. Do not merge (scheduler squash-merges on green CI only). Do not touch the pharmacy repo.\n\nTests required: existing unit tests for history/send + new coverage that staging/preview allows read/send without PIN while production still requires it; new or updated Playwright under tests/ux/ at 1366x768 and 390x844 with fake data; record exact commands and results. Frontend + staging-gated backend only. Preserve Arabic RTL. Design and smoothness first.",
+   "acceptance": "Conversations open with no PIN on staging/preview (read and send UI); production code path still PIN-gated; 24h window, rate limits, wa_send_log, and NOVA_INBOX_SEND still enforced; WhatsApp Web–like list+pane layout on desktop and mobile, RTL correct; REQUIRED_MARKERS updated (waHistPin replaced, other markers kept); unit + Playwright tests pass; no live customer messages; no production deploy.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track (WhatsApp). Scheduler should dispatch this first among pending tasks so it gets slot A."
+  },
+  {
+   "id": "UX401",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: الفقاعات والعلامات والرد والوسائط وخانة الكتابة",
+   "brief": "Continue SLOT A WhatsApp Web work (task 2 of 4). Depends on UX400 (PIN already removed; list+pane chrome in place). Do not reopen the PIN gate. Do not start UX402/UX403. Slot B is modernizing other pages — stay inside the conversations screen to avoid conflicts.\n\nMake the chat pane look and behave like WhatsApp Web:\n- Incoming (white/light) and outgoing (WhatsApp green) bubbles, WhatsApp-like wallpaper, date separators between days, per-message time on every bubble.\n- Ticks from message status: one check when sent, two checks when delivered, two blue checks when read; failed state visible.\n- Reply/quote: swipe or long-press/context to reply; quoted snippet above the bubble and in the composer; can cancel the quote.\n- Media, voice notes, stickers, and documents render inside the thread like WhatsApp (images in-bubble, voice with duration/play, sticker size, document name/type). Use existing history data; fake attachments in tests. Do not send media to real customers.\n- Composer: emoji picker, attachments control, text field (Arabic RTL / dir=auto), send control. Keep NOVA_INBOX_SEND kill switch (composer disabled/draft-only when send is off). Keep the 24-hour window: cannot send when the window is closed, with a clear Arabic explanation. Auto-scroll to latest on open and on send; do not rip the user away if they have scrolled up (WhatsApp-like 'jump to latest' control).\n- Smooth animations, 60fps scrolling, no layout jank, instant feedback (<100ms) on tap. RTL Arabic correct. Responsive: 1366x768 split view and 390x844 stacked list/chat.\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html only (plus their tests). Do not edit ux-tokens.css/js, other pages, queue, workflows, secrets. No deploy, no merge, no production, no live customer messages.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering bubbles, ticks, date separators, reply/quote, media/voice/sticker/doc rendering, composer, 24h-window closed state, auto-scroll; plus nearest unit tests. Record exact results.",
+   "acceptance": "Chat pane matches WhatsApp Web: wallpaper, green/white bubbles, date separators, per-message time, single/double/blue ticks from status, reply/quote, media/voice/sticker/doc rendering, emoji+attachments composer, auto-scroll; 24h window and NOVA_INBOX_SEND still enforced; RTL + desktop/mobile; Playwright + unit tests pass; no live customer messages.",
+   "after": [
+    "UX400"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX400."
+  },
+  {
+   "id": "UX402",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: الرسايل الجديدة بدون تحديث وإشعارات",
+   "brief": "Continue SLOT A WhatsApp Web work (task 3 of 4). Depends on UX401. Do not reopen the PIN gate. Do not start UX403. Stay inside the conversations screen (unified-inbox.js + WhatsApp/conversations regions of index.html + related tests/backend poll endpoints). Avoid conflicts with slot B.\n\nRealtime and notifications, like WhatsApp Web:\n- New inbound and outbound messages appear in the open chat and in the list (preview, time, unread badge) without a full page refresh. Use the existing history poll (hPoll) and/or a safer short poll; do not hammer the API. If a lighter push/path already exists in staging, use it; otherwise improve polling (pause when the tab is hidden, backoff, no duplicate bubbles).\n- Unread counts and the #novaWaBtn badge update live.\n- In-app notification for a new customer message when the user is on another screen or another chat (Arabic, not noisy, respects a simple mute-if-already-viewing rule). Browser Notification API only with a graceful fallback; do not require a new paid service.\n- Keep 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND. No test messages to real customers; fake/local data only.\n- Smooth insert of new bubbles (no flash/flicker), list row updates, scroll-to-latest only when the user is already at the bottom.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) that inject or mock a new message and assert it appears in the open chat and list without location.reload; badge updates; notification hook/fallback is present. Plus nearest unit tests. Record exact results. No deploy, no merge, no secrets, no production.",
+   "acceptance": "New messages appear in the open chat and list without a full refresh; unread badge updates; in-app/browser notification path exists with a fallback; poll is well-behaved; 24h window, rate limits, wa_send_log, NOVA_INBOX_SEND kept; Playwright + unit tests pass; no live customer messages.",
+   "after": [
+    "UX401"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX401."
+  },
+  {
+   "id": "UX403",
+   "phase": 10,
+   "title": "شاشة المحادثات زي واتساب ويب: اختبار Playwright كامل وصقل وبناء أثر الـ preview",
+   "brief": "Final SLOT A WhatsApp Web task (4 of 4). Depends on UX402. Thoroughly test and polish the conversations screen so it is indistinguishable from WhatsApp Web in look and behavior, then build the preview artifact.\n\n1) Thorough Playwright pass of the conversations screen only (tests/ux, 1366x768 and 390x844, fake data, block non-GET / no live writes, no messages to real customers): open inbox with no PIN; list (avatar, last message, time, unread, search, pin/archive); open a chat; wallpaper, bubbles, date separators, times, ticks; reply/quote; media/voice/sticker/doc; composer (emoji, attachments, send disabled when NOVA_INBOX_SEND is off, 24h window closed); auto-scroll; new message appears without refresh; RTL Arabic; mobile back navigation; reduced-motion / no major jank. Fix every failure and any visual/UX gap you still see (spacing, contrast, typography, empty/loading/error, smoothness). Quality bar is exceptional; design and smoothness first.\n2) Build worker/live/nova-rx-preview.ux-403.js from the latest worker/live artifact using tools/build-worker-artifact.mjs so preview auto-deploy can pick it up. Worker code outside the HTML literal must stay byte-identical except for the intended app HTML. Add/update a markers test (PIN-free marker from UX400 plus novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). Run the markers test and node --check on the artifact. Do NOT deploy (auto-deploy-preview.yml deploys the newest artifact on main). Do not touch production.\n\nScope remains the conversations screen + the new artifact and its tests. Do not edit other pages, queue, workflows, or secrets. Do not merge. Record exact test commands and results.",
+   "acceptance": "Full Playwright conversations pass green on desktop and mobile with fake data; remaining polish done; worker/live/nova-rx-preview.ux-403.js built; markers test and node --check pass; no deploy; no live customer messages.",
+   "after": [
+    "UX402"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot A track; starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy."
+  },
+  {
+   "id": "UX420",
+   "phase": 10,
+   "title": "تحديث الهوية البصرية: نظام تصميم حديث وأنيق (التوكنات المشتركة، من غير شاشة المحادثات)",
+   "brief": "Owner Ahmed: use SLOT B to modernize the app-wide look — modern, elegant, polished — while slot A turns the conversations screen into WhatsApp Web. This is task 1 of 3 on SLOT B (UX420 → UX421 → UX422). Do not start later tasks. Do NOT touch the conversations/WhatsApp screen.\n\nGoal: a shared design system upgrade (typography, spacing, color, cards, buttons, icons, transitions, dark/light consistency, Arabic RTL) that other pages can adopt without a messy one-off restyle.\n\nWork in this task ONLY on shared token/icon files: ux-tokens.css, ux-tokens.js, nova-icons.css, nova-icons.js, and a short doc of the token set if one already exists under docs/design or docs/DESIGN_SYSTEM.md (update, do not invent a new process). Define a coherent modern palette and type scale, spacing/grid, radius, elevation/cards, button hierarchy, icon sizing, focus/hover/active, motion (short, smooth, respect prefers-reduced-motion), and light/dark consistency that still fits NOVA Rx Black Edition (do not turn the app into a generic light admin theme). RTL must be first-class (logical properties, no hardcoded left/right that break Arabic).\n\nHARD EXCLUSIONS (slot A owns these; editing them will conflict): unified-inbox.js; integrations/whatsapp/; backend inbox/whatsapp/wa-* files; any WhatsApp/conversations DOM/CSS/JS in index.html (novaWa*, wa-*, waHist*, #novaWaBtn, chat list/pane/composer). Do NOT edit index.html in this task at all (reduces merge conflicts with UX400). Do not edit sticker-studio.html, emergency-sales.html, purchases.html, or supplier-compare.html yet (those are UX421). Do not edit .nova/cloud-queue.json, workflows, or secrets. No deploy, no merge, no production, no paid services.\n\nTests: unit/CSS token tests as they exist (including tests around ux-tokens / UX contrast); add or extend a check that new tokens exist and contrast stays >=4.5:1 for text/icons on backgrounds you define. Record exact results.",
+   "acceptance": "Shared typography/spacing/color/card/button/icon/transition tokens live in ux-tokens (and icons) with RTL and dark/light consistency, Black Edition preserved; conversations/index.html/standalone pages untouched; contrast and token tests pass; no deploy.",
+   "after": [],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot B track (app-wide visual modernization, excluding conversations). Listed after UX400 so slot A gets UX400 and slot B gets this."
+  },
+  {
+   "id": "UX421",
+   "phase": 10,
+   "title": "تطبيق الهوية البصرية الحديثة على الصفحات المستقلة (استيكرات، طوارئ، مشتريات، مقارنة موردين)",
+   "brief": "Continue SLOT B visual modernization (task 2 of 3). Depends on UX420 tokens. Apply the new design system to STANDALONE pages only, not the main index.html SPA and not conversations.\n\nPages in scope: sticker-studio.html (+ sticker-six-layout.css / in-app sticker styles used by that page), emergency-sales.html, purchases.html (+ purchases.css), supplier-compare.html, and their page-local CSS/JS. Modern, elegant, polished: typography, spacing, cards, buttons, icons, transitions, dark/light consistency, Arabic RTL, 44px touch targets, no horizontal overflow at 390px, no broken images or overlapping labels, consistent with the UX420 tokens.\n\nHARD EXCLUSIONS: index.html (any section), unified-inbox.js, anything under WhatsApp/conversations (novaWa*, wa-*, waHist*), backend, queue, workflows, secrets. No deploy, no merge, no production.\n\nTests: Playwright or existing page checks at 1366x768 and 390x844 with fake data (block non-GET / no live writes) for each of the four pages — layout, contrast, overflow, RTL, primary controls. Record exact results.",
+   "acceptance": "Sticker studio, emergency sales, purchases, and supplier compare use the new tokens, look modern/elegant, RTL and mobile-correct, no overflow/overlap; tests pass; index.html and conversations files untouched; no deploy.",
+   "after": [
+    "UX420"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot B track; starts after UX420. Does not edit index.html or conversations."
+  },
+  {
+   "id": "UX422",
+   "phase": 10,
+   "title": "تطبيق الهوية البصرية الحديثة على صفحات التطبيق ما عدا المحادثات، وبناء أثر الـ preview",
+   "brief": "Final SLOT B visual modernization task (3 of 3). Depends on UX421. Apply the UX420 design system to the main app pages inside index.html EXCEPT the conversations/WhatsApp screen, then build a preview artifact.\n\nPages in scope (index.html SPA): البيع، الفواتير، المرتجعات، المنتجات، العملاء، التقارير، المشتريات (if in index), الإعدادات, and any other top-nav tab that is not المحادثات. Modern, elegant, polished typography/spacing/colors/cards/buttons/icons/transitions; dark/light consistency; Arabic RTL; smooth 60fps transitions; 44px targets; no jank.\n\nHARD EXCLUSIONS (do not edit these regions or files): unified-inbox.js; integrations/whatsapp/; backend inbox/whatsapp/wa-*; the conversations/WhatsApp blocks in index.html (novaWa*, wa-*, waHist*, #novaWaBtn, chat list/pane/composer, PIN-free inbox UI from UX400–UX403). If those regions must stay byte-stable, do not reformat them. Merge/rebase onto latest main if slot A has landed or has an open cloud/UX400–UX403 branch conflict, and only resolve conflicts outside the conversations regions (leave slot A's conversations code intact).\n\nBuild worker/live/nova-rx-preview.ux-422.js from the latest worker/live artifact with tools/build-worker-artifact.mjs only if slot A's ux-403 artifact is not already newer on main — if UX403 has already produced nova-rx-preview.ux-403.js on main, build nova-rx-preview.ux-422.js FROM that artifact so conversations work is not overwritten, and keep all conversations markers (PIN-free marker, novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed). If UX403 has not landed yet, build from the latest live artifact and still preserve those markers if present. Run markers test + node --check. Do NOT deploy (auto-deploy handles preview). Do not touch production.\n\nTests: Playwright at 1366x768 and 390x844 with fake data (block non-GET / no live writes) walking the in-scope pages; plus nearest unit/contrast tests. Record exact results. No queue/workflow/secret edits, no merge.",
+   "acceptance": "Main SPA pages except conversations use the modernized design system, RTL/mobile-correct and polished; conversations regions left intact; worker/live/nova-rx-preview.ux-422.js built without dropping conversations markers; tests and node --check pass; no deploy.",
+   "after": [
+    "UX421"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-request-2026-11-15",
+   "note": "Slot B track; starts after UX421. Must not overwrite conversations work; build artifact carefully."
   },
   {
    "id": "UX313",
@@ -4126,10 +4216,11 @@
     "UX310",
     "UX311"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
-   "source": "inbox/qa-loop-301-fixes.json"
+   "source": "inbox/qa-loop-301-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
   },
   {
    "id": "UX312",
@@ -4300,7 +4391,217 @@
    "pr": 442,
    "merged_at": "2026-11-14T23:50:02+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/442"
+  },
+  {
+   "id": "UX315",
+   "phase": 10,
+   "title": "الموبايل: السهم ‹ يغطي شعار «NOVA Rx» في رأس كل الشاشات (تراجع عن UX204)",
+   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Wordmark fully visible at 390px on every tab; test asserts no bounding-box overlap between brand and nav arrows.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX316",
+   "phase": 10,
+   "title": "العملاء: رسالة البحث الفارغ خاطئة «لا يوجد عملاء بعد» + لا زر مسح + «عبدالله» لا تطابق «عبد الله»",
+   "brief": "In customers, search 'zzz' shows 'لا يوجد عملاء بعد / أضف عميلًا' instead of 'لا توجد نتائج لـ «zzz»' with a clear-search action. Add × clear button (#novaFilterClear like products), normalise spaces/hamza/ya/ta-marbuta/Arabic digits so 'عبدالله' matches 'عبد الله'. Keep <100ms. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Zero-result search shows correct no-results copy + clear button; 'عبدالله' matches; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX317",
+   "phase": 10,
+   "title": "العملاء: مؤشرات المديونية — إجمالي المديونية وعدد المدينين وفلتر «عليهم مديونية»",
+   "brief": "KPIs show العملاء/الزيارات/النقاط/النشطون (active == total, redundant). Replace the redundant KPI with إجمالي المديونية + عدد المدينين (from NovaCredit.customers()), add filter chips (الكل / مدينون / متأخرون) and sort by debt desc; red debt value must meet AA contrast on dark. Seed NovaCredit in test via localStorage 'nova.credit'. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Debt KPI and debtor filter work with seeded ledger; test asserts totals.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX318",
+   "phase": 10,
+   "title": "العملاء: بطاقة «عدد العملاء قليل / أضف عميلًا» تدفع الجدول للأسفل وتظهر مع 4 عملاء",
+   "brief": "Empty-state card renders above the table whenever <8 customers, pushing real data ~170px down (and between title and table). Show it only when there are 0 customers; otherwise a compact 'إضافة عميل' primary button in the page header. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "With >=1 customer no nag card; table starts right after KPIs; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX319",
+   "phase": 10,
+   "title": "العملاء: لا يوجد ملف/تفاصيل عميل ولا فرز ولا تركيز بلوحة المفاتيح على الصفوف",
+   "brief": "Clicking/Enter on a customer row does nothing. Add focusable rows (tabindex, Enter/Space) opening a detail panel (name, phone, tier, visits, points, debt, كشف حساب, سداد, WhatsApp link to inbox) with focus trap/restore; sortable headers with aria-sort (name, visits, points, debt) like the products table (UX305). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Row Enter opens detail; headers sort with aria-sort; test asserts keyboard flow.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX320",
+   "phase": 10,
+   "title": "العملاء: «إضافة عميل» تنقل إلى شاشة البيع وتطلق F3 بدل نموذج مباشر",
+   "brief": "novaCustAdd does switchPage('sale') + synthetic F3: user loses context and no dialog appears on the customers screen. Add an inline add-customer dialog (name, phone with validation/Arabic-Indic digits, duplicate-phone warning) saved to local demo data, accessible, 44px targets. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Add customer from the customers screen without leaving it; test asserts new row.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX321",
+   "phase": 10,
+   "title": "العملاء: نافذة سداد المديونية وكشف الحساب — وصولية وتحقق ومظهر",
+   "brief": "#novaPayDebt has no aria-labelledby, #novaPayAmt/#novaPayMethod have no labels, over-payment is only a toast ('أكبر من المديونية') while dialog stays open, no focus trap/restore; the statement dialog close ✕ overlaps the title on 390px. Add labels, inline validation with aria-invalid, trap+restore focus, scroll lock, no title overlap, remaining-balance preview after payment. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Dialogs labelled/trapped, inline error, no overlap at 390px; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX322",
+   "phase": 10,
+   "title": "العملاء: لا توجد واجهة لإعادة الصرف للأدوية المزمنة (rx-followup.js غير موصول)",
+   "brief": "Chronic refill has no UI: rx-followup.js (opt-in reminders, manual only) is not loaded in index.html. Add in the customer detail a 'أدوية مزمنة' section: list chronic meds with last dispense date and next refill due, a 'مستحقة للصرف' filter/badge on the customers list, and a 'إعادة صرف' button that adds the last items to the sale cart (existing 'إعادة صرف آخر فاتورة' logic) — no automatic messages, no therapy decisions. Local demo data only. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Due-refill badge + one-click reorder to cart; test asserts with fake data.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX323",
+   "phase": 10,
+   "title": "استوديو الاستيكرات: شعار مكسور، تداخل نص المعاينة مع شارة «يتطلب مراجعة»، وخانة الموافقة 22px",
+   "brief": "/sticker-studio.html preview shows a broken-image icon in place of the logo, the draft line 'مسودة غير مكتملة — مراجعة الصيدلي...' collides with the 'يتطلب مراجعة' pill, and #pharmacistApproval is 22x22. Hide/replace broken logo with the pharmacy wordmark, reserve space for the pill, enlarge the checkbox target to >=44px touch. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "No broken image, no overlap in preview at 1366 and 390; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX324",
+   "phase": 10,
+   "title": "بيع الطوارئ: واجهة فاتحة خارج هوية Black Edition وحقول ملف/تاريخ افتراضية بالإنجليزية",
+   "brief": "/emergency-sales.html uses a light/green theme and native 'Choose File / No file chosen' and mm/dd/yyyy controls (English), 233x32 and 324x26 targets; the message says 'افتح تبويب الأسعار' while already on it. Restyle to Black Edition tokens (ux-tokens.css), styled file picker with Arabic label, locale-aware date, >=44px targets, corrected copy. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Page matches Black Edition, Arabic controls, 44px targets; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX325",
+   "phase": 10,
+   "title": "مقارنة الموردين: فيض أفقي على الموبايل (390px) وجدول مقصوص",
+   "brief": "/supplier-compare.html at 390px has horizontal overflow: table and notice are cut off on the left, product names truncated, pagination detached. Make the table a card list or contained scroller, wrap the notice, keep sticky header, no page-level horizontal scroll. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "scrollWidth<=innerWidth at 390px; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX326",
+   "phase": 10,
+   "title": "أهداف اللمس الصغيرة: selectAll (22px) في المشتريات وحقول الطوارئ والاستيكرات",
+   "brief": "Small controls measured: purchases #selectAll 22x22, sticker-studio #pharmacistApproval 22x22, emergency-sales inputs 32/26px high. Raise to >=44px hit area (padding/label wrapper) without changing layout visually. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "All listed targets >=36px desktop/44px touch; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX327",
+   "phase": 10,
+   "title": "العملاء: صقل الجدول — اسم عربي مع الإنجليزي بين قوسين، محاذاة الهاتف، والعناوين",
+   "brief": "Names render 'د. طارق المنصور (Dr. Tariq Al-Mansoor)' in one line (bidi reorders parentheses on mobile '(Dr. Tariq ...) د.'). Show Arabic as primary and Latin as muted secondary line, tabular numerals and consistent alignment for phone/visits/points/debt, tier as a coloured badge, group the table header cleanly (remove the redundant 'البيانات التجريبية' panel heading or turn into a demo chip like products). Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Name cell bidi-correct at 390px; tier badges; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX328",
+   "phase": 10,
+   "title": "البيع (موبايل): رقم الفاتورة مقطوع «…00001» وحالة فارغة بزر «إخفاء» غير مفهوم",
+   "brief": "Mobile sale header shows invoice number truncated to '...00001' and the empty-cart hint has a stray 'إخفاء' button with no label/explanation. Show the full short number (tap to copy) and give the hide control a clear label/aria-label or remove it; reduce empty-state vertical dead space. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Full invoice number readable at 390px; hide control labelled; test asserts.",
+   "after": [],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
+  },
+  {
+   "id": "UX329",
+   "phase": 10,
+   "title": "Build worker/live/nova-rx-preview.qa-314.js (qa-loop, no deploy)",
+   "brief": "Rebuild the artifact from the latest worker/live artifact the same way UX80 did (tools/build-worker-artifact.mjs), embed the UX315-UX328 frontend changes, add a markers test (like tests/artifact-qa231-markers.mjs) and run node --check. NO deploy, backend untouched.",
+   "acceptance": "worker/live/nova-rx-preview.qa-314.js built; markers test passes; node --check passes; no deploy.",
+   "after": [
+    "UX315",
+    "UX316",
+    "UX317",
+    "UX318",
+    "UX319",
+    "UX320",
+    "UX321",
+    "UX322",
+    "UX323",
+    "UX324",
+    "UX325",
+    "UX326",
+    "UX327",
+    "UX328"
+   ],
+   "status": "hold",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-314-fixes.json",
+   "note": "Deferred/hold by owner Ahmed on 2026-11-15 (Asia/Riyadh): paused so slot A works only on UX400–UX403 (WhatsApp Web conversations) and slot B only on UX420–UX422 (app-wide visual modernization). Do not start until the owner un-holds (set status back to pending)."
   }
  ],
- "updated": "2026-11-15T05:23:48+00:00"
+ "updated": "2026-11-15T09:05:00+00:00"
 }
