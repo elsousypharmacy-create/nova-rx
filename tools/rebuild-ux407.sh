@@ -7,7 +7,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 branch="$(git rev-parse --abbrev-ref HEAD)"
 [ "$branch" != "main" ] || { echo "refusing to run on main: use a branch"; exit 1; }
-node tools/build-worker-artifact.mjs worker/live/nova-rx-preview.ux-406.js index.html worker/live/nova-rx-preview.ux-407.js
+node tools/build-worker-artifact.mjs worker/live/nova-rx-preview.ux-406.js index.html worker/live/nova-rx-preview.ux-407.js --sw sw.js
+node tools/inject-pwa-assets.mjs worker/live/nova-rx-preview.ux-407.js
+node tools/whatsapp-spa.mjs --inject worker/live/nova-rx-preview.ux-407.js
 node tests/unit/artifact-ux407.check.mjs | tail -3
 git add worker/live/nova-rx-preview.ux-407.js
 if git diff --cached --quiet; then echo "artifact already current"; exit 0; fi

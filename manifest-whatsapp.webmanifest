@@ -1,10 +1,10 @@
 {
-  "id": "/?app=whatsapp",
+  "id": "/whatsapp",
   "name": "NOVA WhatsApp",
   "short_name": "NOVA WhatsApp",
   "description": "Pharmacy WhatsApp conversations",
-  "start_url": "/?app=whatsapp",
-  "scope": "/",
+  "start_url": "/whatsapp?app=whatsapp",
+  "scope": "/whatsapp",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0A0B0E",

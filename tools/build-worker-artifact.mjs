@@ -8,7 +8,7 @@ import crypto from 'node:crypto';
 
 function locate(code) {
   const lines = code.split('\n');
-  const idx = lines.findIndex(l => l.includes('new Response("<!DOCTYPE html>'));
+  const idx = lines.findIndex(l => l.includes('"<!DOCTYPE html>') && (l.includes('new Response("<!DOCTYPE html>') || l.includes('novaWhatsAppSpaHtml(url.pathname,"<!DOCTYPE html>')));
   if (idx < 0) throw new Error('app HTML literal not found');
   const line = lines[idx];
   const start = line.indexOf('"<!DOCTYPE html>');

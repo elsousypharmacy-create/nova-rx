@@ -12,7 +12,11 @@ on:
       - "tools/build-worker-artifact.mjs"
       - "tests/unit/artifact-ux406*.check.mjs"
       - "tests/unit/artifact-ux407*.check.mjs"
+      - "tests/unit/ux412-whatsapp-spa.check.mjs"
       - "tests/unit/ux430-*-artifact.check.mjs"
+      - "tools/whatsapp-spa.mjs"
+      - "manifest-whatsapp.webmanifest"
+      - "sw.js"
       - ".github/workflows/preview-artifact-unit.yml"
       - ".github/scripts/pick_artifact_check.py"
   workflow_dispatch:
@@ -37,3 +41,5 @@ jobs:
           git fetch -q origin main
           python3 .github/scripts/pick_artifact_check.py --base origin/main --print
           python3 .github/scripts/pick_artifact_check.py --base origin/main
+      - name: UX412 /whatsapp SPA unit check
+        run: node tests/unit/ux412-whatsapp-spa.check.mjs
