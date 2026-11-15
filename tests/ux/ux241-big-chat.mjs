@@ -41,17 +41,18 @@ for (const vp of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   assert.ok(s.older && s.olderTxt.includes('240'), 'older button shows hidden count');
   assert.equal(await view.locator('#waInput').isDisabled(), true);
   // scroll up > 1 screen: latest button appears
-  await page.evaluate(() => { document.getElementById('waMsgs').scrollTop = 0; });
+  await page.evaluate(() => { const m = document.getElementById('waMsgs'); m.scrollTop = m.scrollHeight - m.clientHeight * 3; });
   await page.waitForTimeout(100);
-  s = await st(); assert.equal(s.btnHidden, false, 'latest button visible when far from bottom');
-  // load older: anchor stays on the same message
-  const before = await page.evaluate(() => { const m = document.getElementById('waMsgs'); const e = m.querySelector('[data-mid="h_240"]'); return e.getBoundingClientRect().top - m.getBoundingClientRect().top; });
-  await view.locator('[data-wa-older]').click();
+  s = await st(); assert.equal(s.btnHidden, false, 'latest button visible when far from bottom'); assert.equal(s.n, 80, 'no early load mid-thread');
+  // UX404: reaching the top loads the older batch by itself; the anchor message stays put (no jump when prepending)
+  const before = await page.evaluate(() => { const m = document.getElementById('waMsgs'); m.scrollTop = 0; const e = m.querySelector('[data-mid="h_240"]'); return e.getBoundingClientRect().top - m.getBoundingClientRect().top; });
+  await page.waitForFunction(() => document.querySelectorAll('#waMsgs [data-mid]').length === 160);
   s = await st(); assert.equal(s.n, 160, 'older batch revealed');
   const after = await page.evaluate(() => { const m = document.getElementById('waMsgs'); const e = m.querySelector('[data-mid="h_240"]'); return e.getBoundingClientRect().top - m.getBoundingClientRect().top; });
   assert.ok(Math.abs(after - before) < 3, `no jump (${before} vs ${after})`);
-  // reveal everything
-  await view.locator('[data-wa-older]').click(); await view.locator('[data-wa-older]').click().catch(() => {});
+  // the button still works (keyboard / screen-reader path): reveal everything
+  for (let k = 0; k < 4 && await view.locator('[data-wa-older]').count(); k++) await view.locator('[data-wa-older]').click().catch(() => {});
+  await page.waitForFunction(() => document.querySelectorAll('#waMsgs [data-mid]').length === 320);
   s = await st(); assert.equal(s.n, 320); assert.equal(s.older, false, 'no older button when all shown');
   // scroll-to-latest
   await page.evaluate(() => { document.getElementById('waMsgs').scrollTop = 0; }); await page.waitForTimeout(100);
