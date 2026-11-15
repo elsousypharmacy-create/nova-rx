@@ -11,7 +11,7 @@
    "after": [
     "UX400b"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-smoothness",
@@ -19,8 +19,7 @@
    "model": "opus",
    "max_turns": 120,
    "slot": "A",
-   "dispatched_at": "2026-11-15T11:43:49+00:00",
-   "retry": true,
+   "dispatched_at": "2026-11-15T12:24:26+00:00",
    "last_failure": "run failure: hit 80-turn cap with work uncommitted (lost); https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43710350867"
   },
   {
@@ -4954,5 +4953,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T12:14:46+00:00"
+ "updated": "2026-11-15T12:24:26+00:00"
 }
