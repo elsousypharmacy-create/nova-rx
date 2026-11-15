@@ -54,7 +54,10 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop' }, { width: 390, h
   await page.waitForFunction(() => /^3$/.test((document.querySelector('#novaWaKpiCard [data-wk="chats"] b') || {}).textContent || ''), null, { timeout: 8000 });
   const tile = async (k) => (await card.locator(`[data-wk="${k}"] b`).innerText()).trim();
   assert.equal(await tile('chats'), '3'); assert.equal(await tile('msgs'), '11'); assert.equal(await tile('waiting'), '1'); assert.equal(await tile('first'), '3 د');
-  assert.match(await card.locator('[data-wk="chats"] i').innerText(), /▲ 2 عن أمس/);
+  assert.match(await card.locator('[data-wk="chats"] i').innerText(), /أمس 1 ▲/);
+  assert.match(await card.locator('[data-wk="first"] i').innerText(), /أمس 10 د/);
+  const clipped = await card.evaluate((c) => [...c.querySelectorAll('.wk-t b, .wk-t span, .wk-t i')].filter((n) => n.scrollWidth > n.clientWidth + 1).map((n) => n.textContent));
+  assert.deepEqual(clipped, [], 'card text not truncated: ' + clipped.join(' | '));
   assert.equal(await card.getAttribute('dir'), 'rtl');
   const cb = await card.boundingBox();
   assert.ok(cb.height >= 44 && cb.width >= 200, 'card is a large tap target');

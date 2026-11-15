@@ -59,7 +59,8 @@
 #novaWaKpiView .wkp-seg.sm{flex:0 0 auto}
 #novaWaKpiView .wkp-seg.sm button{flex:0 0 auto;padding:0 12px}
 #novaWaKpiView .wkp-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:6px 0 0;direction:ltr;overflow:hidden}
-#novaWaKpiView .wkp-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;height:100%;gap:2px}
+#novaWaKpiView .wkp-col{flex:1 1 0;min-width:0;display:flex;flex-direction:row;align-items:flex-end;height:100%;gap:1px}
+#novaWaKpiView .wkp-col>span{flex:1 1 0;min-width:0}
 #novaWaKpiView .wkp-col .m{background:#76b8d5;border-radius:3px 3px 0 0;min-height:2px}
 #novaWaKpiView .wkp-col .c{background:#60b99b;border-radius:3px 3px 0 0;min-height:2px}
 #novaWaKpiView .wkp-col.zero .m,#novaWaKpiView .wkp-col.zero .c{background:#2a313a}

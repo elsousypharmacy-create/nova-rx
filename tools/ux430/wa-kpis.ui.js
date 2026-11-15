@@ -32,9 +32,7 @@ function kpLoad(force) {
 }
 function kpDelta(a, b) {
   if (a == null || b == null) return '';
-  var d = a - b;
-  if (!d) return 'زي أمس';
-  return (d > 0 ? '▲ ' : '▼ ') + Math.abs(Math.round(d)) + ' عن أمس';
+  return 'أمس ' + b + (a > b ? ' ▲' : a < b ? ' ▼' : '');
 }
 function kpCardHtml() {
   var h = KPW.data ? kpHeadline(KPW.data, Date.now()) : null, t = h && h.today, y = h && h.yesterday;
@@ -44,8 +42,8 @@ function kpCardHtml() {
     '<span class="wk-tiles">' +
     tile(t ? t.chats : '—', 'محادثات', t ? kpDelta(t.chats, y.chats) : '', '', 'chats') +
     tile(t ? t.msgs : '—', 'رسائل', t ? kpDelta(t.msgs, y.msgs) : '', '', 'msgs') +
-    tile(t ? t.waitingOpen : '—', 'بانتظار الرد', t && t.waitingOpen ? 'محتاجين رد' : (t ? 'مفيش حد مستني' : ''), t && t.waitingOpen ? 'wk-warn' : '', 'waiting') +
-    tile(fr, 'متوسط أول رد', t && t.firstResponse.n ? 'من الصيدلي (' + t.firstResponse.n + ')' : (t ? 'لسه مفيش ردود' : ''), '', 'first') +
+    tile(t ? t.waitingOpen : '—', 'بانتظار الرد', t && t.waitingOpen ? 'محتاجين رد' : (t ? 'مفيش حد' : ''), t && t.waitingOpen ? 'wk-warn' : '', 'waiting') +
+    tile(fr, 'متوسط الرد', t ? 'أمس ' + kpDur(y.firstResponse.avg) : '', '', 'first') +
     '</span>' + (KPW.err && !KPW.data ? '<span class="wk-note" role="status">' + kpEsc(KPW.err) + '</span>' : KPW.busy && !KPW.data ? '<span class="wk-note" role="status">جارٍ التحميل…</span>' : '');
 }
 function kpTrendHtml(n) {
