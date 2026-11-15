@@ -407,7 +407,7 @@
    "after": [
     "UX422"
    ],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -419,14 +419,14 @@
    "dispatched_at": "2026-11-15T17:05:17+00:00",
    "pr": 482,
    "ci_dispatched": {
-    "sha": "4a724bfdc0d586f132e7d12e2e418c7f8bcd8054",
+    "sha": "1c01ceddc05ffbf2ad654035ba71d902e1e8d6d4",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-15T16:59:14+00:00",
+    "at": "2026-11-15T17:06:53+00:00",
     "na": []
    }
   },
@@ -5110,6 +5110,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:05:17+00:00",
+ "updated": "2026-11-15T17:06:53+00:00",
  "slot_cooldown": {}
 }
