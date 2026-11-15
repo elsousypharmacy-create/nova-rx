@@ -4104,7 +4104,7 @@
    "brief": "Owner Ahmed approved removing the PIN (he knows anyone with the preview link can then read and reply).\n\nThis is task 1 of 5 on SLOT A (Claude account ahmed m / ahmedmelsousy), model Opus, up to 80 turns. Sequential: UX400 → UX400b → UX401 → UX402 → UX403. Do not start later tasks. Slot B owns a separate visual-modernization track (UX420+) on every page EXCEPT conversations — avoid file conflicts (see Scope).\n\nNARROWED SCOPE: two previous Sonnet runs (40-turn cap) finished with no commits and no cloud/UX400 branch. This retry is PIN removal only. WhatsApp Web chrome (list+pane, search, pin/archive, wallpaper, header, composer shell) is UX400b, not this task. If branch cloud/UX400 already has commits, continue from them; otherwise start from main.\n\nGoals for this task:\n1) REMOVE the PIN gate on both reading and sending for staging/preview. Opening المحادثات must show the chat list immediately: no PIN prompt, no lock bar, no «المحادثات مقفولة», no X-Nova-Pin from the UI. Remove waHistPin / PIN lock empty/error states from the conversations UI (index.html WhatsApp/conversations blocks and related CSS/JS).\n2) Staging/preview API only: stop requiring X-Nova-Pin == NOVA_API_PIN on the inbox history read and send endpoints (backend/src/inbox-history.js checkPin, backend/src/inbox-send.js). Implement this behind an environment/env-flag check so the PRODUCTION backend path STILL requires the PIN until Ahmed explicitly approves a production deploy. Do not run Deploy backend production. Do not change production env, Worker, or secrets. Never print, log, or rotate secrets or the PIN. If staging backend code changes belong in this PR, leave actual staging deploy to the existing 'Deploy backend staging' workflow; do not deploy yourself.\n3) KEEP all of these exactly: WhatsApp 24-hour customer-service window (winClosed / WINDOW_MS), rate limits, wa_send_log, and the NOVA_INBOX_SEND kill switch (send stays disabled unless that flag is '1'). No test messages to real customers. Tests must use fake/local data and must not call live WhatsApp send against real numbers. Block non-GET / no live writes in Playwright.\n4) Auto-deploy markers: tools/preview_auto_deploy.py REQUIRED_MARKERS currently includes waHistPin. Replace waHistPin with a new stable marker that the PIN-free inbox is present (e.g. a data attribute in the conversations UI). Keep novaWaBtn, hLoad, inbox/history, NOVA_FIX50, NOVA_FIX50_VV, hPoll, winClosed. Update tests that asserted the PIN lock (including tests/ux/ux240-wa-lock-bar.mjs, tests/ux/ux242-wa-error-states.mjs, and any unit tests of checkPin) so they expect the unlocked staging/preview path and still-gated production path.\n\nDo NOT implement WhatsApp Web chrome, bubbles, ticks, reply/quote, media, realtime, or deep visual redesign in this task (UX400b–UX403).\n\nScope (you OWN the conversations screen for PIN work): unified-inbox.js; the WhatsApp/conversations regions of index.html (novaWa*, wa-*, waHist*, #novaWaBtn, chat list/pane/composer); backend/src/inbox-history.js, inbox-send.js and their unit tests; related tests under tests/ux and tests/unit; tools/preview_auto_deploy.py markers as above. Do NOT edit other app pages, ux-tokens.css/js (slot B), sticker-studio/emergency-sales/purchases/supplier-compare pages, .nova/cloud-queue.json, .github/workflows, or secrets. Do not deploy. Do not merge (scheduler squash-merges on green CI only). Do not touch the pharmacy repo.\n\nTests required: existing unit tests for history/send + new coverage that staging/preview allows read/send without PIN while production still requires it; new or updated Playwright under tests/ux/ at 1366x768 and 390x844 with fake data covering the unlocked inbox (open المحادثات, no PIN UI, list visible); record exact commands and results. Frontend + staging-gated backend only. Preserve Arabic RTL.\n",
    "acceptance": "Conversations open with no PIN on staging/preview (read and send UI); production code path still PIN-gated; 24h window, rate limits, wa_send_log, and NOVA_INBOX_SEND still enforced; REQUIRED_MARKERS updated (waHistPin replaced, other markers kept); unit + Playwright tests pass; no live customer messages; no production deploy. WhatsApp Web chrome is out of scope (UX400b).",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -4112,7 +4112,18 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T09:31:07+00:00",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "pr": 448,
+   "ci_dispatched": {
+    "sha": "0e9d60bd4e996bbd57c475fee43384fdd995c16d",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T09:54:09+00:00"
+   }
   },
   {
    "id": "UX400b",
@@ -4610,13 +4621,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
    "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Standalone sticker studio; after UX422. UX421 may have fixed logo/overlap/targets — re-verify.",
    "model": "opus",
-   "max_turns": 60
+   "max_turns": 60,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T09:54:09+00:00"
   },
   {
    "id": "UX324",
@@ -4825,5 +4838,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T09:45:39+00:00"
+ "updated": "2026-11-15T09:54:09+00:00"
 }
