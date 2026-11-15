@@ -53,7 +53,7 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop' }, { width: 390, h
   let txt = await view.innerText();
   assert.ok(!/PIN/i.test(txt), 'no PIN wording'); assert.ok(!txt.includes('مقفولة') && !txt.includes('محمية'), 'no locked wording');
   const bar = view.locator('.wa-side-head #waHistBar');
-  assert.equal(await bar.getAttribute('data-state'), 'ready'); assert.match(await bar.innerText(), /المحادثات \(2\)/);
+  assert.equal(await bar.getAttribute('data-state'), 'ready'); assert.match(await bar.innerText(), /^2 محادثة$/);
   assert.ok((await view.locator('.wa-side-head').boundingBox()).height <= 60, 'header stays compact');
   assert.equal(await view.locator('.wa-root').getAttribute('dir'), 'rtl');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('novaHistPin')), null, 'stale PIN wiped from sessionStorage');
