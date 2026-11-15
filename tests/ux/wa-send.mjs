@@ -1,5 +1,5 @@
 // WA-SEND: composer sends a reply through the mocked staging API (no real customer, no network beyond localhost).
-// Checks: no PIN => composer disabled; PIN => enabled; Enter sends; optimistic 🕓 then ✓; server error => Arabic banner + text kept;
+// Checks (UX400: no PIN; mock answers 401 if a PIN header is sent): composer enabled for an open 24h window; Enter sends; optimistic 🕓 then ✓; server error => Arabic banner + text kept;
 // 24h-window error shown; X-Nova-Pin + only {id,text,clientId} posted. Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/wa-send.mjs
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
@@ -7,7 +7,6 @@ import { readFileSync, mkdirSync } from 'node:fs';
 const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/';
 const SHOTS = process.env.SHOTS || '';
 if (SHOTS) mkdirSync(SHOTS, { recursive: true });
-const PIN = 'test-pin-1234567';
 const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.meta.url), 'utf8');
 const T = Date.now() - 3600e3;
 const CONVS = [{ id: 'wa_201000000001', customer: 'منى التجريبية', updatedAt: T, count: 1, last: { id: 'wa_wamid.1', dir: 'in', kind: 'in', text: 'عندكم بنادول؟', at: T, status: null } }];
@@ -21,7 +20,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop', touch: false }, {
     const q = r.request(), u = q.url(), cors = { 'Access-Control-Allow-Origin': origin };
     if (u.includes('/api/v1/inbox/history/')) {
       if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { ...cors, 'Access-Control-Allow-Headers': 'Content-Type,X-Nova-Pin', 'Access-Control-Allow-Methods': 'GET,POST' } });
-      if (q.headers()['x-nova-pin'] !== PIN) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'PIN_INVALID' }) });
+      if (q.headers()['x-nova-pin'] !== undefined) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'PIN_INVALID' }) });
       if (u.endsWith('/send') && q.method() === 'POST') {
         const b = JSON.parse(q.postData()); sends.push(b);
         if (mode === 'slow') await new Promise((res) => { release = res; });
@@ -41,9 +40,6 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop', touch: false }, {
   await page.waitForTimeout(500);
   await page.locator('#novaWaBtn').click();
   const view = page.locator('#novaInboxView');
-  await view.locator('#waHistForm').waitFor();
-  await view.locator('#waHistPin').fill(PIN);
-  await view.locator('#waHistForm button[type=submit]').click();
   await view.locator('[data-conv="wa_201000000001"]').click();
   await view.locator('[data-mid="wa_wamid.1"]').waitFor();
   const input = view.locator('#waInput');
@@ -73,8 +69,6 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop', touch: false }, {
   assert.equal(await view.locator('.wa-out [data-tick="failed"]').count(), 1);
   assert.equal(await view.locator('#waInput').inputValue(), 'رسالة متأخرة', 'text kept for retry');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/wa-send-window-${vp.name}.png` });
-  // lock => composer disabled again
-  await view.locator('.wa-head [data-wa-lock]').click();
   assert.deepEqual(other, [], 'no other non-GET requests');
   assert.deepEqual(errors, []);
   console.log(vp.name, 'sends', sends.length);

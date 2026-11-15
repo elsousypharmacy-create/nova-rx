@@ -4,7 +4,6 @@ import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/';
-const PIN = 'test-pin-1234567';
 const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.meta.url), 'utf8');
 const T = Date.UTC(2026, 9, 20, 10, 0, 0), ID = 'wa_201000000009', N = 320;
 const msgs = Array.from({ length: N }, (_, k) => ({ id: 'h_' + k, dir: k % 2 ? 'out' : 'in', kind: k % 2 ? 'bot' : 'in', text: 'رسالة رقم ' + k, at: T + k * 60000, status: k % 2 ? 'delivered' : null }));
@@ -18,7 +17,7 @@ for (const vp of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
     if (q.method() !== 'GET' && q.method() !== 'HEAD') return r.abort();
     if (u.includes('/api/v1/inbox/history/')) {
       const cors = { 'Access-Control-Allow-Origin': origin };
-      if (q.headers()['x-nova-pin'] !== PIN) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: '{"ok":false}' });
+      if (q.headers()['x-nova-pin'] !== undefined) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: '{"ok":false}' });
       const body = u.includes('/conversations') ? { ok: true, conversations: CONVS } : { ok: true, conversation: { id: ID, customer: 'عميل كبير', updatedAt: T, messages: msgs } };
       return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
     }
@@ -31,8 +30,6 @@ for (const vp of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   await page.waitForTimeout(600);
   await page.locator('#novaWaBtn').click();
   const view = page.locator('#novaInboxView');
-  await view.locator('#waHistPin').fill(PIN);
-  await view.locator('#waHistForm button[type=submit]').click();
   await view.locator(`[data-conv="${ID}"]`).click();
   await view.locator('[data-mid="h_319"]').waitFor();
   const st = () => page.evaluate(() => { const m = document.getElementById('waMsgs'); const b = document.querySelector('[data-wa-latest]');

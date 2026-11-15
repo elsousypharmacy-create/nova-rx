@@ -1,11 +1,10 @@
-// UX300: WhatsApp response-time dashboard. PIN-gated, exact times (Africa/Cairo), filters, drill-down, no storage, no writes.
+// UX300: WhatsApp response-time dashboard. PIN-free on staging/preview (UX400), exact times (Africa/Cairo), filters, drill-down, no storage, no writes.
 // Backend is mocked. Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/ux300-wa-dashboard.mjs
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/';
 const SHOTS = process.env.SHOTS || '';
-const PIN = 'test-pin-1234567';
 const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.meta.url), 'utf8');
 const T = Date.UTC(2026, 9, 20, 10, 0, 0), S = 1000, MIN = 60000;
 const CONVS = [{ id: 'wa_1', customer: 'منى التجريبية', updatedAt: T, count: 2, last: { id: 'h_p_2', dir: 'out', kind: 'pharm', text: 'x', at: T, status: null } }];
@@ -23,7 +22,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
     if (q.method() !== 'GET' && q.method() !== 'HEAD' && q.method() !== 'OPTIONS') { posts.push(q.method() + ' ' + u); return r.abort(); }
     if (u.includes('/api/v1/inbox/history/')) {
       const cors = { 'Access-Control-Allow-Origin': origin };
-      if (q.headers()['x-nova-pin'] !== PIN) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'PIN_INVALID' }) });
+      if (q.headers()['x-nova-pin'] !== undefined) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'PIN_INVALID' }) });
       if (u.includes('/metrics')) { metricsReq.push(u); return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: true, data: DATA }) }); }
       const body = u.includes('/conversations') ? { ok: true, conversations: CONVS } : { ok: true, conversation: { id: 'wa_1', customer: 'منى التجريبية', updatedAt: T, messages: [{ id: 'h_u_1', dir: 'in', kind: 'in', text: 'سؤال', at: T, status: null }] } };
       return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
@@ -38,10 +37,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   await page.locator('#novaWaBtn').click();
   const view = page.locator('#novaInboxView');
   await view.waitFor({ state: 'visible' });
-  assert.equal(await view.locator('#waDashOpen').count(), 0, 'no dashboard button before the PIN');
-  assert.equal(metricsReq.length, 0, 'no metrics request without a PIN');
-  await view.locator('#waHistPin').fill(PIN);
-  await view.locator('#waHistForm button[type=submit]').click();
+  assert.equal(metricsReq.length, 0, 'no metrics request until the dashboard is opened');
   await view.locator('[data-conv="wa_1"]').waitFor();
   await view.locator('#waDashOpen').click();
   await view.locator('.wd-grid').waitFor();
@@ -73,14 +69,12 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   if (SHOTS) { await view.locator('.wd-two').scrollIntoViewIfNeeded(); await page.screenshot({ path: `${SHOTS}/ux300-${vp.name}-charts.png` }); }
   await view.locator('[data-open-chat="wa_1"]').first().click();
   await view.locator('[data-mid="h_u_1"]').waitFor();
-  // chat -> dashboard again -> lock clears everything
+  // chat -> dashboard again (UX400: no lock button any more)
   if (vp.name === 'mobile') await view.locator('[data-wa-back]').click();
   await view.locator('#waDashOpen').click(); await view.locator('.wd-grid').waitFor();
-  await view.locator('[data-wa-lock]').first().click();
-  await view.locator('#waHistForm').waitFor();
-  assert.ok(!(await view.innerText()).includes('منى التجريبية'), 'lock clears dashboard data');
+  assert.equal(await view.locator('[data-wa-lock], #waHistForm').count(), 0);
   const ls = await page.evaluate(() => JSON.stringify(localStorage) + JSON.stringify(sessionStorage));
-  assert.ok(!ls.includes('التجريبية') && !ls.includes(PIN), 'nothing stored');
+  assert.ok(!ls.includes('التجريبية'), 'nothing stored');
   assert.deepEqual(posts, [], 'no non-GET requests');
   assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
   await ctx.close();

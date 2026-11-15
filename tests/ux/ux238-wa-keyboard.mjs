@@ -1,5 +1,5 @@
-// UX238 (keyboard + screen reader, built on the FIX46 mock pattern). Original FIX46 note: old WhatsApp chats behind the pharmacy PIN. No PIN => lock form, no history request, no chat text.
-// Wrong PIN => error, PIN forgotten. Right PIN => old chats (system notes centred, bot/pharmacist labels), composer stays disabled,
+// UX238 (keyboard + screen reader, built on the FIX46 mock pattern). UX400: no PIN; the list loads on open (mock answers 401 if a PIN header is sent).
+// Old chats: system notes centred, bot/pharmacist labels, composer disabled for a closed 24h window,
 // chats never written to localStorage, "قفل المحادثات" clears them. Backend is mocked; no network, no sends.
 // Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/fix46-wa-history.mjs
 import { chromium } from '@playwright/test';
@@ -7,7 +7,6 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/';
 const SHOTS = process.env.SHOTS || '';
-const PIN = 'test-pin-1234567';
 const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.meta.url), 'utf8');
 const T = Date.UTC(2026, 9, 20, 10, 0, 0);
 const CONVS = [{ id: 'wa_201000000001', customer: 'منى التجريبية', updatedAt: T + 3000, count: 4, last: { id: 'h_b_3', dir: 'out', kind: 'bot', text: 'متوفر بـ 30 جنيه', at: T + 3000, status: 'delivered' } }];
@@ -28,7 +27,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
     if (u.includes('/api/v1/inbox/history/')) {
       const pin = q.headers()['x-nova-pin'];
       const cors = { 'Access-Control-Allow-Origin': origin };
-      if (pin !== PIN) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: pin ? 'PIN_INVALID' : 'PIN_REQUIRED', message_ar: 'x' }) });
+      if (pin !== undefined) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: pin ? 'PIN_INVALID' : 'PIN_REQUIRED', message_ar: 'x' }) });
       return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(u.includes('/conversations') ? { ok: true, conversations: CONVS } : { ok: true, conversation: FULL }) });
     }
     return u.startsWith(origin) || u.startsWith('data:') ? r.continue() : r.abort();
@@ -40,24 +39,13 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   await page.waitForTimeout(600);
   await page.locator('#novaWaBtn').click();
   const view = page.locator('#novaInboxView');
-  await view.locator('#waHistForm').waitFor();
-  // opening: heading, labels, PIN focused
+  await view.locator('[data-conv="wa_201000000001"]').waitFor();
+  // opening: heading, labels, no PIN field
   assert.equal(await view.locator('h1').count(), 1, 'page heading');
   assert.ok(await view.locator('#waSearch').getAttribute('aria-label'), 'search label');
   assert.ok(await view.locator('#waList').getAttribute('aria-label'), 'list label');
-  assert.equal(await act(page), 'waHistPin', 'PIN focused on open');
-  if (SHOTS) await page.screenshot({ path: `${SHOTS}/qa-loop-231-${vp.name}-pin.png` });
-  // wrong PIN via Enter
-  await page.keyboard.type('wrong-pin-000000');
-  await page.keyboard.press('Enter');
-  await view.locator('.wa-lock-err[role=alert]').waitFor();
-  await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'waHistPin');
-  assert.equal(await act(page), 'waHistPin', 'PIN focused after wrong PIN');
-  // right PIN via Enter
-  await page.keyboard.type(PIN);
-  await page.keyboard.press('Enter');
-  await view.locator('[data-conv="wa_201000000001"]').waitFor();
-  assert.ok(await view.locator('#waHistLock').getAttribute('aria-label'), 'lock label');
+  assert.equal(await view.locator('#waHistPin, #waHistForm, #waHistLock').count(), 0, 'no PIN / lock controls');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/qa-loop-231-${vp.name}-list.png` });
   assert.equal(await view.locator('[aria-current]').count(), 0, 'no current chat yet');
   // keyboard into list: Tab from search, arrow
   await view.locator('#waSearch').focus();

@@ -21,7 +21,7 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
     if (q.method() !== 'GET' && q.method() !== 'HEAD' && q.method() !== 'OPTIONS') { posts.push(u); return r.abort(); }
     if (u.includes('/api/v1/inbox/history/')) {
       const cors = { 'Access-Control-Allow-Origin': origin };
-      if (q.headers()['x-nova-pin'] !== PIN) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'PIN_INVALID', message_ar: 'x' }) });
+      if (q.headers()['x-nova-pin'] !== undefined) return r.fulfill({ status: 401, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'PIN_INVALID', message_ar: 'x' }) });
       let body = { ok: true, conversations: CONVS };
       if (!u.includes('/conversations')) { const m = CONVS.find((c) => u.includes(c.id)); body = { ok: true, conversation: full(m || CONVS[0]) }; }
       return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
@@ -35,9 +35,6 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop' }, { width: 390, h
   await page.waitForTimeout(600);
   await page.locator('#novaWaBtn').click();
   const view = page.locator('#novaInboxView');
-  await view.locator('#waHistForm').waitFor();
-  await view.locator('#waHistPin').fill(PIN);
-  await view.locator('#waHistForm button[type=submit]').click();
   await view.locator('[data-conv="' + id(0) + '"]').waitFor();
   assert.equal(await view.locator('[data-conv]').count(), 22);
   const top = () => page.evaluate(() => document.querySelector('#waList').scrollTop);

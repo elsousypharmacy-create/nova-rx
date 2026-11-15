@@ -37,8 +37,6 @@ await page.goto(BASE, { waitUntil: 'load' });
 await page.waitForTimeout(600);
 await page.locator('#novaWaBtn').click();
 const view = page.locator('#novaInboxView');
-await view.locator('#waHistPin').fill(PIN);
-await view.locator('#waHistForm button[type=submit]').click();
 await view.locator('[data-conv="' + ID + '"]').waitFor();
 // slow fetch: placeholder, aria-busy, no lone preview bubble
 await view.locator('[data-conv="' + ID + '"]').click();
@@ -56,10 +54,10 @@ assert.equal(await view.locator('[data-mid]').count(), 3);
 await view.locator('[data-wa-back]').click();
 await page.evaluate(() => 0);
 mode = 'fail';
-// fresh conversation state: lock and re-enter
-await view.locator('#waHistLock').click();
-await view.locator('#waHistPin').fill(PIN);
-await view.locator('#waHistForm button[type=submit]').click();
+// fresh conversation state (UX400: no lock button any more): reload the app and reopen المحادثات
+await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(600);
+await page.locator('#novaWaBtn').click();
+await view.locator('[data-conv="' + ID + '"]').waitFor();
 await view.locator('[data-conv="' + ID + '"]').click();
 await view.locator('[data-chat-error]').waitFor();
 assert.equal(await view.locator('#waMsgs').getAttribute('aria-busy'), null);
