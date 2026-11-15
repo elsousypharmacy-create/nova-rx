@@ -162,17 +162,16 @@
    "id": "UX315",
    "phase": 10,
    "title": "الموبايل: السهم ‹ يغطي شعار «NOVA Rx» في رأس كل الشاشات (تراجع عن UX204)",
-   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "brief": "At 390x844 the header shows '‹OVA Rx': #novaNavNext/#novaNavPrev overlay the wordmark (44px arrows at x=0..44, brand starts at 0). Reserve room so the wordmark stays whole and >=12px from edges, and arrows sit inside the tab strip, not over the brand. Verify on all tabs. Evidence: .nova/qa/qa-loop-314.md, screenshots .nova/qa/qa-loop-314/, repro tools/qa/qa-loop-314.mjs. Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.\n\nSlot B may run this in parallel with slot A's WhatsApp work (UX406 then UX407, UX401–UX403). Do NOT edit unified-inbox.js, the WhatsApp/conversations regions of index.html (composer, bubbles, #wa* / data-wa-*), or any worker/live/nova-rx-preview.ux-40*.js / ux-430.js artifacts. Touch only the shared app header / wordmark / #novaNavPrev / #novaNavNext (and tests for those). If a change would overlap the conversations screen, stop and leave a note.",
    "acceptance": "Wordmark fully visible at 390px on every tab; test asserts no bounding-box overlap between brand and nav arrows.",
    "after": [
-    "UX403",
     "UX422"
    ],
    "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held 2026-11-15 for sale-readiness (owner: finish today, execute without asking). Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn. Starts only after UX403 and UX422 so index.html does not conflict.",
+   "note": "Un-held 2026-11-15 for sale-readiness. 2026-11-15 16:34 Asia/Riyadh: after UX403 was relaxed so slot B can work while WhatsApp stays serialized on slot A. Stay off the conversations screen / unified-inbox.js. Re-verify first: UX421/UX422 may already have fixed this. If not reproducible, record that and do not churn.",
    "model": "sonnet",
    "max_turns": 60
   },
@@ -4982,5 +4981,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:32:20+00:00"
+ "updated": "2026-11-15T13:34:17+00:00"
 }
