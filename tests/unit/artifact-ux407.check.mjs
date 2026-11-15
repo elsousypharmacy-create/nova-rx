@@ -55,6 +55,7 @@ const M = {
   UX409: ['NOVA WhatsApp', 'manifest-whatsapp.webmanifest', '/icons/nova-whatsapp-180.png', 'height:100dvh', '.wa-list{padding-bottom:var(--wa-sab,env(safe-area-inset-bottom,0px))', '.wa-composer{margin:0;background:#1a1e24'],
   UX411: ['html.app-whatsapp .pos-root', "html.app-whatsapp .wa-home", 'UX411: stay on the conversations list'],
   UX412: ['function waKeepUrl()', "path==='/whatsapp'||path==='/wa'", "var swUrl = '/sw.js?v=6';", 'UX412: /whatsapp (and /wa) is the dedicated install path', "sessionStorage.setItem('nova.wa.standalone','1')"],
+  UX413: ['function fit(){var h=window.innerHeight||0;', "setProperty('--wa-app-h',h+'px')", 'max-height:none', 'window.NovaWaFitAppHeight', 'padding-left:calc(16px + var(--wa-sal,env(safe-area-inset-left,0px)))', 'background:#14171c!important'],
 };
 for (const [k, ms] of Object.entries(M)) for (const m of ms) ck(k + ' marker ' + m, app.includes(m));
 ck('PWA assets served by the preview worker', raw.includes('NOVA_PWA_ASSETS') && raw.includes('/icons/nova-whatsapp-180.png') && raw.includes('/manifest-whatsapp.webmanifest') && raw.includes('/manifest.webmanifest'));
