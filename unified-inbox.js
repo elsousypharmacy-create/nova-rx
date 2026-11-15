@@ -389,6 +389,7 @@
     '.wa-msg{touch-action:pan-y}.wa-msg .wa-bubble{transition:transform .18s cubic-bezier(.2,.8,.2,1)}.wa-msg[data-swipe] .wa-bubble{transition:none}.wa-swipe-ic{position:absolute;top:50%;margin-top:-16px;width:32px;height:32px;border-radius:50%;background:#1f252c;color:#cfd8df;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}.wa-in .wa-swipe-ic{left:-44px}.wa-out .wa-swipe-ic{right:-44px}' +
     '@media(pointer:coarse){.wa-bubble{-webkit-touch-callout:none}}' +
     '.wa-msg.wa-flash .wa-bubble{animation:waFlash 1.4s ease-out}@keyframes waFlash{0%,35%{box-shadow:0 0 0 3px rgba(83,189,235,.6)}100%{box-shadow:0 0 0 0 rgba(83,189,235,0)}}' +
+    '.wa-msg[data-live]{animation:waPop .2s cubic-bezier(.2,.8,.2,1) both}' + /* UX402: a bubble that arrived by the live poll slides in (no flash) */
     '.wa-msg[data-status=sending]{animation:waPop .18s cubic-bezier(.2,.8,.2,1) both}@keyframes waPop{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}' +
     '.wa-qbar{flex:none;display:flex;align-items:center;gap:6px;padding:6px 10px 0;background:#1a1e24;border-top:1px solid #2a313a;animation:waUp .16s cubic-bezier(.2,.8,.2,1) both}.wa-qbar .wa-quote{flex:1;min-width:0;margin:0;cursor:default}.wa-qbar+.wa-composer{border-top:0}' +
     '.wa-qx{flex:none;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:transparent;color:#9eacb9;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.wa-qx svg{width:20px;height:20px}.wa-qx:hover{color:#f2f3f5}.wa-qx:focus-visible{outline:2px solid #79c9eb}' +
@@ -405,7 +406,7 @@
     '.wa-vdur{flex:none;min-width:34px;font-size:12px;color:#b5c0ca;direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.wa-vmic{width:34px;height:34px;color:#06cf9c}.wa-vmic svg{width:18px;height:18px}' +
     '.wa-mdoc-ic{position:relative}.wa-mext{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);padding:0 4px;border-radius:3px;background:#2f7de1;color:#fff;font-size:9px;font-weight:700;line-height:14px;letter-spacing:.3px}.wa-mdoc-ic[data-wa-ext=PDF] .wa-mext{background:#d9363e}' +
     '.wa-cbtn,.wa-send,.wa-vplay,.wa-qx,.wa-emo,.wa-rbtn,.wa-tolatest{transition:transform .08s ease-out,opacity .12s}.wa-cbtn:active,.wa-send:active,.wa-vplay:active,.wa-qx:active,.wa-emo:active,.wa-rbtn:active,.wa-tolatest:active{transform:scale(.9)}.wa-chat:active{background:#232a32}' +
-    '@media(prefers-reduced-motion:reduce){.wa-msg[data-status=sending],.wa-qbar,.wa-emoji,.wa-attmenu,.wa-msg.wa-flash .wa-bubble{animation:none}.wa-msg .wa-bubble,.wa-cbtn,.wa-send,.wa-vplay,.wa-qx,.wa-emo,.wa-rbtn{transition:none}}';
+    '@media(prefers-reduced-motion:reduce){.wa-msg[data-live],.wa-msg[data-status=sending],.wa-qbar,.wa-emoji,.wa-attmenu,.wa-msg.wa-flash .wa-bubble{animation:none}.wa-msg .wa-bubble,.wa-cbtn,.wa-send,.wa-vplay,.wa-qx,.wa-emo,.wa-rbtn{transition:none}}';
   /* UX408: WhatsApp iOS review (owner iPhone shots + design-lead frames). Phone: the app tab strip is hidden while the conversations screen
      is open, so ONE solid header (list or chat) sits below the status bar (padding-top = safe-area top; --wa-sat simulates it in tests) and
      the root fills the viewport (flex children min-height:0) so the list scrolls to its last row. Bubbles 17px / 16px corners, tail on the
@@ -636,7 +637,54 @@
   var NOTIF_CSS = '.wa-notif{display:inline-flex;flex:none}.wa-nbtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:50%;border:0;background:transparent;color:#25d366;font:inherit;cursor:pointer}.wa-nbtn svg{width:22px;height:22px;flex:none}.wa-nbtn[data-wa-notify=default],.wa-nbtn[data-wa-notify=unsupported]{color:#9aa4b0}.wa-nbtn[data-wa-notify=denied]{color:#fbbf24}.wa-nbtn[aria-pressed=false]{color:#9aa4b0}.wa-nbtn[aria-disabled=true]{opacity:.6;cursor:default}.wa-nbtn:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}.wa-root{position:relative}.wa-nnote-toast{position:absolute;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;padding:10px 14px;border-radius:12px;background:#1c2128;color:#f2f3f5;font-size:13px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:none}';
   /* tab badge style is inline (the tab lives outside the conversations view) */
   var TAB_BADGE_CSS = 'display:inline-block;min-width:18px;height:18px;margin-inline-start:6px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#25d366;color:#06210f;font-size:12px;font-weight:700;line-height:18px;text-align:center;vertical-align:middle';
-  var api = { chipsHtml: chipsHtml, needsReply: needsReply, trailingIn: trailingIn, moreHtml: moreHtml, tick: tick, quoteHtml: quoteHtml, quoteBarHtml: quoteBarHtml, emojiPanelHtml: emojiPanelHtml, EMOJI: EMOJI, docExt: docExt, durLabel: durLabel, stripStaffPrefix: stripStaffPrefix, createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, noteHtml: noteHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+  /* UX402: realtime like WhatsApp Web (pure helpers; the page wires them to the existing history poll hPoll).
+     pollDelay: 4s while the conversations screen is visible, 15s while the user is on another screen (badges + toast still update),
+     paused (null) while the browser tab is hidden (a visibilitychange resumes it) unless o.notifyBg (system notifications allowed but
+     no Web Push subscription => a slow 30s poll is the only way to raise the browser Notification), exponential backoff on errors capped at 60s. */
+  var POLL_FG = 4000, POLL_BG = 15000, POLL_HIDDEN = 30000, POLL_MAX = 60000;
+  function pollDelay(o) {
+    o = o || {}; if (o.docHidden && !o.notifyBg) return null;
+    var d = o.docHidden ? POLL_HIDDEN : o.screenHidden ? POLL_BG : POLL_FG, f = Math.min(6, Math.max(0, Number(o.fails) || 0));
+    return Math.min(POLL_MAX, d * Math.pow(2, f));
+  }
+  /* server thread + local bubbles (tmp_ sending/failed): a local bubble whose clientId/id the server already has is dropped => no duplicate bubble */
+  function mergeLive(server, local) {
+    var out = arr(server).slice(), have = {};
+    out.forEach(function (m) { if (m) { have['i' + m.id] = 1; if (m.clientId) have['c' + m.clientId] = 1; } });
+    arr(local).forEach(function (m) {
+      if (!m || String(m.id).indexOf('tmp_') !== 0) return;
+      var cl = String(m.id).slice(4);
+      if (have['i' + m.id] || have['c' + cl] || (m.clientId && have['c' + m.clientId])) return;
+      have['i' + m.id] = 1; out.push(m);
+    });
+    return out;
+  }
+  /* ids rendered now that were not on screen before (same chat) => animated in; first render of a chat => none */
+  function newIds(prev, now) { if (!prev) return []; return arr(now).filter(function (id) { return !prev[id]; }); }
+  /* who gets an in-app toast: a fresh customer message for a chat that is NOT the one on screen right now (mute-if-already-viewing) */
+  function toastFor(fresh, o) {
+    o = o || {}; var viewing = o.screenVisible && !o.docHidden ? o.selected : null;
+    return arr(fresh).filter(function (f) { return f && f.id != null && !(viewing != null && String(viewing) === String(f.id)) && !(o.screenVisible && !o.docHidden && viewing == null); });
+  }
+  /* Arabic in-app toast for a new customer message (click opens the chat). One toast, replaced by the next one (never stacks) */
+  function toastHtml(items) {
+    items = arr(items); if (!items.length) return '';
+    var f = items[items.length - 1], more = items.length - 1, t = String(f.text || '').replace(/\s+/g, ' ').trim();
+    if (t.length > 90) t = t.slice(0, 89) + '…';
+    return '<button type="button" class="wa-toast-open" data-wa-toast-open="' + esc(f.id) + '"><span class="wa-toast-t">رسالة جديدة من ' + esc(f.customer || 'عميل') + (more > 0 ? ' <span class="wa-toast-more">و' + more + ' محادثة تانية</span>' : '') + '</span>' + (t ? '<span class="wa-toast-b" dir="auto">' + esc(t) + '</span>' : '') + '</button><button type="button" class="wa-toast-x" data-wa-toast-x aria-label="إغلاق التنبيه">×</button>';
+  }
+  /* browser Notification content (fallback when Web Push is off): short, no phone number in the title */
+  function notifContent(items) {
+    items = arr(items); if (!items.length) return null; var f = items[items.length - 1], t = String(f.text || '').replace(/\s+/g, ' ').trim();
+    return { title: items.length > 1 ? items.length + ' رسائل جديدة على واتساب' : 'رسالة جديدة من ' + (/^\+?\d[\d\s]{6,}$/.test(String(f.customer || '')) ? 'عميل' : (f.customer || 'عميل')), body: t.length > 120 ? t.slice(0, 119) + '…' : t, tag: 'nova-wa-' + hashId(f.id), chat: f.id };
+  }
+  var TOAST_CSS = '#novaWaToast{position:fixed;z-index:9999;top:64px;left:16px;max-width:min(360px,calc(100vw - 32px));display:flex;align-items:stretch;gap:2px;background:#161a20;color:#f2f3f5;border:1px solid #2a313a;border-inline-start:3px solid #25d366;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:14px;direction:rtl;animation:waUp .18s ease-out both}#novaWaToast[hidden]{display:none}' +
+    '.wa-toast-open{flex:1;min-width:0;min-height:44px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 12px;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}.wa-toast-t{font-weight:700;color:#25d366}.wa-toast-more{font-weight:400;color:#9aa4b0;font-size:12px}.wa-toast-b{color:#d5dde4;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+    '.wa-toast-x{flex:none;width:44px;min-height:44px;border:0;background:none;color:#9aa4b0;font-size:20px;cursor:pointer}.wa-toast-open:focus-visible,.wa-toast-x:focus-visible{outline:2px solid #79c9eb;outline-offset:-2px}' +
+    '@media(max-width:780px){#novaWaToast{top:8px;left:12px;right:12px;max-width:none}}@media(prefers-reduced-motion:reduce){#novaWaToast{animation:none}}' +
+    '@keyframes waUp{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}';
+  var api = { pollDelay: pollDelay, mergeLive: mergeLive, newIds: newIds, toastFor: toastFor, toastHtml: toastHtml, notifContent: notifContent, TOAST_CSS: TOAST_CSS, POLL_FG: POLL_FG, POLL_BG: POLL_BG, POLL_HIDDEN: POLL_HIDDEN, chipsHtml: chipsHtml, needsReply: needsReply, trailingIn: trailingIn, moreHtml: moreHtml, tick: tick, quoteHtml: quoteHtml, quoteBarHtml: quoteBarHtml, emojiPanelHtml: emojiPanelHtml, EMOJI: EMOJI, docExt: docExt, durLabel: durLabel, stripStaffPrefix: stripStaffPrefix, createUnread: createUnread, titleBadge: titleBadge, notifyHtml: notifyHtml, noteHtml: noteHtml, NOTIF_CSS: NOTIF_CSS, TAB_BADGE_CSS: TAB_BADGE_CSS, hashId: hashId, isInbound: isInbound, normAr: normAr, create: create, render: render, renderWa: renderWa, chatListHtml: chatListHtml, bubbles: bubbles, mediaHtml: mediaHtml, mediaMiss: mediaMiss, previewText: previewText, openLightbox: openLightbox, dateLabel: dateLabel, unreadCount: unreadCount, totalUnread: totalUnread, KEY: KEY };
+
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovaUnifiedInbox = api;
 })(typeof window !== 'undefined' ? window : globalThis);
