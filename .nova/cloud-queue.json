@@ -90,13 +90,13 @@
    "brief": "Continue SLOT A WhatsApp Web work (task 6 of 8). Depends on UX406 (PIN already removed; list+pane chrome from UX400b; smoothness from UX404; incoming media display from UX405; notifications from UX406). Do not reopen the PIN gate. Do not start UX402/UX403. Incoming media display and web-push are already in UX405/UX406 — build on them, do not rip them out. Model Opus. Slot B is modernizing other pages — stay inside the conversations screen to avoid conflicts.\n\nMake the chat pane look and behave like WhatsApp Web:\n- Incoming (white/light) and outgoing (WhatsApp green) bubbles, WhatsApp-like wallpaper, date separators between days, per-message time on every bubble.\n- Ticks from message status: one check when sent, two checks when delivered, two blue checks when read; failed state visible.\n- Reply/quote: swipe or long-press/context to reply; quoted snippet above the bubble and in the composer; can cancel the quote.\n- Media, voice notes, stickers, and documents render inside the thread like WhatsApp (images in-bubble, voice with duration/play, sticker size, document name/type). Use existing history data; fake attachments in tests. Do not send media to real customers.\n- Composer: emoji picker, attachments control, text field (Arabic RTL / dir=auto), send control. Keep NOVA_INBOX_SEND kill switch (composer disabled/draft-only when send is off). Keep the 24-hour window: cannot send when the window is closed, with a clear Arabic explanation. Auto-scroll to latest on open and on send; do not rip the user away if they have scrolled up (WhatsApp-like 'jump to latest' control).\n- Smooth animations, 60fps scrolling, no layout jank, instant feedback (<100ms) on tap. RTL Arabic correct. Responsive: 1366x768 split view and 390x844 stacked list/chat.\n\nScope: unified-inbox.js and the WhatsApp/conversations regions of index.html only (plus their tests). Do not edit ux-tokens.css/js, other pages, queue, workflows, secrets. No deploy, no merge, no production, no live customer messages.\n\nTests: Playwright tests/ux at 1366x768 and 390x844 with fake data (block non-GET / no live writes) covering bubbles, ticks, date separators, reply/quote, media/voice/sticker/doc rendering, composer, 24h-window closed state, auto-scroll; plus nearest unit tests. Record exact results.",
    "acceptance": "Chat pane matches WhatsApp Web: wallpaper, green/white bubbles, date separators, per-message time, single/double/blue ticks from status, reply/quote, media/voice/sticker/doc rendering, emoji+attachments composer, auto-scroll; 24h window and NOVA_INBOX_SEND still enforced; RTL + desktop/mobile; Playwright + unit tests pass; no live customer messages.",
    "after": [
-    "UX406"
+    "UX407"
    ],
    "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX406 (media UX405 + notifications UX406, which follow UX404). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
+   "note": "Slot A track; starts after UX407 (prefix/alignment/keyboard/focus-ring, which follows running UX406). Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
    "model": "opus",
    "max_turns": 80
   },
@@ -4982,5 +4982,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:30:23+00:00"
+ "updated": "2026-11-15T13:32:20+00:00"
 }
