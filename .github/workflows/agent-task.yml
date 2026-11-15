@@ -1,6 +1,7 @@
-# Run one Claude Code (Sonnet only) task on a GitHub-hosted runner so work
-# continues when the local box sleeps. Started by cloud-scheduler.yml (or by
-# hand). Slot A uses CLAUDE_CODE_OAUTH_TOKEN_A (fallback CLAUDE_CODE_OAUTH_TOKEN),
+# Run one Claude Code task on a GitHub-hosted runner so work continues when
+# the local box sleeps. Started by cloud-scheduler.yml (or by hand).
+# Model is per-task (inputs.model: sonnet or opus; latest alias for each).
+# Slot A uses CLAUDE_CODE_OAUTH_TOKEN_A (fallback CLAUDE_CODE_OAUTH_TOKEN),
 # slot B uses CLAUDE_CODE_OAUTH_TOKEN_B. The scheduler opens/merges the PR.
 # Auth: Claude Pro/Max subscription via CLAUDE_CODE_OAUTH_TOKEN
 # (from `claude setup-token`). Do not use a billed Anthropic API key.
@@ -31,6 +32,16 @@ on:
         default: A
         type: choice
         options: [A, B]
+      model:
+        description: "Claude model alias: sonnet or opus (latest of that family)"
+        required: false
+        default: sonnet
+        type: string
+      max_turns:
+        description: "Max agent turns (1-120)"
+        required: false
+        default: "40"
+        type: string
 
 permissions:
   contents: write
@@ -45,13 +56,15 @@ concurrency:
 jobs:
   implement:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Validate inputs and secret
         env:
           TASK_ID: ${{ inputs.task_id }}
           BRIEF: ${{ inputs.brief }}
           SLOT: ${{ inputs.slot }}
+          MODEL: ${{ inputs.model }}
+          MAX_TURNS: ${{ inputs.max_turns }}
           TOK_A: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_A || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           TOK_B: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_B }}
         run: |
@@ -65,6 +78,19 @@ jobs:
             exit 1
           }
           [ -n "$BRIEF" ] || { echo "::error::brief is required"; exit 1; }
+          echo "$MODEL" | grep -Eq '^(sonnet|opus)$' || {
+            echo "::error::model must be sonnet or opus"
+            exit 1
+          }
+          echo "$MAX_TURNS" | grep -Eq '^[0-9]{1,3}$' || {
+            echo "::error::max_turns must be an integer 1-120"
+            exit 1
+          }
+          if [ "$MAX_TURNS" -lt 1 ] || [ "$MAX_TURNS" -gt 120 ]; then
+            echo "::error::max_turns must be an integer 1-120"
+            exit 1
+          fi
+          echo "Using model=$MODEL max_turns=$MAX_TURNS slot=$SLOT task=$TASK_ID"
 
       - uses: actions/checkout@v4
         with:
@@ -92,7 +118,7 @@ jobs:
           fi
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
-      - name: Implement with Claude Sonnet
+      - name: Implement with Claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ inputs.slot == 'B' && secrets.CLAUDE_CODE_OAUTH_TOKEN_B || secrets.CLAUDE_CODE_OAUTH_TOKEN_A || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -111,13 +137,13 @@ jobs:
             - Do exactly this brief's scope. Do not start other tasks.
             - Stay on branch ${{ steps.branch.outputs.branch }}. Commit and push there (git push origin HEAD). Do NOT open a pull request: the cloud scheduler opens it, runs CI and merges on green. Put changed files, exact test commands and results, and remaining work in your final commit message. Never claim untested success.
             - If the branch already has commits (retry or fix mode), continue from them; in fix mode fix only what the brief says failed.
-            - The model is already pinned to Sonnet. Do not switch to Opus or any other model.
+            - The model is already pinned to ${{ inputs.model }}. Do not switch to a different model.
             - Do not edit .nova/cloud-queue.json or .github/workflows, secrets, env files, or node_modules. Do not deploy. Do not merge. Do not call paid APIs or supplier live sites. Do not print secrets.
             - If you touch UI, preserve Black Edition Arabic RTL UX.
             - Run the tests the brief names, or the nearest existing unit tests for the files you change, and record exact results.
           claude_args: |
-            --model sonnet
-            --max-turns 40
+            --model ${{ inputs.model }}
+            --max-turns ${{ inputs.max_turns }}
             --allowedTools Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash
 
       - name: Push leftover commits and wake the scheduler

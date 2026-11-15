@@ -30,6 +30,31 @@ MAX_FIX, MAX_ATTEMPTS, GRACE = 2, 2, 600
 DRY = "--dry-run" in sys.argv
 DONE = ("done", "done_noop")
 NOW = time.time()
+# Heavy visual / WhatsApp-rebuild tasks use Opus even on slot B.
+OPUS_PREFIXES = ("UX400", "UX401", "UX402", "UX403", "UX420", "UX421", "UX422")
+
+
+def pick_model(t, slot, mode="new"):
+    """Per-task model if set; else Opus for slot A, fix retries, and heavy design tasks; Sonnet otherwise."""
+    raw = str(t.get("model") or "").strip().lower()
+    if raw in ("opus", "sonnet"):
+        return raw
+    if slot == "A" or mode == "fix":
+        return "opus"
+    tid = str(t.get("id") or "")
+    if tid.startswith(OPUS_PREFIXES):
+        return "opus"
+    return "sonnet"
+
+
+def pick_max_turns(t):
+    try:
+        n = int(t.get("max_turns", 40))
+    except (TypeError, ValueError):
+        n = 40
+    return str(min(120, max(1, n)))
+
+
 
 
 def log(m):
@@ -384,7 +409,7 @@ def main():
             continue
         if (api(f"repos/{REPO}/compare/main...cloud/{tid}") or {}).get("ahead_by", 0) == 0:
             continue
-        body = (f"Cloud task {tid} (Claude Sonnet via GitHub Actions).\n\n{t['brief']}\n\nAcceptance: {t.get('acceptance','')}\n\n"
+        body = (f"Cloud task {tid} (Claude {pick_model(t, t.get('slot') or 'A')} via GitHub Actions).\n\n{t['brief']}\n\nAcceptance: {t.get('acceptance','')}\n\n"
                 "Opened by cloud-scheduler; CI is dispatched on the branch and the PR is squash-merged when all checks are green. Never deploys.")
         out = act("gh", "pr", "create", "-R", REPO, "--base", "main", "--head", f"cloud/{tid}", "--title", f"[{tid}] {t['title']}", "--body", body)
         m = re.search(r"/pull/(\d+)", out or "")
@@ -473,8 +498,9 @@ def main():
             log(f"{tid}: needs fix but no free slot"); continue
         t["fix_attempts"] = t.get("fix_attempts", 0) + 1
         brief = f"FIX MODE for PR #{p['number']} (attempt {t['fix_attempts']}/{MAX_FIX}): {why}. Inspect with `gh run view <id> --log-failed` if needed, fix on this branch, rerun the tests, commit and push.\n\nOriginal task: {t['title']}\n{t['brief']}"
-        act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={tid}", "-f", "mode=fix", "-f", f"slot={slot}", "-f", f"brief={brief[:20000]}")
-        t.update(status="fixing", slot=slot, dispatched_at=iso()); active[tid] = slot
+        model, turns = pick_model(t, slot, "fix"), pick_max_turns(t)
+        act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={tid}", "-f", "mode=fix", "-f", f"slot={slot}", "-f", f"model={model}", "-f", f"max_turns={turns}", "-f", f"brief={brief[:20000]}")
+        t.update(status="fixing", slot=slot, dispatched_at=iso(), model=t.get("model") or model); active[tid] = slot
 
     gate_deploys(items, byid)
     preview_deploys(items, byid)
@@ -489,8 +515,9 @@ def main():
         if not all(byid.get(a, {}).get("status") in DONE for a in t.get("after", [])):
             continue
         brief = f"{t['title']}\n{t['brief']}\nAcceptance: {t.get('acceptance','')}"
-        act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={t['id']}", "-f", "mode=new", "-f", f"slot={free[0]}", "-f", f"brief={brief[:20000]}")
-        t.update(status="running", slot=free[0], dispatched_at=iso()); active[t["id"]] = free[0]
+        model, turns = pick_model(t, free[0], "new"), pick_max_turns(t)
+        act("gh", "workflow", "run", AGENT_WF, "-R", REPO, "--ref", "main", "-f", f"task_id={t['id']}", "-f", "mode=new", "-f", f"slot={free[0]}", "-f", f"model={model}", "-f", f"max_turns={turns}", "-f", f"brief={brief[:20000]}")
+        t.update(status="running", slot=free[0], dispatched_at=iso(), model=t.get("model") or model); active[t["id"]] = free[0]
 
     changed = json.dumps(q, sort_keys=True) != before
     if changed and not DRY:
