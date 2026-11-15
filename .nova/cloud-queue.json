@@ -4918,8 +4918,8 @@
    "after": [
     "SALE-06"
    ],
-   "status": "running",
-   "attempts": 1,
+   "status": "failed",
+   "attempts": 2,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-wa-kpis",
    "note": "Slot B track; Opus allowed (model opus, max_turns 80). Inserted after running SALE-06 and ahead of SALE-05. Home card + dedicated KPIs page from staging D1; reuse UX300 if present. Do not touch conversations or the pharmacy repo.",
@@ -4949,5 +4949,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T12:13:23+00:00"
+ "updated": "2026-11-15T12:14:46+00:00"
 }
