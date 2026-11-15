@@ -551,7 +551,7 @@
     "SALE-02",
     "UX430"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
@@ -563,15 +563,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T23:34:23+00:00",
    "pr": 501,
-   "ci_dispatched": {
-    "sha": "c1d24784da4f7480f72ba6468dd6c3e511649252",
-    "wf": [
-     "playwright-smoke.yml",
-     "secret-scan.yml"
-    ],
-    "at": "2026-11-15T23:38:09+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-15T23:43:24+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/501"
   },
   {
    "id": "N60",
@@ -5175,6 +5168,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T23:39:31+00:00",
+ "updated": "2026-11-15T23:43:24+00:00",
  "slot_cooldown": {}
 }
