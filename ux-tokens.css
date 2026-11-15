@@ -1,6 +1,42 @@
 /* UX45: spacing + radius scale tokens (display layer only). */
 :root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--r-1:6px;--r-2:10px;--r-pill:999px}
 
+/* UX420: modern design tokens (Black Edition dark default, opt-in light). Additive: only --nx-* variables and opt-in .nx-* classes,
+   no global element selectors, so existing screens are unchanged until they adopt them. Mirrors ux-tokens.js (NovaUx.apply). Logical properties only (RTL-first). */
+:root{--nx-font:Cairo,Tahoma,Arial,sans-serif;
+--nx-bg-base:#08090b;--nx-bg-panel:#111418;--nx-bg-surface:#1b2026;--nx-bg-elevated:#232a32;--nx-border-subtle:#2a313a;--nx-border-focus:#76b8d5;
+--nx-text-main:#f1f3f5;--nx-text-muted:#a4adb7;--nx-text-dim:#808b96;--nx-accent:#76b8d5;--nx-on-accent:#08090b;--nx-ok:#60b99b;--nx-danger:#ff6b6b;--nx-warn:#d9bf86;
+--nx-fs-xs:12px;--nx-fs-sm:13px;--nx-fs-md:15px;--nx-fs-lg:18px;--nx-fs-xl:22px;--nx-fs-2xl:28px;--nx-lh-tight:1.3;--nx-lh-base:1.6;--nx-fw-regular:400;--nx-fw-semibold:600;--nx-fw-bold:700;
+--nx-sp-1:4px;--nx-sp-2:8px;--nx-sp-3:12px;--nx-sp-4:16px;--nx-sp-5:24px;--nx-sp-6:32px;--nx-sp-7:48px;
+--nx-r-1:6px;--nx-r-2:10px;--nx-r-3:14px;--nx-r-pill:999px;
+--nx-icon-sm:14px;--nx-icon-md:16px;--nx-icon-lg:20px;--nx-icon-xl:24px;
+--nx-shadow-1:0 1px 2px rgba(0,0,0,.5);--nx-shadow-2:0 6px 18px rgba(0,0,0,.55);
+--nx-ease:cubic-bezier(.2,.7,.2,1);--nx-dur-fast:120ms;--nx-dur-base:180ms;--nx-dur-slow:260ms;--nx-focus-ring:2px}
+[data-theme=light]{--nx-bg-base:#f6f7f9;--nx-bg-panel:#fff;--nx-bg-surface:#eef1f4;--nx-bg-elevated:#fff;--nx-border-subtle:#d5dbe1;--nx-border-focus:#0b5f85;
+--nx-text-main:#14181d;--nx-text-muted:#4a5560;--nx-text-dim:#5b6670;--nx-accent:#0b5f85;--nx-on-accent:#fff;--nx-ok:#0d6b4d;--nx-danger:#b42318;--nx-warn:#8a5a00;
+--nx-shadow-1:0 1px 2px rgba(20,24,29,.12);--nx-shadow-2:0 6px 18px rgba(20,24,29,.16)}
+/* Opt-in components. */
+.nx-card{background:var(--nx-bg-panel);color:var(--nx-text-main);border:1px solid var(--nx-border-subtle);border-radius:var(--nx-r-3);padding:var(--nx-sp-4);box-shadow:var(--nx-shadow-1);transition:box-shadow var(--nx-dur-base) var(--nx-ease),border-color var(--nx-dur-base) var(--nx-ease)}
+.nx-card--elevated{background:var(--nx-bg-elevated);box-shadow:var(--nx-shadow-2)}
+.nx-card:hover{border-color:var(--nx-border-focus)}
+.nx-h1{font:var(--nx-fw-bold) var(--nx-fs-2xl)/var(--nx-lh-tight) var(--nx-font)}
+.nx-h2{font:var(--nx-fw-semibold) var(--nx-fs-xl)/var(--nx-lh-tight) var(--nx-font)}
+.nx-h3{font:var(--nx-fw-semibold) var(--nx-fs-lg)/var(--nx-lh-tight) var(--nx-font)}
+.nx-text{font:var(--nx-fw-regular) var(--nx-fs-md)/var(--nx-lh-base) var(--nx-font)}
+.nx-text-muted{color:var(--nx-text-muted);font-size:var(--nx-fs-sm)}
+.nx-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--nx-sp-2);min-block-size:40px;padding-block:var(--nx-sp-2);padding-inline:var(--nx-sp-4);border:1px solid var(--nx-border-subtle);border-radius:var(--nx-r-2);background:var(--nx-bg-surface);color:var(--nx-text-main);font:var(--nx-fw-semibold) var(--nx-fs-md)/1 var(--nx-font);cursor:pointer;transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),transform var(--nx-dur-fast) var(--nx-ease)}
+.nx-btn:hover{border-color:var(--nx-border-focus);background:var(--nx-bg-elevated)}
+.nx-btn:active{transform:translateY(1px)}
+.nx-btn:focus-visible,.nx-card:focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:2px}
+.nx-btn:disabled,.nx-btn[aria-disabled=true]{opacity:.5;cursor:not-allowed;transform:none}
+.nx-btn--primary{background:var(--nx-accent);border-color:var(--nx-accent);color:var(--nx-on-accent)}
+.nx-btn--primary:hover{background:var(--nx-accent);filter:brightness(1.08)}
+.nx-btn--ghost{background:transparent;border-color:transparent}
+.nx-btn--danger{background:transparent;border-color:var(--nx-danger);color:var(--nx-danger)}
+.nx-ico{inline-size:var(--nx-icon-md);block-size:var(--nx-icon-md)}
+.nx-ico--sm{inline-size:var(--nx-icon-sm);block-size:var(--nx-icon-sm)}.nx-ico--lg{inline-size:var(--nx-icon-lg);block-size:var(--nx-icon-lg)}.nx-ico--xl{inline-size:var(--nx-icon-xl);block-size:var(--nx-icon-xl)}
+@media (prefers-reduced-motion:reduce){:root{--nx-dur-fast:0ms;--nx-dur-base:0ms;--nx-dur-slow:0ms}.nx-btn:active{transform:none}}
+
 /* UX214: reserve space on desktop so load-time text/i18n swaps do not shift layout (CLS). */
 @media (min-width:1100px) and (min-height:651px){
   html body .invoice-footer{height:163px;min-height:163px;max-height:163px;box-sizing:border-box}

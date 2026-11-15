@@ -29,4 +29,20 @@ t('apply sets rtl, lang ar, theme tokens, Cairo', () => {
   assert.match(css['--nx-font'], /^Cairo/); assert.equal(css['--nx-bg-base'], '#08090b');
   ux.apply(doc, 'light'); assert.equal(attrs['data-theme'], 'light');
 });
+t('UX420 scale + new colour tokens exist and are audited', () => {
+  ['fs-md', 'sp-7', 'r-3', 'icon-xl', 'dur-base', 'ease', 'focus-ring'].forEach(k => assert.ok(ux.SCALE[k], k));
+  ['bg-elevated', 'on-accent', 'border-subtle'].forEach(k => { assert.ok(ux.THEMES.dark[k], k); assert.ok(ux.THEMES.light[k], k); });
+  ['dark', 'light'].forEach(th => {
+    assert.ok(ux.contrast(ux.THEMES[th]['on-accent'], ux.THEMES[th].accent) >= 4.5, th + ' on-accent');
+    assert.ok(ux.contrast(ux.THEMES[th]['text-main'], ux.THEMES[th]['bg-elevated']) >= 4.5, th + ' elevated');
+  });
+});
+t('ux-tokens.css mirrors tokens, RTL-safe and reduced-motion aware', () => {
+  const css = createRequire(import.meta.url)('node:fs').readFileSync(new URL('../../ux-tokens.css', import.meta.url), 'utf8');
+  ['--nx-bg-elevated', '--nx-fs-md', '--nx-sp-7', '--nx-r-3', '--nx-icon-xl', '--nx-dur-base'].forEach(k => assert.ok(css.includes(k), k));
+  assert.match(css, /prefers-reduced-motion:reduce/);
+  assert.match(css, /#08090b/);
+  const nx = css.slice(css.indexOf('/* UX420'), css.indexOf('/* UX214'));
+  assert.doesNotMatch(nx, /(^|[;{\s])(margin|padding|border|text-align)-(left|right)\s*:/);
+});
 console.log(n + ' tests passed');
