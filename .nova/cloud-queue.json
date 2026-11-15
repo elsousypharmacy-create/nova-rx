@@ -70,11 +70,11 @@
    "after": [
     "UX408"
    ],
-   "status": "hold",
+   "status": "pending",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX401. Web-push / in-app sound / badges were pulled forward to UX406 — implement realtime in-chat appearance and hook those APIs, do not redo push from scratch. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits. | HOLD (owner 2026-11-15): conversations screen is now done by hand (Claude 2); do not start.",
+   "note": "Slot A (ahmed m), Opus (realtime WIP + conflicts with later WhatsApp work). Owner 2026-11-16 02:17 Asia/Riyadh: resume both slots («خليهم يكملوا»). Keep retry=true so the scheduler continues cloud/UX402 / PR #491 and does not squash-merge unfinished WIP. WhatsApp first.",
    "model": "opus",
    "max_turns": 80,
    "not_before": "2026-11-15T15:11:00+00:00",
@@ -295,12 +295,12 @@
    "after": [
     "UX402"
    ],
-   "status": "hold",
+   "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
-   "note": "Slot A track; starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits. | HOLD (owner 2026-11-15): conversations screen is now done by hand (Claude 2); do not start.",
-   "model": "opus",
+   "note": "Slot A (ahmed m), Sonnet. Starts after UX402. Builds worker/live/nova-rx-preview.ux-403.js; no manual deploy. Owner 2026-11-16 02:17 Asia/Riyadh: resume both slots («خليهم يكملوا»).",
+   "model": "sonnet",
    "max_turns": 80,
    "not_before": "2026-11-15T15:11:00+00:00",
    "pin_slot": "A"
@@ -532,15 +532,15 @@
     "UX327",
     "UX328"
    ],
-   "status": "hold",
+   "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-314-fixes.json",
-   "note": "Un-held for sale-readiness. Build preview artifact only after UX315–UX328; no deploy (auto-deploy-preview.yml). 2026-11-15 17:00 Asia/Riyadh: when this starts, build from current main (include the #467 / ux-406b flag gate) and do not drop conversations markers. Stay off editing the conversations screen except as required to copy already-landed HTML into the new qa-314 artifact. No deploy.",
+   "note": "Slot B (elsousypharmacy), Sonnet. Build preview artifact only after UX315–UX328; no deploy (auto-deploy-preview.yml). 2026-11-15 17:00 Asia/Riyadh: when this starts, build from current main (include the #467 / ux-406b flag gate) and do not drop conversations markers. Stay off editing the conversations screen except as required to copy already-landed HTML into the new qa-314 artifact. No deploy. Owner 2026-11-16 02:17 Asia/Riyadh: resume both slots («خليهم يكملوا»).",
    "model": "sonnet",
    "max_turns": 40,
    "not_before": "2026-11-15T15:11:00+00:00",
-   "hold_reason": "owner 2026-11-15: WhatsApp chain first (UX401->UX408->UX402->UX403); resume after UX403"
+   "pin_slot": "B"
   },
   {
    "id": "SALE-05",
@@ -554,15 +554,15 @@
     "SALE-02",
     "UX430"
    ],
-   "status": "hold",
+   "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
-   "note": "Sale-readiness end-to-end pass after UX and VAT land.",
+   "note": "Slot A (ahmed m), Sonnet. Sale-readiness end-to-end pass after UX329. Owner 2026-11-16 02:17 Asia/Riyadh: resume both slots («خليهم يكملوا»).",
    "model": "sonnet",
    "max_turns": 80,
    "not_before": "2026-11-15T15:11:00+00:00",
-   "hold_reason": "owner 2026-11-15: WhatsApp chain first (UX401->UX408->UX402->UX403); resume after UX403"
+   "pin_slot": "A"
   },
   {
    "id": "N60",
@@ -4803,11 +4803,14 @@
     "UX310",
     "UX311"
    ],
-   "status": "hold",
+   "status": "pending",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-301-fixes.json",
-   "note": "Kept on hold: qa-301 artifact superseded by later preview artifacts (UX403 / UX422 / UX329). Do not start unless the owner un-holds."
+   "note": "Slot B (elsousypharmacy), Sonnet. qa-301 artifact may be superseded by later preview artifacts (UX403 / UX422 / UX329); still un-held because the owner resumed both slots. Owner 2026-11-16 02:17 Asia/Riyadh: resume both slots («خليهم يكملوا»).",
+   "model": "sonnet",
+   "max_turns": 40,
+   "pin_slot": "B"
   },
   {
    "id": "UX312",
@@ -5158,6 +5161,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T22:18:06+00:00",
+ "updated": "2026-11-15T23:22:04+00:00",
  "slot_cooldown": {}
 }
