@@ -11,7 +11,7 @@
    "after": [
     "UX407"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 2,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -19,10 +19,9 @@
    "model": "opus",
    "max_turns": 80,
    "slot": "A",
-   "dispatched_at": "2026-11-15T14:42:25+00:00",
+   "dispatched_at": "2026-11-15T14:45:31+00:00",
    "run_id": 43724106887,
-   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43725833874",
-   "retry": true
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43725833874"
   },
   {
    "id": "UX404",
@@ -263,7 +262,7 @@
    "after": [
     "UX422"
    ],
-   "status": "fixing",
+   "status": "failed",
    "attempts": 0,
    "fix_attempts": 2,
    "source": "inbox/qa-loop-314-fixes.json",
@@ -5033,5 +5032,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T14:44:42+00:00"
+ "updated": "2026-11-15T14:45:31+00:00"
 }
