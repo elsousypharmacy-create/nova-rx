@@ -4126,7 +4126,7 @@
    "after": [
     "UX400"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -4134,7 +4134,13 @@
    "model": "opus",
    "max_turns": 80,
    "slot": "A",
-   "dispatched_at": "2026-11-15T10:00:47+00:00"
+   "dispatched_at": "2026-11-15T10:00:47+00:00",
+   "pr": 454,
+   "ci_dispatched": {
+    "sha": "899ac0a79832ddd4b80478fb313acc6c0088a0f0",
+    "wf": [],
+    "at": "2026-11-15T10:18:23+00:00"
+   }
   },
   {
    "id": "UX401",
@@ -4776,7 +4782,7 @@
    "after": [
     "UX422"
    ],
-   "status": "running",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
@@ -4784,7 +4790,10 @@
    "model": "sonnet",
    "max_turns": 40,
    "slot": "B",
-   "dispatched_at": "2026-11-15T10:15:02+00:00"
+   "dispatched_at": "2026-11-15T10:15:02+00:00",
+   "pr": 453,
+   "merged_at": "2026-11-15T10:18:23+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/453"
   },
   {
    "id": "SALE-03",
@@ -4795,13 +4804,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness read-only Aumet follow-up. Secrets stay untouched.",
    "model": "sonnet",
-   "max_turns": 40
+   "max_turns": 40,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T10:18:23+00:00"
   },
   {
    "id": "SALE-01",
@@ -4812,13 +4823,15 @@
    "after": [
     "UX422"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-sale-readiness-2026-11-15",
    "note": "Sale-readiness. After UX422. Do not enable the production backend flag globally.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "B",
+   "dispatched_at": "2026-11-15T10:18:23+00:00"
   },
   {
    "id": "SALE-06",
@@ -4857,5 +4870,5 @@
    "max_turns": 80
   }
  ],
- "updated": "2026-11-15T10:15:02+00:00"
+ "updated": "2026-11-15T10:18:23+00:00"
 }
