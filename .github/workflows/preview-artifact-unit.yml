@@ -1,0 +1,39 @@
+# Unit-check the preview Worker artifact(s) this ref adds or modifies, each with its own
+# tests/unit/artifact-<tag>.check.mjs. Refs that do not touch worker/live/** skip (N/A).
+# No network, no deploy, never prints secrets.
+name: Preview artifact unit checks
+
+on:
+  pull_request:
+    paths:
+      - "worker/live/**"
+      - "index.html"
+      - "sw.js"
+      - "tools/build-worker-artifact.mjs"
+      - "tests/unit/artifact-ux406*.check.mjs"
+      - "tests/unit/artifact-ux407*.check.mjs"
+      - "tests/unit/ux430-*-artifact.check.mjs"
+      - ".github/workflows/preview-artifact-unit.yml"
+      - ".github/scripts/pick_artifact_check.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check the artifact(s) this ref changes (skip when worker/live is untouched)
+        run: |
+          set -euo pipefail
+          git fetch -q origin main
+          python3 .github/scripts/pick_artifact_check.py --base origin/main --print
+          python3 .github/scripts/pick_artifact_check.py --base origin/main

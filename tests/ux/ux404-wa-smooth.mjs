@@ -208,9 +208,9 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
     return { id: m.dataset.mid, text: t.textContent, hit, inside, first: m.classList.contains('wa-first'), tail: pb.content !== 'none' && pb.content !== '' ? (pb.right === '-8px' ? 'right' : pb.left === '-8px' ? 'left' : '?') : '', side: b.left + b.width / 2 > innerWidth / 2 ? 'right' : 'left', dir: m.dataset.dir };
   }));
   for (const o of ov) { assert.equal(o.hit, false, `time overlaps text in «${o.text}»`); assert.ok(o.inside, `time inside bubble «${o.text}»`); }
-  for (const o of ov.filter((x) => x.first)) assert.equal(o.tail, o.dir === 'in' ? 'right' : 'left', 'tail on the screen-edge side ' + o.id);
+  for (const o of ov.filter((x) => x.first)) assert.equal(o.tail, o.dir === 'in' ? 'left' : 'right', 'tail on the screen-edge side ' + o.id); // UX407: WhatsApp sides
   assert.ok(ov.filter((x) => !x.first).every((x) => x.tail === ''), 'tail only on the first bubble of a run');
-  assert.ok(ov.filter((x) => x.dir === 'in').every((x) => x.side === 'right') && ov.filter((x) => x.dir === 'out').every((x) => x.side === 'left'), 'RTL: incoming right, outgoing left');
+  assert.ok(ov.filter((x) => x.dir === 'in').every((x) => x.side === 'left') && ov.filter((x) => x.dir === 'out').every((x) => x.side === 'right'), 'UX407 (like WhatsApp): incoming left, outgoing right');
   r.bubbles = ov.map((o) => o.id + (o.first ? '*' : '')).join(' ');
 
   // --- visual regression (390x844): chat open with short LTR bubble + tails + composer icons; header vs safe area
