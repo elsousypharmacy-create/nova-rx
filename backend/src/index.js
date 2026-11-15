@@ -17,6 +17,7 @@ import { registerMeteringRoutes } from './metering.js';
 import { registerInboxRoutes } from './inbox.js';
 import { registerInboxHistoryRoutes } from './inbox-history.js';
 import { registerInboxSendRoutes } from './inbox-send.js';
+import { registerInboxPushRoutes } from './inbox-push.js';
 import { registerTransferRoutes } from './transfers.js';
 import { registerCameraRoutes } from './cameras.js';
 import { registerBranchRoutes } from './branches.js';
@@ -91,18 +92,19 @@ registerWaBridgeRoutes(route, { json, errorResponse }, { authenticate });
 registerInboxRoutes(route, { errorResponse }, { authenticate });
 registerInboxHistoryRoutes(route, { errorResponse });
 registerInboxSendRoutes(route, { errorResponse });
+registerInboxPushRoutes(route, { errorResponse });
 registerTransferRoutes(route, { errorResponse }, { authenticate });
 registerCameraRoutes(route, { errorResponse }, { authenticate });
 registerBranchRoutes(route, { errorResponse }, { authenticate });
 registerDeliveryRoutes(route, { errorResponse }, { authenticate });
 registerExportRoute(route, { json, errorResponse }, { authenticate, requireReauth, normalizeRole });
 
-export async function handle(request, env = {}) {
-  const res = await handleInner(request, env);
+export async function handle(request, env = {}, ec = null) {
+  const res = await handleInner(request, env, ec);
   return hardeningEnabled(env) ? applySecurityHeaders(res) : res;
 }
 
-async function handleInner(request, env) {
+async function handleInner(request, env, ec) {
   const requestId = newRequestId();
   const cors = corsHeaders(request, env);
   try {
@@ -126,7 +128,9 @@ async function handleInner(request, env) {
         ? errorResponse('METHOD_NOT_ALLOWED', 'الطريقة غير مسموحة لهذا المسار.', 405, requestId, cors)
         : errorResponse('NOT_FOUND', 'المسار غير موجود.', 404, requestId, cors);
     }
-    const out = await h({ request, env, url, requestId });
+    // UX406: waitUntil (when the runtime gives an ExecutionContext) lets a route finish background work after responding.
+    const waitUntil = ec && typeof ec.waitUntil === 'function' ? (p) => ec.waitUntil(p) : null;
+    const out = await h({ request, env, url, requestId, waitUntil });
     if (out instanceof Response) {
       const r = new Response(out.body, out);
       for (const [k, v] of Object.entries(cors)) r.headers.set(k, v);
@@ -141,6 +145,6 @@ async function handleInner(request, env) {
 }
 
 export default {
-  fetch: (request, env) => handle(request, env),
+  fetch: (request, env, ec) => handle(request, env, ec),
   scheduled: (event, env, ctx) => { const p = Promise.all([scheduledBackup(env), scheduledWaProcess(env).catch(() => null)]).then((r) => r[0]); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; },
 };
