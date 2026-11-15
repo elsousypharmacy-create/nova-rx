@@ -2024,7 +2024,8 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
  .nova-sale-actions .nova-hold-action,.nova-sale-actions .nova-held-action{padding:0!important;width:44px!important;min-width:44px!important;justify-content:center;position:relative}
  .nova-sale-actions .nova-hold-action>span,.nova-sale-actions .nova-held-action>span:not(.nova-held-count){display:none}
  .nova-sale-actions .nova-held-action .nova-held-count{position:absolute;top:1px;inset-inline-end:2px;font-size:10px}
- .nova-sale-actions .nova-sale-number{font-size:11px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+ .nova-sale-actions .nova-sale-number{font-size:11px;max-width:none;overflow:visible;text-overflow:clip;white-space:nowrap;flex:0 0 auto;padding:7px 6px}
+ .empty-invoice-state{height:auto!important;min-height:0!important;padding:18px 0}
  .nova-sale-actions .nova-new-sale{padding:0 8px!important;flex:0 1 auto}
 }
 @media (hover:none),(pointer:coarse){.nova-help-chip{display:none!important}}
@@ -2093,7 +2094,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
           </div>
         </div>
 
-        <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" aria-label="رقم عملية البيع"></span>
+        <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" role="button" tabindex="0" title="اضغط لنسخ رقم الفاتورة" aria-label="رقم عملية البيع، اضغط للنسخ" style="cursor:pointer"></span>
           <button id="novaHelpChip" class="nova-help-chip" type="button" title="عرض اختصارات الكيبورد (F1)">F1 اختصارات</button>
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="فاتورة جديدة (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
           <button id="holdCurrentInvoice" class="btn nova-hold-action" type="button" title="تعليق الفاتورة الحالية" aria-label="تعليق الفاتورة الحالية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M10 9v6m4-6v6"/></svg><span>تعليق</span></button>
@@ -2166,7 +2167,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
           <div style="font-weight: 600; font-size: 14px;">Invoice is Empty</div>
           <div id="novaFirstRunHint" class="nova-first-run-hint" role="note" dir="auto" hidden>
             <ol><li>امسح الباركود أو اكتب الاسم</li><li>Enter لإضافة</li><li>Enter للدفع</li></ol>
-            <button type="button" id="novaHintHide" class="btn btn-secondary">إخفاء</button>
+            <button type="button" id="novaHintHide" class="btn btn-secondary" aria-label="إخفاء نصائح البدء" title="إخفاء نصائح البدء">إخفاء النصائح</button>
           </div>
           <div id="emptyInvoiceSub" class="empty-invoice-sub" style="font-size: 12px;">Scan product barcode or type medicine name in the search bar above.</div>
         </div>
@@ -4765,6 +4766,13 @@ window.NovaFmt=(function(){
         if (el) el.textContent = activeSaleNumber;
       }
       renderSaleNumber();
+      (function () {
+        const el = document.getElementById('activeSaleNumber');
+        if (!el) return;
+        const copy = () => { const t = activeSaleNumber; try { navigator.clipboard.writeText(t).catch(() => {}); } catch (_) {} el.setAttribute('data-copied', '1'); setTimeout(() => el.removeAttribute('data-copied'), 1200); };
+        el.addEventListener('click', copy);
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(); } });
+      })();
       let heldInvoices = [];
       try { const saved = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(saved)) heldInvoices = saved.filter(x => x && Array.isArray(x.lines)).slice(0, 50); } catch (_) {}
       const heldPanel = document.getElementById('heldInvoicePanel');
@@ -5770,7 +5778,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   'جاهز':'Ready','ناقص':'Missing','ناقصة':'Missing','تحذير':'Warning','فشل':'Failed','جاري التوليد':'Generating',
   '↻ توليد تاني':'↻ Generate again','👁 معاينة الاستيكرات':'👁 Preview stickers','إخفاء معاينة الاستيكرات':'Hide sticker preview','👁 معاينة الاستيكر':'👁 Preview sticker',
   'لا توجد نتائج مطابقة':'No matching results',
-  'F1 اختصارات':'F1 Shortcuts','امسح الباركود أو اكتب الاسم':'Scan the barcode or type the name','Enter لإضافة':'Enter to add','Enter للدفع':'Enter to pay','إخفاء':'Hide','عرض اختصارات الكيبورد (F1)':'Show keyboard shortcuts (F1)',
+  'F1 اختصارات':'F1 Shortcuts','امسح الباركود أو اكتب الاسم':'Scan the barcode or type the name','Enter لإضافة':'Enter to add','Enter للدفع':'Enter to pay','إخفاء':'Hide','إخفاء النصائح':'Hide tips','عرض اختصارات الكيبورد (F1)':'Show keyboard shortcuts (F1)',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
   'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','آخر شراء:':'Last purchase:','أدوية مزمنة:':'Chronic medicines:','إعادة صرف آخر فاتورة':'Refill last invoice','رقم العميل قبل الدفع':'Customer number before payment',
   'سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.':'Enter the customer number, or press Enter with no number to skip.',
