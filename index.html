@@ -2071,6 +2071,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 .nova-nav-chev.prev{right:0;background:linear-gradient(to left,#111418 55%,transparent)}
 .nova-nav-chev.next{left:var(--nova-brand-w,0px);background:linear-gradient(to right,#111418 55%,transparent)}}
 </style>
+<style>html.app-whatsapp .nova-nav-row{display:none!important}html.app-whatsapp #novaPageView{display:none!important}</style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;document.documentElement.classList.remove('nova-boot');try{var a=document.activeElement;if(!a||a===document.body){var m=document.getElementById('mainSearchInput');if(m&&m.offsetParent)m.focus()}}catch(e){}s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
@@ -7452,6 +7453,15 @@ function boot(){var nav=document.querySelector('.nova-nav');if(!nav||document.ge
 window.NovaOpenInbox=function(){boot();var t=document.getElementById('novaInboxTab');if(t){t.click();return true}return false};
 /* UX406: a click on a new-message notification opens /#wa => the conversations screen */
 window.addEventListener('load',function(){if(location.hash==='#wa')window.NovaOpenInbox()});
+/* WA-APP: /?app=whatsapp (the standalone WhatsApp link) = the conversations screen on its own: no POS and no other tabs, only the header
+   and the conversations. Same code as the in-app «المحادثات» tab, so everything added there appears in both. */
+(function(){try{if(new URLSearchParams(location.search).get('app')!=='whatsapp')return}catch(e){return}
+window.NOVA_APP='whatsapp';document.documentElement.classList.add('app-whatsapp');document.title='واتساب الصيدلية | NOVA Rx';
+var mt=document.querySelector('meta[name=apple-mobile-web-app-title]');if(mt)mt.setAttribute('content','واتساب الصيدلية');
+function show(){if(location.hash!=='#wa'){try{history.replaceState(null,'','?app=whatsapp#wa')}catch(e){}}if(window.NovaOpenInbox)window.NovaOpenInbox()}
+window.addEventListener('load',function(){setTimeout(show,0)});
+window.addEventListener('hashchange',function(){if(location.hash!=='#wa')show()});
+})();
 function init(nav){var U=window.NovaUnifiedInbox;if(!U)return;var remote={enabled:function(){return localStorage.getItem('novaBackend.enabled')==='true'},baseUrl:function(){return localStorage.getItem('novaBackend.url')||'https://nova-rx-api.elsousypharmacy.workers.dev'},fetch:function(u,o){return fetch(u,o)},getToken:function(){return sessionStorage.getItem('novaBackend.token')}};var inbox=U.create(localStorage,remote).load();var wa={sel:null,q:'',err:'',draft:'',pin:{},arch:{},showArch:false,menu:null,mfail:{},quote:null,qmap:{},emo:false,att:false,filt:'all'}/* UX408: list filter chip (all|noreply|unread) *//* UX401: reply quote, quotes of replies sent here (memory only), emoji/attach popovers *//* UX400b: pin/archive/menu state in memory only (chat ids can be phone numbers; never localStorage, same rule as FIX46) */
 function listMeta(){return{pinned:wa.pin,archived:wa.arch,showArchived:wa.showArch,menu:wa.menu,unread:nU,filter:wa.filt,more:hMoreState()}};function localSendOn(){try{return localStorage.getItem('nova.flags.inboxSend')==='1'}catch(e){return false}}
 /* WA-SEND (owner approved 2026-11-14; UX400 2026-11-15: no PIN on staging/preview): a reply in an old/live WhatsApp chat goes to that customer through the staging API (POST history/send -> pharmacy bot). Text only, 1000 chars, 24h WhatsApp window enforced server-side. */

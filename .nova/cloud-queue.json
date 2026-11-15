@@ -12,7 +12,7 @@
     "UX401"
    ],
    "status": "running",
-   "attempts": 1,
+   "attempts": 2,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-design-review",
    "note": "Slot A, Opus, max_turns 80. Design-lead review of live preview artifact ux-407 on 2026-11-15 17:32 Asia/Riyadh (390×844, service worker blocked, inbox API mocked, every send/reply aborted). Inserted immediately after running UX401 (run 43724106887) and ahead of UX402–UX403 so the bubbles work can land first, then these visual fixes. Screenshots: .nova/inbox/ux408-review.png, ux408-chat-list.png, ux408-open-chat.png, ux408-composer-keyboard.png, ux408-lightbox.png. Owner 2026-11-15 17:05 Asia/Riyadh: Grok Bot is design lead for NOVA and reviews WhatsApp screens before they ship. Owner iPhone screenshots 2026-11-15 18:12–18:13 Asia/Riyadh appended as top-priority defects A–G with Playwright 390×844 + iPhone UA + simulated safe-area insets: .nova/inbox/ux408-iphone-chat-list.jpg, .nova/inbox/ux408-iphone-open-chat.jpg. Owner follow-up 2026-11-15 ~18:17 Asia/Riyadh: H–J (header redesign, unread/needs-reply chips, old-chats investigation) prepended as top priority. Read-only finding: staging history API + metrics both return 33 chats / 598 messages; the 26 imported October chats are still there, below the Nov rows; fix iPhone list scroll + thread load-more, do not re-import.",
@@ -21,8 +21,8 @@
    "slot": "A",
    "not_before": "2026-11-15T15:11:00+00:00",
    "pin_slot": "A",
-   "dispatched_at": "2026-11-15T17:54:07+00:00",
-   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43741885875"
+   "dispatched_at": "2026-11-15T18:19:56+00:00",
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/43743713663"
   },
   {
    "id": "UX401",
@@ -5079,6 +5079,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T17:54:07+00:00",
+ "updated": "2026-11-15T18:19:56+00:00",
  "slot_cooldown": {}
 }

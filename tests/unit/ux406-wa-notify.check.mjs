@@ -95,8 +95,9 @@ t('chat list uses the unread hook for per-chat badges; renderWa shows the contro
   const cs = [conv('a', [m('1', 'in', T0 + 1)]), conv('b', [m('2', 'in', T0 + 2)])];
   const html = U.chatListHtml(cs, null, '', T0 + 10, false, { unread: (c) => (c.id === 'a' ? 4 : 0) });
   assert.equal((html.match(/data-unread="4"/g) || []).length, 1);
-  // UX408: «لم يُرد» (last message from the customer) also gets the green badge (count of waiting messages), state noreply
-  assert.equal((html.match(/data-unread=/g) || []).length, 2);
+  // UX408: the hook decides the badge; an opened chat still waiting for a reply (hook 0) keeps state noreply + the green dot
+  assert.equal((html.match(/data-unread=/g) || []).length, 1);
+  assert.equal((html.match(/data-wa-wait/g) || []).length, 1);
   assert.match(html, /data-conv="a" data-state="unread"/); assert.match(html, /data-conv="b" data-state="noreply"/);
   assert.equal((U.chatListHtml(cs, null, '', T0 + 10).match(/data-unread="1"/g) || []).length, 2, 'history chats waiting for a reply show a badge without the hook too');
   const rep = [conv('c', [m('1', 'in', T0 + 1), m('2', 'out', T0 + 2)])];
