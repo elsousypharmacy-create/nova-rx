@@ -56,7 +56,7 @@
    "after": [
     "UX405"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "note": "Slot A track (conversations — better than slot B). High-priority notifications from owner phone test. After UX405 and ahead of UX401–UX403. Model sonnet (owner rule 2026-11-15), max_turns 80. UX402 keeps realtime appearance and should hook these APIs, not redo web-push. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits.",
@@ -66,16 +66,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-15T13:43:45+00:00",
    "pr": 466,
-   "ci_dispatched": {
-    "sha": "99ef5818cdc03e9cc78476b5808b66fc5e1b1dff",
-    "wf": [
-     "backend-unit.yml",
-     "playwright-smoke.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-15T13:46:01+00:00"
-   }
+   "merged_at": "2026-11-15T13:50:57+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/466"
   },
   {
    "id": "UX407",
@@ -86,13 +78,15 @@
    "after": [
     "UX406"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15-composer-fixes",
    "note": "Slot A preferred (conversations). High-priority follow-up from owner iPhone tests at 16:18–16:24 Asia/Riyadh. Inserted after running UX406 and ahead of UX401–UX403. Model opus, max_turns 80. Messages are not duplicates — do not implement dedupe. Screenshots in .nova/inbox/ux407-whatsapp-real-keyboard.png and .nova/inbox/ux407-nova-keyboard-gap.png. Owner 2026-11-15 15:32 Asia/Riyadh: finish WhatsApp first on both slots; Opus allowed for these tasks. Non-WhatsApp waits. Re-queued 2026-11-15 ~16:40 Asia/Riyadh: the 16:25 scheduler state commit dropped it.",
    "model": "opus",
-   "max_turns": 80
+   "max_turns": 80,
+   "slot": "A",
+   "dispatched_at": "2026-11-15T13:50:57+00:00"
   },
   {
    "id": "UX401",
@@ -4997,5 +4991,5 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T13:46:01+00:00"
+ "updated": "2026-11-15T13:50:57+00:00"
 }
