@@ -31,7 +31,7 @@ DRY = "--dry-run" in sys.argv
 DONE = ("done", "done_noop")
 NOW = time.time()
 # Heavy visual / WhatsApp-rebuild tasks use Opus even on slot B.
-OPUS_PREFIXES = ("UX400", "UX401", "UX402", "UX403", "UX420", "UX421", "UX422")
+OPUS_PREFIXES = ("UX400", "UX401", "UX402", "UX403", "UX404", "UX420", "UX421", "UX422")
 
 
 def pick_model(t, slot, mode="new"):
