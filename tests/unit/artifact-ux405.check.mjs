@@ -23,7 +23,9 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+// UX430 later appended its WhatsApp KPIs block to index.html (shipped in ux-430); compare with that block removed.
+const noUx430 = (h) => { const i = h.indexOf('<!-- UX430:BEGIN WhatsApp KPIs -->'), j = h.indexOf('<!-- UX430:END -->'); return i >= 0 && j > i ? h.slice(0, i) + h.slice(j + '<!-- UX430:END -->'.length).replace(/^\n/, '') : h; };
+ck('app HTML equals main index.html (minus UX430 block)', app === noUx430(readFileSync(join(ROOT, 'index.html'), 'utf8')));
 const strip = (s) => s.split('\n').filter((l) => !l.includes('new Response("<!DOCTYPE html>')).join('\n');
 ck('worker code outside the HTML literal identical to ux-404', strip(raw) === strip(readFileSync(BASE, 'utf8')));
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>')).length === 1);
