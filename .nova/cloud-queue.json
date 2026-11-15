@@ -285,7 +285,7 @@
    "after": [
     "UX402"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-request-2026-11-15",
@@ -295,7 +295,19 @@
    "not_before": "2026-11-15T15:11:00+00:00",
    "pin_slot": "A",
    "slot": "A",
-   "dispatched_at": "2026-11-15T23:39:31+00:00"
+   "dispatched_at": "2026-11-15T23:39:31+00:00",
+   "pr": 502,
+   "ci_dispatched": {
+    "sha": "3ee2a3e2aba198995d25e3cd2112ff410fed2a5e",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-15T23:48:18+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX315",
@@ -5168,6 +5180,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/458"
   }
  ],
- "updated": "2026-11-15T23:43:24+00:00",
+ "updated": "2026-11-15T23:48:18+00:00",
  "slot_cooldown": {}
 }
