@@ -1,7 +1,7 @@
 // N102 sync pull: GET /api/v1/sync/pull?cursor=&limit= . Flag NOVA_SYNC=1 (default OFF) + D1 binding DB.
 // Scope (tenant/branch) comes ONLY from the authenticated session; a client-named tenant/branch must match.
 // Tombstones are rows with deleted=1 (soft flag); nothing here ever deletes.
-import { scopeFromSession } from './security/tenant.js';
+import { syncScope } from './sync-scope.js';
 
 export const syncEnabled = (env) => !!env && String(env.NOVA_SYNC) === '1';
 export const DEFAULT_LIMIT = 100;
@@ -34,11 +34,7 @@ export function registerSyncPullRoutes(route, { errorResponse }, { authenticate 
     if (!syncEnabled(env) || !env.DB || !env.KV) return errorResponse('SYNC_DISABLED', 'المزامنة غير مفعّلة.', 404, requestId);
     const a = await authenticate(request, env);
     if (a.fail) return errorResponse(a.fail.code, a.fail.message_ar, a.fail.status, requestId);
-    const s = a.session;
-    const sc = scopeFromSession({
-      actorId: s.user, tenantId: s.tenantId, roles: s.roles || [], tenantBranchIds: s.tenantBranchIds,
-      assignedBranchIds: s.assignedBranchIds, activeBranchId: s.activeBranchId,
-    }, { query: Object.fromEntries(url.searchParams), headers: Object.fromEntries(request.headers) }, requestId);
+    const sc = await syncScope(env, a.session, request, requestId); // S1-02: single-branch KV sessions resolve their branch
     if (!sc.ok) return errorResponse(sc.code, sc.message_ar, sc.status, requestId);
     const cursor = parseCursor(url.searchParams.get('cursor'));
     if (cursor === null) return errorResponse('SYNC_BAD_CURSOR', 'مؤشر المزامنة غير صالح.', 400, requestId);

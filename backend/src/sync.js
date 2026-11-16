@@ -2,6 +2,57 @@
 // Ops: {key, kind:'ledger'|'master', entity, id?, payload, baseVersion?}. An op without kind (offline-outbox entry) is a ledger 'invoice'.
 import { authenticate } from './auth/auth.js';
 import { audit } from './audit.js';
+import { createSale, salesWritesEnabled } from './sales/service.js';
+import { syncScope } from './sync-scope.js';
+
+// S1-02: with NOVA_SALES_WRITES=1 a ledger 'invoice' op is also applied as a real sale + stock movements, and a
+// change_feed row is written so /sync/pull returns it on the other devices. Everything (sale, stock, sync_ledger,
+// change_feed, sync_ops) is ONE db.batch(): all-or-nothing. A replay of the same op.key returns the stored result.
+// POS line -> sale item mapping (documented in docs/backend/SYNC.md): productId = String(line.productId || line.code),
+// qty = line.qty (positive integer), unitPriceMinor = round(line.price * 100) (the POS stores major units).
+// invoice-level discount = round(payload.discount * 100); payments = payload.payments[{method, amount}] or one cash payment = total.
+const NOT_MINOR = (n) => Math.round(Number(n) * 100);
+export function invoiceToSaleInput(p) {
+  const lines = Array.isArray(p && p.lines) ? p.lines : null;
+  if (!lines || !lines.length) return null;
+  const items = [];
+  for (const l of lines) {
+    const productId = l && (l.productId || l.code);
+    const qty = l && Number(l.qty), price = l && Number(l.price);
+    if (!productId || !Number.isSafeInteger(qty) || qty <= 0 || !Number.isFinite(price) || price < 0) return null;
+    items.push({ productId: String(productId), qty, unitPriceMinor: NOT_MINOR(price) });
+  }
+  const gross = items.reduce((a, it) => a + it.qty * it.unitPriceMinor, 0);
+  const disc = p.discount == null ? 0 : NOT_MINOR(p.discount);
+  if (!Number.isSafeInteger(disc) || disc < 0 || disc > gross) return null;
+  const total = gross - disc;
+  let payments = [];
+  if (Array.isArray(p.payments) && p.payments.length) payments = p.payments.map((x) => ({ method: x && x.method, amountMinor: NOT_MINOR(x && x.amount) }));
+  else if (total > 0) payments = [{ method: 'cash', amountMinor: total }];
+  return { items, payments, discountMinor: disc };
+}
+
+async function applyInvoice(db, tenant, op, id, data, ctx) {
+  const input = invoiceToSaleInput(op.payload);
+  if (!input) return rej('SYNC_INVOICE_INVALID', 'بيانات الفاتورة غير صالحة (البنود أو الأسعار أو الكميات).');
+  const saleId = 'sale_' + crypto.randomUUID().replace(/-/g, '');
+  const totalMinor = input.items.reduce((a, it) => a + it.qty * it.unitPriceMinor, 0) - input.discountMinor;
+  const res = { status: 'applied', saleId, totalMinor };
+  const extra = () => [
+    db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, 'invoice', data),
+    db.prepare('INSERT INTO change_feed (tenant_id,branch_id,entity,entity_id,deleted,payload_json) VALUES (?,?,?,?,0,?)')
+      .bind(tenant, ctx.scope.branchId, 'sale', saleId, JSON.stringify({ saleId, opKey: op.key, invoiceId: id, items: input.items, discountMinor: input.discountMinor, payments: input.payments })),
+    db.prepare('INSERT INTO sync_ops (tenant_id,op_key,result_json) VALUES (?,?,?)').bind(tenant, op.key, JSON.stringify(res)), // strict: a concurrent twin batch fails on the PK and rolls back whole
+  ];
+  const r = await createSale(ctx.env, ctx.scope, input, ctx.requestId, ctx.actor, { saleId, extra });
+  if (r.ok) return res;
+  if (r.code === 'WRITE_FAILED') { // lost a race with the same op/invoice (PK of sync_ops / sync_ledger): the twin won, answer with its stored result
+    const prior = await db.prepare('SELECT result_json FROM sync_ops WHERE tenant_id=? AND op_key=?').bind(tenant, op.key).first();
+    if (prior) return { ...JSON.parse(prior.result_json), duplicate: true };
+  }
+  if (r.code === 'INSUFFICIENT_STOCK') return { status: 'conflict', code: 'SYNC_STOCK_CONFLICT', message_ar: r.message_ar, transient: true };
+  return rej('SYNC_SALE_REJECTED', r.message_ar);
+}
 
 export const MAX_OPS = 200;
 export function syncEnabled(env) { return !!env && String(env.NOVA_SYNC) === '1' && !!env.DB; }
@@ -10,7 +61,7 @@ const KEY_RE = /^[A-Za-z0-9_\-:.]{1,128}$/;
 const NAME_RE = /^[a-z][a-z0-9_]{0,48}$/;
 const rej = (code, message_ar) => ({ status: 'rejected', code, message_ar });
 
-async function one(db, tenant, op) {
+async function one(db, tenant, op, ctx) {
   if (!op || typeof op !== 'object' || typeof op.key !== 'string' || !KEY_RE.test(op.key)) return rej('SYNC_OP_INVALID', 'عملية غير صالحة: المفتاح مفقود أو خاطئ.');
   const kind = op.kind || 'ledger';
   const entity = op.entity || (op.kind ? '' : 'invoice');
@@ -27,7 +78,11 @@ async function one(db, tenant, op) {
   if (kind === 'ledger') {
     const ex = await db.prepare('SELECT payload_json FROM sync_ledger WHERE tenant_id=? AND entity=? AND id=?').bind(tenant, entity, id).first();
     if (ex) res = ex.payload_json === data ? { status: 'applied', duplicate: true } : rej('SYNC_LEDGER_EXISTS', 'السجل موجود ولا يمكن تعديله (دفتر إضافة فقط).');
-    else { await db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, entity, data).run(); res = { status: 'applied' }; }
+    else if (entity === 'invoice' && ctx && ctx.scope && salesWritesEnabled(ctx.env) && Array.isArray(op.payload.lines)) { // no `lines` = a plain ledger record, as before
+      res = await applyInvoice(db, tenant, op, id, data, ctx);
+      if (res.transient) { const { transient, ...out } = res; return out; } // stock may arrive later: never cache this conflict
+      if (res.status === 'applied') return res; // sync_ops row was written in the same batch
+    } else { await db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, entity, data).run(); res = { status: 'applied' }; }
   } else {
     const cur = await db.prepare('SELECT version FROM sync_master WHERE tenant_id=? AND entity=? AND id=?').bind(tenant, entity, id).first();
     const base = op.baseVersion == null ? null : Number(op.baseVersion);
@@ -46,11 +101,11 @@ async function one(db, tenant, op) {
   return res;
 }
 
-export async function pushOps(db, tenant, ops) {
+export async function pushOps(db, tenant, ops, ctx = null) {
   const results = [];
   for (const op of ops) {
     let r;
-    try { r = await one(db, tenant, op); } catch { r = { status: 'error', code: 'SYNC_OP_FAILED', message_ar: 'فشلت معالجة العملية. أعد المحاولة.' }; }
+    try { r = await one(db, tenant, op, ctx); } catch { r = { status: 'error', code: 'SYNC_OP_FAILED', message_ar: 'فشلت معالجة العملية. أعد المحاولة.' }; }
     results.push({ key: op && typeof op.key === 'string' ? op.key : null, ...r });
   }
   return results;
@@ -68,7 +123,13 @@ export function registerSyncRoutes(route, { json, errorResponse }) {
     if (!ops) return errorResponse('SYNC_BAD_REQUEST', 'صيغة الطلب غير صالحة: ops مطلوبة.', 400, requestId);
     if (ops.length > MAX_OPS) return errorResponse('SYNC_TOO_MANY_OPS', 'عدد العمليات يتجاوز الحد المسموح.', 413, requestId);
     const tenant = String(a.session.tenant || env.NOVA_TENANT_ID || 'default');
-    const results = await pushOps(env.DB, tenant, ops);
+    // S1-02: the sale needs a tenant+branch scope (from the session only). No scope => ledger-only, as before.
+    let applyCtx = null;
+    if (salesWritesEnabled(env)) {
+      const sc = await syncScope(env, a.session, ctx.request, requestId);
+      if (sc.ok) applyCtx = { env, requestId, actor: a.session.user, scope: { tenantId: sc.tenantId, branchId: sc.branchId } };
+    }
+    const results = await pushOps(env.DB, applyCtx ? applyCtx.scope.tenantId : tenant, ops, applyCtx); // one tenant for the sale AND the sync rows
     const c = (s) => results.filter((r) => r.status === s).length;
     await audit(env, { actor: a.session.user, action: 'sync.push', entity: 'sync', requestId, outcome: 'ALLOWED', after: { ops: ops.length, applied: c('applied'), conflict: c('conflict'), rejected: c('rejected') } });
     return json({ ok: true, results, requestId }, 200, { 'X-Request-Id': requestId });
