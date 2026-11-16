@@ -65,6 +65,11 @@ export async function ingestDirect(db, tenant, items, now = Date.now(), kv = nul
     const at = Math.min(tsMs(it.timestamp) || now, now + 5 * 60 * 1000);
     const dup = await db.prepare('SELECT id FROM inbox_messages WHERE tenant_id = ? AND id = ?').bind(tenant, mid).first();
     if (dup) { duplicates++; continue; }
+    // A reply sent from NOVA already has its own ps_ row (WA-SEND): the bot's forwarded copy of the same text is the same message.
+    if (out && type === 'text') {
+      const ps = await db.prepare("SELECT id FROM inbox_messages WHERE tenant_id = ? AND conversation_id = ? AND dir = 'out' AND id LIKE 'ps\\_%' ESCAPE '\\' AND text = ? AND at BETWEEN ? AND ? LIMIT 1").bind(tenant, cid, text.slice(0, 4000), at - 180000, at + 180000).first();
+      if (ps) { duplicates++; continue; }
+    }
     const ok = md && !md.skipped && it.media_base64 ? await cacheMedia(kv, tenant, mid, it.media_base64) : false;
     if (ok) cached++;
     await db.prepare('INSERT OR IGNORE INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES (?,?,?,?)').bind(tenant, cid, (!out && s(it.name)) || from, at).run();
