@@ -186,12 +186,9 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
 
   // --- composer: WhatsApp iOS icons (UX408: + attach outside the field, camera + mic inert while empty, no emoji button), send only with text
   await input.fill(''); await view.locator('[data-wa-composer][data-has-text="0"]').waitFor();
-  for (const k of ['attach', 'camera', 'mic']) {
-    const b = view.locator(`[data-wa-composer] [data-wa-${k}]`); assert.ok(await b.isVisible(), k + ' icon'); const bb = await b.boundingBox();
-    assert.ok(bb.width >= 40 && bb.height >= 40, k + ' touch target'); assert.equal(await b.getAttribute('aria-disabled'), k === 'attach' ? null : 'true');
-  }
+  for (const k of ['attach', 'camera', 'mic']) assert.equal(await view.locator(`[data-wa-composer] [data-wa-${k}]`).isVisible(), false, k + ' hidden (text only)');
   assert.equal(await view.locator('[data-wa-composer] [data-wa-emoji]').count(), 0, 'UX408: no emoji button in the field');
-  const nBefore = st.sends.length; await view.locator('[data-wa-mic]').click({ force: true }); await view.locator('[data-wa-camera]').click({ force: true }); assert.equal(st.sends.length, nBefore, 'icons never send');
+  
 
   // --- simulated on-screen keyboard (mobile): composer stays above it, no gap
   if (vp.touch) {

@@ -243,7 +243,7 @@ for (const vp of [{ width: 390, height: 844, name: 'iphone', touch: true }, { wi
   const c0 = await cp();
   assert.ok(!c0.form && c0.forms === 0 && c0.ekh === 'send', 'no <form>, enterkeyhint=send');
   assert.ok(c0.pillKids === 1 && c0.pillBtns === 0 && !c0.emoji, 'nothing but the text field inside the pill');
-  assert.ok(!c0.sendVis && c0.micVis && c0.plusRight && c0.trailLeft, 'empty: + right, mic at the trailing end, no send ' + JSON.stringify(c0));
+  assert.ok(!c0.sendVis && !c0.micVis && !c0.camVis, 'empty: text only (attach/camera/mic hidden), no send ' + JSON.stringify(c0));
   if (mob) assert.equal(c0.padB, '34px', 'safe-area bottom padding max(8, 34)');
   const input = view.locator('#waInput');
   if (mob) await input.tap(); else await input.click();
@@ -252,7 +252,7 @@ for (const vp of [{ width: 390, height: 844, name: 'iphone', touch: true }, { wi
   assert.ok(c1.sendVis && !c1.micVis && !c1.camVis && c1.trailLeft, 'text: send replaces mic at the trailing end ' + JSON.stringify(c1));
   await shot(page, vp.name + '-composer');
   await page.keyboard.press('Control+A'); await page.keyboard.press('Backspace');
-  const c2 = await cp(); assert.ok(!c2.sendVis && c2.micVis, 'cleared: mic again');
+  const c2 = await cp(); assert.ok(!c2.sendVis && !c2.micVis, 'cleared: send hidden again, still no mic');
   await input.blur();
   r.composer = { empty: c0, typing: c1 };
 
