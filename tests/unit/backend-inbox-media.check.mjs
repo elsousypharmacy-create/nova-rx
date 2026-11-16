@@ -80,7 +80,15 @@ assert.match(r.headers.get('Content-Disposition'), /filename\*=UTF-8''%D8%AA/);
 r = await get('/api/v1/inbox/history/media?id=wa_aud1'); assert.equal(r.headers.get('Content-Type'), 'audio/ogg');
 assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {})).status, 401); // PIN gate (non-staging env)
 assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', { 'X-Nova-Pin': 'wrong-pin-000000' })).status, 401);
-assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {}, { ...env, NOVA_ENV: 'staging' })).status, 200); // UX400 staging pinless
+assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {}, { ...env, NOVA_ENV: 'staging' })).status, 401); // S1-01: staging is PIN-gated too
+{ // media ticket: minted only for an authenticated caller, short-lived, media GET only
+  const tr = await get('/api/v1/inbox/history/media-ticket', {}); assert.equal(tr.status, 401);
+  const tj = await (await get('/api/v1/inbox/history/media-ticket', { 'X-Nova-Pin': PIN })).json(); assert.ok(tj.ok && /^\d{10}\.[0-9a-f]{40}$/.test(tj.ticket)); assert.ok(!JSON.stringify(tj).includes(PIN));
+  assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1&t=' + tj.ticket, {})).status, 200);
+  assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1&t=' + tj.ticket.slice(0, -1) + '0', {})).status, 401);
+  assert.equal((await get('/api/v1/inbox/history/conversations?t=' + tj.ticket, {})).status, 401);
+  assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1&t=1.' + 'a'.repeat(40), {})).status, 401);
+}
 // fallbacks: metadata-only, KV miss, not media, unknown id, bad id -> clear Arabic JSON, never 500
 for (const [id, code, st] of [['wa_big1', 'MEDIA_UNAVAILABLE', 404], ['wa_txt1', 'MEDIA_NOT_FOUND', 404], ['nope', 'MEDIA_NOT_FOUND', 404], ['', 'MEDIA_BAD_ID', 400]]) {
   r = await get('/api/v1/inbox/history/media?id=' + id); j = await r.json();

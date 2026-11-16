@@ -2,10 +2,8 @@
 // Guarded by the pharmacy PIN (X-Nova-Pin == env.NOVA_API_PIN, >= 12 chars), independent of NOVA_AUTH,
 // so the public preview never gets chat data without the PIN. SELECT only: never writes, deletes or sends.
 // Failed PIN attempts are rate limited per client IP in KV (10 per 15 minutes).
-// UX400 (owner approved 2026-11-15): on the STAGING/PREVIEW backend only (NOVA_ENV 'staging' or 'preview') the
-// read and send routes no longer require the PIN; the owner accepted that anyone with the preview link can read
-// and reply. Every other NOVA_ENV (production, dev, unset, anything unknown) stays PIN-gated exactly as before.
-import { sha256Hex } from './auth/auth.js';
+// S1-01: UX400's pinless staging/preview mode is removed; every NOVA_ENV is PIN-gated (or needs a valid bearer session).
+import { sha256Hex, authEnabled, bearer, authenticate } from './auth/auth.js';
 import { waIsHandoff, waTopics } from './wa-metrics.js';
 import { mediaKind } from './wa-kpis.js';
 import { mediaOfRow, mediaResponse } from './inbox-media.js';
@@ -36,12 +34,17 @@ async function safeEq(a, b) {
   return d === 0 && x.length === y.length;
 }
 
-const PINLESS_ENVS = Object.freeze(['staging', 'preview']);
-export const historyPinless = (env) => !!env && PINLESS_ENVS.includes(String(env.NOVA_ENV || ''));
+// S1-01: the UX400 pinless mode is gone. Staging/preview are gated exactly like production.
+// historyPinless is kept only as a constant-false export so nothing can reopen the gate by environment name.
+export const historyPinless = () => false;
 
 export async function checkPin(request, env) {
   if (!env || !env.DB) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
-  if (historyPinless(env)) return null;
+  // S1-07 ready: a valid bearer session (NOVA_AUTH=1) is accepted in place of the shared PIN.
+  if (authEnabled(env) && env.KV && bearer(request)) {
+    const a = await authenticate(request, env);
+    if (a.session) return null;
+  }
   const pin = env.NOVA_API_PIN;
   if (!pin || String(pin).length < 12) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
   const ip = request.headers.get('CF-Connecting-IP') || 'anon';
@@ -56,6 +59,22 @@ export async function checkPin(request, env) {
     return { status: 401, code: 'PIN_INVALID', message_ar: 'رقم PIN غير صحيح.' };
   }
   return null;
+}
+
+// S1-01: <img>/<video>/<a> cannot send X-Nova-Pin, so media URLs carry a short-lived read-only ticket (media GET only):
+// exp.sha256(PIN|media|exp). The ticket is minted only for an already-authenticated caller; it never contains the PIN.
+const TICKET_TTL_S = 600;
+export async function mediaTicket(env, nowMs = Date.now()) {
+  const pin = env && env.NOVA_API_PIN; if (!pin || String(pin).length < 12) return null;
+  const exp = Math.floor(nowMs / 1000) + TICKET_TTL_S;
+  return exp + '.' + (await sha256Hex(String(pin) + '|media|' + exp)).slice(0, 40);
+}
+export async function mediaTicketOk(env, t, nowMs = Date.now()) {
+  const m = /^(\d{10})\.([0-9a-f]{40})$/.exec(String(t || '')); if (!m) return false;
+  const exp = Number(m[1]); const now = Math.floor(nowMs / 1000);
+  if (exp < now || exp > now + TICKET_TTL_S + 5) return false;
+  const want = await mediaTicket({ NOVA_API_PIN: env && env.NOVA_API_PIN }, (exp - TICKET_TTL_S) * 1000);
+  return !!want && (await safeEq(want, t));
 }
 
 export async function listHistory(db, t) {
@@ -143,11 +162,19 @@ export function registerInboxHistoryRoutes(route, { errorResponse }) {
     }
   };
   route('GET', '/api/v1/inbox/history/conversations', guard(async ({ db, t }) => ({ conversations: await listHistory(db, t) })));
+  route('GET', '/api/v1/inbox/history/media-ticket', async (ctx) => {
+    const { env, requestId, request } = ctx;
+    const bad = await checkPin(request, env);
+    if (bad) return errorResponse(bad.code, bad.message_ar, bad.status, requestId);
+    const ticket = await mediaTicket(env);
+    return new Response(JSON.stringify({ ok: true, ticket, ttl: TICKET_TTL_S, requestId }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  });
   route('GET', '/api/v1/inbox/history/metrics', guard(async ({ db, t }) => ({ data: await metricsData(db, t) })));
   // UX405: cached media bytes (KV) for one message; same gate as the chat history. Arabic JSON fallback when absent.
   route('GET', '/api/v1/inbox/history/media', async (ctx) => {
     const { env, requestId, request, url } = ctx;
-    const bad = await checkPin(request, env);
+    const ticketed = env && env.DB && await mediaTicketOk(env, url.searchParams.get('t'));
+    const bad = ticketed ? null : await checkPin(request, env);
     if (bad) return errorResponse(bad.code, bad.message_ar, bad.status, requestId);
     try { return await mediaResponse(env, historyTenant(env), url.searchParams.get('id') || '', errorResponse, requestId); }
     catch { return errorResponse('MEDIA_FAILED', 'تعذّر تحميل الملف. حاول مرة أخرى.', 503, requestId); }
