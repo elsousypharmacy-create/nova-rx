@@ -54,7 +54,7 @@ jobs:
           node tests/unit/ux12-13-checkout.check.mjs
           node tests/unit/ux07-supplier-view.check.mjs
           node tests/ux/ahmed-checkout-layout.mjs
-          node tests/ux/undo-cart.mjs
+          NOVA_UX_URL=http://127.0.0.1:8765/ node tests/ux/undo-cart.mjs
       - name: WhatsApp-only link (/?app=whatsapp)
         run: node tests/ux/wa-app-mode.mjs
       - name: UX409 conversations bell, iPhone flush, PWA name
