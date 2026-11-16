@@ -70,6 +70,11 @@ export async function ingestDirect(db, tenant, items, now = Date.now(), kv = nul
       const ps = await db.prepare("SELECT id FROM inbox_messages WHERE tenant_id = ? AND conversation_id = ? AND dir = 'out' AND id LIKE 'ps\\_%' ESCAPE '\\' AND text = ? AND at BETWEEN ? AND ? LIMIT 1").bind(tenant, cid, text.slice(0, 4000), at - 180000, at + 180000).first();
       if (ps) { duplicates++; continue; }
     }
+    // Same for a photo / voice note sent from NOVA (its ps_ row has the media type): skip the bot's copy.
+    if (out && md) {
+      const ps = await db.prepare("SELECT id FROM inbox_messages WHERE tenant_id = ? AND conversation_id = ? AND dir = 'out' AND id LIKE 'ps\\_%' ESCAPE '\\' AND media_type = ? AND at BETWEEN ? AND ? LIMIT 1").bind(tenant, cid, md.type, at - 180000, at + 180000).first();
+      if (ps) { duplicates++; continue; }
+    }
     const ok = md && !md.skipped && it.media_base64 ? await cacheMedia(kv, tenant, mid, it.media_base64) : false;
     if (ok) cached++;
     await db.prepare('INSERT OR IGNORE INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES (?,?,?,?)').bind(tenant, cid, (!out && s(it.name)) || from, at).run();
