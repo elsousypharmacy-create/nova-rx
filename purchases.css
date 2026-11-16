@@ -65,3 +65,26 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:var(--sp-3);flex-wrap:nowr
 @media (hover:none),(pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=color]):not([type=button]):not([type=submit]){font-size:16px!important}}
 /* UX326: desktop #selectAll hit area (44x44 label) fits entirely inside its own header cell */
 @media(min-width:801px){.products thead th:first-child{width:44px;padding-inline:0;text-align:center}.products thead th:first-child .select-all-label{vertical-align:middle}}
+
+/* UX06/07: lightweight progress order; procurement algorithms and actions are unchanged. */
+.purchase-flow{display:flex;flex-wrap:wrap;list-style:none;gap:8px;margin:0 0 10px;padding:0;font-size:12px;color:var(--muted)}
+.purchase-flow li{border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+.supplier-renew-link{display:inline-flex;align-items:center;min-height:44px;margin-inline-start:8px;padding:8px 12px;color:var(--light);text-decoration:underline;border-radius:8px}
+#supplierStatusPanel>div{padding:8px 0;border-bottom:1px solid var(--line)}
+#supplierStatusPanel [data-supplier-state=connected]{color:#8ec5a9}
+#supplierStatusPanel [data-supplier-state=auth_failed],#supplierStatusPanel [data-supplier-state=missing_credential]{color:#e2c887}
+.controls #load{margin-inline-start:0;margin-inline-end:0}
+@media(max-width:600px){.purchase-flow{gap:4px}.purchase-flow li{flex:1 1 40%;text-align:center}}
+
+/* UX-AHMED follow-up: keep the draft action inside the remaining workspace. */
+html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
+@media(min-width:801px){
+ .controls,.purchase-flow,#status,#coverageHint{flex-shrink:0}
+ .workspace{overflow:hidden}
+ .cart{align-self:stretch;max-height:100%;min-height:0}
+ .cart #groups{flex:1 1 auto;min-height:0;overflow-y:auto}
+}
+
+/* Toolbar labels must stay legible when all procurement actions are present. */
+.controls{flex-wrap:wrap}
+.controls #receiveInvoice,.controls label:after{white-space:nowrap;flex-shrink:0}

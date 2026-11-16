@@ -7,7 +7,7 @@ try {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG' });
   const page = await ctx.newPage(), errors = [], dialogs = [];
   page.on('pageerror', e => errors.push(String(e)));
-  page.on('dialog', d => { dialogs.push(d.message()); d.dismiss(); });
+  page.on('dialog', d => { dialogs.push(d.message()); d.accept(); });
   await page.addInitScript(() => { try { if (!sessionStorage.getItem('s')) { localStorage.clear(); sessionStorage.setItem('s', '1'); } localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
   await page.goto(BASE + 'index.html');
   await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source && window.NOVA_DEMO && window.NOVA_DEMO.products.length);
@@ -48,7 +48,8 @@ try {
   assert.equal(await page.locator('[data-held-delete]').count(), 0);
   await page.locator('#btnUndoToast').click();
   assert.equal(await page.locator('[data-held-delete]').count(), 1, 'held invoice restored');
-  assert.deepEqual(dialogs, [], 'no native dialog');
+  assert.equal(dialogs.length, 2, 'each F4 clear asks once; line/held deletions do not');
+  assert(dialogs.every(message => message.includes('مسح كل أصناف')), 'only invoice clear confirmation appears');
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl');
   assert.deepEqual(errors, []);
   console.log('undo-cart passed');
