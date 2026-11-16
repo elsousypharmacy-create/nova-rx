@@ -5195,7 +5195,7 @@
    "brief": "Typing opening float then 'change' re-renders the whole reports page (render(page,filter)): #novaShiftCount value becomes '' and document.activeElement is lost. A cashier who counted first then adds the float loses the count. Update #novaShiftExpected/#novaShiftDiff in place (no full re-render), keep focus and counted value, recompute diff. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Changing float keeps counted value and focus; expected and diff update live; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5205,17 +5205,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-16T07:44:18+00:00",
    "pr": 507,
-   "ci_dispatched": {
-    "sha": "b0ab20e78d08624cb1f350660646d0894a2f235c",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-16T07:47:14+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-16T07:53:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/507"
   },
   {
    "id": "UX433",
@@ -5453,6 +5444,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T07:51:40+00:00",
+ "updated": "2026-11-16T07:53:35+00:00",
  "slot_cooldown": {}
 }
