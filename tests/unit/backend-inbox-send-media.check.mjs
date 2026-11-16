@@ -80,7 +80,12 @@ assert.equal(db.prepare("SELECT COUNT(*) c FROM inbox_messages WHERE id LIKE 'wb
 // bot failures: window closed, generic, timeout -> mapped, nothing stored
 const before = db.prepare('SELECT COUNT(*) c FROM inbox_messages').get().c;
 botReply = { ok: false, error: 'فات أكتر من 24 ساعة على آخر رسالة' }; [s, j] = await send({ ...ok(), clientId: 'cli_img_0004' }); assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED');
-botReply = { ok: false, error: 'upload failed: x' }; [s, j] = await send({ ...ok(), clientId: 'cli_img_0005' }); assert.equal(s, 502); assert.equal(j.code, 'SEND_FAILED');
+botReply = { ok: false, error: 'upload failed: x' }; [s, j] = await send({ ...ok(), clientId: 'cli_img_0005' }); assert.equal(s, 502); assert.equal(j.code, 'SENDMEDIA_UPLOAD'); assert.ok(j.message_ar.includes('واتساب رفض الملف'));
+// an OLD pharmacy server answers with its own errors: tell the owner to update it instead of a generic refusal
+for (const [i, e] of ['unsupported media kind', 'unsupported operation', 'unsupported file type'].entries()) { botReply = { ok: false, error: e }; [s, j] = await send({ ...ok(), clientId: 'cli_old_srv_0' + i }); assert.equal(s, 502, e); assert.equal(j.code, 'SENDMEDIA_SERVER_OLD', e); assert.ok(j.message_ar.includes('حدّث السيرفر')); }
+botReply = { ok: false, error: 'something else' }; [s, j] = await send({ ...ok(), clientId: 'cli_other_err1' }); assert.equal(j.code, 'SEND_FAILED', 'unknown errors stay generic');
+assert.equal(db.prepare("SELECT error FROM wa_send_log WHERE client_id = 'cli_old_srv_00'").get().error, 'unsupported media kind', 'the real reason is kept in the log');
+assert.ok(!JSON.stringify(j).includes('something else'), 'bot error text is never echoed to the screen');
 botThrow = true; [s, j] = await send({ ...ok(), clientId: 'cli_img_0006' }); assert.equal(s, 504); assert.equal(j.code, 'SEND_UNKNOWN');
 assert.equal(db.prepare('SELECT COUNT(*) c FROM inbox_messages').get().c, before, 'no message stored on failure');
 assert.deepEqual(db.prepare("SELECT status FROM wa_send_log WHERE client_id IN ('cli_img_0004','cli_img_0005','cli_img_0006') ORDER BY client_id").all().map((x) => x.status), ['failed', 'failed', 'unknown']);

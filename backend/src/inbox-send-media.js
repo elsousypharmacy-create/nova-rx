@@ -20,6 +20,8 @@ const ERR = Object.freeze({
   SENDMEDIA_BAD_FILE: ['الملف غير صالح. المسموح صور JPEG أو PNG فقط.', 400],
   SENDMEDIA_TOO_LARGE: ['الصورة كبيرة. الحد الأقصى 5 ميجا.', 413],
   SENDMEDIA_CAPTION: ['التعليق طويل. الحد الأقصى 1024 حرف.', 400],
+  SENDMEDIA_SERVER_OLD: ['سيرفر الصيدلية لسه على نسخة قديمة ما بتعرفش تبعت الصور والصوت. دوس «حدّث السيرفر» وجرّب تاني.', 502],
+  SENDMEDIA_UPLOAD: ['واتساب رفض الملف نفسه (الصيغة أو الحجم). جرّب صورة أو تسجيل تاني.', 502],
   SENDMEDIA_NO_CAPTION: ['الرسالة الصوتية ما ينفعش يكون عليها تعليق.', 400],
 });
 const e = (code) => ERR[code] || SEND_ERR[code];
@@ -98,7 +100,11 @@ export function registerInboxSendMediaRoutes(route, { errorResponse }) {
     if (!r.ok || !r.j || r.j.ok !== true) {
       const why = r.j && typeof r.j.error === 'string' ? r.j.error.slice(0, 200) : 'http-' + r.http;
       if (/24\s*ساعة|131047|re-?engagement/i.test(why)) { await log('failed', 'window-closed'); return err('SEND_WINDOW_CLOSED'); }
-      await log('failed', why); return err('SEND_FAILED');
+      await log('failed', why);
+      // an older pharmacy server (before photos / voice) answers with its own error: say so, so the owner knows to update it
+      if (/^unsupported (operation|media kind|file type)/i.test(why)) return err('SENDMEDIA_SERVER_OLD');
+      if (/^upload failed/i.test(why)) return err('SENDMEDIA_UPLOAD');
+      return err('SEND_FAILED');
     }
     const at = Date.now(), mid = 'ps_' + crypto.randomUUID();
     try { await db.prepare("DELETE FROM inbox_messages WHERE tenant_id = ? AND rowid IN (SELECT rowid FROM inbox_messages WHERE tenant_id = ? AND conversation_id = ? AND dir = 'out' AND id LIKE 'wb\\_%' ESCAPE '\\' AND media_type = ? AND at BETWEEN ? AND ? ORDER BY at DESC LIMIT 1)").bind(t, t, cid, kind, at - 180000, at + 180000).run(); } catch { /* the duplicate stays */ }
