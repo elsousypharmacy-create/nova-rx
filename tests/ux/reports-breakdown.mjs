@@ -48,14 +48,14 @@ try {
     assert.equal(v.count, 3, per + ' count');
     assert.ok(v.cash > 0 && v.card > 0 && v.credit > 0, per + ' each method has value');
     assert.ok(Math.abs(v.cash + v.card + v.credit + v.ret - v.net) < 0.011, per + ' breakdown sums to net');
-    assert.ok(Math.abs(v.drawer - v.cash) < 0.011, 'drawer = cash without cash returns');
+    assert.equal(await page.locator('#novaPayBreakdown [data-pay-row="drawer"]').count(), 0, 'no second drawer figure in payment breakdown');
   }
   // demo block collapsed by default: no visible demo numbers
   const demo = await page.evaluate(() => { const d = document.getElementById('novaDemoData'); const vis = [...d.querySelectorAll('.nova-kpi, .nova-kpis *')].filter(e => e.checkVisibility() && /[0-9]/.test(e.textContent) && e.children.length === 0); return { open: d.open, label: d.querySelector('summary').textContent, visible: vis.length }; });
   assert.equal(demo.open, false); assert.equal(demo.visible, 0, 'visible demo numbers'); assert.match(demo.label, /بيانات تجريبية \(للعرض فقط\)/);
   // print view
   const txt = await page.evaluate(() => { let h = ''; window.print = () => { const e = document.getElementById('novaDayReport'); h = e ? e.innerText : 'MISSING'; }; document.getElementById('novaPrintDay').click(); return h; });
-  for (const w of ['نقدي', 'بطاقة', 'آجل', 'مرتجعات', 'النقدي المتوقع في الدرج']) assert.ok(txt.includes(w), 'print has ' + w + ': ' + txt);
+  for (const w of ['نقدي', 'بطاقة', 'آجل', 'مرتجعات', 'المتوقع في الدرج']) assert.ok(txt.includes(w), 'print has ' + w + ': ' + txt);
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl');
   assert.deepEqual(errs, [], 'page errors');
   console.log('reports-breakdown passed');
