@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install Playwright test runner
-        run: npm install --no-save --no-package-lock @playwright/test@1.58.2
+        run: npm install --no-save --no-package-lock @playwright/test@1.58.2 opus-recorder@8.0.5 # opus-recorder: the voice-note OGG/Opus encoder the page loads from jsDelivr (same pinned file, used by ux413)
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Serve static demo locally
