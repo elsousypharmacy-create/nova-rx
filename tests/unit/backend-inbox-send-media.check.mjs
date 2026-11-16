@@ -130,5 +130,7 @@ assert.equal(calls.length, nv, 'invalid voice requests never reach the bot');
   const r5 = await ingestDirect(D1, 'default', [{ id: 'wamid.DOCOUT', from: '201111', type: 'document', direction: 'out', timestamp: at, mime_type: 'application/pdf', media_id: 'M5', filename: 'a.pdf' }], Date.now(), KV);
   assert.equal(r5.added, 1, 'only the same media type counts as the same message (a document sent by the bot at the same time is kept)'); }
 // probe says audio is supported
-[ps, pj] = await probe(); assert.equal(pj.audio, true);
+[ps, pj] = await probe(); assert.equal(pj.audio, false, 'mic hidden until voice is turned on (WhatsApp rejects the iPhone recording as is)');
+[ps, pj] = await probe(PIN, { ...env, NOVA_INBOX_SEND_VOICE: '1' }); assert.equal(pj.audio, true);
+[ps, pj] = await probe(PIN, { ...env, NOVA_INBOX_SEND_VOICE: '1', NOVA_INBOX_SEND_MEDIA: undefined }); assert.equal(pj.audio, false, 'never without media sending');
 console.log('PASS backend inbox send-media');
