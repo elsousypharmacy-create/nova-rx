@@ -1,6 +1,6 @@
 /* NOVA Rx — N104 optional backend client. Flag novaBackend.enabled (default OFF) + novaBackend.url setting.
    OFF: zero fetches, nothing changes. ON: pushes the offline outbox (POST /api/v1/sync/push) and pulls the feed
-   (GET /api/v1/sync/feed?since=). Any error keeps the app local; outbox entries stay queued (backoff by NovaOutbox).
+   (GET /api/v1/sync/pull?cursor=). Any error keeps the app local; outbox entries stay queued (backoff by NovaOutbox).
    SALE-01: when ON and no (https) novaBackend.url override is set, the base URL is production nova-rx-api
    (PRODUCTION_URL). The flag is per device (localStorage); the token lives in sessionStorage only and is never logged.
    Works as <script> (window.NovaBackendClient) and in Node (module.exports). */
@@ -59,15 +59,16 @@
     function pull() {
       if (!active()) return Promise.resolve({ skipped: true, items: 0 });
       var cursor = storage.getItem(K_CURSOR) || '';
-      return doFetch(baseUrl() + '/api/v1/sync/feed?since=' + encodeURIComponent(cursor), { method: 'GET', headers: headers() })
+      // S1-02: the real route is GET /api/v1/sync/pull?cursor= -> { changes:[{seq,entity,id,deleted,data}], nextCursor, hasMore }.
+      return doFetch(baseUrl() + '/api/v1/sync/pull?cursor=' + encodeURIComponent(cursor), { method: 'GET', headers: headers() })
         .then(function (r) { if (!r.ok) throw new Error('http-' + r.status); return r.json(); })
         .then(function (j) {
-          var items = j && Array.isArray(j.items) ? j.items : null;
+          var items = j && Array.isArray(j.changes) ? j.changes : null;
           if (!items) throw new Error('bad-response');
           var all = readJson(storage, K_FEED, []).concat(items);
           storage.setItem(K_FEED, JSON.stringify(all));
-          if (j.cursor != null) storage.setItem(K_CURSOR, String(j.cursor));
-          return { skipped: false, items: items.length };
+          if (j.nextCursor != null) storage.setItem(K_CURSOR, String(j.nextCursor));
+          return { skipped: false, items: items.length, hasMore: !!j.hasMore };
         })
         .catch(function (e) { return { skipped: false, items: 0, error: String(e && e.message || e) }; });
     }
