@@ -5315,7 +5315,7 @@
    "brief": "KPI grid mixes period KPIs (مبيعات/مرتجعات/صافي/فواتير اليوم) with all-time KPIs whose values duplicate (666.75 twice) and zero cards add noise. Group into 'الفترة' (4 cards, primary size) and a quieter 'الإجمالي على هذا الجهاز' strip, hide redundant ones, show delta vs previous period. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Two clearly labelled groups, no duplicate values; test asserts card count/grouping.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5323,7 +5323,19 @@
    "pin_slot": "A",
    "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
    "slot": "A",
-   "dispatched_at": "2026-11-16T08:11:22+00:00"
+   "dispatched_at": "2026-11-16T08:11:22+00:00",
+   "pr": 517,
+   "ci_dispatched": {
+    "sha": "c064e699e54cb2760411dacf4971808d00d3e304",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-16T08:14:31+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX438",
@@ -5332,13 +5344,15 @@
    "brief": "inPer('day') uses toDateString(); a shift 20:00-04:00 splits into two days and expected-cash is wrong. Add period options 'أمس' and 'من آخر إقفال' (since last closing record from UX433) plus custom from/to; keep default 'اليوم'. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Period 'since last close' sums sales across midnight; test seeds sales across midnight.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
    "model": "sonnet",
    "pin_slot": "A",
-   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix."
+   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
+   "slot": "A",
+   "dispatched_at": "2026-11-16T08:14:31+00:00"
   },
   {
    "id": "UX439",
@@ -5469,6 +5483,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T08:13:07+00:00",
+ "updated": "2026-11-16T08:14:31+00:00",
  "slot_cooldown": {}
 }
