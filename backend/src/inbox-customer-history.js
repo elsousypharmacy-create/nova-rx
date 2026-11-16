@@ -10,13 +10,19 @@ const CACHE_S = 300;
 /* Pure: bot answer -> what the screen gets (trimmed, typed). */
 export function cleanHistory(j) {
   const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
-  const purchases = (Array.isArray(j && j.purchases) ? j.purchases : []).slice(0, 10).map((p) => ({
-    date: typeof p.date === 'string' ? p.date.slice(0, 10) : '',
-    invoice: typeof p.invoice === 'string' ? p.invoice.slice(0, 40) : '',
-    total: num(p.total),
-    items: (Array.isArray(p.items) ? p.items : []).slice(0, 40).map((i) => ({ name: typeof i.name === 'string' ? i.name.slice(0, 80) : '', qty: num(i.qty) })),
-  }));
-  return { purchases, debt: j && j.debt && Number.isFinite(Number(j.debt.net)) ? { net: Number(j.debt.net) } : null, partial: !!(j && j.partial) };
+  const purchases = (Array.isArray(j && j.purchases) ? j.purchases : []).slice(0, 10).map((p) => {
+    const o = {
+      date: typeof p.date === 'string' ? p.date.slice(0, 10) : '',
+      invoice: typeof p.invoice === 'string' ? p.invoice.slice(0, 40) : '',
+      total: num(p.total),
+      discount: num(p.discount),
+      items: (Array.isArray(p.items) ? p.items : []).slice(0, 40).map((i) => ({ name: typeof i.name === 'string' ? i.name.slice(0, 80) : '', qty: num(i.qty), price: num(i.price) })),
+    };
+    if (p.points !== undefined && p.points !== null && Number.isFinite(Number(p.points))) o.points = Math.round(Number(p.points));
+    return o;
+  });
+  const pts = j && j.points && Number.isFinite(Number(j.points.total)) ? { total: Math.round(Number(j.points.total)) } : null;
+  return { purchases, debt: j && j.debt && Number.isFinite(Number(j.debt.net)) ? { net: Number(j.debt.net) } : null, points: pts, partial: !!(j && j.partial) };
 }
 
 export function registerInboxCustomerHistoryRoutes(route, { errorResponse }) {

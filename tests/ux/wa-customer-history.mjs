@@ -25,8 +25,8 @@ await ctx.route('**/*', async (r) => {
       if (mode === 'err') return json({ ok: false, code: 'HIST_FAILED', message_ar: 'تعذّر تحميل سجل الفواتير. حاول مرة تانية.' }, 502);
       if (mode === 'empty') return json({ ok: true, available: true, purchases: [], debt: null, partial: false });
       return json({ ok: true, available: true, purchases: [
-        { date: '2026-11-10', invoice: '1234', total: 150.5, items: [{ name: 'بنادول إكسترا', qty: 2 }, { name: 'فيتامين C', qty: 1 }, { name: 'شاش', qty: 1 }, { name: 'قطرة', qty: 1 }] },
-        { date: '2026-11-02', invoice: '1190', total: 60, items: [{ name: '<b>x</b>', qty: 1 }] }], debt: { net: 40 }, partial: true });
+        { date: '2026-11-10', invoice: '1234', total: 145.5, discount: 5, points: 7, items: [{ name: 'بنادول إكسترا', qty: 2, price: 30 }, { name: 'فيتامين C', qty: 1, price: 60 }, { name: 'شاش', qty: 1, price: 10 }, { name: 'قطرة', qty: 1, price: 20.5 }] },
+        { date: '2026-11-02', invoice: '1190', total: 60, discount: 0, items: [{ name: '<b>x</b>', qty: 1, price: 60 }] }], debt: { net: 40 }, points: { total: 42 }, partial: true });
     }
     if (u.includes('/link-names')) return json({ ok: true });
     if (u.includes('/conversations')) return json({ ok: true, conversations: CONVS });
@@ -53,11 +53,30 @@ release();
 await sheet.locator('.wa-inv').first().waitFor();
 const txt = await sheet.innerText();
 assert.equal(await sheet.locator('.wa-inv').count(), 2);
-assert.ok(txt.includes('فاتورة #1234') && txt.includes('10/11/2026') && txt.includes('150.5'), txt);
+assert.ok(txt.includes('فاتورة #1234') && txt.includes('10/11/2026') && txt.includes('145.5'), txt);
 assert.ok(txt.includes('بنادول إكسترا ×2') && txt.includes('(+1)'), 'items summarised (3 + 1 more)');
 assert.ok(txt.includes('عليه مديونية') && txt.includes('40'), 'debt shown');
+assert.ok(txt.includes('رصيد نقاطه: 42 نقطة'), 'points balance shown');
 assert.ok(txt.includes('القائمة ممكن تكون ناقصة'), 'partial note');
 assert.equal(await sheet.locator('b', { hasText: 'x' }).count(), 0, 'item name is escaped, not HTML');
+// 1b) tap an invoice -> details (lines, discount, total, points); back returns to the list; Esc backs out one level first
+await sheet.locator('.wa-inv').first().click();
+await sheet.locator('.wa-line').first().waitFor();
+let dt = await sheet.innerText();
+assert.ok(dt.includes('تفاصيل الفاتورة') && dt.includes('فاتورة #1234'), dt);
+assert.equal(await sheet.locator('.wa-line').count(), 4);
+assert.ok(dt.includes('بنادول إكسترا') && dt.includes('2 × 30') && dt.includes('60'), dt);
+assert.ok(dt.includes('مجموع الأصناف') && dt.includes('150.5') && dt.includes('الخصم') && dt.includes('الإجمالي المدفوع') && dt.includes('145.5') && dt.includes('نقاط الفاتورة') && dt.includes('7 نقطة'), dt);
+await page.waitForTimeout(4800);
+assert.equal(await sheet.locator('.wa-line').count(), 4, 'details kept after the live refresh');
+await sheet.locator('[data-wa-cust-backlist]').click(); await sheet.locator('.wa-inv').first().waitFor();
+await sheet.locator('.wa-inv').nth(1).click(); await sheet.locator('.wa-line').first().waitFor();
+dt = await sheet.innerText(); assert.ok(!dt.includes('الخصم'), 'no discount row when 0'); assert.ok(!dt.includes('نقاط الفاتورة'), 'no points row when unknown');
+assert.equal(await sheet.locator('b', { hasText: 'x' }).count(), 0, 'escaped in details');
+await page.keyboard.press('Escape'); await sheet.locator('.wa-inv').first().waitFor();   // Esc from details = back to the list, sheet stays
+await sheet.locator('.wa-inv').first().click(); await sheet.locator('.wa-line').first().waitFor();
+await sheet.locator('[data-wa-cust-close]').click(); await sheet.waitFor({ state: 'detached' });
+await view.locator('[data-wa-cust-open]').click(); await sheet.locator('.wa-inv').first().waitFor();   // reopen starts at the list
 // 2) survives the 4s live refresh
 await page.waitForTimeout(4800);
 assert.equal(await sheet.locator('.wa-inv').count(), 2, 'sheet kept after poll');
