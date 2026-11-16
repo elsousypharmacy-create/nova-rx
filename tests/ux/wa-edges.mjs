@@ -38,11 +38,17 @@ for (const [name, vp] of [['desktop 1920x950', { width: 1920, height: 950 }], ['
   const { ctx, page, other, errors } = await open(vp, BASE + '#wa'); const g = await rects(page);
   const top = g.root.top - g.view.top, bottom = g.view.bottom - g.root.bottom;
   assert.ok(Math.abs(g.view.bottom - g.vh) <= 1, name + ': the view reaches the bottom of the window'); assert.ok(top >= 0 && top <= 14, name + ': top frame ' + top); assert.ok(bottom >= 0 && bottom <= 14, name + ': bottom frame ' + bottom + ' (was 72)'); assert.ok(g.docH <= g.vh + 1, name + ': no page scroll');
+  assert.notEqual(await page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor), 'rgb(26, 30, 36)', name + ': desktop page background is not recoloured');
   assert.deepEqual(other, []); assert.deepEqual(errors, []); ok(name + ': ' + Math.round(top) + 'px above, ' + Math.round(bottom) + 'px below, no page scroll'); await ctx.close();
 }
 for (const [name, url] of [['phone tab 390x844', BASE + '#wa'], ['phone app 390x844', BASE + '?app=whatsapp']]) {
   const { ctx, page, other, errors } = await open({ width: 390, height: 844, touch: true }, url); const g = await rects(page);
   assert.ok(g.root.top <= 1 && Math.abs(g.root.bottom - g.vh) <= 1, name + ': fills the screen ' + JSON.stringify(g.root) + ' vh ' + g.vh); assert.ok(g.docH <= g.vh + 1, name + ': no page scroll');
-  assert.deepEqual(other, []); assert.deepEqual(errors, []); ok(name + ': edge to edge'); await ctx.close();
+  // whatever is left under the screen (home-indicator / browser-bar area) must be the colour of what sits above it, never a darker band
+  const htmlBg = () => page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
+  assert.equal(await htmlBg(), 'rgb(20, 23, 28)', name + ': list view: page background = list colour');
+  await page.locator('#novaInboxView [data-conv]').first().click(); await page.locator('.wa-composer').waitFor(); await page.waitForTimeout(350);
+  assert.equal(await htmlBg(), 'rgb(26, 30, 36)', name + ': chat view: page background = composer colour');
+  assert.deepEqual(other, []); assert.deepEqual(errors, []); ok(name + ': edge to edge, page background follows the screen'); await ctx.close();
 }
 console.log('PASS wa-edges:', n, 'cases'); await browser.close();
