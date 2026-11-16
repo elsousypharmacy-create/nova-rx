@@ -47,6 +47,13 @@ jobs:
         run: node tests/ui-real-catalog.mjs
       - name: UI sales ledger (U1)
         run: node tests/ui-sales-ledger.mjs
+      - name: Non-WhatsApp UX checkout and page regression checks
+        run: |
+          node tests/unit/ahmed-ux-render.check.mjs
+          node tests/unit/ux11-search.check.mjs
+          node tests/unit/ux12-13-checkout.check.mjs
+          node tests/unit/ux07-supplier-view.check.mjs
+          node tests/ux/ahmed-checkout-layout.mjs
       - name: WhatsApp-only link (/?app=whatsapp)
         run: node tests/ux/wa-app-mode.mjs
       - name: UX409 conversations bell, iPhone flush, PWA name

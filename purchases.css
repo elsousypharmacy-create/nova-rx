@@ -75,3 +75,16 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:var(--sp-3);flex-wrap:nowr
 #supplierStatusPanel [data-supplier-state=auth_failed],#supplierStatusPanel [data-supplier-state=missing_credential]{color:#e2c887}
 .controls #load{margin-inline-start:0;margin-inline-end:0}
 @media(max-width:600px){.purchase-flow{gap:4px}.purchase-flow li{flex:1 1 40%;text-align:center}}
+
+/* UX-AHMED follow-up: keep the draft action inside the remaining workspace. */
+html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
+@media(min-width:801px){
+ .controls,.purchase-flow,#status,#coverageHint{flex-shrink:0}
+ .workspace{overflow:hidden}
+ .cart{align-self:stretch;max-height:100%;min-height:0}
+ .cart #groups{flex:1 1 auto;min-height:0;overflow-y:auto}
+}
+
+/* Toolbar labels must stay legible when all procurement actions are present. */
+.controls{flex-wrap:wrap}
+.controls #receiveInvoice,.controls label:after{white-space:nowrap;flex-shrink:0}
