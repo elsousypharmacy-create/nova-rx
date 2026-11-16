@@ -70,6 +70,23 @@ export async function listHistory(db, t) {
   return out;
 }
 
+// A reply sent from NOVA is stored as ps_<uuid> (kind 'pharm'); the bot forwards the same message back as wb_<wamid> (kind 'bot').
+// When both exist (same text/caption, within 3 minutes) they are ONE message: hide the bot's copy. Read-time only, nothing is deleted,
+// so it also cleans up chats that were already doubled. Two ps_ rows with the same text are two real sends and both stay.
+export const ECHO_WINDOW_MS = 180000;
+export function dropBotEchoes(msgs) {
+  const pharm = msgs.filter((m) => m.dir === 'out' && m.kind === 'pharm');
+  if (!pharm.length) return msgs;
+  const taken = new Set();
+  return msgs.filter((m) => {
+    if (m.dir !== 'out' || m.kind !== 'bot') return true;
+    const twin = pharm.find((p) => !taken.has(p.id) && (p.text || '') === (m.text || '') && !!p.media === !!m.media && Math.abs(p.at - m.at) <= ECHO_WINDOW_MS);
+    if (!twin) return true;
+    taken.add(twin.id); // one bot copy per sent message
+    return false;
+  });
+}
+
 export async function getHistory(db, t, id) {
   const cid = typeof id === 'string' && id.length > 0 && id.length <= 80 ? id : null;
   if (!cid) return null;
@@ -78,7 +95,7 @@ export async function getHistory(db, t, id) {
   const { results } = await db.prepare(
     'SELECT * FROM (SELECT rowid AS rid, ' + MS('at') + ' AS ams, * FROM inbox_messages WHERE tenant_id = ? AND conversation_id = ? ORDER BY ams DESC, rowid DESC LIMIT 1000) ORDER BY ams ASC, rid ASC',
   ).bind(t, cid).all();
-  return { id: c.id, customer: c.customer || c.id, updatedAt: atMs(c.updated_at), messages: (results || []).map(toMsg) };
+  return { id: c.id, customer: c.customer || c.id, updatedAt: atMs(c.updated_at), messages: dropBotEchoes((results || []).map(toMsg)) };
 }
 
 // UX300: slim, text-free events for the response-time dashboard (SELECT only). Message text is read only to tag
