@@ -69,6 +69,7 @@ jobs:
         run: |
           node tests/ux/ux411-wa-send-photo.mjs
           node tests/ux/ux412-wa-stale-note.mjs
+          node tests/ux/ux413-wa-voice.mjs
       - name: UX413 standalone list flush + 16px edge inset
         run: node tests/ux/ux413-wa-bottom.mjs
       - name: POS-01 sale flow on one screen (N34)
