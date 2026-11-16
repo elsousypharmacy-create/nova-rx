@@ -5236,7 +5236,7 @@
    "brief": "Diff shows red for +2.25 and −7.75 alike, green only at 0.00 with no words. Negative counted (-5) and 1e3 accepted silently. Show 'عجز'/'زيادة'/'مطابق' text + distinct colour/icon (overage amber, shortage red, match green, AA contrast on rgb(23,26,31)), reject negatives with inline aria-invalid error (not toast), require a note when |diff| exceeds a threshold before closing. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Distinct overage/shortage/match states; negatives rejected inline; test asserts texts and aria-invalid.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5247,14 +5247,14 @@
    "dispatched_at": "2026-11-16T08:04:01+00:00",
    "pr": 510,
    "ci_dispatched": {
-    "sha": "657f9fc93c153a5c36301691189552b56bc4edd8",
+    "sha": "68f40249f2bccc9da0e3c4bf0347afd20bb9429b",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-16T07:57:39+00:00",
+    "at": "2026-11-16T08:07:37+00:00",
     "na": []
    },
    "conflict_fixes": 1
@@ -5266,7 +5266,7 @@
    "brief": "Desktop/mobile screenshots: rows in #novaPayBreakdown and #novaShiftClose touch the panel edges while titles are padded; panels stack with 0 gap; labels of float/count inputs flush to the edge; 'رصيد افتتاح الدرج' input label then a second 'رصيد الافتتاح' row duplicate. Apply consistent 16-20px inner padding, 12-16px gap between panels, tokens from ux-tokens.css, merge duplicate float rows. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Consistent padding and gaps on all report panels at both viewports; test asserts computed padding/gap and no label touching panel edge.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5276,17 +5276,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-16T07:59:30+00:00",
    "pr": 513,
-   "ci_dispatched": {
-    "sha": "01c431d7804f8d1dc3cc83de66198f6788308064",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-16T08:02:28+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-16T08:07:37+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/513"
   },
   {
    "id": "UX436",
@@ -5473,6 +5464,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T08:05:47+00:00",
+ "updated": "2026-11-16T08:07:37+00:00",
  "slot_cooldown": {}
 }
