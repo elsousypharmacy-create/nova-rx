@@ -33,6 +33,13 @@ const send = async (body, pin = PIN, e = env) => {
 };
 const ok = () => ({ id: 'wa_201111', mime: 'image/jpeg', data: b64(JPEG), caption: 'الروشتة', clientId: 'cli_img_0001', by: 'د. أحمد' });
 
+const probe = async (pin = PIN, e = env) => { const h = { 'CF-Connecting-IP': '10.2.0.1', Origin: 'https://p.test' }; if (pin != null) h['X-Nova-Pin'] = pin; const r = await handle(new Request('https://x.test/api/v1/inbox/history/send-media', { headers: h }), e); return [r.status, await r.json()]; };
+let [ps, pj] = await probe(null); assert.equal(ps, 401);
+[ps, pj] = await probe(); assert.equal(ps, 200); assert.equal(pj.enabled, true);
+[ps, pj] = await probe(PIN, { ...env, NOVA_INBOX_SEND_MEDIA: undefined }); assert.equal(pj.enabled, false, 'flag off -> buttons stay hidden');
+[ps, pj] = await probe(PIN, { ...env, WA_BACKEND_URL: '' }); assert.equal(pj.enabled, false, 'not configured -> hidden');
+[ps, pj] = await probe(PIN, { ...env, NOVA_WA_BRIDGE_TOKEN: 'short' }); assert.equal(pj.enabled, false, 'short token -> hidden');
+assert.ok(!JSON.stringify(pj).includes(TOKEN));
 let [s, j] = await send(ok(), null); assert.equal(s, 401);
 [s, j] = await send(ok(), 'wrong-pin-000000'); assert.equal(s, 401);
 [s, j] = await send(ok(), PIN, { ...env, NOVA_INBOX_SEND_MEDIA: undefined }); assert.equal(s, 404); assert.equal(j.code, 'SENDMEDIA_DISABLED');

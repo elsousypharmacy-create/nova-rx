@@ -32,6 +32,14 @@ async function bump(kv, key, max, ttl) {
 }
 
 export function registerInboxSendMediaRoutes(route, { errorResponse }) {
+  // Capability probe so the screen shows the photo buttons only when sending is really on (no dead buttons). Same PIN gate; reveals nothing else.
+  route('GET', '/api/v1/inbox/history/send-media', async (ctx) => {
+    const { env, requestId, request } = ctx;
+    const bad = await checkPin(request, env);
+    if (bad) return errorResponse(bad.code, bad.message_ar, bad.status, requestId);
+    const ready = String(env.NOVA_INBOX_SEND_MEDIA) === '1' && typeof env.WA_BACKEND_URL === 'string' && !!env.WA_BACKEND_URL && typeof env.NOVA_WA_BRIDGE_TOKEN === 'string' && env.NOVA_WA_BRIDGE_TOKEN.length >= 32;
+    return new Response(JSON.stringify({ ok: true, enabled: ready, requestId }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  });
   route('POST', '/api/v1/inbox/history/send-media', async (ctx) => {
     const { env, requestId, request } = ctx;
     const err = (code) => errorResponse(code, e(code)[0], e(code)[1], requestId);
