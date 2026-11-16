@@ -63,7 +63,7 @@ let n = 0; const ok = (m) => { n++; console.log('ok -', m); };
   await shot(page, '1-composer');
   await view.locator('[data-wa-attach]').click();
   assert.equal(await view.locator('[data-wa-att]').count(), 2, 'menu: gallery + camera'); assert.equal(await view.locator('[data-wa-att="image"]').getAttribute('aria-disabled'), null);
-  await shot(page, '2-menu');
+  await shot(page, '2-menu'); await view.locator('[data-wa-attach]').click(); assert.equal(await view.locator('[data-wa-attach-menu]').isHidden(), true, 'menu closes');
   // cancel path: pick -> preview -> X -> nothing sent
   await view.locator('[data-wa-file]').setInputFiles(file);
   await page.locator('[data-wa-mp]').waitFor(); await page.waitForTimeout(300); await shot(page, '3-preview');
