@@ -5274,7 +5274,7 @@
    "brief": "Desktop/mobile screenshots: rows in #novaPayBreakdown and #novaShiftClose touch the panel edges while titles are padded; panels stack with 0 gap; labels of float/count inputs flush to the edge; 'رصيد افتتاح الدرج' input label then a second 'رصيد الافتتاح' row duplicate. Apply consistent 16-20px inner padding, 12-16px gap between panels, tokens from ux-tokens.css, merge duplicate float rows. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Consistent padding and gaps on all report panels at both viewports; test asserts computed padding/gap and no label touching panel edge.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5282,7 +5282,19 @@
    "pin_slot": "A",
    "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
    "slot": "A",
-   "dispatched_at": "2026-11-16T07:59:30+00:00"
+   "dispatched_at": "2026-11-16T07:59:30+00:00",
+   "pr": 513,
+   "ci_dispatched": {
+    "sha": "01c431d7804f8d1dc3cc83de66198f6788308064",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-16T08:02:28+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX436",
@@ -5291,13 +5303,15 @@
    "brief": "Payment breakdown shows 'النقدي المتوقع في الدرج' (sales−cash returns only) while the shift panel shows 'المتوقع في الدرج' (with float + debt collections). Show one authoritative drawer figure with a formula breakdown (افتتاح + مبيعات نقدية − مرتجعات + تحصيل)، and rename/remove the other. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Only one expected-in-drawer number per view with a visible breakdown; test asserts value equality with the formula.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
    "model": "sonnet",
    "pin_slot": "A",
-   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix."
+   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
+   "slot": "A",
+   "dispatched_at": "2026-11-16T08:02:28+00:00"
   },
   {
    "id": "UX437",
@@ -5464,6 +5478,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T07:59:30+00:00",
+ "updated": "2026-11-16T08:02:28+00:00",
  "slot_cooldown": {}
 }
