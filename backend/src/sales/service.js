@@ -76,7 +76,9 @@ export async function recordStockMovement(env, scope, input, requestId, actor = 
 }
 
 // input: { items:[{productId, qty, unitPriceMinor}], payments:[{method, amountMinor}], discountMinor?, customerId?, cashierSessionId? }
-export async function createSale(env, scope, input, requestId, actor = null) {
+// S1-02: opts = { saleId?, extra?: (saleId) => prepared statements } so the sync layer can put its own rows
+// (sync_ledger, change_feed, sync_ops) in the SAME all-or-nothing batch as the sale: no partial apply, no double stock on replay.
+export async function createSale(env, scope, input, requestId, actor = null, opts = {}) {
   const g = guard(env, scope, requestId); if (g) return g;
   const i = input || {};
   const items = i.items, pays = i.payments || [], disc = i.discountMinor ?? 0;
@@ -90,7 +92,7 @@ export async function createSale(env, scope, input, requestId, actor = null) {
   if (disc > gross) return fail('BAD_REQUEST', requestId);
   const total = gross - disc;
   if (pays.reduce((a, p) => a + p.amountMinor, 0) !== total) return fail('PAYMENT_MISMATCH', requestId);
-  const db = env.DB, S = { tenant_id: scope.tenantId, branch_id: scope.branchId }, saleId = uid('sale');
+  const db = env.DB, S = { tenant_id: scope.tenantId, branch_id: scope.branchId }, saleId = (opts && opts.saleId) || uid('sale');
   const st = [ins(db, 'sales', { id: saleId, ...S, customer_id: i.customerId || null, cashier_session_id: i.cashierSessionId || null, total_minor: total, discount_minor: disc, status: 'completed' })];
   for (const it of items) {
     st.push(ins(db, 'sale_items', { id: uid('si'), ...S, sale_id: saleId, product_id: it.productId, qty: it.qty, unit_price_minor: it.unitPriceMinor }));
@@ -98,6 +100,7 @@ export async function createSale(env, scope, input, requestId, actor = null) {
   }
   for (const p of pays) st.push(ins(db, 'payments', { id: uid('pay'), ...S, sale_id: saleId, method: p.method, amount_minor: p.amountMinor }));
   if (total > 0) st.push(...journal(db, S, 'sale', 'sale', saleId, '1000', '4000', total));
+  if (opts && typeof opts.extra === 'function') st.push(...opts.extra(saleId));
   return exec(env, st, requestId, { saleId, totalMinor: total });
 }
 
