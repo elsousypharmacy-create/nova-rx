@@ -129,6 +129,8 @@ export function registerInboxSendRoutes(route, { errorResponse }) {
       return err('SEND_FAILED');
     }
     const at = Date.now(), mid = 'ps_' + crypto.randomUUID();
+    // The bot forwards the same reply to NOVA as wb_<wamid> (usually before this point): keep one row, ours (it carries the staff name).
+    try { await db.prepare("DELETE FROM inbox_messages WHERE tenant_id = ? AND rowid IN (SELECT rowid FROM inbox_messages WHERE tenant_id = ? AND conversation_id = ? AND dir = 'out' AND id LIKE 'wb\\_%' ESCAPE '\\' AND text = ? AND at BETWEEN ? AND ? ORDER BY at DESC LIMIT 1)").bind(t, t, cid, text, at - 180000, at + 180000).run(); } catch { /* the duplicate stays; nothing else breaks */ }
     await db.prepare('INSERT INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at) VALUES (?,?,?,?,?,?,?)').bind(t, mid, cid, 'out', text, 'sent', at).run();
     await db.prepare('UPDATE inbox_conversations SET updated_at = ? WHERE tenant_id = ? AND id = ?').bind(at, t, cid).run();
     await log('sent', null);
