@@ -5257,7 +5257,8 @@
     "at": "2026-11-16T08:17:18+00:00",
     "na": []
    },
-   "conflict_fixes": 2
+   "conflict_fixes": 2,
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/510"
   },
   {
    "id": "UX435",
@@ -5326,7 +5327,8 @@
     ],
     "at": "2026-11-16T08:19:16+00:00",
     "na": []
-   }
+   },
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/517"
   },
   {
    "id": "UX438",
@@ -5355,7 +5357,8 @@
     ],
     "at": "2026-11-16T08:17:18+00:00",
     "na": []
-   }
+   },
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/518"
   },
   {
    "id": "UX439",
@@ -5487,5 +5490,43 @@
   }
  ],
  "updated": "2026-11-16T08:19:16+00:00",
- "slot_cooldown": {}
+ "slot_cooldown": {},
+ "ingested_inbox": [
+  "fix-aumet-login.json",
+  "fix-aumet-session.json",
+  "fix-conversations-missing.json",
+  "fix-ios-zoom.json",
+  "fix-qa-loop.json",
+  "fix-staging-cron.json",
+  "fix-wa-404.json",
+  "fix-wa-bot-down.json",
+  "fix-wa-live-inbound.json",
+  "qa-loop-203-fixes.json",
+  "qa-loop-203.json",
+  "qa-loop-219-fixes.json",
+  "qa-loop-219.json",
+  "qa-loop-231-fixes.json",
+  "qa-loop-231.json",
+  "qa-loop-301-fixes.json",
+  "qa-loop-301.json",
+  "qa-loop-314-fixes.json",
+  "qa-loop-314.json",
+  "qa-loop-431.json",
+  "qa-loop-82-fixes.json",
+  "qa-loop-82.json",
+  "ux-phase10.json",
+  "ux-pro-request.json",
+  "ux-pro.json",
+  "ux-pro2-request.json",
+  "ux-pro2.json",
+  "ux-pro2b-request.json",
+  "ux-pro2b.json",
+  "ux-pro3-build.json",
+  "ux-pro3-request.json",
+  "ux-pro3.json",
+  "ux-wa-badge.json",
+  "ux-wa-chat-suppliers.json",
+  "ux-wa-dashboard.json",
+  "qa-loop-431-fixes.json"
+ ]
 }
