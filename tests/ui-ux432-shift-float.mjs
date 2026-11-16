@@ -26,7 +26,7 @@ try {
     assert.equal(await p.locator('#novaShiftCount').inputValue(), '167.75', 'counted kept');
     assert.equal(await p.locator('#novaShiftExpected').getAttribute('data-amount'), '167.75');
     assert.equal(await p.locator('#novaShiftDiff').getAttribute('data-diff'), '0.00');
-    assert.equal(await p.locator('[data-shift-row="float"]').getAttribute('data-amount'), '100.00');
+    assert.equal(await p.locator('#novaShiftFloat').inputValue(), '100'); assert.equal(await p.locator('[data-shift-row="float"]').count(), 0, 'UX435 no duplicate float row');
     await fl.fill('110'); await fl.dispatchEvent('change');
     assert.equal(await p.locator('#novaShiftExpected').getAttribute('data-amount'), '177.75');
     assert.equal(await p.locator('#novaShiftDiff').getAttribute('data-diff'), '-10.00');
