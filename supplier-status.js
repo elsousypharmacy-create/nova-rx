@@ -32,7 +32,8 @@
     var t = Date.parse(checkedAt || '');
     return !isFinite(t) || (now == null ? Date.now() : now) - t > STALE_MS;
   }
-  function label(state) { return LABELS[state] || LABELS.unknown; }
+  var EN_LABELS = { connected: 'Connected', auth_failed: 'Sign-in failed', missing_credential: 'Credentials missing', down: 'Supplier unavailable', unknown: 'Unknown' };
+  function label(state, language) { var labels = language === 'en' ? EN_LABELS : LABELS; return labels[state] || labels.unknown; }
   function build(items, checkedAt) {
     return { checkedAt: checkedAt, suppliers: items.map(function (i) { return { id: i.id, name: i.name, state: STATES.indexOf(i.state) < 0 ? 'unknown' : i.state, detail: i.detail || null }; }) };
   }

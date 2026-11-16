@@ -2114,6 +2114,37 @@ html.app-whatsapp .wa-composer{margin:0!important;background:#1a1e24!important;p
 html.app-whatsapp .wa-root[data-kbd] .wa-composer{padding-bottom:8px!important}
 html.app-whatsapp .wa-sclear{inset-inline-end:24px}
 </style>
+<style id="ahmed-ux13-checkout">
+/* Only the payment fields scroll. Total, customer link, allocation and actions stay visible. */
+#checkoutModal{box-sizing:border-box;padding:12px;overflow:hidden}
+#checkoutModal .modal-card{display:flex;flex-direction:column;min-height:0;max-height:calc(100dvh - 24px);overflow:hidden}
+#checkoutModal .modal-header,#checkoutModal .checkout-amount-display,#checkoutModal .modal-footer{flex:0 0 auto}
+#checkoutModal .checkout-amount-display{margin:0;padding:10px 16px}
+#checkoutModal .modal-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+#checkoutModal .modal-footer{display:flex;flex-wrap:wrap;gap:8px}
+#checkoutModal .checkout-allocation{flex-basis:100%;font-size:13px;color:var(--text-dim);font-variant-numeric:tabular-nums}
+#checkoutModal input:disabled{opacity:.55;cursor:not-allowed}
+#checkoutModal label{line-height:1.6}
+@media(max-height:740px){#checkoutModal .modal-header,#checkoutModal .modal-footer{padding:8px 12px}#checkoutModal .checkout-amount-display .val{font-size:24px}}
+</style>
+<style id="ahmed-ux11-search">
+.suggestion-item{min-height:64px;gap:12px}.sugg-product-text{min-width:0;flex:1}.sugg-product-text .sugg-primary{white-space:normal;overflow-wrap:anywhere;line-height:1.6}.sugg-meta{flex-shrink:0;display:grid;gap:4px}.sugg-stock{font-size:12px;color:var(--text-dim)}.sugg-stock[data-stock-known="false"]{color:#e4c98f}.sugg-strength small{display:inline;font-size:11px;color:#e4c98f}.suggestion-item.selected{outline:2px solid #79c9eb;outline-offset:-2px}
+@media(max-width:480px){.suggestion-item{flex-wrap:wrap}.sugg-product-text{flex-basis:100%}.sugg-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%}.sugg-price{margin-inline-end:auto}}
+</style>
+<style id="ahmed-ux-small-batch">
+html body .pos-root .qty-btn,html body .pos-root .btn-icon-del,html body .nova-clear-invoice{min-width:44px!important;min-height:44px!important}
+html body .pos-root .customer-empty-box{padding:12px 8px;gap:8px;min-height:0}
+html body .pos-root .customer-empty-box>svg{width:24px;height:24px}
+html body .pos-root .customer-empty-sub{line-height:1.6}
+html body .pos-root .discount-inputs .input-grp label{font-size:12px;white-space:nowrap}
+html body .nova-clear-invoice{color:#ffb4a8;border:1px solid #74423e;background:transparent;flex-shrink:0}
+html body .header-actions #btnHelpShortcuts{display:block;min-height:44px}
+.nova-product-en-name{display:block;white-space:normal;overflow-wrap:anywhere;font-size:12px;color:var(--text-dim)}
+.nova-product-full-name{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.8}
+.nova-rep-example{padding:16px;border:1px dashed #46515b;border-radius:8px;color:#b7c4ce;margin-top:14px}
+.checkout-mock-note{font-size:12px;line-height:1.7;color:#e4c98f;margin:0 0 12px}
+.nova-settings-grid{align-items:start}.nova-setting-card h3{margin-block:0 12px}.nova-setting-card p{line-height:1.8}
+</style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;document.documentElement.classList.remove('nova-boot');try{var a=document.activeElement;if(!a||a===document.body){var m=document.getElementById('mainSearchInput');if(m&&m.offsetParent)m.focus()}}catch(e){}s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
@@ -2138,15 +2169,14 @@ html.app-whatsapp .wa-sclear{inset-inline-end:24px}
         </div>
 
         <div class="header-actions nova-sale-actions"><span id="activeSaleNumber" class="nova-sale-number" role="button" tabindex="0" title="اضغط لنسخ رقم الفاتورة" aria-label="رقم عملية البيع، اضغط للنسخ" style="cursor:pointer"></span>
-          <button id="novaHelpChip" class="nova-help-chip" type="button" title="عرض اختصارات الكيبورد (F1)">F1 اختصارات</button>
           <button id="btnNewSale" class="btn nova-new-sale" type="button" title="فاتورة جديدة (F2)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Sale</span></button>
           <button id="holdCurrentInvoice" class="btn nova-hold-action" type="button" title="تعليق الفاتورة الحالية" aria-label="تعليق الفاتورة الحالية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M10 9v6m4-6v6"/></svg><span>تعليق</span></button>
           <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="الفواتير المعلقة" aria-label="الفواتير المعلقة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
           <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="إضافة أو تغيير العميل (F3)" aria-label="إضافة أو تغيير العميل"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
+          <button id="btnClearInvoice" class="btn nova-clear-invoice" type="button" title="مسح الأصناف (F4)">مسح الفاتورة</button>
           <div class="nova-more-wrap">
             <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="المزيد من الإجراءات" title="المزيد من الإجراءات" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
             <div id="novaSaleMoreMenu" class="nova-more-menu" hidden>
-              <button id="btnClearInvoice" class="nova-more-item nova-more-danger" type="button" title="مسح الأصناف (F4)">Clear Invoice</button>
               <button id="btnHelpShortcuts" class="nova-more-item" type="button" title="عرض اختصارات الكيبورد (F1)">Keyboard Shortcuts (F1)</button>
             </div>
           </div>
@@ -2230,8 +2260,8 @@ html.app-whatsapp .wa-sclear{inset-inline-end:24px}
               <input type="number" id="inputPercentDiscount" min="0" max="100" step="1" placeholder="0">
             </div>
             <div class="input-grp">
-              <span>EGP</span>
-              <input type="number" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
+              <label for="inputFixedDiscount">خصم بالجنيه</label>
+              <input type="number" aria-label="خصم بالجنيه" id="inputFixedDiscount" min="0" step="0.5" placeholder="0.00">
             </div>
           </div>
           <div id="discountHint" class="discount-hint" role="status" aria-live="polite" hidden></div>
@@ -2354,19 +2384,21 @@ html.app-whatsapp .wa-sclear{inset-inline-end:24px}
   </div>
   <!-- CHECKOUT MODAL -->
   <div id="checkoutModal" class="modal-backdrop">
-    <div class="modal-card">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
       <div class="modal-header">
-        <h3>Complete Sale & Payment / إنهاء الفاتورة</h3>
+        <h3 id="checkoutTitle">Complete Sale & Payment / إنهاء الفاتورة</h3>
         <button id="btnCloseCheckout" class="btn-icon-del" type="button" aria-label="إغلاق" style="color:#cbd5e1;">✕</button>
       </div>
-      <div class="modal-body">
         <div class="checkout-amount-display">
           <div class="label">Total Amount Payable</div>
           <div id="modalAmountDue" class="val">0.00 EGP</div>
           <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div><button type="button" id="checkoutAddCustomer" class="nova-checkout-customer">إضافة رقم العميل (اختياري)</button>
           <div id="checkoutCreditHint" role="alert" hidden>اختر عميلاً لإتمام البيع الآجل</div>
         </div>
+      <div class="modal-body">
 
+
+        <p class="checkout-mock-note" role="note">البطاقة محاكاة فقط — لا يُخصم مبلغ بنكي. تأكيد البيع يحفظ الفاتورة، وبعده تختار الطباعة.</p>
         <div>
           <label style="font-size:12px; font-weight:600; color:#94a3b8; display:block; margin-bottom:6px;">Payment Method</label>
           <div class="pay-methods-grid">
@@ -2374,7 +2406,7 @@ html.app-whatsapp .wa-sclear{inset-inline-end:24px}
               <span>Cash / نقدي (F12)</span>
             </button>
             <button class="pay-method-btn" data-method="card">
-              <span>Mada / بطاقة (F10)</span>
+              <span>بطاقة بنكية (F10)</span>
             </button>
             <button class="pay-method-btn" data-method="credit">
               <span>Credit / آجل (F11)</span>
@@ -2386,15 +2418,15 @@ html.app-whatsapp .wa-sclear{inset-inline-end:24px}
         </div>
 
         <div id="splitDetailsBox" style="display:none; margin-bottom:8px;">
-          <label style="font-size:12px; font-weight:600; color:#94a3b8;">Card (mock) / بطاقة</label>
+          <label for="inputCardAmount" style="font-size:12px; font-weight:600; color:#94a3b8;">Card (mock) / بطاقة</label>
           <input type="number" id="inputCardAmount" class="history-search-input" style="height:34px; text-align:right;" placeholder="0.00" min="0" step="0.01">
-          <label style="font-size:12px; font-weight:600; color:#94a3b8;">Credit / آجل (يحتاج عميلاً)</label>
+          <label for="inputCreditAmount" style="font-size:12px; font-weight:600; color:#94a3b8;">Credit / آجل (يحتاج عميلاً)</label>
           <input type="number" id="inputCreditAmount" class="history-search-input" style="height:34px; text-align:right;" placeholder="0.00" min="0" step="0.01">
         </div>
 
         <div id="cashDetailsBox">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <label style="font-size:12px; font-weight:600; color:#94a3b8;">Cash Received</label>
+            <label for="inputCashReceived" style="font-size:12px; font-weight:600; color:#94a3b8;">Cash Received</label>
             <span style="font-size:12px; color:var(--text-dim);">EGP</span>
           </div>
           <input 
@@ -2419,8 +2451,9 @@ html.app-whatsapp .wa-sclear{inset-inline-end:24px}
         </div>
       </div>
       <div class="modal-footer">
+        <div id="checkoutAllocation" role="status" aria-live="polite" class="checkout-allocation" hidden></div>
         <button id="btnConfirmPayment" class="btn btn-primary" style="padding:8px 18px; font-size:13px;">
-          Confirm & Print Receipt (Enter)
+          تأكيد البيع (Enter)
         </button>
         <button id="btnCancelCheckout" class="btn btn-secondary">Cancel (Esc)</button>
       </div>
@@ -2672,6 +2705,11 @@ window.NovaFmt=(function(){
       const normCode = s => normDigits(s).replace(/[\s-]+/g, "");
       const STRENGTH_RE = /(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?\s*(?:mg|g|mcg|ug|ml|iu|%|مجم|مج|ملجم|جم|جرام|مكج|مل|وحدة|وحده))(?![\p{L}])/iu;
       const PACK_RE = /(\d+\s*(?:tab(?:let)?s?|cap(?:let|sule)?s?|amp(?:oule)?s?|sachets?|strips?|vials?|bottles?|drops?|spra?y|tube|قرص|أقراص|اقراص|حبة|حبه|كبسولة|كبسوله|امبول|أمبول|شريط|كيس|عبوة|علبة|علبه|وحدة|وحده))(?![\p{L}])/iu;
+      // UX11: presentation only. Unknown stock is never coerced to zero; source text is never corrected.
+      const searchStockLabel = p => Number.isFinite(p && p.stock)
+        ? (p.stock === 0 ? (novaEn() ? 'Stock: 0' : 'الرصيد: صفر') : (novaEn() ? 'Stock: ' : 'الرصيد: ') + p.stock)
+        : (novaEn() ? 'Stock unknown' : 'الرصيد غير معروف');
+      const sourceMeasureNeedsReview = value => /(?:^|\s)(?:[1-9]\d{2,})(?:[.,]\d+)?\s*(?:g|جم|جرام)\b/iu.test(normDigits(value));
       const extractStrength = p => {
         if (!p) return "";
         if (p.strength) return String(p.strength);
@@ -3345,19 +3383,21 @@ window.NovaFmt=(function(){
         const q = state.searchQuery;
         elements.suggestionsBox.innerHTML = matches.map((prod, idx) => {
           const str = extractStrength(prod), pk = extractPack(prod), gen = prod.generic || prod.activeIngredient || "";
+          const measureNote = sourceMeasureNeedsReview(str) ? (novaEn() ? 'Source value — verify pack/strength' : 'قيمة من المصدر — راجع العبوة والتركيز') : (novaEn() ? 'Source description' : 'وصف المصدر');
           const sub = [
             gen ? `<span class="sugg-generic">${highlightText(gen, q)}</span>` : "",
-            str ? `<span class="sugg-strength" data-hl="strength">${highlightText(str, q)}</span>` : "",
+            str ? `<span class="sugg-strength" data-hl="strength" title="${escH(measureNote)}">${highlightText(str, q)} <small>${escH(measureNote)}</small></span>` : "",
             pk && pk !== str ? `<span class="sugg-pack" data-hl="pack">${highlightText(pk, q)}</span>` : ""
           ].filter(Boolean).join(" • ");
           return `
           <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
-            <div>
+            <div class="sugg-product-text">
               <div class="sugg-primary" dir="auto" data-hl="name">${highlightText(prod.name, q)}</div>
               <div class="sugg-sub">${sub}</div>
             </div>
             <div class="sugg-meta">
               <div class="sugg-price">${Number(prod.price || 0).toFixed(2)} EGP</div>
+              <span class="sugg-stock" data-stock-known="${Number.isFinite(prod.stock)}">${escH(searchStockLabel(prod))}</span>
               <span class="sugg-tag" data-hl="barcode">${highlightText(prod.barcode, q)}</span>
             </div>
           </div>
@@ -3782,6 +3822,7 @@ window.NovaFmt=(function(){
           elements.mainSearchInput.focus();
           return;
         }
+        if (!window.confirm(novaEn() ? 'Clear all items from this open invoice? Saved invoices stay unchanged.' : 'مسح كل أصناف الفاتورة المفتوحة؟ الفواتير المحفوظة لن تتغير.')) return false;
         const snap = snapshotCart();
         state.invoiceLines = [];
         state.percentDiscount = 0;
@@ -4005,8 +4046,23 @@ window.NovaFmt=(function(){
         elements.displayChangeDue.textContent = formatMoney(tp.ok ? tp.change : 0);
         const needCust = !tp.ok && tp.error === "credit-needs-customer";
         const hint = document.getElementById("checkoutCreditHint");
-        if (hint) hint.hidden = !needCust;
-        elements.btnConfirmPayment.disabled = needCust;
+        const split = state.checkoutPaymentMethod === 'split';
+        if (hint) hint.hidden = !(needCust || (split && !state.attachedCustomer));
+        const creditInput = document.getElementById('inputCreditAmount');
+        creditInput.disabled = !state.attachedCustomer;
+        creditInput.setAttribute('aria-describedby', 'checkoutCreditHint');
+        const attach = document.getElementById('checkoutAddCustomer');
+        if (attach) attach.textContent = (localStorage.getItem("nova-rx-language") === "en") ? (needCust || split ? 'Link customer for credit' : 'Add customer (optional)') : (needCust || split ? 'ربط عميل للبيع الآجل' : 'إضافة رقم العميل (اختياري)');
+        const allocation = document.getElementById('checkoutAllocation');
+        if (allocation) {
+          allocation.hidden = !split;
+          const n = id => Math.max(0, Number(document.getElementById(id).value) || 0);
+          const assigned = Math.round((n('inputCashReceived') + n('inputCardAmount') + n('inputCreditAmount')) * 100) / 100;
+          const remaining = Math.round((grandTotal - assigned) * 100) / 100;
+          allocation.textContent = ((localStorage.getItem("nova-rx-language") === "en") ? 'Allocated: ' : 'الموزّع: ') + formatMoney(assigned) + ' · ' +
+            (remaining < 0 ? ((localStorage.getItem("nova-rx-language") === "en") ? 'Excess: ' : 'الزيادة: ') : ((localStorage.getItem("nova-rx-language") === "en") ? 'Remaining: ' : 'المتبقي: ')) + formatMoney(Math.abs(remaining));
+        }
+        elements.btnConfirmPayment.disabled = !!state.paymentSubmitting || !tp.ok;
       }
 
       function updateChangeDue(received, total) {
@@ -4490,10 +4546,21 @@ window.NovaFmt=(function(){
         return window.novaPay.plan(total, inputs, !!state.attachedCustomer);
       }
 
-      function confirmPayment() { window.novaStock.withLock(confirmPaymentCore); }
+      function confirmPayment() {
+        // UX12: reject rapid clicks/Enter before the async stock lock is acquired.
+        if (state.paymentSubmitting || !elements.checkoutModal.classList.contains('active') || elements.btnConfirmPayment.disabled) return;
+        state.paymentSubmitting = true;
+        elements.btnConfirmPayment.disabled = true;
+        return Promise.resolve().then(() => window.novaStock.withLock(confirmPaymentCore)).catch(() => {
+          showToast(novaEn() ? 'Unable to confirm sale. Check saved invoices before retrying.' : 'تعذر تأكيد البيع. راجع الفواتير المحفوظة قبل المحاولة مرة أخرى.', 'error');
+        }).finally(() => {
+          state.paymentSubmitting = false;
+          if (elements.checkoutModal.classList.contains('active')) refreshChange();
+        });
+      }
 
       function confirmPaymentCore() {
-        if (elements.btnConfirmPayment.disabled) return;
+        if (!elements.checkoutModal.classList.contains('active')) return;
         if (!state.attachedCustomer && !state.customerGateSkipped) { closeCheckout(); openCheckout(); return; }
         const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
         const tp = currentTenderPlan(grandTotal);
@@ -4568,7 +4635,7 @@ window.NovaFmt=(function(){
       }
 
       function startNewSale() {
-        clearInvoice();
+        if (clearInvoice() === false) return;
         document.getElementById("novaLabelsPanel")?.classList.remove("open");
         elements.receiptModal.classList.remove("active");
         activeSaleNumber = nextSaleNumber();
@@ -5445,8 +5512,8 @@ window.NovaFmt=(function(){
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Cairo,sans-serif';
   const inp='width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;background:#0d1014;border:1px solid #2a3139;border-radius:8px;color:#e8eef3;font:inherit';
   ov.innerHTML='<div style="max-width:94vw;box-sizing:border-box;background:#14181d;border:1px solid #2a3139;border-radius:12px;padding:20px;width:min(400px,94vw);max-height:90vh;overflow:auto;color:#e8eef3;position:relative"><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button><h2 id="novaCustAddT" style="margin:0 0 12px;font-size:18px;padding-inline-start:52px;min-height:44px;box-sizing:border-box">إضافة عميل</h2>'
-   +'<label for="novaCaName" style="display:block;margin-bottom:4px">الاسم</label><input id="novaCaName" autocomplete="off" aria-describedby="novaCaNameErr" style="'+inp+'"><div id="novaCaNameErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>'
-   +'<label for="novaCaPhone" style="display:block;margin:8px 0 4px">رقم الهاتف</label><input id="novaCaPhone" type="tel" inputmode="numeric" dir="ltr" autocomplete="off" aria-describedby="novaCaPhoneErr" style="'+inp+';text-align:left"><div id="novaCaPhoneErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>'
+   +'<label for="novaCaName" style="display:block;margin-bottom:4px">الاسم (مطلوب)</label><input id="novaCaName" required autocomplete="name" aria-describedby="novaCaNameErr" style="'+inp+'"><div id="novaCaNameErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>'
+   +'<label for="novaCaPhone" style="display:block;margin:8px 0 4px">رقم الهاتف (مطلوب)</label><p id="novaCaPhoneHelp" style="font-size:13px;color:#a7b3bd">من 9 إلى 15 رقمًا؛ الأرقام العربية مقبولة، ولا يمكن تكرار رقم مسجّل.</p><input id="novaCaPhone" required type="tel" inputmode="tel" dir="ltr" autocomplete="tel" aria-describedby="novaCaPhoneHelp novaCaPhoneErr" style="'+inp+';text-align:left"><div id="novaCaPhoneErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>'
    +'<div style="display:flex;gap:8px;margin-top:14px"><button type="button" class="btn btn-primary" id="novaCaOk" style="min-height:44px;flex:1">حفظ العميل</button><button type="button" class="nova-return-btn" id="novaCaCancel" style="min-height:44px">إلغاء</button></div></div>';
   document.body.appendChild(ov);
   const nm=ov.querySelector('#novaCaName'),ph=ov.querySelector('#novaCaPhone'),ne=ov.querySelector('#novaCaNameErr'),pe=ov.querySelector('#novaCaPhoneErr');
@@ -5550,6 +5617,7 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
  const chipBar=real?'':'<div class="nova-stock-chips" id="novaStockChips" role="group" title="'+tr('نواقص: أقل من 30 وحدة · نفد: صفر · قريب الانتهاء: ضمن مهلة التحذير','Low: under 30 units · Out: zero · Near expiry: within warning window')+'" aria-label="'+tr('تصفية المخزون','Stock filter')+'">'+['all','low','out','near'].map(k=>'<button type="button" class="nova-stock-chip'+(fAct===k?' active':'')+'" data-stock-filter="'+k+'" aria-pressed="'+(fAct===k)+'">'+fLbl[k]+' <b data-chip-count="'+k+'">'+fCount(k)+'</b></button>').join('')+'<span class="nova-stock-legend" title="'+tr('نواقص: رصيد أقل من 30 وحدة. نفد: رصيد صفر. قريب الانتهاء: تشغيلة منتهية أو ضمن مهلة التحذير','Low: stock under 30. Out: zero stock. Near expiry: a lot expired or within the warning window')+'">'+tr('نواقص = أقل من '+LOW_T+' وحدة · نفد = 0 · قريب الانتهاء = ضمن '+window.novaStock.nearExpiryDays()+' يومًا','Low = under '+LOW_T+' · Out = 0 · Near expiry = within '+window.novaStock.nearExpiryDays()+' days')+'</span></div>';
  const catAr={Topical:'موضعي',ENT:'أنف وأذن وحنجرة',Chronic:'مزمن',Analgesic:'مسكنات',Antibiotic:'مضاد حيوي',Lipid:'دهون','GI Care':'جهاز هضمي',Vitamins:'فيتامينات',Antihistamine:'مضاد هيستامين'};
  const catLbl=c=>catAr[c]?tr(catAr[c],c):esc(c);
+ const nameOf=p=>{const n=String(p.name||''),m=/^(.*?)\s*\(([A-Za-z][A-Za-z0-9 .%\/+'-]*)\)\s*$/.exec(n);return m&&/[\u0600-\u06FF]/.test(m[1])?'<span dir="rtl" class="nova-product-full-name">'+hl(m[1],q)+'</span><span dir="ltr" class="nova-product-en-name">('+hl(m[2],q)+')</span>':'<span dir="auto" class="nova-product-full-name">'+hl(n,q)+'</span>'};
  const packOf=p=>p.pack||(p.packaging&&p.packaging.stripsPerBox&&p.packaging.unitsPerStrip?p.packaging.stripsPerBox+' × '+p.packaging.unitsPerStrip:'');
  const dupLate=!!window.novaDuplicates&&products.length>500;const dups=window.novaDuplicates&&!dupLate?window.novaDuplicates(products):[];
  const mkDup=dups=>dups.length?'<details class="nova-panel" id="novaDupes" style="padding:10px 18px"><summary style="cursor:pointer;font-weight:700">'+tr('أصناف مكررة محتملة للمراجعة: ','Possible duplicates to review: ')+dups.length+'</summary><p style="color:#9eacb9;font-size:13px">'+tr('للمراجعة فقط — لا يتم دمج أي صنف تلقائيًا.','Review only — nothing is merged automatically.')+'</p>'+dups.slice(0,50).map(g=>'<div data-dupe-group="'+g.reason+'" style="padding:6px 0;border-top:1px solid #2a3139"><small style="color:#9eacb9">'+(g.reason==='barcode'?tr('نفس الباركود ','Same barcode '):tr('نفس الاسم والعبوة ','Same name and pack '))+(g.reason==='barcode'?'<span dir="ltr">'+esc(g.key)+'</span>':'')+'</small>'+g.items.map(p=>'<div>'+esc(p.name)+' — <span dir="ltr">'+esc(p.barcode)+'</span> — '+money(p.price)+'</div>').join('')+'</div>').join('')+(dups.length>50?'<div class="nova-empty">'+tr('يعرض أول 50 مجموعة','Showing first 50 groups')+'</div>':'')+'</details>':'';
@@ -5562,11 +5630,11 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
   +'<div style="overflow:auto;margin-top:8px"><table class="nova-data-table"><thead><tr><th>الصنف</th><th>الفرع</th><th>الاتجاه</th><th>الكمية</th><th>الحالة</th><th>الفرق</th><th>إجراء</th></tr></thead><tbody id="novaTrfRows">'
   +(window.novaTransfers.list().map(t=>'<tr data-trf="'+esc(t.id)+'"><td>'+esc(t.name||t.key)+'</td><td>'+esc(t.branch)+'</td><td>'+(t.direction==='out'?'صادر':'وارد')+'</td><td>'+esc(t.sentQty!==undefined?t.sentQty:t.qty)+'</td><td data-status="'+esc(t.status)+'">'+esc(trfSt[t.status]||t.status)+'</td><td>'+(t.diff?esc(t.diff):'—')+'</td><td>'+(t.status==='requested'?'<button type="button" class="btn btn-secondary" data-trf-send="'+esc(t.id)+'" style="min-height:44px;min-width:44px">إرسال</button>':t.status==='in-transit'?'<button type="button" class="btn btn-secondary" data-trf-recv="'+esc(t.id)+'" style="min-height:44px;min-width:44px">استلام</button>':'')+'</td></tr>').join('')||'<tr><td colspan="7" class="nova-muted">لا توجد تحويلات</td></tr>')
   +'</tbody></table></div></section>':'';
- const when=real&&cat.exportedAt?new Date(cat.exportedAt).toLocaleDateString('ar-EG'):'';
- content=head(title,real?'أسعار حقيقية من STOCK LIVE'+(when?' (آخر تحديث '+when+')':'')+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false) +'<div class="nova-products-toolbar"><span class="nova-search-wrap"><input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة"><button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaManualReceive" class="nova-inventory-action">استلام بضاعة</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
+ const when=real&&cat.exportedAt?window.NovaFmt.formatDateTime(cat.exportedAt):'';
+ content=head(real?tr('المنتجات — قائمة أسعار','Products — price list'):title,real?tr('قائمة أسعار حقيقية من STOCK LIVE','Real price list from STOCK LIVE')+(when?' ('+tr('آخر تحديث ','Last updated ')+when+')':tr(' — وقت التحديث غير متاح',' — Update time unavailable'))+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false) +'<div class="nova-products-toolbar"><span class="nova-search-wrap"><input class="nova-page-search" id="novaFilter" placeholder="بحث بالاسم أو الرقم أو الباركود" aria-label="بحث في الصفحة"><button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span><button type="button" id="novaInventoryPurchase" class="nova-inventory-action">✦ قراءة فاتورة مشتريات</button><button type="button" id="novaManualReceive" class="nova-inventory-action">استلام بضاعة</button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary">طباعة استيكرات الأدوية</button></div>'
  +(real?'<div class="nova-kpis nova-kpis-compact" id="novaProductsKpis">'+kpi('عدد الأصناف',products.length+tr(' صنف',' items'))+(q?kpi('نتيجة البحث',list.length):'')+kpi('مصدر الأسعار','STOCK LIVE')+nearKpi(products)+'</div><div class="nova-stock-notice" id="novaStockNotice" role="note">'+tr('الرصيد','Stock')+': '+tr('غير متوفر من مصدر الأسعار','Not available from price source')+'</div>'
  :'<div class="nova-kpis nova-kpis-prod">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(fAct==='low'?' active':'')+'" aria-pressed="'+(fAct==='low')+'" title="'+tr('نقص مسجّل','Logged shortages')+': '+window.novaShortages.list().length+' — '+tr('أقل من '+LOW_T+' وحدة؛ اضغط للتصفية','under '+LOW_T+' units; click to filter')+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(fTests.low).length+'</strong>'+(fAct==='low'?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+nearKpi(products)+'</div>')
- +chipBar+dupBlock+trfBlock+(()=>{const cols=[['الصنف',p=>'<td class="pc-name" data-label="الصنف">'+hl(window.novaDispName(p.name),q)+'</td>'],['الباركود',p=>'<td dir="ltr" class="pc-bar" data-label="الباركود">'+hl(p.barcode,q)+'</td>'],['السعر',p=>'<td class="pc-price" data-label="السعر">'+money(p.price)+'</td>']];
+ +chipBar+dupBlock+trfBlock+(()=>{const cols=[['الصنف',p=>'<td class="pc-name" data-label="الصنف">'+nameOf(p)+'</td>'],['الباركود',p=>'<td dir="ltr" class="pc-bar" data-label="الباركود">'+hl(p.barcode,q)+'</td>'],['السعر',p=>'<td class="pc-price" data-label="السعر">'+money(p.price)+'</td>']];
  if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack class="pc-pack" data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
  if(!real){cols.push(['الرصيد',p=>window.novaStockChip(p.stock)],['التصنيف',p=>'<td class="pc-cat" data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
  if(shown.some(p=>expInfo(p)))cols.push(['أقرب صلاحية',expBadge]);
@@ -5581,22 +5649,25 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
  const cfLbl={all:tr('الكل','All'),debtors:tr('مدينون','Debtors'),late:tr('متأخرون','Overdue'),refill:tr('مستحقة للصرف','Refill due')};
  const list=custAll.filter(cfTests[cf]||cfTests.all).sort((x,y)=>(debtMap[String(y.id)]||0)-(debtMap[String(x.id)]||0));
  const cs=(window.__novaSort&&window.__novaSort.page==='customers')?window.__novaSort:{},cv={name:c=>c.name,visits:c=>c.visits,points:c=>c.points,debt:c=>debtOf(c.id)},csl=cs.key&&cv[cs.key]?list.slice().sort((a,b)=>{const x=cv[cs.key](a),y=cv[cs.key](b),r=cs.key==='name'?String(x).localeCompare(String(y),'ar'):(Number(x)||0)-(Number(y)||0);return cs.dir==='desc'?-r:r}):list,csb=(l,k)=>{const d=cs.key===k?cs.dir:'none';return '<button type="button" class="nova-sort-btn" data-sort="'+k+'" data-sort-dir="'+d+'"><span>'+l+'</span><svg class="nova-sort-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(d==='asc'?'<path d="M12 19V5M5 12l7-7 7 7"/>':d==='desc'?'<path d="M12 5v14M19 12l-7 7-7-7"/>':'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>')+'</svg></button>'};
- const custChips='<div class="nova-stock-chips" id="novaCustChips" role="group" aria-label="'+tr('تصفية العملاء','Customer filter')+'">'+['all','debtors','late','refill'].map(k=>'<button type="button" class="nova-stock-chip'+(cf===k?' active':'')+'" data-cust-filter="'+k+'" aria-pressed="'+(cf===k)+'">'+cfLbl[k]+' <b data-cust-count="'+k+'">'+custAll.filter(cfTests[k]).length+'</b></button>').join('')+'</div>';
- content=head(title,'دليل العملاء التجريبي — إدارة بيانات العملاء الفعلية ستتطلب قاعدة بيانات',true).replace(/<input class="nova-page-search" id="novaFilter"[^>]*>/,m=>'<span class="nova-search-wrap">'+m+'<button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span>')
+ const custChips=!customers.length?'':'<div class="nova-stock-chips" id="novaCustChips" role="group" aria-label="'+tr('تصفية العملاء','Customer filter')+'">'+['all','debtors','late','refill'].map(k=>'<button type="button" class="nova-stock-chip'+(cf===k?' active':'')+'" data-cust-filter="'+k+'" aria-pressed="'+(cf===k)+'">'+cfLbl[k]+' <b data-cust-count="'+k+'">'+custAll.filter(cfTests[k]).length+'</b></button>').join('')+'</div>';
+ content=head(title,tr('عملاء هذا الجهاز؛ تذكير إعادة الصرف بعد 30 يومًا من آخر صرف مسجّل، وليس وصفة أو موافقة للصرف.','Customers on this device; refill reminders start 30 days after the last recorded supply and are not a prescription or approval.'),true).replace(/<input class="nova-page-search" id="novaFilter"[^>]*>/,m=>'<span class="nova-search-wrap">'+m+'<button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span>')
  .replace(/<\/div>$/,(customers.length?'<button type="button" class="btn btn-primary" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button>':'')+'</div>')
- +'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi(tr('إجمالي المديونية','Total debt'),'<span id="novaDebtTotal" style="color:#ff8a8f">'+money(debtTotal)+'</span>')+kpi(tr('عدد المدينين','Debtors'),'<span id="novaDebtorCount">'+debtors.length+'</span>')+'</div>'+custChips
- +cards([csb('الاسم','name'),'الهاتف','المستوى',csb('الزيارات','visits'),csb('النقاط','points'),csb('المديونية','debt')],rows(csl,c=>{const d=debtOf(c.id);return '<tr tabindex="0" class="nova-row-focus" data-cust-row="'+esc(c.id)+'" aria-haspopup="dialog"><td data-label="الاسم" class="nova-cust-name">'+(()=>{const m=/^(.*?)\s*\(([A-Za-z][A-Za-z0-9 .%\/+'-]*)\)\s*$/.exec(String(c.name==null?'':c.name));return '<div class="nova-cust-namebox">'+(m&&/[\u0600-\u06FF]/.test(m[1])?'<span class="nova-cust-ar" dir="rtl">'+esc(m[1])+'</span><span class="nova-cust-en" dir="ltr">'+esc(m[2])+'</span>':'<span class="nova-cust-ar" dir="auto">'+esc(c.name)+'</span>')+'</div>'})()+((window.novaChronic&&window.novaChronic.dueList(c).length)?' <span class="nova-chip" data-refill-badge="'+esc(c.id)+'" style="color:#ffcf6b">'+tr('مستحقة للصرف','Refill due')+'</span>':'')+'</td><td dir="ltr" class="nova-num nova-cust-phone" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى"><span class="nova-tier-badge" data-tier="'+esc(String(c.tier||'').toLowerCase().includes('gold')?'gold':String(c.tier||'').toLowerCase().includes('silver')?'silver':String(c.tier||'').toLowerCase().includes('bronze')?'bronze':'other')+'">'+esc(window.novaTierAr(c.tier))+'</span></td><td class="nova-num" data-label="الزيارات">'+esc(c.visits)+'</td><td class="nova-num" data-label="النقاط">'+esc(c.points)+'</td><td class="nova-num" data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff8a8f;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+(hasStmt(c.id)?' <button type="button" class="nova-return-btn" style="min-height:44px" data-stmt="'+esc(c.id)+'">كشف حساب</button>':'')+'</td></tr>'})+(!list.length&&filter.trim()?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا توجد نتائج لـ «','No results for “')+esc(filter.trim())+tr('»','”')+'</strong><span>'+tr('جرّب اسمًا أو رقم هاتف آخر.','Try a different name or phone number.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustClear" style="min-height:44px">'+tr('مسح البحث','Clear search')+'</button></div>':(!customers.length?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا يوجد عملاء بعد','No customers yet')+'</strong><span>'+tr('أضف عميلًا لتتبّع الزيارات والنقاط والمديونية.','Add a customer to track visits, points and balance due.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button></div>':''))).replace('البيانات التجريبية','العملاء <span class="nova-demo-chip">عرض تجريبي</span>');
+ +(customers.length?'<div class="nova-kpis">'+kpi('العملاء',customers.length)+kpi('إجمالي الزيارات',customers.reduce((s,c)=>s+c.visits,0))+kpi('نقاط الولاء',customers.reduce((s,c)=>s+c.points,0))+kpi(tr('إجمالي المديونية','Total debt'),'<span id="novaDebtTotal" style="color:#ff8a8f">'+money(debtTotal)+'</span>')+kpi(tr('عدد المدينين','Debtors'),'<span id="novaDebtorCount">'+debtors.length+'</span>')+'</div>':'')+custChips
+ +(list.length?cards([csb('الاسم','name'),'الهاتف','المستوى',csb('الزيارات','visits'),csb('النقاط','points'),csb('المديونية','debt')],rows(csl,c=>{const d=debtOf(c.id);return '<tr tabindex="0" class="nova-row-focus" data-cust-row="'+esc(c.id)+'" aria-haspopup="dialog"><td data-label="الاسم" class="nova-cust-name">'+(()=>{const m=/^(.*?)\s*\(([A-Za-z][A-Za-z0-9 .%\/+'-]*)\)\s*$/.exec(String(c.name==null?'':c.name));return '<div class="nova-cust-namebox">'+(m&&/[\u0600-\u06FF]/.test(m[1])?'<span class="nova-cust-ar" dir="rtl">'+esc(m[1])+'</span><span class="nova-cust-en" dir="ltr">'+esc(m[2])+'</span>':'<span class="nova-cust-ar" dir="auto">'+esc(c.name)+'</span>')+'</div>'})()+((window.novaChronic&&window.novaChronic.dueList(c).length)?' <span class="nova-chip" data-refill-badge="'+esc(c.id)+'" style="color:#ffcf6b">'+tr('مستحقة للصرف','Refill due')+'</span>':'')+'</td><td dir="ltr" class="nova-num nova-cust-phone" data-label="الهاتف">'+esc(c.phone)+'</td><td data-label="المستوى"><span class="nova-tier-badge" data-tier="'+esc(String(c.tier||'').toLowerCase().includes('gold')?'gold':String(c.tier||'').toLowerCase().includes('silver')?'silver':String(c.tier||'').toLowerCase().includes('bronze')?'bronze':'other')+'">'+esc(window.novaTierAr(c.tier))+'</span></td><td class="nova-num" data-label="الزيارات">'+esc(c.visits)+'</td><td class="nova-num" data-label="النقاط">'+esc(c.points)+'</td><td class="nova-num" data-label="المديونية" data-debt="'+esc(c.id)+'"'+(d>0?' style="color:#ff8a8f;font-weight:700"':'')+'>'+money(d)+(d>0?' <button type="button" class="nova-return-btn" style="min-height:44px" data-pay-debt="'+esc(c.id)+'">سداد</button>':'')+(hasStmt(c.id)?' <button type="button" class="nova-return-btn" style="min-height:44px" data-stmt="'+esc(c.id)+'">كشف حساب</button>':'')+'</td></tr>'})):(!list.length&&filter.trim()?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا توجد نتائج لـ «','No results for “')+esc(filter.trim())+tr('»','”')+'</strong><span>'+tr('جرّب اسمًا أو رقم هاتف آخر.','Try a different name or phone number.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustClear" style="min-height:44px">'+tr('مسح البحث','Clear search')+'</button></div>':(!customers.length?'<div class="nova-panel nova-empty-card" id="novaCustEmpty" role="status"><strong>'+tr('لا يوجد عملاء بعد','No customers yet')+'</strong><span>'+tr('أضف عميلًا لتتبّع الزيارات والنقاط والمديونية.','Add a customer to track visits, points and balance due.')+'</span><button type="button" class="btn btn-secondary nova-return-btn" id="novaCustAdd" style="min-height:44px">'+tr('إضافة عميل','Add customer')+'</button></div>':tr('لا يوجد عملاء ضمن هذا الفلتر','No customers match this filter')))).replace('البيانات التجريبية',tr('عملاء هذا الجهاز','Customers on this device'));
  }else if(page==='invoices'){
- const saved=(window.novaSales?window.novaSales.list():[]).map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، '),hist:retHistory(x.id,x.lines),full:(()=>{const d=window.novaSales.returnedQty(x.id);return x.lines.length>0&&x.lines.every((l,k)=>l.qty-(d[k]||0)<=0)})()}));
+ const deviceRecords=window.novaSales?window.novaSales.list():[];
+ const demoDeviceRecords=deviceRecords.filter(x=>x.source==='DEMO');
+ const saved=deviceRecords.filter(x=>x.source!=='DEMO').map(x=>({sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، '),hist:retHistory(x.id,x.lines),full:(()=>{const d=window.novaSales.returnedQty(x.id);return x.lines.length>0&&x.lines.every((l,k)=>l.qty-(d[k]||0)<=0)})()}));
  const sl=filtered(saved,['id','customer','date','items']);
  const backupBar='<div class="nova-panel" style="padding:10px 18px;display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center"><button type="button" id="novaSalesExport" class="btn btn-secondary nova-return-btn" style="min-height:44px">'+tr('تصدير نسخة احتياطية (JSON)','Export backup (JSON)')+'</button><button type="button" id="novaSalesImport" class="btn btn-secondary nova-return-btn" style="min-height:44px">'+tr('استيراد نسخة احتياطية','Import backup')+'</button><input type="file" id="novaSalesImportFile" accept="application/json,.json" hidden><span id="novaBackupMsg" role="status" style="font-size:13px;color:#9eacb9"></span></div>';
  const savedBlock=saved.length?'<div class="nova-kpis">'+kpi('فواتير محفوظة',saved.length)+kpi('إجمالي المبيعات',money(saved.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(saved.reduce((s,i)=>s+i.total,0)/saved.length))+'</div>'
-  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table nova-cards"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="الدفع">'+esc(i.pay)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="المرتجع">'+(i.ret>0?money(i.ret):'—')+(i.cx?' <span class="nova-ret-badge nova-ret-cx" data-ret-status="cancelled">'+tr('ملغاة','Cancelled')+'</span>':i.full?' <span class="nova-ret-badge nova-ret-full" data-ret-status="full">'+tr('مرتجع بالكامل','Fully returned')+'</span>':i.ret>0?' <span class="nova-ret-badge nova-ret-part" data-ret-status="partial">'+tr('مرتجع جزئي','Partially returned')+'</span>':'')+i.hist+'</td><td data-label="الأصناف">'+esc(i.items)+'</td><td class="nova-actions" data-label="إجراء"><button type="button" class="nova-return-btn nova-act-ghost" data-reprint="'+esc(i.sid)+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg><span>'+tr('إعادة طباعة نسخة','Reprint Copy')+'</span></button>'+(i.full?'<button type="button" class="nova-return-btn nova-act-return nova-act-done" data-return-done="'+esc(i.sid)+'" aria-disabled="true" disabled title="'+(i.cx?tr('الفاتورة ملغاة — لا يوجد ما يُرجع','Invoice cancelled — nothing left to return'):tr('تم إرجاع كل الأصناف — لا يوجد ما يُرجع','All items returned — nothing left to return'))+'"><span>'+tr('تم الإرجاع بالكامل','Fully returned')+'</span></button>':'<button type="button" class="nova-return-btn nova-act-return" data-return="'+esc(i.sid)+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span>'+tr('مرتجع / إلغاء','Return / Void')+'</span></button>')+'</td></tr>')+'</tbody></table></div></div>'
-  :'<div class="nova-panel"><div class="nova-panel-title">لا توجد فواتير محفوظة بعد — أتمّ عملية بيع وستظهر هنا</div></div>';
+  +'<div class="nova-panel"><div class="nova-panel-title">فواتير محفوظة على هذا الجهاز (لا تُزامَن مع جهاز آخر)</div><div style="overflow:auto"><table class="nova-data-table nova-cards"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="الدفع">'+esc(i.pay)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="المرتجع">'+(i.ret>0?money(i.ret):'—')+(i.cx?' <span class="nova-ret-badge nova-ret-cx" data-ret-status="cancelled">'+tr('ملغاة','Cancelled')+'</span>':i.full?' <span class="nova-ret-badge nova-ret-full" data-ret-status="full">'+tr('مرتجع بالكامل','Fully returned')+'</span>':i.ret>0?' <span class="nova-ret-badge nova-ret-part" data-ret-status="partial">'+tr('مرتجع جزئي','Partially returned')+'</span>':'')+i.hist+'</td><td data-label="الأصناف">'+esc(i.items)+'</td><td class="nova-actions" data-label="إجراء"><button type="button" class="nova-return-btn nova-act-ghost" data-reprint="'+esc(i.sid)+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg><span>'+tr('إعادة طباعة نسخة','Reprint Copy')+'</span></button>'+(i.full?'<button type="button" class="nova-return-btn nova-act-return nova-act-done" data-return-done="'+esc(i.sid)+'" aria-disabled="true" disabled title="'+(i.cx?tr('الفاتورة ملغاة — لا يوجد ما يُرجع','Invoice cancelled — nothing left to return'):tr('تم إرجاع كل الأصناف — لا يوجد ما يُرجع','All items returned — nothing left to return'))+'"><span>'+tr('تم الإرجاع بالكامل','Fully returned')+'</span></button>':'<button type="button" class="nova-return-btn nova-act-return" data-return="'+esc(i.sid)+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span>'+tr('مرتجع / إلغاء','Return / Void')+'</span></button>')+'</td></tr>')+(sl.length?'':'<tr><td colspan="8" role="status">'+tr('لا توجد فواتير مطابقة للبحث','No invoices match your search')+'</td></tr>')+'</tbody></table></div></div>'
+  :'<div class="nova-panel nova-empty-card" role="status"><strong>'+tr('لا توجد فواتير محفوظة بعد','No saved invoices yet')+'</strong><span>'+tr('أتمّ عملية بيع وستظهر الفاتورة على هذا الجهاز.','Complete a sale to save its invoice on this device.')+'</span><button type="button" class="btn btn-primary" id="novaInvStartSale">'+tr('ابدأ فاتورة','Start an invoice')+'</button></div>';
  const list=filtered(inv,['id','customer','date','branch']);
- content=head(title,'فواتير هذا الجهاز أولًا، ثم فواتير سابقة من بيانات العرض (تجريبية)',true)+backupBar+savedBlock
-  +'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
- +cards(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="الأصناف">'+esc((i.items||[]).length)+'</td></tr>'));
+ content=head(title,tr('فواتير محفوظة على هذا الجهاز؛ بيانات العرض منفصلة','Invoices saved on this device; demo records are separate'),true)+backupBar+savedBlock
+ +(demoDeviceRecords.length?'<details class="nova-demo-wm"><summary>'+tr('فواتير محفوظة لمنتجات تجريبية — ليست فواتير منتجات STOCK LIVE','Saved demo-product invoices — not STOCK LIVE product invoices')+' ('+demoDeviceRecords.length+')</summary><p>'+tr('هذه سجلات بيع محفوظة لمصدر DEMO، منفصلة عن فواتير قائمة الأسعار الحقيقية.','These are saved DEMO-source sales, separated from real price-list invoices.')+'</p>'+demoDeviceRecords.map(x=>'<div style="padding:8px"><bdi dir="ltr">'+esc(x.number)+'</bdi> · '+esc(window.NovaFmt.formatDateTime(x.at))+' · '+money(x.total)+' · '+tr('تجريبي','Demo')+'</div>').join('')+'</details>':'')
+  +(window.NOVA_DEMO_MODE&&inv.length?'<details class="nova-demo-wm"><summary>'+tr('فواتير تجريبية — منفصلة عن فواتير الجهاز','Demo invoices — separate from device invoices')+'</summary>'+'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
+ +cards(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="الأصناف">'+esc((i.items||[]).length)+'</td></tr>'))+'</details>':'');
  }else if(page==='reports'){
  const sum=inv.reduce((s,i)=>s+i.total,0);
 const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDateString();
@@ -5642,13 +5713,13 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   +'<div id="novaShiftMsg" role="alert" style="color:#ff5d5d;min-height:0"></div><div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" id="novaShiftDo" class="btn btn-primary nova-return-btn" style="min-height:44px;font-weight:700">🔒 '+tr('إقفال الوردية','Close shift')+'</button><button type="button" id="novaShiftPrint" class="btn btn-secondary nova-return-btn" style="min-height:44px">🖨 '+tr('طباعة تقرير الوردية','Print shift report')+'</button></div><div id="novaShiftLast" role="status" aria-live="polite" style="margin-top:10px;color:#9eacb9;font-size:13px"></div></div>'
   +'<div class="nova-panel" id="novaTopSellers"><div class="nova-panel-title">'+tr('الأكثر مبيعًا','Top sellers')+' — '+pl+'</div>'+(top.length?'<div data-top-head style="display:flex;gap:var(--sp-2);padding:6px 0;border-bottom:1px solid #2a3139;color:#9eacb9;font-size:13px"><span style="flex:1">'+tr('الصنف','Item')+'</span><span style="min-width:64px;text-align:end">'+tr('الكمية','Qty')+'</span><span style="min-width:96px;text-align:end">'+tr('الإيراد','Revenue')+'</span></div>'+top.map(t=>'<div data-top-row="'+esc(t[0])+'" data-qty="'+t[1]+'" data-revenue="'+(byRev[t[0]]||0).toFixed(2)+'" style="padding:6px 0;border-bottom:1px solid #2a3139"><div style="display:flex;gap:var(--sp-2)"><span style="flex:1">'+esc(t[0])+'</span><strong style="min-width:64px;text-align:end">'+t[1]+'</strong><strong style="min-width:96px;text-align:end">'+money(byRev[t[0]]||0)+'</strong></div><div aria-hidden="true" style="background:#29313a;height:5px;border-radius:3px;margin-top:5px;overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+Math.round(t[1]/top[0][1]*100)+'%"></div></div></div>').join(''):'<div style="color:#9eacb9">'+tr('لا مبيعات في هذه الفترة','No sales in this period')+'</div>')+'</div>'
   :'<div class="nova-panel nova-empty-card" id="novaRepEmpty" role="status"><svg class="nova-empty-ico" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><strong>'+tr('لا توجد مبيعات محفوظة بعد','No saved sales yet')+'</strong><span>'+tr('التقارير الحقيقية تظهر بعد أول عملية بيع.','Real reports appear after the first sale.')+'</span><button type="button" class="btn btn-primary nova-return-btn" id="novaRepStartSale" style="min-height:44px">'+tr('ابدأ بيع','Start a sale')+'</button></div>'
-  +'<div class="nova-rep-skel" id="novaRepSkeleton" aria-hidden="true"><span class="nova-rep-skel-tag">'+tr('معاينة شكل التقرير — بيانات غير حقيقية','Report preview — not real data')+'</span><div class="nova-kpis">'+[1,2,3,4].map(()=>'<div class="nova-skel-card"><i></i><b></b></div>').join('')+'</div></div>';
- content=head(title,window.NOVA_DEMO_MODE?'مبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض':'مبيعات هذا الجهاز')+realBlock+(sv.length?'':'<p class="nova-rep-locked" id="novaRepLocked" role="note">'+tr('طباعة تقرير اليوم وقفل الوردية غير متاحين حتى تُسجَّل أول عملية بيع على هذا الجهاز.','Print and shift close are unavailable until the first sale is recorded on this device.')+'</p>')+(window.NOVA_DEMO_MODE?'<details id="novaDemoData" class="nova-demo-wm" data-demo="1" style="margin-top:18px"><summary style="cursor:pointer;min-height:44px;font-size:15px;color:#9eacb9">'+tr('بيانات تجريبية (للعرض فقط) — ليست مبيعاتك الفعلية','Demo data (display only) — not your actual sales')+'</summary>'
+  +'<div class="nova-rep-example" id="novaRepSkeleton" role="note"><strong>'+tr('مثال ثابت لشكل التقرير — ليس تحميلًا ولا بيانات فعلية','Static report example — not loading or real data')+'</strong><div class="nova-kpis">'+[[tr('مبيعات مثال','Example sales'),'100.00'],[tr('مرتجعات مثال','Example returns'),'20.00'],[tr('صافي مثال','Example net'),'80.00']].map(v=>'<div class="nova-kpi"><small>'+v[0]+'</small><strong>'+v[1]+' EGP</strong></div>').join('')+'</div></div>';
+ content=head(title,tr('تقارير هذا الجهاز فقط — الفترة: ','Reports from this device only — period: ')+pl)+realBlock+(sv.length?'':'<p class="nova-rep-locked" id="novaRepLocked" role="note">'+tr('طباعة تقرير اليوم وقفل الوردية غير متاحين حتى تُسجَّل أول عملية بيع على هذا الجهاز.','Print and shift close are unavailable until the first sale is recorded on this device.')+'</p>')+(window.NOVA_DEMO_MODE?'<details id="novaDemoData" class="nova-demo-wm" data-demo="1" style="margin-top:18px"><summary style="cursor:pointer;min-height:44px;font-size:15px;color:#9eacb9">'+tr('بيانات تجريبية (للعرض فقط) — ليست مبيعاتك الفعلية','Demo data (display only) — not your actual sales')+'</summary>'
  +'<span class="nova-demo-badge" role="note">'+tr('تجريبي — أرقام وهمية وليست مبيعاتك','DEMO — fake numbers, not your sales')+'</span><div class="nova-kpis">'+kpi('مبيعات تجريبية',money(sum))+kpi('فواتير تجريبية',inv.length)+kpi('متوسط الفاتورة',money(inv.length?sum/inv.length:0))+kpi('العملاء',customers.length)+'</div>'
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:var(--sp-2);font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:var(--r-1);overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div></details>':'');
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>المنتجات والعملاء والفواتير الحالية بيانات تجريبية محلية داخل التطبيق.</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide" id="novaBackendCard"></div><div class="nova-setting-card nova-card-wide" id="novaOnboardingCard" hidden></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>'+tr(window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'المنتجات من قائمة أسعار STOCK LIVE؛ الأرصدة غير متاحة من هذا المصدر.':'مصدر المنتجات الحالي بيانات عرض تجريبية.',window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'Products use the STOCK LIVE price list; stock is unavailable from this source.':'The current product source is demo data.')+'</p><p>'+tr('الفواتير والعملاء المحفوظون على هذا الجهاز منفصلون عن بيانات العرض التجريبية.','Customers and invoices saved on this device are separate from demo records.')+'</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide" id="novaBackendCard"></div><div class="nova-setting-card nova-card-wide" id="novaOnboardingCard" hidden></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
  }
  window.__novaRowFillTok=(window.__novaRowFillTok||0)+1;
  const rest=page==='products'?window.__novaRowRest:null;window.__novaRowRest=null;
@@ -5814,6 +5885,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   document.addEventListener('keydown',key,true);q('#novaRcvOk').addEventListener('click',ok);ov.querySelectorAll('[data-dlg-close]').forEach(x=>x.addEventListener('click',close));ov.addEventListener('mousedown',e=>{if(e.target===ov)close()});srch.focus();
  };
  const labelBtn=document.getElementById('novaInventoryLabels');if(labelBtn)labelBtn.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');
+ const invStart=document.getElementById('novaInvStartSale');if(invStart)invStart.onclick=()=>switchPage('sale');
  const repStart=document.getElementById('novaRepStartSale');if(repStart)repStart.onclick=()=>switchPage('sale');
  document.querySelectorAll('[data-cust-filter]').forEach(b=>{b.onclick=()=>{const k=b.getAttribute('data-cust-filter');window.__novaCustFilter=k;const f=document.getElementById('novaFilter');render(page,f?f.value:'');const n=document.querySelector('[data-cust-filter="'+k+'"]');if(n)n.focus()}});
  document.querySelectorAll('#novaCustAdd').forEach(b=>{b.onclick=()=>openCustAdd()});
@@ -5915,6 +5987,8 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
  }
  const enExtra={
+"خصم بالجنيه":"Discount (EGP)","مسح الفاتورة":"Clear invoice","تأكيد البيع (Enter)":"Confirm sale (Enter)","بطاقة بنكية (F10)":"Bank card (F10)","البطاقة محاكاة فقط — لا يُخصم مبلغ بنكي. تأكيد البيع يحفظ الفاتورة، وبعده تختار الطباعة.":"Card payment is simulated; no bank debit. Confirm saves the sale, then choose whether to print.","الاسم (مطلوب)":"Name (required)","رقم الهاتف (مطلوب)":"Phone (required)","من 9 إلى 15 رقمًا؛ الأرقام العربية مقبولة، ولا يمكن تكرار رقم مسجّل.":"9–15 digits; Arabic digits are accepted. An existing phone number cannot be reused.",
+
  'حالات تانية ▾':'More conditions ▾','أقل ▴':'Less ▴','حساسية':'Allergies','أمراض مزمنة':'Chronic conditions','حالات خاصة':'Special cases','أسبرين ومسكنات':'Aspirin & painkillers','سلفا':'Sulfa','مضاد حيوي تاني':'Other antibiotic','ربو':'Asthma','غدة درقية':'Thyroid','صرع':'Epilepsy','جلوكوما':'Glaucoma','سيولة دم':'Blood thinner','مناعة ضعيفة':'Weak immunity','علاج كيماوي':'Chemotherapy','كبير سن':'Elderly','قبل عملية':'Before surgery','بيسوق':'Drives','مش بيبلع أقراص':'Cannot swallow pills','أدوية مزمنة':'Chronic medicines',
  'مثال: 4':'e.g. 4','مش عارف الوزن':'Weight unknown','بانتظار بيانات العميل':'Waiting for customer data','تحذير — المس':'Warning — tap','اطلعت':'Reviewed',
  'مين العميل؟':'Who is the customer?','بالغ':'Adult','طفل':'Child','حامل':'Pregnant','مرضعة':'Breastfeeding',
@@ -5979,7 +6053,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  const mixedText={
   'Complete Sale & Payment / إنهاء الفاتورة':['Complete Sale & Payment','إتمام البيع والدفع'],
   'اختر عميلاً لإتمام البيع الآجل':['Select a customer to complete the credit sale','اختر عميلاً لإتمام البيع الآجل'],
-  'F10 / F11 / F12 (أو C)':['F10 / F11 / F12 (or C)','F10 / F11 / F12 (أو C)'],'Cash / نقدي (F12)':['Cash (F12)','نقدي (F12)'],'Mada / بطاقة (F10)':['Mada / Card (F10)','مدى / بطاقة (F10)'],'Credit / آجل (F11)':['Credit (F11)','آجل (F11)'],'Start New Sale (F2 / Enter)':['Start New Sale (F2 / Enter)','فاتورة جديدة (F2 / Enter)'],
+  'F10 / F11 / F12 (أو C)':['F10 / F11 / F12 (or C)','F10 / F11 / F12 (أو C)'],'Cash / نقدي (F12)':['Cash (F12)','نقدي (F12)'],'بطاقة بنكية (F10)':['Bank card (F10)','بطاقة بنكية (F10)'],'Credit / آجل (F11)':['Credit (F11)','آجل (F11)'],'Start New Sale (F2 / Enter)':['Start New Sale (F2 / Enter)','فاتورة جديدة (F2 / Enter)'],
   'Cash / نقدي':['Cash','نقدي'],'Mada / بطاقة':['Mada / Card','مدى / بطاقة'],'Split / مختلط':['Split','مختلط'],'Credit / آجل':['Credit','آجل'],'Card (mock) / بطاقة':['Card (mock)','بطاقة (تجريبية)'],'Credit / آجل (يحتاج عميلاً)':['Credit (needs a customer)','آجل (يحتاج عميلاً)'],
   'Transaction Receipt / إيصال الدفع':['Transaction Receipt','إيصال الدفع'],
   'اختصارات الكيبورد ودليل الكاشير':['Keyboard Shortcuts & POS Manual','اختصارات الكيبورد ودليل الكاشير'],

@@ -28,8 +28,16 @@ const raw = readFileSync(ART, 'utf8');
 ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
 const SWK = '"/sw.js":{"body":';
 const swBody = (code) => { const j = code.indexOf(SWK) + SWK.length; let e = j + 1; while (code[e] !== '"') { if (code[e] === '\\') e++; e++; } return [code.slice(0, j) + code.slice(e + 1), JSON.parse(code.slice(j, e + 1))]; };
-const strip = (s) => swBody(s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>')).join('\n'))[0];
-ck('worker code outside the HTML literal, /sw.js body, PWA assets and /whatsapp route identical to ux-406', strip(stripWaSpa(stripPwa(raw))) === strip(readFileSync(BASE, 'utf8')));
+// UX01–14: allow only the four purchase UI body refreshes, and assert their exact repo bytes below.
+const purchaseUi = {'/purchases':'purchases.html','/purchases.html':'purchases.html','/purchases.css':'purchases.css','/purchases.js':'purchases.js','/supplier-status.js':'supplier-status.js'};
+const stripPurchaseUi = s => s.replace(/const NOVA_PURCHASING_ASSETS=(.*);/, (_,raw) => {
+ const table=JSON.parse(raw);for(const route of Object.keys(purchaseUi))table[route].body='UI_BODY_VERIFIED_SEPARATELY';
+ return 'const NOVA_PURCHASING_ASSETS='+JSON.stringify(table)+';';
+});
+const purchaseTable = JSON.parse(raw.match(/const NOVA_PURCHASING_ASSETS=(.*);/)[1]);
+for(const [route,path] of Object.entries(purchaseUi))ck('purchase UI matches repo '+route,purchaseTable[route].body===readFileSync(join(ROOT,path),'utf8'));
+const strip = (s) => stripPurchaseUi(swBody(s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>')).join('\n'))[0]);
+ck('worker code outside explicitly verified app/SW/PWA/purchase UI bodies and /whatsapp route identical to ux-406', strip(stripWaSpa(stripPwa(raw))) === strip(readFileSync(BASE, 'utf8')));
 const sw = swBody(raw)[1];
 ck('embedded /sw.js is UX412 v6 (network-first for /whatsapp and ?app=whatsapp, never falls back to cached /)', sw.includes("const CACHE='nova-rx-shell-v6'") && sw.includes("url.searchParams.get('app')==='whatsapp'") && sw.includes("path==='/whatsapp'") && !sw.includes("const CACHE='nova-rx-shell-v5'") && !sw.includes("const CACHE='nova-rx-shell-v4'"));
 ck('embedded /sw.js equals repo sw.js', sw === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
