@@ -24,6 +24,7 @@ export function kindOf(id, dir) {
   if (m) return KIND[m[1]];
   if (/^wb_/.test(String(id || ''))) return 'bot'; // FIX51: bot reply forwarded by the bridge
   if (/^ps_/.test(String(id || ''))) return 'pharm'; // WA-SEND: pharmacist reply sent from NOVA
+  if (/^sf_/.test(String(id || ''))) return 'sys'; // WhatsApp accepted a message but failed to deliver it: a system line forwarded by the bot
   return dir === 'out' ? 'out' : 'in';
 }
 const toMsg = (r) => { const o = { id: r.id, dir: r.dir, kind: kindOf(r.id, r.dir), text: r.text, at: atMs(r.at), status: r.status || null }; const md = mediaOfRow(r); if (md) o.media = md; return o; };
