@@ -202,7 +202,7 @@
     var md = m && m.media, t = md && MT_AR[md.type] ? md.type : null;
     if (!t) return '';
     var src = md.cached && !md.skipped && mopts && typeof mopts.url === 'function' && !(mopts.fail && mopts.fail[m.id]) ? String(mopts.url(m.id) || '') : '';
-    if (md.local && /^data:(image\/(jpeg|png)|audio\/(ogg|mp4|mpeg|aac|amr));base64,[A-Za-z0-9+\/=]+$/.test(String(md.local))) src = String(md.local); /* UX411/413: the photo / voice note being sent from this screen is shown from memory until the server copy exists */
+    if (md.local && /^data:(image\/(jpeg|png)|audio\/(ogg|mp4|mpeg|aac|amr|webm));base64,[A-Za-z0-9+\/=]+$/.test(String(md.local))) src = String(md.local); /* UX411/413: the photo / voice note being sent from this screen is shown from memory until the server copy exists */
     if (!src) return mediaMiss(t, md.skipped || (md.cached ? 'error' : 'missing'), md.filename);
     var a = ' data-wa-mid="' + esc(m.id) + '"';
     if (t === 'image' || t === 'sticker') return '<button type="button" class="wa-media wa-m-' + t + '" data-wa-media="' + t + '" data-wa-media-open="' + esc(src) + '"' + a + ' aria-label="عرض ال' + MT_AR[t] + ' بالحجم الكامل"><img class="wa-mimg" data-wa-mimg' + a + ' src="' + esc(src) + '" alt="' + MT_AR[t] + (m.dir === 'out' ? '' : ' من العميل') + '" loading="lazy" decoding="async"></button>';
