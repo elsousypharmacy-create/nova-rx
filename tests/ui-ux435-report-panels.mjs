@@ -26,6 +26,7 @@ for (const vp of [{ width: 1366, height: 768 }, { width: 390, height: 844 }]) {
       const pr = pn.getBoundingClientRect();
       const next = document.getElementById(['novaPayBreakdown', 'novaRetReasons', 'novaShiftClose', 'novaTopSellers'][i + 1 === 1 ? 2 : i + 1]);
       pn.querySelectorAll(':scope > :not(.nova-panel-title)').forEach(el => {
+        if (el.hidden || (!el.matches('label,input,button') && !el.textContent.trim())) return;
         let rr; if (el.matches('label,input,button')) rr = el.getBoundingClientRect(); else { const g = document.createRange(); g.selectNodeContents(el); rr = g.getBoundingClientRect(); }
         const lead = Math.min(rr.left - pr.left, pr.right - rr.right);
         if (lead < 15.5) bad.push(pn.id + ':' + (el.id || el.getAttribute('data-pay-row') || el.getAttribute('data-shift-row') || el.tagName) + ':' + lead);
