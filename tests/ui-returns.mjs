@@ -54,9 +54,20 @@ await t('returning a sale one unit at a time never drifts by a cent (last unit t
 });
 await t('Reports show returns and net sales, and top sellers exclude returned units', async () => {
   await page.locator('.nova-tab[data-page=reports]').click(); await page.waitForTimeout(200);
-  const txt = await page.locator('body').innerText();
-  assert.ok(txt.includes('مرتجعات اليوم') && txt.includes('صافي اليوم') && txt.includes('صافي المبيعات'));
-  assert.ok(txt.includes('0.00 ج.م'), 'net is zero after a full return');
+  await page.locator('#novaKpiPeriod').waitFor();
+  const r = await page.evaluate(() => {
+    const t = (s) => (document.querySelector(s)?.innerText || '').replace(/\s+/g, ' ').trim();
+    const tops = [...document.querySelectorAll('#novaTopSellers [data-top-row]')].map(e => e.dataset.topRow);
+    return {
+      ret: t('#novaKpiPeriod [data-kpi="ret"]'),
+      net: t('#novaKpiPeriod [data-kpi="net"]'),
+      periodTitle: t('#novaKpiPeriod .nova-kpi-group-title'),
+      tops,
+    };
+  });
+  assert.ok(r.periodTitle.includes('الفترة') && r.ret.includes('مرتجعات') && r.net.includes('صافي'), JSON.stringify(r));
+  assert.ok(/\b0\.00\b/.test(r.net), 'net is zero after a full return: ' + r.net);
+  assert.ok(!r.tops.includes('A') && !r.tops.includes('B') && !r.tops.includes('D'), 'top sellers still list returned items: ' + r.tops);
 });
 await t('storage failure on return is reported, not thrown', async () => {
   await page.evaluate(() => window.novaSales.add({ id: 'sale-2', number: 'S-T2', at: new Date().toISOString(), customer: '', payment: 'cash', lines: [{ name: 'C', price: 10, qty: 1, discount: 0 }], subtotal: 10, discount: 0, vat: 0, total: 10, received: 10, change: 0 }));
