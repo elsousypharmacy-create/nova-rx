@@ -121,24 +121,26 @@ seed("INSERT INTO inbox_messages (tenant_id, id, conversation_id, dir, text, sta
   "('default','wa_b','wa_2','in','audio omitted',NULL,1763190000000)," +
   "('default','ps_1','wa_2','out','تمام يا فندم','sent',1763190120000)");
 seed("INSERT INTO wa_send_log (tenant_id, id, conversation_id, sent_by, text_len, status, created_at, finished_at) VALUES ('default','ws_1','wa_2','د. أحمد',12,'sent',1763190110000,1763190119000)");
-const call = async (env, method = 'GET') => {
-  const res = await handle(new Request('https://x.test/api/v1/inbox/history/metrics', { method, headers: { 'CF-Connecting-IP': '1.1.1.1' } }), env);
+const call = async (env, method = 'GET', pin = 'pin-123456789012') => {
+  const res = await handle(new Request('https://x.test/api/v1/inbox/history/metrics', { method, headers: { 'CF-Connecting-IP': '1.1.1.1', ...(pin ? { 'X-Nova-Pin': pin } : {}) } }), env);
   return [res.status, await res.json()];
 };
 const KV = { async get() { return null; }, async put() {} };
-let [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging' });
+let [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging', NOVA_API_PIN: 'pin-123456789012' });
 assert.equal(s, 200); assert.equal(j.ok, true);
 const byId = Object.fromEntries(j.data.events.map((e) => [e.c + ':' + e.k, e]));
 assert.equal(byId['wa_1:in'].m, 'image'); assert.equal(byId['wa_2:in'].m, 'audio');
 assert.equal(byId['wa_2:pharm'].s, 'د. أحمد', 'staff name from wa_send_log'); assert.equal(byId['wa_1:pharm'].s, 'نهى', 'fallback: chat assignee');
 const body = JSON.stringify(j);
 assert.ok(!body.includes('روشتة') && !body.includes('تمام يا فندم'), 'message text never returned');
+// S1-01: staging without the PIN is closed
+[s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging', NOVA_API_PIN: 'pin-123456789012' }, 'GET', null); assert.equal(s, 401); assert.equal(j.data, undefined);
 // production-like env without the PIN stays gated; POST is not a route
-[s, j] = await call({ DB: D1, KV, NOVA_ENV: 'production', NOVA_API_PIN: 'pin-123456789012' }); assert.equal(s, 401); assert.equal(j.data, undefined);
-[s] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }, 'POST'); assert.equal(s, 405);
+[s, j] = await call({ DB: D1, KV, NOVA_ENV: 'production', NOVA_API_PIN: 'pin-123456789012' }, 'GET', null); assert.equal(s, 401); assert.equal(j.data, undefined);
+[s] = await call({ DB: D1, KV, NOVA_ENV: 'staging', NOVA_API_PIN: 'pin-123456789012' }, 'POST'); assert.equal(s, 405);
 // an old DB without wa_send_log still answers (names fall back to the assignee)
 const D1old = { prepare: (sql) => { if (/wa_send_log/.test(sql)) throw new Error('no such table'); return D1.prepare(sql); } };
-[s, j] = await call({ DB: D1old, KV, NOVA_ENV: 'staging' }); assert.equal(s, 200);
+[s, j] = await call({ DB: D1old, KV, NOVA_ENV: 'staging', NOVA_API_PIN: 'pin-123456789012' }); assert.equal(s, 200);
 assert.equal(j.data.events.find((e) => e.c === 'wa_2' && e.k === 'pharm').s, undefined);
 
 // --- shared block copied verbatim into the UI ---
