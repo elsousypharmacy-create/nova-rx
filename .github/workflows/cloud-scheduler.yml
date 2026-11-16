@@ -2,7 +2,9 @@
 # Opens PRs for cloud/* branches, dispatches their CI, squash-merges on green,
 # sends red PRs back to agent-task in fix mode (max 2), and starts the next
 # pending task when a Claude slot is free. Uses only GITHUB_TOKEN.
-# Never deploys, never edits other workflows, never prints secrets.
+# Never edits other workflows, never prints secrets. After merging a PR
+# that changes worker/live/*, dispatches "Auto-deploy preview artifact"
+# with dry_run=false (GITHUB_TOKEN merges do not trigger that push event).
 #
 # Chaining: GitHub suppresses workflow_run (and pull_request/push CI) for
 # events caused by GITHUB_TOKEN. This workflow therefore never wakes from

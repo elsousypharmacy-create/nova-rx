@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """NOVA Rx cloud queue scheduler (runs in GitHub Actions with GITHUB_TOKEN).
 
-Deterministic: no AI calls, never deploys, never prints secrets.
+Deterministic: no AI calls, never prints secrets.
 1. Opens PRs for cloud/<id> branches that are ahead of main and have no PR.
 2. Dispatches the PR's applicable CI workflows on the branch (PRs/commits made
    with GITHUB_TOKEN do not trigger pull_request/push CI).
 3. Squash-merges cloud PRs whose CI runs are all green; on red CI dispatches
    agent-task in fix mode (max 2), then marks the task failed.
-4. Starts the next pending task when a Claude slot is free.
+4. After a squash-merge that changes worker/live/*, dispatches
+   auto-deploy-preview.yml with dry_run=false. GITHUB_TOKEN merges do not
+   trigger that workflow's on.push event, so preview would otherwise stay stale.
+5. Starts the next pending task when a Claude slot is free.
 State lives in .nova/cloud-queue.json on main.
 
 The workflow loops this script while cloud PRs are waiting on CI. When a
@@ -21,6 +24,7 @@ REPO = os.environ.get("GITHUB_REPOSITORY", "elsousypharmacy-create/nova-rx")
 QF = ".nova/cloud-queue.json"
 AGENT_WF, SELF_WF = "agent-task.yml", "cloud-scheduler.yml"
 DEPLOY_WF = "deploy-backend-staging.yml"
+PREVIEW_DEPLOY_WF = "auto-deploy-preview.yml"
 # owner_gates the scheduler may auto-deploy (staging Worker only) once all `after` tasks are done.
 # GATE-17 (live pilot + production enablement) is deliberately absent: owner-only.
 AUTO_GATES = ("GATE-14", "GATE-15", "GATE-16")
@@ -395,6 +399,30 @@ def _latest_run(path, since):
     return mine[0] if mine else None  # newest first
 
 
+def should_dispatch_preview_deploy(files, noop=False):
+    """True when a just-merged PR changed worker/live/* and is not a noop task.
+
+    GITHUB_TOKEN squash-merges do not fire on.push for Auto-deploy preview artifact,
+    so the scheduler must dispatch that workflow itself (dry_run=false).
+    """
+    if noop:
+        return False
+    return any(
+        isinstance(f, str) and (f == "worker/live" or f.startswith("worker/live/"))
+        for f in (files or [])
+    )
+
+
+def dispatch_preview_deploy(tid, files, noop=False):
+    if not should_dispatch_preview_deploy(files, noop):
+        return False
+    act("gh", "workflow", "run", PREVIEW_DEPLOY_WF, "-R", REPO, "--ref", "main",
+        "-f", "dry_run=false")
+    log(f"{tid}: dispatched {PREVIEW_DEPLOY_WF} dry_run=false "
+        "(GITHUB_TOKEN merge does not trigger the push deploy)")
+    return True
+
+
 def preview_deploys(items, byid, smoke=None, exists=os.path.exists, live_modified=None, markers=None):
     """Disabled. nova-rx-preview auto-deploy lives in .github/workflows/auto-deploy-preview.yml
     so only the newest worker/live artifact (by git commit time) is deployed, never a stale qa-* file.
@@ -627,6 +655,10 @@ def main():
                 t.update(status="done_noop" if noop else "done", merged_at=iso(), pr_url=p["html_url"])
                 t.pop("ci_dispatched", None)
                 log(f"{tid}: merged PR #{p['number']} ({t['status']})")
+                try:
+                    dispatch_preview_deploy(tid, files, noop)
+                except RuntimeError as ex:
+                    log(f"{tid}: failed to dispatch {PREVIEW_DEPLOY_WF}: {ex}")
                 continue
             why = "the PR has merge conflicts with main: merge origin/main into the branch and resolve them"
         else:

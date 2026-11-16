@@ -5195,7 +5195,7 @@
    "brief": "Typing opening float then 'change' re-renders the whole reports page (render(page,filter)): #novaShiftCount value becomes '' and document.activeElement is lost. A cashier who counted first then adds the float loses the count. Update #novaShiftExpected/#novaShiftDiff in place (no full re-render), keep focus and counted value, recompute diff. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Changing float keeps counted value and focus; expected and diff update live; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5205,17 +5205,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-16T07:44:18+00:00",
    "pr": 507,
-   "ci_dispatched": {
-    "sha": "b0ab20e78d08624cb1f350660646d0894a2f235c",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-16T07:47:14+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-16T07:53:35+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/507"
   },
   {
    "id": "UX433",
@@ -5223,6 +5214,35 @@
    "title": "قفل الوردية: لا يوجد إجراء «إقفال» فعلي — العدّ لا يُحفظ والطباعة هي الإجراء الوحيد",
    "brief": "#novaShiftClose only has a print button. Add a primary 'إقفال الوردية' action (Enter in counted field too) that saves a local closing record (localStorage, e.g. nova-rx-shift-closings-v1: period, float, expected, counted, diff, time, cashier if available), shows a confirmation summary with last closing, persists counted cash across reload, and offers print after close. No backend. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Close saves record, survives reload, shows last closing; test asserts record fields and keyboard Enter flow.",
+   "after": [],
+   "status": "pr_open",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "inbox/qa-loop-431-fixes.json",
+   "model": "sonnet",
+   "pin_slot": "A",
+   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
+   "slot": "A",
+   "dispatched_at": "2026-11-16T07:47:14+00:00",
+   "pr": 508,
+   "ci_dispatched": {
+    "sha": "738a7a7a850da5a923c41d56522e4b22ed89ed21",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-16T07:51:40+00:00",
+    "na": []
+   }
+  },
+  {
+   "id": "UX434",
+   "phase": 10,
+   "title": "قفل الوردية: الفرق أحمر دائمًا (زيادة وعجز بنفس اللون) ويقبل أرقامًا سالبة وغير منطقية",
+   "brief": "Diff shows red for +2.25 and −7.75 alike, green only at 0.00 with no words. Negative counted (-5) and 1e3 accepted silently. Show 'عجز'/'زيادة'/'مطابق' text + distinct colour/icon (overage amber, shortage red, match green, AA contrast on rgb(23,26,31)), reject negatives with inline aria-invalid error (not toast), require a note when |diff| exceeds a threshold before closing. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
+   "acceptance": "Distinct overage/shortage/match states; negatives rejected inline; test asserts texts and aria-invalid.",
    "after": [],
    "status": "running",
    "attempts": 0,
@@ -5232,22 +5252,7 @@
    "pin_slot": "A",
    "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
    "slot": "A",
-   "dispatched_at": "2026-11-16T07:47:14+00:00"
-  },
-  {
-   "id": "UX434",
-   "phase": 10,
-   "title": "قفل الوردية: الفرق أحمر دائمًا (زيادة وعجز بنفس اللون) ويقبل أرقامًا سالبة وغير منطقية",
-   "brief": "Diff shows red for +2.25 and −7.75 alike, green only at 0.00 with no words. Negative counted (-5) and 1e3 accepted silently. Show 'عجز'/'زيادة'/'مطابق' text + distinct colour/icon (overage amber, shortage red, match green, AA contrast on rgb(23,26,31)), reject negatives with inline aria-invalid error (not toast), require a note when |diff| exceeds a threshold before closing. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
-   "acceptance": "Distinct overage/shortage/match states; negatives rejected inline; test asserts texts and aria-invalid.",
-   "after": [],
-   "status": "pending",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "inbox/qa-loop-431-fixes.json",
-   "model": "sonnet",
-   "pin_slot": "A",
-   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix."
+   "dispatched_at": "2026-11-16T07:51:40+00:00"
   },
   {
    "id": "UX435",
@@ -5316,7 +5321,7 @@
    "brief": "Top sellers list shows name and a bare number (6) with no heading for qty/revenue, only 5 rows, tied to all-time not the selected period. Add columns (الكمية، الإيراد)، follow the period selector, show bars; hide the zero 'مرتجعات' row in the payment breakdown unless > 0 and show each method's share %. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Top sellers follows period with qty+revenue headers; zero returns row hidden; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5324,7 +5329,19 @@
    "pin_slot": "B",
    "note": "Slot B (elsousypharmacy), Sonnet. QA loop 431 reports & shift-close fix.",
    "slot": "B",
-   "dispatched_at": "2026-11-16T07:45:45+00:00"
+   "dispatched_at": "2026-11-16T07:45:45+00:00",
+   "pr": 509,
+   "ci_dispatched": {
+    "sha": "829fadc02b6d8ed9f6e659590b83ef059d8948e4",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-16T07:51:40+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX440",
@@ -5333,13 +5350,15 @@
    "brief": "#novaWaBtn and #btnRefreshApp are 36x36 at 1366px (44x44 on mobile). Make hit area >=44px (keep visual size, extend padding), add aria-label/title (e.g. 'تحديث التطبيق') and visible focus ring, check dot indicator contrast. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Both buttons >=44px hit target with accessible names at both viewports; test asserts bounding boxes.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
    "model": "sonnet",
    "pin_slot": "B",
-   "note": "Slot B (elsousypharmacy), Sonnet. QA loop 431 reports & shift-close fix."
+   "note": "Slot B (elsousypharmacy), Sonnet. QA loop 431 reports & shift-close fix.",
+   "slot": "B",
+   "dispatched_at": "2026-11-16T07:51:40+00:00"
   },
   {
    "id": "UX441",
@@ -5363,7 +5382,7 @@
    "brief": "#novaPrintDay appends #novaDayReport and relies on afterprint to remove it; no pharmacy name, cashier, closing time or signature lines, no 80mm/58mm layout. Add header (pharmacy/branch/cashier/time), signature lines, @media print for 80mm and A4, remove element via both afterprint and a timeout fallback; include shift-close figures when counted. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Printed DOM includes header+signatures, cleaned up after afterprint/fallback; test stubs window.print and asserts content.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5373,17 +5392,8 @@
    "pin_slot": "B",
    "note": "Slot B (elsousypharmacy), Sonnet. QA loop 431 reports & shift-close fix.",
    "pr": 506,
-   "ci_dispatched": {
-    "sha": "82bce82f16be578e9ec1c093462716a73cce7f26",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-16T07:45:45+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-16T07:51:40+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/506"
   },
   {
    "id": "UX443",
@@ -5392,7 +5402,7 @@
    "brief": "With no sales the page shows a collapsed 'بيانات تجريبية' details; ensure demo data is clearly watermarked and cannot be mistaken for real, and that print/shift controls are hidden or disabled with an explanation. On 390px the tab strip clips 'المشتريات' under the chevron without edge fade; add a fade mask/scroll-snap and keep the active tab centred. Also keep emergency/stock.json 404 out of scope (UX312). Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Empty state clear and non-misleading; mobile tab strip shows fade/snap; test asserts.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5402,17 +5412,8 @@
    "pin_slot": "A",
    "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
    "pr": 504,
-   "ci_dispatched": {
-    "sha": "8612ae2826bc963f3c91732231418534141da772",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-16T07:44:18+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-16T07:50:02+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/504"
   },
   {
    "id": "UX444",
@@ -5443,6 +5444,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T07:47:14+00:00",
+ "updated": "2026-11-16T07:53:35+00:00",
  "slot_cooldown": {}
 }
