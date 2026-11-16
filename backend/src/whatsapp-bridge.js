@@ -53,6 +53,19 @@ const tsMs = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? 
 export async function ingestDirect(db, tenant, items, now = Date.now(), kv = null, fresh = null) {
   let added = 0, duplicates = 0, skipped = 0, cached = 0;
   for (const it of items) {
+    // A delivery-failure note from the bot (Meta accepted the message, then failed to deliver it): a system line in the chat, nothing else.
+    // Never creates a conversation, never carries media or a name, never counts as a customer message, never triggers a push.
+    if (it.direction === 'sys') {
+      const sf = String(it.from).replace(/\D/g, ''), sid = 'sf_' + it.id, cid0 = 'wa_' + sf, txt = s(it.text);
+      if (!sf || !txt) { skipped++; continue; }
+      const conv = await db.prepare('SELECT id FROM inbox_conversations WHERE tenant_id = ? AND id = ?').bind(tenant, cid0).first();
+      if (!conv) { skipped++; continue; }
+      if (await db.prepare('SELECT id FROM inbox_messages WHERE tenant_id = ? AND id = ?').bind(tenant, sid).first()) { duplicates++; continue; }
+      const at0 = Math.min(tsMs(it.timestamp) || now, now + 5 * 60 * 1000);
+      await db.prepare('INSERT OR IGNORE INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at) VALUES (?,?,?,?,?,?,?)').bind(tenant, sid, cid0, 'out', txt.slice(0, 500), null, at0).run();
+      await db.prepare('UPDATE inbox_conversations SET updated_at = ? WHERE tenant_id = ? AND id = ? AND (CASE WHEN updated_at > 0 AND updated_at < 1000000000000 THEN updated_at * 1000 ELSE updated_at END) < ?').bind(at0, tenant, cid0, at0).run();
+      added++; continue;
+    }
     const out = it.direction === 'out';
     const from = String(it.from).replace(/\D/g, '');
     const type = s(it.type) || 'text';
@@ -120,7 +133,7 @@ export function registerWaBridgeRoutes(route, { json, errorResponse }, { authent
     const entries = [], pend = [];
     let skipped = 0;
     for (const it of body.messages) {
-      if (it && it.direction === 'out') { skipped++; continue; }
+      if (it && (it.direction === 'out' || it.direction === 'sys')) { skipped++; continue; }
       const e = it && typeof it === 'object' ? toQueueEntry(it) : { bad: true };
       if (e && e.bad) return errorResponse('WA_BAD_JSON', 'صيغة الطلب غير صالحة.', 400, requestId);
       if (!e) { skipped++; continue; }
