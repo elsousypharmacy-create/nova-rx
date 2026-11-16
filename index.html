@@ -7998,7 +7998,8 @@ function custPanel(){
   else if(ch.state==='none')body='<div class="wa-cust-msg">العميل ده مفيش له رقم تليفون ظاهر (حساب واتساب بيوزرنيم)، فمفيش سجل فواتير ليه.</div>';
   else if(ch.state==='ok'){var d=ch.data||{},ps=Array.isArray(d.purchases)?d.purchases:[],inv=ch.inv!=null?ps[ch.inv]:null;
     if(inv)body=custInv(inv);
-    else body=(d.debt&&Number(d.debt.net)>0?'<div class="wa-cust-debt">عليه مديونية: '+cMoney(d.debt.net)+'</div>':'')+
+    else body=(d.points&&Number.isFinite(Number(d.points.total))?'<div class="wa-pts">رصيد نقاطه: '+Number(d.points.total)+' نقطة</div>':'')+
+      (d.debt&&Number(d.debt.net)>0?'<div class="wa-cust-debt">عليه مديونية: '+cMoney(d.debt.net)+'</div>':'')+
       (ps.length?ps.map(function(p,k){return '<button type="button" class="wa-inv" data-wa-inv="'+k+'"><div class="wa-inv-t"><span>فاتورة #'+ceh(p.invoice)+'</span><span dir="ltr">'+cMoney(p.total)+'</span></div><div class="wa-inv-d"><span class="wa-inv-go" aria-hidden="true">‹</span>'+cDate(p.date)+(p.items&&p.items.length?' · '+p.items.length+' صنف':'')+'</div>'+(cItems(p.items)?'<div class="wa-inv-i">'+cItems(p.items)+'</div>':'')+'</button>'}).join(''):'<div class="wa-cust-msg">مفيش فواتير مسجلة على رقمه في آخر 90 يوم.</div>')+
       '<div class="wa-cust-n">آخر '+ps.length+' فواتير من مبيعات الصيدلية (آخر 90 يوم) — دوس على فاتورة لتفاصيلها'+(d.partial?' — القائمة ممكن تكون ناقصة':'')+'</div>'}
   return '<div class="wa-cust" data-wa-cust><div class="wa-cust-card" role="dialog" aria-modal="true" aria-label="سجل فواتير '+ceh(nm)+'"><div class="wa-cust-h">'+(ch.inv!=null&&ch.state==='ok'?'<button type="button" class="wa-cust-x" data-wa-cust-backlist aria-label="رجوع لسجل الفواتير">›</button><b>تفاصيل الفاتورة</b>':'<b>سجل فواتير '+ceh(nm)+'</b>')+'<button type="button" class="wa-cust-x" data-wa-cust-close aria-label="إغلاق">✕</button></div><div class="wa-cust-b">'+body+'</div></div></div>'}
@@ -8009,7 +8010,7 @@ function custInv(p){
     (it.length?'<div class="wa-sum"><span>مجموع الأصناف</span><span dir="ltr">'+cMoney(sub)+'</span></div>':'')+
     (Number(p.discount)>0?'<div class="wa-sum"><span>الخصم</span><span dir="ltr">'+cMoney(p.discount)+'</span></div>':'')+
     '<div class="wa-sum t"><span>الإجمالي المدفوع</span><span dir="ltr">'+cMoney(p.total)+'</span></div>'+
-    ''}
+    (p.points!==undefined&&p.points!==null?'<div class="wa-sum p"><span>نقاط الفاتورة</span><span>'+Number(p.points)+' نقطة</span></div>':'')}
 function custOpen(id,force){
   ch.open=true;ch.id=id;ch.err='';ch.inv=null;var hit=ch.cache[id];
   if(!force&&hit&&Date.now()-hit.at<300000){ch.state=hit.state;ch.data=hit.data;wa.f='';draw();return}

@@ -56,7 +56,7 @@ assert.equal(await sheet.locator('.wa-inv').count(), 2);
 assert.ok(txt.includes('فاتورة #1234') && txt.includes('10/11/2026') && txt.includes('145.5'), txt);
 assert.ok(txt.includes('بنادول إكسترا ×2') && txt.includes('و 1 صنف تاني'), 'items summarised (3 + 1 more)');
 assert.ok(txt.includes('عليه مديونية') && txt.includes('40'), 'debt shown');
-assert.ok(!txt.includes('نقاط'), 'points are not shown (owner removed them)');
+assert.ok(txt.includes('رصيد نقاطه: 42 نقطة'), 'points balance shown');
 assert.ok(txt.includes('القائمة ممكن تكون ناقصة'), 'partial note');
 assert.equal(await sheet.locator('b', { hasText: 'x' }).count(), 0, 'item name is escaped, not HTML');
 // 1b) tap an invoice -> details (lines, discount, total, points); back returns to the list; Esc backs out one level first
@@ -66,13 +66,12 @@ let dt = await sheet.innerText();
 assert.ok(dt.includes('تفاصيل الفاتورة') && dt.includes('فاتورة #1234'), dt);
 assert.equal(await sheet.locator('.wa-line').count(), 4);
 assert.ok(dt.includes('بنادول إكسترا') && dt.includes('2 × 30') && dt.includes('60'), dt);
-assert.ok(dt.includes('مجموع الأصناف') && dt.includes('150.5') && dt.includes('الخصم') && dt.includes('الإجمالي المدفوع') && dt.includes('145.5'), dt);
-assert.ok(!dt.includes('نقاط'), 'no points in the details');
+assert.ok(dt.includes('مجموع الأصناف') && dt.includes('150.5') && dt.includes('الخصم') && dt.includes('الإجمالي المدفوع') && dt.includes('145.5') && dt.includes('نقاط الفاتورة') && dt.includes('7 نقطة'), dt);
 await page.waitForTimeout(4800);
 assert.equal(await sheet.locator('.wa-line').count(), 4, 'details kept after the live refresh');
 await sheet.locator('[data-wa-cust-backlist]').click(); await sheet.locator('.wa-inv').first().waitFor();
 await sheet.locator('.wa-inv').nth(1).click(); await sheet.locator('.wa-line').first().waitFor();
-dt = await sheet.innerText(); assert.ok(!dt.includes('الخصم'), 'no discount row when 0');
+dt = await sheet.innerText(); assert.ok(!dt.includes('الخصم'), 'no discount row when 0'); assert.ok(!dt.includes('نقاط الفاتورة'), 'no points row when unknown');
 assert.equal(await sheet.locator('b', { hasText: 'x' }).count(), 0, 'escaped in details');
 await page.keyboard.press('Escape'); await sheet.locator('.wa-inv').first().waitFor();   // Esc from details = back to the list, sheet stays
 await sheet.locator('.wa-inv').first().click(); await sheet.locator('.wa-line').first().waitFor();
