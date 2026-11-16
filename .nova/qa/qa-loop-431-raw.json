@@ -1,0 +1,347 @@
+{
+ "d": {
+  "pages": {
+   "sale": {
+    "ms": 60,
+    "hs": false,
+    "len": 515,
+    "nf": false,
+    "small": []
+   },
+   "invoices": {
+    "ms": 140,
+    "hs": false,
+    "len": 816,
+    "nf": false,
+    "small": []
+   },
+   "products": {
+    "ms": 121,
+    "hs": false,
+    "len": 1308,
+    "nf": false,
+    "small": []
+   },
+   "customers": {
+    "ms": 92,
+    "hs": false,
+    "len": 667,
+    "nf": false,
+    "small": []
+   },
+   "reports": {
+    "ms": 78,
+    "hs": false,
+    "len": 321,
+    "nf": false,
+    "small": []
+   },
+   "settings": {
+    "ms": 142,
+    "hs": false,
+    "len": 1316,
+    "nf": false,
+    "small": []
+   }
+  },
+  "header": [
+   "novaWaBtn|المحادثات (واتساب)|36x36"
+  ],
+  "rep": {
+   "rootId": "",
+   "text": "البيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nنسخة تجريبية\nNOVA Rx\nالتقارير\n\nمبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض\n\nلا توجد مبيعات محفوظة بعد\nالتقارير الحقيقية تظهر بعد أول عملية بيع.\nابدأ بيع\nمعاينة شكل التقرير — بيانات غير حقيقية\nبيانات تجريبية (للعرض فقط) — ليست مبيعاتك الفعلية",
+   "controls": [
+    "|البيع|42x44|NOLABEL",
+    "|الفواتير|59x44|NOLABEL",
+    "|المنتجات|68x44|NOLABEL",
+    "|العملاء|55x44|NOLABEL",
+    "|التقارير|59x44|NOLABEL",
+    "novaPurchasesNav|المشتريات|78x44|NOLABEL",
+    "|الإعدادات|71x44|NOLABEL",
+    "novaWaBtn||36x36",
+    "btnRefreshApp||36x36",
+    "novaRepStartSale|ابدأ بيع|63x44|NOLABEL",
+    "btnCloseCheckout||44x44",
+    "checkoutAddCustomer|إضافة رقم العميل (اختياري)|156x44|NOLABEL",
+    "|نقدي (F12)|161x44|NOLABEL",
+    "|مدى / بطاقة (F10)|161x44|NOLABEL",
+    "|آجل (F11)|161x44|NOLABEL",
+    "|مختلط|161x44|NOLABEL",
+    "inputCashReceived|0.00|666x44|NOLABEL",
+    "|بالضبط|127x44|NOLABEL",
+    "|50|127x44|NOLABEL",
+    "|100|127x44|NOLABEL",
+    "|200|127x44|NOLABEL",
+    "|500|127x44|NOLABEL",
+    "btnConfirmPayment|تأكيد وطباعة الإيصال (Enter)|194x44|NOLABEL",
+    "btnCancelCheckout|إلغاء (Esc)|79x44|NOLABEL",
+    "btnCloseReceipt||44x44",
+    "btnReceiptWidth80|80mm|61x44|NOLABEL",
+    "btnReceiptWidth58|58mm|59x44|NOLABEL",
+    "btnPrinterStatus|الطابعة غير معروفة|122x44|NOLABEL",
+    "btnPrintReceiptBtn|طباعة|54x40|NOLABEL",
+    "btnReprintReceipt|إعادة طباعة نسخة|115x40|NOLABEL",
+    "btnExportReceiptPdf|تحميل PDF|82x40|NOLABEL",
+    "btnReceiptNewSale|فاتورة جديدة (F2 / Enter)|154x40|NOLABEL",
+    "btnCloseHelp||44x44",
+    "btnDismissHelp|تمام (Esc)|78x40|NOLABEL"
+   ],
+   "heights": [
+    "nova-panel nova-empty-car:1306x229",
+    "nova-kpi:318x88",
+    "nova-kpi:318x88",
+    "nova-kpi:318x88",
+    "nova-kpi:318x88",
+    "nova-panel:1306x294"
+   ],
+   "hs": false,
+   "sh": 768
+  },
+  "noShiftCount": true,
+  "tabOrder": [
+   "novaPurchasesNav|المشتريات|ring",
+   "BUTTON|الإعدادات|ring",
+   "novaWaBtn||ring",
+   "btnRefreshApp||ring",
+   "novaRepStartSale|ابدأ بيع|ring",
+   "SUMMARY|بيانات تجريبية (لل|ring",
+   "BODY|(function(){var s=|NORING",
+   "BUTTON|البيع|ring",
+   "BUTTON|الفواتير|ring",
+   "BUTTON|المنتجات|ring",
+   "BUTTON|العملاء|ring",
+   "BUTTON|التقارير|ring",
+   "novaPurchasesNav|المشتريات|ring",
+   "BUTTON|الإعدادات|ring"
+  ],
+  "standalone": {
+   "purchases": {
+    "status": 200,
+    "len": 711,
+    "hs": false,
+    "small": [
+     "selectAll:22x22"
+    ],
+    "text": "NOVA\nRx\nالبيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nالمشتريات\nمدة التغطية بالأيام\nالحد الأدنى\nالمثالي\nأوميت: لا مخازن مختارة · فارما أوفرسيز\nتحديث النواقص\nتوزيع تلقائي\nسلال الموردين\nاستلام فاتورة\nأوامر الشراء المحلية\nإعدادات الموردين\nالمخزون الحي · اضغط تحديث النواقص\n\nاختَر إعدادات الموردين، ثم حدّث النواقص.\n\nالأصناف المطلوبة (0)\nاقتراح تلقائي\nوضع يدوي\nبيانات تجريبية\n\tالصنف\tالرصيد\tالمستهدف\tمعدل البيع / التوريد\tأدنى / أقصى\tالمطلوب\tالعرض والخصم\tتعديل\nحدّث النواقص لقراءة مخزون الصي"
+   },
+   "sticker-studio.html": {
+    "status": 200,
+    "len": 841,
+    "hs": false,
+    "small": [],
+    "text": "صيدلية السوسي\nلصاحبها ومديرها د. أحمد السوسي · 01143404023\nاستيكرات الأدوية\n١\nالمريض\n٢\nالأدوية\n٣\nمراجعة\n٤\nطباعة\nالعودة لنقطة البيع\nالمريض والأدوية\nمسح المسودة\nفواتير سابقة\nاسم المريض\nرقم الهاتف\nالعمر\nسنة\nشهر\nالوزن (كجم)\nحامل؟ *\nنعم\nلا\nرضاعة؟ *\nنعم\nلا\n1 / 6\n1\nدواء بدون اسم\n+ دواء\nيحتاج مراجعة\nإعادة توليد AI\nتكرار\nحذف\nاسم الدواء\nالجرعة\nالتكرار\nالمدة\nتعليمات الاستعمال\nناقص: الجرعة\nناقص: التكرار\nناقص: المدة\nناقص: التعليمات\nمعاينة الاستيكر\n50 × 30 مم · ملصق فردي · كامل\nإعدادات الطباعة\nالاستيكر 1 من 1"
+   },
+   "emergency-sales.html": {
+    "status": 200,
+    "len": 520,
+    "hs": false,
+    "small": [
+     "file:1x1"
+    ],
+    "text": "بيع طوارئ — صيدلية د. أحمد السوسي\nأسعار للقراءة فقط · فواتير مؤقتة\nلا توجد أسعار محمّلة على هذا الجهاز. اختر ملف STOCK LIVE من الأسفل لتحميل الأسعار.\nأسعار الأصناف\n\nالأسعار هنا نسخة للقراءة فقط من شيت STOCK LIVE (عمود price = سعر الجمهور). حمّل الملف وأنت عليك إنترنت، وبعدها يشتغل الجهاز بدون المخزن.\n\nوقت تصدير الملف من الشيت (مهم لتحذير الأسعار القديمة)\nاختر التاريخ والوقت\nالآن\n\nلو تركته فاضي يظهر تحذير «وقت التصدير غير معروف».\n\nملف الأسعار (CSV أو JSON)\nاختر ملف الأسعار\nلم يتم اختيار ملف بعد\n\n"
+   },
+   "supplier-compare.html": {
+    "status": 200,
+    "len": 546,
+    "hs": false,
+    "small": [],
+    "text": "مقارنة أسعار الموردين\nنموذج تجريبي للقراءة فقط — بيانات تركيبية، بدون أي اتصال أو طلب شراء\nالمورد\tكود الصنف\tالصنف\tالسعر (ج.م)\tالخصم\tالسعر بعد الخصم\tالمخزون\tآخر تحديث\nEl Motawakel الأفضل سعرًا\tPCM-500\tParacetamol 500mg 20 tab\t١٩٫٠٠\t8%\t١٧٫٤٨\t90\t٠٢‏/١١‏/٢٠٢٦\nUnited Pharma\tPCM-500\tParacetamol 500mg 20 tab\t١٨٫٥٠\t5%\t١٧٫٥٨\t240\t٠١‏/١١‏/٢٠٢٦\nCairo Drug Store\tPCM-500\tParacetamol 500mg 20 tab\t١٨٫٠٠\t0%\t١٨٫٠٠\tنفد\t٠٣‏/١١‏/٢٠٢٦\nCairo Drug Store الأفضل سعرًا\tIBU-400\tIbuprofen 400mg 20 tab\t٢٤٫٢٥\t10%\t٢١٫٨٣\t300\t٠٣"
+   }
+  },
+  "wa": {
+   "view": true,
+   "len": 322
+  },
+  "cls": 0,
+  "longtasks": [
+   53,
+   88,
+   62,
+   62,
+   61,
+   62,
+   66
+  ],
+  "errors": [
+   "Failed to load resource: net::ERR_FAILED",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 http://127.0.0.1:8765/emergency/stock.json"
+  ],
+  "blocked": []
+ },
+ "m": {
+  "pages": {
+   "sale": {
+    "ms": 60,
+    "hs": false,
+    "len": 413,
+    "nf": false,
+    "small": []
+   },
+   "invoices": {
+    "ms": 96,
+    "hs": false,
+    "len": 762,
+    "nf": false,
+    "small": []
+   },
+   "products": {
+    "ms": 186,
+    "hs": false,
+    "len": 1074,
+    "nf": false,
+    "small": []
+   },
+   "customers": {
+    "ms": 147,
+    "hs": false,
+    "len": 597,
+    "nf": false,
+    "small": []
+   },
+   "reports": {
+    "ms": 142,
+    "hs": false,
+    "len": 312,
+    "nf": false,
+    "small": []
+   },
+   "settings": {
+    "ms": 163,
+    "hs": false,
+    "len": 1305,
+    "nf": false,
+    "small": []
+   }
+  },
+  "header": [
+   "novaWaBtn|المحادثات (واتساب)|44x44"
+  ],
+  "rep": {
+   "rootId": "",
+   "text": "البيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\n›\n‹\nNOVA Rx\nالتقارير\n\nمبيعات هذا الجهاز أولًا، وبعدها مؤشرات توضيحية من بيانات العرض\n\nلا توجد مبيعات محفوظة بعد\nالتقارير الحقيقية تظهر بعد أول عملية بيع.\nابدأ بيع\nمعاينة شكل التقرير — بيانات غير حقيقية\nبيانات تجريبية (للعرض فقط) — ليست مبيعاتك الفعلية",
+   "controls": [
+    "|البيع|44x44|NOLABEL",
+    "|الفواتير|59x44|NOLABEL",
+    "|المنتجات|68x44|NOLABEL",
+    "|العملاء|55x44|NOLABEL",
+    "|التقارير|59x44|NOLABEL",
+    "novaPurchasesNav|المشتريات|78x44|NOLABEL",
+    "|الإعدادات|71x44|NOLABEL",
+    "novaNavPrev|›|44x47",
+    "novaNavNext|‹|44x47",
+    "novaWaBtn||44x44",
+    "btnRefreshApp||44x44",
+    "novaRepStartSale|ابدأ بيع|57x44|NOLABEL",
+    "btnCloseCheckout||44x44",
+    "checkoutAddCustomer|إضافة رقم العميل (اختياري)|156x44|NOLABEL",
+    "|نقدي (F12)|144x44|NOLABEL",
+    "|مدى / بطاقة (F10)|144x44|NOLABEL",
+    "|آجل (F11)|144x44|NOLABEL",
+    "|مختلط|144x44|NOLABEL",
+    "inputCashReceived|0.00|295x44|NOLABEL",
+    "|بالضبط|53x44|NOLABEL",
+    "|50|53x44|NOLABEL",
+    "|100|53x44|NOLABEL",
+    "|200|53x44|NOLABEL",
+    "|500|53x44|NOLABEL",
+    "btnConfirmPayment|تأكيد وطباعة الإيصال (Enter)|194x44|NOLABEL",
+    "btnCancelCheckout|إلغاء (Esc)|73x44|NOLABEL",
+    "btnCloseReceipt||44x44",
+    "btnReceiptWidth80|80mm|61x44|NOLABEL",
+    "btnReceiptWidth58|58mm|59x44|NOLABEL",
+    "btnPrinterStatus|الطابعة غير معروفة|122x44|NOLABEL",
+    "btnPrintReceiptBtn|طباعة|48x44|NOLABEL",
+    "btnReprintReceipt|إعادة طباعة نسخة|109x44|NOLABEL",
+    "btnExportReceiptPdf|تحميل PDF|76x44|NOLABEL",
+    "btnReceiptNewSale|فاتورة جديدة (F2 / Enter)|148x44|NOLABEL",
+    "btnCloseHelp||44x44",
+    "btnDismissHelp|تمام (Esc)|72x44|NOLABEL"
+   ],
+   "heights": [
+    "nova-panel nova-empty-car:366x229",
+    "nova-kpi:177x82",
+    "nova-kpi:177x82",
+    "nova-kpi:177x82",
+    "nova-kpi:177x82",
+    "nova-panel:366x294"
+   ],
+   "hs": false,
+   "sh": 844
+  },
+  "noShiftCount": true,
+  "tabOrder": [
+   "novaPurchasesNav|المشتريات|ring",
+   "BUTTON|الإعدادات|ring",
+   "novaNavPrev|›|ring",
+   "novaNavNext|‹|ring",
+   "novaWaBtn||ring",
+   "btnRefreshApp||ring",
+   "novaRepStartSale|ابدأ بيع|ring",
+   "SUMMARY|بيانات تجريبية (لل|ring",
+   "BODY|(function(){var s=|NORING",
+   "BUTTON|البيع|ring",
+   "BUTTON|الفواتير|ring",
+   "BUTTON|المنتجات|ring",
+   "BUTTON|العملاء|ring",
+   "BUTTON|التقارير|ring"
+  ],
+  "standalone": {
+   "purchases": {
+    "status": 200,
+    "len": 628,
+    "hs": false,
+    "small": [
+     "selectAll:22x22"
+    ],
+    "text": "NOVA\nRx\nالبيع\nالفواتير\nالمنتجات\nالعملاء\nالتقارير\nالمشتريات\nالإعدادات\nالمشتريات\nمدة التغطية بالأيام\nالحد الأدنى\nالمثالي\nأوميت: لا مخازن مختارة · فارما أوفرسيز\nتحديث النواقص\nتوزيع تلقائي\nسلال الموردين\nاستلام فاتورة\nأوامر الشراء المحلية\nإعدادات الموردين\nالمخزون الحي · اضغط تحديث النواقص\n\nاختَر إعدادات الموردين، ثم حدّث النواقص.\n\nالأصناف المطلوبة (0)\nاقتراح تلقائي\nوضع يدوي\nبيانات تجريبية\nحدّث النواقص لقراءة مخزون الصيدلية.\nاختيار المخازن يحدد العروض المسموح بها في التوزيع.\nتوزيع الطلب\n0 مجموعات\n\nلم "
+   },
+   "sticker-studio.html": {
+    "status": 200,
+    "len": 731,
+    "hs": false,
+    "small": [],
+    "text": "صيدلية السوسي\nالعودة لنقطة البيع\nالمريض والأدوية\nمسح المسودة\nفواتير سابقة\nاسم المريض\nرقم الهاتف\nالعمر\nسنة\nشهر\nالوزن (كجم)\nحامل؟ *\nنعم\nلا\nرضاعة؟ *\nنعم\nلا\n1\nدواء بدون اسم\n+ دواء\nيحتاج مراجعة\nإعادة توليد AI\nتكرار\nحذف\nاسم الدواء\nالجرعة\nالتكرار\nالمدة\nتعليمات الاستعمال\nناقص: الجرعة\nناقص: التكرار\nناقص: المدة\nناقص: التعليمات\nمعاينة الاستيكر\n50 × 30 مم · ملصق فردي · كامل\nإعدادات الطباعة\nالاستيكر 1 من 1\nصيدلية السوسي\nيتطلب مراجعة\nاسم الدواء\nتعليمات الاستعمال تُراجع هنا\nمسودة غير مكتملة — مراجعة الصيدلي إل"
+   },
+   "emergency-sales.html": {
+    "status": 200,
+    "len": 520,
+    "hs": false,
+    "small": [
+     "file:1x1"
+    ],
+    "text": "بيع طوارئ — صيدلية د. أحمد السوسي\nأسعار للقراءة فقط · فواتير مؤقتة\nلا توجد أسعار محمّلة على هذا الجهاز. اختر ملف STOCK LIVE من الأسفل لتحميل الأسعار.\nأسعار الأصناف\n\nالأسعار هنا نسخة للقراءة فقط من شيت STOCK LIVE (عمود price = سعر الجمهور). حمّل الملف وأنت عليك إنترنت، وبعدها يشتغل الجهاز بدون المخزن.\n\nوقت تصدير الملف من الشيت (مهم لتحذير الأسعار القديمة)\nاختر التاريخ والوقت\nالآن\n\nلو تركته فاضي يظهر تحذير «وقت التصدير غير معروف».\n\nملف الأسعار (CSV أو JSON)\nاختر ملف الأسعار\nلم يتم اختيار ملف بعد\n\n"
+   },
+   "supplier-compare.html": {
+    "status": 200,
+    "len": 546,
+    "hs": false,
+    "small": [],
+    "text": "مقارنة أسعار الموردين\nنموذج تجريبي للقراءة فقط — بيانات تركيبية، بدون أي اتصال أو طلب شراء\nالمورد\tكود الصنف\tالصنف\tالسعر (ج.م)\tالخصم\tالسعر بعد الخصم\tالمخزون\tآخر تحديث\nEl Motawakel الأفضل سعرًا\nPCM-500\nParacetamol 500mg 20 tab\n١٩٫٠٠\n8%\n١٧٫٤٨\n90\n٠٢‏/١١‏/٢٠٢٦\nUnited Pharma\nPCM-500\nParacetamol 500mg 20 tab\n١٨٫٥٠\n5%\n١٧٫٥٨\n240\n٠١‏/١١‏/٢٠٢٦\nCairo Drug Store\nPCM-500\nParacetamol 500mg 20 tab\n١٨٫٠٠\n0%\n١٨٫٠٠\nنفد\n٠٣‏/١١‏/٢٠٢٦\nCairo Drug Store الأفضل سعرًا\nIBU-400\nIbuprofen 400mg 20 tab\n٢٤٫٢٥\n10%\n٢١٫٨٣\n300\n٠٣"
+   }
+  },
+  "wa": {
+   "view": false,
+   "len": 117
+  },
+  "cls": 0,
+  "longtasks": [
+   90,
+   50,
+   62,
+   62,
+   62,
+   61
+  ],
+  "errors": [
+   "Failed to load resource: net::ERR_FAILED",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 http://127.0.0.1:8765/emergency/stock.json"
+  ],
+  "blocked": []
+ }
+}

@@ -56,11 +56,22 @@
     ]
   },
   "reports & shift close": {
-    "score": 7.0,
-    "last_cycle": 203,
-    "open_findings": 1,
+    "score": 6.5,
+    "last_cycle": 431,
+    "open_findings": 12,
     "refs": [
-      "UX213"
+      "UX432",
+      "UX433",
+      "UX434",
+      "UX435",
+      "UX436",
+      "UX437",
+      "UX438",
+      "UX439",
+      "UX440",
+      "UX441",
+      "UX442",
+      "UX443"
     ]
   },
   "conversations (WhatsApp inbox)": {
@@ -99,7 +110,7 @@
   },
   "performance": {
     "score": 8.0,
-    "last_cycle": 314,
+    "last_cycle": 431,
     "open_findings": 1,
     "refs": []
   },
