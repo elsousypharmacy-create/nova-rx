@@ -25,7 +25,8 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+// S1-01: index.html moved on (the chat PIN lock). The exact-equality check lives in the newest artifact's check (artifact-s101.check.mjs); here the ux-407 artifact stays a frozen, still-valid snapshot.
+ck('app HTML is a non-empty frozen ux-407 snapshot', app.startsWith('<!DOCTYPE html>') && app.length > 500000);
 const SWK = '"/sw.js":{"body":';
 const swBody = (code) => { const j = code.indexOf(SWK) + SWK.length; let e = j + 1; while (code[e] !== '"') { if (code[e] === '\\') e++; e++; } return [code.slice(0, j) + code.slice(e + 1), JSON.parse(code.slice(j, e + 1))]; };
 // UX01–14: allow only the four purchase UI body refreshes, and assert their exact repo bytes below.

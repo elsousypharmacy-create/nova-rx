@@ -99,8 +99,9 @@ const KV = { async get(k) { return kvm.has(k) ? kvm.get(k) : null; }, async put(
 const sent = []; let pushStatus = 201;
 const NOVA_PUSH_FETCH = async (u, o) => { sent.push({ u, o }); if (pushStatus === 'throw') throw new Error('net'); return { status: pushStatus }; };
 const TOK = 'a'.repeat(40);
-const env = { NOVA_ENV: 'staging', NOVA_WA_BRIDGE_INTAKE: '1', NOVA_WA_BRIDGE_DIRECT: '1', NOVA_WA_BRIDGE_TOKEN: TOK, DB: D1, KV, VAPID_PUBLIC_KEY: VPUB, VAPID_PRIVATE_KEY: vjwk.d, NOVA_PUSH_FETCH };
-const api = async (path, body, e = env) => { const r = await handle(new Request('https://x.test/api/v1/inbox/history/push/' + path, body === undefined ? {} : { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }), e); return [r.status, await r.json()]; };
+const PIN = 'pin-123456789012'; // S1-01: staging is PIN-gated too, so the test env has a PIN and the history/push calls send it
+const env = { NOVA_ENV: 'staging', NOVA_API_PIN: PIN, NOVA_WA_BRIDGE_INTAKE: '1', NOVA_WA_BRIDGE_DIRECT: '1', NOVA_WA_BRIDGE_TOKEN: TOK, DB: D1, KV, VAPID_PUBLIC_KEY: VPUB, VAPID_PRIVATE_KEY: vjwk.d, NOVA_PUSH_FETCH };
+const api = async (path, body, e = env, pin = PIN) => { const h = { ...(body === undefined ? {} : { 'Content-Type': 'application/json' }), ...(pin ? { 'X-Nova-Pin': pin } : {}) }; const r = await handle(new Request('https://x.test/api/v1/inbox/history/push/' + path, body === undefined ? { headers: h } : { method: 'POST', body: JSON.stringify(body), headers: h }), e); return [r.status, await r.json()]; };
 const subs = () => [...kvm.keys()].filter((k) => k.startsWith(SUB_PREFIX));
 {
   let [s, j] = await api('key');
@@ -123,9 +124,13 @@ const subs = () => [...kvm.keys()].filter((k) => k.startsWith(SUB_PREFIX));
   assert.deepEqual([s, j.subscribed, subs().length], [200, false, 1]);
   [s, j] = await api('unsubscribe', {});
   assert.equal(s, 400);
-  // PIN-gated outside staging/preview
-  [s, j] = await api('key', undefined, { ...env, NOVA_ENV: 'production' });
-  assert.ok(s === 503 || s === 401, String(s));
+  // S1-01: PIN-gated in every env, staging included
+  [s, j] = await api('key', undefined, { ...env, NOVA_ENV: 'production' }, null);
+  assert.equal(s, 401, String(s));
+  [s, j] = await api('key', undefined, env, null);
+  assert.equal(s, 401, 'staging without a PIN is locked');
+  [s, j] = await api('subscribe', { subscription: SUB() }, env, 'wrong-pin-000000');
+  assert.equal(s, 401);
   // per-tenant cap
   for (let i = 0; i < MAX_SUBS + 2; i++) await api('subscribe', { subscription: SUB('https://fcm.googleapis.com/fcm/send/cap' + i) });
   assert.equal(subs().length, MAX_SUBS);
