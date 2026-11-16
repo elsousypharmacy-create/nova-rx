@@ -38,6 +38,11 @@ assert.equal(j.purchases[0].invoice, '1234'); assert.equal(j.purchases[0].items[
 bot = { ok: false, error: 'boom' }; [s, j] = await get('wa_201009998888'); assert.deepEqual([s, j.ok, j.code], [502, false, 'HIST_FAILED']);
 botThrow = true; [s, j] = await get('wa_201007776666'); assert.equal(s, 502); botThrow = false;
 bot = { ok: true, purchases: [] }; [s, j] = await get('wa_201009998888'); assert.deepEqual([s, j.ok, j.purchases.length], [200, true, 0]); // failures were not cached
+// a partial answer is not cached (second call asks the bot again and may be complete)
+bot = { ok: true, purchases: [], partial: true }; const nb = calls.length;
+[s, j] = await get('wa_201003332222'); assert.deepEqual([j.partial, j.cached, j.purchases.length], [true, false, 0]);
+bot = { ok: true, purchases: [{ date: '2026-11-01', invoice: '7', total: 5, items: [] }], partial: false };
+[s, j] = await get('wa_201003332222'); assert.deepEqual([j.partial, j.cached, j.purchases.length, calls.length - nb], [false, false, 1, 2]);
 // not configured
 [s, j] = await get('wa_201005554444', PIN, { ...env, NOVA_WA_BRIDGE_TOKEN: '' }); assert.deepEqual([s, j.code], [503, 'HIST_NOT_CONFIGURED']);
 console.log('backend-customer-history: all passed');

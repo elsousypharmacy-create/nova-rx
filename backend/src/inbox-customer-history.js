@@ -44,7 +44,8 @@ export function registerInboxCustomerHistoryRoutes(route, { errorResponse }) {
     try { r = await callBot(env, { action: 'novaWhatsAppBridge', bridgeToken: token, operation: 'customerHistory', chatId: id }, 28000); } catch { r = null; }
     if (!r || !r.ok || !r.j || r.j.ok !== true) return errorResponse('HIST_FAILED', 'تعذّر تحميل سجل الفواتير. حاول مرة تانية.', 502, requestId);
     const out = cleanHistory(r.j);
-    if (env.KV) { try { await env.KV.put(key, JSON.stringify(out), { expirationTtl: CACHE_S }); } catch { /* ignore */ } }
+    // a partial answer (the bot is still building its index / timed out) is never cached: the next try may be complete
+    if (env.KV && !out.partial) { try { await env.KV.put(key, JSON.stringify(out), { expirationTtl: CACHE_S }); } catch { /* ignore */ } }
     return { ok: true, available: true, cached: false, ...out, requestId };
   });
 }
