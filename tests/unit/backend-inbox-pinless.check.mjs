@@ -20,10 +20,10 @@ const kvm = new Map();
 const KV = { async get(k) { return kvm.has(k) ? kvm.get(k) : null; }, async put(k, v) { kvm.set(k, v); }, async delete(k) { kvm.delete(k); } };
 const PIN = 'pin-123456789012', TOKEN = 'x'.repeat(64), URL_ = 'https://script.test/exec';
 const calls = [];
-let botGet = { ok: true, msgs: [] };
+let botGet = { ok: true, msgs: [] }, botReply = { ok: true };
 const NOVA_FETCH = async (u, o) => {
   const p = JSON.parse(o.body); calls.push({ u, p });
-  return { ok: true, status: 200, async json() { return p.operation === 'get' ? botGet : { ok: true }; } };
+  return { ok: true, status: 200, async json() { return p.operation === 'get' ? botGet : botReply; } };
 };
 const base = { DB: D1, KV, NOVA_API_PIN: PIN, NOVA_INBOX_SEND: '1', WA_BACKEND_URL: URL_, NOVA_WA_BRIDGE_TOKEN: TOKEN, NOVA_FETCH, CORS_ALLOW_ORIGINS: 'https://p.test' };
 const staging = { ...base, NOVA_ENV: 'staging' }, preview = { ...base, NOVA_ENV: 'preview' }, production = { ...base, NOVA_ENV: 'production' };
@@ -89,11 +89,11 @@ assert.deepEqual(db.prepare("SELECT status FROM wa_send_log WHERE conversation_i
 // duplicate guard still on
 [s, j] = await send({ id: 'wa_201111', text: 'متوفر', clientId: 'cli_pinless1' }, staging, null); assert.equal(s, 409);
 
-// 24h window still enforced on staging: old customer => 422, only the read-only lookup, logged as blocked
-calls.length = 0; botGet = { ok: true, msgs: [{ t: "'2025-10-01 10:00:00", role: 'user', text: 'x' }] };
+// no 24h pre-check on staging either (owner 2026-11-16): the send is attempted; a WhatsApp refusal is a plain note, logged as failed
+calls.length = 0; const okR = botReply; botReply = { ok: false, error: 'تيليجرام رفض الرسالة: فات أكتر من 24 ساعة على آخر رسالة من العميل' };
 [s, j] = await send({ id: 'wa_old', text: 'hi' }, staging, null); assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED');
-assert.deepEqual(calls.map((c) => c.p.operation), ['get']);
-assert.equal(db.prepare("SELECT status FROM wa_send_log WHERE conversation_id = 'wa_old'").get().status, 'blocked');
+assert.deepEqual(calls.map((c) => c.p.operation), ['reply']);
+assert.equal(db.prepare("SELECT status FROM wa_send_log WHERE conversation_id = 'wa_old'").get().status, 'failed'); botReply = okR;
 
 // per-IP rate limit still enforced on staging (20 / 10 min)
 let last;

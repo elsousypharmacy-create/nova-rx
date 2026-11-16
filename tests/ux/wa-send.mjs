@@ -61,13 +61,14 @@ for (const vp of [{ width: 1280, height: 800, name: 'desktop', touch: false }, {
   await view.locator('[data-mid="ps_2"]').waitFor();
   assert.notEqual(sends[0].clientId, sends[1].clientId);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/wa-send-sent-${vp.name}.png` });
-  // 24h window closed: Arabic banner, failed tick, text restored
+  // WhatsApp refuses (24h window): Arabic note + failed tick, the message stays as a failed bubble (owner 2026-11-16: note only, no lock)
   mode = 'window';
   await input.fill('رسالة متأخرة'); await input.press('Enter');
   await view.locator('[data-send-err]').waitFor();
   assert.match(await view.locator('[data-send-err]').innerText(), /24 ساعة/);
   assert.equal(await view.locator('.wa-out [data-tick="failed"]').count(), 1);
-  assert.equal(await view.locator('#waInput').inputValue(), 'رسالة متأخرة', 'text kept for retry');
+  assert.equal(await view.locator('#waInput').inputValue(), '', 'the field is free again: the failed message stays in the thread');
+  assert.equal(await view.locator('#waInput').isDisabled(), false, 'the composer is not locked after a refusal');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/wa-send-window-${vp.name}.png` });
   assert.deepEqual(other, [], 'no other non-GET requests');
   assert.deepEqual(errors, []);

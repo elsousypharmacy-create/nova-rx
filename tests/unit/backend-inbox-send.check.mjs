@@ -71,16 +71,23 @@ const hm = (await hr.json()).conversation.messages; assert.equal(hm[hm.length - 
 // duplicate client id
 [s, j] = await send({ id: 'wa_201111', text: 'again', clientId: 'cli_abcdef12' }); assert.equal(s, 409); assert.equal(calls.length, 1);
 
-// 24h window closed (D1 and bot log both old) => 422, nothing sent, logged as blocked
-calls.length = 0; botGet = { ok: true, msgs: [{ t: "'2025-10-01 10:00:00", role: 'user', text: 'x' }] };
-[s, j] = await send({ id: 'wa_old', text: 'hi' }); assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED'); assert.match(j.message_ar, /24 ساعة/);
-assert.deepEqual(calls.map((c) => c.p.operation), ['get'], 'only the read-only bot lookup, no reply');
-assert.equal(db.prepare("SELECT status FROM wa_send_log WHERE conversation_id = 'wa_old'").get().status, 'blocked');
-// window open according to the bot log (customer wrote 1h ago, not yet in D1) => sent
+// No 24h pre-check any more (owner 2026-11-16): an old chat is attempted; when WhatsApp refuses it (bot says «أكتر من 24 ساعة») the answer is a plain note
+calls.length = 0; const okReply = botReply;
+botReply = { ok: false, error: 'تيليجرام رفض الرسالة: فات أكتر من 24 ساعة على آخر رسالة من العميل — واتساب مش بيسمح برسالة عادية' };
+[s, j] = await send({ id: 'wa_old', text: 'hi' }); assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED'); assert.match(j.message_ar, /ما وصلتش/); assert.match(j.message_ar, /24 ساعة/);
+assert.deepEqual(calls.map((c) => c.p.operation), ['reply'], 'the send was attempted, no read-only lookup, nothing blocked up front');
+assert.equal(db.prepare("SELECT status, error FROM wa_send_log WHERE conversation_id = 'wa_old'").get().status, 'failed');
+assert.equal(db.prepare("SELECT COUNT(*) n FROM inbox_messages WHERE conversation_id = 'wa_old' AND dir = 'out'").get().n, 0, 'a refused send is not stored as sent');
+// any other refusal stays a generic failure note
+calls.length = 0; botReply = { ok: false, error: 'تيليجرام رفض الرسالة: Rate limit' };
+[s, j] = await send({ id: 'wa_old', text: 'hi2' }); assert.equal(s, 502); assert.equal(j.code, 'SEND_FAILED');
+// the same old chat when the bot accepts (the customer's window is actually open on WhatsApp's side) => sent
+calls.length = 0; botReply = okReply;
+[s, j] = await send({ id: 'wa_old', text: 'hi3' }); assert.equal(s, 200, JSON.stringify(j)); assert.deepEqual(calls.map((c) => c.p.operation), ['reply']);
+// a chat that wrote 1h ago: also sent, still no lookup
 calls.length = 0;
+[s, j] = await send({ id: 'wa_bot', text: 'hi' }); assert.equal(s, 200, JSON.stringify(j)); assert.deepEqual(calls.map((c) => c.p.operation), ['reply']);
 const fmt = (ms) => { const p = {}; for (const x of new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Cairo', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(ms)) p[x.type] = x.value; return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`; };
-botGet = { ok: true, msgs: [{ t: fmt(now - 3600e3), role: 'user', text: 'x' }, { t: fmt(now - 60e3), role: 'bot', text: 'y' }] };
-[s, j] = await send({ id: 'wa_bot', text: 'hi' }); assert.equal(s, 200, JSON.stringify(j)); assert.deepEqual(calls.map((c) => c.p.operation), ['get', 'reply']);
 assert.ok(Math.abs(cairoMs(fmt(now)) - now) < 1500, 'cairoMs round-trips');
 assert.equal(cairoMs('bad'), 0); assert.ok(WINDOW_MS < 24 * 3600e3);
 
