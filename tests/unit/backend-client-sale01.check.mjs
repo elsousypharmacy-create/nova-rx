@@ -32,7 +32,7 @@ assert.equal(resolveBaseUrl({ getItem() { throw new Error('blocked'); } }), '', 
   c.setEnabled(true);
   await c.pull();
   assert.equal(f.calls.length, 1);
-  assert.ok(f.calls[0].url.startsWith(PROD + '/api/v1/sync/feed'), f.calls[0].url);
+  assert.ok(f.calls[0].url.startsWith(PROD + '/api/v1/sync/pull'), f.calls[0].url);
   assert.equal(f.calls[0].o.method, 'GET');
   assert.equal(f.calls[0].o.headers.Authorization, 'Bearer tok-x');
 }

@@ -26,12 +26,12 @@ const res = (body, status = 200) => ({ ok: status < 400, status, json: async () 
   c.setEnabled(true); c.setUrl('');
   assert.equal(c.baseUrl(), 'https://nova-rx-api.elsousypharmacy.workers.dev', 'no url -> production default');
   await c.pull();
-  assert.match(f.calls[0].url, /^https:\/\/nova-rx-api\.elsousypharmacy\.workers\.dev\/api\/v1\/sync\/feed/);
+  assert.match(f.calls[0].url, /^https:\/\/nova-rx-api\.elsousypharmacy\.workers\.dev\/api\/v1\/sync\/pull/);
 }
 // ON: push + pull
 {
   const st = mem();
-  const f = mkFetch((u) => u.includes('/push') ? res({ ok: true, results: [{ key: 'i1', status: 'applied' }] }) : res({ items: [{ id: 1 }], cursor: 7 }));
+  const f = mkFetch((u) => u.includes('/push') ? res({ ok: true, results: [{ key: 'i1', status: 'applied' }] }) : res({ changes: [{ seq: 7, entity: 'sale', id: 's1', deleted: false, data: {} }], nextCursor: '7', hasMore: false }));
   const ob = createOutbox(st, 'ob'); ob.enqueue(inv('i1'));
   const c = createBackendClient({ storage: st, fetch: f, outbox: ob, getToken: () => 'tok' });
   c.setEnabled(true); c.setUrl('https://b.test/');
@@ -40,8 +40,8 @@ const res = (body, status = 200) => ({ ok: status < 400, status, json: async () 
   assert.equal(ob.pending().length, 0);
   assert.equal(f.calls[0].url, 'https://b.test/api/v1/sync/push');
   assert.equal(f.calls[0].o.headers.Authorization, 'Bearer tok');
-  assert.match(f.calls[1].url, /feed\?since=$/);
-  await c.pull(); assert.match(f.calls[2].url, /since=7$/);
+  assert.match(f.calls[1].url, /pull\?cursor=$/);
+  await c.pull(); assert.match(f.calls[2].url, /cursor=7$/);
   assert.equal(c.feed().length, 2);
 }
 // ON: errors stay local and queued
