@@ -17,3 +17,12 @@ Response `200`: `{ ok, results: [{ key, status, ... }], requestId }`, one result
 - **Master data is last-writer-wins with a version check** (`sync_master.version`). `baseVersion` equal to the server version → applied, version+1 (compare-and-set). `baseVersion` stale → `conflict SYNC_VERSION_CONFLICT` with `serverVersion`; nothing is overwritten and the client reviews/resubmits with the new base. `baseVersion` omitted → explicit last-writer-wins overwrite. New record: base 0/omitted.
 
 Tenant comes from the session (`tenant`) or `NOVA_TENANT_ID`, default `default`.
+
+## S1-02 — push applies the sale, pull returns it (flags default OFF)
+- **Client:** `backend-client.js` pulls `GET /api/v1/sync/pull?cursor=` -> `{ changes:[{seq,entity,id,deleted,data}], nextCursor, hasMore }` (the old `/sync/feed` route never existed).
+- **Push:** with `NOVA_SYNC=1` + `NOVA_SALES_WRITES=1`, an outbox invoice op (entity `invoice`, payload with `lines`) is applied as a real sale (`sales`, `sale_items`, `payments`, `inventory_movements`, journal) in ONE `db.batch()` together with its `sync_ledger`, `change_feed` (entity `sale`) and `sync_ops` rows: all-or-nothing, so a replay of the same `op.key` returns the stored result and never decrements stock twice.
+- **Mapping (POS line -> sale item):** `productId = String(line.productId || line.code)`, `qty = line.qty` (positive integer), `unitPriceMinor = round(line.price * 100)` (the POS stores major units); invoice discount = `round(payload.discount * 100)`; payments = `payload.payments[{method, amount}]` or one cash payment = total. An invoice op without `lines` stays a plain ledger record.
+- **Conflicts:** not enough stock -> `{status:'conflict', code:'SYNC_STOCK_CONFLICT'}`, nothing written and the result is NOT cached, so the same op can succeed after stock is received. A bad invoice -> `rejected / SYNC_INVOICE_INVALID`.
+- **Scope:** sessions with scope data use the isolation check; a KV owner session acts for `NOVA_TENANT_ID` on that tenant's only branch (`backend/src/sync-scope.js`); zero or several branches -> `SCOPE_INVALID`.
+- **Not in this task:** returns/cancel through sync (S1-03/04), staff sessions with branch data (S1-06).
+- Tests: `tests/unit/backend-sync-sales.check.mjs`.
