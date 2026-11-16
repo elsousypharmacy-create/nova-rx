@@ -5968,6 +5968,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  const arabicSource=new Set(Object.keys(arToEn).filter(x=>/[\u0600-\u06FF]/.test(x)));
  const englishSource=new Set(Object.keys(enToAr));
  const preserved=new WeakMap();
+ const phraseCache={};
  function translateText(text,lang){
   const trimmed=text.trim();if(!trimmed)return text;
   if(lang==='en'&&text.includes('ج.م'))text=text.split('ج.م').join('EGP');
@@ -5976,10 +5977,11 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   const dict=lang==='en'?toEn:enToAr;
   if(dict[trimmed])return text.replace(trimmed,dict[trimmed]);
   let next=text;
-  // Longer UI phrases first, but do not translate user/product data
-  for(const [a,b] of Object.entries(dict).sort((a,b)=>b[0].length-a[0].length)){
-   if(a.length<7)continue;
-   if(next.includes(a))next=next.split(a).join(b);
+  // Longer UI phrases first, but do not translate user/product data (UX441: sorted list built once per language, not per text node)
+  const phr=phraseCache[lang]||(phraseCache[lang]=Object.entries(dict).filter(e=>e[0].length>=7).sort((a,b)=>b[0].length-a[0].length));
+  for(let i=0;i<phr.length;i++){
+   const a=phr[i][0];
+   if(next.includes(a))next=next.split(a).join(phr[i][1]);
   }
   return next;
  }
