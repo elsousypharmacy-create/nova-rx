@@ -3817,12 +3817,12 @@ window.NovaFmt=(function(){
         showUndoToast("تم حذف الصنف", () => restoreCart(snap));
       }
 
-      function clearInvoice() {
+      function clearInvoice(alreadySaved = false) {
         if (state.invoiceLines.length === 0) {
           elements.mainSearchInput.focus();
           return;
         }
-        if (!window.confirm(novaEn() ? 'Clear all items from this open invoice? Saved invoices stay unchanged.' : 'مسح كل أصناف الفاتورة المفتوحة؟ الفواتير المحفوظة لن تتغير.')) return false;
+        if (alreadySaved !== true && !window.confirm(novaEn() ? 'Clear all items from this open invoice? Saved invoices stay unchanged.' : 'مسح كل أصناف الفاتورة المفتوحة؟ الفواتير المحفوظة لن تتغير.')) return false;
         const snap = snapshotCart();
         state.invoiceLines = [];
         state.percentDiscount = 0;
@@ -4634,8 +4634,8 @@ window.NovaFmt=(function(){
         showToast("Payment confirmed & Invoice completed!");
       }
 
-      function startNewSale() {
-        if (clearInvoice() === false) return;
+      function startNewSale(alreadySaved = false) {
+        if (clearInvoice(alreadySaved === true) === false) return;
         document.getElementById("novaLabelsPanel")?.classList.remove("open");
         elements.receiptModal.classList.remove("active");
         activeSaleNumber = nextSaleNumber();
@@ -4931,7 +4931,7 @@ window.NovaFmt=(function(){
         if (heldInvoices.length >= 50) { showToast('Held invoice limit reached (50).', 'error'); return; }
         const record = {id: String(Date.now()) + '-' + Math.random().toString(36).slice(2,8), saleNumber:activeSaleNumber, created: new Date().toISOString(), customerName: state.attachedCustomer?.name || '', customerId: state.attachedCustomer?.id ?? null, lines: JSON.parse(JSON.stringify(state.invoiceLines)), percentDiscount:state.percentDiscount, fixedDiscount:state.fixedDiscount, customerGateSkipped:state.customerGateSkipped};
         if (!saveHeldInvoices([record, ...heldInvoices])) return;
-        startNewSale(); heldPanel.hidden = true; showToast('Invoice held on this device.');
+        startNewSale(true); heldPanel.hidden = true; showToast('Invoice held on this device.');
       }
       document.getElementById('btnHeldInvoices').addEventListener('click', () => { heldPanel.hidden = !heldPanel.hidden; renderHeldInvoices(); });
       document.getElementById('closeHeldInvoices').addEventListener('click', () => { heldPanel.hidden = true; elements.mainSearchInput.focus(); });

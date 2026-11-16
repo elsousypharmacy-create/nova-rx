@@ -20,7 +20,7 @@ check('05 settings describes real source truthfully',()=>{const s=ctx.renderPage
 check('04 static report example explicitly labelled and not hidden from accessibility',()=>{const s=ctx.renderPage('reports');assert.match(s,/تقارير هذا الجهاز فقط — الفترة:/);assert.match(s,/مثال ثابت لشكل التقرير/);assert.match(s,/80.00 EGP/);assert.doesNotMatch(s,/class="nova-skel-card"/)});
 check('English new source descriptions and reports',()=>{lang='en';assert.match(ctx.renderPage('settings'),/Products use the STOCK LIVE price list/);assert.match(ctx.renderPage('reports'),/Static report example/);assert.match(ctx.renderPage('products'),/Products — price list/)});
 // Exercise actual clear handler for both cancellation and undo safety, without persisting data.
-const clear=h.slice(h.indexOf('      function clearInvoice() {'),h.indexOf('      function lineOverStock('));
+const clear=h.slice(h.indexOf('      function clearInvoice(alreadySaved = false) {'),h.indexOf('      function lineOverStock('));
 let snapshots=0,renders=0;const state={invoiceLines:[{name:'FAKE',qty:1}],percentDiscount:2,fixedDiscount:1};
 const c={state,window:{confirm:()=>false},novaEn:()=>false,elements:{mainSearchInput:{focus(){}},inputPercentDiscount:{value:2},inputFixedDiscount:{value:1}},snapshotCart:()=>{snapshots++;return 'snapshot'},renderInvoice:()=>renders++,restoreCart(){},showUndoToast(){}};
 vm.createContext(c);vm.runInContext(clear+';this.clear=clearInvoice;',c);
