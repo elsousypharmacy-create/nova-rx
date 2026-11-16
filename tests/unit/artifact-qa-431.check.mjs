@@ -1,6 +1,6 @@
 // UX444: markers test for worker/live/nova-rx-preview.qa-431.js (UX432-UX443 frontend changes embedded). No deploy.
 import fs from 'node:fs'; import path from 'node:path'; import { execFileSync } from 'node:child_process';
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const art = path.join(ROOT, 'worker/live/nova-rx-preview.qa-431.js');
 const base = path.join(ROOT, 'worker/live/nova-rx-preview.ux-407.js');
 const tmp = fs.mkdtempSync('/tmp/qa431-'); const out = path.join(tmp, 'app.html');

@@ -5480,13 +5480,15 @@
     "UX442",
     "UX443"
    ],
-   "status": "pending",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
    "model": "sonnet",
    "pin_slot": "B",
-   "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
+   "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml).",
+   "pr": 520,
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/520"
   }
  ],
  "updated": "2026-11-16T08:19:16+00:00",
