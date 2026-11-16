@@ -257,34 +257,50 @@ def applicable(wfs, files):
 # ---------- follow-up inbox ----------
 # Cloud tasks may not edit the queue. A merged task can instead commit
 # .nova/inbox/*.json = {"tasks":[{id,title,brief,acceptance,phase?,after?}]}.
-# Only ids like UX12 / FIX3 are accepted; existing ids are never overwritten;
-# status is always forced to pending. New tasks go before the first pending
-# task so follow-ups run next.
+# Only ids like UX12 / FIX3 are accepted; existing ids are never overwritten
+# (status, title, brief stay as they are). New tasks get status=pending and
+# go before the first pending task so follow-ups run next. Once every valid
+# id in an inbox file is already in the queue, the filename is recorded in
+# q["ingested_inbox"] and later runs skip that file, so a resume cannot
+# re-queue finished work from the same file.
 INBOX_ID = re.compile(r"^(UX|FIX)[0-9]{1,4}$")
 
 
-def ingest_followups(items, byid):
-    d = ".nova/inbox"
+def ingest_followups(items, byid, q=None, inbox_dir=".nova/inbox"):
+    d = inbox_dir
     if not os.path.isdir(d):
         return
+    ingested = (q if q is not None else {}).setdefault("ingested_inbox", [])
     for fn in sorted(os.listdir(d)):
         if not fn.endswith(".json"):
             continue
+        if fn in ingested:
+            continue
         try:
-            data = json.load(open(os.path.join(d, fn)))
+            with open(os.path.join(d, fn)) as fh:
+                data = json.load(fh)
         except Exception as ex:
             log(f"warn: inbox {fn} unreadable: {ex}"); continue
+        file_ids, added = [], 0
         for x in (data.get("tasks") or [])[:30]:
             tid = str(x.get("id", ""))
-            if not INBOX_ID.match(tid) or tid in byid or not x.get("title") or not x.get("brief"):
+            if not INBOX_ID.match(tid) or not x.get("title") or not x.get("brief"):
                 continue
+            file_ids.append(tid)
+            if tid in byid:
+                continue  # never overwrite an existing task's status or body
             t = {"id": tid, "phase": x.get("phase", 10), "title": str(x["title"])[:200], "brief": str(x["brief"])[:6000],
                  "acceptance": str(x.get("acceptance", ""))[:2000],
                  "after": [a for a in (x.get("after") or []) if isinstance(a, str)][:10],
                  "status": "pending", "attempts": 0, "fix_attempts": 0, "source": f"inbox/{fn}"}
             pos = next((i for i, y in enumerate(items) if y.get("status") == "pending"), len(items))
             items.insert(pos, t); byid[tid] = t
+            added += 1
             log(f"inbox: queued {tid} from {fn}")
+        if file_ids and all(tid in byid for tid in file_ids):
+            if fn not in ingested:
+                ingested.append(fn)
+            log(f"inbox: marked {fn} ingested ({len(file_ids)} ids, added {added})")
 
 
 # ---------- auto gate deploys ----------
@@ -528,7 +544,7 @@ def reconcile_finished(items, active, latest, open_pr, branches, ahead_by, coold
 def main():
     q = json.load(open(QF)); items = q["tasks"]; byid = {t["id"]: t for t in items}
     before = json.dumps(q, sort_keys=True)
-    ingest_followups(items, byid)
+    ingest_followups(items, byid, q)
 
     runs = (api(f"repos/{REPO}/actions/workflows/{AGENT_WF}/runs?per_page=50") or {}).get("workflow_runs", [])[:50]
     active, seen, latest = {}, {}, {}  # task id -> slot for queued/in-progress agent runs; newest run start; newest run
