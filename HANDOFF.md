@@ -927,3 +927,5 @@ Pharmacy PR #87 (merged): `getBotChats`/`chatWho_` link `wa_<number>` chats to t
 
 ## 2026-11-16 — UX-AHMED release authorized
 Owner explicitly asked to execute the remaining review/merge/deploy. Latest head 7e1532d: artifact, secret scan, contrast and purchasing CI PASS; smoke failed only because undo-cart default URL used 8766 while CI serves 8765. Set NOVA_UX_URL explicitly for that step. Independent review in progress. No real supplier/payment/message operations are authorized by this release. Preview deploy only, with backup/read-back verification.
+
+- Remote smoke e5683cb passed all new UX checks, undo, WA regressions, POS01/02, sticker suite, INV02/03/05, SEC01/02 and POS04; stopped at POS05's normal reprint selector because its sale was DEMO. Reprint policy intentionally separates DEMO invoices. POS05 now intercepts a deterministic synthetic STOCK LIVE price-list fixture before sale instead of relying on bundled demo products. No production code changed.
