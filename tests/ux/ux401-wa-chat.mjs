@@ -66,6 +66,7 @@ async function setup(vp) {
         if (!t) return r.fulfill({ status: 404, headers: cors, contentType: 'application/json', body: '{"ok":false}' });
         return r.fulfill({ status: 200, headers: cors, contentType: t[0], body: t[1] });
       }
+      if (u.includes('/history/send-media')) return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: '{"ok":true,"enabled":false}' }); // UX411 capability probe: photo sending off here
       if (u.includes('/link-names')) return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: '{"ok":true,"throttled":false,"linked":0}' });
       if (u.includes('/conversations')) return r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify({ ok: true, conversations: convs() }) });
       const c = convs().find((x) => x.id === id), m = id === ID ? live() : id === ID2 ? closedMsgs : offMsgs;
