@@ -3,7 +3,7 @@
 // Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/ux413-wa-voice.mjs   (SHOTS=dir to save screenshots)
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/', SHOTS = process.env.SHOTS || '';
 const snapshot = readFileSync(new URL('../../data/emergency-stock.json', import.meta.url), 'utf8');
 const NOW = Date.parse('2026-11-16T21:17:00+03:00'), H = 3600e3, CHAT = 'wa_201000000413';
@@ -11,24 +11,30 @@ const conv = { id: CHAT, customer: 'منى حسن', updatedAt: NOW - H, count: 1
 const msgs = [{ id: 'm1', dir: 'in', kind: 'in', text: 'عندكم بانادول؟', at: NOW - H }];
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
 // a tiny valid WAV (0.2 s of silence) so the player can really load the "server copy"
-const WAV = (() => { const n = 1600, b = Buffer.alloc(44 + n); b.write('RIFF', 0); b.writeUInt32LE(36 + n, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(8000, 24); b.writeUInt32LE(8000, 28); b.writeUInt16LE(1, 32); b.writeUInt16LE(8, 34); b.write('data', 36); b.writeUInt32LE(n, 40); b.fill(128, 44); return b; })();
+const WAV = (() => { const n = 12000, b = Buffer.alloc(44 + n); b.write('RIFF', 0); b.writeUInt32LE(36 + n, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(8000, 24); b.writeUInt32LE(8000, 28); b.writeUInt16LE(1, 32); b.writeUInt16LE(8, 34); b.write('data', 36); b.writeUInt32LE(n, 40); for (let i = 0; i < n; i++) b[44 + i] = 128 + Math.round(60 * Math.sin(i / 8000 * 2 * Math.PI * 440)); return b; })();
+const OPUS_FILE = process.env.OPUS_WORKER || new URL('../../node_modules/opus-recorder/dist/encoderWorker.min.js', import.meta.url).pathname;
+assert.ok(existsSync(OPUS_FILE), 'opus-recorder@8.0.5 encoder missing: npm install --no-save opus-recorder@8.0.5 (or set OPUS_WORKER)');
+const OPUS = readFileSync(OPUS_FILE);
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
 const origin = new URL(BASE).origin;
-const FAKE = () => {
+const FAKE = (wavB64) => {
+  const WAVB = Uint8Array.from(atob(wavB64), (c) => c.charCodeAt(0));
   window.__gum = 0; window.__stopped = 0; window.__recStarts = 0;
   navigator.mediaDevices.getUserMedia = async () => { window.__gum++; if (window.__deny) throw new Error('denied'); return { getTracks: () => [{ stop() { window.__stopped++; } }] }; };
-  window.MediaRecorder = class { static isTypeSupported(t) { return !window.__noRec && String(t).startsWith('audio/mp4'); }
+  window.MediaRecorder = class { static isTypeSupported(t) { return !window.__noRec && String(t).startsWith(window.__recType || 'audio/mp4'); }
     constructor(s, o) { this.state = 'inactive'; this.mimeType = o.mimeType; }
     start() { this.state = 'recording'; window.__recStarts++; if (window.__bigStart) setTimeout(() => this.ondataavailable({ data: new Blob([new Uint8Array(4.6 * 1024 * 1024)], { type: 'audio/mp4' }) }), 1200); }
-    stop() { this.state = 'inactive'; const b = window.__huge ? new Uint8Array(5 * 1024 * 1024 + 1) : new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112, 77, 52, 65, 32, 1, 2, 3, 4]); if (this.ondataavailable) this.ondataavailable({ data: new Blob([b], { type: 'audio/mp4' }) }); if (this.onstop) this.onstop(); } };
+    stop() { this.state = 'inactive'; const b = window.__huge ? new Uint8Array(30 * 1024 * 1024) : WAVB; if (this.ondataavailable) this.ondataavailable({ data: new Blob([b], { type: String(this.mimeType).split(';')[0] }) }); if (this.onstop) this.onstop(); } };
 };
-async function setup({ audio, postReply }) {
+async function setup({ audio, postReply, opus = 'ok' }) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ar-EG', timezoneId: 'Asia/Riyadh', serviceWorkers: 'block', hasTouch: true, isMobile: true, deviceScaleFactor: 2, userAgent: IPHONE_UA });
   const st = { posts: [], other: [], sent: [] };
-  await ctx.addInitScript(FAKE);
+  await ctx.addInitScript(FAKE, WAV.toString('base64'));
+  st.cdn = 0;
   await ctx.route('**/*', async (r) => {
     const q = r.request(), u = q.url(), cors = { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS' };
     if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    if (u === 'https://cdn.jsdelivr.net/npm/opus-recorder@8.0.5/dist/encoderWorker.min.js') { st.cdn++; if (opus === 'down') return r.abort(); return r.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' }, contentType: 'application/javascript', body: opus === 'tampered' ? Buffer.concat([OPUS, Buffer.from('\n//x')]) : OPUS }); }
     if (u.includes('/api/v1/inbox/history/send-media') && q.method() === 'POST') { st.posts.push(JSON.parse(q.postData())); const rep = postReply(st.posts.length); if (rep.status === 200 && rep.body.message) st.sent.push(rep.body.message); return r.fulfill({ status: rep.status, headers: cors, contentType: 'application/json', body: JSON.stringify(rep.body) }); }
     if (q.method() !== 'GET' && q.method() !== 'HEAD') { st.other.push(q.method() + ' ' + u); return r.abort(); }
     if (u.includes('/api/v1/inbox/history/')) {
@@ -78,10 +84,12 @@ const OKREPLY = (i) => i === 1 ? { status: 200, body: { ok: true, message: { id:
   await view.locator('[data-wa-mic]').click(); await page.locator('[data-wa-rec]').waitFor(); await page.waitForTimeout(1300); await page.locator('[data-wa-rec-send]').click();
   await page.locator('#waMsgs [data-mid="ps_v1"] [data-wa-voice]').waitFor({ timeout: 8000 }); // the server copy replaces the temporary bubble (its fake recording bytes are not decodable audio)
   assert.equal(st.posts.length, 1); const b = st.posts[0];
-  assert.equal(b.id, CHAT); assert.equal(b.kind, 'audio'); assert.equal(b.mime, 'audio/mp4'); assert.ok(/^[A-Za-z0-9_-]{8,64}$/.test(b.clientId)); assert.ok(b.data.startsWith('AAAAGGZ0eXBNNEEg'), 'ftyp bytes'); assert.ok(!('caption' in b) && !('to' in b), 'no caption, chat id only');
+  assert.equal(b.id, CHAT); assert.equal(b.kind, 'audio'); assert.equal(b.mime, 'audio/ogg', 'converted for WhatsApp'); assert.ok(/^[A-Za-z0-9_-]{8,64}$/.test(b.clientId));
+  { const ogg = Buffer.from(b.data, 'base64'); assert.equal(ogg.subarray(0, 4).toString(), 'OggS', 'OGG container'); assert.ok(ogg.includes(Buffer.from('OpusHead')) && ogg.includes(Buffer.from('OpusTags')), 'Opus voice note'); assert.ok(ogg.length > 200 && ogg.length < 60000, 'real encoded audio, small: ' + ogg.length); }
+  assert.equal(st.cdn, 1, 'encoder fetched once'); assert.ok(!('caption' in b) && !('to' in b), 'no caption, chat id only');
   assert.equal(await flag(page, '__stopped'), 3, 'microphone released after sending'); assert.equal(await page.locator('[data-wa-rec]').count(), 0);
   const bub = await page.evaluate(() => { const m = document.querySelector('#waMsgs [data-mid="ps_v1"]'); return { voice: !!m.querySelector('[data-wa-voice]'), audio: !!m.querySelector('audio'), text: m.textContent }; });
-  assert.ok(bub.voice && bub.audio, 'voice bubble with a player'); await shot(page, '3-sent'); ok('voice note sent: POST valid (kind audio, no caption), voice bubble shown, mic released');
+  assert.ok(bub.voice && bub.audio, 'voice bubble with a player'); await shot(page, '3-sent'); ok('iPhone recording converted to OGG/Opus by the real encoder and sent; voice bubble shown, mic released');
   // refusal
   await view.locator('[data-wa-mic]').click(); await page.locator('[data-wa-rec]').waitFor(); await page.waitForTimeout(1300); await page.locator('[data-wa-rec-send]').click(); await page.waitForTimeout(700);
   assert.equal(st.posts.length, 2); assert.ok((await view.locator('[data-send-err]').textContent()).includes('24 ساعة')); ok('server refusal shown as a plain note');
@@ -101,10 +109,31 @@ const OKREPLY = (i) => i === 1 ? { status: 200, body: { ok: true, message: { id:
 { // recording that grows past the size limit: auto-stops and sends at 4.5 MB; a final blob over 5 MB is refused with a note
   const { ctx, page, view, st } = await setup({ audio: true, postReply: OKREPLY });
   await page.evaluate(() => { window.__bigStart = true; }); await view.locator('[data-wa-mic]').click();
-  await page.waitForFunction(() => document.querySelectorAll('[data-wa-rec]').length === 0 && window.__stopped >= 1, null, { timeout: 8000 }); for (let i = 0; i < 80 && !st.posts.length; i++) await page.waitForTimeout(100); // a 4.6 MB recording is encoded and posted: give a loaded machine time
-  assert.equal(st.posts.length, 1, 'auto-stopped and sent without pressing send at 4.5 MB'); ok('size limit: recording auto-stops and sends');
+  await page.waitForFunction(() => document.querySelectorAll('[data-wa-rec]').length === 0 && window.__stopped >= 1, null, { timeout: 8000 });
+  assert.equal(await page.locator('[data-wa-rec]').count(), 0, 'auto-stopped at 4.5 MB without pressing send'); assert.ok(await flag(page, '__stopped') >= 1, 'microphone released');
+  for (let i = 0; i < 80 && !st.posts.length && !(await view.locator('[data-send-err]').count()); i++) await page.waitForTimeout(100);
+  assert.ok(st.posts.length === 1 || (await view.locator('[data-send-err]').count()) === 1, 'the stopped recording goes on to conversion'); ok('size limit: recording auto-stops by itself'); await page.evaluate(() => { const e = document.querySelector('[data-send-err]'); if (e) e.remove(); });
+  const postsBefore = st.posts.length;
   await page.evaluate(() => { window.__bigStart = false; window.__huge = true; }); await view.locator('[data-wa-mic]').click(); await page.locator('[data-wa-rec]').waitFor(); await page.waitForTimeout(1300); await page.locator('[data-wa-rec-send]').click(); await page.waitForTimeout(500);
-  assert.equal(st.posts.length, 1, 'over 5 MB is never posted'); assert.ok((await view.locator('[data-send-err]').textContent()).includes('كبير')); ok('a recording over 5 MB is refused with a note'); await ctx.close();
+  assert.equal(st.posts.length, postsBefore, 'over 5 MB is never posted'); assert.ok((await view.locator('[data-send-err]').textContent()).includes('كبير')); ok('a recording over 5 MB is refused with a note'); await ctx.close();
+}
+for (const [mode, why] of [['tampered', 'encoder file changed on the CDN (hash mismatch)'], ['down', 'CDN unreachable']]) {
+  const { ctx, page, view, st, errors } = await setup({ audio: true, postReply: OKREPLY, opus: mode });
+  await view.locator('[data-wa-mic]').click(); await page.locator('[data-wa-rec]').waitFor(); await page.waitForTimeout(1300); await page.locator('[data-wa-rec-send]').click(); await page.waitForTimeout(1500);
+  assert.equal(st.posts.length, 0, why + ': nothing sent'); assert.ok((await view.locator('[data-send-err]').textContent()).includes('صيغة واتساب'), why + ': plain note');
+  assert.deepEqual(errors, []); await ctx.close(); ok(why + ': not sent, plain note');
+}
+{ // a browser that already records OGG/Opus (Firefox): sent as is, the encoder is never downloaded
+  const { ctx, page, view, st } = await setup({ audio: true, postReply: OKREPLY });
+  await page.evaluate(() => { window.__recType = 'audio/ogg'; }); await view.locator('[data-wa-mic]').click(); await page.locator('[data-wa-rec]').waitFor(); await page.waitForTimeout(1300); await page.locator('[data-wa-rec-send]').click();
+  for (let i = 0; i < 50 && !st.posts.length; i++) await page.waitForTimeout(100);
+  assert.equal(st.posts.length, 1); assert.equal(st.posts[0].mime, 'audio/ogg'); assert.equal(st.cdn, 0, 'no download'); ok('already OGG: sent as is, no encoder download'); await ctx.close();
+}
+{ // Chrome records webm: converted too, so the mic works there as well
+  const { ctx, page, view, st } = await setup({ audio: true, postReply: OKREPLY });
+  await page.evaluate(() => { window.__recType = 'audio/webm'; }); await view.locator('[data-wa-mic]').click(); await page.locator('[data-wa-rec]').waitFor(); await page.waitForTimeout(1300); await page.locator('[data-wa-rec-send]').click();
+  for (let i = 0; i < 80 && !st.posts.length; i++) await page.waitForTimeout(100);
+  assert.equal(st.posts.length, 1); assert.equal(st.posts[0].mime, 'audio/ogg'); assert.equal(Buffer.from(st.posts[0].data, 'base64').subarray(0, 4).toString(), 'OggS'); ok('webm (Chrome) converted to OGG/Opus and sent'); await ctx.close();
 }
 await browser.close();
 console.log(`PASS ux413 voice: ${n} groups`);
