@@ -44,7 +44,7 @@ try {
   assert.ok(clicks <= 2, 'tab+period clicks ' + clicks);
   for (const per of ['day', 'week', 'month']) {
     if (per !== 'week') { await page.locator(`[data-rep-period="${per}"]`).click(); await sleep(200); }
-    const v = await page.evaluate(() => { const g = k => Number(document.querySelector(`#novaPayBreakdown [data-pay-row="${k}"]`).dataset.amount); const d = window.__novaRepData; return { cash: g('cash'), card: g('card'), credit: g('credit'), ret: g('returns'), drawer: g('drawer'), net: d.net, count: d.count }; });
+    const v = await page.evaluate(() => { const g = k => { const e = document.querySelector(`#novaPayBreakdown [data-pay-row="${k}"]`); return e ? Number(e.dataset.amount) : 0; }; const d = window.__novaRepData; return { cash: g('cash'), card: g('card'), credit: g('credit'), ret: g('returns'), drawer: g('drawer'), net: d.net, count: d.count }; });
     assert.equal(v.count, 3, per + ' count');
     assert.ok(v.cash > 0 && v.card > 0 && v.credit > 0, per + ' each method has value');
     assert.ok(Math.abs(v.cash + v.card + v.credit + v.ret - v.net) < 0.011, per + ' breakdown sums to net');
