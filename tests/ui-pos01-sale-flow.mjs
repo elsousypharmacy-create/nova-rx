@@ -92,6 +92,10 @@ try {
   });
 
   await t('clear invoice (F4) resets lines and keeps focus on #mainSearchInput', async () => {
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.keyboard.press('F4');
+    assert.equal(await page.locator('#invoiceTableBody tr').count(), 1, 'cancelling keeps the open invoice');
+    page.once('dialog', dialog => dialog.accept());
     await page.keyboard.press('F4');
     assert.equal(await page.locator('#invoiceTableBody tr').count(), 0);
     assert.equal(await activeId(), 'mainSearchInput');

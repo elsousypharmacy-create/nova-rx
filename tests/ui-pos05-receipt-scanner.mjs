@@ -10,18 +10,30 @@ import fs from 'node:fs/promises';
 
 const BASE = process.env.BASE_URL || process.env.NOVA_URL || 'http://127.0.0.1:8765/index.html';
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
+// Reprint tests use an isolated price-list fixture. DEMO invoices intentionally
+// have no normal reprint action and are covered by ahmed-ux-render.check.mjs.
+const stockFixture={source:'STOCK LIVE',exportedAt:'2026-11-16T00:00:00Z',items:[
+ {code:'6281001234567',namear:'صنف اختبار أ',nameen:'TEST ITEM A',price:50},
+ {code:'6281001234568',namear:'صنف اختبار ب',nameen:'TEST ITEM B',price:70},
+ ...Array.from({length:58},(_,i)=>({code:String(990000+i),namear:'صنف اختبار '+i,nameen:'TEST FIXTURE '+i,price:10+i}))
+]};
+
 
 try {
   // 1. Desktop (mouse) layout + full receipt, thermal 58/80mm, barcode, PDF, printer disconnect, reprint, and Bluetooth scanner flow
   {
-    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: false });
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: false, serviceWorkers: 'block' });
     const page = await ctx.newPage();
+    await page.addInitScript(() => {window.NOVA_STOCK_PROBE=true});
+    await page.route('**/emergency/stock.json', route => route.fulfill({json:stockFixture}));
     const errors = [];
     page.on('pageerror', e => errors.push(String(e)));
 
     await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.novaCatalog?.source === 'STOCK LIVE');
     await page.evaluate(() => localStorage.clear());
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.novaCatalog?.source === 'STOCK LIVE');
 
     // Install print spy
     await page.evaluate(() => {
@@ -204,16 +216,21 @@ try {
   {
     const ctx = await browser.newContext({
       viewport: { width: 1280, height: 800 },
+      serviceWorkers: 'block',
       hasTouch: true,
       isMobile: true
     });
     const page = await ctx.newPage();
+    await page.addInitScript(() => {window.NOVA_STOCK_PROBE=true});
+    await page.route('**/emergency/stock.json', route => route.fulfill({json:stockFixture}));
     await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.novaCatalog?.source === 'STOCK LIVE');
     await page.evaluate(() => {
       localStorage.clear();
       window.print = () => {};
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.novaCatalog?.source === 'STOCK LIVE');
 
     await page.evaluate(() => window.novaScanner.scan('6281001234567'));
     await page.click('#btnCheckout');

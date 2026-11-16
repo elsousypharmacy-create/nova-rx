@@ -1,0 +1,12 @@
+import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),model=require('../../supplier-status.js');
+const js=readFileSync('purchases.js','utf8');const source=js.slice(js.indexOf('function renderSupplierStatus('),js.indexOf('// UX06/07: labels only'));
+const panel={replaceChildren(...children){this.children=children}};let lang='ar';
+const make=()=>({dataset:{},children:[],appendChild(n){this.children.push(n)}});
+const ctx={$:()=>panel,window:{NovaSupplierStatus:model},document:{createElement:make},localStorage:{getItem:()=>lang}};
+vm.createContext(ctx);vm.runInContext(source+';this.render=renderSupplierStatus;',ctx);
+ctx.render([{id:'a',state:'ok'},{id:'b',state:'expired'},{id:'c',state:'off'},{id:'d',state:'unknown'}]);
+assert.deepEqual(panel.children.slice(0,4).map(n=>n.dataset.supplierState),['connected','auth_failed','missing_credential','unknown']);
+assert.equal(panel.children[0].children.length,0);assert.match(panel.children[1].children[0].href,/actions\/workflows\/supplier-sessions.yml$/);assert.equal(panel.children[2].children[0].target,'_blank');assert.equal(panel.children[3].children[0].href,undefined);
+lang='en';ctx.render([{id:'test',state:'expired'}]);assert.match(panel.children[0].textContent,/Sign-in failed/);assert.equal(panel.children[0].children[0].textContent,'Open connection renewal');
+console.log('PASS UX07 status presentation and existing-workflow link, Arabic/English; no network, no renewal');
