@@ -54,7 +54,7 @@ await sheet.locator('.wa-inv').first().waitFor();
 const txt = await sheet.innerText();
 assert.equal(await sheet.locator('.wa-inv').count(), 2);
 assert.ok(txt.includes('فاتورة #1234') && txt.includes('10/11/2026') && txt.includes('145.5'), txt);
-assert.ok(txt.includes('بنادول إكسترا ×2') && txt.includes('(+1)'), 'items summarised (3 + 1 more)');
+assert.ok(txt.includes('بنادول إكسترا ×2') && txt.includes('و 1 صنف تاني'), 'items summarised (3 + 1 more)');
 assert.ok(txt.includes('عليه مديونية') && txt.includes('40'), 'debt shown');
 assert.ok(txt.includes('رصيد نقاطه: 42 نقطة'), 'points balance shown');
 assert.ok(txt.includes('القائمة ممكن تكون ناقصة'), 'partial note');

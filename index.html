@@ -7988,7 +7988,7 @@ document.addEventListener('keydown',function(e){if(ch.open&&e.key==='Escape'&&!b
 function ceh(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function cMoney(n){n=Number(n)||0;return (Math.round(n*100)/100).toLocaleString('en-US',{maximumFractionDigits:2})+' ج.م'}
 function cDate(d){var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||''));return m?m[3]+'/'+m[2]+'/'+m[1]:ceh(d)}
-function cItems(it){it=Array.isArray(it)?it:[];if(!it.length)return '';var f=it.slice(0,3).map(function(x){return ceh(x.name)+(Number(x.qty)>1?' ×'+Number(x.qty):'')}).join('، ');return f+(it.length>3?' … (+'+(it.length-3)+')':'')}
+function cItems(it){it=Array.isArray(it)?it:[];if(!it.length)return '';var f=it.slice(0,3).map(function(x){return ceh(x.name)+(Number(x.qty)>1?' ×'+Number(x.qty):'')}).join('، ');return f+(it.length>3?' و '+(it.length-3)+' صنف تاني':'')}
 function custPanel(){
   if(!ch.open||ch.id!==wa.sel)return '';
   var c=null;convs().forEach(function(x){if(x.id===ch.id)c=x});var nm=c&&c.customer?String(c.customer):'العميل';
