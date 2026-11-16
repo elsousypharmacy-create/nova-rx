@@ -5306,7 +5306,7 @@
    "brief": "KPI grid mixes period KPIs (مبيعات/مرتجعات/صافي/فواتير اليوم) with all-time KPIs whose values duplicate (666.75 twice) and zero cards add noise. Group into 'الفترة' (4 cards, primary size) and a quieter 'الإجمالي على هذا الجهاز' strip, hide redundant ones, show delta vs previous period. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Two clearly labelled groups, no duplicate values; test asserts card count/grouping.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5317,14 +5317,14 @@
    "dispatched_at": "2026-11-16T08:17:18+00:00",
    "pr": 517,
    "ci_dispatched": {
-    "sha": "c064e699e54cb2760411dacf4971808d00d3e304",
+    "sha": "1536464ad9c372e392c27d06fb7ab3a2ad53f510",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-16T08:14:31+00:00",
+    "at": "2026-11-16T08:19:16+00:00",
     "na": []
    }
   },
@@ -5486,6 +5486,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T08:17:18+00:00",
+ "updated": "2026-11-16T08:19:16+00:00",
  "slot_cooldown": {}
 }
