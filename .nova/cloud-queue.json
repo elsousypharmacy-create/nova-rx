@@ -5236,7 +5236,7 @@
    "brief": "Diff shows red for +2.25 and −7.75 alike, green only at 0.00 with no words. Negative counted (-5) and 1e3 accepted silently. Show 'عجز'/'زيادة'/'مطابق' text + distinct colour/icon (overage amber, shortage red, match green, AA contrast on rgb(23,26,31)), reject negatives with inline aria-invalid error (not toast), require a note when |diff| exceeds a threshold before closing. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Distinct overage/shortage/match states; negatives rejected inline; test asserts texts and aria-invalid.",
    "after": [],
-   "status": "fixing",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5247,14 +5247,14 @@
    "dispatched_at": "2026-11-16T08:13:07+00:00",
    "pr": 510,
    "ci_dispatched": {
-    "sha": "68f40249f2bccc9da0e3c4bf0347afd20bb9429b",
+    "sha": "a75ce2628a5841bedc93924fd446ab6991e5d8bb",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-16T08:07:37+00:00",
+    "at": "2026-11-16T08:17:18+00:00",
     "na": []
    },
    "conflict_fixes": 2
@@ -5286,7 +5286,7 @@
    "brief": "Payment breakdown shows 'النقدي المتوقع في الدرج' (sales−cash returns only) while the shift panel shows 'المتوقع في الدرج' (with float + debt collections). Show one authoritative drawer figure with a formula breakdown (افتتاح + مبيعات نقدية − مرتجعات + تحصيل)، and rename/remove the other. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Only one expected-in-drawer number per view with a visible breakdown; test asserts value equality with the formula.",
    "after": [],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5296,17 +5296,8 @@
    "slot": "A",
    "dispatched_at": "2026-11-16T08:02:28+00:00",
    "pr": 515,
-   "ci_dispatched": {
-    "sha": "cf8b3b5e3596495d2e6f443543d7ed7007bb845d",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-16T08:11:22+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-16T08:17:18+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/515"
   },
   {
    "id": "UX437",
@@ -5317,23 +5308,23 @@
    "after": [],
    "status": "pr_open",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "inbox/qa-loop-431-fixes.json",
    "model": "sonnet",
    "pin_slot": "A",
    "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
    "slot": "A",
-   "dispatched_at": "2026-11-16T08:11:22+00:00",
+   "dispatched_at": "2026-11-16T08:17:18+00:00",
    "pr": 517,
    "ci_dispatched": {
-    "sha": "c064e699e54cb2760411dacf4971808d00d3e304",
+    "sha": "1536464ad9c372e392c27d06fb7ab3a2ad53f510",
     "wf": [
      "playwright-smoke.yml",
      "preview-artifact-unit.yml",
      "secret-scan.yml",
      "ux-unit.yml"
     ],
-    "at": "2026-11-16T08:14:31+00:00",
+    "at": "2026-11-16T08:19:16+00:00",
     "na": []
    }
   },
@@ -5344,7 +5335,7 @@
    "brief": "inPer('day') uses toDateString(); a shift 20:00-04:00 splits into two days and expected-cash is wrong. Add period options 'أمس' and 'من آخر إقفال' (since last closing record from UX433) plus custom from/to; keep default 'اليوم'. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Period 'since last close' sums sales across midnight; test seeds sales across midnight.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5352,7 +5343,19 @@
    "pin_slot": "A",
    "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
    "slot": "A",
-   "dispatched_at": "2026-11-16T08:14:31+00:00"
+   "dispatched_at": "2026-11-16T08:14:31+00:00",
+   "pr": 518,
+   "ci_dispatched": {
+    "sha": "279eeee4c081f7c9adf5f22b615a931886d155e3",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-16T08:17:18+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX439",
@@ -5483,6 +5486,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T08:14:31+00:00",
+ "updated": "2026-11-16T08:19:16+00:00",
  "slot_cooldown": {}
 }
