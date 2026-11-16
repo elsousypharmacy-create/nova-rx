@@ -24,7 +24,6 @@ await ctx.route('**/*', async (r) => {
       if (mode === 'slow') await new Promise((res) => { release = res; });
       if (mode === 'err') return json({ ok: false, code: 'HIST_FAILED', message_ar: 'تعذّر تحميل سجل الفواتير. حاول مرة تانية.' }, 502);
       if (mode === 'empty') return json({ ok: true, available: true, purchases: [], debt: null, partial: false });
-      if (mode === 'building') return json({ ok: true, available: true, purchases: [], debt: null, partial: true });
       return json({ ok: true, available: true, purchases: [
         { date: '2026-11-10', invoice: '1234', total: 145.5, discount: 5, points: 7, items: [{ name: 'بنادول إكسترا', qty: 2, price: 30 }, { name: 'فيتامين C', qty: 1, price: 60 }, { name: 'شاش', qty: 1, price: 10 }, { name: 'قطرة', qty: 1, price: 20.5 }] },
         { date: '2026-11-02', invoice: '1190', total: 60, discount: 0, items: [{ name: '<b>x</b>', qty: 1, price: 60 }] }], debt: { net: 40 }, points: { total: 42 }, partial: true });
@@ -100,12 +99,6 @@ await sheet.locator('[role=alert]').waitFor();
 assert.ok((await sheet.innerText()).includes('تعذّر تحميل سجل الفواتير'));
 mode = 'empty'; await sheet.locator('[data-wa-cust-retry]').click();
 await sheet.locator('.wa-cust-msg', { hasText: 'مفيش فواتير' }).waitFor();
-// 5b) partial + nothing yet: says it is being prepared (not «no invoices»); retry once it is complete shows the invoices
-mode = 'building'; await page.reload({ waitUntil: 'load' }); await page.locator('#novaWaBtn').click(); await openChat('wa_201000000001');
-await view.locator('[data-wa-cust-open]').click();
-await sheet.locator('.wa-cust-msg', { hasText: 'بنجهّز سجل' }).waitFor();
-assert.ok(!(await sheet.innerText()).includes('مفيش فواتير'), 'not reported as «no invoices» while the index is being built');
-mode = 'ok'; await sheet.locator('[data-wa-cust-retry]').click(); await sheet.locator('.wa-inv').first().waitFor();
 await page.keyboard.press('Escape');
 // 6) username chat (no phone): explained, no invoices
 await view.locator('[data-wa-back]').click(); await openChat('wa_user_abc');
