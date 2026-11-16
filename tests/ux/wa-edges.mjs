@@ -12,8 +12,10 @@ const list = Array.from({ length: 30 }, (_, i) => conv(i + 1));
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
 const origin = new URL(BASE).origin;
 let n = 0; const ok = (m) => { n++; console.log('  ok', m); };
-async function open(vp, url) {
+async function open(vp, url, short = 0) {
   const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, locale: 'ar-EG', hasTouch: !!vp.touch, isMobile: !!vp.touch, serviceWorkers: 'block' });
+  // iOS home-screen apps report a window.innerHeight that is shorter than the screen (owner's iPhone: ~47pt): emulate that shortfall
+  if (short) await ctx.addInitScript((h) => { Object.defineProperty(window, 'innerHeight', { get: () => h }); const d = Object.getOwnPropertyDescriptor(Element.prototype, 'clientHeight'); Object.defineProperty(Element.prototype, 'clientHeight', { get() { return this === document.documentElement ? h : d.get.call(this); } }); }, vp.height - short);
   const other = [];
   await ctx.route('**/*', (r) => {
     const q = r.request(), u = q.url(), cors = { 'Access-Control-Allow-Origin': origin };
@@ -33,7 +35,7 @@ async function open(vp, url) {
   await page.locator('#novaInboxView [data-conv]').first().waitFor(); await page.waitForTimeout(300);
   return { ctx, page, other, errors };
 }
-const rects = (page) => page.evaluate(() => { const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; }; return { vh: innerHeight, view: r('#novaInboxView'), root: r('.wa-root'), docH: document.documentElement.scrollHeight }; });
+const rects = (page) => page.evaluate(() => { const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; }; return { vh: innerHeight, real: visualViewport.height, view: r('#novaInboxView'), root: r('.wa-root'), docH: document.documentElement.scrollHeight }; });
 for (const [name, vp] of [['desktop 1920x950', { width: 1920, height: 950 }], ['desktop 1366x768', { width: 1366, height: 768 }], ['tablet 1194x834', { width: 1194, height: 834, touch: true }]]) {
   const { ctx, page, other, errors } = await open(vp, BASE + '#wa'); const g = await rects(page);
   const top = g.root.top - g.view.top, bottom = g.view.bottom - g.root.bottom;
@@ -50,5 +52,13 @@ for (const [name, url] of [['phone tab 390x844', BASE + '#wa'], ['phone app 390x
   await page.locator('#novaInboxView [data-conv]').first().click(); await page.locator('.wa-composer').waitFor(); await page.waitForTimeout(350);
   assert.equal(await htmlBg(), 'rgb(26, 30, 36)', name + ': chat view: page background = composer colour');
   assert.deepEqual(other, []); assert.deepEqual(errors, []); ok(name + ': edge to edge, page background follows the screen'); await ctx.close();
+}
+{ // standalone iPhone: innerHeight 47px shorter than the screen. The screen must still reach the real bottom edge (inset:0), list and chat.
+  const { ctx, page, other, errors } = await open({ width: 390, height: 844, touch: true }, BASE + '?app=whatsapp', 47); let g = await rects(page);
+  assert.ok(g.real - g.vh >= 46, 'the shortfall is emulated: ' + g.real + ' vs ' + g.vh);
+  assert.ok(Math.abs(g.root.bottom - g.real) <= 1, 'list: reaches the real screen bottom (' + g.root.bottom + ' vs ' + g.real + '), not the short innerHeight ' + g.vh);
+  await page.locator('#novaInboxView [data-conv]').first().click(); await page.locator('.wa-composer').waitFor(); await page.waitForTimeout(350); g = await rects(page);
+  assert.ok(Math.abs(g.root.bottom - g.real) <= 1, 'chat: reaches the real screen bottom (' + g.root.bottom + ' vs ' + g.real + ')');
+  assert.deepEqual(other, []); assert.deepEqual(errors, []); ok('phone app, innerHeight 47px short (iOS standalone): list and chat still reach the screen bottom'); await ctx.close();
 }
 console.log('PASS wa-edges:', n, 'cases'); await browser.close();
