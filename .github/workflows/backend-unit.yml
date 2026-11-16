@@ -21,6 +21,7 @@ on:
       - 'tests/unit/scheduler_cooldown_test.py'
       - 'tests/unit/scheduler_stay_test.py'
       - 'tests/unit/scheduler_preview_deploy_test.py'
+      - 'tests/unit/scheduler_ingest_test.py'
       - '.github/workflows/cloud-scheduler-watchdog.yml'
       - '.github/scripts/pick_artifact_check.py'
       - '.github/workflows/agent-task.yml'
@@ -41,6 +42,7 @@ on:
       - 'tests/unit/scheduler_cooldown_test.py'
       - 'tests/unit/scheduler_stay_test.py'
       - 'tests/unit/scheduler_preview_deploy_test.py'
+      - 'tests/unit/scheduler_ingest_test.py'
       - '.github/workflows/cloud-scheduler-watchdog.yml'
       - '.github/scripts/pick_artifact_check.py'
       - '.github/workflows/agent-task.yml'
@@ -74,6 +76,7 @@ jobs:
           python3 tests/unit/scheduler_cooldown_test.py
           python3 tests/unit/scheduler_stay_test.py
           python3 tests/unit/scheduler_preview_deploy_test.py
+          python3 tests/unit/scheduler_ingest_test.py
       - name: Guard migrations are additive only
         run: |
           set -euo pipefail
