@@ -1,12 +1,12 @@
 # NOVA Rx — CURRENT (read this, not all of HANDOFF.md)
-Last updated: 2026-11-15 (SALE-04). main @ 7777cb2. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
+Last updated: 2026-11-16 (UX-AHMED). App merge @ bb4eb4d. Index of the present state, 60 lines max. History and evidence stay in HANDOFF.md (nothing is deleted). If this file disagrees with GitHub, GitHub wins and you fix this file in the same reviewed PR.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue or PR number, or read the last 60 lines) and Issue #87 since your last checkpoint  4. docs/skills/nova/SKILL.md  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when acceptance or scope matters.
 Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 2026-11-11): only two Claude sessions work here; ChatGPT, Gemini, Kimi and Grok are out (old instructions: docs/archive/retired-agents/, not active).
 
 ## Priorities (newest first)
-- Owner 2026-11-16: non-WhatsApp UX01–09/11–14 on `ux/ahmed-non-wa`, based on `943b2d5`. Owner now authorized merge/deploy after CI and review (2026-11-16). WhatsApp preserved. Local logic, 3 checkout sizes, 5 tablet/phone page layouts, POS-01, contrast and 7 purchasing browser suites PASS with synthetic data. Initial CI failures corrected; updated CI pending. Independent review and physical-device checks remain.
+- UX-AHMED: PR #537 merged bb4eb4d after exact-head independent review + all 5 CI PASS. Preview deployed run 43941072035; SHA256 a14f7676d19d6e7a297a5f197d618d96ba21ceec52ce75cf082846d708d06df5. Live browser verified search, split checkout, clear confirmation and purchases UI; no sale saved. WhatsApp unchanged. Physical keyboard/printer untested.
 1. **Sale readiness (2026-11-15): sell today from preview/app.** Operator guide: docs/ops/SALE_DAY.md (Arabic). Cloud queue tasks SALE-01–06 and UX3xx/UX4xx run via the cloud scheduler (state: .nova/cloud-queue.json; scheduler opens PRs and squash-merges on green CI).
 2. Merged on main (not necessarily deployed to preview): UX420 design tokens, UX421/UX422 Black Edition pages, UX400 conversations without PIN on staging/preview (production PIN still required), SALE-02 VAT default 14% + static assets + demo text hidden, UX323/UX324 sticker and emergency-sales fixes.
 3. Backend: production backend exists; the frontend flag (novaBackend.enabled) stays OFF until the owner enables it on one device (SALE-01: Settings card, flag ON -> production nova-rx-api; docs/ops/BACKEND_ONE_DEVICE.md). SAAS-01–05 exist behind flags OFF; billing is a mock. Not a ready multi-tenant SaaS.
@@ -20,7 +20,7 @@ Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 202
 
 ## State and deploys
 - Deploys are owner/Nova only: preview via deploy-worker.yml, production via deploy-backend-production.yml. Cloud tasks never deploy. This file does not know the current live digest: read the workflow run, not this file.
-- Last recorded live preview digest (2026-11-12, stale): ui-real-prices6 sha256 6f56bf8b...5bdbfc. Newer main changes need a fresh deploy and read-back before being called LIVE.
+- Live preview (2026-11-16): ux-407 SHA256 a14f7676d19d6e7a297a5f197d618d96ba21ceec52ce75cf082846d708d06df5, modified_on 2026-11-16T19:36:34.896755Z, deploy 43941072035; browser-verified. Backend deployment state is separate.
 - Backups: encrypted daily D1 export (workflow D1 backup, 30-day artifact) + D1 Time Travel; restore is owner-approved only (docs/ops/backup-restore.md).
 - Legal drafts in docs/backend/legal/ are NOT legally reviewed or signed.
 - Out of scope now: payments, GAS WA_PHONE_ID, sending WhatsApp to customers, making the repo private.
