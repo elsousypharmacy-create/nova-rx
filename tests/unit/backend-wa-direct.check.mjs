@@ -43,14 +43,14 @@ assert.equal((await post([{ id: '', from: '1' }]))[0], 400);
 [s, j] = await post([item({ id: 'a1', type: 'audio', text: null })]); assert.deepEqual([j.added, j.skipped], [1, 0]); // UX405: caption-less audio is stored, not skipped
 [s, j] = await post([item({ id: 'l1', type: 'location', text: null })]); assert.deepEqual([j.added, j.skipped], [0, 1]);
 assert.equal((await post([item()], { ...env, NOVA_WA_BRIDGE_DIRECT: undefined }))[0], 200); // legacy queue path still works
-// 5) 24h window computed from the latest real inbound: a fresh inbound re-opens a chat whose backfill is old
+// 5) no 24h pre-check: an old chat is attempted and a fresh inbound changes nothing about that
 db.prepare("INSERT INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES ('default','wa_555','قديم',1)").run();
 db.prepare("INSERT INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at) VALUES ('default','h_u_1','wa_555','in','قديم',NULL,1760799000000)").run();
 [s, j] = await api('/api/v1/inbox/history/send', { method: 'POST', body: JSON.stringify({ id: 'wa_555', text: 'x' }) });
-assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED'); assert.equal(calls.filter((c) => c.operation === 'reply').length, 0);
+assert.equal(s, 200, JSON.stringify(j)); assert.equal(calls.filter((c) => c.operation === 'reply').length, 1); // no 24h pre-check (owner 2026-11-16): the send is attempted, WhatsApp decides
 [s, j] = await post([item({ id: 'wamid.9', from: '555' })]);
 [s, j] = await api('/api/v1/inbox/history/send', { method: 'POST', body: JSON.stringify({ id: 'wa_555', text: 'اتفضل' }) });
-assert.equal(s, 200, JSON.stringify(j)); assert.equal(calls.filter((c) => c.operation === 'reply').length, 1);
+assert.equal(s, 200, JSON.stringify(j)); assert.equal(calls.filter((c) => c.operation === 'reply').length, 2);
 // 6) the conversation name follows the pharmacy's customer name: a bare-number row is upgraded by the next real name, a name is updated when
 //    the bot forwards a different one (the pharmacy's customer database name wins on its side), but a bare number or an empty name never overwrites a name
 const nameOf = async (id) => (await api('/api/v1/inbox/history/conversations'))[1].conversations.find((c) => c.id === id)?.customer;

@@ -226,14 +226,11 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   assert.ok(await atBottom(page) <= 2, 'send lands on the newest message');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/ux401-chat-${vp.name}.png` });
 
-  // 8) 24h window closed: everything disabled with the Arabic explanation, no reply affordance
+  // 8) no 24h pre-check (owner 2026-11-16): an old chat keeps a working composer and shows no window note; WhatsApp decides and a refusal is a note under the failed message
   await openChat(page, view, ID2, 'x2');
-  const cl = await page.evaluate(() => ({ dis: document.getElementById('waInput').disabled, send: document.querySelector('[data-wa-send]').disabled, note: (document.querySelector('[data-wa-window]') || {}).textContent || '',
-    emoji: document.querySelector('[data-wa-emoji]') ? 'present' : 'none', attach: document.querySelector('[data-wa-attach]').getAttribute('aria-disabled'), panel: !!document.querySelector('[data-wa-emoji-panel]'), reply: document.querySelectorAll('[data-wa-reply]').length }));
-  assert.ok(cl.dis && cl.send, 'field + send disabled'); assert.match(cl.note, /24 ساعة/); assert.equal(cl.emoji, 'none', 'UX408: no emoji button'); assert.equal(cl.attach, 'true'); assert.equal(cl.panel, false); assert.equal(cl.reply, 0);
-  if (vp.touch) { await touch(page, '[data-mid="x1"] .wa-bubble', [14, 30, 50, 70], 0); assert.equal(await view.locator('[data-wa-qbar]').count(), 0, 'no swipe reply when the window is closed'); }
-  const n1 = st.sends.length; await page.evaluate(() => document.querySelector('[data-wa-send]').click()); /* UX408: Send is hidden while the field is empty */ assert.equal(st.sends.length, n1, 'nothing sent when closed');
-  r.window = 'closed: disabled + note';
+  const cl = await page.evaluate(() => ({ dis: document.getElementById('waInput').disabled, note: (document.querySelector('[data-wa-window]') || {}).textContent || '', emoji: document.querySelector('[data-wa-emoji]') ? 'present' : 'none', panel: !!document.querySelector('[data-wa-emoji-panel]') }));
+  assert.ok(!cl.dis, 'field enabled on an old chat'); assert.equal(cl.note, '', 'no 24h note'); assert.equal(cl.emoji, 'none', 'UX408: no emoji button'); assert.equal(cl.panel, false);
+  r.window = 'old chat: composer enabled, no pre-block';
 
   // 9) NOVA_INBOX_SEND off on the server: failed tick, Arabic error, text + quote restored for a retry
   await openChat(page, view, ID3, 'y1');

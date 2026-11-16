@@ -85,7 +85,7 @@ const chatGeom = await page.evaluate(() => {
 });
 assert.ok(Math.abs(chatGeom.viewBottom - chatGeom.vh) <= 1, 'chat container reaches the bottom ' + JSON.stringify(chatGeom));
 assert.ok(Math.abs(chatGeom.compBottom - chatGeom.vh) <= 1, 'composer sits flush on the bottom edge ' + JSON.stringify(chatGeom));
-assert.equal(chatGeom.padB, '42px', 'composer padding-bottom is 8 + 34 (safe-area inside the bar)');
+assert.equal(chatGeom.padB, '34px', 'composer padding-bottom is max(8, 34) (safe-area inside the bar)');
 assert.equal(chatGeom.marginB, '0px', 'no extra margin under the composer');
 assert.ok(!chatGeom.kbd, 'keyboard not open: UX407 data-kbd is off');
 

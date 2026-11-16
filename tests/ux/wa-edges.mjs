@@ -14,8 +14,8 @@ const origin = new URL(BASE).origin;
 let n = 0; const ok = (m) => { n++; console.log('  ok', m); };
 async function open(vp, url, short = 0) {
   const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, locale: 'ar-EG', hasTouch: !!vp.touch, isMobile: !!vp.touch, serviceWorkers: 'block' });
-  // iOS home-screen apps report a window.innerHeight that is shorter than the screen (owner's iPhone: ~47pt): emulate that shortfall
-  if (short) await ctx.addInitScript((h) => { Object.defineProperty(window, 'innerHeight', { get: () => h }); const d = Object.getOwnPropertyDescriptor(Element.prototype, 'clientHeight'); Object.defineProperty(Element.prototype, 'clientHeight', { get() { return this === document.documentElement ? h : d.get.call(this); } }); }, vp.height - short);
+  // iOS home-screen apps (standalone) report window.innerHeight / clientHeight ~47pt shorter than the screen (owner's iPhone): emulate it, with screen.height = the real size
+  if (short) await ctx.addInitScript(([h, w, full]) => { Object.defineProperty(navigator, 'standalone', { get: () => true }); Object.defineProperty(window.screen, 'height', { get: () => full }); Object.defineProperty(window.screen, 'width', { get: () => w }); Object.defineProperty(window, 'innerHeight', { get: () => h }); const d = Object.getOwnPropertyDescriptor(Element.prototype, 'clientHeight'); Object.defineProperty(Element.prototype, 'clientHeight', { get() { return this === document.documentElement ? h : d.get.call(this); } }); }, [vp.height - short, vp.width, vp.height]);
   const other = [];
   await ctx.route('**/*', (r) => {
     const q = r.request(), u = q.url(), cors = { 'Access-Control-Allow-Origin': origin };

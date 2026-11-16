@@ -244,7 +244,7 @@ for (const vp of [{ width: 390, height: 844, name: 'iphone', touch: true }, { wi
   assert.ok(!c0.form && c0.forms === 0 && c0.ekh === 'send', 'no <form>, enterkeyhint=send');
   assert.ok(c0.pillKids === 1 && c0.pillBtns === 0 && !c0.emoji, 'nothing but the text field inside the pill');
   assert.ok(!c0.sendVis && c0.micVis && c0.plusRight && c0.trailLeft, 'empty: + right, mic at the trailing end, no send ' + JSON.stringify(c0));
-  if (mob) assert.equal(c0.padB, '42px', 'safe-area bottom padding (8 + 34)');
+  if (mob) assert.equal(c0.padB, '34px', 'safe-area bottom padding max(8, 34)');
   const input = view.locator('#waInput');
   if (mob) await input.tap(); else await input.click();
   await page.keyboard.type('تمام');

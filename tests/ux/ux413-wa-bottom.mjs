@@ -187,7 +187,7 @@ const chatGeom = await page.evaluate(() => {
 });
 assert.ok(Math.abs(chatGeom.viewBottom - chatGeom.vh) <= 1, 'chat container reaches the bottom ' + JSON.stringify(chatGeom));
 assert.ok(Math.abs(chatGeom.compBottom - chatGeom.vh) <= 1, 'composer sits flush on the bottom edge ' + JSON.stringify(chatGeom));
-assert.equal(chatGeom.padB, '42px', 'composer padding-bottom is 8 + 34 (safe-area inside the bar)');
+assert.equal(chatGeom.padB, '34px', 'composer padding-bottom is max(8, 34) (safe-area inside the bar, owner 2026-11-16: less space under the field)');
 assert.equal(chatGeom.padL, '16px', 'composer padding-left 16px');
 assert.equal(chatGeom.padR, '16px', 'composer padding-right 16px');
 assert.equal(chatGeom.headPL, '16px', 'chat header padding-left 16px');

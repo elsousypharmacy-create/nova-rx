@@ -5,7 +5,8 @@
 // Delivery reuses the pharmacy bot's EXISTING Apps Script op novaWhatsAppBridge/reply (same WA_BACKEND_URL +
 // NOVA_WA_BRIDGE_TOKEN as the auto-reply toggle). NOVA never holds the WhatsApp token; secrets by NAME only.
 // Safety: flag NOVA_INBOX_SEND === '1'; text only; 1..1000 chars; target = the conversation's own chat id
-// (must exist in D1; the client never sends a phone number); WhatsApp 24-hour customer-service window;
+// (must exist in D1; the client never sends a phone number); the WhatsApp 24-hour window is NOT pre-checked any more (owner 2026-11-16):
+// the send is attempted and, when WhatsApp refuses it, the reply is a plain note (SEND_WINDOW_CLOSED / SEND_FAILED), nothing is blocked up front;
 // per-IP and per-tenant rate limits; duplicate guard by client id; every attempt logged in wa_send_log.
 import { sha256Hex } from './auth/auth.js';
 import { checkPin, historyTenant, atMs } from './inbox-history.js';
@@ -24,7 +25,7 @@ export const SEND_ERR = Object.freeze({
   SEND_EMPTY: ['اكتب الرسالة الأول.', 400],
   SEND_TOO_LONG: ['الرسالة طويلة. الحد الأقصى 1000 حرف.', 400],
   SEND_UNKNOWN_CHAT: ['المحادثة دي مش موجودة.', 404],
-  SEND_WINDOW_CLOSED: ['مينفعش تبعت للعميل ده دلوقتي: آخر رسالة منه عدّى عليها أكتر من 24 ساعة (قاعدة واتساب). لازم العميل يبعت الأول.', 422],
+  SEND_WINDOW_CLOSED: ['الرسالة ما وصلتش: عدّى أكتر من 24 ساعة على آخر رسالة من العميل، وواتساب مش بيسمح بالرد. هتوصل لو العميل بعتلك رسالة جديدة.', 422],
   SEND_RATE_LIMITED: ['رسائل كتير ورا بعض. استنى شوية وحاول تاني.', 429],
   SEND_DUPLICATE: ['الرسالة دي اتبعتت قبل كده.', 409],
   SEND_FAILED: ['واتساب رفض الرسالة، ما وصلتش للعميل.', 502],
@@ -112,21 +113,18 @@ export function registerInboxSendRoutes(route, { errorResponse }) {
     if (!(await bump(env.KV, 'wasend:ip:' + ipHash, IP_MAX, IP_WINDOW_S)) || !(await bump(env.KV, 'wasend:t:' + t, TENANT_MAX, TENANT_WINDOW_S))) return err('SEND_RATE_LIMITED');
     const bridge = { action: 'novaWhatsAppBridge', bridgeToken: token };
     const now0 = Date.now();
-    const lastIn = await lastIncomingMs(env, t, cid, bridge);
     const logId = 'ws_' + crypto.randomUUID();
     const log = (status, error) => db.prepare('UPDATE wa_send_log SET status = ?, error = ?, finished_at = ? WHERE tenant_id = ? AND id = ?').bind(status, error, Date.now(), t, logId).run();
     await db.prepare('INSERT INTO wa_send_log (tenant_id, id, conversation_id, client_id, ip_hash, sent_by, text_len, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)')
       .bind(t, logId, cid, clientId, ipHash, by, text.length, 'pending', now0).run();
-    if (!lastIn || Date.now() - lastIn > WINDOW_MS) {
-      await log('blocked', 'window-closed');
-      return errorResponse('SEND_WINDOW_CLOSED', SEND_ERR.SEND_WINDOW_CLOSED[0], 422, requestId, lastIn ? { 'X-Last-Incoming': String(lastIn) } : undefined);
-    }
     if (clientId && env.KV) { try { await env.KV.put('wasend:cid:' + clientId, '1', { expirationTtl: 86400 }); } catch { /* ignore */ } }
     let r;
     try { r = await callBot(env, { ...bridge, operation: 'reply', chatId: cid, text }, 25000); } catch { r = null; }
     if (!r) { await log('unknown', 'no-response'); return err('SEND_UNKNOWN'); }
     if (!r.ok || !r.j || r.j.ok !== true) {
       const why = r.j && typeof r.j.error === 'string' ? r.j.error.slice(0, 200) : 'http-' + r.http;
+      // WhatsApp refuses a free-text reply once 24 h passed since the customer's last message (Meta 131047; the bot words it «أكتر من 24 ساعة»)
+      if (/24\s*ساعة|131047|re-?engagement/i.test(why)) { await log('failed', 'window-closed'); return err('SEND_WINDOW_CLOSED'); }
       await log('failed', why);
       return err('SEND_FAILED');
     }
