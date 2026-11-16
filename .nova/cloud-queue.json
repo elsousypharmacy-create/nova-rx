@@ -5195,13 +5195,15 @@
    "brief": "Typing opening float then 'change' re-renders the whole reports page (render(page,filter)): #novaShiftCount value becomes '' and document.activeElement is lost. A cashier who counted first then adds the float loses the count. Update #novaShiftExpected/#novaShiftDiff in place (no full re-render), keep focus and counted value, recompute diff. Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Changing float keeps counted value and focus; expected and diff update live; test asserts.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
    "model": "sonnet",
    "pin_slot": "A",
-   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix."
+   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
+   "slot": "A",
+   "dispatched_at": "2026-11-16T07:44:18+00:00"
   },
   {
    "id": "UX433",
@@ -5362,7 +5364,7 @@
    "brief": "With no sales the page shows a collapsed 'بيانات تجريبية' details; ensure demo data is clearly watermarked and cannot be mistaken for real, and that print/shift controls are hidden or disabled with an explanation. On 390px the tab strip clips 'المشتريات' under the chevron without edge fade; add a fade mask/scroll-snap and keep the active tab centred. Also keep emergency/stock.json 404 out of scope (UX312). Evidence: .nova/qa/qa-loop-431.md, screenshots .nova/qa/qa-loop-431/, repro tools/qa/qa-loop-431-shift.mjs (seeds fake sales in localStorage key nova-rx-sales-v1). Code: renderer in index.html (search page==='reports', #novaShiftClose, #novaShiftFloat, #novaShiftCount, #novaShiftDiff). Frontend-only. Preserve Black Edition Arabic RTL UX. Backend frozen. No deploy. Tests required: new Playwright test under tests/ (1366x768 + 390x844, fake data, block non-GET) plus nearest existing unit tests; record exact results.",
    "acceptance": "Empty state clear and non-misleading; mobile tab strip shows fade/snap; test asserts.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "inbox/qa-loop-431-fixes.json",
@@ -5370,7 +5372,19 @@
    "dispatched_at": "2026-11-16T07:41:48+00:00",
    "model": "sonnet",
    "pin_slot": "A",
-   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix."
+   "note": "Slot A (ahmed m), Sonnet. QA loop 431 reports & shift-close fix.",
+   "pr": 504,
+   "ci_dispatched": {
+    "sha": "8612ae2826bc963f3c91732231418534141da772",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-16T07:44:18+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX444",
@@ -5401,6 +5415,6 @@
    "note": "Slot B (elsousypharmacy), Sonnet. Build qa-431 artifact only after UX432–UX443; no deploy (auto-deploy-preview.yml)."
   }
  ],
- "updated": "2026-11-16T07:43:59+00:00",
+ "updated": "2026-11-16T07:44:18+00:00",
  "slot_cooldown": {}
 }
