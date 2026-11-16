@@ -204,12 +204,8 @@ for (const vp of [{ width: 1366, height: 768, name: 'desktop', touch: false }, {
   // UX408 (WhatsApp iOS): no emoji button inside the field (the iOS keyboard has its own emoji key)
   assert.equal(await view.locator('[data-wa-emoji]').count(), 0, 'no emoji clutter in the composer');
   await input.fill('تمام 👍');
-  await view.locator('[data-wa-attach]').click();
-  const att = await page.evaluate(() => { const m = document.querySelector('[data-wa-attach-menu]'); return { open: !m.hidden, items: [...m.querySelectorAll('[data-wa-att]')].map((b) => b.getAttribute('aria-disabled')), note: m.querySelector('[data-wa-att-note]').textContent }; });
-  assert.ok(att.open && att.items.length === 3 && att.items.every((x) => x === 'true') && att.note.includes('النص بس'), 'attach menu: no file sending, explained ' + JSON.stringify(att));
-  const n0 = st.sends.length; await view.locator('[data-wa-att="document"]').click({ force: true }); assert.equal(st.sends.length, n0, 'attach items never send');
-  await view.locator('#waMsgs').click({ position: { x: 20, y: 20 } });
-  assert.equal(await view.locator('[data-wa-attach-menu]').isHidden(), true, 'outside click closes the attach menu');
+  // owner 2026-11-16: no dead buttons — attach / camera / mic are hidden (text only)
+  for (const k of ['attach', 'camera', 'mic']) assert.equal(await view.locator(`[data-wa-composer] [data-wa-${k}]`).isVisible(), false, k + ' hidden');
   assert.equal(await input.inputValue(), 'تمام 👍', 'draft kept');
   // reply to c6 and send; scroll up first: sending still lands on the newest message
   if (vp.touch) { await touch(page, '[data-mid="c6"] .wa-bubble', [-14, -30, -50, -70], 0); await view.locator('[data-wa-qbar]').waitFor({ timeout: 1000 }); }
