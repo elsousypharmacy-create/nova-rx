@@ -88,12 +88,15 @@ const rRecovered = await wire.printInvoice(sale2, 0);
 assert.deepEqual(rRecovered, { ok: true, via: 'device' });
 assert.equal(sends, 3);
 
-// 6. devicesHtml contains 'novaInvoicePrinter' and every SUPPORTED name
-const html = wire.devicesHtml();
+// 6. devicesHtml lists every supported device; Arabic UI has no Latin letters, English UI has no Arabic (app i18n rules)
+const html = wire.devicesHtml('ar');
 assert.ok(html.includes('novaInvoicePrinter'));
-for (const item of NovaDevices.list()) {
-  assert.ok(html.includes(item.name), `Missing device name: ${item.name}`);
-}
+for (const item of NovaDevices.list()) assert.ok(html.includes('data-device="' + item.id + '"'), `Missing device: ${item.id}`);
+const visible = (h) => h.replace(/<[^>]*>/g, ' ');
+assert.ok(!/[A-Za-z]/.test(visible(html)), 'Arabic card has no Latin words');
+const htmlEn = wire.devicesHtml('en');
+assert.ok(!/[؀-ۿ]/.test(visible(htmlEn)), 'English card has no Arabic');
+assert.ok(htmlEn.includes('dir="ltr"') && html.includes('dir="rtl"'));
 
 // 7. Sale object passed in was never mutated across all operations
 assert.deepEqual(sampleSale, saleSnapshot);
@@ -108,5 +111,6 @@ assert.equal(rNo.ok, false); assert.equal(rNo.message_ar, ERRORS_AR['not-permitt
 const page = readFileSync('index.html', 'utf8');
 assert.ok(page.includes('window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0)'), 'printNow uses the device wire');
 assert.ok(page.includes('id="novaDevicesCard"'), 'devices card in settings');
+assert.ok(page.includes("devicesHtml(localStorage.getItem('nova-rx-language')==='en'?'en':'ar')"), 'card follows the UI language');
 
 console.log('device-print OK');
