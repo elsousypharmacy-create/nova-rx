@@ -99,31 +99,121 @@ export async function createSandboxTenant(db, { suffix } = {}) {
   return { ok: true, tenantId, branchId: branch, seeded: SEED.length, sandbox: true };
 }
 
+// S4-01: every route acts on the SESSION tenant (fail-closed when the session has none). Another tenant can only be managed by
+// the platform operator (session tenant === env.NOVA_PLATFORM_TENANT, unset by default = nobody), who alone may create pharmacies.
+// An owner can never disable his own pharmacy through this route.
 export function registerOnboardingRoutes(route, { json, errorResponse }) {
   async function guard(ctx) {
     const { env, requestId } = ctx;
-    if (!onboardingEnabled(env)) return { res: errorResponse('ONBOARDING_DISABLED', 'الميزة غير مفعّلة.', 404, requestId) };
+    if (!onboardingEnabled(env)) {
+      return { res: errorResponse('ONBOARDING_DISABLED', 'الميزة غير مفعّلة.', 404, requestId) };
+    }
     const a = await authenticate(ctx.request, env);
-    if (a.fail) return { res: errorResponse(a.fail.code, a.fail.message_ar, a.fail.status, requestId) };
-    if (normalizeRole(a.session.role) !== 'owner') return { res: errorResponse('PERMISSION_DENIED', 'ليست لديك صلاحية لهذه العملية.', 403, requestId) };
-    let body = {}; if (ctx.request.method === 'POST') { try { body = await ctx.request.json(); } catch { body = null; } }
-    if (!body || typeof body !== 'object') return { res: errorResponse('ONBOARDING_BAD_REQUEST', 'صيغة الطلب غير صالحة.', 400, requestId) };
-    return { body };
+    if (a.fail) {
+      return { res: errorResponse(a.fail.code, a.fail.message_ar, a.fail.status, requestId) };
+    }
+    if (normalizeRole(a.session.role) !== 'owner') {
+      return { res: errorResponse('PERMISSION_DENIED', 'ليست لديك صلاحية لهذه العملية.', 403, requestId) };
+    }
+    const tenantId = a.session.tenantId;
+    if (typeof tenantId !== 'string' || tenantId === '') {
+      return { res: errorResponse('ONBOARDING_TENANT_REQUIRED', 'الجلسة غير مرتبطة بصيدلية. سجّل الدخول بحساب موظف.', 403, requestId) };
+    }
+    let body = {};
+    if (ctx.request.method === 'POST') {
+      try {
+        body = await ctx.request.json();
+      } catch {
+        body = null;
+      }
+    }
+    if (!body || typeof body !== 'object') {
+      return { res: errorResponse('ONBOARDING_BAD_REQUEST', 'صيغة الطلب غير صالحة.', 400, requestId) };
+    }
+    const isPlatform =
+      typeof env.NOVA_PLATFORM_TENANT === 'string' &&
+      env.NOVA_PLATFORM_TENANT !== '' &&
+      tenantId === env.NOVA_PLATFORM_TENANT;
+    return { body, tenantId, isPlatform };
   }
-  const out = (ctx, r, okStatus = 200) => r.ok
-    ? json({ ...r, requestId: ctx.requestId }, okStatus, { 'X-Request-Id': ctx.requestId })
-    : errorResponse(r.code, r.message_ar, r.status, ctx.requestId);
-  const wrap = (fn, okStatus) => async (ctx) => {
-    const g = await guard(ctx); if (g.res) return g.res;
-    try { return out(ctx, await fn(ctx, g.body), okStatus); }
-    catch { return errorResponse('ONBOARDING_FAILED', 'تعذّر تنفيذ العملية.', 500, ctx.requestId); }
-  };
-  const tid = (ctx, b) => String(b.tenantId || new URL(ctx.request.url).searchParams.get('tenantId') || '');
 
-  route('POST', '/api/v1/onboarding/tenants', wrap((ctx, b) => createTenant(ctx.env.DB, b), 201));
-  route('POST', '/api/v1/onboarding/sandbox', wrap((ctx) => createSandboxTenant(ctx.env.DB), 201));
-  route('POST', '/api/v1/onboarding/import-step', wrap((ctx, b) => completeImportStep(ctx.env.DB, tid(ctx, b), b)));
-  route('POST', '/api/v1/onboarding/disable', wrap((ctx, b) => disableTenant(ctx.env.DB, tid(ctx, b))));
-  route('POST', '/api/v1/onboarding/enable', wrap((ctx, b) => enableTenant(ctx.env.DB, tid(ctx, b))));
-  route('GET', '/api/v1/onboarding/status', wrap((ctx, b) => getStatus(ctx.env.DB, tid(ctx, b))));
+  const out = (ctx, r, okStatus = 200) =>
+    r.ok
+      ? json({ ...r, requestId: ctx.requestId }, okStatus, { 'X-Request-Id': ctx.requestId })
+      : errorResponse(r.code, r.message_ar, r.status, ctx.requestId);
+
+  const wrap = (fn, okStatus) => async (ctx) => {
+    const g = await guard(ctx);
+    if (g.res) return g.res;
+    try {
+      return out(ctx, await fn(ctx, g.body, g), okStatus);
+    } catch {
+      return errorResponse('ONBOARDING_FAILED', 'تعذّر تنفيذ العملية.', 500, ctx.requestId);
+    }
+  };
+
+  const platformOnly = {
+    ok: false,
+    code: 'ONBOARDING_PLATFORM_ONLY',
+    message_ar: 'إنشاء صيدلية جديدة متاح لمشغّل المنصة فقط.',
+    status: 403
+  };
+
+  const crossTenant = {
+    ok: false,
+    code: 'ONBOARDING_CROSS_TENANT',
+    message_ar: 'لا يمكنك إدارة صيدلية أخرى.',
+    status: 403
+  };
+
+  const resolveTarget = (ctx, b, g, { forbidSelf = false } = {}) => {
+    const reqTid = String(b.tenantId || new URL(ctx.request.url).searchParams.get('tenantId') || '');
+    const target = reqTid || g.tenantId;
+    if (target !== g.tenantId && !g.isPlatform) return { err: crossTenant };
+    if (forbidSelf && target === g.tenantId && !g.isPlatform) return { err: crossTenant };
+    return { target };
+  };
+
+  route(
+    'POST',
+    '/api/v1/onboarding/tenants',
+    wrap((ctx, b, g) => (g.isPlatform ? createTenant(ctx.env.DB, b) : platformOnly), 201)
+  );
+  route(
+    'POST',
+    '/api/v1/onboarding/sandbox',
+    wrap((ctx, _b, g) => (g.isPlatform ? createSandboxTenant(ctx.env.DB) : platformOnly), 201)
+  );
+  route(
+    'POST',
+    '/api/v1/onboarding/import-step',
+    wrap((ctx, b, g) => {
+      const t = resolveTarget(ctx, b, g);
+      return t.err || completeImportStep(ctx.env.DB, t.target, b);
+    })
+  );
+  route(
+    'POST',
+    '/api/v1/onboarding/disable',
+    wrap((ctx, b, g) => {
+      const t = resolveTarget(ctx, b, g, { forbidSelf: true });
+      return t.err || disableTenant(ctx.env.DB, t.target);
+    })
+  );
+  route(
+    'POST',
+    '/api/v1/onboarding/enable',
+    wrap((ctx, b, g) => {
+      const t = resolveTarget(ctx, b, g);
+      return t.err || enableTenant(ctx.env.DB, t.target);
+    })
+  );
+  route(
+    'GET',
+    '/api/v1/onboarding/status',
+    wrap((ctx, b, g) => {
+      const t = resolveTarget(ctx, b, g);
+      return t.err || getStatus(ctx.env.DB, t.target);
+    })
+  );
 }
