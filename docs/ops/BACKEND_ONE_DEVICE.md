@@ -39,3 +39,14 @@ localStorage.removeItem('novaBackend.enabled')        // إيقاف
 ## الاختبارات (بيانات وهمية، من غير أي كتابة على السيرفر الحقيقي)
 - `node tests/unit/backend-client-sale01.check.mjs`: مقفول = صفر طلبات، ومفعّل = عنوان الإنتاج، والمفتاح في الجلسة بس.
 - `python3 -m http.server 8765 &` وبعدها `node tests/ui-sale01-backend-flag.mjs`: Playwright بيرد على سيرفر الإنتاج بـ mock، وكل طلب غير GET بيتوقف.
+
+## S1-03 / S1-04 / S1-05 — المبيعات بتتزامن بين الأجهزة (staging)
+- **S1-03:** كل فاتورة بتتحفظ على الجهاز بتسجّل حركة مخزون محلية (`nova.stock.ledger`) وبتدخل الـoutbox (`nova.outbox`). المرتجع بيسجّل حركة مخزون محلية بس. الفواتير اللي فيها وحدات غير العلبة (شريط...) بتتسجل في `nova.sync.skipped` ومش بتتبعت للسيرفر لحد ما ربط الوحدات بالكتالوج يخلص.
+- **S1-04:** لما `novaBackend.enabled = 'true'` على الجهاز: كل 8 ثواني، وعند رجوع النت أو فتح التاب، الجهاز بيرفع الـoutbox (`POST /api/v1/sync/push`) ويسحب (`GET /api/v1/sync/pull`) ويضيف مبيعات الأجهزة التانية مرة واحدة (`source: 'SYNC'`) ويخصمها من المخزون المحلي. الجدول القديم اللي بيقول "المبيعات تفضل محلية حتى والعلم شغال" **مبقاش صحيح**: المبيعات والمخزون بيتزامنوا دلوقتي عبر push/pull.
+- **العلم مقفول = صفر طلبات شبكة** والشاشة زي ما هي.
+- **S1-05 (staging بس):** `NOVA_AUTH`، `NOVA_SYNC`، `NOVA_SALES_WRITES` = `"1"` تحت `[env.staging.vars]`. الإنتاج مقفول.
+- **إزاي جهاز تجربة يشتغل على staging:**
+  1. `localStorage.setItem('novaBackend.url', 'https://nova-rx-api-staging.elsousypharmacy.workers.dev')`
+  2. `localStorage.setItem('novaBackend.enabled', 'true')`
+  3. تسجيل دخول المالك على staging (أول مرة بـ PIN الصيدلية ثم تغيير كلمة السر) وحفظ التوكن في `sessionStorage['novaBackend.token']`.
+- **نشر staging:** من Actions → "Deploy backend staging": dry_run الأول، ثم تأكيد `DEPLOY nova-rx-api-staging`.
