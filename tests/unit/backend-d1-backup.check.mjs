@@ -141,6 +141,13 @@ const PASS = 'test-passphrase-not-a-secret-0123456789';
   assert.match(wf, /workflow_dispatch/); assert.match(wf, /cron:/);
   assert.ok(!/^\s*\[\[.*r2_buckets\]\]/m.test(readFileSync(join(ROOT, 'backend/wrangler.toml'), 'utf8')));
   ok('workflow: encrypted-only upload, 30 days; no R2 binding');
+  // S1-09: staging AND production, each its own artifact named with the db and the run id; one failing never skips the other
+  assert.match(wf, /db: \[nova-rx-staging, nova-rx-production\]/);
+  assert.match(wf, /name: d1-backup-\$\{\{ matrix\.db \}\}-\$\{\{ github\.run_id \}\}/);
+  assert.match(wf, /fail-fast: false/);
+  assert.match(wf, /d1-backup\.sh "\$DB_NAME"/); assert.match(wf, /DB_NAME: \$\{\{ matrix\.db \}\}/);
+  assert.ok(!/r2|R2_/.test(wf.replace(/no R2/g, '')), 'no R2 in the backup workflow');
+  ok('S1-09: daily encrypted backups of nova-rx-staging and nova-rx-production as separate artifacts');
 }
 assert.ok(existsSync(join(ROOT, 'docs/ops/backup-restore.md')));
 console.log(`backend-d1-backup: ${pass} passed`);
