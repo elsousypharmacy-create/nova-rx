@@ -2,10 +2,9 @@
 // Guarded by the pharmacy PIN (X-Nova-Pin == env.NOVA_API_PIN, >= 12 chars), independent of NOVA_AUTH,
 // so the public preview never gets chat data without the PIN. SELECT only: never writes, deletes or sends.
 // Failed PIN attempts are rate limited per client IP in KV (10 per 15 minutes).
-// S1-01 (2026-11-17): UX400's pinless staging/preview mode is REMOVED. Every environment (staging, preview,
-// production, dev, unset, anything unknown) requires the pharmacy PIN, so a stranger with the preview link can no
-// longer read or reply to customer chats. `historyPinless` is kept as an export that always returns false so older
-// imports keep working. S1-07 will let a staff bearer session satisfy the same gate (see `checkPin`).
+// UX400 (owner approved 2026-11-15): on the STAGING/PREVIEW backend only (NOVA_ENV 'staging' or 'preview') the
+// read and send routes no longer require the PIN; the owner accepted that anyone with the preview link can read
+// and reply. Every other NOVA_ENV (production, dev, unset, anything unknown) stays PIN-gated exactly as before.
 import { sha256Hex } from './auth/auth.js';
 import { waIsHandoff, waTopics } from './wa-metrics.js';
 import { mediaKind } from './wa-kpis.js';
@@ -37,11 +36,12 @@ async function safeEq(a, b) {
   return d === 0 && x.length === y.length;
 }
 
-// S1-01: no environment is open any more (see the header). Kept so existing imports and tests still resolve.
-export const historyPinless = () => false;
+const PINLESS_ENVS = Object.freeze(['staging', 'preview']);
+export const historyPinless = (env) => !!env && PINLESS_ENVS.includes(String(env.NOVA_ENV || ''));
 
 export async function checkPin(request, env) {
   if (!env || !env.DB) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
+  if (historyPinless(env)) return null;
   const pin = env.NOVA_API_PIN;
   if (!pin || String(pin).length < 12) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
   const ip = request.headers.get('CF-Connecting-IP') || 'anon';
