@@ -297,7 +297,12 @@ smoke_code() { # path method want-code
   done
   say "SMOKE FAILED: $2 $1 last body: ${out:0:300}"; return 1
 }
-smoke_code /api/v1/auth/login POST AUTH_DISABLED || { rollback; exit 1; }
+# S1-11: the expected auth answer follows the production vars in wrangler.toml (flag ON -> the route answers and rejects an
+# empty body; flag OFF -> 404 AUTH_DISABLED). Sync ON -> pull requires a session.
+PROD_VARS="$(awk '/^\[env\.production\.vars\]/{f=1;next} /^\[/{f=0} f' "$ROOT/backend/wrangler.toml")"
+if printf '%s\n' "$PROD_VARS" | grep -Eq '^NOVA_AUTH *= *"1"'; then AUTH_WANT=AUTH_BAD_REQUEST; else AUTH_WANT=AUTH_DISABLED; fi
+smoke_code /api/v1/auth/login POST "$AUTH_WANT" || { rollback; exit 1; }
+if printf '%s\n' "$PROD_VARS" | grep -Eq '^NOVA_SYNC *= *"1"'; then smoke_code /api/v1/sync/pull GET AUTH_REQUIRED || { rollback; exit 1; }; fi
 smoke_code /api/v1/releases GET RELEASES_DISABLED || { rollback; exit 1; }
 printf '%s\n' "SELECT COUNT(*) AS n FROM schema_migrations;" > "$WORK/cnt.sql"
 if d1_query "$WORK/cnt.sql"; then say "SMOKE ok: D1 nova-rx-production schema_migrations rows=$(jq -r '.result[0].results[0].n' "$WORK/q.out")"; else say "SMOKE FAILED: D1 read"; rollback; exit 1; fi
