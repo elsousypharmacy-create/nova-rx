@@ -2143,7 +2143,7 @@ html body .header-actions #btnHelpShortcuts{display:block;min-height:44px}
 .nova-product-full-name{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.8}
 .nova-rep-example{padding:16px;border:1px dashed #46515b;border-radius:8px;color:#b7c4ce;margin-top:14px}
 .checkout-mock-note{font-size:12px;line-height:1.7;color:#e4c98f;margin:0 0 12px}
-.nova-settings-grid{align-items:start}.nova-setting-card h3{margin-block:0 12px}.nova-setting-card p{line-height:1.8}
+.nova-settings-grid{align-items:start}.nova-setting-card h3{margin-block:0 12px}.nova-devices-settings ul{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:6px;color:#c9d2dc}.nova-devices-settings li{padding:8px 12px;background:#1b2026;border:1px solid #2a3037;border-radius:var(--r-2)}.nova-devices-settings label{display:block;margin-bottom:6px;font-weight:600}.nova-devices-settings select{min-height:44px;width:100%;max-width:360px;padding:8px 12px;background:#1b2026;color:#f1f3f5;border:1px solid #2a3037;border-radius:var(--r-2)}.nova-devices-settings p{margin-top:12px;color:#a4adb7;font-size:13px}.nova-setting-card p{line-height:1.8}
 </style>
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;document.documentElement.classList.remove('nova-boot');try{var a=document.activeElement;if(!a||a===document.body){var m=document.getElementById('mainSearchInput');if(m&&m.offsetParent)m.focus()}}catch(e){}s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
@@ -8412,7 +8412,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  .totals-breakdown .tot-row>span{min-width:0;overflow-wrap:anywhere}
  .totals-breakdown .tot-row>span:last-child{flex:none;white-space:nowrap}
  .totals-breakdown .tot-row.grand-total{font-size:15px;padding-top:2px;margin-top:0}
- .totals-breakdown .tot-row.grand-total span:last-child{font-size:16px}
+ .totals-breakdown .tot-row.grand-total span:last-child{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
  .discount-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 10px;background:#191e24;color:#dce3ea;border:1px solid #303841;border-radius:var(--r-2);font:inherit;font-size:13px;cursor:pointer}
  .discount-toggle[aria-expanded="true"] .discount-toggle-caret{transform:rotate(180deg)}
  .totals-breakdown .discount-controls{display:none;flex:none;width:100%;box-sizing:border-box;margin:0}
@@ -10762,7 +10762,7 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-page-header p{font-size:var(--nx-fs-sm);color:var(--nx-text-muted);margin-top:var(--nx-sp-1)}
 /* --- cards: KPI, panels, settings --- */
 #novaPageView .nova-kpis{gap:var(--nx-sp-3)}
-#novaPageView .nova-kpi,#novaPageView .nova-panel,#novaPageView .nova-setting-card{background:linear-gradient(180deg,#191e24 0%,var(--nx-bg-panel) 100%);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1);transition:border-color var(--nx-dur-base) var(--nx-ease),box-shadow var(--nx-dur-base) var(--nx-ease),transform var(--nx-dur-base) var(--nx-ease)}
+#novaPageView .nova-kpi,#novaPageView .nova-panel,#novaPageView .nova-setting-card,.nova-page-view .nova-kpi,.nova-page-view .nova-panel,.nova-page-view .nova-setting-card{background:linear-gradient(180deg,#191e24 0%,var(--nx-bg-panel) 100%);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1);transition:border-color var(--nx-dur-base) var(--nx-ease),box-shadow var(--nx-dur-base) var(--nx-ease),transform var(--nx-dur-base) var(--nx-ease)}
 #novaPageView .nova-kpi:hover,#novaPageView .nova-setting-card:hover{border-color:#3a4652;box-shadow:var(--nx-shadow-2)}
 #novaPageView button.nova-kpi-btn:hover{transform:translateY(-1px)}
 #novaPageView button.nova-kpi-btn:active{transform:none}
