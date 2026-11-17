@@ -70,3 +70,13 @@ Tenant comes from the session (`tenant`) or `NOVA_TENANT_ID`, default `default`.
 - Other devices append `receive` ledger movements (base units, lot/expiry/cost) once; the receiving device skips its own receipt
   (already in its ledger in boxes) via `nova.receipts.local`. The POS scheduler runs it as an extra; the purchases page only enqueues.
 - Test: `tests/unit/receipt-sync.check.mjs`.
+
+## S2-04 — purchase orders on the server (no supplier contact)
+- `po-sync-wire.js` (POS scheduler extra) queues a snapshot of every local PO that left `draft` whenever its state / history / GRN count changes:
+  `{ key:'po:<fnv32>:<historyLen>', kind:'ledger', entity:'purchase_order', payload:{ id, op:'po', key:'po:<fnv32>', po:{ id, supplier, state, createdAt, lines, historyLen } } }`
+  (key = hash of PO id + createdAt, because `PO-n` numbers repeat across devices).
+- Server: supplier (`<tenant>:sup:<fnv32(name)>`), `purchase_orders` upsert (status: draft | sent (sent/accepted/partial) | received | cancelled),
+  products and `purchase_order_items` (OR IGNORE), `sync_ledger`, `change_feed` (entity `purchase_order`), `sync_ops`: ONE batch. Invalid = `SYNC_PO_INVALID`.
+- Other devices keep a read-only remote copy (`remote:true`, id `PO-n@<key part>`, newest history wins) next to their own POs; remote copies are never pushed back.
+  Nothing here calls a supplier, writes a supplier cart or places an order.
+- Test: `tests/unit/po-sync.check.mjs`.
