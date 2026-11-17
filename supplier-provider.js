@@ -7,33 +7,9 @@
   if (window.NOVA_SUPPLIER_PROVIDER) return;
 
   var KEY = 'novaApiPin';
-
-  function getPin(forceAsk) {
-    var pin = null;
-    try { pin = localStorage.getItem(KEY); } catch (e) { pin = null; }
-    if (!pin || forceAsk) {
-      pin = window.prompt('رقم PIN الموردين');
-      if (pin) { try { localStorage.setItem(KEY, pin); } catch (e) { /* ignore */ } }
-    }
-    return pin;
-  }
-
-  function call(path, options, retried) {
-    var pin = getPin(false);
-    if (!pin) return Promise.reject(new Error('pin-required'));
-    var init = Object.assign({ headers: {} }, options || {});
-    init.headers = Object.assign({ 'X-Nova-Pin': pin, 'Content-Type': 'application/json' }, init.headers);
-    return fetch(path, init).then(function (res) {
-      if (res.status === 401 && !retried) {
-        try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
-        return call(path, options, true);
-      }
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) throw new Error(data.error || ('http-' + res.status));
-        return data;
-      });
-    });
-  }
+  try { localStorage.removeItem(KEY); } catch (e) {}
+  function getPin() { return null; }
+  function call(path, options) { var init = Object.assign({ headers: {} }, options || {}); init.headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers); return fetch(path, init).then(function (res) { return res.json().catch(function () { return {}; }).then(function (data) { if (!res.ok) throw new Error(data.error || ('http-' + res.status)); return data; }); }); }
 
   function mapState(s) {
     if (s === 'ok') return 'ok';
