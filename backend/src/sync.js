@@ -60,6 +60,9 @@ async function applyInvoice(db, tenant, op, id, data, ctx) {
     if (prior) return { ...JSON.parse(prior.result_json), duplicate: true };
   }
   if (r.code === 'INSUFFICIENT_STOCK') return { status: 'conflict', code: 'SYNC_STOCK_CONFLICT', message_ar: r.message_ar, transient: true };
+  // The product is not on the server yet (opening stock / receipt not synced): the write fails on the product reference. That is a
+  // "wait for stock" case, NOT a permanent refusal (a cached rejection would keep this invoice rejected even after the stock arrives).
+  if (r.code === 'WRITE_FAILED') return { status: 'conflict', code: 'SYNC_STOCK_CONFLICT', message_ar: 'الصنف غير مسجّل على الخادم بعد (الرصيد الافتتاحي أو الاستلام لم يصل).', transient: true };
   return rej('SYNC_SALE_REJECTED', r.message_ar);
 }
 
