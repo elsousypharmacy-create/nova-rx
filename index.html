@@ -4835,7 +4835,7 @@ window.NovaFmt=(function(){
           }
           applyPrinterState();
           pendingJob = null;
-          try { window.print(); } catch (_) {}
+          if (window.novaDevicePrint && window.novaDevicePrint.hasGateway() && currentSale) { window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0).then(function (r) { if (!r.ok) showToast(r.message_ar, 'error'); }); } else { try { window.print(); } catch (_) {} } // S3-01: device gateway when configured, else the browser print
           return { ok: true, saleNumber: currentSale && currentSale.number, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
         }
         function reconnectAndRetry() {
@@ -5720,7 +5720,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:var(--sp-2);font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:var(--r-1);overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div></details>':'');
  }else if(page==='settings'){
  content=head(title,'إعدادات واجهة العرض — لا توجد صلاحيات أو مزامنة إنتاجية حتى الآن')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>'+tr(window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'المنتجات من قائمة أسعار STOCK LIVE؛ الأرصدة غير متاحة من هذا المصدر.':'مصدر المنتجات الحالي بيانات عرض تجريبية.',window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'Products use the STOCK LIVE price list; stock is unavailable from this source.':'The current product source is demo data.')+'</p><p>'+tr('الفواتير والعملاء المحفوظون على هذا الجهاز منفصلون عن بيانات العرض التجريبية.','Customers and invoices saved on this device are separate from demo records.')+'</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide" id="novaBackendCard"></div><div class="nova-setting-card nova-card-wide" id="novaOnboardingCard" hidden></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>'+tr(window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'المنتجات من قائمة أسعار STOCK LIVE؛ الأرصدة غير متاحة من هذا المصدر.':'مصدر المنتجات الحالي بيانات عرض تجريبية.',window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'Products use the STOCK LIVE price list; stock is unavailable from this source.':'The current product source is demo data.')+'</p><p>'+tr('الفواتير والعملاء المحفوظون على هذا الجهاز منفصلون عن بيانات العرض التجريبية.','Customers and invoices saved on this device are separate from demo records.')+'</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide" id="novaBackendCard"></div><div class="nova-setting-card nova-card-wide" id="novaDevicesCard"></div><div class="nova-setting-card nova-card-wide" id="novaOnboardingCard" hidden></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
  }
  window.__novaRowFillTok=(window.__novaRowFillTok||0)+1;
  const rest=page==='products'?window.__novaRowRest:null;window.__novaRowRest=null;
@@ -5761,6 +5761,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const pd=document.getElementById('novaPrintDay');if(pd)pd.onclick=()=>{const d=window.__novaRepData;if(!d)return;const old=document.getElementById('novaDayReport');if(old)old.remove();const el=document.createElement('div');el.id='novaDayReport';el.setAttribute('dir','rtl');const pn=d.per==='day'?tr('اليوم','Today'):d.per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');const r=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>';let cashier='';try{cashier=String((JSON.parse(localStorage.getItem('nova-rx-shift-v1')||'{}')||{}).cashier||'')}catch(e){}const phName=(document.querySelector('.pharmacy-banner-copy strong')||{}).textContent||'صيدلية السوسي';const phOwner=(document.querySelector('.pharmacy-banner-copy span')||{}).textContent||'';const closeAt=window.NovaFmt.formatDateTime(new Date());const hdr='<div class="nova-dr-head" data-dr="header"><strong class="nova-dr-ph">'+esc(phName)+'</strong>'+(phOwner?'<div>'+esc(phOwner)+'</div>':'')+'<div>'+tr('الفرع','Branch')+': '+tr('الفرع الرئيسي','Main branch')+'</div><div>'+tr('الكاشير','Cashier')+': '+(cashier?esc(cashier):'<span class="nova-dr-blank">&nbsp;</span>')+'</div><div>'+tr('وقت الإغلاق','Closing time')+': '+esc(closeAt)+'</div></div>';const sig='<div class="nova-dr-sigs" data-dr="signatures"><div><span>'+tr('توقيع الكاشير','Cashier signature')+'</span><i></i></div><div><span>'+tr('توقيع المراجع / المدير','Reviewer / manager signature')+'</span><i></i></div></div>';
 el.innerHTML=hdr+'<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('مرتجعات','Returns'),money(-d.returns))+r(tr('رصيد الافتتاح','Opening float'),money(d.float))+r(tr('مرتجعات نقدية','Cash returns'),money(-d.cashReturns))+r(tr('تحصيل مديونيات نقدًا','Cash debt collections'),money(d.cashDebt))+r('<b>'+tr('المتوقع في الدرج','Expected in drawer')+'</b>','<b>'+money(d.expected)+'</b>')+(d.counted!=null?r(tr('النقدي المعدود','Counted cash'),money(d.counted))+r('<b>'+tr('الفرق','Difference')+'</b>','<b>'+(d.counted-d.expected).toFixed(2)+'</b>'):'')+r(tr('عدد الفواتير','Invoices'),d.count)+r(tr('ضريبة متضمنة','VAT included')+' ('+window.novaVat.label()+'%)',money(d.vat))+'</table>'+sig;document.body.appendChild(el);document.body.classList.add('nova-printing-report');let tm=null;const done=()=>{if(tm){clearTimeout(tm);tm=null}document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);try{window.print()}finally{tm=setTimeout(done,window.__novaPrintFallbackMs||60000)}};
  if(window.novaBackendFlag)window.novaBackendFlag.mount(document.getElementById('novaBackendCard'));
+ const dvc=document.getElementById('novaDevicesCard');if(dvc&&window.novaDevicePrint){dvc.innerHTML=window.novaDevicePrint.devicesHtml();const sel=document.getElementById('novaInvoicePrinter');if(sel)sel.onchange=()=>window.novaDevicePrint.setPrinter(sel.value)}
  if(window.novaOnboarding)window.novaOnboarding.mount(document.getElementById('novaOnboardingCard'));
  const vr=document.getElementById('novaVatRate');if(vr)vr.onchange=()=>{if(!window.novaVat.set(vr.value))vr.value=window.novaVat.get();else if(window.novaRecalc)window.novaRecalc()};
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
@@ -10027,6 +10028,295 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     } catch (_) {}
   }
 })(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script>
+/* NOVA Rx — INT-04 local printers/scanners support (pure logic, mocked gateway, no network, no paid cloud print).
+   Supported-device list, permission check, gateway contract, and idempotent device output so a device failure never doubles a sale.
+   Works as <script> (window.NovaDevices) and Node. Not wired to a screen yet. */
+(function (root) {
+  'use strict';
+  var SUPPORTED = [
+    { id: 'scanner-hid', kind: 'barcode', name: 'ماسح باركود USB/HID (محاكاة لوحة مفاتيح)', formats: ['EAN-13', 'EAN-8', 'CODE-128', 'QR'] },
+    { id: 'printer-thermal-80', kind: 'printer', name: 'طابعة حرارية 80mm (فواتير)', outputs: ['invoice'] },
+    { id: 'printer-thermal-58', kind: 'printer', name: 'طابعة حرارية 58mm (فواتير)', outputs: ['invoice'] },
+    { id: 'printer-label', kind: 'printer', name: 'طابعة ملصقات حرارية (ستيكر)', outputs: ['sticker'] },
+    { id: 'printer-a4', kind: 'printer', name: 'طابعة A4 عادية', outputs: ['invoice', 'sticker'] }
+  ];
+  var PERMS = { barcode: 'devices.scan', invoice: 'devices.print.invoice', sticker: 'devices.print.sticker' };
+
+  function list() { return SUPPORTED.map(function (d) { return Object.assign({}, d); }); }
+  function find(id) { return SUPPORTED.filter(function (d) { return d.id === id; })[0] || null; }
+
+  /* EAN-13 / EAN-8 check digit validation; other formats only need non-empty. */
+  function validBarcode(code) {
+    code = String(code == null ? '' : code).trim();
+    if (!code) return false;
+    if (!/^\d+$/.test(code)) return true;
+    if (code.length !== 13 && code.length !== 8) return false;
+    var sum = 0, n = code.length - 1;
+    for (var i = 0; i < n; i++) sum += Number(code[i]) * ((n - i) % 2 === 1 ? 3 : 1);
+    return (10 - (sum % 10)) % 10 === Number(code[n]);
+  }
+
+  function can(user, action) {
+    var p = PERMS[action];
+    return !!(user && p && (user.role === 'owner' || (user.permissions || []).indexOf(p) >= 0));
+  }
+
+  /* Gateway contract: gateway.send({deviceId, type, jobId, payload}) -> Promise<{ok:boolean, error?}>. Mockable. */
+  function createDispatcher(gateway, opts) {
+    var jobs = {}; // jobId -> {status, attempts}
+    return {
+      jobs: jobs,
+      /* Printing is a side effect of a saved sale; it never creates or re-creates the sale. Same jobId is never printed twice once ok. */
+      print: function (user, type, deviceId, jobId, payload) {
+        if (!can(user, type)) return Promise.resolve({ ok: false, error: 'not-permitted' });
+        var dev = find(deviceId);
+        if (!dev || dev.kind !== 'printer' || dev.outputs.indexOf(type) < 0) return Promise.resolve({ ok: false, error: 'unsupported-device' });
+        if (!jobId) return Promise.resolve({ ok: false, error: 'job-id-required' });
+        var j = jobs[jobId];
+        if (j && j.status === 'done') return Promise.resolve({ ok: true, duplicate: true });
+        if (j && j.status === 'pending') return Promise.resolve({ ok: false, error: 'in-progress' });
+        j = jobs[jobId] = { status: 'pending', attempts: ((j && j.attempts) || 0) + 1 };
+        return Promise.resolve().then(function () {
+          return gateway.send({ deviceId: deviceId, type: type, jobId: jobId, payload: payload });
+        }).then(function (r) {
+          j.status = r && r.ok ? 'done' : 'failed';
+          return r && r.ok ? { ok: true } : { ok: false, error: (r && r.error) || 'device-failed' };
+        }, function () { j.status = 'failed'; return { ok: false, error: 'device-failed' }; });
+      }
+    };
+  }
+
+  var api = { SUPPORTED: SUPPORTED, PERMS: PERMS, list: list, find: find, validBarcode: validBarcode, can: can, createDispatcher: createDispatcher };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.NovaDevices = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* NOVA Rx - S3-01 device-print-wire.js: routes the POS invoice print to a device gateway (window.novaDeviceGateway with send())
+   through NovaDevices (device-gateway.js) when one is configured AND a printer is chosen in Settings; otherwise the caller keeps the
+   browser print. The same click retried never prints twice (jobId 'inv:<saleId>:<copyNo>'); a reprint has a new copyNo on purpose.
+   A failure only returns an Arabic message: the sale is never touched. No network of its own, no paid cloud print.
+   NOTE: no physical printer has been tested yet (S3-02..S3-04 need the owner in the pharmacy).
+   Works as <script> (window.NovaDevicePrint / window.novaDevicePrint) and in Node (module.exports). */
+(function (root) {
+  'use strict';
+
+  var STORAGE_KEY = 'nova.devices.invoicePrinter';
+
+  var ERRORS_AR = {
+    'not-permitted': 'ليس لديك صلاحية الطباعة على هذه الطابعة.',
+    'unsupported-device': 'الطابعة المختارة لا تدعم الفواتير.',
+    'in-progress': 'جاري الطباعة… انتظر لحظة.',
+    'device-failed': 'تعذّر الوصول للطابعة. الفاتورة محفوظة — أعد المحاولة أو اطبع من المتصفح.'
+  };
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function defaultStorage(rootObj) {
+    try {
+      if (rootObj && rootObj.localStorage) return rootObj.localStorage;
+    } catch (_) {}
+    var mem = {};
+    return {
+      getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+      setItem: function (k, v) { mem[k] = String(v); }
+    };
+  }
+
+  function isInvoicePrinter(dev) {
+    if (!dev || dev.kind !== 'printer' || !Array.isArray(dev.outputs)) return false;
+    return dev.outputs.indexOf('invoice') !== -1;
+  }
+
+  function create(opts) {
+    opts = opts || {};
+    var devices = opts.devices || (root && root.NovaDevices) || null;
+    var storage = opts.storage || defaultStorage(root);
+    var getGateway = typeof opts.getGateway === 'function'
+      ? opts.getGateway
+      : function () { return (root && root.novaDeviceGateway) || null; };
+
+    var hasCustomGetUser = typeof opts.getUser === 'function';
+    var getUser = hasCustomGetUser
+      ? opts.getUser
+      : function () {
+          if (root && root.novaAuth) {
+            try {
+              if (typeof root.novaAuth.currentUser === 'function') return root.novaAuth.currentUser();
+              if (typeof root.novaAuth.getUser === 'function') return root.novaAuth.getUser();
+              if (typeof root.novaAuth.user === 'function') return root.novaAuth.user(); // the app exposes novaAuth.user()
+              if (root.novaAuth.user) return root.novaAuth.user;
+            } catch (_) {}
+            return null;
+          }
+          return null;
+        };
+
+    var dispatcher = null;
+    var boundGw = null;
+
+    function getDispatcher() {
+      var gw = getGateway();
+      if (!gw || typeof gw.send !== 'function' || !devices || typeof devices.createDispatcher !== 'function') {
+        return null;
+      }
+      if (!dispatcher || boundGw !== gw) {
+        boundGw = gw;
+        dispatcher = devices.createDispatcher({
+          send: function (req) {
+            return gw.send(req);
+          }
+        });
+      }
+      return dispatcher;
+    }
+
+    function selectedPrinter() {
+      try {
+        var v = storage.getItem(STORAGE_KEY);
+        return v ? String(v) : '';
+      } catch (_) {
+        return '';
+      }
+    }
+
+    function setPrinter(id) {
+      if (!id) {
+        try { storage.setItem(STORAGE_KEY, ''); } catch (_) {}
+        return true;
+      }
+      if (!devices || typeof devices.find !== 'function') return false;
+      var dev = devices.find(id);
+      if (!isInvoicePrinter(dev)) return false;
+      try { storage.setItem(STORAGE_KEY, String(id)); } catch (_) {}
+      return true;
+    }
+
+    function hasGateway() {
+      var gw = getGateway();
+      var p = selectedPrinter();
+      return Boolean(gw && typeof gw.send === 'function' && p);
+    }
+
+    function resolveUser() {
+      var u = getUser();
+      if (u) return u;
+      var authPresent = Boolean(hasCustomGetUser || (root && root.novaAuth));
+      if (authPresent) return null;
+      return { role: 'owner' };
+    }
+
+    function buildPayload(sale) {
+      var s = sale || {};
+      var rawLines = Array.isArray(s.lines) ? s.lines : (Array.isArray(s.items) ? s.items : []);
+      var lines = [];
+      for (var i = 0; i < rawLines.length; i++) {
+        var ln = rawLines[i] || {};
+        lines.push({
+          name: ln.name != null ? ln.name : '',
+          qty: ln.qty != null ? ln.qty : (ln.quantity != null ? ln.quantity : 1),
+          price: ln.price != null ? ln.price : (ln.unitPrice != null ? ln.unitPrice : 0)
+        });
+      }
+      return {
+        saleId: s.id != null ? s.id : s.number,
+        number: s.number,
+        total: s.total,
+        lines: lines
+      };
+    }
+
+    function printInvoice(sale, copyNo) {
+      if (!hasGateway()) {
+        return Promise.resolve({ ok: true, via: 'browser' });
+      }
+      var disp = getDispatcher();
+      if (!disp) {
+        return Promise.resolve({ ok: true, via: 'browser' });
+      }
+      var s = sale || {};
+      var saleKey = s.id != null ? s.id : s.number;
+      var jobId = 'inv:' + saleKey + ':' + (copyNo || 0);
+      var payload = buildPayload(s);
+      var user = resolveUser();
+      var printer = selectedPrinter();
+
+      return disp.print(user, 'invoice', printer, jobId, payload).then(function (res) {
+        if (res && res.ok) {
+          var out = { ok: true, via: 'device' };
+          if (res.duplicate) out.duplicate = true;
+          return out;
+        }
+        var errCode = (res && res.error) ? res.error : 'device-failed';
+        var msg = ERRORS_AR[errCode] || ERRORS_AR['device-failed'];
+        return {
+          ok: false,
+          via: 'device',
+          error: errCode,
+          message_ar: msg
+        };
+      });
+    }
+
+    function devicesHtml() {
+      var list = (devices && typeof devices.list === 'function') ? devices.list() : [];
+      var cur = selectedPrinter();
+      var itemsHtml = '';
+      var optionsHtml = '<option value=""' + (cur === '' ? ' selected' : '') + '>طباعة المتصفح (افتراضي)</option>';
+
+      for (var i = 0; i < list.length; i++) {
+        var d = list[i];
+        itemsHtml += '<li>' + escapeHtml(d.name) + '</li>';
+        if (isInvoicePrinter(d)) {
+          var sel = (cur === d.id) ? ' selected' : '';
+          optionsHtml += '<option value="' + escapeHtml(d.id) + '"' + sel + '>' + escapeHtml(d.name) + '</option>';
+        }
+      }
+
+      return (
+        '<div dir="rtl" class="nova-devices-settings">' +
+          '<h3>الطابعات والماسح</h3>' +
+          '<ul>' + itemsHtml + '</ul>' +
+          '<label for="novaInvoicePrinter">طابعة الفواتير:</label>' +
+          '<select id="novaInvoicePrinter">' + optionsHtml + '</select>' +
+          '<p>الماسح الضوئي (HID) يعمل كلوحة مفاتيح: اضغط في خانة البحث ثم امسح. لم تُجرَّب طابعة حقيقية بعد.</p>' +
+        '</div>'
+      );
+    }
+
+    return {
+      selectedPrinter: selectedPrinter,
+      setPrinter: setPrinter,
+      hasGateway: hasGateway,
+      printInvoice: printInvoice,
+      devicesHtml: devicesHtml
+    };
+  }
+
+  var api = {
+    create: create,
+    ERRORS_AR: ERRORS_AR
+  };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
+  }
+  if (root) {
+    root.NovaDevicePrint = api;
+    if (root.NovaDevices) {
+      root.novaDevicePrint = create({ devices: root.NovaDevices });
+    }
+  }
+})(typeof window !== 'undefined' ? window : null);
 </script>
 <script>
 /* NOVA Rx - S1-03: wires a finished POS sale / return into the offline outbox (NovaOutbox) and the on-device stock ledger
