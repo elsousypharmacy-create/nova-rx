@@ -10881,7 +10881,9 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-setting-card{padding:18px 20px}
 #novaPageView .nova-setting-card h3{margin:0 0 6px}
 /* UX-P4 (owner screenshot, customers page): KPI row never leaves one orphan card, header has breathing room, compact table header */
+:root:not([data-theme="light"]){--nx-text-muted:#a9b5c2}
 @media(min-width:801px){
+#novaPageView table td,.nova-page-view table td{height:48px}
 #novaPageView .nova-kpis,.nova-page-view .nova-kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 #novaPageView .nova-kpi,.nova-page-view .nova-kpi{min-height:0}
 #novaPageView .nova-page-header,.nova-page-view .nova-page-header{flex-wrap:wrap;align-items:center;gap:12px 24px}

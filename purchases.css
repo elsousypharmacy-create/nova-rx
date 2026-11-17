@@ -154,3 +154,11 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
 .info::after{content:attr(data-tip);position:absolute;z-index:40;top:calc(100% - 2px);right:50%;transform:translateX(50%);width:max-content;max-width:min(280px,80vw);padding:9px 12px;background:#0e1216;border:1px solid #3a444e;border-radius:10px;color:#e8ecef;font:400 12px/1.7 Cairo,Tahoma,sans-serif;text-align:start;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.5);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s}
 .info:hover::after,.info:focus-visible::after{opacity:1;visibility:visible}
 @media(max-width:800px){.cover-pop{inset-inline-start:auto;inset-inline-end:0}.controls .cover{order:initial}}
+/* UX-P6 (ChatGPT design review, applied): readable secondary text, 48px rows, one error colour, clearer empty state */
+@media(min-width:801px){
+ td{height:48px}
+ .hint,.cart small,.controls small,th,.empty,footer{color:#a9b5c2}
+ .empty{font-size:14px;padding:48px 16px;line-height:1.8}
+ .offer-state.error,.offer-state.incomplete{color:#e17b80}
+ .panel-head h2{font-size:17px;font-weight:700}
+}
