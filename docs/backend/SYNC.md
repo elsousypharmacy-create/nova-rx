@@ -26,3 +26,14 @@ Tenant comes from the session (`tenant`) or `NOVA_TENANT_ID`, default `default`.
 - **Scope:** sessions with scope data use the isolation check; a KV owner session acts for `NOVA_TENANT_ID` on that tenant's only branch (`backend/src/sync-scope.js`); zero or several branches -> `SCOPE_INVALID`.
 - **Not in this task:** returns/cancel through sync (S1-03/04), staff sessions with branch data (S1-06).
 - Tests: `tests/unit/backend-sync-sales.check.mjs`.
+
+## S2-01 — returns / cancels sync (same flags; nothing new is enabled by default)
+- POS: a return (a cancel = return of all remaining qty) whose sale was sendable (whole boxes) is queued AFTER that sale as
+  `{ key:'ret:<retId>', kind:'ledger', entity:'sale_return', payload:{ id:'ret:<retId>', op:'return', clientReturnId, saleInvoiceId, lines:[{code,qty,price}] } }`.
+  It is never sent as an invoice. A return of a non-box sale stays local and is listed in `nova.sync.skipped`.
+- Server (`applyReturn` in `backend/src/sync.js`): finds the sale through `sync_ops` (op_key = invoice id) and calls `returnSale` with
+  `opts.extra`, so return rows + stock movement + `sync_ledger` + `change_feed` (entity `sale_return`) + `sync_ops` are ONE batch.
+  Sale not synced yet => `conflict SYNC_SALE_NOT_SYNCED` (not cached, the outbox retries). Over-return => `rejected SYNC_RETURN_REJECTED`, nothing written.
+- Other devices: `applyChanges` appends a `return` ledger movement with ref `return:<clientReturnId>` (the same ref the selling device used),
+  so it is applied exactly once per device. Flag OFF (`novaBackend.enabled`) => zero network calls, as before.
+- Tests: `tests/unit/backend-sync-returns.check.mjs`, `tests/unit/sync-returns-client.check.mjs`, `tests/unit/pos-outbox-wire.check.mjs`.
