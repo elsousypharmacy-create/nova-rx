@@ -58,6 +58,11 @@ name = "nova-rx-api"
 workers_dev = true
 [env.production.vars]
 NOVA_ENV = "production"
+# S1-11 (owner approved 2026-11-17: "انشر", nobody uses production yet): server auth + sync + sales writes ON in production.
+# The FRONTEND flag novaBackend.enabled stays OFF on every device until the owner turns it on per device.
+NOVA_AUTH = "1"
+NOVA_SYNC = "1"
+NOVA_SALES_WRITES = "1"
 CORS_ALLOW_ORIGINS = "https://nova-rx-preview.elsousypharmacy.workers.dev"
 [[env.production.d1_databases]]
 binding = "DB"
