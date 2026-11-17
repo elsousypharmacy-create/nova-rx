@@ -105,7 +105,8 @@ export async function createSale(env, scope, input, requestId, actor = null, opt
 }
 
 // input: { saleId, items:[{saleItemId, qty}], reason? }. Over-return is refused by the DB trigger (whole batch rolls back).
-export async function returnSale(env, scope, input, requestId, actor = null) {
+// S2-01: opts.returnId fixes the id; opts.extra(returnId, refundMinor) appends statements (sync rows) to the SAME batch.
+export async function returnSale(env, scope, input, requestId, actor = null, opts = {}) {
   const g = guard(env, scope, requestId); if (g) return g;
   const i = input || {};
   if (typeof i.saleId !== 'string' || !Array.isArray(i.items) || !i.items.length) return fail('BAD_REQUEST', requestId);
@@ -115,20 +116,25 @@ export async function returnSale(env, scope, input, requestId, actor = null) {
   if (!sale) return fail('NOT_FOUND', requestId);
   if (sale.status !== 'completed') return fail('SALE_NOT_COMPLETED', requestId);
   const gross = sale.total_minor + sale.discount_minor;
-  const retId = uid('ret'), st = [ins(db, 'sale_returns', { id: retId, ...S, sale_id: i.saleId, reason: i.reason || null })];
+  const retId = (opts && opts.returnId) || uid('ret');
+  const st = [ins(db, 'sale_returns', { id: retId, ...S, sale_id: i.saleId, reason: i.reason || null })];
   let refund = 0;
   const seen = new Set();
   for (const it of i.items) {
     if (seen.has(it.saleItemId)) return fail('BAD_REQUEST', requestId);
     seen.add(it.saleItemId);
-    const row = await db.prepare('SELECT id,product_id,unit_price_minor FROM sale_items WHERE id=? AND sale_id=? AND tenant_id=? AND branch_id=?').bind(it.saleItemId, i.saleId, S.tenant_id, S.branch_id).first();
+    const row = await db.prepare('SELECT id,product_id,qty,unit_price_minor FROM sale_items WHERE id=? AND sale_id=? AND tenant_id=? AND branch_id=?').bind(it.saleItemId, i.saleId, S.tenant_id, S.branch_id).first();
     if (!row) return fail('NOT_FOUND', requestId);
+    const prev = await db.prepare('SELECT COALESCE(SUM(qty),0) AS rqty FROM sale_return_items WHERE sale_item_id=? AND tenant_id=? AND branch_id=?').bind(row.id, S.tenant_id, S.branch_id).first();
+    const returnedQty = Number((prev && prev.rqty) || 0);
+    if (returnedQty + it.qty > Number(row.qty)) return fail('RETURN_EXCEEDS_SOLD', requestId);
     const r = gross > 0 ? Math.floor(it.qty * row.unit_price_minor * sale.total_minor / gross) : 0; // pro-rata of any discount
     refund += r;
     st.push(ins(db, 'sale_return_items', { id: uid('ri'), ...S, return_id: retId, sale_item_id: row.id, qty: it.qty, refund_minor: r }));
     st.push(ins(db, 'inventory_movements', { id: uid('mv'), ...S, product_id: row.product_id, kind: 'return', qty_delta: it.qty, ref_type: 'return', ref_id: retId, created_by: actor }));
   }
   if (refund > 0) st.push(...journal(db, S, 'sale return', 'return', retId, '4000', '1000', refund));
+  if (opts && typeof opts.extra === 'function') st.push(...opts.extra(retId, refund));
   return exec(env, st, requestId, { returnId: retId, refundMinor: refund });
 }
 
