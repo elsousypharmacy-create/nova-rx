@@ -2174,6 +2174,7 @@ html body .header-actions #btnHelpShortcuts{display:block;min-height:44px}
           <button id="btnHeldInvoices" class="btn nova-held-action" type="button" title="الفواتير المعلقة" aria-label="الفواتير المعلقة"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 8v8m4-8v8"/></svg><span>Held</span><span id="heldInvoiceCount" class="nova-held-count">0</span></button>
           <button id="btnAddLoyalty" class="btn nova-customer-action" type="button" title="إضافة أو تغيير العميل (F3)" aria-label="إضافة أو تغيير العميل"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg></button>
           <button id="btnClearInvoice" class="btn nova-clear-invoice" type="button" title="مسح الأصناف (F4)">مسح الفاتورة</button>
+          <button id="btnSaleLabels" class="btn nova-sale-labels" type="button" title="تصميم وطباعة استيكرات الأدوية" aria-label="طباعة استيكرات الأدوية"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><span>استيكرات الأدوية</span></button>
           <div class="nova-more-wrap">
             <button id="btnSaleMore" class="btn nova-more-action" type="button" aria-label="المزيد من الإجراءات" title="المزيد من الإجراءات" aria-expanded="false" aria-controls="novaSaleMoreMenu"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
             <div id="novaSaleMoreMenu" class="nova-more-menu" hidden>
@@ -6202,7 +6203,7 @@ body[data-active-page="products"] .nova-page-view{padding-bottom:calc(180px + en
 </div></section>
 <script>
 (()=>{const $=id=>document.getElementById(id),panel=$('novaAiPanel'),status=$('novaAiStatus'),table=$('novaAiTable'),tbody=table.querySelector('tbody');
-$('novaAiLaunch').onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');$('novaAiClose').onclick=()=>panel.classList.remove('open');
+$('novaAiLaunch').onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');{const sl=document.getElementById('btnSaleLabels');if(sl)sl.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open')}$('novaAiClose').onclick=()=>panel.classList.remove('open');
 function field(v){const input=document.createElement('input');input.value=v==null?'':String(v);return input}
 $('novaAiRun').onclick=async()=>{
 const files=Array.from($('novaAiFiles').files||[]);
