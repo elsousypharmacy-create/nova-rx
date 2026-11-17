@@ -5761,7 +5761,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const pd=document.getElementById('novaPrintDay');if(pd)pd.onclick=()=>{const d=window.__novaRepData;if(!d)return;const old=document.getElementById('novaDayReport');if(old)old.remove();const el=document.createElement('div');el.id='novaDayReport';el.setAttribute('dir','rtl');const pn=d.per==='day'?tr('اليوم','Today'):d.per==='week'?tr('آخر 7 أيام','Last 7 days'):tr('الشهر','This month');const r=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>';let cashier='';try{cashier=String((JSON.parse(localStorage.getItem('nova-rx-shift-v1')||'{}')||{}).cashier||'')}catch(e){}const phName=(document.querySelector('.pharmacy-banner-copy strong')||{}).textContent||'صيدلية السوسي';const phOwner=(document.querySelector('.pharmacy-banner-copy span')||{}).textContent||'';const closeAt=window.NovaFmt.formatDateTime(new Date());const hdr='<div class="nova-dr-head" data-dr="header"><strong class="nova-dr-ph">'+esc(phName)+'</strong>'+(phOwner?'<div>'+esc(phOwner)+'</div>':'')+'<div>'+tr('الفرع','Branch')+': '+tr('الفرع الرئيسي','Main branch')+'</div><div>'+tr('الكاشير','Cashier')+': '+(cashier?esc(cashier):'<span class="nova-dr-blank">&nbsp;</span>')+'</div><div>'+tr('وقت الإغلاق','Closing time')+': '+esc(closeAt)+'</div></div>';const sig='<div class="nova-dr-sigs" data-dr="signatures"><div><span>'+tr('توقيع الكاشير','Cashier signature')+'</span><i></i></div><div><span>'+tr('توقيع المراجع / المدير','Reviewer / manager signature')+'</span><i></i></div></div>';
 el.innerHTML=hdr+'<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('مرتجعات','Returns'),money(-d.returns))+r(tr('رصيد الافتتاح','Opening float'),money(d.float))+r(tr('مرتجعات نقدية','Cash returns'),money(-d.cashReturns))+r(tr('تحصيل مديونيات نقدًا','Cash debt collections'),money(d.cashDebt))+r('<b>'+tr('المتوقع في الدرج','Expected in drawer')+'</b>','<b>'+money(d.expected)+'</b>')+(d.counted!=null?r(tr('النقدي المعدود','Counted cash'),money(d.counted))+r('<b>'+tr('الفرق','Difference')+'</b>','<b>'+(d.counted-d.expected).toFixed(2)+'</b>'):'')+r(tr('عدد الفواتير','Invoices'),d.count)+r(tr('ضريبة متضمنة','VAT included')+' ('+window.novaVat.label()+'%)',money(d.vat))+'</table>'+sig;document.body.appendChild(el);document.body.classList.add('nova-printing-report');let tm=null;const done=()=>{if(tm){clearTimeout(tm);tm=null}document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);try{window.print()}finally{tm=setTimeout(done,window.__novaPrintFallbackMs||60000)}};
  if(window.novaBackendFlag)window.novaBackendFlag.mount(document.getElementById('novaBackendCard'));
- const dvc=document.getElementById('novaDevicesCard');if(dvc&&window.novaDevicePrint){dvc.innerHTML=window.novaDevicePrint.devicesHtml();const sel=document.getElementById('novaInvoicePrinter');if(sel)sel.onchange=()=>window.novaDevicePrint.setPrinter(sel.value)}
+ const dvc=document.getElementById('novaDevicesCard');if(dvc&&window.novaDevicePrint){dvc.innerHTML=window.novaDevicePrint.devicesHtml(localStorage.getItem('nova-rx-language')==='en'?'en':'ar');const sel=document.getElementById('novaInvoicePrinter');if(sel)sel.onchange=()=>window.novaDevicePrint.setPrinter(sel.value)}
  if(window.novaOnboarding)window.novaOnboarding.mount(document.getElementById('novaOnboardingCard'));
  const vr=document.getElementById('novaVatRate');if(vr)vr.onchange=()=>{if(!window.novaVat.set(vr.value))vr.value=window.novaVat.get();else if(window.novaRecalc)window.novaRecalc()};
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
@@ -10267,28 +10267,39 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
       });
     }
 
-    function devicesHtml() {
+    /* UI text per language: the app's i18n checks forbid Latin words inside Arabic UI and Arabic inside English UI. */
+    var NAMES = {
+      ar: { 'scanner-hid': 'ماسح باركود يعمل كلوحة مفاتيح', 'printer-thermal-80': 'طابعة حرارية عرض ٨٠ مم (فواتير)', 'printer-thermal-58': 'طابعة حرارية عرض ٥٨ مم (فواتير)', 'printer-label': 'طابعة ملصقات حرارية', 'printer-a4': 'طابعة ورق عادي' },
+      en: { 'scanner-hid': 'Barcode scanner (keyboard mode)', 'printer-thermal-80': 'Thermal printer 80 mm (invoices)', 'printer-thermal-58': 'Thermal printer 58 mm (invoices)', 'printer-label': 'Thermal label printer', 'printer-a4': 'Plain paper printer' }
+    };
+    var TEXT = {
+      ar: { title: 'الطابعات والماسح', printer: 'طابعة الفواتير:', browser: 'طباعة المتصفح (افتراضي)', note: 'الماسح يعمل كلوحة مفاتيح: اضغط في خانة البحث ثم امسح. لم تُجرَّب طابعة حقيقية بعد.', dir: 'rtl' },
+      en: { title: 'Printers and scanner', printer: 'Invoice printer:', browser: 'Browser print (default)', note: 'The scanner types like a keyboard: tap the search box, then scan. No real printer has been tested yet.', dir: 'ltr' }
+    };
+
+    function devicesHtml(lang) {
+      var L = lang === 'en' ? 'en' : 'ar', T = TEXT[L];
       var list = (devices && typeof devices.list === 'function') ? devices.list() : [];
       var cur = selectedPrinter();
       var itemsHtml = '';
-      var optionsHtml = '<option value=""' + (cur === '' ? ' selected' : '') + '>طباعة المتصفح (افتراضي)</option>';
+      var optionsHtml = '<option value=""' + (cur === '' ? ' selected' : '') + '>' + T.browser + '</option>';
 
       for (var i = 0; i < list.length; i++) {
-        var d = list[i];
-        itemsHtml += '<li>' + escapeHtml(d.name) + '</li>';
+        var d = list[i], nm = NAMES[L][d.id] || d.id;
+        itemsHtml += '<li data-device="' + escapeHtml(d.id) + '">' + escapeHtml(nm) + '</li>';
         if (isInvoicePrinter(d)) {
           var sel = (cur === d.id) ? ' selected' : '';
-          optionsHtml += '<option value="' + escapeHtml(d.id) + '"' + sel + '>' + escapeHtml(d.name) + '</option>';
+          optionsHtml += '<option value="' + escapeHtml(d.id) + '"' + sel + '>' + escapeHtml(nm) + '</option>';
         }
       }
 
       return (
-        '<div dir="rtl" class="nova-devices-settings">' +
-          '<h3>الطابعات والماسح</h3>' +
+        '<div dir="' + T.dir + '" class="nova-devices-settings">' +
+          '<h3>' + T.title + '</h3>' +
           '<ul>' + itemsHtml + '</ul>' +
-          '<label for="novaInvoicePrinter">طابعة الفواتير:</label>' +
+          '<label for="novaInvoicePrinter">' + T.printer + '</label>' +
           '<select id="novaInvoicePrinter">' + optionsHtml + '</select>' +
-          '<p>الماسح الضوئي (HID) يعمل كلوحة مفاتيح: اضغط في خانة البحث ثم امسح. لم تُجرَّب طابعة حقيقية بعد.</p>' +
+          '<p>' + T.note + '</p>' +
         '</div>'
       );
     }

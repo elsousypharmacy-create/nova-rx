@@ -171,28 +171,39 @@
       });
     }
 
-    function devicesHtml() {
+    /* UI text per language: the app's i18n checks forbid Latin words inside Arabic UI and Arabic inside English UI. */
+    var NAMES = {
+      ar: { 'scanner-hid': 'ماسح باركود يعمل كلوحة مفاتيح', 'printer-thermal-80': 'طابعة حرارية عرض ٨٠ مم (فواتير)', 'printer-thermal-58': 'طابعة حرارية عرض ٥٨ مم (فواتير)', 'printer-label': 'طابعة ملصقات حرارية', 'printer-a4': 'طابعة ورق عادي' },
+      en: { 'scanner-hid': 'Barcode scanner (keyboard mode)', 'printer-thermal-80': 'Thermal printer 80 mm (invoices)', 'printer-thermal-58': 'Thermal printer 58 mm (invoices)', 'printer-label': 'Thermal label printer', 'printer-a4': 'Plain paper printer' }
+    };
+    var TEXT = {
+      ar: { title: 'الطابعات والماسح', printer: 'طابعة الفواتير:', browser: 'طباعة المتصفح (افتراضي)', note: 'الماسح يعمل كلوحة مفاتيح: اضغط في خانة البحث ثم امسح. لم تُجرَّب طابعة حقيقية بعد.', dir: 'rtl' },
+      en: { title: 'Printers and scanner', printer: 'Invoice printer:', browser: 'Browser print (default)', note: 'The scanner types like a keyboard: tap the search box, then scan. No real printer has been tested yet.', dir: 'ltr' }
+    };
+
+    function devicesHtml(lang) {
+      var L = lang === 'en' ? 'en' : 'ar', T = TEXT[L];
       var list = (devices && typeof devices.list === 'function') ? devices.list() : [];
       var cur = selectedPrinter();
       var itemsHtml = '';
-      var optionsHtml = '<option value=""' + (cur === '' ? ' selected' : '') + '>طباعة المتصفح (افتراضي)</option>';
+      var optionsHtml = '<option value=""' + (cur === '' ? ' selected' : '') + '>' + T.browser + '</option>';
 
       for (var i = 0; i < list.length; i++) {
-        var d = list[i];
-        itemsHtml += '<li>' + escapeHtml(d.name) + '</li>';
+        var d = list[i], nm = NAMES[L][d.id] || d.id;
+        itemsHtml += '<li data-device="' + escapeHtml(d.id) + '">' + escapeHtml(nm) + '</li>';
         if (isInvoicePrinter(d)) {
           var sel = (cur === d.id) ? ' selected' : '';
-          optionsHtml += '<option value="' + escapeHtml(d.id) + '"' + sel + '>' + escapeHtml(d.name) + '</option>';
+          optionsHtml += '<option value="' + escapeHtml(d.id) + '"' + sel + '>' + escapeHtml(nm) + '</option>';
         }
       }
 
       return (
-        '<div dir="rtl" class="nova-devices-settings">' +
-          '<h3>الطابعات والماسح</h3>' +
+        '<div dir="' + T.dir + '" class="nova-devices-settings">' +
+          '<h3>' + T.title + '</h3>' +
           '<ul>' + itemsHtml + '</ul>' +
-          '<label for="novaInvoicePrinter">طابعة الفواتير:</label>' +
+          '<label for="novaInvoicePrinter">' + T.printer + '</label>' +
           '<select id="novaInvoicePrinter">' + optionsHtml + '</select>' +
-          '<p>الماسح الضوئي (HID) يعمل كلوحة مفاتيح: اضغط في خانة البحث ثم امسح. لم تُجرَّب طابعة حقيقية بعد.</p>' +
+          '<p>' + T.note + '</p>' +
         '</div>'
       );
     }
