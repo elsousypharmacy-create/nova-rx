@@ -15,10 +15,10 @@ const DB = { prepare: mk };
 const kv = new Map();
 const KV = { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); } };
 const tok = 'a'.repeat(40);
-kv.set('sess:' + await sha256Hex(tok), JSON.stringify({ user: 'boss', role: 'owner', expires: 9e12, reauthAt: 9e12 }));
+kv.set('sess:' + await sha256Hex(tok), JSON.stringify({ user: 'boss', role: 'owner', tenantId: 'platform', expires: 9e12, reauthAt: 9e12 })); // S4-01: the platform operator
 const tok2 = 'b'.repeat(40);
 kv.set('sess:' + await sha256Hex(tok2), JSON.stringify({ user: 'c', role: 'cashier', expires: 9e12 }));
-const env = { NOVA_ONBOARDING: '1', DB, KV };
+const env = { NOVA_ONBOARDING: '1', NOVA_PLATFORM_TENANT: 'platform', DB, KV };
 const call = (e, path, body, t = tok, method = 'POST') => handle(new Request('https://x.test' + path, { method, body: body ? JSON.stringify(body) : undefined, headers: { Authorization: 'Bearer ' + t } }), e);
 
 // flag default OFF: 404, no DB touched
