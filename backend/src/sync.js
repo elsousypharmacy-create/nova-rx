@@ -294,6 +294,17 @@ async function applyReceipt(db, tenant, op, id, data, ctx) {
   }
 }
 
+// S2-04: same hash as po-sync-wire.js (stable ids from free text such as supplier names).
+function fnv1a32hex(str) {
+  const s = String(str ?? '');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  return (h >>> 0).toString(16).padStart(8, '0').slice(-8);
+}
+
 export const MAX_OPS = 200;
 export function syncEnabled(env) { return !!env && String(env.NOVA_SYNC) === '1' && !!env.DB; }
 
@@ -366,6 +377,66 @@ async function one(db, tenant, op, ctx) {
       res = await applyReceipt(db, tenant, op, id, data, ctx);
       if (res.transient) { const { transient, ...out } = res; return out; }
       if (res.status === 'applied') return res;
+    } else if (entity === 'purchase_order' && ctx && ctx.scope && op.payload && op.payload.po && typeof op.payload.key === 'string') { // S2-04
+      const key = op.payload.key;
+      const po = op.payload.po;
+      const validStates = ['draft', 'sent', 'accepted', 'partial', 'received', 'cancelled'];
+      const validKey = /^po:[0-9a-f]{8}$/.test(key);
+      const validSup = typeof po.supplier === 'string' && po.supplier.trim().length > 0 && po.supplier.length <= 200;
+      const validState = validStates.includes(po.state);
+      const validLines = Array.isArray(po.lines) && po.lines.length > 0 && po.lines.every((ln) =>
+        ln &&
+        typeof ln.code === 'string' && ln.code.trim().length > 0 &&
+        Number.isSafeInteger(ln.qty) && ln.qty > 0 &&
+        typeof ln.cost === 'number' && Number.isFinite(ln.cost) && ln.cost >= 0 &&
+        Number.isSafeInteger(ln.received ?? 0) && (ln.received ?? 0) >= 0
+      );
+      if (!validKey || !validSup || !validState || !validLines) {
+        return rej('SYNC_PO_INVALID', 'بيانات أمر الشراء غير صالحة.');
+      }
+      const tenantId = ctx.scope.tenantId;
+      const branchId = ctx.scope.branchId;
+      const poId = tenantId + ':' + key;
+      const supId = tenantId + ':sup:' + fnv1a32hex(po.supplier);
+      const statusMap = { draft: 'draft', sent: 'sent', accepted: 'sent', partial: 'sent', received: 'received', cancelled: 'cancelled' };
+      const dbStatus = statusMap[po.state];
+      const createdAt = typeof po.createdAt === 'string' && po.createdAt ? po.createdAt : new Date().toISOString();
+      const resObj = { status: 'applied', purchaseOrderId: poId };
+      const stmts = [
+        db.prepare('INSERT OR IGNORE INTO suppliers (id, tenant_id, branch_id, name, phone, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+          .bind(supId, tenantId, branchId, po.supplier, null, createdAt),
+        db.prepare('INSERT INTO purchase_orders (id, tenant_id, branch_id, supplier_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET status = excluded.status')
+          .bind(poId, tenantId, branchId, supId, dbStatus, createdAt)
+      ];
+      for (const ln of po.lines) {
+        const code = String(ln.code);
+        const nameAr = typeof ln.name === 'string' && ln.name.trim() ? ln.name : code;
+        const unitCostMinor = Math.round(Number(ln.cost) * 100);
+        stmts.push(
+          db.prepare('INSERT OR IGNORE INTO products (id, tenant_id, branch_id, sku, name_ar) VALUES (?, ?, ?, ?, ?)')
+            .bind(code, tenantId, branchId, code, nameAr),
+          db.prepare('INSERT OR IGNORE INTO purchase_order_items (id, tenant_id, branch_id, purchase_order_id, product_id, qty, unit_cost_minor) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            .bind(poId + ':' + code, tenantId, branchId, poId, code, ln.qty, unitCostMinor)
+        );
+      }
+      stmts.push(
+        db.prepare('INSERT INTO sync_ledger (id, tenant_id, entity, payload_json) VALUES (?, ?, ?, ?)')
+          .bind(id, tenant, entity, data),
+        db.prepare('INSERT INTO change_feed (tenant_id, branch_id, entity, entity_id, deleted, payload_json) VALUES (?, ?, ?, ?, 0, ?)')
+          .bind(tenantId, branchId, 'purchase_order', key, JSON.stringify({ key, po })),
+        db.prepare('INSERT INTO sync_ops (tenant_id, op_key, result_json) VALUES (?, ?, ?)')
+          .bind(tenant, op.key, JSON.stringify(resObj))
+      );
+      try {
+        await db.batch(stmts);
+        return resObj;
+      } catch (_) {
+        const row = await db.prepare('SELECT result_json FROM sync_ops WHERE tenant_id = ? AND op_key = ?').bind(tenant, op.key).first();
+        if (row && row.result_json) {
+          return { ...JSON.parse(row.result_json), duplicate: true };
+        }
+        return rej('SYNC_WRITE_FAILED', 'تعذّر حفظ أمر الشراء.');
+      }
     } else if (entity === 'shift_close' && ctx && ctx.scope && op.payload && op.payload.record && typeof op.payload.record === 'object') { // S2-06
       const rec = op.payload.record;
       const validId = typeof rec.id === 'string' && /^[A-Za-z0-9_\-:.]{1,128}$/.test(rec.id);
