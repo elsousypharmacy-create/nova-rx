@@ -29,7 +29,9 @@ const count = (t, w = '1=1') => db.prepare(`SELECT COUNT(*) c FROM ${t} WHERE ${
 
 // flags default OFF (code + wrangler.toml)
 const wt = readFileSync(new URL('../../backend/wrangler.toml', import.meta.url), 'utf8');
-assert.ok(!/NOVA_(SYNC|AUTH|SALES_WRITES)\s*=\s*"?(1|true|on)/i.test(wt), 'flags default OFF');
+// S1-05: staging turns them on on purpose; dev ([vars]) and production must stay OFF (full split in wrangler-stage1-flags.check.mjs)
+const notStaging = wt.replace(/\[env\.staging\.vars\][\s\S]*?(?=\n\[)/, '');
+assert.ok(!/NOVA_(SYNC|AUTH|SALES_WRITES)\s*=\s*"?(1|true|on)/i.test(notStaging), 'flags default OFF outside staging');
 let r = await handle(new Request('https://x.test/api/v1/sync/push', { method: 'POST', body: '{"ops":[]}' }), { DB: D1, KV });
 assert.equal(r.status, 404); assert.equal((await r.json()).code, 'SYNC_DISABLED');
 
