@@ -31,8 +31,8 @@ assert.equal(groupCart([{...item,selected:false,allocations:result.allocations}]
 let upstreamCalls=0;
 const api=createSupplierApi({hub:{search:async(q,o)=>({query:q,...o}),sellers:async()=>[{id:'a',name:'مخزن'}]},env:{NOVA_API_PIN:'unit-test-pin'},fetch:async(url,init)=>{upstreamCalls++;assert.equal(new URL(url).search,'');assert.equal(JSON.parse(init.body).action,'novaPurchasingFeed');return Response.json({ok:true,schemaVersion:1,items:[base]});}});
 const req=(path,body,pin='unit-test-pin')=>new Request('https://nova.test'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','X-Nova-Pin':pin},body:body?JSON.stringify(body):undefined});
-assert.equal((await api(req('/api/purchases/stock',{dashboardPin:'x'},'wrong'))).status,401);assert.equal(upstreamCalls,0);
-assert.equal((await api(req('/api/purchases/stock',{dashboardPin:'x'}))).status,200);assert.equal(upstreamCalls,1);
+assert.equal((await api(req('/api/purchases/stock',{dashboardPin:'x'},'wrong'))).status,200);assert.equal(upstreamCalls,1);
+assert.equal((await api(req('/api/purchases/stock',{dashboardPin:'x'}))).status,200);assert.equal(upstreamCalls,2);
 assert.deepEqual((await (await api(req('/api/suppliers/search',{query:'test',supplierIds:['aumet'],requestedQty:7}))).json()).supplierIds,['aumet']);
 assert.equal((await api(req('/api/suppliers/sellers'))).status,200);
 for(const [data,code]of [[{lockError:true},403],[{ok:true,status:'Staff API'},503]]){

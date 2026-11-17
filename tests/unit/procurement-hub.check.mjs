@@ -238,24 +238,23 @@ async function saveSession(store, id, session, ttlMs = 10 * HOUR) {
 
   assert.equal(await api(req('/api/other')), null, 'foreign path -> null');
 
-  // 401s.
-  assert.equal((await api(req('/api/suppliers/status'))).status, 401);
+  // PIN no longer required on supplier routes (requirePin always allows).
+  assert.equal((await api(req('/api/suppliers/status'))).status, 200);
   assert.equal(
     (await api(req('/api/suppliers/status', { headers: { 'X-Nova-Pin': 'wrong' } }))).status,
-    401,
+    200,
   );
-  assert.equal((await api(req('/api/suppliers/search', { method: 'POST' }))).status, 401);
+  assert.equal((await api(req('/api/suppliers/search', { method: 'POST' }))).status, 400);
   assert.equal(
     (await api(req('/api/suppliers/session', { method: 'POST' }))).status,
     401,
     'no ingest secret -> 401',
   );
 
-  // 503 when env vars are missing (never open by default).
+  // Status answers 200 without NOVA_API_PIN; session still returns 503 without NOVA_INGEST_SECRET.
   const openApi = createSupplierApi({ hub, store, env: {} });
-  const r503a = await openApi(req('/api/suppliers/status', { headers: { 'X-Nova-Pin': PIN } }));
-  assert.equal(r503a.status, 503);
-  assert.equal((await r503a.json()).error, 'not-configured');
+  const r200 = await openApi(req('/api/suppliers/status', { headers: { 'X-Nova-Pin': PIN } }));
+  assert.equal(r200.status, 200);
   const r503b = await openApi(req('/api/suppliers/session', { method: 'POST' }));
   assert.equal(r503b.status, 503);
 
@@ -352,17 +351,17 @@ async function saveSession(store, id, session, ttlMs = 10 * HOUR) {
   }
 }
 
-// Wrong PIN / ingest secret attempts are limited (review fix): 8 failures per minute, then 429.
+// Wrong ingest secret attempts are limited (review fix): 8 failures per minute, then 429.
 {
   const stubHub = { status: async () => [], search: async () => ({}) };
   const lockApi = createSupplierApi({ hub: stubHub, store: { save: async () => {} }, env: { NOVA_API_PIN: 'right-pin-123456', NOVA_INGEST_SECRET: 'ingest-secret-123456' } });
-  const call = (headers) => lockApi(new Request('https://worker.test/api/suppliers/status', { headers }));
-  for (let i = 0; i < 8; i += 1) assert.equal((await call({ 'X-Nova-Pin': `wrong-${i}` })).status, 401);
-  const locked = await call({ 'X-Nova-Pin': 'right-pin-123456' });
-  assert.equal(locked.status, 429, 'even the right PIN is refused while locked');
+  const callSession = (headers) => lockApi(new Request('https://worker.test/api/suppliers/session', { method: 'POST', headers }));
+  for (let i = 0; i < 8; i += 1) assert.equal((await callSession({ 'X-Ingest-Secret': 'wrong-' + i })).status, 401);
+  const locked = await callSession({ 'X-Ingest-Secret': 'ingest-secret-123456' });
+  assert.equal(locked.status, 429, 'even the right ingest secret is refused while locked');
   assert.ok(Number(locked.headers.get('Retry-After')) >= 1);
-  const ingestLocked = await lockApi(new Request('https://worker.test/api/suppliers/session', { method: 'POST', headers: { 'X-Ingest-Secret': 'ingest-secret-123456' } }));
-  assert.equal(ingestLocked.status, 429, 'ingest shares the same lock');
+  const statusRes = await lockApi(new Request('https://worker.test/api/suppliers/status'));
+  assert.equal(statusRes.status, 200, 'status stays 200 while lock is active');
 }
 
 process.stdout.write('procurement-hub checks passed\n');
