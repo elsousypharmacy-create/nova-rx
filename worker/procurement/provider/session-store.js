@@ -36,7 +36,11 @@ async function importKey(secret) {
 
 // kv: Cloudflare KV-style { get(key), put(key, value, { expirationTtl }), delete(key) }.
 // now: injectable clock (ms epoch) for tests.
-export function createSessionStore({ kv, secret, now = () => Date.now() }) {
+// tenant (optional): scopes every key to one pharmacy (`supplier-session:<tenant>:<supplier>`). Without it the
+// legacy single-pharmacy key is used, unchanged.
+export function createSessionStore({ kv, secret, now = () => Date.now(), tenant = null }) {
+  if (tenant != null && !/^[A-Za-z0-9_-]{1,64}$/.test(String(tenant))) throw new Error('bad tenant id');
+  const KEY = KEY_PREFIX + (tenant != null ? tenant + ':' : '');
   let keyPromise = null;
   const getKey = () => (keyPromise ??= importKey(secret));
 
@@ -55,14 +59,14 @@ export function createSessionStore({ kv, secret, now = () => Date.now() }) {
     const opts = Number.isFinite(expMs)
       ? { expirationTtl: Math.max(1, Math.floor((expMs - now()) / 1000)) }
       : undefined;
-    await kv.put(KEY_PREFIX + supplierId, payload, opts);
+    await kv.put(KEY + supplierId, payload, opts);
   }
 
   // Returns { session, expiresAt, savedAt } or null when missing, expired
   // (unless ignoreExpiry), or undecryptable (e.g. wrong secret).
   async function load(supplierId, { ignoreExpiry = false } = {}) {
     assertSupplierId(supplierId);
-    const raw = await kv.get(KEY_PREFIX + supplierId);
+    const raw = await kv.get(KEY + supplierId);
     if (typeof raw !== 'string') return null;
     let parsed;
     try {
@@ -101,7 +105,7 @@ export function createSessionStore({ kv, secret, now = () => Date.now() }) {
 
   async function remove(supplierId) {
     assertSupplierId(supplierId);
-    await kv.delete(KEY_PREFIX + supplierId);
+    await kv.delete(KEY + supplierId);
   }
 
   return { save, load, remove };
