@@ -23,3 +23,9 @@
 ## الاختبارات
 - `node tests/unit/backend-onboarding-ui-sale06.check.mjs` (بدون شبكة؛ كل الطلبات وهمية).
 - `python3 -m http.server 8765 &` ثم `CHROME_PATH=/usr/bin/chromium node tests/ui-sale06-onboarding.mjs` (المسارات الإنتاجية تُجاب بمحاكاة داخل الاختبار؛ لا يصل شيء للسيرفر الحقيقي).
+
+## S4-02 — صيدلية خارجية (بدون دفع)
+- الشاشة عربية بالكامل وتعرض رسالة السيرفر العربية كما هي (ومنها رفض S4-01: `ONBOARDING_PLATFORM_ONLY` و`ONBOARDING_CROSS_TENANT` و`ONBOARDING_TENANT_REQUIRED`).
+- لا توجد أي واجهة دفع أو اشتراك؛ الفوترة تبقى mock.
+- مسار التجربة على staging فقط: `NOVA_ONBOARDING = "1"` و`NOVA_PLATFORM_TENANT = "<صيدلية المشغّل>"` في `[env.staging.vars]` بقرار المالك، ثم مالك الصيدلية الجديدة يدخل بحسابه ويكمل خطواته لصيدليته فقط. الإنتاج يبقى مقفولًا حتى S4-05.
+- الاختبارات: `tests/unit/backend-onboarding-ui-sale06.check.mjs` (الشاشة مخفية افتراضيًا ومع API وهمية) و`tests/unit/onboarding-tenant-bind.check.mjs`.
