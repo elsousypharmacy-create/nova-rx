@@ -50,3 +50,10 @@ localStorage.removeItem('novaBackend.enabled')        // إيقاف
   2. `localStorage.setItem('novaBackend.enabled', 'true')`
   3. تسجيل دخول المالك على staging (أول مرة بـ PIN الصيدلية ثم تغيير كلمة السر) وحفظ التوكن في `sessionStorage['novaBackend.token']`.
 - **نشر staging:** من Actions → "Deploy backend staging": dry_run الأول، ثم تأكيد `DEPLOY nova-rx-api-staging`.
+
+## S1-11 — الإنتاج (موافقة المالك 2026-11-17)
+- `NOVA_AUTH` و`NOVA_SYNC` و`NOVA_SALES_WRITES` = `"1"` تحت `[env.production.vars]` (`tests/unit/wrangler-stage1-flags.check.mjs`).
+- **علم الواجهة `novaBackend.enabled` مقفول افتراضياً** في كل الأجهزة. المالك بيفتحه على جهاز واحد الأول، بعدها تابلتات الصيدلية.
+- جهاز على الإنتاج: `novaBackend.url = https://nova-rx-api.elsousypharmacy.workers.dev` (ده الافتراضي لما العلم يتفتح من غير url)، ودخول موظف، وجرّب بيعة على staging الأول.
+- **نشر الإنتاج:** Actions → `deploy-backend-production.yml`: dry_run الأول، ثم تأكيد `DEPLOY nova-rx-api production`. الـworkflow بيعمل unit checks، وحارس الـmigrations الإضافية فقط، ونسخة D1 مشفّرة + Time Travel bookmark قبل الـmigrate، والنشر، والأسرار بالاسم، وsmoke، وrollback تلقائي.
+- **الرجوع:** redeploy للنسخة اللي قبلها من نفس الـworkflow، أو رجّع الثلاث فلاجات `"0"`/امسحهم وانشر.

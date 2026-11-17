@@ -112,3 +112,18 @@ If a command fails with Cloudflare error 7403, 9106, or 10000, the token is miss
 ## 6. Worker R2 snapshot code (N106)
 
 `backend/src/backup.js` still contains an R2 snapshot adapter behind flag `NOVA_BACKUP` (default OFF). No R2 binding exists in `wrangler.toml`, so it is a no-op (`skipped: 'no-bindings'`). Do not enable it; operational backups are sections 1–2.
+
+## S1-09 — نسخة احتياطية يومية مشفّرة للإنتاج
+- الـworkflow `.github/workflows/d1-backup.yml` بقى بيصدّر **`nova-rx-staging` و`nova-rx-production`** كل يوم 01:00 UTC، كل واحدة في artifact منفصل اسمه `d1-backup-<db>-<run id>`، بنفس التشفير (AES-256-CBC + PBKDF2) و manifest (sha256، عدد الصفوف، bookmark، git sha؛ من غير SQL)، ومدة 30 يوم، والـplaintext بيتمسح.
+- فشل قاعدة ما بيوقفش التانية (`fail-fast: false`). R2 لسه مقفول.
+- الوكلاء ما بيشغّلوش النسخة على الإنتاج بأنفسهم؛ Nova أو المالك يشغّلها من Actions → "D1 backup" → Run workflow.
+
+## S1-10 — تجربة الاسترجاع
+- **آلي (CI، من غير شبكة):** `node tools/backend/restore-drill-sales.mjs` بيعمل بيعة حقيقية عبر sync push + موظف + مخزون، يصدّر كل الصفوف كـ INSERT، ويستورد في **قاعدة جديدة فاضية**، ويتأكد إن البيعة والبنود والدفعات والمخزون (17) و hash الموظف وتسجيل الدخول رجعوا زي ما هم، وإن إعادة نفس العملية ما بتبيعش مرتين. التست: `tests/unit/restore-drill-sales.check.mjs`.
+- **تجربة حية على staging (Nova فقط، بعد النشر):**
+  1. خُد bookmark: `scripts/d1-bookmark.sh nova-rx-staging`.
+  2. صدّر: شغّل "D1 backup" وانزّل artifact الـstaging.
+  3. فك التشفير محلياً، واستورد في **قاعدة D1 جديدة مؤقتة (throwaway)** بس، مثلاً `nova-rx-restore-drill`.
+  4. اتأكد من عدد المبيعات وآخر بيعة وتسجيل دخول موظف تجربة.
+  5. امسح القاعدة المؤقتة بعد التجربة.
+- **ممنوع:** الاسترجاع في نفس المكان (in-place) على `nova-rx-staging` أو `nova-rx-production`، وممنوع Time Travel restore من وكيل. never in-place.
