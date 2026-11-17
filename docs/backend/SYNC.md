@@ -37,3 +37,17 @@ Tenant comes from the session (`tenant`) or `NOVA_TENANT_ID`, default `default`.
 - Other devices: `applyChanges` appends a `return` ledger movement with ref `return:<clientReturnId>` (the same ref the selling device used),
   so it is applied exactly once per device. Flag OFF (`novaBackend.enabled`) => zero network calls, as before.
 - Tests: `tests/unit/backend-sync-returns.check.mjs`, `tests/unit/sync-returns-client.check.mjs`, `tests/unit/pos-outbox-wire.check.mjs`.
+
+## S2-02 — strip/tablet units sync as integer base units
+- Base unit of a product = its finest packaged unit (tablet, else strip, else box); box-only products are unchanged.
+  POS line -> `{ code, qty: qty * basePerBox / perBox[unit], price: ceil(lineTotal / baseQty), unit, perBox }`; the invoice discount keeps the server total equal to the POS total.
+- The server counts stock in base units (`sale_items.qty` stays an integer). `change_feed` sale items carry `unit`/`perBox` so other devices show the line in that unit.
+- A product without packaging info is NOT dropped: the invoice (and its returns) wait in `nova.sync.review` with an Arabic reason and are queued once by `retryReview` after the packaging is set (outbox is idempotent by sale id).
+- Test: `tests/unit/sync-units.check.mjs`.
+
+## S2-05 — credit (آجل) sync
+- Every local `nova.credit` movement is queued once as `{ key:'cr:<moveId>', kind:'ledger', entity:'credit_move', payload:{ id, op:'credit', move } }`.
+- Server: `sync_ledger` + `change_feed` (entity `credit_move`) + `sync_ops` in ONE batch; replay = duplicate; invalid move = `SYNC_CREDIT_INVALID`.
+- Other devices import the movement AS-IS (same id, same FIFO allocations), so balances and aging match; imported ids are never pushed back.
+  Opening/reversal ids now carry a random suffix so two devices never collide.
+- Tests: `tests/unit/credit-sync.check.mjs`, case 7 of `tests/unit/backend-sync-returns.check.mjs`.
