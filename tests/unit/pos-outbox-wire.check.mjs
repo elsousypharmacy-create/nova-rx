@@ -101,7 +101,7 @@ const html = readFileSync(root('index.html'), 'utf8');
 const b = html.indexOf('<!-- S1-03:BEGIN'), e = html.indexOf('<!-- S1-03:END -->');
 assert.ok(b > 0 && e > b, 'S1-03 block present');
 const block = html.slice(b, e);
-for (const f of ['offline-outbox.js', 'stock-ledger.js', 'backend-client.js', 'credit-sync-wire.js', 'receipt-sync-wire.js', 'shift-sync-wire.js', 'po-sync-wire.js', 'pos-sync-wire.js']) assert.ok(block.includes('<script>\n' + readFileSync(root(f), 'utf8').replace(/\r?\n$/, '').replace(/\r\n/g, '\n') + '\n</script>'), f + ' is inlined verbatim');
+for (const f of ['offline-outbox.js', 'stock-ledger.js', 'backend-client.js', 'credit-sync-wire.js', 'receipt-sync-wire.js', 'shift-sync-wire.js', 'po-sync-wire.js', 'device-gateway.js', 'device-print-wire.js', 'pos-sync-wire.js']) assert.ok(block.includes('<script>\n' + readFileSync(root(f), 'utf8').replace(/\r?\n$/, '').replace(/\r\n/g, '\n') + '\n</script>'), f + ' is inlined verbatim');
 assert.equal(html.split('S1-03:BEGIN').length, 2, 'one block only');
 assert.ok(/localStorage\.setItem\(KEY, JSON\.stringify\(all\.slice\(0, MAX\)\)\);\s*try \{ if \(window\.novaSync\) window\.novaSync\.afterSale\(sale\); \} catch/.test(html), 'sale hook after the local save');
 assert.ok(/localStorage\.setItem\(RKEY, JSON\.stringify\(all\.slice\(0, 1000\)\)\); try \{ if \(window\.novaSync\) window\.novaSync\.afterReturn\(sale, r\); \} catch/.test(html), 'return hook after the local save');
