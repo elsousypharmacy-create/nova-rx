@@ -1,4 +1,5 @@
-# Daily encrypted export of D1 nova-rx-staging as a GitHub Actions artifact (free; no R2).
+# Daily encrypted export of D1 nova-rx-staging AND (S1-09) nova-rx-production, each as its own GitHub Actions artifact (free; no R2).
+# Restore is owner-only, into a NEW database, never in-place (docs/ops/backup-restore.md).
 # Repo is public: artifacts are world-readable, so ONLY the AES-256 ciphertext and a
 # manifest (sha256, sizes, row counts, bookmark; no SQL) are uploaded. Runbook:
 # docs/ops/backup-restore.md. Never deploys, never restores, never prints secret values.
@@ -17,6 +18,10 @@ jobs:
   backup:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false # one database failing never skips the other
+      matrix:
+        db: [nova-rx-staging, nova-rx-production]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,11 +44,12 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || '7140d9b8f71fb0854b43e50172a7146c' }}
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE || secrets.NOVA_INGEST_SECRET }}
           BACKUP_OUTDIR: ${{ github.workspace }}/artifacts/d1-backup
-        run: bash ../scripts/d1-backup.sh nova-rx-staging
+          DB_NAME: ${{ matrix.db }}
+        run: bash ../scripts/d1-backup.sh "$DB_NAME"
       - name: Upload encrypted artifact (30 days)
         uses: actions/upload-artifact@v4
         with:
-          name: d1-backup-nova-rx-staging-${{ github.run_id }}
+          name: d1-backup-${{ matrix.db }}-${{ github.run_id }}
           path: |
             artifacts/d1-backup/*.sql.gz.enc
             artifacts/d1-backup/manifest.json
