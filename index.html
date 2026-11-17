@@ -5721,7 +5721,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  +'<div class="nova-panel"><div class="nova-panel-title">توزيع قيمة الفواتير التجريبية حسب العميل</div>'+rows(customers,c=>{const amount=(c.pastInvoices||[]).reduce((s,i)=>s+i.total,0);const width=sum?Math.round(amount/sum*100):0;return '<div style="padding:13px 18px;border-bottom:1px solid #2a3037"><div style="display:flex;justify-content:space-between;gap:var(--sp-2);font-size:12px;margin-bottom:8px"><span>'+esc(c.name)+'</span><strong>'+money(amount)+'</strong></div><div style="background:#29313a;height:7px;border-radius:var(--r-1);overflow:hidden"><div style="background:#76b8d5;height:100%;width:'+width+'%"></div></div></div>'})+'</div></details>':'');
  }else if(page==='settings'){
  content=head(title,'الحسابات والمزامنة والأجهزة واللغة')
- +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>'+tr(window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'المنتجات من قائمة أسعار STOCK LIVE؛ الأرصدة غير متاحة من هذا المصدر.':'مصدر المنتجات الحالي بيانات عرض تجريبية.',window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'Products use the STOCK LIVE price list; stock is unavailable from this source.':'The current product source is demo data.')+'</p><p>'+tr('الفواتير والعملاء المحفوظون على هذا الجهاز منفصلون عن بيانات العرض التجريبية.','Customers and invoices saved on this device are separate from demo records.')+'</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide" id="novaBackendCard"></div><div class="nova-setting-card nova-card-wide" id="novaDevicesCard"></div><div class="nova-setting-card nova-card-wide" id="novaOnboardingCard" hidden></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
+ +'<div class="nova-settings-grid"><div class="nova-setting-card"><h3>لغة الواجهة</h3><p>اختر لغة العرض</p><div class="nova-lang-switch" role="group" aria-label="Language"><button type="button" data-lang="ar" class="nova-lang-btn">عربي</button><button type="button" data-lang="en" class="nova-lang-btn">English</button></div></div><div class="nova-setting-card" id="novaAboutCard"><h3>'+tr('عن النظام','About')+'</h3><p>المظهر: Black Edition، خط Cairo، مناسب للتابلت</p><p>'+tr(window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'المنتجات من قائمة أسعار STOCK LIVE؛ الأرصدة غير متاحة من هذا المصدر.':'مصدر المنتجات الحالي بيانات عرض تجريبية.',window.novaCatalog&&window.novaCatalog.source==='STOCK LIVE'?'Products use the STOCK LIVE price list; stock is unavailable from this source.':'The current product source is demo data.')+'</p><p>'+tr('الفواتير والعملاء المحفوظون على هذا الجهاز منفصلون عن بيانات العرض التجريبية.','Customers and invoices saved on this device are separate from demo records.')+'</p><p>NOVA Rx PWA · نسخة أولية للتجربة. لا تعتمد عليها في معاملات العملاء الحقيقية.</p></div><div class="nova-setting-card"><h3>🔐 مفاتيح API والتكاملات</h3><p>إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.</p><button type="button" class="nova-page-btn" onclick="window.novaOpenSecrets()">⚙️ إدارة المفاتيح</button></div><div class="nova-setting-card"><h3>'+tr('نسبة ضريبة القيمة المضافة (%)','VAT rate (%)')+'</h3><p>'+tr('تُستخدم في إجمالي البيع والإيصال وتقرير اليوم (ضريبة متضمنة في السعر). راجع المحاسب قبل التغيير.','Used in sale totals, receipt and day report (VAT included in price). Consult your accountant before changing.')+'</p><div class="nova-vat-row"><input id="novaVatRate" class="nova-field" type="number" min="0" max="100" step="0.01" inputmode="decimal" dir="ltr" value="'+window.novaVat.get()+'" aria-label="'+tr('نسبة ضريبة القيمة المضافة','VAT rate')+'"><span class="nova-unit" aria-hidden="true">%</span></div></div><div class="nova-setting-card" id="novaAuthCard"></div><div class="nova-setting-card nova-card-wide" id="novaBackendCard"></div><div class="nova-setting-card nova-card-wide" id="novaSetupCard"></div><div class="nova-setting-card nova-card-wide" id="novaDevicesCard"></div><div class="nova-setting-card nova-card-wide" id="novaOnboardingCard" hidden></div><div class="nova-setting-card nova-card-wide"><h3>'+tr('التشغيلات والصلاحية','Lots & Expiry')+'</h3><p>'+tr('حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.','Block selling expired stock by default and warn before expiry within the configured window.')+'</p><label for="novaNearExpiryDays" style="display:block;font-size:13px;color:#e7ebf0;margin-bottom:6px">'+tr('تنبيه قرب الانتهاء (بالأيام)','Near-expiry warning (days)')+'</label><input type="number" id="novaNearExpiryDays" min="0" max="3650" step="1" value="'+(window.novaStock?window.novaStock.nearExpiryDays():90)+'" style="min-height:38px;width:110px;padding:6px 10px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font-size:14px"></div></div>';
  }
  window.__novaRowFillTok=(window.__novaRowFillTok||0)+1;
  const rest=page==='products'?window.__novaRowRest:null;window.__novaRowRest=null;
@@ -5763,7 +5763,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
 el.innerHTML=hdr+'<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('مرتجعات','Returns'),money(-d.returns))+r(tr('رصيد الافتتاح','Opening float'),money(d.float))+r(tr('مرتجعات نقدية','Cash returns'),money(-d.cashReturns))+r(tr('تحصيل مديونيات نقدًا','Cash debt collections'),money(d.cashDebt))+r('<b>'+tr('المتوقع في الدرج','Expected in drawer')+'</b>','<b>'+money(d.expected)+'</b>')+(d.counted!=null?r(tr('النقدي المعدود','Counted cash'),money(d.counted))+r('<b>'+tr('الفرق','Difference')+'</b>','<b>'+(d.counted-d.expected).toFixed(2)+'</b>'):'')+r(tr('عدد الفواتير','Invoices'),d.count)+r(tr('ضريبة متضمنة','VAT included')+' ('+window.novaVat.label()+'%)',money(d.vat))+'</table>'+sig;document.body.appendChild(el);document.body.classList.add('nova-printing-report');let tm=null;const done=()=>{if(tm){clearTimeout(tm);tm=null}document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);try{window.print()}finally{tm=setTimeout(done,window.__novaPrintFallbackMs||60000)}};
  if(window.novaBackendFlag)window.novaBackendFlag.mount(document.getElementById('novaBackendCard'));
  const dvc=document.getElementById('novaDevicesCard');if(dvc&&window.novaDevicePrint){dvc.innerHTML=window.novaDevicePrint.devicesHtml(localStorage.getItem('nova-rx-language')==='en'?'en':'ar');const sel=document.getElementById('novaInvoicePrinter');if(sel)sel.onchange=()=>window.novaDevicePrint.setPrinter(sel.value)}
- if(window.novaOnboarding)window.novaOnboarding.mount(document.getElementById('novaOnboardingCard'));
+ if(window.novaOnboarding)window.novaOnboarding.mount(document.getElementById('novaOnboardingCard'));if(window.novaSetup)window.novaSetup.mount(document.getElementById('novaSetupCard'));
  const vr=document.getElementById('novaVatRate');if(vr)vr.onchange=()=>{if(!window.novaVat.set(vr.value))vr.value=window.novaVat.get();else if(window.novaRecalc)window.novaRecalc()};
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
 
@@ -10716,6 +10716,73 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <!-- S1-03:END -->
+<!-- SETUP-WIZARD:BEGIN -->
+<script>
+(function (root) {
+  'use strict';
+  var en = function () { try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; } };
+  var T = function (a, e) { return en() ? e : a; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var go = function (page) { var b = document.querySelector('.nova-tab[data-page="' + page + '"]'); if (b) b.click(); else if (page === 'purchases') location.href = '/purchases'; };
+  function row(ok, title, body, actions) {
+    return '<div class="nsw-row" data-ok="' + (ok === true ? '1' : ok === false ? '0' : '') + '"><span class="nsw-dot" aria-hidden="true">' + (ok === true ? '✓' : ok === false ? '!' : '·') + '</span>' +
+      '<div class="nsw-main"><strong>' + esc(title) + '</strong><div class="nsw-body">' + body + '</div></div><div class="nsw-act">' + (actions || '') + '</div></div>';
+  }
+  var STATE = function () { return { ok: T('متصل', 'Connected'), expired: T('انتهت الجلسة', 'Session expired'), off: T('غير مربوط', 'Not connected') }; };
+  async function suppliersRow() {
+    var st = STATE(), body = '', ok = null;
+    try {
+      var r = await fetch('/api/suppliers/status', { cache: 'no-store' });
+      if (!r.ok) throw new Error('x');
+      var j = await r.json(), list = (j && j.suppliers) || [];
+      ok = list.length > 0 && list.every(function (s) { return s.state === 'ok'; });
+      body = list.map(function (s) { return '<span class="nsw-chip" data-s="' + esc(s.state) + '"><b>' + esc(s.name) + '</b> <span>' + esc(st[s.state] || st.off) + '</span></span>'; }).join('');
+      if (list.some(function (s) { return s.state !== 'ok'; })) body += '<div class="nsw-hint">' + T('سجّل دخولك في موقع المورد من متصفحك، وبعدها اضغط تحديث الحالة.', 'Sign in on the supplier site in your browser, then press Refresh status.') + '</div>';
+    } catch (e) { body = '<div class="nsw-hint">' + T('تعذر قراءة حالة الموردين الآن.', 'Could not read supplier status right now.') + '</div>'; ok = false; }
+    return row(ok, T('الموردين', 'Suppliers'), body, '<button type="button" class="btn" data-nsw="refresh">' + T('تحديث الحالة', 'Refresh status') + '</button><button type="button" class="btn" data-nsw="purchases">' + T('افتح المشتريات', 'Open purchases') + '</button>');
+  }
+  function syncRow() {
+    var s = root.novaSync, p = null, ok = null, body;
+    try { p = s && s.pending ? s.pending() : null; } catch (e) { p = null; }
+    if (!s) { body = T('المزامنة مقفولة على هذا الجهاز. فعّلها من «الحسابات والمزامنة» على جهاز واحد الأول.', 'Sync is off on this device. Turn it on under Accounts and sync, on one device first.'); }
+    else { ok = !(p && (p.review || p.pending)); body = T('الفواتير المنتظرة: ', 'Waiting invoices: ') + esc(p ? p.pending : 0) + ' · ' + T('تحتاج مراجعة: ', 'Need review: ') + esc(p ? p.review : 0); }
+    return row(ok, T('المزامنة بين الأجهزة', 'Sync between devices'), '<div class="nsw-hint">' + body + '</div>', '');
+  }
+  async function render(el) {
+    var name = (document.querySelector('.pharmacy-banner-copy strong') || {}).textContent || T('صيدليتك', 'Your pharmacy');
+    el.innerHTML = '<h3>' + T('ابدأ هنا: تجهيز الصيدلية', 'Start here: set up your pharmacy') + '</h3><p>' + T('خطوات بسيطة تربط صيدليتك بالموردين والواتس اب والمزامنة. كل خطوة ممكن ترجع لها بعدين.', 'A few simple steps to connect your pharmacy to suppliers, WhatsApp and sync. You can come back to any step.') + '</p><div class="nsw-list">' +
+      row(true, T('الصيدلية', 'Pharmacy'), '<div class="nsw-hint">' + esc(name) + '</div>', '') +
+      row(null, T('الأصناف والرصيد', 'Products and stock'), '<div class="nsw-hint">' + T('ارفع ملف الأصناف من صفحة الأصناف، وبعده الرصيد الافتتاحي.', 'Upload your product file from the Products page, then the opening balance.') + '</div>', '<button type="button" class="btn" data-nsw="products">' + T('افتح الأصناف', 'Open products') + '</button>') +
+      '<div data-nsw-slot="sup">' + row(null, T('الموردين', 'Suppliers'), '<div class="nsw-hint">…</div>', '') + '</div>' +
+      row(null, T('واتس اب', 'WhatsApp'), '<div class="nsw-hint">' + T('افتح المحادثات وتأكد إن الرسائل بتوصل.', 'Open the conversations and make sure messages arrive.') + '</div>', '<a class="btn" href="/whatsapp">' + T('افتح المحادثات', 'Open conversations') + '</a>') +
+      syncRow() + '</div>';
+    var slot = el.querySelector('[data-nsw-slot="sup"]');
+    if (slot) slot.innerHTML = await suppliersRow();
+    el.onclick = function (e) {
+      var b = e.target.closest && e.target.closest('[data-nsw]'); if (!b) return;
+      var a = b.getAttribute('data-nsw');
+      if (a === 'refresh') render(el); else if (a === 'products') go('products'); else if (a === 'purchases') go('purchases');
+    };
+  }
+  root.novaSetup = { mount: function (el) { if (!el) return; try { render(el); } catch (e) { el.innerHTML = ''; } } };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<style id="NOVA_SETUP_WIZARD_CSS">
+.nova-settings-grid #novaSetupCard .nsw-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#novaSetupCard .nsw-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border:1px solid var(--nx-line,#2a3037);border-radius:10px;background:var(--nx-panel-2,#14181c)}
+#novaSetupCard .nsw-dot{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:#2a3037;color:#a4adb7}
+#novaSetupCard .nsw-row[data-ok="1"] .nsw-dot{background:#1f6f43;color:#fff}
+#novaSetupCard .nsw-row[data-ok="0"] .nsw-dot{background:#8a5a12;color:#fff}
+#novaSetupCard .nsw-main{flex:1;min-width:0}
+#novaSetupCard .nsw-body{margin-top:4px}
+#novaSetupCard .nsw-hint{font-size:13px;color:#a4adb7;line-height:1.5}
+#novaSetupCard .nsw-chip{display:inline-flex;gap:6px;align-items:center;margin:2px 0 2px 8px;padding:3px 10px;border-radius:999px;background:#1b2026;font-size:13px}
+#novaSetupCard .nsw-chip[data-s="ok"]{outline:1px solid #1f6f43}
+#novaSetupCard .nsw-chip[data-s="expired"],#novaSetupCard .nsw-chip[data-s="off"]{outline:1px solid #8a5a12}
+#novaSetupCard .nsw-act{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:640px){#novaSetupCard .nsw-row{flex-wrap:wrap}#novaSetupCard .nsw-act{width:100%}}
+</style>
+<!-- SETUP-WIZARD:END -->
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
