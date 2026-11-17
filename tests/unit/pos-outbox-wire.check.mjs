@@ -76,15 +76,16 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
 {
   const { ledger, wire } = mk(); wire.afterSale(sale()); wire.afterSale(sale({ number: 'INV-1-REPRINT' }));
   assert.equal(ledger.movements().length, 2);
-}// 6. return / cancel: local stock movement(s) only, never an outbox entry (the server would treat it as a sale)
+}// 6. return / cancel (S2-01): local stock movement + ONE explicit 'return' op after its sale (never invoice-shaped)
 {
   const { outbox, ledger, wire } = mk(); const s = sale(); wire.afterSale(s);
   const r = wire.afterReturn(s, { id: 'ret-1', saleId: s.id, lines: [{ idx: 0, qty: 1 }] });
-  assert.deepEqual([r.ok, r.movements], [true, 1]);
+  assert.deepEqual([r.ok, r.movements, r.queued], [true, 1, true]);
   assert.deepEqual(ledger.movements().filter((m) => m.kind === 'return').map((m) => [m.code, m.qty, m.delta, m.ref]), [['622100', 1, 1, 'return:ret-1']]);
-  assert.equal(outbox.all().length, 1, 'return is not queued');
+  assert.deepEqual(outbox.all().map((e) => [e.key, e.payload.op || 'invoice']), [[s.id, 'invoice'], ['ret:ret-1', 'return']]);
   wire.afterReturn(s, { id: 'ret-1', saleId: s.id, lines: [{ idx: 0, qty: 1 }] }); // replay
   assert.equal(ledger.movements().filter((m) => m.kind === 'return').length, 1);
+  assert.equal(outbox.all().length, 2, 'replayed return is not queued twice');
   assert.equal(wire.afterReturn(s, null).ok, false);
 }
 // 7. a broken outbox / ledger never throws out of the wiring
