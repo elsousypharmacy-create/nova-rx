@@ -2,7 +2,7 @@
 // Ops: {key, kind:'ledger'|'master', entity, id?, payload, baseVersion?}. An op without kind (offline-outbox entry) is a ledger 'invoice'.
 import { authenticate } from './auth/auth.js';
 import { audit } from './audit.js';
-import { createSale, salesWritesEnabled } from './sales/service.js';
+import { createSale, returnSale, salesWritesEnabled } from './sales/service.js';
 import { syncScope } from './sync-scope.js';
 
 // S1-02: with NOVA_SALES_WRITES=1 a ledger 'invoice' op is also applied as a real sale + stock movements, and a
@@ -54,6 +54,107 @@ async function applyInvoice(db, tenant, op, id, data, ctx) {
   return rej('SYNC_SALE_REJECTED', r.message_ar);
 }
 
+// S2-01: a POS return/cancel op { kind:'ledger', entity:'sale_return', payload:{ id, op:'return', clientReturnId, saleInvoiceId, lines:[{code,qty,price}] } }
+// is applied through returnSale; sync_ledger + change_feed ('sale_return') + sync_ops go in the SAME batch. Sale not synced yet => transient conflict.
+async function applyReturn(db, tenant, op, id, data, ctx) {
+  const p = op.payload || {};
+  const saleInvoiceId = typeof p.saleInvoiceId === 'string' ? p.saleInvoiceId.trim() : '';
+  const clientReturnId = typeof p.clientReturnId === 'string' ? p.clientReturnId.trim() : '';
+  const lines = Array.isArray(p.lines) ? p.lines : [];
+  if (!saleInvoiceId || !clientReturnId || !lines.length) {
+    return rej('SYNC_RETURN_INVALID', 'بيانات المرتجع غير صالحة.');
+  }
+
+  const invOp = await db.prepare('SELECT result_json FROM sync_ops WHERE tenant_id = ? AND op_key = ?')
+    .bind(tenant, saleInvoiceId).first();
+  if (!invOp) {
+    return {
+      status: 'conflict',
+      code: 'SYNC_SALE_NOT_SYNCED',
+      message_ar: 'الفاتورة الأصلية لم تُزامن بعد.',
+      transient: true,
+    };
+  }
+
+  let invRes = null;
+  try { invRes = JSON.parse(invOp.result_json); } catch {}
+  if (!invRes || invRes.status !== 'applied' || typeof invRes.saleId !== 'string' || !invRes.saleId) {
+    return rej('SYNC_RETURN_INVALID', 'الفاتورة الأصلية غير صالحة للمرتجع.');
+  }
+  const saleId = invRes.saleId;
+
+  const byItem = new Map();
+  for (const ln of lines) {
+    const code = ln && typeof ln.code === 'string' ? ln.code.trim() : '';
+    const qty = Number(ln && ln.qty);
+    if (!code || !Number.isInteger(qty) || qty <= 0) {
+      return rej('SYNC_RETURN_INVALID', 'سطر المرتجع غير صالح.');
+    }
+    const si = await db.prepare('SELECT id FROM sale_items WHERE sale_id = ? AND product_id = ? AND tenant_id = ? AND branch_id = ?')
+      .bind(saleId, code, ctx.scope.tenantId, ctx.scope.branchId).first();
+    if (!si) {
+      return rej('SYNC_RETURN_INVALID', 'الصنف غير موجود في الفاتورة الأصلية.');
+    }
+    const prev = byItem.get(si.id);
+    if (prev) {
+      prev.qty += qty;
+    } else {
+      byItem.set(si.id, { saleItemId: si.id, productId: code, qty });
+    }
+  }
+
+  const items = [];
+  const feedItems = [];
+  for (const v of byItem.values()) {
+    items.push({ saleItemId: v.saleItemId, qty: v.qty });
+    feedItems.push({ productId: v.productId, qty: v.qty });
+  }
+
+  const r = await returnSale(
+    ctx.env,
+    ctx.scope,
+    { saleId, items, reason: 'pos-sync' },
+    ctx.requestId,
+    ctx.actor || null,
+    {
+      extra: (returnId, refundMinor) => {
+        const applied = { status: 'applied', returnId, refundMinor };
+        const feedPayload = JSON.stringify({
+          returnId,
+          clientReturnId,
+          saleInvoiceId,
+          items: feedItems,
+        });
+        return [
+          db.prepare('INSERT INTO sync_ledger (id, tenant_id, entity, payload_json) VALUES (?, ?, ?, ?)')
+            .bind(id, tenant, 'sale_return', data),
+          db.prepare('INSERT INTO change_feed (tenant_id, branch_id, entity, entity_id, deleted, payload_json) VALUES (?, ?, ?, ?, 0, ?)')
+            .bind(ctx.scope.tenantId, ctx.scope.branchId, 'sale_return', returnId, feedPayload),
+          db.prepare('INSERT INTO sync_ops (tenant_id, op_key, result_json) VALUES (?, ?, ?)')
+            .bind(tenant, op.key, JSON.stringify(applied)),
+        ];
+      },
+    }
+  );
+
+  if (r && r.ok) {
+    return { status: 'applied', returnId: r.returnId, refundMinor: r.refundMinor };
+  }
+  const code = r?.code;
+  const msg = r?.message_ar || 'تعذر تنفيذ المرتجع.';
+  if (code === 'RETURN_EXCEEDS_SOLD') {
+    return rej('SYNC_RETURN_REJECTED', msg);
+  }
+  if (code === 'WRITE_FAILED') {
+    const stored = await db.prepare('SELECT result_json FROM sync_ops WHERE tenant_id = ? AND op_key = ?')
+      .bind(tenant, op.key).first();
+    if (stored) {
+      return { ...JSON.parse(stored.result_json), duplicate: true };
+    }
+  }
+  return rej('SYNC_RETURN_INVALID', msg);
+}
+
 export const MAX_OPS = 200;
 export function syncEnabled(env) { return !!env && String(env.NOVA_SYNC) === '1' && !!env.DB; }
 
@@ -78,7 +179,11 @@ async function one(db, tenant, op, ctx) {
   if (kind === 'ledger') {
     const ex = await db.prepare('SELECT payload_json FROM sync_ledger WHERE tenant_id=? AND entity=? AND id=?').bind(tenant, entity, id).first();
     if (ex) res = ex.payload_json === data ? { status: 'applied', duplicate: true } : rej('SYNC_LEDGER_EXISTS', 'السجل موجود ولا يمكن تعديله (دفتر إضافة فقط).');
-    else if (entity === 'invoice' && ctx && ctx.scope && salesWritesEnabled(ctx.env) && Array.isArray(op.payload.lines)) { // no `lines` = a plain ledger record, as before
+    else if (entity === 'sale_return' && ctx && ctx.scope && salesWritesEnabled(ctx.env) && Array.isArray(op.payload.lines)) { // S2-01
+      res = await applyReturn(db, tenant, op, id, data, ctx);
+      if (res.transient) { const { transient, ...out } = res; return out; } // the sale may sync later: never cache this conflict
+      if (res.status === 'applied') return res;
+    } else if (entity === 'invoice' && ctx && ctx.scope && salesWritesEnabled(ctx.env) && Array.isArray(op.payload.lines)) { // no `lines` = a plain ledger record, as before
       res = await applyInvoice(db, tenant, op, id, data, ctx);
       if (res.transient) { const { transient, ...out } = res; return out; } // stock may arrive later: never cache this conflict
       if (res.status === 'applied') return res; // sync_ops row was written in the same batch
