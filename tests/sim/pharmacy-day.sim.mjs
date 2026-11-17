@@ -76,7 +76,7 @@ async function receive(d) {
   const r = d.store.receive(po.id, grn, { confirmed: true }); d.receiptSync.afterReceive(r.po, grn); stats.receipts++;
 }
 // opening stock: device D1 receives every product first (the real pharmacy imports an opening balance)
-for (const c of CODES) { const d = devs[0]; const po = d.store.create({ supplier: 'S0', lines: [{ code: c, name: c, qty: 100, cost: 4 }] }); d.store.send(po.id, { confirmed: true }); d.store.accept(po.id, { confirmed: true }); const grn = { ref: 'OPEN-' + c, lines: [{ code: c, lot: 'L0', expiry: '2030-01-01', qty: 100, cost: 4 }] }; const r = d.store.receive(po.id, grn, { confirmed: true }); d.receiptSync.afterReceive(r.po, grn); }
+for (const c of CODES) { const d = devs[0]; const po = d.store.create({ supplier: 'S0', lines: [{ code: c, name: c, qty: Number(process.env.SIM_OPEN || 100), cost: 4 }] }); d.store.send(po.id, { confirmed: true }); d.store.accept(po.id, { confirmed: true }); const grn = { ref: 'OPEN-' + c, lines: [{ code: c, lot: 'L0', expiry: '2030-01-01', qty: Number(process.env.SIM_OPEN || 100), cost: 4 }] }; const r = d.store.receive(po.id, grn, { confirmed: true }); d.receiptSync.afterReceive(r.po, grn); }
 for (let i = 0; i < 3; i++) for (const d of devs) await d.sched.tick();
 
 let sid = 0;
@@ -93,7 +93,7 @@ for (let step = 0; step < STEPS; step++) {
       d.sales.push(sale); d.wire.afterSale(sale); stats.sales++;
       if (credit) d.credit.charge({ id, customerId: sale.customerId, amount: sale.total, override: true });
     } else if (a < 0.55) { // partial return of one of this device's own sales
-      const cand = own(d).filter((x) => remaining(d, x) > 0); if (cand.length) { const sale = pick(cand), q = int(1, remaining(d, sale)), rid = 'r' + (++sid) + d.name;
+      const cand = (process.env.SIM_CROSS ? d.sales : own(d)).filter((x) => remaining(d, x) > 0); if (cand.length) { const sale = pick(cand), q = int(1, remaining(d, sale)), rid = 'r' + (++sid) + d.name;
         d.wire.afterReturn(sale, { id: rid, saleId: sale.id, lines: [{ idx: 0, qty: q }] }); d.returned[sale.id] = (d.returned[sale.id] || 0) + q; stats.returns++; }
     } else if (a < 0.65) { // collection
       const c = pick(CUST), bal = d.credit.balance(c); if (bal > 0) { d.credit.collect({ id: 'k' + (++sid) + d.name, customerId: c, amount: Math.min(bal, int(1, 20)) }); stats.collects++; }
@@ -108,10 +108,11 @@ for (const d of devs) d.online = true;
 const origRnd = rnd; // no more random failures while settling
 d0: for (let round = 0; round < 40; round++) { for (const d of devs) { await d.sched.tick(); } const pend = devs.reduce((n, d) => n + d.outbox.all().filter((e) => e.status !== 'synced').length, 0); if (!pend && round > 4) break d0; await new Promise((r) => setTimeout(r, 5)); }
 
+const HARSH = !!(process.env.SIM_CROSS || process.env.SIM_OPEN);
 const problems = [];
 const chk = (ok, msg) => { if (!ok) problems.push(msg); };
 for (const d of devs) {
-  const bad = d.outbox.all().filter((e) => e.status !== 'synced');
+  const bad = d.outbox.all().filter((e) => e.status !== 'synced' && !(HARSH && e.status === 'review'));
   chk(bad.length === 0, `${d.name}: ${bad.length} outbox entries not synced: ` + JSON.stringify(bad.slice(0, 3).map((e) => [e.key, e.status, e.lastError, (e.conflicts || []).length])));
 }
 for (const c of CODES) {
@@ -137,4 +138,5 @@ if (problems.some((p) => /stock/.test(p)) && process.env.SIM_DIAG) {
   const keys = {}; for (const d of devs) for (const e of d.outbox.all()) if (/^rcv:/.test(e.key)) (keys[e.key] = keys[e.key] || []).push(d.name); console.log('DIAG receipt keys on >1 device', JSON.stringify(Object.entries(keys).filter(([, v]) => v.length > 1)));
 }
 console.log(`seed=${SEED} steps=${STEPS} devices=${NDEV}`, JSON.stringify(stats));
-if (problems.length) { console.log('PROBLEMS (' + problems.length + '):'); problems.slice(0, 15).forEach((p) => console.log(' - ' + p)); process.exitCode = 1; } else console.log('SIM OK');
+const review = devs.reduce((n, d) => n + d.outbox.all().filter((e) => e.status === 'review').length, 0); console.log('in review list:', review);
+if (problems.length) { console.log((HARSH ? 'HARSH FINDINGS (' : 'PROBLEMS (') + problems.length + '):'); problems.slice(0, 15).forEach((p) => console.log(' - ' + p)); if (!HARSH) process.exitCode = 1; } else console.log('SIM OK');
