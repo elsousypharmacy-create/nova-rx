@@ -25,8 +25,8 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
   assert.deepEqual([r.ok, r.movements, r.queued], [true, 2, true]);
   assert.deepEqual(ledger.movements().map((m) => [m.kind, m.code, m.qty, m.delta, m.ref]), [['sale', '622100', 2, -2, 'sale:sale-1'], ['sale', 'فيتامين', 1, -1, 'sale:sale-1']]);
   assert.equal(outbox.all().length, 1); assert.equal(outbox.all()[0].status, 'pending'); assert.equal(outbox.all()[0].key, 'sale-1');
-  const p = outbox.all()[0].payload; assert.deepEqual(p.lines, [{ code: '622100', qty: 2, price: 5 }, { code: 'فيتامين', qty: 1, price: 5 }]); assert.equal(p.discount, undefined);
-  assert.deepEqual(wire.pending(), { pending: 1, review: 0 });
+  const p = outbox.all()[0].payload; assert.deepEqual(p.lines, [{ code: '622100', qty: 2, price: 5, unit: 'box', perBox: 1 }, { code: 'فيتامين', qty: 1, price: 5, unit: 'box', perBox: 1 }]); // S2-02: base unit fields assert.equal(p.discount, undefined);
+  assert.deepEqual(wire.pending(), { pending: 1, review: 0, reviewUnits: 0 });
   // the server maps this exact payload to a sale (S1-02 contract): productId = code, minor units, total equals the POS total
   const si = invoiceToSaleInput(p); assert.deepEqual(si.items, [{ productId: '622100', qty: 2, unitPriceMinor: 500 }, { productId: 'فيتامين', qty: 1, unitPriceMinor: 500 }]);
   assert.equal(si.items.reduce((a, i) => a + i.qty * i.unitPriceMinor, 0) - si.discountMinor, 1500);
@@ -53,15 +53,15 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
   assert.equal(r.queued, false); assert.equal(outbox.all().length, 0); assert.deepEqual(ledger.movements().map((m) => m.code), ['neg'], 'a valid-qty line still moves stock even if its price is unusable'); // half-unit and code-less lines are skipped
   assert.equal(wire.afterSale(null).ok, false); assert.equal(wire.afterSale({ id: 'x' }).ok, false);
 }
-// 5b. other units: counted per unit (own ledger code), never sent to the server as boxes; listed locally, never silently dropped
+// 5b. other units without packaging info (S2-02): counted per unit (own ledger code), not sent; held in the visible review list (nova.sync.review)
 {
   const { s, outbox, ledger, wire } = mk();
   const r = wire.afterSale(sale({ id: 's-u', number: 'INV-U', total: 8, lines: [{ name: 'x', barcode: '777', unit: 'strip', unitFactor: 10, price: 4, qty: 2 }] }));
   assert.deepEqual([r.ok, r.queued, r.skipped], [true, false, 'unit-mapping']);
   assert.deepEqual(ledger.movements().map((m) => [m.code, m.qty]), [['777#strip', 2]]); assert.equal(outbox.all().length, 0);
-  assert.deepEqual(JSON.parse(s.getItem('nova.sync.skipped')).map((x) => [x.id, x.reason]), [['s-u', 'unit-mapping']]);
+  assert.deepEqual(JSON.parse(s.getItem('nova.sync.review')).map((x) => [x.id, x.reason]), [['s-u', 'unit-mapping']]);
   wire.afterSale(sale({ id: 's-u', number: 'INV-U', total: 8, lines: [{ name: 'x', barcode: '777', unit: 'strip', unitFactor: 10, price: 4, qty: 2 }] })); // replay
-  assert.equal(JSON.parse(s.getItem('nova.sync.skipped')).length, 1);
+  assert.equal(JSON.parse(s.getItem('nova.sync.review')).length, 1);
   // a whole-box line mixed with a strip line: the whole invoice is held back (a partial invoice would give a wrong server total)
   const m2 = mk(); const r2 = m2.wire.afterSale(sale({ id: 's-m', number: 'INV-M', total: 10, lines: [{ name: 'a', barcode: '1', price: 5, qty: 1 }, { name: 'b', barcode: '2', unit: 'strip', price: 5, qty: 1 }] }));
   assert.deepEqual([r2.queued, m2.outbox.all().length, m2.ledger.movements().length], [false, 0, 2]);
@@ -92,7 +92,7 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
 {
   const bad = { enqueue() { throw Object.assign(new Error('x'), { code: 'outbox-write-failed' }); }, all() { throw new Error('x'); } };
   const w = Wire.create({ outbox: bad, ledger: { append() { throw Object.assign(new Error('x'), { code: 'bad-qty' }); } } });
-  const r = w.afterSale(sale()); assert.equal(r.ok, false); assert.deepEqual(w.pending(), { pending: 0, review: 0 });
+  const r = w.afterSale(sale()); assert.equal(r.ok, false); assert.deepEqual(w.pending(), { pending: 0, review: 0, reviewUnits: 0 });
 }
 assert.equal(fetched, 0, 'zero network calls');
 
@@ -101,7 +101,7 @@ const html = readFileSync(root('index.html'), 'utf8');
 const b = html.indexOf('<!-- S1-03:BEGIN'), e = html.indexOf('<!-- S1-03:END -->');
 assert.ok(b > 0 && e > b, 'S1-03 block present');
 const block = html.slice(b, e);
-for (const f of ['offline-outbox.js', 'stock-ledger.js', 'backend-client.js', 'pos-sync-wire.js']) assert.ok(block.includes('<script>\n' + readFileSync(root(f), 'utf8').replace(/\r?\n$/, '').replace(/\r\n/g, '\n') + '\n</script>'), f + ' is inlined verbatim');
+for (const f of ['offline-outbox.js', 'stock-ledger.js', 'backend-client.js', 'credit-sync-wire.js', 'pos-sync-wire.js']) assert.ok(block.includes('<script>\n' + readFileSync(root(f), 'utf8').replace(/\r?\n$/, '').replace(/\r\n/g, '\n') + '\n</script>'), f + ' is inlined verbatim');
 assert.equal(html.split('S1-03:BEGIN').length, 2, 'one block only');
 assert.ok(/localStorage\.setItem\(KEY, JSON\.stringify\(all\.slice\(0, MAX\)\)\);\s*try \{ if \(window\.novaSync\) window\.novaSync\.afterSale\(sale\); \} catch/.test(html), 'sale hook after the local save');
 assert.ok(/localStorage\.setItem\(RKEY, JSON\.stringify\(all\.slice\(0, 1000\)\)\); try \{ if \(window\.novaSync\) window\.novaSync\.afterReturn\(sale, r\); \} catch/.test(html), 'return hook after the local save');

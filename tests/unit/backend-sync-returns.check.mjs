@@ -134,4 +134,20 @@ assert.deepEqual(cfPayload.items, [{ productId: 'p1', qty: 1 }]);
   assert.equal(count('sale_returns'), 1);
 }
 
+// 7) S2-05 credit movement: stored + change_feed in one batch, replay = duplicate, invalid move rejected
+{
+  const move = { id: 'ch-s9', type: 'charge', ref: 's9', customerId: 'c1', cents: 5000, at: 1, due: 2 };
+  const op = { key: 'cr:ch-s9', kind: 'ledger', entity: 'credit_move', payload: { id: 'cr:ch-s9', op: 'credit', move } };
+  const [c1] = await push([op]);
+  assert.equal(c1.status, 'applied', JSON.stringify(c1));
+  const row = db.prepare("SELECT entity_id, payload_json FROM change_feed WHERE entity='credit_move'").get();
+  assert.equal(row.entity_id, 'ch-s9'); assert.deepEqual(JSON.parse(row.payload_json).move, move);
+  const [c2] = await push([op]);
+  assert.equal(c2.duplicate, true); assert.equal(count('change_feed', "entity='credit_move'"), 1);
+  const [c3] = await push([{ key: 'cr:bad', kind: 'ledger', entity: 'credit_move', payload: { id: 'cr:bad', op: 'credit', move: { id: 'bad', type: 'charge', customerId: 'c1', cents: 1.5 } } }]);
+  assert.deepEqual([c3.status, c3.code], ['rejected', 'SYNC_CREDIT_INVALID']);
+  const p = await pull(0);
+  assert.ok(p.changes.some((c) => c.entity === 'credit_move' && c.data.move.id === 'ch-s9'), 'pull returns the credit move');
+}
+
 console.log('backend-sync-returns OK');

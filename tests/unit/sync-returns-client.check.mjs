@@ -59,7 +59,7 @@ function memStorage() {
   });
 }
 
-// 2. Return of a strip-unit sale -> not queued, in nova.sync.skipped
+// 2. Return of a strip-unit sale without packaging info -> not queued, remembered in nova.sync.review (S2-02)
 {
   const storage = memStorage();
   const outbox = createOutbox(storage);
@@ -80,9 +80,10 @@ function memStorage() {
   assert.equal(res.skipped, 'unit-mapping');
   assert.equal(outbox.all().length, 0);
 
-  const skipped = JSON.parse(storage.getItem('nova.sync.skipped') || '[]');
-  assert.equal(skipped.length, 1);
-  assert.equal(skipped[0].reason, 'unit-mapping');
+  const review = JSON.parse(storage.getItem('nova.sync.review') || '[]');
+  assert.equal(review.length, 1);
+  assert.equal(review[0].reason, 'unit-mapping');
+  assert.equal(review[0].returns[0].id, 'r-strip-1');
 }
 
 // 3. applyChanges with sale_return on another device -> onHand goes up by qty, replay -> skipped & onHand unchanged
