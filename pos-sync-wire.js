@@ -319,7 +319,7 @@
         var client = root.NovaBackendClient.createBackendClient({ storage: ls, fetch: root.fetch.bind(root), outbox: outbox,
           getToken: function () { try { return root.sessionStorage.getItem('novaBackend.token'); } catch (e) { return null; } } });
         sched = createScheduler({ client: client, wire: wire, storage: ls, onDone: refresh, getSale: getSaleFn,
-          extras: function () { return root.novaCreditSync ? [root.novaCreditSync] : []; },
+          extras: function () { return [root.novaCreditSync, root.novaReceiptSync, root.novaShiftSync].filter(Boolean); },
           isHidden: function () { return !!(root.document && root.document.hidden); },
           isOffline: function () { return root.navigator && root.navigator.onLine === false; } });
         var go = function () { sched.tick(); };

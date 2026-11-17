@@ -40,7 +40,9 @@
     if (!window.confirm('تأكيد استلام البضاعة وإضافتها للمخزون؟')) return;
     try {
       var inv = {}; lines('grnInvoice').forEach(function (a) { inv[a[0]] = Number(a[1]); });
-      var r = store.receive(id, { ref: $('grnRef').value.trim(), invoice: { qty: inv }, lines: lines('grnLines').map(function (a) { return { code: a[0], lot: a[1], expiry: a[2], qty: Number(a[3]), cost: Number(a[4]) }; }) }, { confirmed: true });
+      var grn = { ref: $('grnRef').value.trim(), invoice: { qty: inv }, lines: lines('grnLines').map(function (a) { return { code: a[0], lot: a[1], expiry: a[2], qty: Number(a[3]), cost: Number(a[4]) }; }) };
+      var r = store.receive(id, grn, { confirmed: true });
+      try { if (window.novaReceiptSync) window.novaReceiptSync.afterReceive(r.po, grn); } catch (_) {} // S2-03: queue the receipt for the other devices
       say(r.warnings.length ? 'تم الاستلام مع ' + r.warnings.length + ' تنبيه' : 'تم الاستلام'); $('grnLines').value = '';
     } catch (e) { err(e); } render();
   };

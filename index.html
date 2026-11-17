@@ -5747,7 +5747,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
   const doClose=()=>{const d=window.__novaRepData,msg=document.getElementById('novaShiftMsg');if(msg)msg.textContent='';applyCount();if(d.counted==null){if(sc.value===''&&msg)msg.textContent=tr('أدخل النقدي المعدود قبل الإقفال','Enter the counted cash before closing');sc.focus();return}
    {const sn0=document.getElementById('novaShiftNote');if(window.__novaShiftNoteOk&&!window.__novaShiftNoteOk()){if(sn0)sn0.focus();return}}
    let cashier='';try{const u=window.novaAuth&&window.novaAuth.user&&window.novaAuth.user();cashier=u&&(u.name||u.email||u.username)||''}catch(e){}
-   const rec={id:'SC'+Date.now(),at:Date.now(),period:d.per,periodLabel:plOf(d.per),float:d.float,expected:d.expected,counted:d.counted,diff:Math.round((d.counted-d.expected)*100)/100,cashier:String(cashier),note:String((document.getElementById('novaShiftNote')||{}).value||'').trim()};
+   const rec={id:(window.NovaShiftSync?window.NovaShiftSync.newClosingId(Date.now()):'SC'+Date.now()),at:Date.now(),period:d.per,periodLabel:plOf(d.per),float:d.float,expected:d.expected,counted:d.counted,diff:Math.round((d.counted-d.expected)*100)/100,cashier:String(cashier),note:String((document.getElementById('novaShiftNote')||{}).value||'').trim()};
    const prev=shiftClosings().slice(-1)[0];
    try{const a=shiftClosings();a.push(rec);localStorage.setItem('nova-rx-shift-closings-v1',JSON.stringify(a.slice(-200)))}catch(e){if(msg)msg.textContent=tr('تعذّر حفظ الإقفال على هذا الجهاز','Could not save the closing on this device');return}
    const panel=document.getElementById('novaShiftClose');let box=document.getElementById('novaShiftSummary');if(!box){box=document.createElement('div');box.id='novaShiftSummary';box.setAttribute('role','status');box.style.cssText='margin-top:10px;padding:10px;border:1px solid #3ddc84;border-radius:8px';panel.insertBefore(box,document.getElementById('novaShiftLast'))}
@@ -8988,6 +8988,8 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
       if (!invoice || typeof invoice.id !== 'string' || !invoice.id) fail('missing-key');
       if (invoice.op === 'credit') { // S2-05: a credit movement carries `move`, not invoice lines
         if (!invoice.move || typeof invoice.move !== 'object' || Array.isArray(invoice.move)) fail('bad-move');
+      } else if (invoice.op === 'shift') { // S2-06: a shift closing carries `record`
+        if (!invoice.record || typeof invoice.record !== 'object' || Array.isArray(invoice.record)) fail('bad-record');
       } else {
         if (!Array.isArray(invoice.lines) || !invoice.lines.length) fail('no-lines');
         invoice.lines.forEach(function (l) {
@@ -9226,6 +9228,8 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
         var op = { key: req.key, payload: req.payload };
         if (req && req.payload && req.payload.op === 'return') { op.kind = 'ledger'; op.entity = 'sale_return'; } // S2-01: never sent as an invoice
         else if (req && req.payload && req.payload.op === 'credit') { op.kind = 'ledger'; op.entity = 'credit_move'; } // S2-05
+        else if (req && req.payload && req.payload.op === 'shift') { op.kind = 'ledger'; op.entity = 'shift_close'; } // S2-06
+        else if (req && req.payload && req.payload.op === 'receipt') { op.kind = 'ledger'; op.entity = 'stock_receipt'; } // S2-03
         return doFetch(baseUrl() + '/api/v1/sync/push', { method: 'POST', headers: headers(), body: JSON.stringify({ ops: [op] }) })
           .then(function (r) { if (!r.ok) return { error: 'http-' + r.status }; return r.json(); })
           .then(function (j) {
@@ -9395,6 +9399,416 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   }
 
   return { create: create };
+});
+</script>
+<script>
+/* NOVA Rx - S2-03: goods receipt (GRN) sync. After a confirmed receive on the purchases page, one op is queued to the shared
+   outbox: { id: receiptId, op:'receipt', poId, ref, lines:[{code, qty (BASE units), price (cost per base unit), lot, expiry, unit, perBox}] }
+   (kind 'ledger', entity 'stock_receipt'). Receipts pulled from other devices are appended to the local stock ledger once;
+   this device's own receipts (already in its ledger, in boxes) are skipped via 'nova.receipts.local'. No network here.
+   Works as <script> (window.NovaReceiptSync / window.novaReceiptSync) and in Node (module.exports). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory(root);
+  } else {
+    root.NovaReceiptSync = factory(root);
+    try {
+      if (root.NovaOutbox && typeof localStorage !== 'undefined' && localStorage) {
+        var ob = typeof root.NovaOutbox.createOutbox === 'function'
+          ? root.NovaOutbox.createOutbox(localStorage, 'nova.outbox')
+          : null;
+        if (ob) {
+          root.novaReceiptSync = root.NovaReceiptSync.create({
+            outbox: ob,
+            storage: localStorage
+          });
+        }
+      }
+    } catch (_) {}
+  }
+})(typeof self !== 'undefined' ? self : this, function (root) {
+  'use strict';
+
+  var LOCAL_KEY = 'nova.receipts.local';
+  var PKG_KEY = 'nova-rx-packaging-v1';
+
+  function fnv1a32hex(str) {
+    var s = String(str == null ? '' : str);
+    var h = 0x811c9dc5;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul ? Math.imul(h, 0x01000193) : ((h * 0x01000193) | 0);
+    }
+    var hex = (h >>> 0).toString(16);
+    while (hex.length < 8) hex = '0' + hex;
+    return hex;
+  }
+
+  function sanitizeIdPart(s) {
+    return String(s == null ? '' : s).replace(/[^A-Za-z0-9_\-:.]/g, '_');
+  }
+
+  function receiptId(po, grn) {
+    var poId = po && po.id ? String(po.id) : '';
+    var createdAt = po && po.createdAt ? String(po.createdAt) : '';
+    var ref = grn && grn.ref ? String(grn.ref) : '';
+    var hash = fnv1a32hex(poId + '|' + createdAt + '|' + ref);
+    return 'rcv:' + sanitizeIdPart(poId) + ':' + hash;
+  }
+
+  function readJson(storage, key, fallback) {
+    if (!storage || typeof storage.getItem !== 'function') return fallback;
+    try {
+      var raw = storage.getItem(key);
+      if (!raw) return fallback;
+      var parsed = JSON.parse(raw);
+      return parsed == null ? fallback : parsed;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  function writeJson(storage, key, val) {
+    if (!storage || typeof storage.setItem !== 'function') return;
+    try {
+      storage.setItem(key, JSON.stringify(val));
+    } catch (_) {}
+  }
+
+  function resolvePackaging(storage, code) {
+    var map = readJson(storage, PKG_KEY, {});
+    var pkg = (map && typeof map === 'object' && map[code]) || {};
+    var unitsPerBox = Number(pkg.unitsPerBox) > 0 ? Number(pkg.unitsPerBox) : 0;
+    var stripsPerBox = Number(pkg.stripsPerBox) > 0 ? Number(pkg.stripsPerBox) : 0;
+    var unitsPerStrip = Number(pkg.unitsPerStrip) > 0 ? Number(pkg.unitsPerStrip) : 0;
+
+    var basePerBox = unitsPerBox || (unitsPerStrip && stripsPerBox ? unitsPerStrip * stripsPerBox : 0) || stripsPerBox || 1;
+    var baseUnit = (unitsPerBox || (unitsPerStrip && stripsPerBox))
+      ? 'tablet'
+      : (stripsPerBox ? 'strip' : 'box');
+
+    return { basePerBox: basePerBox, baseUnit: baseUnit };
+  }
+
+  function getLocalSet(storage) {
+    var arr = readJson(storage, LOCAL_KEY, []);
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function rememberLocalId(storage, id) {
+    var list = getLocalSet(storage);
+    if (list.indexOf(id) === -1) {
+      list.push(id);
+      writeJson(storage, LOCAL_KEY, list);
+    }
+  }
+
+  function resolveLedger(deps, storage) {
+    if (deps && deps.ledger) return deps.ledger;
+    var g = typeof window !== 'undefined' ? window : root;
+    var st = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    if (g && g.NovaStockLedger && typeof g.NovaStockLedger.createLedger === 'function' && st) {
+      return g.NovaStockLedger.createLedger(st, 'nova.stock.ledger');
+    }
+    return null;
+  }
+
+  function create(deps) {
+    deps = deps || {};
+    var outbox = deps.outbox;
+    var storage = deps.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+
+    function afterReceive(po, grn) {
+      try {
+        if (!outbox || typeof outbox.enqueue !== 'function') {
+          return { ok: false, queued: 0, error: 'no-outbox' };
+        }
+        if (!po || !grn || !Array.isArray(grn.lines) || !grn.lines.length) {
+          return { ok: false, queued: 0, error: 'invalid-grn' };
+        }
+        var id = receiptId(po, grn);
+        var lines = [];
+        for (var i = 0; i < grn.lines.length; i++) {
+          var ln = grn.lines[i] || {};
+          var code = String(ln.code || '');
+          var pkg = resolvePackaging(storage, code);
+          var perBox = pkg.basePerBox;
+          var qty = Number(ln.qty) * perBox;
+          var price = Math.round((Number(ln.cost) / perBox) * 100) / 100;
+          lines.push({
+            code: code,
+            qty: qty,
+            price: price,
+            lot: String(ln.lot || ''),
+            expiry: String(ln.expiry || ''),
+            unit: pkg.baseUnit,
+            perBox: perBox
+          });
+        }
+        var payload = {
+          id: id,
+          op: 'receipt',
+          poId: String(po.id || ''),
+          ref: String(grn.ref || ''),
+          lines: lines
+        };
+        outbox.enqueue(payload);
+        rememberLocalId(storage, id);
+        return { ok: true, queued: 1 };
+      } catch (err) {
+        return { ok: false, queued: 0, error: err && err.message ? err.message : String(err) };
+      }
+    }
+
+    function flush() {
+      return { queued: 0 };
+    }
+
+    function applyChanges(changes) {
+      var applied = 0;
+      var skipped = 0;
+      if (!Array.isArray(changes)) return { applied: 0, skipped: 0 };
+      var localIds = getLocalSet(storage);
+      var ledger = resolveLedger(deps, storage);
+
+      for (var i = 0; i < changes.length; i++) {
+        var ch = changes[i];
+        if (!ch || ch.entity !== 'stock_receipt' || !ch.data || !ch.data.receiptId) {
+          continue;
+        }
+        var rId = String(ch.data.receiptId);
+        if (localIds.indexOf(rId) !== -1) {
+          skipped++;
+          continue;
+        }
+        if (!ledger || typeof ledger.append !== 'function') {
+          skipped++;
+          continue;
+        }
+        var items = Array.isArray(ch.data.items) ? ch.data.items : [];
+        var anyApplied = false;
+        for (var j = 0; j < items.length; j++) {
+          var item = items[j] || {};
+          try {
+            ledger.append({
+              kind: 'receive',
+              code: String(item.productId || item.code || ''),
+              qty: Number(item.qty),
+              ref: rId,
+              lot: item.lot ? String(item.lot) : '',
+              expiry: item.expiry ? String(item.expiry) : '',
+              cost: Number(item.unitCostMinor || 0) / 100
+            });
+            anyApplied = true;
+          } catch (e) {
+            if (e && e.code === 'duplicate-movement') {
+              /* already applied */
+            } else {
+              throw e;
+            }
+          }
+        }
+        if (anyApplied) applied++;
+        else skipped++;
+      }
+      return { applied: applied, skipped: skipped };
+    }
+
+    return {
+      afterReceive: afterReceive,
+      flush: flush,
+      applyChanges: applyChanges
+    };
+  }
+
+  return {
+    create: create,
+    receiptId: receiptId
+  };
+});
+</script>
+<script>
+/* NOVA Rx - S2-06: shift closings sync. Single source of truth for POS shift closings: localStorage 'nova-rx-shift-closings-v1'
+   (the list the reports screen already reads; records are immutable). finance-shifts.js (NovaShifts / 'nova.shifts') is retired
+   for the POS screen. Every local closing is queued once as { id:'sh:<recId>', op:'shift', record } (kind 'ledger', entity
+   'shift_close'); closings pulled from other devices are inserted by id (sorted by time) and never pushed back.
+   No network here: the POS scheduler calls flush()/applyChanges() only while novaBackend.enabled is 'true'.
+   Works as <script> (window.NovaShiftSync / window.novaShiftSync) and in Node (module.exports). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.NovaShiftSync = factory();
+    if (root.NovaOutbox && typeof root.localStorage !== 'undefined') {
+      try {
+        root.novaShiftSync = root.NovaShiftSync.create({
+          storage: root.localStorage,
+          outbox: root.NovaOutbox.createOutbox(root.localStorage, 'nova.outbox')
+        });
+      } catch (e) {}
+    }
+  }
+})(typeof self !== 'undefined' ? self : this, function () {
+  var CLOSINGS_KEY = 'nova-rx-shift-closings-v1';
+  var SYNCED_KEY = 'nova.shift.synced';
+  var MAX_RECORDS = 200;
+
+  function newClosingId(now) {
+    var ts = typeof now === 'number' && isFinite(now) ? Math.floor(now) : Date.now();
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    var suffix = '';
+    for (var i = 0; i < 6; i++) {
+      suffix += chars.charAt(Math.floor(Math.random() * 36));
+    }
+    return 'SC' + ts + '-' + suffix;
+  }
+
+  function readJson(storage, key, fallback) {
+    try {
+      var raw = storage.getItem(key);
+      if (!raw) return fallback;
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function writeJson(storage, key, val) {
+    storage.setItem(key, JSON.stringify(val));
+  }
+
+  function isValidRecord(r) {
+    if (!r || typeof r !== 'object' || Array.isArray(r)) return false;
+    if (typeof r.id !== 'string' || !r.id) return false;
+    if (typeof r.at !== 'number' || !isFinite(r.at)) return false;
+    if (typeof r.float !== 'number' || !isFinite(r.float) || r.float < 0) return false;
+    if (typeof r.expected !== 'number' || !isFinite(r.expected)) return false;
+    if (typeof r.counted !== 'number' || !isFinite(r.counted) || r.counted < 0) return false;
+    if (typeof r.diff !== 'number' || !isFinite(r.diff)) return false;
+    if (typeof r.note !== 'string') return false;
+    return true;
+  }
+
+  function create(opts) {
+    var storage = opts && opts.storage;
+    var outbox = opts && opts.outbox;
+
+    function flush() {
+      var queued = 0;
+      var errors = 0;
+      if (!storage || !outbox || typeof outbox.enqueue !== 'function') {
+        return { queued: 0, errors: 0 };
+      }
+      try {
+        var closings = readJson(storage, CLOSINGS_KEY, []);
+        var synced = readJson(storage, SYNCED_KEY, []);
+        var syncedMap = {};
+        for (var i = 0; i < synced.length; i++) {
+          syncedMap[synced[i]] = true;
+        }
+        var changed = false;
+        for (var j = 0; j < closings.length; j++) {
+          var rec = closings[j];
+          if (!rec || typeof rec.id !== 'string' || !rec.id) continue;
+          if (syncedMap[rec.id]) continue;
+          try {
+            outbox.enqueue({
+              id: 'sh:' + rec.id,
+              op: 'shift',
+              record: rec
+            });
+            synced.push(rec.id);
+            syncedMap[rec.id] = true;
+            queued++;
+            changed = true;
+          } catch (err) {
+            errors++;
+          }
+        }
+        if (changed) {
+          writeJson(storage, SYNCED_KEY, synced);
+        }
+      } catch (e) {
+        errors++;
+      }
+      return { queued: queued, errors: errors };
+    }
+
+    function applyChanges(changes) {
+      var applied = 0;
+      var skipped = 0;
+      if (!storage || !Array.isArray(changes)) {
+        return { applied: 0, skipped: 0 };
+      }
+      var closings = readJson(storage, CLOSINGS_KEY, []);
+      var synced = readJson(storage, SYNCED_KEY, []);
+      var existingIds = {};
+      var syncedMap = {};
+      var i;
+      for (i = 0; i < closings.length; i++) {
+        if (closings[i] && closings[i].id) existingIds[closings[i].id] = true;
+      }
+      for (i = 0; i < synced.length; i++) {
+        syncedMap[synced[i]] = true;
+      }
+
+      var dirty = false;
+      var syncedDirty = false;
+
+      for (i = 0; i < changes.length; i++) {
+        var ch = changes[i];
+        if (!ch || ch.entity !== 'shift_close') continue;
+        var rec = ch.data && ch.data.record;
+        if (!isValidRecord(rec)) {
+          skipped++;
+          continue;
+        }
+        if (existingIds[rec.id]) {
+          if (!syncedMap[rec.id]) {
+            synced.push(rec.id);
+            syncedMap[rec.id] = true;
+            syncedDirty = true;
+          }
+          skipped++;
+          continue;
+        }
+        closings.push(rec);
+        existingIds[rec.id] = true;
+        if (!syncedMap[rec.id]) {
+          synced.push(rec.id);
+          syncedMap[rec.id] = true;
+          syncedDirty = true;
+        }
+        applied++;
+        dirty = true;
+      }
+
+      if (dirty) {
+        closings.sort(function (a, b) {
+          return a.at - b.at;
+        });
+        if (closings.length > MAX_RECORDS) {
+          closings = closings.slice(closings.length - MAX_RECORDS);
+        }
+        writeJson(storage, CLOSINGS_KEY, closings);
+      }
+      if (syncedDirty) {
+        writeJson(storage, SYNCED_KEY, synced);
+      }
+      return { applied: applied, skipped: skipped };
+    }
+
+    return {
+      flush: flush,
+      applyChanges: applyChanges
+    };
+  }
+
+  return {
+    create: create,
+    newClosingId: newClosingId
+  };
 });
 </script>
 <script>
@@ -9719,7 +10133,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
         var client = root.NovaBackendClient.createBackendClient({ storage: ls, fetch: root.fetch.bind(root), outbox: outbox,
           getToken: function () { try { return root.sessionStorage.getItem('novaBackend.token'); } catch (e) { return null; } } });
         sched = createScheduler({ client: client, wire: wire, storage: ls, onDone: refresh, getSale: getSaleFn,
-          extras: function () { return root.novaCreditSync ? [root.novaCreditSync] : []; },
+          extras: function () { return [root.novaCreditSync, root.novaReceiptSync, root.novaShiftSync].filter(Boolean); },
           isHidden: function () { return !!(root.document && root.document.hidden); },
           isOffline: function () { return root.navigator && root.navigator.onLine === false; } });
         var go = function () { sched.tick(); };

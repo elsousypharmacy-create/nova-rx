@@ -44,6 +44,8 @@
         var op = { key: req.key, payload: req.payload };
         if (req && req.payload && req.payload.op === 'return') { op.kind = 'ledger'; op.entity = 'sale_return'; } // S2-01: never sent as an invoice
         else if (req && req.payload && req.payload.op === 'credit') { op.kind = 'ledger'; op.entity = 'credit_move'; } // S2-05
+        else if (req && req.payload && req.payload.op === 'shift') { op.kind = 'ledger'; op.entity = 'shift_close'; } // S2-06
+        else if (req && req.payload && req.payload.op === 'receipt') { op.kind = 'ledger'; op.entity = 'stock_receipt'; } // S2-03
         return doFetch(baseUrl() + '/api/v1/sync/push', { method: 'POST', headers: headers(), body: JSON.stringify({ ops: [op] }) })
           .then(function (r) { if (!r.ok) return { error: 'http-' + r.status }; return r.json(); })
           .then(function (j) {

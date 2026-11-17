@@ -38,6 +38,8 @@
       if (!invoice || typeof invoice.id !== 'string' || !invoice.id) fail('missing-key');
       if (invoice.op === 'credit') { // S2-05: a credit movement carries `move`, not invoice lines
         if (!invoice.move || typeof invoice.move !== 'object' || Array.isArray(invoice.move)) fail('bad-move');
+      } else if (invoice.op === 'shift') { // S2-06: a shift closing carries `record`
+        if (!invoice.record || typeof invoice.record !== 'object' || Array.isArray(invoice.record)) fail('bad-record');
       } else {
         if (!Array.isArray(invoice.lines) || !invoice.lines.length) fail('no-lines');
         invoice.lines.forEach(function (l) {
