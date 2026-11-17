@@ -36,12 +36,16 @@
     /* invoice: { id, number, total, lines: [{code, qty, price, lot?}] }. Same id twice returns the stored entry (no duplicate). */
     function enqueue(invoice) {
       if (!invoice || typeof invoice.id !== 'string' || !invoice.id) fail('missing-key');
-      if (!Array.isArray(invoice.lines) || !invoice.lines.length) fail('no-lines');
-      invoice.lines.forEach(function (l) {
-        if (!l || typeof l.code !== 'string' || !l.code) fail('bad-code');
-        if (!isInt(l.qty) || l.qty <= 0) fail('bad-qty');
-        if (typeof l.price !== 'number' || !isFinite(l.price) || l.price < 0) fail('bad-price');
-      });
+      if (invoice.op === 'credit') { // S2-05: a credit movement carries `move`, not invoice lines
+        if (!invoice.move || typeof invoice.move !== 'object' || Array.isArray(invoice.move)) fail('bad-move');
+      } else {
+        if (!Array.isArray(invoice.lines) || !invoice.lines.length) fail('no-lines');
+        invoice.lines.forEach(function (l) {
+          if (!l || typeof l.code !== 'string' || !l.code) fail('bad-code');
+          if (!isInt(l.qty) || l.qty <= 0) fail('bad-qty');
+          if (typeof l.price !== 'number' || !isFinite(l.price) || l.price < 0) fail('bad-price');
+        });
+      }
       var a = load(), ex = find(a, invoice.id);
       if (ex) return copy(ex);
       var e = { key: invoice.id, payload: copy(invoice), status: 'pending', attempts: 0, nextAt: 0, queuedAt: now(), lastError: null, conflicts: [] };

@@ -55,7 +55,12 @@
         .sort(function (a, b) { return a.due - b.due || a.at - b.at; });
     }
     function balanceC(s, c) { return openDebts(s, c).reduce(function (t, d) { return t + d.open; }, 0); }
-    function nextId(s, p) { return p + '-' + (s.moves.length + 1); }
+    /* S2-05: a random suffix keeps ids unique across devices (old ids stay valid). */
+    function rand6() {
+      var s = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      return (s + '000000').slice(0, 6);
+    }
+    function nextId(s, p) { return p + '-' + (s.moves.length + 1) + '-' + rand6(); }
 
     function setLimit(customerId, limit) {
       var s = load(); cust(customerId);
@@ -171,8 +176,36 @@
       return { ok: diffs.length === 0, diffs: diffs };
     }
 
+    /* S2-05: sync helpers. allMoves = every movement (copy); importMove appends a movement from another device AS-IS, once. */
+    function allMoves() {
+      return copy(load().moves);
+    }
+    function importMove(m) {
+      if (!m || typeof m !== 'object') return { ok: false, error: 'bad-move' };
+      if (typeof m.id !== 'string' || !m.id) return { ok: false, error: 'bad-id' };
+      if (m.type !== 'opening' && m.type !== 'charge' && m.type !== 'collection' && m.type !== 'reversal') {
+        return { ok: false, error: 'bad-type' };
+      }
+      if (typeof m.customerId !== 'string' || !m.customerId) return { ok: false, error: 'bad-customer' };
+      if (typeof m.cents !== 'number' || !isFinite(m.cents) || Math.floor(m.cents) !== m.cents || m.cents <= 0) {
+        return { ok: false, error: 'bad-cents' };
+      }
+      if (m.type === 'collection' && !Array.isArray(m.allocations)) {
+        return { ok: false, error: 'bad-allocations' };
+      }
+      if (m.type === 'reversal' && (typeof m.target !== 'string' || !m.target)) {
+        return { ok: false, error: 'bad-target' };
+      }
+      var s = load();
+      if (byId(s, m.id)) return { ok: true, imported: false };
+      s.moves.push(copy(m));
+      save(s);
+      return { ok: true, imported: true };
+    }
+
     return { setLimit: setLimit, limitOf: limitOf, openingBalance: openingBalance, charge: charge, collect: collect, reverse: reverse,
-      balance: balance, aging: aging, statement: statement, customers: customers, totalOutstanding: totalOutstanding, reconcile: reconcile };
+      balance: balance, aging: aging, statement: statement, customers: customers, totalOutstanding: totalOutstanding, reconcile: reconcile,
+      allMoves: allMoves, importMove: importMove };
   }
 
   var api = { createCreditLedger: createCreditLedger };
