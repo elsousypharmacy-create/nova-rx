@@ -36,7 +36,9 @@ const stripPurchaseUi = s => s.replace(/const NOVA_PURCHASING_ASSETS=(.*);/, (_,
  return 'const NOVA_PURCHASING_ASSETS='+JSON.stringify(table)+';';
 });
 const purchaseTable = JSON.parse(raw.match(/const NOVA_PURCHASING_ASSETS=(.*);/)[1]);
-for(const [route,path] of Object.entries(purchaseUi))ck('purchase UI matches repo '+route,purchaseTable[route].body===readFileSync(join(ROOT,path),'utf8'));
+// S2-03 added two script tags to purchases.html (shipped in the s2-03 build); this older artifact predates them.
+const preS203 = (s) => s.replace('<script src="/offline-outbox.js"></script><script src="/receipt-sync-wire.js"></script>', '');
+for(const [route,path] of Object.entries(purchaseUi))ck('purchase UI matches repo '+route,purchaseTable[route].body===preS203(readFileSync(join(ROOT,path),'utf8')));
 const strip = (s) => stripPurchaseUi(swBody(s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>')).join('\n'))[0]);
 ck('worker code outside explicitly verified app/SW/PWA/purchase UI bodies and /whatsapp route identical to ux-406', strip(stripWaSpa(stripPwa(raw))) === strip(readFileSync(BASE, 'utf8')));
 const sw = swBody(raw)[1];
