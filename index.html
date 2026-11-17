@@ -4083,6 +4083,7 @@ window.NovaFmt=(function(){
               if (all.some(x => x.id === sale.id)) return true; // idempotent on id
               all.unshift(sale);
               localStorage.setItem(KEY, JSON.stringify(all.slice(0, MAX)));
+              try { if (window.novaSync) window.novaSync.afterSale(sale); } catch (_) { /* S1-03: outbox + stock ledger wiring never blocks a sale */ }
               return true;
             } catch (_) { return false; }
           },
@@ -4177,7 +4178,7 @@ window.NovaFmt=(function(){
             // Tender reversal: same method as the sale. Card refunds are MOCKED (no gateway): reference only. Cash leaves the drawer.
             const tender = { method: sale.payment, amount: q.amount, direction: 'refund', mock: sale.payment === 'card', ref: sale.payment === 'card' ? 'MOCK-' + id.slice(0, 8).toUpperCase() : null };
             const r = { id, saleId: sale.id, number: sale.number, at: new Date().toISOString(), kind: 'return', ...(extra || {}), reason: text.slice(0, 200), lines: q.lines, amount: q.amount, method: sale.payment, tender, lotsRestored: rv.lots, costReversed: rv.cost };
-            try { const all = this.returns(); all.unshift(r); localStorage.setItem(RKEY, JSON.stringify(all.slice(0, 1000))); return { ok: true, ret: r }; } catch (_) { return { ok: false, error: 'storage' }; }
+            try { const all = this.returns(); all.unshift(r); localStorage.setItem(RKEY, JSON.stringify(all.slice(0, 1000))); try { if (window.novaSync) window.novaSync.afterReturn(sale, r); } catch (_) { /* S1-03: local stock movement only; never blocks a return */ } return { ok: true, ret: r }; } catch (_) { return { ok: false, error: 'storage' }; }
           }
         };
       })();
@@ -8945,6 +8946,348 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 })();
 </script>
 <!-- UX430:END -->
+<!-- S1-03:BEGIN offline sync scripts (verbatim copies of offline-outbox.js, stock-ledger.js, pos-sync-wire.js; kept equal by tests/unit/pos-outbox-wire.check.mjs) -->
+<script>
+/* NOVA Rx — OFF-03 persistent offline outbox + mock sync endpoint (pure logic, no DOM, no real network).
+   A finalized invoice is enqueued under its idempotency key (the invoice id) and is NEVER deleted: it goes
+   pending -> synced, or pending -> review (price / balance / lot conflict) -> pending (resubmit) | resolved (kept local).
+   Sync failures only schedule a retry with exponential backoff; nothing is dropped after any number of attempts.
+   Works as a <script> (window.NovaOutbox) and in Node (module.exports). Not wired to a screen yet. */
+(function (root) {
+  'use strict';
+
+  function fail(code) { var e = new Error(code); e.code = code; throw e; }
+  function copy(o) { return JSON.parse(JSON.stringify(o)); }
+  function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
+  var TYPES = { price: 1, balance: 1, lot: 1 };
+
+  /* opts: { now(): ms, baseMs: 2000, capMs: 3600000 } */
+  function createOutbox(storage, key, opts) {
+    key = key || 'nova.outbox';
+    opts = opts || {};
+    var now = opts.now || function () { return Date.now(); };
+    var baseMs = opts.baseMs || 2000, capMs = opts.capMs || 3600000;
+    var running = false;
+
+    function load() {
+      var raw = storage.getItem(key);
+      if (!raw) return [];
+      var a;
+      try { a = JSON.parse(raw); } catch (e) { fail('outbox-corrupt'); }
+      if (!Array.isArray(a)) fail('outbox-corrupt');
+      return a;
+    }
+    function save(a) {
+      try { storage.setItem(key, JSON.stringify(a)); } catch (e) { fail('outbox-write-failed'); }
+    }
+    function find(a, k) { for (var i = 0; i < a.length; i++) if (a[i].key === k) return a[i]; return null; }
+    function backoff(attempts) { return Math.min(capMs, baseMs * Math.pow(2, Math.max(0, attempts - 1))); }
+
+    /* invoice: { id, number, total, lines: [{code, qty, price, lot?}] }. Same id twice returns the stored entry (no duplicate). */
+    function enqueue(invoice) {
+      if (!invoice || typeof invoice.id !== 'string' || !invoice.id) fail('missing-key');
+      if (!Array.isArray(invoice.lines) || !invoice.lines.length) fail('no-lines');
+      invoice.lines.forEach(function (l) {
+        if (!l || typeof l.code !== 'string' || !l.code) fail('bad-code');
+        if (!isInt(l.qty) || l.qty <= 0) fail('bad-qty');
+        if (typeof l.price !== 'number' || !isFinite(l.price) || l.price < 0) fail('bad-price');
+      });
+      var a = load(), ex = find(a, invoice.id);
+      if (ex) return copy(ex);
+      var e = { key: invoice.id, payload: copy(invoice), status: 'pending', attempts: 0, nextAt: 0, queuedAt: now(), lastError: null, conflicts: [] };
+      a.push(e);
+      save(a);
+      return copy(e);
+    }
+
+    /* endpoint.send({key, payload}) -> {ok:true} | {conflicts:[{type,code,...}]}; a throw / rejection = network failure.
+       Handles each due entry once per call; a second concurrent call is a no-op. */
+    function sync(endpoint) {
+      if (running) return Promise.resolve({ skipped: true, synced: 0, review: 0, retry: 0 });
+      running = true;
+      var out = { skipped: false, synced: 0, review: 0, retry: 0 };
+      var t0 = now();
+      var due = load().filter(function (e) { return e.status === 'pending' && e.nextAt <= t0; }).map(function (e) { return e.key; });
+      var chain = Promise.resolve();
+      due.forEach(function (k) {
+        chain = chain.then(function () {
+          var cur = find(load(), k);
+          if (!cur || cur.status !== 'pending') return;
+          var res;
+          return Promise.resolve().then(function () { return endpoint.send({ key: cur.key, payload: copy(cur.payload) }); })
+            .then(function (r) { res = r; }, function (err) { res = { error: String(err && err.message || err) }; })
+            .then(function () {
+              var a = load(), e = find(a, k);
+              e.attempts += 1;
+              if (res && res.ok === true) { e.status = 'synced'; e.lastError = null; e.syncedAt = now(); out.synced++; }
+              else if (res && Array.isArray(res.conflicts) && res.conflicts.length && res.conflicts.every(function (c) { return c && TYPES[c.type]; })) {
+                e.status = 'review'; e.conflicts = copy(res.conflicts); e.lastError = null; out.review++;
+              } else {
+                e.lastError = (res && res.error) || 'bad-response';
+                e.nextAt = now() + backoff(e.attempts);
+                out.retry++;
+              }
+              save(a);
+            });
+        });
+      });
+      return chain.then(function () { running = false; return out; }, function (e) { running = false; throw e; });
+    }
+
+    /* action 'resubmit' puts it back in the queue (fresh retry, same key); 'keep-local' closes the review but keeps the invoice. */
+    function resolve(k, r) {
+      if (!r || (r.action !== 'resubmit' && r.action !== 'keep-local')) fail('bad-action');
+      if (typeof r.by !== 'string' || !r.by) fail('missing-reviewer');
+      var a = load(), e = find(a, k);
+      if (!e) fail('not-found');
+      if (e.status !== 'review') fail('not-in-review');
+      e.resolution = { action: r.action, by: r.by, note: r.note || '', at: now() };
+      if (r.action === 'resubmit') { e.status = 'pending'; e.nextAt = 0; e.attempts = 0; }
+      else e.status = 'resolved';
+      save(a);
+      return copy(e);
+    }
+
+    function by(status) { return load().filter(function (e) { return e.status === status; }).map(copy); }
+    return {
+      enqueue: enqueue, sync: sync, resolve: resolve,
+      all: function () { return load().map(copy); },
+      pending: function () { return by('pending'); },
+      needsReview: function () { return by('review'); },
+      get: function (k) { var e = find(load(), k); return e ? copy(e) : null; }
+    };
+  }
+
+  /* MOCK server for tests and the UI trial. Holds balances and prices in memory; never touches a network.
+     Idempotent per key (a replay after a lost response returns the stored answer and does not decrement again).
+     A sale is all-or-nothing: if any line conflicts, no balance moves. stock: {code: {qty, price, lots?: {lot: qty}}}.
+     opts.failNext(n): next n calls throw (simulated network loss; the sale is NOT applied). opts.dropResponseNext: apply, then throw. */
+  function createMockEndpoint(stock) {
+    var seen = {}, st = copy(stock), failures = 0, dropResponses = 0, calls = 0;
+    return {
+      calls: function () { return calls; },
+      failNext: function (n) { failures = n; },
+      dropResponseNext: function (n) { dropResponses = n; },
+      balance: function (code) { return st[code] ? st[code].qty : 0; },
+      send: function (req) {
+        calls++;
+        if (failures > 0) { failures--; throw new Error('network-down'); }
+        var res;
+        if (Object.prototype.hasOwnProperty.call(seen, req.key)) res = seen[req.key];
+        else {
+          var conflicts = [];
+          req.payload.lines.forEach(function (l) {
+            var s = st[l.code];
+            if (!s) { conflicts.push({ type: 'balance', code: l.code, wanted: l.qty, available: 0 }); return; }
+            if (l.price !== s.price) conflicts.push({ type: 'price', code: l.code, sold: l.price, current: s.price });
+            if (l.lot != null && (!s.lots || (s.lots[l.lot] || 0) < l.qty)) conflicts.push({ type: 'lot', code: l.code, lot: l.lot, wanted: l.qty, available: s.lots ? (s.lots[l.lot] || 0) : 0 });
+            var total = req.payload.lines.filter(function (x) { return x.code === l.code; }).reduce(function (n, x) { return n + x.qty; }, 0);
+            if (s.qty < total) conflicts.push({ type: 'balance', code: l.code, wanted: total, available: s.qty });
+          });
+          if (conflicts.length) res = { conflicts: conflicts };
+          else {
+            req.payload.lines.forEach(function (l) { st[l.code].qty -= l.qty; if (l.lot != null) st[l.code].lots[l.lot] -= l.qty; });
+            res = { ok: true };
+          }
+          seen[req.key] = res;
+        }
+        if (dropResponses > 0) { dropResponses--; throw new Error('response-lost'); }
+        return copy(res);
+      }
+    };
+  }
+
+  var api = { createOutbox: createOutbox, createMockEndpoint: createMockEndpoint };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.NovaOutbox = api;
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>
+/* NOVA Rx — INV-01 on-device stock movement ledger (pure logic, no DOM, no network).
+   Append-only: there is no update or delete. onHand is DERIVED from the movements, never stored.
+   Works as a <script> (window.NovaStockLedger) and in Node (module.exports). Not wired to a screen yet. */
+(function (root) {
+  'use strict';
+
+  var KINDS = { sale: -1, return: 1, receive: 1, adjustment: 0 };   // sign of qty; adjustment carries its own sign
+  function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
+  function fail(code) { var e = new Error(code); e.code = code; throw e; }
+  function copy(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function createLedger(storage, key, now) {
+    key = key || 'nova.stock.ledger';
+    now = now || function () { return new Date().toISOString(); };
+    function load() {
+      var raw = storage.getItem(key);
+      if (!raw) return [];
+      try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { fail('ledger-corrupt'); }
+    }
+    return {
+      /* qty: positive integer for sale/return/receive; non-zero signed integer for adjustment.
+         ref is required (invoice no., PO no., reason). Same kind+ref+code twice is rejected (idempotent replay). */
+      append: function (m) {
+        if (!m || !Object.prototype.hasOwnProperty.call(KINDS, m.kind)) fail('bad-kind');
+        if (typeof m.code !== 'string' || !m.code) fail('bad-code');
+        if (typeof m.ref !== 'string' || !m.ref) fail('missing-ref');
+        if (!isInt(m.qty) || m.qty === 0) fail('bad-qty');
+        if (m.kind !== 'adjustment' && m.qty < 0) fail('bad-qty');
+        var lot = m.lot == null ? null : String(m.lot);
+        if (m.kind === 'receive' && m.lot != null) {   // N29: receiving may carry lot / expiry / unit cost
+          if (!lot) fail('bad-lot');
+          if (typeof m.expiry !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(m.expiry) || isNaN(Date.parse(m.expiry))) fail('bad-expiry');
+          if (typeof m.cost !== 'number' || !isFinite(m.cost) || m.cost < 0) fail('bad-cost');
+        } else if (m.lot != null || m.expiry != null || m.cost != null) fail('lot-only-on-receive');
+        var a = load();
+        for (var i = 0; i < a.length; i++) if (a[i].kind === m.kind && a[i].ref === m.ref && a[i].code === m.code && (a[i].lot || null) === lot) fail('duplicate-movement');
+        var delta = m.kind === 'adjustment' ? m.qty : KINDS[m.kind] * m.qty;
+        var rec = { seq: a.length + 1, at: now(), kind: m.kind, code: m.code, qty: m.qty, delta: delta, ref: m.ref };
+        if (lot) { rec.lot = lot; rec.expiry = m.expiry; rec.cost = m.cost; }
+        a.push(rec);
+        storage.setItem(key, JSON.stringify(a));
+        return copy(rec);
+      },
+      movements: function (code) { return load().filter(function (r) { return !code || r.code === code; }); },
+      /* receipts that carry a lot: [{code, lot, expiry, cost, qty, ref, seq}] (received quantity, not remaining) */
+      lots: function (code) { return load().filter(function (r) { return r.lot && (!code || r.code === code); }); },
+      onHand: function (code) { return load().reduce(function (s, r) { return r.code === code ? s + r.delta : s; }, 0); },
+      balances: function () {
+        var out = {};
+        load().forEach(function (r) { out[r.code] = (out[r.code] || 0) + r.delta; });
+        return out;
+      }
+    };
+  }
+
+  /* Daily ledger-vs-balance check. balances: { code: qty } as shown by any other store/screen.
+     Returns { ok, day, mismatches: [{code, ledger, balance}] }; a code missing on one side counts as 0 there. */
+  function checkDaily(ledger, balances, day) {
+    var l = ledger.balances(), codes = {}, bad = [];
+    Object.keys(l).forEach(function (c) { codes[c] = 1; });
+    Object.keys(balances || {}).forEach(function (c) { codes[c] = 1; });
+    Object.keys(codes).sort().forEach(function (c) {
+      var lv = l[c] || 0, bv = (balances || {})[c] || 0;
+      if (lv !== bv) bad.push({ code: c, ledger: lv, balance: bv });
+    });
+    return { ok: bad.length === 0, day: day || null, mismatches: bad };
+  }
+
+  var api = { KINDS: Object.keys(KINDS), createLedger: createLedger, checkDaily: checkDaily };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NovaStockLedger = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* NOVA Rx - S1-03: wires a finished POS sale / return into the offline outbox (NovaOutbox) and the on-device stock ledger
+   (NovaStockLedger). Pure logic (no DOM except the optional pending chip, no network): it never fetches. The outbox is only
+   SENT by NovaBackendClient.syncAll when the per-device flag novaBackend.enabled is on (S1-04), so with the flag OFF there
+   are zero network calls and the sale screen behaves exactly as before. Every call is wrapped by the caller in try/catch:
+   a wiring error must never block a sale.
+   Sale line -> outbox line: code = barcode || name, qty = line qty (integers only), price = unit price (major units).
+   Invoice discount sent = max(0, gross - total) so the server total equals the POS total.
+   Returns / cancels append local stock movements only (kind 'return'); the outbox payload is invoice-shaped and the server
+   would apply it as a sale, so server-side returns are a separate step (not enqueued here).
+   Works as <script> (window.novaSync) and in Node (module.exports). */
+(function (root) {
+  'use strict';
+  var round2 = function (n) { return Math.round((n + Number.EPSILON) * 100) / 100; };
+  var codeOf = function (l) { return String((l && (l.barcode || l.name)) || '').trim(); };
+
+  function create(deps) {
+    var outbox = deps.outbox, ledger = deps.ledger;
+
+    /* qty per code (a repeated product in one invoice is one movement) */
+    function byCode(lines) {
+      var m = {}, order = [];
+      (lines || []).forEach(function (l) {
+        var c = codeOf(l), q = Number(l && l.qty);
+        if (!c || !Number.isInteger(q) || q <= 0) return;
+        if (!(c in m)) { m[c] = 0; order.push(c); }
+        m[c] += q;
+      });
+      return order.map(function (c) { return { code: c, qty: m[c] }; });
+    }
+
+    function invoicePayload(sale) {
+      var lines = [], gross = 0;
+      (sale.lines || []).forEach(function (l) {
+        var c = codeOf(l), q = Number(l.qty), p = Number(l.price);
+        if (!c || !Number.isInteger(q) || q <= 0 || !isFinite(p) || p < 0) return;
+        lines.push({ code: c, qty: q, price: p }); gross += q * p;
+      });
+      if (!lines.length) return null;
+      var total = Number(sale.total), p = { id: String(sale.id), number: String(sale.number || sale.id), at: sale.at, total: isFinite(total) ? total : round2(gross), lines: lines };
+      var d = round2(gross - p.total);
+      if (d > 0) p.discount = d;
+      return p;
+    }
+
+    return {
+      /* sale: the saved POS record. Idempotent (outbox by invoice id, ledger by kind+ref+code). */
+      afterSale: function (sale) {
+        if (!sale || !sale.id || !Array.isArray(sale.lines)) return { ok: false, error: 'bad-sale' };
+        var out = { ok: true, movements: 0, queued: false }, ref = 'sale:' + String(sale.number || sale.id);
+        byCode(sale.lines).forEach(function (m) {
+          try { ledger.append({ kind: 'sale', code: m.code, qty: m.qty, ref: ref }); out.movements++; }
+          catch (e) { if (!e || e.code !== 'duplicate-movement') out.ok = false; }
+        });
+        var p = invoicePayload(sale);
+        if (p) { try { outbox.enqueue(p); out.queued = true; } catch (e) { out.ok = false; out.error = e && e.code; } }
+        return out;
+      },
+      /* ret: the saved return record { id, saleId, lines:[{idx, qty}] }. Local stock only. */
+      afterReturn: function (sale, ret) {
+        if (!sale || !ret || !ret.id || !Array.isArray(ret.lines)) return { ok: false, error: 'bad-return' };
+        var out = { ok: true, movements: 0 }, ref = 'return:' + String(ret.id), m = {}, order = [];
+        ret.lines.forEach(function (rl) {
+          var l = sale.lines && sale.lines[rl.idx], c = codeOf(l), q = Number(rl.qty);
+          if (!c || !Number.isInteger(q) || q <= 0) return;
+          if (!(c in m)) { m[c] = 0; order.push(c); }
+          m[c] += q;
+        });
+        order.forEach(function (c) {
+          try { ledger.append({ kind: 'return', code: c, qty: m[c], ref: ref }); out.movements++; }
+          catch (e) { if (!e || e.code !== 'duplicate-movement') out.ok = false; }
+        });
+        return out;
+      },
+      pending: function () {
+        try { var a = outbox.all(); return { pending: a.filter(function (e) { return e.status === 'pending'; }).length, review: a.filter(function (e) { return e.status === 'review'; }).length }; }
+        catch (e) { return { pending: 0, review: 0 }; }
+      }
+    };
+  }
+
+  /* Pending chip: only when the per-device backend flag is ON (otherwise sync is off and a permanent "waiting" chip would mislead). */
+  function chip(api, doc, storage) {
+    if (!doc || !doc.body) return;
+    var on = false; try { on = storage.getItem('novaBackend.enabled') === 'true'; } catch (e) { on = false; }
+    var el = doc.getElementById('novaSyncChip'), p = api.pending();
+    if (!on || (!p.pending && !p.review)) { if (el) el.remove(); return; }
+    if (!el) {
+      el = doc.createElement('div'); el.id = 'novaSyncChip'; el.dir = 'rtl'; el.setAttribute('role', 'status');
+      el.style.cssText = 'position:fixed;bottom:8px;inset-inline-start:8px;z-index:50;background:#1f2937;color:#fff;border-radius:999px;padding:4px 12px;font-size:12px;opacity:.9;pointer-events:none';
+      doc.body.appendChild(el);
+    }
+    el.textContent = p.review ? 'تحتاج مراجعة (' + p.review + ')' : 'في انتظار المزامنة (' + p.pending + ')';
+  }
+
+  var api = { create: create, chip: chip };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else if (root.NovaOutbox && root.NovaStockLedger) {
+    var ls; try { ls = root.localStorage; } catch (e) { ls = null; }
+    if (ls) {
+      var wire = create({ outbox: root.NovaOutbox.createOutbox(ls, 'nova.outbox'), ledger: root.NovaStockLedger.createLedger(ls, 'nova.stock.ledger') });
+      var refresh = function () { try { chip(wire, root.document, ls); } catch (e) { /* cosmetic only */ } };
+      root.novaSync = {
+        afterSale: function (s) { var r = wire.afterSale(s); refresh(); return r; },
+        afterReturn: function (s, r) { return wire.afterReturn(s, r); },
+        pending: wire.pending, refresh: refresh
+      };
+      if (root.document && root.document.addEventListener) root.document.addEventListener('DOMContentLoaded', refresh);
+    }
+  }
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<!-- S1-03:END -->
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
