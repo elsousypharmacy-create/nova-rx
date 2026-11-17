@@ -162,3 +162,5 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
  .offer-state.error,.offer-state.incomplete{color:#e17b80}
  .panel-head h2{font-size:17px;font-weight:700}
 }
+/* UX-P7: same button colours as the rest of the app */
+@media(min-width:801px){.secondary{background:#20262d;border-color:#343b44;color:#e6eaee}.secondary:hover:not(:disabled){background:#29313a}.primary:hover:not(:disabled){background:#438ead}}

@@ -10892,6 +10892,33 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-data-table th,.nova-page-view .nova-data-table th{padding:8px 14px}
 #novaPageView .nova-data-table th:has(.nova-sort-btn),.nova-page-view .nova-data-table th:has(.nova-sort-btn){padding-block:0}
 }
+/* UX-P7 one button system, one empty state, one warning (ChatGPT decisions, brand colours kept; CSS drafted by Gemini, reviewed + measured): colour/radius/type only, no layout change */
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action:not(.secondary),.nova-page-btn,.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice){border-radius:10px!important;font-size:14px;font-weight:700;border:1px solid transparent!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.btn-checkout,.nova-inventory-action:not(.secondary),.nova-page-btn){background:#387e9e!important;border-color:#76b8d5!important;color:#fff!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.btn-checkout,.nova-inventory-action:not(.secondary),.nova-page-btn):hover:not(:disabled){background:#438ead!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale){background:#20262d!important;border-color:#343b44!important;color:#e6eaee!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale):hover:not(:disabled){background:#29313a!important}
+:is(#novaPageView,.nova-page-view,.pos-root) .nova-clear-invoice{background:transparent!important;border-color:#7a2d33!important;color:#ffb4b8!important}
+:is(#novaPageView,.nova-page-view,.pos-root) .nova-clear-invoice:hover:not(:disabled){background:#3a1519!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action,.nova-page-btn,.btn-secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice):focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action,.nova-page-btn,.btn-secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice):disabled{opacity:.45}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-empty-card,.nova-empty){text-align:center;padding:40px 16px;border:1px dashed #343b44!important;border-radius:14px!important;background:transparent!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-empty-card,.nova-empty) strong{display:block;margin-bottom:6px;font-size:15px;font-weight:700;color:#e6eaee!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-empty-card,.nova-empty) span{font-size:13px;color:#a9b5c2!important}
+#novaPageView .nova-notice,.nova-page-view .nova-notice,.pos-root .nova-notice{background:#2a2412!important;border:1px solid #6b5a2a!important;color:#e6d9a6!important;border-radius:10px!important;padding:10px 14px;font-size:13px}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-sale-labels,.btn:not([class*="btn-"]):not([class*="nova-"])){background:#20262d!important;border:1px solid #343b44!important;border-radius:10px!important;color:#e6eaee!important;font-size:14px;font-weight:700}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-sale-labels,.btn:not([class*="btn-"]):not([class*="nova-"])):hover:not(:disabled){background:#29313a!important}
+body .btn-primary{background:#387e9e!important;border:1px solid #76b8d5!important;color:#fff!important;border-radius:10px!important}
+body .btn-primary:hover:not(:disabled){background:#438ead!important}
+body .modal-footer .btn-primary,body [class*="modal"] .btn-primary{background:#387e9e!important;border:1px solid #76b8d5!important;color:#fff!important;border-radius:10px!important}
+body .modal-footer .btn-secondary,body [class*="modal"] .btn-secondary{background:#20262d!important;border:1px solid #343b44!important;color:#e6eaee!important;border-radius:10px!important}
+body .btn-secondary{background:#20262d!important;border:1px solid #343b44!important;color:#e6eaee!important;border-radius:10px!important}
+body .btn-secondary:hover:not(:disabled){background:#29313a!important}
+/* sale toolbar: every button the same height (was 34px next to 44px) */
+.nova-sale-actions .btn,.nova-sale-actions .nova-more-wrap>.btn,.nova-sale-actions>.btn{height:44px!important;min-height:44px!important}
+/* minimum 13px for operational text (products "same name and pack" alert was 11.7px) */
+#novaPageView #novaDupes,#novaPageView #novaDupes *{font-size:13px}
+#novaPageView table th,.nova-page-view table th{font-size:13px}
 #novaPageView .nova-kpi-delta[data-dir=up]{color:#3ddc84}#novaPageView .nova-kpi-delta[data-dir=down]{color:#ff8a8f}
 </style>
 </html>
