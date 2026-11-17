@@ -164,6 +164,136 @@ async function applyReturn(db, tenant, op, id, data, ctx) {
   return rej('SYNC_RETURN_INVALID', msg);
 }
 
+// S2-03: a goods receipt op { kind:'ledger', entity:'stock_receipt', payload:{ id, op:'receipt', poId, ref, lines:[{code, qty (base units), price, lot, expiry, unit, perBox}] } }
+// creates the product row if missing, adds to the lot batch, appends the receipt movement, and writes sync rows: ONE batch.
+async function applyReceipt(db, tenant, op, id, data, ctx) {
+  const payload = op.payload || {};
+  const lines = payload.lines;
+  if (!Array.isArray(lines) || lines.length === 0) {
+    return rej('SYNC_RECEIPT_INVALID', 'بيانات الاستلام غير صالحة.');
+  }
+
+  const normLines = [];
+  for (const ln of lines) {
+    if (!ln || typeof ln !== 'object') {
+      return rej('SYNC_RECEIPT_INVALID', 'بيانات الاستلام غير صالحة.');
+    }
+    const code = typeof ln.code === 'string' ? ln.code.trim() : '';
+    const qty = ln.qty;
+    const price = ln.price;
+    const lot = typeof ln.lot === 'string' ? ln.lot.trim() : '';
+    const expiry = ln.expiry == null ? '' : String(ln.expiry).trim();
+
+    if (
+      !code ||
+      !Number.isSafeInteger(qty) || qty <= 0 ||
+      typeof price !== 'number' || !Number.isFinite(price) || price < 0 ||
+      !lot || lot.length > 64 ||
+      (expiry !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(expiry))
+    ) {
+      return rej('SYNC_RECEIPT_INVALID', 'بيانات الاستلام غير صالحة.');
+    }
+
+    const unitCostMinor = Math.round(price * 100);
+    const unit = typeof ln.unit === 'string' && ln.unit ? ln.unit : 'box';
+    const perBox = Number.isFinite(Number(ln.perBox)) && Number(ln.perBox) > 0 ? Number(ln.perBox) : 1;
+
+    normLines.push({
+      code,
+      qty,
+      unitCostMinor,
+      lot,
+      expiry: expiry || null,
+      expiryStr: expiry,
+      unit,
+      perBox
+    });
+  }
+
+  const { tenantId, branchId } = ctx.scope;
+  const createdBy = (typeof ctx.actor === 'string' ? ctx.actor : (ctx.actor && (ctx.actor.id || ctx.actor.username || ctx.actor.sub))) || null;
+  const stmts = [];
+  const feedItems = [];
+
+  for (const ln of normLines) {
+    const btId = 'bt_' + crypto.randomUUID();
+    const mvId = 'mv_' + crypto.randomUUID();
+
+    stmts.push(
+      db.prepare(
+        'INSERT OR IGNORE INTO products (id, tenant_id, branch_id, sku, name_ar) VALUES (?, ?, ?, ?, ?)'
+      ).bind(ln.code, tenantId, branchId, ln.code, ln.code)
+    );
+
+    stmts.push(
+      db.prepare(
+        'INSERT INTO inventory_batches (id, tenant_id, branch_id, product_id, batch_no, expiry_date, qty_on_hand, cost_minor) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(tenant_id, branch_id, product_id, batch_no) DO UPDATE SET qty_on_hand = qty_on_hand + excluded.qty_on_hand'
+      ).bind(btId, tenantId, branchId, ln.code, ln.lot, ln.expiry, ln.qty, ln.unitCostMinor)
+    );
+
+    stmts.push(
+      db.prepare(
+        "INSERT INTO inventory_movements (id, tenant_id, branch_id, product_id, batch_id, kind, qty_delta, unit_cost_minor, ref_type, ref_id, created_by) SELECT ?, ?, ?, ?, b.id, 'receipt', ?, ?, 'stock_receipt', ?, ? FROM inventory_batches b WHERE b.tenant_id = ? AND b.branch_id = ? AND b.product_id = ? AND b.batch_no = ?"
+      ).bind(mvId, tenantId, branchId, ln.code, ln.qty, ln.unitCostMinor, id, createdBy, tenantId, branchId, ln.code, ln.lot)
+    );
+
+    feedItems.push({
+      productId: ln.code,
+      qty: ln.qty,
+      lot: ln.lot,
+      expiry: ln.expiryStr,
+      unitCostMinor: ln.unitCostMinor,
+      unit: ln.unit,
+      perBox: ln.perBox
+    });
+  }
+
+  const feedPayload = JSON.stringify({
+    receiptId: id,
+    poId: payload.poId ? String(payload.poId) : '',
+    ref: payload.ref ? String(payload.ref) : '',
+    items: feedItems
+  });
+
+  const opResult = { status: 'applied', receiptId: id };
+  const opResultJson = JSON.stringify(opResult);
+
+  stmts.push(
+    db.prepare(
+      "INSERT INTO sync_ledger (id, tenant_id, entity, payload_json) VALUES (?, ?, 'stock_receipt', ?)"
+    ).bind(id, tenant, data)
+  );
+
+  stmts.push(
+    db.prepare(
+      "INSERT INTO change_feed (tenant_id, branch_id, entity, entity_id, deleted, payload_json) VALUES (?, ?, 'stock_receipt', ?, 0, ?)"
+    ).bind(tenantId, branchId, id, feedPayload)
+  );
+
+  stmts.push(
+    db.prepare(
+      'INSERT INTO sync_ops (tenant_id, op_key, result_json) VALUES (?, ?, ?)'
+    ).bind(tenant, op.key, opResultJson)
+  );
+
+  try {
+    await db.batch(stmts);
+    return opResult;
+  } catch (_) {
+    try {
+      const existing = await db
+        .prepare('SELECT result_json FROM sync_ops WHERE tenant_id = ? AND op_key = ?')
+        .bind(tenant, op.key)
+        .first();
+      if (existing && existing.result_json) {
+        const stored = JSON.parse(existing.result_json);
+        return { ...stored, duplicate: true };
+      }
+    } catch (_) {}
+    return rej('SYNC_WRITE_FAILED', 'تعذّر حفظ الاستلام.');
+  }
+}
+
 export const MAX_OPS = 200;
 export function syncEnabled(env) { return !!env && String(env.NOVA_SYNC) === '1' && !!env.DB; }
 
@@ -232,6 +362,52 @@ async function one(db, tenant, op, ctx) {
         }
         return rej('SYNC_WRITE_FAILED', 'تعذّر حفظ حركة الآجل.');
       }
+    } else if (entity === 'stock_receipt' && ctx && ctx.scope && salesWritesEnabled(ctx.env) && Array.isArray(op.payload.lines)) { // S2-03
+      res = await applyReceipt(db, tenant, op, id, data, ctx);
+      if (res.transient) { const { transient, ...out } = res; return out; }
+      if (res.status === 'applied') return res;
+    } else if (entity === 'shift_close' && ctx && ctx.scope && op.payload && op.payload.record && typeof op.payload.record === 'object') { // S2-06
+      const rec = op.payload.record;
+      const validId = typeof rec.id === 'string' && /^[A-Za-z0-9_\-:.]{1,128}$/.test(rec.id);
+      const validNums =
+        typeof rec.at === 'number' && Number.isFinite(rec.at) &&
+        typeof rec.float === 'number' && Number.isFinite(rec.float) && rec.float >= 0 &&
+        typeof rec.expected === 'number' && Number.isFinite(rec.expected) &&
+        typeof rec.counted === 'number' && Number.isFinite(rec.counted) && rec.counted >= 0 &&
+        typeof rec.diff === 'number' && Number.isFinite(rec.diff) &&
+        typeof rec.note === 'string';
+      if (!validId || !validNums) {
+        return rej('SYNC_SHIFT_INVALID', 'بيانات إقفال الوردية غير صالحة.');
+      }
+      const tenantId = ctx.scope.tenantId;
+      const branchId = ctx.scope.branchId;
+      const userId = String(rec.cashier || (ctx.actor || 'pos'));
+      const openingMinor = Math.round(rec.float * 100);
+      const countedMinor = Math.round(rec.counted * 100);
+      const isoAt = new Date(rec.at).toISOString();
+      const appliedResult = { status: 'applied' };
+      try {
+        await db.batch([
+          db.prepare('INSERT INTO sync_ledger (id, tenant_id, entity, payload_json) VALUES (?, ?, ?, ?)')
+            .bind(id, tenant, entity, data),
+          db.prepare("INSERT INTO cashier_sessions (id, tenant_id, branch_id, user_id, opening_float_minor, closing_counted_minor, status, opened_at, closed_at) VALUES (?, ?, ?, ?, ?, ?, 'closed', ?, ?)")
+            .bind('cs:' + rec.id, tenantId, branchId, userId, openingMinor, countedMinor, isoAt, isoAt),
+          db.prepare('INSERT INTO change_feed (tenant_id, branch_id, entity, entity_id, deleted, payload_json) VALUES (?, ?, ?, ?, 0, ?)')
+            .bind(tenantId, branchId, 'shift_close', rec.id, JSON.stringify({ record: rec })),
+          db.prepare('INSERT INTO sync_ops (tenant_id, op_key, result_json) VALUES (?, ?, ?)')
+            .bind(tenant, op.key, JSON.stringify(appliedResult))
+        ]);
+      } catch (e) {
+        const prev = await db.prepare('SELECT result_json FROM sync_ops WHERE tenant_id = ? AND op_key = ?')
+          .bind(tenant, op.key)
+          .first();
+        if (prev && prev.result_json) {
+          const stored = JSON.parse(prev.result_json);
+          return { ...stored, duplicate: true };
+        }
+        return rej('SYNC_WRITE_FAILED', 'تعذّر حفظ إقفال الوردية.');
+      }
+      return appliedResult;
     } else { await db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, entity, data).run(); res = { status: 'applied' }; }
   } else {
     const cur = await db.prepare('SELECT version FROM sync_master WHERE tenant_id=? AND entity=? AND id=?').bind(tenant, entity, id).first();
