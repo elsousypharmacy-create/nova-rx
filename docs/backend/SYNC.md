@@ -51,3 +51,22 @@ Tenant comes from the session (`tenant`) or `NOVA_TENANT_ID`, default `default`.
 - Other devices import the movement AS-IS (same id, same FIFO allocations), so balances and aging match; imported ids are never pushed back.
   Opening/reversal ids now carry a random suffix so two devices never collide.
 - Tests: `tests/unit/credit-sync.check.mjs`, case 7 of `tests/unit/backend-sync-returns.check.mjs`.
+
+## S2-06 — shift close sync (one source of truth)
+- The reports screen's closings list `nova-rx-shift-closings-v1` is the ONLY shift ledger on the POS (records are immutable;
+  `finance-shifts.js` / `nova.shifts` is retired for the POS screen). Closing ids are `SC<ms>-<6 random>` so devices never collide.
+- Each closing is queued once as `{ key:'sh:<id>', kind:'ledger', entity:'shift_close', payload:{ id, op:'shift', record } }`.
+- Server: `sync_ledger` + `cashier_sessions` (id `cs:<recordId>`, status `closed`, float/counted in minor units) + `change_feed`
+  (entity `shift_close`) + `sync_ops` in ONE batch; replay = duplicate; invalid = `SYNC_SHIFT_INVALID`.
+- Other devices insert the record by id (sorted by time), so "آخر إقفال" and "من آخر إقفال" match everywhere; imported records are never pushed back.
+- Test: `tests/unit/shift-sync.check.mjs`.
+
+## S2-03 — goods receipt (GRN) sync
+- After a confirmed receive on the purchases page, `receipt-sync-wire.js` queues ONE op to the shared outbox:
+  `{ key:'rcv:<poId>:<fnv32>', kind:'ledger', entity:'stock_receipt', payload:{ id, op:'receipt', poId, ref, lines:[{ code, qty (base units), price (cost per base unit), lot, expiry, unit, perBox }] } }`
+  (the id hashes PO id + PO createdAt + GRN ref, so Arabic refs and repeated PO numbers on two devices never collide).
+- Server (`applyReceipt`): product row created if missing (`INSERT OR IGNORE`, id = code), lot batch upserted (`qty_on_hand += qty`),
+  `inventory_movements` receipt row, `sync_ledger`, `change_feed` (entity `stock_receipt`), `sync_ops`: ONE batch. Invalid = `SYNC_RECEIPT_INVALID`.
+- Other devices append `receive` ledger movements (base units, lot/expiry/cost) once; the receiving device skips its own receipt
+  (already in its ledger in boxes) via `nova.receipts.local`. The POS scheduler runs it as an extra; the purchases page only enqueues.
+- Test: `tests/unit/receipt-sync.check.mjs`.
