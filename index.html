@@ -10880,6 +10880,16 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-page-header h1{font-size:23px;line-height:1.3}
 #novaPageView .nova-setting-card{padding:18px 20px}
 #novaPageView .nova-setting-card h3{margin:0 0 6px}
+/* UX-P4 (owner screenshot, customers page): KPI row never leaves one orphan card, header has breathing room, compact table header */
+@media(min-width:801px){
+#novaPageView .nova-kpis,.nova-page-view .nova-kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+#novaPageView .nova-kpi,.nova-page-view .nova-kpi{min-height:0}
+#novaPageView .nova-page-header,.nova-page-view .nova-page-header{flex-wrap:wrap;align-items:center;gap:12px 24px}
+#novaPageView .nova-page-header>div:first-child,.nova-page-view .nova-page-header>div:first-child{flex:1 1 320px;min-width:0}
+#novaPageView .nova-search-wrap,.nova-page-view .nova-search-wrap{flex:0 1 420px;min-width:260px}
+#novaPageView .nova-data-table th,.nova-page-view .nova-data-table th{padding:8px 14px}
+#novaPageView .nova-data-table th:has(.nova-sort-btn),.nova-page-view .nova-data-table th:has(.nova-sort-btn){padding-block:0}
+}
 #novaPageView .nova-kpi-delta[data-dir=up]{color:#3ddc84}#novaPageView .nova-kpi-delta[data-dir=down]{color:#ff8a8f}
 </style>
 </html>
