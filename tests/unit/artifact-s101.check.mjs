@@ -23,7 +23,8 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8');
 rmSync(dir, { recursive: true });
 const raw = readFileSync(ART, 'utf8');
 
-ck('app HTML equals main index.html', app === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+// S1-03: index.html moved on (offline sync wiring). The exact-equality check lives in the newest artifact's check (artifact-s103.check.mjs); here s1-01 stays a frozen snapshot.
+ck('app HTML is a frozen s1-01 snapshot', app.startsWith('<!DOCTYPE html>') && app.includes('function hLock(') && app.length > 500000);
 const noHtml = (s) => s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>')).join('\n');
 ck('worker code outside the app HTML literal is identical to ux-407', noHtml(raw) === noHtml(readFileSync(BASE, 'utf8')));
 ck('one app HTML literal line', raw.split('\n').filter((l) => l.includes('new Response("<!DOCTYPE html>') || l.includes('novaWhatsAppSpaHtml(url.pathname,"<!DOCTYPE html>')).length === 1);
