@@ -99,3 +99,24 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
 .purchase-flow{gap:6px;font-size:12px}.purchase-flow li{padding:3px 10px;border-radius:999px;color:#a4adb7;background:transparent}
 /* hints and small notes were too faint */
 .controls small,.hint,#coverageHint{color:#a4adb7;font-size:13px;line-height:1.6}
+/* UX-P2: one clean toolbar (title+settings row, actions row), no duplicate step strip, readable table headers, roomier cart (owner screenshot 2026-11-18) */
+@media(min-width:801px){
+ .purchase-flow{display:none}
+ .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:12px 16px}
+ .controls::before{content:"";order:3;flex:0 0 100%;height:0}
+ .controls .compact-title{order:0;margin:0 0 0 8px;font-size:20px}
+ .controls label{order:1}.controls fieldset{order:1}.controls #scopeChip{order:2}
+ .controls .source{order:2;margin-inline-start:auto;flex-direction:row;align-items:center;gap:8px;max-width:none;text-align:start}
+ .controls #openSettings{order:4;margin:0}.controls #load{order:5}.controls #distribute{order:6}.controls .progress-dialog{order:6}
+ .controls #openSupplierCarts{order:7;margin-inline-start:auto}.controls #receiveInvoice{order:7}.controls #openPo{order:7}
+ .controls button,.controls #receiveInvoice{min-height:40px;font-size:13px;padding:6px 14px}
+ .controls #distribute{padding:6px 20px}
+ #status{padding:6px 2px;color:#a4adb7}
+ table{table-layout:auto}
+ th{white-space:normal;line-height:1.35;font-size:12px;padding:8px}
+ th:nth-child(3),th:nth-child(4),th:nth-child(5),th:nth-child(6),th:nth-child(7),th:nth-child(8),th:nth-child(9){width:auto;min-width:78px}
+ th:nth-child(2){width:26%}
+ #total{direction:rtl;unicode-bidi:plaintext;text-align:start}
+ .cart-footer small{line-height:1.6;color:#a4adb7}
+}
+@media(min-width:1280px){.workspace{grid-template-columns:minmax(0,1fr) 340px}}
