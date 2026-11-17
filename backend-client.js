@@ -41,7 +41,9 @@
 
     var endpoint = {
       send: function (req) {
-        return doFetch(baseUrl() + '/api/v1/sync/push', { method: 'POST', headers: headers(), body: JSON.stringify({ ops: [{ key: req.key, payload: req.payload }] }) })
+        var op = { key: req.key, payload: req.payload };
+        if (req && req.payload && req.payload.op === 'return') { op.kind = 'ledger'; op.entity = 'sale_return'; } // S2-01: never sent as an invoice
+        return doFetch(baseUrl() + '/api/v1/sync/push', { method: 'POST', headers: headers(), body: JSON.stringify({ ops: [op] }) })
           .then(function (r) { if (!r.ok) return { error: 'http-' + r.status }; return r.json(); })
           .then(function (j) {
             var x = j && j.results && j.results[0];
@@ -78,7 +80,7 @@
       return push().then(function (p) { return pull().then(function (q) { return { skipped: false, push: p, pull: q }; }); });
     }
 
-    return { enabled: enabled, baseUrl: baseUrl, setEnabled: setEnabled, setUrl: setUrl, push: push, pull: pull, syncAll: syncAll, feed: function () { return readJson(storage, K_FEED, []); } };
+    return { endpoint: endpoint, enabled: enabled, baseUrl: baseUrl, setEnabled: setEnabled, setUrl: setUrl, push: push, pull: pull, syncAll: syncAll, feed: function () { return readJson(storage, K_FEED, []); } };
   }
 
   var api = { createBackendClient: createBackendClient, resolveBaseUrl: resolveBaseUrl, PRODUCTION_URL: PRODUCTION_URL, KEYS: { enabled: K_ENABLED, url: K_URL, token: K_TOKEN } };
