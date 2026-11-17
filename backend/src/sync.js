@@ -12,15 +12,24 @@ import { syncScope } from './sync-scope.js';
 // qty = line.qty (positive integer), unitPriceMinor = round(line.price * 100) (the POS stores major units).
 // invoice-level discount = round(payload.discount * 100); payments = payload.payments[{method, amount}] or one cash payment = total.
 const NOT_MINOR = (n) => Math.round(Number(n) * 100);
+// S2-02: lines may carry unit (box|strip|tablet) + perBox (base units per box). The sale/stock use items exactly as before
+// (qty = integer base units); feedItems = items + unit/perBox so the other devices show the line in the right unit.
+const VALID_UNITS = new Set(['box', 'strip', 'tablet']);
 export function invoiceToSaleInput(p) {
   const lines = Array.isArray(p && p.lines) ? p.lines : null;
   if (!lines || !lines.length) return null;
-  const items = [];
+  const items = [], feedItems = [];
   for (const l of lines) {
     const productId = l && (l.productId || l.code);
     const qty = l && Number(l.qty), price = l && Number(l.price);
     if (!productId || !Number.isSafeInteger(qty) || qty <= 0 || !Number.isFinite(price) || price < 0) return null;
-    items.push({ productId: String(productId), qty, unitPriceMinor: NOT_MINOR(price) });
+    const item = { productId: String(productId), qty, unitPriceMinor: NOT_MINOR(price) };
+    items.push(item);
+    const fi = { ...item };
+    if (l && VALID_UNITS.has(l.unit)) fi.unit = l.unit;
+    const pb = l && Number(l.perBox);
+    if (Number.isSafeInteger(pb) && pb > 0) fi.perBox = pb;
+    feedItems.push(fi);
   }
   const gross = items.reduce((a, it) => a + it.qty * it.unitPriceMinor, 0);
   const disc = p.discount == null ? 0 : NOT_MINOR(p.discount);
@@ -29,7 +38,7 @@ export function invoiceToSaleInput(p) {
   let payments = [];
   if (Array.isArray(p.payments) && p.payments.length) payments = p.payments.map((x) => ({ method: x && x.method, amountMinor: NOT_MINOR(x && x.amount) }));
   else if (total > 0) payments = [{ method: 'cash', amountMinor: total }];
-  return { items, payments, discountMinor: disc };
+  return { items, feedItems, payments, discountMinor: disc };
 }
 
 async function applyInvoice(db, tenant, op, id, data, ctx) {
@@ -41,7 +50,7 @@ async function applyInvoice(db, tenant, op, id, data, ctx) {
   const extra = () => [
     db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, 'invoice', data),
     db.prepare('INSERT INTO change_feed (tenant_id,branch_id,entity,entity_id,deleted,payload_json) VALUES (?,?,?,?,0,?)')
-      .bind(tenant, ctx.scope.branchId, 'sale', saleId, JSON.stringify({ saleId, opKey: op.key, invoiceId: id, items: input.items, discountMinor: input.discountMinor, payments: input.payments })),
+      .bind(tenant, ctx.scope.branchId, 'sale', saleId, JSON.stringify({ saleId, opKey: op.key, invoiceId: id, items: input.feedItems, discountMinor: input.discountMinor, payments: input.payments })),
     db.prepare('INSERT INTO sync_ops (tenant_id,op_key,result_json) VALUES (?,?,?)').bind(tenant, op.key, JSON.stringify(res)), // strict: a concurrent twin batch fails on the PK and rolls back whole
   ];
   const r = await createSale(ctx.env, ctx.scope, input, ctx.requestId, ctx.actor, { saleId, extra });
@@ -187,6 +196,42 @@ async function one(db, tenant, op, ctx) {
       res = await applyInvoice(db, tenant, op, id, data, ctx);
       if (res.transient) { const { transient, ...out } = res; return out; } // stock may arrive later: never cache this conflict
       if (res.status === 'applied') return res; // sync_ops row was written in the same batch
+    } else if (entity === 'credit_move' && ctx && ctx.scope && op.payload && op.payload.move && typeof op.payload.move === 'object') { // S2-05
+      const mv = op.payload.move;
+      const validTypes = { opening: 1, charge: 1, collection: 1, reversal: 1 };
+      if (
+        typeof mv.id !== 'string' || !/^[A-Za-z0-9_\-:.]{1,128}$/.test(mv.id) ||
+        !validTypes[mv.type] ||
+        typeof mv.customerId !== 'string' || !mv.customerId.trim() ||
+        typeof mv.cents !== 'number' || !Number.isInteger(mv.cents) || mv.cents <= 0
+      ) {
+        return rej('SYNC_CREDIT_INVALID', 'بيانات حركة الآجل غير صالحة.');
+      }
+      const appliedRes = { status: 'applied' };
+      try {
+        await db.batch([
+          db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, entity, data),
+          db.prepare('INSERT INTO change_feed (tenant_id,branch_id,entity,entity_id,deleted,payload_json) VALUES (?,?,?,?,0,?)').bind(
+            ctx.scope.tenantId,
+            ctx.scope.branchId || null,
+            'credit_move',
+            String(mv.id),
+            JSON.stringify({ move: mv })
+          ),
+          db.prepare('INSERT INTO sync_ops (tenant_id,op_key,result_json) VALUES (?,?,?)').bind(
+            tenant,
+            op.key,
+            JSON.stringify(appliedRes)
+          )
+        ]);
+        return appliedRes;
+      } catch (e) {
+        const dup = await db.prepare('SELECT result_json FROM sync_ops WHERE tenant_id = ? AND op_key = ?').bind(tenant, op.key).first();
+        if (dup && dup.result_json) {
+          return { ...JSON.parse(dup.result_json), duplicate: true };
+        }
+        return rej('SYNC_WRITE_FAILED', 'تعذّر حفظ حركة الآجل.');
+      }
     } else { await db.prepare('INSERT INTO sync_ledger (id,tenant_id,entity,payload_json) VALUES (?,?,?,?)').bind(id, tenant, entity, data).run(); res = { status: 'applied' }; }
   } else {
     const cur = await db.prepare('SELECT version FROM sync_master WHERE tenant_id=? AND entity=? AND id=?').bind(tenant, entity, id).first();
