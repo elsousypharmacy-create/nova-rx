@@ -95,12 +95,7 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
   }
 
   async function requirePin(request) {
-    if (!env.NOVA_API_PIN) return json({ error: 'not-configured' }, 503);
-    if (tooManyFailures(Date.now())) return lockedResponse(Date.now());
-    if (!(await secretsEqual(request.headers.get('X-Nova-Pin'), env.NOVA_API_PIN))) {
-      failCount += 1;
-      return json({ error: 'unauthorized' }, 401);
-    }
+    // Owner decision: PIN removed from supplier/purchasing preview routes (nobody uses it yet).
     return null;
   }
 
