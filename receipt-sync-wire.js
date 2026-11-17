@@ -44,11 +44,24 @@
     return String(s == null ? '' : s).replace(/[^A-Za-z0-9_\-:.]/g, '_');
   }
 
-  function receiptId(po, grn) {
+  /* Random id of THIS device, kept in storage: two devices that number a PO / GRN identically in the same millisecond must not
+     produce the same receipt key (the server would drop the second as a duplicate = silent stock loss). Found by the day simulation. */
+  function deviceId(storage) {
+    try {
+      var v = storage && storage.getItem('nova.device.id');
+      if (v) return String(v);
+      var chars = '0123456789abcdefghijklmnopqrstuvwxyz', s = '';
+      for (var i = 0; i < 8; i++) s += chars.charAt(Math.floor(Math.random() * 36));
+      if (storage) storage.setItem('nova.device.id', s);
+      return s;
+    } catch (_) { return ''; }
+  }
+
+  function receiptId(po, grn, devId) {
     var poId = po && po.id ? String(po.id) : '';
     var createdAt = po && po.createdAt ? String(po.createdAt) : '';
     var ref = grn && grn.ref ? String(grn.ref) : '';
-    var hash = fnv1a32hex(poId + '|' + createdAt + '|' + ref);
+    var hash = fnv1a32hex(poId + '|' + createdAt + '|' + ref + '|' + (devId || ''));
     return 'rcv:' + sanitizeIdPart(poId) + ':' + hash;
   }
 
@@ -122,7 +135,7 @@
         if (!po || !grn || !Array.isArray(grn.lines) || !grn.lines.length) {
           return { ok: false, queued: 0, error: 'invalid-grn' };
         }
-        var id = receiptId(po, grn);
+        var id = receiptId(po, grn, deviceId(storage));
         var lines = [];
         for (var i = 0; i < grn.lines.length; i++) {
           var ln = grn.lines[i] || {};

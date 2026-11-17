@@ -9452,11 +9452,24 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     return String(s == null ? '' : s).replace(/[^A-Za-z0-9_\-:.]/g, '_');
   }
 
-  function receiptId(po, grn) {
+  /* Random id of THIS device, kept in storage: two devices that number a PO / GRN identically in the same millisecond must not
+     produce the same receipt key (the server would drop the second as a duplicate = silent stock loss). Found by the day simulation. */
+  function deviceId(storage) {
+    try {
+      var v = storage && storage.getItem('nova.device.id');
+      if (v) return String(v);
+      var chars = '0123456789abcdefghijklmnopqrstuvwxyz', s = '';
+      for (var i = 0; i < 8; i++) s += chars.charAt(Math.floor(Math.random() * 36));
+      if (storage) storage.setItem('nova.device.id', s);
+      return s;
+    } catch (_) { return ''; }
+  }
+
+  function receiptId(po, grn, devId) {
     var poId = po && po.id ? String(po.id) : '';
     var createdAt = po && po.createdAt ? String(po.createdAt) : '';
     var ref = grn && grn.ref ? String(grn.ref) : '';
-    var hash = fnv1a32hex(poId + '|' + createdAt + '|' + ref);
+    var hash = fnv1a32hex(poId + '|' + createdAt + '|' + ref + '|' + (devId || ''));
     return 'rcv:' + sanitizeIdPart(poId) + ':' + hash;
   }
 
@@ -9530,7 +9543,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
         if (!po || !grn || !Array.isArray(grn.lines) || !grn.lines.length) {
           return { ok: false, queued: 0, error: 'invalid-grn' };
         }
-        var id = receiptId(po, grn);
+        var id = receiptId(po, grn, deviceId(storage));
         var lines = [];
         for (var i = 0; i < grn.lines.length; i++) {
           var ln = grn.lines[i] || {};
@@ -9840,11 +9853,24 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     return hex.slice(-8);
   }
 
-  function poKey(po) {
+  /* Random id of THIS device (same key as receipt-sync-wire.js): two devices with the same PO number and creation millisecond
+     must not share a key. Found by the day simulation. */
+  function deviceId(storage) {
+    try {
+      var v = storage && storage.getItem('nova.device.id');
+      if (v) return String(v);
+      var chars = '0123456789abcdefghijklmnopqrstuvwxyz', s = '';
+      for (var i = 0; i < 8; i++) s += chars.charAt(Math.floor(Math.random() * 36));
+      if (storage) storage.setItem('nova.device.id', s);
+      return s;
+    } catch (_) { return ''; }
+  }
+
+  function poKey(po, devId) {
     if (po && typeof po.syncKey === 'string' && po.syncKey) return po.syncKey;
     var id = po && po.id != null ? String(po.id) : '';
     var at = po && po.createdAt != null ? String(po.createdAt) : '';
-    return 'po:' + fnv1a32hex(id + '|' + at);
+    return 'po:' + fnv1a32hex(id + '|' + at + '|' + (devId || ''));
   }
 
   function readJson(storage, key, fallback) {
@@ -9884,6 +9910,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     var cfg = opts || {};
     var storage = cfg.storage || (root && root.localStorage) || null;
     var outbox = cfg.outbox || null;
+    var dev = deviceId(storage);
 
     function flush() {
       var queued = 0;
@@ -9902,7 +9929,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
           var po = orders[i];
           if (!po || typeof po !== 'object' || po.remote) continue;
           if (!po.state || po.state === 'draft') continue;
-          var key = poKey(po);
+          var key = poKey(po, dev);
           var histLen = Array.isArray(po.history) ? po.history.length : 0;
           var grnsLen = Array.isArray(po.grns) ? po.grns.length : 0;
           var sig = String(po.state) + ':' + histLen + ':' + grnsLen;
@@ -9964,7 +9991,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
           for (var j = 0; j < orders.length; j++) {
             var cur = orders[j];
             if (!cur || typeof cur !== 'object') continue;
-            if (cur.syncKey === key || (!cur.syncKey && poKey(cur) === key)) {
+            if (cur.syncKey === key || (!cur.syncKey && poKey(cur, dev) === key)) {
               idx = j;
               break;
             }

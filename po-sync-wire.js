@@ -22,11 +22,24 @@
     return hex.slice(-8);
   }
 
-  function poKey(po) {
+  /* Random id of THIS device (same key as receipt-sync-wire.js): two devices with the same PO number and creation millisecond
+     must not share a key. Found by the day simulation. */
+  function deviceId(storage) {
+    try {
+      var v = storage && storage.getItem('nova.device.id');
+      if (v) return String(v);
+      var chars = '0123456789abcdefghijklmnopqrstuvwxyz', s = '';
+      for (var i = 0; i < 8; i++) s += chars.charAt(Math.floor(Math.random() * 36));
+      if (storage) storage.setItem('nova.device.id', s);
+      return s;
+    } catch (_) { return ''; }
+  }
+
+  function poKey(po, devId) {
     if (po && typeof po.syncKey === 'string' && po.syncKey) return po.syncKey;
     var id = po && po.id != null ? String(po.id) : '';
     var at = po && po.createdAt != null ? String(po.createdAt) : '';
-    return 'po:' + fnv1a32hex(id + '|' + at);
+    return 'po:' + fnv1a32hex(id + '|' + at + '|' + (devId || ''));
   }
 
   function readJson(storage, key, fallback) {
@@ -66,6 +79,7 @@
     var cfg = opts || {};
     var storage = cfg.storage || (root && root.localStorage) || null;
     var outbox = cfg.outbox || null;
+    var dev = deviceId(storage);
 
     function flush() {
       var queued = 0;
@@ -84,7 +98,7 @@
           var po = orders[i];
           if (!po || typeof po !== 'object' || po.remote) continue;
           if (!po.state || po.state === 'draft') continue;
-          var key = poKey(po);
+          var key = poKey(po, dev);
           var histLen = Array.isArray(po.history) ? po.history.length : 0;
           var grnsLen = Array.isArray(po.grns) ? po.grns.length : 0;
           var sig = String(po.state) + ':' + histLen + ':' + grnsLen;
@@ -146,7 +160,7 @@
           for (var j = 0; j < orders.length; j++) {
             var cur = orders[j];
             if (!cur || typeof cur !== 'object') continue;
-            if (cur.syncKey === key || (!cur.syncKey && poKey(cur) === key)) {
+            if (cur.syncKey === key || (!cur.syncKey && poKey(cur, dev) === key)) {
               idx = j;
               break;
             }
