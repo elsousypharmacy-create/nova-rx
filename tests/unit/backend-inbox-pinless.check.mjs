@@ -1,5 +1,5 @@
-// S1-01 (2026-11-17): UX400's pinless staging/preview mode is REMOVED. Every NOVA_ENV (staging, preview, production, dev,
-// unset, unknown) requires the pharmacy PIN for the conversations read + send routes. The send safety rails stay:
+// UX400 (owner approved 2026-11-15): the staging/preview backend serves the conversations read + send routes WITHOUT
+// the pharmacy PIN; production (and dev / unset / unknown NOVA_ENV) stays PIN-gated. The send safety rails stay:
 // NOVA_INBOX_SEND kill switch, WhatsApp 24h window, rate limits, wa_send_log.
 // Fake data only, mocked bot fetch, no network, no real customer. Run: node tests/unit/backend-inbox-pinless.check.mjs
 import assert from 'node:assert/strict';
@@ -43,27 +43,22 @@ const send = async (body, e, pin, ip) => {
   return [r.status, await r.json()];
 };
 
-// S1-01: no env value opens the gate any more (fail closed on everything, including the old staging / preview values)
-for (const v of ['staging', 'preview', 'production', 'dev', '', undefined, null, 'Staging', 'STAGING', 'staging ', 'prod', 'staging,production']) assert.equal(historyPinless({ NOVA_ENV: v }), false, 'gated for NOVA_ENV=' + v);
+// env flag: only the exact staging / preview values open the gate (fail closed on anything else)
+assert.equal(historyPinless(staging), true); assert.equal(historyPinless(preview), true);
+for (const v of ['production', 'dev', '', undefined, null, 'Staging', 'STAGING', 'staging ', 'prod', 'staging,production']) assert.equal(historyPinless({ NOVA_ENV: v }), false, 'gated for NOVA_ENV=' + v);
 assert.equal(historyPinless(null), false); assert.equal(historyPinless(undefined), false);
-// no DB is still "not configured" (never data)
+// no DB is still "not configured" even on staging (never data)
 assert.equal((await checkPin(new Request('https://x.test/'), { NOVA_ENV: 'staging' })).status, 503);
 
-// READ: staging + preview are locked: no PIN / wrong PIN => 401 and never any chat data; right PIN => data
-let s, j;
-for (const e of [staging, preview]) {
-  [s, j] = await get('conversations', e, null); assert.equal(s, 401); assert.equal(j.code, 'PIN_REQUIRED'); assert.equal(j.conversations, undefined);
-  [s, j] = await get('conversation?id=wa_201111', e, null); assert.equal(s, 401); assert.ok(!JSON.stringify(j).includes('بنادول'));
-  [s, j] = await get('metrics', e, null); assert.equal(s, 401); assert.equal(j.data, undefined);
-  [s, j] = await get('conversations', e, 'wrong-pin-000000'); assert.equal(s, 401); assert.equal(j.code, 'PIN_INVALID'); assert.equal(j.conversations, undefined);
-  [s, j] = await get('conversations', e, PIN); assert.equal(s, 200, JSON.stringify(j)); assert.deepEqual(j.conversations.map((c) => c.id).sort(), ['wa_201111', 'wa_old']);
-  [s, j] = await get('conversation?id=wa_201111', e, PIN); assert.equal(s, 200); assert.equal(j.conversation.messages[0].text, 'عايزة بنادول');
-  [s, j] = await get('metrics', e, PIN); assert.equal(s, 200); assert.ok(Array.isArray(j.data.events));
+// READ: staging + preview => list + thread without any PIN header and without NOVA_API_PIN configured
+for (const e of [staging, preview, { ...staging, NOVA_API_PIN: undefined }]) {
+  let [s, j] = await get('conversations', e, null); assert.equal(s, 200, JSON.stringify(j)); assert.deepEqual(j.conversations.map((c) => c.id).sort(), ['wa_201111', 'wa_old']);
+  [s, j] = await get('conversation?id=wa_201111', e, null); assert.equal(s, 200); assert.equal(j.conversation.messages[0].text, 'عايزة بنادول');
+  [s, j] = await get('metrics', e, null); assert.equal(s, 200); assert.ok(Array.isArray(j.data.events));
 }
-// staging without a PIN configured stays closed (503), even with a header
-[s, j] = await get('conversations', { ...staging, NOVA_API_PIN: undefined }, PIN); assert.equal(s, 503); assert.equal(j.conversations, undefined);
-[s, j] = await get('conversations', { ...staging, NOVA_API_PIN: 'short' }, 'short'); assert.equal(s, 503);
-// read stays read-only
+// a stray/wrong PIN header on staging is ignored, never a 401 lock
+let [s, j] = await get('conversations', staging, 'wrong-pin-000000'); assert.equal(s, 200);
+// read stays read-only on staging
 assert.equal((await handle(new Request('https://x.test/api/v1/inbox/history/conversations', { method: 'POST' }), staging)).status, 405);
 
 // READ: production / dev / unset stay PIN-gated exactly as before
@@ -75,36 +70,34 @@ for (const e of [production, { ...base, NOVA_ENV: 'dev' }, base]) {
 }
 [s, j] = await get('conversations', { ...production, NOVA_API_PIN: undefined }, null); assert.equal(s, 503, 'production without a PIN configured stays closed');
 
-// SEND: staging / preview / production without / with wrong PIN => 401, nothing reaches the bot, nothing logged
-for (const e of [staging, preview, production]) {
-  [s, j] = await send({ id: 'wa_201111', text: 'hi' }, e, null); assert.equal(s, 401); assert.equal(j.code, 'PIN_REQUIRED');
-  [s, j] = await send({ id: 'wa_201111', text: 'hi' }, e, 'wrong-pin-000000'); assert.equal(s, 401);
-}
+// SEND: production without / with wrong PIN => 401, nothing reaches the bot, nothing logged
+[s, j] = await send({ id: 'wa_201111', text: 'hi' }, production, null); assert.equal(s, 401); assert.equal(j.code, 'PIN_REQUIRED');
+[s, j] = await send({ id: 'wa_201111', text: 'hi' }, production, 'wrong-pin-000000'); assert.equal(s, 401);
 assert.equal(calls.length, 0);
 assert.equal(db.prepare('SELECT COUNT(*) n FROM wa_send_log').get().n, 0);
 
 // SEND kill switch still enforced on staging: NOVA_INBOX_SEND must be exactly '1'
 for (const v of [undefined, '', '0', 'true', 'yes']) {
-  [s, j] = await send({ id: 'wa_201111', text: 'hi' }, { ...staging, NOVA_INBOX_SEND: v }, PIN); assert.equal(s, 404); assert.equal(j.code, 'SEND_DISABLED');
+  [s, j] = await send({ id: 'wa_201111', text: 'hi' }, { ...staging, NOVA_INBOX_SEND: v }, null); assert.equal(s, 404); assert.equal(j.code, 'SEND_DISABLED');
 }
 assert.equal(calls.length, 0);
 
-// SEND on staging with the right PIN: relays to the mocked bot and is logged in wa_send_log
-[s, j] = await send({ id: 'wa_201111', text: 'متوفر', clientId: 'cli_pinless1' }, staging, PIN); assert.equal(s, 200, JSON.stringify(j)); assert.equal(j.message.status, 'sent');
+// SEND on staging without PIN: relays to the mocked bot and is logged in wa_send_log
+[s, j] = await send({ id: 'wa_201111', text: 'متوفر', clientId: 'cli_pinless1' }, staging, null); assert.equal(s, 200, JSON.stringify(j)); assert.equal(j.message.status, 'sent');
 assert.deepEqual(calls.map((c) => c.p.operation), ['reply']); assert.equal(calls[0].p.chatId, 'wa_201111');
 assert.deepEqual(db.prepare("SELECT status FROM wa_send_log WHERE conversation_id = 'wa_201111'").all().map((r) => r.status), ['sent']);
 // duplicate guard still on
-[s, j] = await send({ id: 'wa_201111', text: 'متوفر', clientId: 'cli_pinless1' }, staging, PIN); assert.equal(s, 409);
+[s, j] = await send({ id: 'wa_201111', text: 'متوفر', clientId: 'cli_pinless1' }, staging, null); assert.equal(s, 409);
 
 // no 24h pre-check on staging either (owner 2026-11-16): the send is attempted; a WhatsApp refusal is a plain note, logged as failed
 calls.length = 0; const okR = botReply; botReply = { ok: false, error: 'تيليجرام رفض الرسالة: فات أكتر من 24 ساعة على آخر رسالة من العميل' };
-[s, j] = await send({ id: 'wa_old', text: 'hi' }, staging, PIN); assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED');
+[s, j] = await send({ id: 'wa_old', text: 'hi' }, staging, null); assert.equal(s, 422); assert.equal(j.code, 'SEND_WINDOW_CLOSED');
 assert.deepEqual(calls.map((c) => c.p.operation), ['reply']);
 assert.equal(db.prepare("SELECT status FROM wa_send_log WHERE conversation_id = 'wa_old'").get().status, 'failed'); botReply = okR;
 
 // per-IP rate limit still enforced on staging (20 / 10 min)
 let last;
-for (let i = 0; i < 21; i++) last = await send({ id: 'wa_201111', text: 'r' + i }, staging, PIN, '9.9.9.9');
+for (let i = 0; i < 21; i++) last = await send({ id: 'wa_201111', text: 'r' + i }, staging, null, '9.9.9.9');
 assert.equal(last[0], 429); assert.equal(last[1].code, 'SEND_RATE_LIMITED');
 
 console.log('backend-inbox-pinless OK');
