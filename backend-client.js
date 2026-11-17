@@ -64,7 +64,8 @@
       return outbox.sync(endpoint).catch(function (e) { return { skipped: false, error: String(e && e.message || e) }; });
     }
 
-    function pull() {
+    /* One page per call; pull() below keeps going while the server says hasMore (a new device, or one back after days offline, catches up in one sync). */
+    function pullPage() {
       if (!active()) return Promise.resolve({ skipped: true, items: 0 });
       var cursor = storage.getItem(K_CURSOR) || '';
       // S1-02: the real route is GET /api/v1/sync/pull?cursor= -> { changes:[{seq,entity,id,deleted,data}], nextCursor, hasMore }.
@@ -79,6 +80,19 @@
           return { skipped: false, items: items.length, hasMore: !!j.hasMore };
         })
         .catch(function (e) { return { skipped: false, items: 0, error: String(e && e.message || e) }; });
+    }
+
+    var MAX_PAGES = 50;
+    function pull() {
+      var total = 0, pages = 0;
+      function next() {
+        return pullPage().then(function (r) {
+          total += r.items || 0; pages++;
+          if (r.hasMore && !r.error && !r.skipped && pages < MAX_PAGES) return next();
+          r.items = total; r.pages = pages; return r;
+        });
+      }
+      return next();
     }
 
     function syncAll() {
