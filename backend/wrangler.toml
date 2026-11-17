@@ -35,6 +35,11 @@ NOVA_ENV = "staging"
 NOVA_INBOX_SEND = "1"
 NOVA_INBOX_SEND_MEDIA = "1" # photo sending: staging only, owner-approved test (production stays OFF)
 NOVA_INBOX_SEND_VOICE = "1" # voice notes (converted to OGG/Opus in the browser): staging only
+# S1-05 (Stage 1, staging only): server auth + sync push/pull + sales writes ON so a test device can sync against staging.
+# Production keeps all three OFF (tests/unit/wrangler-stage1-flags.check.mjs locks this split).
+NOVA_AUTH = "1"
+NOVA_SYNC = "1"
+NOVA_SALES_WRITES = "1"
 # FIX51: bot -> NOVA live forward (bridge). DIRECT writes the message into the inbox tables immediately (no cron queue / tenant map).
 NOVA_WA_BRIDGE_INTAKE = "1"
 NOVA_WA_BRIDGE_DIRECT = "1"
