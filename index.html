@@ -9239,6 +9239,8 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
           .then(function (j) {
             var x = j && j.results && j.results[0];
             if (x && x.status === 'applied') return { ok: true };
+            /* S2 hardening: a permanent refusal (e.g. a second return of the same units from another device, an invalid op) goes to the review list instead of being retried forever. */
+            if (x && x.status === 'rejected') return { conflicts: [{ type: 'balance', code: x.code || 'rejected', message_ar: x.message_ar || '' }] };
             return { error: (x && x.code) || (j && j.error) || 'bad-response' };
           });
       }
@@ -10600,9 +10602,10 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
           return {
             pending: a.filter(function (e) { return e.status === 'pending'; }).length,
             review: a.filter(function (e) { return e.status === 'review'; }).length,
-            reviewUnits: revUnits
+            reviewUnits: revUnits,
+            stockWait: a.filter(function (e) { return e.status === 'pending' && e.lastError === 'SYNC_STOCK_CONFLICT'; }).length
           };
-        } catch (e) { return { pending: 0, review: 0, reviewUnits: revUnits }; }
+        } catch (e) { return { pending: 0, review: 0, reviewUnits: revUnits, stockWait: 0 }; }
       }
     };
   }
@@ -10617,7 +10620,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
       el.style.cssText = 'position:fixed;bottom:8px;inset-inline-start:8px;z-index:50;background:#1f2937;color:#fff;border-radius:999px;padding:4px 12px;font-size:12px;opacity:.9;pointer-events:none';
       doc.body.appendChild(el);
     }
-    el.textContent = p.review ? 'تحتاج مراجعة (' + p.review + ')' : (p.reviewUnits ? 'فواتير تحتاج ضبط الوحدة (' + p.reviewUnits + ')' : 'في انتظار المزامنة (' + p.pending + ')');
+    el.textContent = p.review ? 'تحتاج مراجعة (' + p.review + ')' : (p.reviewUnits ? 'فواتير تحتاج ضبط الوحدة (' + p.reviewUnits + ')' : (p.stockWait ? 'فواتير تنتظر رصيد الصنف على الخادم (' + p.stockWait + ')' : 'في انتظار المزامنة (' + p.pending + ')'));
   }
 
   var SYNC_POLL_MS = 8000;

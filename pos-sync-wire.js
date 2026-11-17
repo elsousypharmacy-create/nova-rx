@@ -241,9 +241,10 @@
           return {
             pending: a.filter(function (e) { return e.status === 'pending'; }).length,
             review: a.filter(function (e) { return e.status === 'review'; }).length,
-            reviewUnits: revUnits
+            reviewUnits: revUnits,
+            stockWait: a.filter(function (e) { return e.status === 'pending' && e.lastError === 'SYNC_STOCK_CONFLICT'; }).length
           };
-        } catch (e) { return { pending: 0, review: 0, reviewUnits: revUnits }; }
+        } catch (e) { return { pending: 0, review: 0, reviewUnits: revUnits, stockWait: 0 }; }
       }
     };
   }
@@ -258,7 +259,7 @@
       el.style.cssText = 'position:fixed;bottom:8px;inset-inline-start:8px;z-index:50;background:#1f2937;color:#fff;border-radius:999px;padding:4px 12px;font-size:12px;opacity:.9;pointer-events:none';
       doc.body.appendChild(el);
     }
-    el.textContent = p.review ? 'تحتاج مراجعة (' + p.review + ')' : (p.reviewUnits ? 'فواتير تحتاج ضبط الوحدة (' + p.reviewUnits + ')' : 'في انتظار المزامنة (' + p.pending + ')');
+    el.textContent = p.review ? 'تحتاج مراجعة (' + p.review + ')' : (p.reviewUnits ? 'فواتير تحتاج ضبط الوحدة (' + p.reviewUnits + ')' : (p.stockWait ? 'فواتير تنتظر رصيد الصنف على الخادم (' + p.stockWait + ')' : 'في انتظار المزامنة (' + p.pending + ')'));
   }
 
   var SYNC_POLL_MS = 8000;

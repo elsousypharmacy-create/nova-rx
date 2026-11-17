@@ -52,6 +52,8 @@
           .then(function (j) {
             var x = j && j.results && j.results[0];
             if (x && x.status === 'applied') return { ok: true };
+            /* S2 hardening: a permanent refusal (e.g. a second return of the same units from another device, an invalid op) goes to the review list instead of being retried forever. */
+            if (x && x.status === 'rejected') return { conflicts: [{ type: 'balance', code: x.code || 'rejected', message_ar: x.message_ar || '' }] };
             return { error: (x && x.code) || (j && j.error) || 'bad-response' };
           });
       }
