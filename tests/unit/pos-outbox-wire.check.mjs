@@ -26,7 +26,7 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
   assert.deepEqual(ledger.movements().map((m) => [m.kind, m.code, m.qty, m.delta, m.ref]), [['sale', '622100', 2, -2, 'sale:sale-1'], ['sale', 'فيتامين', 1, -1, 'sale:sale-1']]);
   assert.equal(outbox.all().length, 1); assert.equal(outbox.all()[0].status, 'pending'); assert.equal(outbox.all()[0].key, 'sale-1');
   const p = outbox.all()[0].payload; assert.deepEqual(p.lines, [{ code: '622100', qty: 2, price: 5, unit: 'box', perBox: 1 }, { code: 'فيتامين', qty: 1, price: 5, unit: 'box', perBox: 1 }]); // S2-02: base unit fields assert.equal(p.discount, undefined);
-  assert.deepEqual(wire.pending(), { pending: 1, review: 0, reviewUnits: 0 });
+  assert.deepEqual(wire.pending(), { pending: 1, review: 0, reviewUnits: 0, stockWait: 0 });
   // the server maps this exact payload to a sale (S1-02 contract): productId = code, minor units, total equals the POS total
   const si = invoiceToSaleInput(p); assert.deepEqual(si.items, [{ productId: '622100', qty: 2, unitPriceMinor: 500 }, { productId: 'فيتامين', qty: 1, unitPriceMinor: 500 }]);
   assert.equal(si.items.reduce((a, i) => a + i.qty * i.unitPriceMinor, 0) - si.discountMinor, 1500);
@@ -92,7 +92,7 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
 {
   const bad = { enqueue() { throw Object.assign(new Error('x'), { code: 'outbox-write-failed' }); }, all() { throw new Error('x'); } };
   const w = Wire.create({ outbox: bad, ledger: { append() { throw Object.assign(new Error('x'), { code: 'bad-qty' }); } } });
-  const r = w.afterSale(sale()); assert.equal(r.ok, false); assert.deepEqual(w.pending(), { pending: 0, review: 0, reviewUnits: 0 });
+  const r = w.afterSale(sale()); assert.equal(r.ok, false); assert.deepEqual(w.pending(), { pending: 0, review: 0, reviewUnits: 0, stockWait: 0 });
 }
 assert.equal(fetched, 0, 'zero network calls');
 

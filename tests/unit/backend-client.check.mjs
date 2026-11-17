@@ -45,7 +45,7 @@ const res = (body, status = 200) => ({ ok: status < 400, status, json: async () 
   assert.equal(c.feed().length, 2);
 }
 // ON: errors stay local and queued
-for (const h of [() => { throw new Error('net'); }, () => res({}, 500), () => res({ ok: true, results: [{ status: 'rejected', code: 'X' }] })]) {
+for (const h of [() => { throw new Error('net'); }, () => res({}, 500)]) {
   const st = mem(), f = mkFetch(h);
   const ob = createOutbox(st, 'ob'); ob.enqueue(inv('i1'));
   const c = createBackendClient({ storage: st, fetch: f, outbox: ob });
@@ -56,4 +56,4 @@ for (const h of [() => { throw new Error('net'); }, () => res({}, 500), () => re
   assert.equal(r.pull.items, 0); assert.ok(r.pull.error);
   assert.equal(c.feed().length, 0);
 }
-console.log('backend-client.check OK');
+// a permanent refusal is NOT retried forever and NOT lost: it goes to the review list with the server's code\n{\n  const st = mem(), f = mkFetch(() => res({ ok: true, results: [{ status: 'rejected', code: 'SYNC_RETURN_REJECTED', message_ar: 'x' }] }));\n  const ob = createOutbox(st, 'ob'); ob.enqueue(inv('i2'));\n  const c = createBackendClient({ storage: st, fetch: f, outbox: ob });\n  c.setEnabled(true); c.setUrl('https://b.test');\n  const r = await c.push();\n  assert.equal(r.review, 1); assert.equal(ob.pending().length, 0); assert.equal(ob.needsReview().length, 1);\n  assert.equal(ob.needsReview()[0].conflicts[0].code, 'SYNC_RETURN_REJECTED');\n}\nconsole.log('backend-client.check OK');
