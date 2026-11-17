@@ -40,6 +40,8 @@
         if (!invoice.move || typeof invoice.move !== 'object' || Array.isArray(invoice.move)) fail('bad-move');
       } else if (invoice.op === 'shift') { // S2-06: a shift closing carries `record`
         if (!invoice.record || typeof invoice.record !== 'object' || Array.isArray(invoice.record)) fail('bad-record');
+      } else if (invoice.op === 'po') { // S2-04: a purchase order snapshot
+        if (!invoice.po || typeof invoice.po !== 'object' || Array.isArray(invoice.po) || typeof invoice.key !== 'string') fail('bad-po');
       } else {
         if (!Array.isArray(invoice.lines) || !invoice.lines.length) fail('no-lines');
         invoice.lines.forEach(function (l) {
