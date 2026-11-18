@@ -4217,15 +4217,29 @@ window.NovaFmt=(function(){
           try { localStorage.setItem(BK, flag ? '1' : '0'); if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice(); return { ok: true, blockExpired: !!flag }; }
           catch (_) { return { ok: false, error: 'storage' }; }
         };
+        const lotRecords = () => {
+          const records = JSON.parse(localStorage.getItem(LK) || '[]');
+          if (!Array.isArray(records)) throw new Error('invalid-lot-store');
+          return records;
+        };
         const rawLots = () => {
           try {
-            const a = JSON.parse(localStorage.getItem(LK) || '[]');
-            return Array.isArray(a) ? a.filter(x => x && typeof x.key === 'string' && x.key && typeof x.lot === 'string' && x.lot && validDate(x.expiry) && Number.isInteger(x.qty) && x.qty > 0) : [];
+            return lotRecords().filter(x => x && typeof x.key === 'string' && x.key && typeof x.lot === 'string' && x.lot && validDate(x.expiry) && Number.isInteger(x.qty) && x.qty > 0);
           } catch (_) { return []; }
         };
+        // The application marker and quantity are committed in the same localStorage write.
+        const receiptMarkers = () => lotRecords().find(record => Array.isArray(record?.receiptRefs))?.receiptRefs || [];
+        const hasReceiptLine = ref => receiptMarkers().includes(ref);
         const recalls = () => { try { const a = JSON.parse(localStorage.getItem(RCK) || '[]'); return Array.isArray(a) ? a.filter(r => r && r.key && r.lot) : []; } catch (_) { return []; } };
         const isRecalled = (key, lot) => recalls().some(r => r.key === keyOf(key) && r.lot === lot);
-        const saveLots = a => { try { localStorage.setItem(LK, JSON.stringify(a)); return true; } catch (_) { return false; } };
+        const saveLots = (lots, receiptRef) => {
+          try {
+            const refs = receiptMarkers();
+            if (receiptRef) refs.push(receiptRef);
+            localStorage.setItem(LK, JSON.stringify(refs.length ? [...lots, { receiptRefs: refs }] : lots));
+            return true;
+          } catch (_) { return false; }
+        };
         const hasLots = key => { const k = keyOf(key); return !!k && rawLots().some(x => x.key === k); };
         const lots = (key, now) => {
           const k = keyOf(key), warnDays = nearExpiryDays();
@@ -4284,7 +4298,11 @@ window.NovaFmt=(function(){
           const nearExpiry = picks.filter(p => p.nearExpiry);
           return { ok: true, picks, lot: picks[0].lot, expiry: picks[0].expiry, available, expiredQty, nearExpiry, hasNearExpiry: nearExpiry.length > 0 };
         };
-        const addLot = entry => {
+        const addLot = (entry, receiptRef) => {
+          if (receiptRef) {
+            try { if (hasReceiptLine(receiptRef)) return { ok: true, replay: true }; }
+            catch (_) { return { ok: false, error: 'storage' }; }
+          }
           const key = keyOf(entry).trim(), lot = String(entry && (entry.lot || entry.lotNo || entry.batch) || '').trim();
           const expiry = String(entry && (entry.expiry || entry.expiryDate || entry.exp) || '').trim(), qty = Number(entry && entry.qty);
           if (!key || !lot || !validDate(expiry) || !Number.isInteger(qty) || qty <= 0) return { ok: false, error: 'invalid' };
@@ -4292,7 +4310,7 @@ window.NovaFmt=(function(){
           const ex = all.find(x => x.key === key && x.lot === lot && x.expiry === expiry);
           if (ex) { ex.qty += qty; if (entry.cost !== undefined) ex.cost = rec.cost; if (entry.location !== undefined) ex.location = rec.location; }
           else all.push(rec);
-          if (!saveLots(all)) return { ok: false, error: 'storage' };
+          if (!saveLots(all, receiptRef)) return { ok: false, error: 'storage' };
           if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice();
           return { ok: true, lot: ex || rec };
         };
@@ -4381,7 +4399,7 @@ window.NovaFmt=(function(){
         return {
           keyOf, available: (key, owner) => avail(keyOf(key), owner, holds()), holds,
           boxQty: l => { const r = lineBoxQty(l); return r.ok ? r.value : 0; },
-          hasLots, lots, fefoPick, addLot, setLots, clearLots,
+          hasLots, lots, fefoPick, addLot, hasReceiptLine, setLots, clearLots,
           recalls, isRecalled,
           // Remove picked quantities from the stored lot receipts (transfer out). Writes nothing if any pick cannot be covered.
           _takeLots(key, picks) {
@@ -10963,6 +10981,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 .rcv-ov input{min-height:40px;padding:0 10px;background:#0b0e11;color:#e8eef3;border:1px solid #2a3139;border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box;width:100%;min-width:0}
 .rcv-ov input:focus{outline:none;border-color:#4a8aa6;box-shadow:0 0 0 3px rgba(74,138,166,.25)}
 .rcv-grid-h,.rcv-line{display:grid;grid-template-columns:minmax(0,2.4fr) 80px minmax(0,1fr) 130px 100px 100px 36px;gap:8px;align-items:center;padding:0 18px}
+.rcv-line[hidden]{display:none}
 .rcv-grid-h{margin-top:10px;padding-bottom:6px;color:#8896a4;font-size:12px;font-weight:700}
 .rcv-grid{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-bottom:4px;min-height:60px}
 .rcv-pick{position:relative}
@@ -11085,6 +11104,52 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
   function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function read(k) { try { var a = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(a) ? a : []; } catch (_) { return []; } }
   function receipts() { return read(RK).filter(function (r) { return r && Array.isArray(r.lines); }); }
+  function saveReceipt(receipt) {
+    const rows = JSON.parse(localStorage.getItem(RK) || '[]');
+    if (!Array.isArray(rows)) throw new Error('invalid-receipt-store');
+    const index = rows.findIndex(row => row?.id === receipt.id);
+    if (index < 0) rows.push(receipt);
+    else rows[index] = receipt;
+    localStorage.setItem(RK, JSON.stringify(rows));
+  }
+  function appliedCount(receipt) {
+    try {
+      return receipt.lines.filter((line, index) => window.novaStock.hasReceiptLine(receipt.id + '/' + index)).length;
+    } catch (_) { return 0; }
+  }
+  function applyReceipt(receipt) {
+    const lines = receipt.lines;
+    let poResult, grn;
+    if (receipt.poId) {
+      const ledger = window.NovaStockLedger.createLedger(localStorage, 'nova.stock.ledger');
+      const retryLedger = {
+        append(movement) {
+          const prior = ledger.movements(movement.code).find(m =>
+            m.kind === movement.kind && m.ref === movement.ref && m.lot === movement.lot);
+          if (!prior) return ledger.append(movement);
+          if (prior.qty !== movement.qty || prior.expiry !== movement.expiry || prior.cost !== movement.cost) {
+            throw new Error('receipt-movement-conflict');
+          }
+          return prior;
+        }
+      };
+      const store = window.NovaPurchaseOrders.createStore(localStorage, retryLedger);
+      grn = { ref: receipt.invoice, lines: lines.map(({ code, lot, expiry, qty, cost }) => ({ code, lot, expiry, qty, cost })) };
+      const po = store.get(receipt.poId);
+      const prior = po.grns.find(entry => entry.ref === grn.ref);
+      if (prior && JSON.stringify(prior.lines) !== JSON.stringify(grn.lines)) throw new Error('receipt-conflict');
+      poResult = prior ? { po, warnings: prior.warnings || [] } : store.receive(receipt.poId, grn, { confirmed: true });
+    }
+    for (const [index, line] of lines.entries()) {
+      if (!window.novaStock.addLot(line, receipt.id + '/' + index)?.ok) throw new Error('stock-save-failed');
+    }
+    const finished = { ...receipt, pending: false, poState: poResult?.po.state || null,
+      warnings: (poResult?.warnings || []).map(warning => warning.type) };
+    saveReceipt(finished);
+    if (poResult) {
+      try { window.novaReceiptSync?.afterReceive(poResult.po, grn); } catch (_) {}
+    }
+  }
   function pendingPOs() { return read(POK).filter(function (p) { return p && Array.isArray(p.lines) && ['sent', 'accepted', 'partial'].indexOf(p.state) >= 0; }); }
   function boxes(r) { return r.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0); }, 0); }
   function total(r) { return r.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0) * (Number(l.cost) || 0); }, 0); }
@@ -11102,7 +11167,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
   var host = null;
   function render(view) {
     host = view || host; if (!host) return;
-    var all = receipts().slice().reverse(), pos = pendingPOs(), t = today();
+    var receiptsList = receipts().slice().reverse(), all = receiptsList.filter(r => !r.pending), pending = receiptsList.filter(r => r.pending), pos = pendingPOs(), t = today();
     var todays = all.filter(function (r) { return String(r.at || '').slice(0, 10) === t; });
     var month = all.filter(function (r) { return String(r.date || r.at || '').slice(0, 7) === t.slice(0, 7); });
     var h = '<div class="rcv">'
@@ -11124,12 +11189,16 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         + '<div class="rcv-po-foot"><span>' + got + ' / ' + q + ' علبة</span><button type="button" class="rcv-btn sm primary" data-rcv-po="' + esc(p.id) + '">استلم</button></div></div>';
     }).join('') + '</div>';
     h += '</section>';
+    if (pending.length) h += '<section class="rcv-sec"><h2>استلامات تحتاج استكمال</h2>' + pending.map(r =>
+      '<div class="rcv-po"><b>' + esc(r.supplier) + ' · ' + esc(r.invoice) + '</b><div class="rcv-po-foot"><span>اتحفظ ' +
+      appliedCount(r) + ' من ' + r.lines.length + '</span><button type="button" class="rcv-btn sm primary" data-rcv-resume="' +
+      esc(r.id) + '">كمّل الاستلام</button></div></div>').join('') + '</section>';
     h += '<section class="rcv-sec"><div class="rcv-sec-h"><h2>آخر الاستلامات</h2><span class="rcv-count">' + all.length + '</span></div>';
     if (!all.length) h += '<div class="rcv-empty">' + I.truck + '<b>لسه مفيش استلامات</b><span>لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.</span><button type="button" class="rcv-btn primary" data-rcv="new">' + I.plus + 'استلام فاتورة</button></div>';
     else h += '<div class="rcv-table"><div class="rcv-tr rcv-th"><span>التاريخ</span><span>المورد</span><span>رقم الفاتورة</span><span>الأصناف</span><span>الإجمالي</span></div>'
       + all.slice(0, 50).map(function (r) {
         return '<details class="rcv-row"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b>' + (r.poId ? ' <small class="rcv-po-ref">' + esc(r.poId) + '</small>' : '') + (r.warnings && r.warnings.length ? ' <small class="rcv-warn" title="' + esc(r.warnings.join('، ')) + '">⚠ ' + r.warnings.length + '</small>' : '') + '</span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
-          + '<div class="rcv-lines">' + r.lines.map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div></details>';
+          + '<div class="rcv-lines">' + r.lines.map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.autoLot ? '—' : l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div></details>';
       }).join('') + '</div>';
     h += '</section></div>';
     host.innerHTML = h;
@@ -11137,19 +11206,19 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
 
   // ---------- invoice form ----------
   var form = null;
-  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && p.qty || '', lot: '', exp: '', cost: p && p.cost != null ? p.cost : '' }; }
+  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && p.qty || '', lot: p && !p.autoLot && p.lot || '', exp: p && p.expiry ? p.expiry.slice(0, 7) : '', cost: p && p.cost != null ? p.cost : '' }; }
   function openForm(pre) {
     if (document.getElementById('rcvForm')) return;
     pre = pre || {};
-    var st = { lines: (pre.lines && pre.lines.length ? pre.lines : [null]).map(blankLine), poId: pre.poId || '' };
+    var st = { lines: (pre.lines && pre.lines.length ? pre.lines : [null]).map(blankLine), poId: pre.poId || '', pending: pre.pending ? pre : null };
     var sups = SUPPLIERS.concat(receipts().map(function (r) { return r.supplier; })).filter(function (s, i, a) { return s && a.indexOf(s) === i; });
     var ov = document.createElement('div'); ov.id = 'rcvForm'; ov.className = 'rcv-ov'; ov.dir = 'rtl';
     ov.innerHTML = '<div class="rcv-dlg" role="dialog" aria-modal="true" aria-labelledby="rcvTitle">'
       + '<div class="rcv-dlg-h"><h2 id="rcvTitle">استلام فاتورة' + (st.poId ? ' <small>' + esc(st.poId) + '</small>' : '') + '</h2><button type="button" class="rcv-x" data-rcv-close aria-label="إغلاق">' + I.x + '</button></div>'
       + '<div class="rcv-meta"><label>المورد<input id="rcvSup" list="rcvSupList" autocomplete="off" value="' + esc(pre.supplier || '') + '" placeholder="اسم المورد"><datalist id="rcvSupList">' + sups.map(function (s) { return '<option value="' + esc(s) + '">'; }).join('') + '</datalist></label>'
-      + '<label>رقم الفاتورة<input id="rcvInv" dir="ltr" autocomplete="off" placeholder="مثلًا 10452"></label>'
-      + '<label>تاريخ الفاتورة<input id="rcvDate" type="date" dir="ltr" value="' + today() + '"></label></div>'
-      + '<div class="rcv-grid-h"><span>الصنف</span><span>الكمية</span><span>التشغيلة</span><span>الصلاحية</span><span>سعر الشراء</span><span>الإجمالي</span><span></span></div>'
+      + '<label>رقم الفاتورة<input id="rcvInv" dir="ltr" autocomplete="off" value="' + esc(pre.invoice || '') + '" placeholder="مثلًا 10452"></label>'
+      + '<label>تاريخ الفاتورة<input id="rcvDate" type="date" dir="ltr" value="' + esc(pre.date || today()) + '"></label></div>'
+      + '<div class="rcv-grid-h"><span>الصنف</span><span>الكمية</span><span>التشغيلة (اختياري)</span><span>الصلاحية</span><span>سعر الشراء</span><span>الإجمالي</span><span></span></div>'
       + '<div id="rcvLines" class="rcv-grid"></div>'
       + '<button type="button" class="rcv-add" data-rcv-add>' + I.plus + 'إضافة صنف</button>'
       + '<div class="rcv-dlg-f"><div class="rcv-sum" id="rcvSum"></div><div id="rcvMsg" class="rcv-msg" role="alert"></div>'
@@ -11160,7 +11229,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       return '<div class="rcv-line" data-i="' + i + '">'
         + '<div class="rcv-pick"><input data-f="q" autocomplete="off" placeholder="ابحث بالاسم أو امسح الباركود" value="' + esc(l.key ? disp(l.name) : (l.name || '')) + '" aria-label="الصنف"' + (l.key ? ' data-ok="1"' : '') + '><div class="rcv-sug" hidden></div></div>'
         + '<input data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="' + esc(l.qty) + '" aria-label="الكمية بالعلب" placeholder="علب">'
-        + '<input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة" placeholder="Lot">'
+        + '<input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة (اختياري)" placeholder="اختياري">'
         + '<input data-f="exp" type="month" dir="ltr" value="' + esc(l.exp) + '" aria-label="تاريخ الصلاحية">'
         + '<input data-f="cost" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.cost) + '" aria-label="سعر الشراء للعلبة" placeholder="0.00">'
         + '<span class="rcv-lt" data-lt>—</span>'
@@ -11218,7 +11287,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     function addLine() { st.lines.push(blankLine()); draw(); box.lastElementChild.querySelector('[data-f=q]').focus(); }
     function msg(m, warn) { var el = ov.querySelector('#rcvMsg'); el.textContent = m || ''; el.className = 'rcv-msg' + (warn ? ' warn' : ''); }
     function dirty() { return ov.querySelector('#rcvInv').value.trim() || st.lines.some(function (l) { return l.key || l.qty || l.lot; }); }
-    function close(force) { if (!force && dirty() && !window.confirm('تقفل من غير ما تحفظ الاستلام؟')) return; ov.remove(); document.removeEventListener('keydown', key, true); form = null; }
+    function close(force) { if (!force && !st.pending && dirty() && !window.confirm('تقفل من غير ما تحفظ الاستلام؟')) return; ov.remove(); document.removeEventListener('keydown', key, true); form = null; }
     function key(e) { if (e.key === 'Escape') { var s = ov.querySelector('.rcv-sug:not([hidden])'); e.preventDefault(); e.stopPropagation(); if (s) { s.hidden = true; return; } close(); } }
     document.addEventListener('keydown', key, true);
     ov.addEventListener('click', function (e) {
@@ -11226,53 +11295,84 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       else if (e.target.closest('[data-rcv-add]')) addLine();
       else if (!e.target.closest('.rcv-pick')) ov.querySelectorAll('.rcv-sug').forEach(function (s) { s.hidden = true; });
     });
-    ov.querySelector('#rcvOk').addEventListener('click', function () {
+    function validateReceipt() {
       var sup = ov.querySelector('#rcvSup').value.trim(), inv = ov.querySelector('#rcvInv').value.trim(), date = ov.querySelector('#rcvDate').value || today();
       if (!sup) { msg('اكتب اسم المورد'); ov.querySelector('#rcvSup').focus(); return; }
       if (!inv) { msg('اكتب رقم الفاتورة'); ov.querySelector('#rcvInv').focus(); return; }
-      if (receipts().some(function (r) { return r.supplier === sup && r.invoice === inv; })) { msg('الفاتورة دي (' + inv + ') اتسجلت قبل كده للمورد ده'); return; }
+      const previous = receipts().find(r => r.supplier === sup && r.invoice === inv);
+      if (previous) {
+        msg(previous.pending ? 'الفاتورة دي محتاجة استكمال. اقفل النافذة واضغط «كمّل الاستلام» من القائمة.' : 'الفاتورة دي (' + inv + ') اتسجلت قبل كده للمورد ده');
+        return;
+      }
       var used = st.lines.filter(function (l) { return l.key || l.name || l.qty || l.lot; });
       if (!used.length) { msg('ضيف صنف واحد على الأقل'); return; }
+      var id = 'RCV-' + window.novaStock.newKey();
       var now = new Date(), t0 = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()), soon = t0 + 90 * 864e5, out = [], short = 0;
       for (var i = 0; i < st.lines.length; i++) {
         var l = st.lines[i]; if (used.indexOf(l) < 0) continue;
         var row = box.children[i], bad = function (f, m) { msg('سطر ' + (i + 1) + ': ' + m); row.querySelector('[data-f=' + f + ']').focus(); };
         if (!l.key) return bad('q', 'اختار الصنف من القائمة');
         var q = Number(l.qty); if (!Number.isInteger(q) || q <= 0) return bad('qty', 'اكتب كمية صحيحة بالعلب');
-        if (!String(l.lot).trim()) return bad('lot', 'اكتب رقم التشغيلة');
+        var autoLot = !String(l.lot).trim(), lot = autoLot ? id + '/' + (i + 1) : String(l.lot).trim();
         if (!/^\d{4}-\d{2}$/.test(l.exp)) return bad('exp', 'اختار تاريخ الصلاحية');
         var y = +l.exp.slice(0, 4), mo = +l.exp.slice(5), last = new Date(Date.UTC(y, mo, 0));
+        if (mo < 1 || mo > 12) return bad('exp', 'اختار تاريخ صلاحية صحيح');
         if (last.getTime() < t0) return bad('exp', 'الصلاحية منتهية');
         if (last.getTime() < soon) short++;
-        if (out.some(function (o) { return o.key === l.key && o.lot === String(l.lot).trim(); })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
-        out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: String(l.lot).trim(), expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
+        if (out.some(function (o) { return o.key === l.key && o.lot === lot; })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
+        if (l.cost !== '' && (!Number.isFinite(Number(l.cost)) || Number(l.cost) < 0)) return bad('cost', 'اكتب سعر شراء صحيح');
+        out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
       }
       var b = out.reduce(function (s, o) { return s + o.qty; }, 0);
       if (!window.confirm('تأكيد استلام ' + nItems(out.length) + ' (' + b + ' علبة) من ' + sup + ' وإضافتهم للمخزون؟' + (short ? '\nتنبيه: ' + short + ' صنف صلاحيته أقل من 3 شهور.' : ''))) return;
-      var poRes = null, grn = null;
       if (st.poId) {
-        if (!window.NovaPurchaseOrders || !window.NovaStockLedger) { msg('تعذر ربط الاستلام بالطلبية على الجهاز ده'); return; }
-        var ERR = { 'bad-transition': 'الطلبية دي مش مستنية استلام', 'duplicate-grn': 'رقم الفاتورة ده اتسجل على الطلبية قبل كده', 'po-not-found': 'الطلبية مش موجودة', 'bad-lot': 'رقم التشغيلة ناقص', 'bad-expiry': 'تاريخ صلاحية غلط', 'bad-qty': 'كمية غلط', 'bad-cost': 'سعر غلط', 'duplicate-lot-line': 'تشغيلة متكررة' };
-        grn = { ref: inv, lines: out.map(function (o) { return { code: o.code, lot: o.lot, expiry: o.expiry, qty: o.qty, cost: o.cost }; }) };
-        try {
-          var store = window.NovaPurchaseOrders.createStore(localStorage, window.NovaStockLedger.createLedger(localStorage, 'nova.stock.ledger'));
-          poRes = store.receive(st.poId, grn, { confirmed: true });
-        } catch (e) { msg(ERR[e && e.code] || ('تعذر تسجيل الاستلام على الطلبية: ' + (e && (e.code || e.message)))); return; }
-        try { if (window.novaReceiptSync) window.novaReceiptSync.afterReceive(poRes.po, grn); } catch (_) {}
+        const po = pendingPOs().find(entry => entry.id === st.poId);
+        if (!po || po.grns?.some(entry => entry.ref === inv)) { msg('الفاتورة دي اتسجلت قبل كده للطلبية أو الطلبية اكتملت'); return; }
       }
-      var done = [];
-      for (var k = 0; k < out.length; k++) {
-        var r = window.novaStock ? window.novaStock.addLot({ key: out[k].key, lot: out[k].lot, expiry: out[k].expiry, qty: out[k].qty, cost: out[k].cost }) : { ok: false };
-        if (!r || !r.ok) break; done.push(out[k]);
-      }
-      if (done.length) {
-        var all = read(RK); all.push({ id: 'RCV-' + Date.now(), at: new Date().toISOString(), date: date, supplier: sup, invoice: inv, poId: st.poId || null, poState: poRes ? poRes.po.state : null, warnings: poRes ? poRes.warnings.map(function (w) { return w.type; }) : [], lines: done });
-        try { localStorage.setItem(RK, JSON.stringify(all)); } catch (_) {}
-      }
-      if (done.length < out.length) { msg('اتسجل ' + done.length + ' من ' + out.length + ' بس — تعذر حفظ الباقي على الجهاز. راجع السطور اللي فضلت.'); st.lines = st.lines.filter(function (l) { return !done.some(function (d) { return d.key === l.key && d.lot === String(l.lot).trim(); }); }); draw(); render(); return; }
-      close(true); toast('تم استلام ' + nItems(done.length) + ' (' + b + ' علبة) من ' + sup + (poRes ? (poRes.po.state === 'received' ? ' — الطلبية اكتملت' : ' — الطلبية وصل جزء منها') + (poRes.warnings.length ? ' · ' + poRes.warnings.length + ' تنبيه' : '') : '')); render();
+      return { id, at: new Date().toISOString(), date, supplier: sup, invoice: inv, poId: st.poId || null, lines: out, pending: true };
+    }
+    const submit = ov.querySelector('#rcvOk');
+    function showPending() {
+      const receipt = st.pending;
+      if (!receipt) return;
+      const done = appliedCount(receipt);
+      box.querySelectorAll('.rcv-line').forEach((row, index) => {
+        try { row.hidden = window.novaStock.hasReceiptLine(receipt.id + '/' + index); } catch (_) {}
+      });
+      ov.querySelectorAll('input,[data-rcv-add],[data-rcv-del]').forEach(el => { el.disabled = true; });
+      submit.textContent = 'كمّل الاستلام';
+      msg('اتحفظ ' + done + ' من ' + receipt.lines.length + ' · كمّل نفس الفاتورة');
+    }
+    submit.addEventListener('click', async function () {
+      if (submit.disabled) return;
+      submit.disabled = true;
+      try {
+        const completed = await window.novaStock.withLock(() => {
+          if (st.pending) {
+            const current = receipts().find(r => r.id === st.pending.id);
+            if (!current) throw new Error('receipt-not-found');
+            if (!current.pending) return current;
+          } else {
+            const receipt = validateReceipt();
+            if (!receipt) return null;
+            saveReceipt(receipt);
+            st.pending = receipt;
+          }
+          applyReceipt(st.pending);
+          return st.pending;
+        });
+        if (completed) {
+          close(true);
+          toast('تم استلام ' + nItems(completed.lines.length) + ' (' + boxes(completed) + ' علبة) من ' + completed.supplier);
+          render();
+        }
+      } catch (_) {
+        if (st.pending) { showPending(); render(); }
+        else msg('تعذر حفظ الفاتورة على الجهاز. جرّب تاني.');
+      } finally { submit.disabled = false; }
     });
     draw();
+    if (st.pending) { showPending(); submit.focus(); return; }
     (pre.supplier ? ov.querySelector('#rcvInv') : ov.querySelector('#rcvSup')).focus();
   }
 
@@ -11281,9 +11381,13 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     if (pn) pn.classList.add('open'); else location.hash = '#products&receive=1';
   }
   document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('[data-rcv],[data-rcv-po]'); if (!a || !a.closest('.rcv')) return;
+    var a = e.target.closest && e.target.closest('[data-rcv],[data-rcv-po],[data-rcv-resume]'); if (!a || !a.closest('.rcv')) return;
     if (a.getAttribute('data-rcv') === 'new') openForm();
     else if (a.getAttribute('data-rcv') === 'photo') openPhoto();
+    else if (a.hasAttribute('data-rcv-resume')) {
+      const receipt = receipts().find(r => r.pending && r.id === a.getAttribute('data-rcv-resume'));
+      if (receipt) openForm(receipt);
+    }
     else if (a.hasAttribute('data-rcv-po')) {
       var po = read(POK).filter(function (p) { return p.id === a.getAttribute('data-rcv-po'); })[0]; if (!po) return;
       openForm({ supplier: po.supplier, poId: po.id, lines: po.lines.filter(function (l) { return (l.qty - (l.received || 0)) > 0; }).map(function (l) {
