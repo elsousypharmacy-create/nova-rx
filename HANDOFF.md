@@ -941,3 +941,7 @@ Owner explicitly asked to execute the remaining review/merge/deploy. Latest head
 - Identifiable diaper lines are excluded by name on invoice load. The pharmacist can include a skipped line manually. Incomplete AI results and unreviewed warnings stay visible, and the rest of the batch can go to print. After a partial submission, the remaining lines stay open and already submitted labels can be included again explicitly.
 - Local checks: `npm run check` and `CHROME_PATH=/tmp/chromium node tests/sale-sticker-modal.mjs` with simulated AI results and print submission. Physical printer, live AI, GitHub CI and independent review remain pending.
 - Source-only draft. No merge, release artifact or deployment. Owner review is the next step before building the preview release from the approved source.
+## 2026-11-18 — Draft #549 purchasing and receiving verification
+- Updated the purchasing browser assertion to verify navigation destinations, including Receiving. The local purchasing browser suite passed with synthetic supplier responses.
+- The receiving browser test creates and confirms a local order from the Purchases UI, records a supplier invoice, resumes after an interrupted write, verifies stock quantities and rejects the same completed invoice. The manual receipt case also passed. Both cases ran at 1280×800 and 1440×900, with external requests blocked.
+- Local purchase-order and stock-ledger unit suites passed. GitHub CI and independent review pending. No supplier order, merge or deployment.
