@@ -324,7 +324,7 @@ $('checkSupplierOrder').onclick=async()=>{
  try{const r=await provider().supplierOrderStatus({plan:orderPlan.plan,signature:orderPlan.signature});if(r.state==='not-started'||r.state==='failed'){localStorage.removeItem(orderKey(orderSupplier));orderPending=false;orderPlan=null;$('checkSupplierOrder').hidden=true;$('orderStatus').textContent=orderError('order-not-started');}else orderReceipt(r);}
  catch(e){$('orderStatus').textContent=orderError(e.message);}finally{orderInFlight=false;orderControls();}
 };
-$('scopeChip').onclick=()=>openSettings();scopeView();
+scopeView();
 
 // UX45: keep the active purchases tab fully visible in the scrollable mobile tab strip.
 (function(){try{const a=document.querySelector('.nova-topbar nav a[aria-current]');if(a&&a.scrollIntoView)a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}})();
