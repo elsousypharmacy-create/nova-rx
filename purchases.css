@@ -164,3 +164,19 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
 }
 /* UX-P7: same button colours as the rest of the app */
 @media(min-width:801px){.secondary{background:#20262d;border-color:#343b44;color:#e6eaee}.secondary:hover:not(:disabled){background:#29313a}.primary:hover:not(:disabled){background:#438ead}}
+/* UX-P8: spacing rhythm - 16px between blocks, no stretched empty panels */
+@media(min-width:801px){
+ main{padding:20px 30px 28px}
+ .controls{margin-bottom:16px;padding:14px 18px;gap:12px 12px}
+ .workspace{align-items:start;overflow:visible}
+ .panel,.cart{align-self:start;min-height:0}
+ .panel{min-height:380px}
+ .cart{max-height:calc(100dvh - 200px);min-height:380px}
+ .panel-head{padding:14px 18px;min-height:56px}
+ .cart>.panel-head{padding:14px 16px}
+ .empty{padding:56px 24px;text-align:center}
+ div.empty{min-height:160px;display:flex;align-items:center;justify-content:center}
+ #groups:empty,.cart #groups{padding:10px 12px}
+ .cart-footer{padding:14px 16px;gap:10px}
+ th,td{padding:12px 14px}
+}
