@@ -578,3 +578,6 @@ html body :is(.chip[aria-pressed=true],.nova-stock-chip.active){background:var(-
 /* titles */
 html body :is(#novaPageView .nova-page-header h1,.app>main .compact-title){font-size:23px!important;font-weight:800!important;letter-spacing:0!important}
 html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.rcv-sec-h h2){font-size:17px!important;font-weight:700!important}
+/* UX-P35: hidden tips take no space (no stray scrollbars) */
+.info::after{display:none}
+.info:hover::after,.info:focus::after,.info:focus-visible::after{display:block}
