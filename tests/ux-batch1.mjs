@@ -41,7 +41,8 @@ try {
     check(`${lang}: html lang/dir`, htmlLang === lang && htmlDir === (lang === 'ar' ? 'rtl' : 'ltr'), `${htmlLang}/${htmlDir}`);
     const bad = new Set();
     for (const pg of ['sale', 'invoices', 'products', 'customers', 'reports', 'settings']) {
-      await page.click(`.nova-tab[data-page="${pg}"]`); await sleep(350);
+      // UX-P29: «المخزون» (data-page=products) lives inside the «العمليات» menu, so switch pages through the DOM like a tap
+      await page.evaluate(p => document.querySelector(`.nova-tab[data-page="${p}"]`).click(), pg); await sleep(350);
       const { texts, attrs } = await page.evaluate(collect, process.env.UX_SKIP_EXTRA || '');
       for (const t of [...texts, ...attrs]) {
         if (isData(t)) continue;

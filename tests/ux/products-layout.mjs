@@ -27,7 +27,7 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
-  await page.locator('.nova-tab[data-page="products"]').first().click();
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
   await page.waitForSelector('#novaRows tr');
 
   // Desktop: one row, equal heights.
