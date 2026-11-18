@@ -945,3 +945,11 @@ Owner explicitly asked to execute the remaining review/merge/deploy. Latest head
 - Updated the purchasing browser assertion to verify navigation destinations, including Receiving. The local purchasing browser suite passed with synthetic supplier responses.
 - The receiving browser test creates and confirms a local order from the Purchases UI, records a supplier invoice, resumes after an interrupted write, verifies stock quantities and rejects the same completed invoice. The manual receipt case also passed. Both cases ran at 1280×800 and 1440×900, with external requests blocked.
 - Local purchase-order and stock-ledger unit suites passed. GitHub CI and independent review pending. No supplier order, merge or deployment.
+
+
+## 2026-11-18 — Receiving controls, Issue #550
+- Owner requested implementation of receipt comparison, remaining-quantity closure, audited quantity correction, and order/receipt/movement navigation. Branch ux/receiving-controls is based on #549 head 1f683432095c7fc3f0a8197b6f58406b87c734cf.
+- Corrections preserve original receipt lines and append linked adjustments, actor, reason and time. Shared journal recovery completes interrupted writes under the existing stock lock. Readers use journal postimages. Unlocked legacy writers reject pending recovery. Corrections check available local lot stock and active sale reservations. Closure preserves ordered/received history and records cancelled outstanding quantities.
+- PASS locally: receipt-operations.check.cjs (review, closure, correction, permission, replay and six persistence-failure boundaries), purchase-orders.check.mjs, stock-ledger.check.mjs, auth-local.check.mjs (13), auth-permissions.check.mjs (10), inline JavaScript parse and git diff --check.
+- Chromium launch in this executor failed because Unix sockets are unavailable. Browser checks and before/after evidence are pending remote CI. Tests intercept external requests and use synthetic operator/product/order fixtures.
+- Existing storage and audit scope are device-local. Corrections are not yet a synchronized multi-device backend feature. Physical device/printer, real supplier and real pharmacy stock remain untested. Independent review and owner deployment acceptance remain pending.
