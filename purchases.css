@@ -309,3 +309,24 @@ html body .controls #scopeChip{border:0!important;background:none!important;padd
 html body .controls #scopeChip::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#5fb27a;margin-inline-end:8px;vertical-align:middle}
 html body .controls #scopeChip[data-state=warn]::before{background:#e8c27a}
 }
+
+/* UX-P21 stage-based layout: one compact header row; items fill the page until a distribution exists; the primary action follows the stage */
+@media(min-width:801px){
+ html body .controls{flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;margin-bottom:14px!important}
+ html body .controls .compact-title{order:0;white-space:nowrap}
+ html body .controls #statusTip{order:1}
+ html body .controls #openSettings{order:2;margin-inline-start:16px!important}
+ html body .controls #scopeChip{order:3!important;flex:0 1 auto!important;margin:0 4px 0 0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw}
+ html body .controls #load{order:6;margin-inline-start:auto!important}
+ html body .controls #distribute{order:7}
+ html body .controls .tools-menu{order:9;margin-inline-start:8px!important}
+ html body .controls .source{display:none!important}
+ /* stage 1: nothing loaded yet -> only "update shortages" is the primary action */
+ main:has(#rows td.empty) .controls #distribute{display:none!important}
+ main:has(#rows td.empty) .controls #load{background:#387e9e!important;border-color:#387e9e!important;color:#fff!important;font-weight:700!important}
+ /* stage 2: items loaded -> distribute is primary, load becomes quiet */
+ main:not(:has(#rows td.empty)) .controls #load{background:transparent!important;border-color:#343b44!important;color:#cfd7de!important;font-weight:600!important}
+ /* the result panel only exists once a distribution does */
+ .workspace:has(.cart #groups>.empty){grid-template-columns:minmax(0,1fr)!important}
+ .workspace:has(.cart #groups>.empty) .cart{display:none!important}
+}
