@@ -936,6 +936,11 @@ Owner explicitly asked to execute the remaining review/merge/deploy. Latest head
 - Live browser reload displayed new visible clear action and fixed-discount label. Searched real price list, opened split checkout (total/allocation/actions visible, credit disabled without customer), cancelled checkout, confirmed clearing the test cart, opened purchases and visually checked numbered flow/buttons/cart footer. No invoice committed, payment or supplier action. Browser tab retained for review.
 - WhatsApp and backend unchanged. Physical tablet/keyboard/printer and real supplier flows remain untested; this is scoped UX release evidence, not acceptance of all ERP stages. Local sandbox sticker/INV03 timing failures reproduced on base; final remote CI passes those suites.
 
+## 2026-11-18 — Sale stickers from the instructions screen
+- Branch `ux/sticker-print-ready`. The pharmacist approves and prints ready labels with one click. The count includes copies. The separate visual preview is removed from the sale flow. The separate Sticker Studio keeps its existing workflow.
+- Identifiable diaper lines are excluded by name on invoice load. The pharmacist can include a skipped line manually. Incomplete AI results and unreviewed warnings stay visible, and the rest of the batch can go to print. After a partial submission, the remaining lines stay open and already submitted labels can be included again explicitly.
+- Local checks: `npm run check` and `CHROME_PATH=/tmp/chromium node tests/sale-sticker-modal.mjs` with simulated AI results and print submission. Physical printer, live AI, GitHub CI and independent review remain pending.
+- Source-only draft. No merge, release artifact or deployment. Owner review is the next step before building the preview release from the approved source.
 ## 2026-11-18 — POS invoice search and returns
 - Owner requested this scoped change. Branch: `ux/invoice-search-and-returns`; accountable implementer: ChatGPT.
 - New sales focus customer search; blank Enter switches to items, a unique or explicitly highlighted customer is linked, and multiple matches require a selection. The invoice list searches by name, phone and receipt code. An exact receipt code opens invoice details. Return, reprint and manager-approved cancellation are distinct actions in details.

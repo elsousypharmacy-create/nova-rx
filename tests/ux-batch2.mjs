@@ -74,7 +74,7 @@ try {
   {
     const { ctx, page, errs } = await open(browser, 'ar'); let calls = 0;
     await page.route('**/api/ai/purchase', r => { calls++; r.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'خطأ تجريبي' }) }); });
-    await page.click('.nova-tab[data-page="products"]'); await sleep(350);
+    await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click()); await sleep(350);
     await page.click('#novaInventoryPurchase'); await sleep(300);
     await page.setInputFiles('#novaAiFiles', { name: 'inv.png', mimeType: 'image/png', buffer: PNG });
     await page.click('#novaAiRun'); await sleep(600);

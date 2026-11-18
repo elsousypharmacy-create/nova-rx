@@ -23,13 +23,13 @@ const toastText=async page=>{await sleep(250);return page.$eval('#novaLabelsPane
 // A real print closes the sticker window 400ms later (by design); bring it back with its state.
 async function reopenAfterPrint(page){
   await page.waitForFunction(()=>!document.getElementById('novaLabelsPanel').classList.contains('open'),null,{timeout:3000});
-  await page.$eval('#novaAiLaunch',b=>b.click());await sleep(300);
+  await page.$eval('#btnSaleLabels',b=>b.click());await sleep(300);
 }
 
 async function openModal(page){
   await page.goto('http://127.0.0.1:8766/index.html#sale',{waitUntil:'domcontentloaded'});
   await sleep(900);
-  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:777,customer:'أحمد علي',items:[{name:'Panadol Extra'},{name:'Augmentin 1g'}]}})));
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:777,customer:'أحمد علي',items:[{name:'Panadol Extra'},{name:'Augmentin 1g'},{name:'بيبي جوي 1 مقاس 60 قطع'}]}})));
   await sleep(400);
   await page.evaluate(()=>{window.__ai=0});
 }
@@ -83,15 +83,15 @@ async function runFlow(page,vp,errors){
   check(`${L}: modal opens from the sale flow`,await page.$eval('#novaLabelsPanel',el=>el.classList.contains('open')));
   const g0=await geometry(page);
   check(`${L}: no stepper, no tabs, no separate approval box`,!g0.stepper&&!g0.tabs&&!g0.approval);
-  check(vp.width>=700?`${L}: stickers are hidden by default on tablets and computers`:`${L}: preview and advanced settings collapsed by default`,vp.width>=700?!(await page.isVisible('#nlPreviewGrid')):g0.moreOpen===false);
+  check(`${L}: no sticker preview step`,await page.locator('#nlPreviewGrid, .nl-prevtoggle, .med-prev').count()===0);
   check(`${L}: sheet fits viewport`,g0.sheet.w<=vp.width+2&&g0.sheet.h<=vp.height+2);
   check(`${L}: print button visible and at least 44px high`,g0.btnShown&&g0.btn.h>=44);
   check(`${L}: RTL`,g0.rtl);
 
-  check(`${L}: invoice medicines are loaded automatically (no add step)`,(await geometry(page)).cards===2);
+  check(`${L}: invoice medicines are loaded automatically (no add step)`,(await geometry(page)).cards===3);
   if(L==='tablet-landscape'){
     const fit=await page.evaluate(()=>{const l=document.querySelector('#novaLabelsPanel .layout');return l.scrollHeight<=l.clientHeight+2});
-    check(`${L}: two medicines fit without scrolling`,fit);
+    check(`${L}: three invoice items fit without scrolling`,fit);
   }
   const why0=await page.$eval('#nlBarWhy',e=>e.textContent);
   check(`${L}: blocked button explains why (age + safety)`,(why0.includes('اكتب العمر')&&why0.includes('الحمل والرضاعة'))||why0.includes('نوع العميل'));
@@ -101,20 +101,29 @@ async function runFlow(page,vp,errors){
 
   if(!(await page.isVisible('.nl-quick'))){await page.fill('#nlPatientAge','30');await page.dispatchEvent('#nlPatientAge','input');}
   await answerSafety(page);
-  await page.waitForFunction(()=>document.getElementById('nlBarWhy').textContent==='',null,{timeout:8000});
-  check(`${L}: AI filled both medicines automatically`,(await page.evaluate(()=>window.__ai))===2);
-  check(`${L}: button label counts the medicines`,(await page.$eval('#nlPrintLabel',e=>e.textContent)).includes('دوائين'));
+  await page.waitForFunction(()=>document.getElementById('nlPrintLabel').textContent.includes('(1)'),null,{timeout:8000});
+  check(`${L}: diaper is not sent to AI`,(await page.evaluate(()=>window.__ai))===2);
+  check(`${L}: AI failure leaves one ready label and one to review`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('1 تحتاج مراجعة'));
+  check(`${L}: non-medical item is visibly skipped`,(await page.$eval('#nlMedicineList .med-card:nth-child(3)',e=>e.textContent)).includes('صنف غير دوائي'));
 
-  await ensureEditing(page,'#nlMedicineList .med-card:nth-child(2)');
-  await page.fill('#nlMedicineList .med-card:nth-child(2) [data-field="dose"]','');
-  await page.dispatchEvent('#nlMedicineList .med-card:nth-child(2) [data-field="dose"]','input');
-  await closeEditing(page);
-  check(`${L}: one incomplete medicine blocks, reason updates`,(await page.$eval('#nlBarWhy',e=>e.textContent)).includes('دواء واحد'));
-  await page.$eval('#nlPrintAll',e=>e.click());
-  { const t=await toastText(page); if(!t.includes('أكمل')) console.log('DBG',L,JSON.stringify(t),await page.$eval('#nlBarWhy',e=>e.textContent)); check(`${L}: incomplete medicine blocks printing`,t.includes('أكمل')); }
+  await page.click('#nlOpenSettings');
+  await page.selectOption('#nlPreset','100x50');
+  await page.evaluate(()=>{window.__printEvents=[];window.addEventListener('nova:sticker-print',e=>window.__printEvents.push(e.detail))});
+  await page.click('#nlPrintAll');
+  await page.waitForFunction(()=>window.__printEvents.length>0,null,{timeout:6000});
+  check(`${L}: prints only the ready medicine`,await page.evaluate(()=>window.__printEvents[0].count===1&&window.__printEvents[0].partial&&document.getElementById('nlPrintFrame').contentDocument.querySelector('.med').textContent==='Panadol Extra'));
+  await page.waitForTimeout(500);
+  check(`${L}: partial print keeps the review open`,await page.$eval('#novaLabelsPanel',e=>e.classList.contains('open')));
+  await fillCard(page,2,'Augmentin 1g');
+  await page.evaluate(()=>{window.__printEvents=[]});
+  await page.click('#nlPrintAll');
+  await page.waitForFunction(()=>window.__printEvents.length>0,null,{timeout:6000});
+  check(`${L}: manual recovery prints just the remaining medicine`,await page.evaluate(()=>window.__printEvents[0].count===1&&!window.__printEvents[0].partial&&document.getElementById('nlPrintFrame').contentDocument.querySelector('.med').textContent==='Augmentin 1g'));
+  await reopenAfterPrint(page);
+
   await fillCard(page,1,'Panadol Extra');
   await fillCard(page,2,'Augmentin 1g');
-  check(`${L}: nothing blocks the button`,(await page.$eval('#nlBarWhy',e=>e.textContent))===''&&await page.$eval('#nlPrintAll',e=>!e.classList.contains('is-blocked')));
+  check(`${L}: counts both medicines after re-enabling the first`,(await page.$eval('#nlPrintLabel',e=>e.textContent)).includes('(2)')&&await page.$eval('#nlPrintAll',e=>!e.classList.contains('is-blocked')));
 
   // Print: one tap is the approval; no popup is opened
   await page.evaluate(()=>{window.__opens=0;window.open=()=>{window.__opens++;return null};window.__printEvents=[];window.addEventListener('nova:sticker-print',e=>window.__printEvents.push(e.detail))});
@@ -130,7 +139,8 @@ async function runFlow(page,vp,errors){
   // Long text: shrinks when it can, refuses when it cannot (never prints clipped text)
   const long=n=>'يؤخذ بعد الأكل مع كوب ماء '.repeat(n).trim();
   await page.evaluate(()=>{const n=document.getElementById('nlPatientName');n.value='';n.dispatchEvent(new Event('input',{bubbles:true}))});
-  await fillCard(page,1,'Panadol Extra',{instructions:long(2)});
+  await page.selectOption('#nlPreset','50x30');
+  await fillCard(page,1,'Panadol Extra',{instructions:long(3)});
   check(`${L}: long text shows a card hint`,await page.$eval('#nlMedicineList .med-card:nth-child(1)',c=>c.textContent.includes('النص طويل')));
   await page.evaluate(()=>{window.__printEvents=[]});
   await page.click('#nlPrintAll');
@@ -161,7 +171,7 @@ async function runFlow(page,vp,errors){
   const g1=await geometry(page);
   check(`${L}: no horizontal clipping`,g1.sheet.sw<=g1.sheet.cw+2);
   check(`${L}: action bar still visible`,g1.barShown);
-  if(L==='desktop') await page.screenshot({path:'reports/sale-sticker-modal.png'}).catch(()=>{});
+  if(L==='desktop'&&process.env.STICKER_SCREENSHOT) await page.screenshot({path:process.env.STICKER_SCREENSHOT});
   await page.keyboard.press('Escape');
   check(`${L}: Escape closes the modal`,await page.$eval('#novaLabelsPanel',el=>!el.classList.contains('open')));
   check(`${L}: no page errors`,errors.length===0);
@@ -175,15 +185,16 @@ try{
     const context=await browser.newContext({viewport:{width:vp.width,height:vp.height},locale:'ar-EG',hasTouch:vp.name!=='desktop'});
     await context.addInitScript(()=>{window.confirm=()=>true});
     const page=await context.newPage();
+    await page.route(/^https:\/\//,r=>r.abort());
     await page.route('**/api/ai/medication-label',async r=>{await page.evaluate(()=>{window.__ai=(window.__ai||0)+1}).catch(()=>{});await r.fulfill({json:{ok:true,instruction:{dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل',warnings:[]}}})});
-    await page.route('**/api/ai/medication-labels',async r=>{const body=JSON.parse(r.request().postData()||'{}');const n=(body.medications||[]).length;await page.evaluate(k=>{window.__ai=(window.__ai||0)+k},n).catch(()=>{});await r.fulfill({json:{ok:true,items:(body.medications||[]).map((m,i)=>({index:i,dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل',warnings:[]})),interactions:[]}})});
+    await page.route('**/api/ai/medication-labels',async r=>{const body=JSON.parse(r.request().postData()||'{}');const n=(body.medications||[]).length;await page.evaluate(k=>{window.__ai=(window.__ai||0)+k},n).catch(()=>{});await r.fulfill({json:{ok:true,items:(body.medications||[]).map((m,i)=>i===1?{index:i}:{index:i,dose:'قرص',frequency:'مرتين يوميًا',duration:'٣ أيام',instructions:'بعد الأكل',warnings:[]}),interactions:[]}})});
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     await context.addInitScript(()=>{try{localStorage.setItem('nova.stickerStudio.draft.v1',JSON.stringify({patient:{age:'6',pregnancy:'no',breastfeeding:'no'},medications:[{name:'Old'}]}))}catch(e){}});
     await page.goto('http://127.0.0.1:8766/index.html#sale',{waitUntil:'domcontentloaded'});await sleep(900);
     check(`${vp.name}: the app exposes the open cart to the sticker screen`,await page.evaluate(()=>Array.isArray(window.novaCartItems())));
     await page.evaluate(()=>{window.__realCart=window.novaCartItems;window.novaCartItems=()=>[{name:'Cart Med A'},{name:'Cart Med B'}]});
-    await page.$eval('#novaAiLaunch',b=>b.click());await sleep(300);
+    await page.$eval('#btnSaleLabels',b=>b.click());await sleep(300);
     check(`${vp.name}: opening by hand starts with an empty age`,await page.$eval('#nlPatientAge',e=>e.value===''));
     check(`${vp.name}: opening by hand loads the medicines of the open cart`,(await page.$$eval('#nlMedicineList [data-field="name"]',a=>a.map(i=>i.value))).join()==='Cart Med A,Cart Med B');
     await page.evaluate(()=>{window.novaCartItems=window.__realCart});

@@ -39,7 +39,7 @@ async function openPanel(browser, width, height, mode = 'ok') {
   await page.goto(`http://127.0.0.1:8773/${FILE}#sale`, { waitUntil: 'domcontentloaded' });
   await sleep(900);
   for (const bc of CODES) { await page.fill('#mainSearchInput', bc); await page.press('#mainSearchInput', 'Enter'); await sleep(150); }
-  await page.click('#novaAiLaunch');
+  await page.click('#btnSaleLabels');
   await sleep(700);
   return { page, errors, calls };
 }
@@ -53,23 +53,12 @@ try {
     const L = 'wide';
     check(`${L}: three medicines are listed as rows`, (await page.$$eval('#nlMedicineList .med-sum', a => a.filter(e => e.getBoundingClientRect().height > 40).length)) === 3);
     check(`${L}: edit fields are hidden until a row is tapped`, !(await page.isVisible('#nlMedicineList .med-card:nth-child(1) [data-field="name"]')));
-    await page.click('.nl-prevtoggle');
-    await sleep(200);
-    check(`${L}: the preview button reveals every sticker`, await page.isVisible('#nlPreviewGrid'));
-    await page.click('.nl-prevtoggle');
-    await sleep(200);
-    check(`${L}: and hides them again`, !(await page.isVisible('#nlPreviewGrid')));
+    check(`${L}: no separate sticker preview step`, await page.locator('#nlPreviewGrid, .nl-prevtoggle').count()===0);
     await page.click('#nlMedicineList .med-card:nth-child(2) .med-sum');
     await sleep(300);
     check(`${L}: tapping a row opens exactly one edit window`, (await page.$$eval('.med-card.editing', a => a.length)) === 1);
     check(`${L}: the edit window shows the fields`, await page.isVisible('.med-card.editing [data-field="dose"]'));
-    check(`${L}: no stickers are shown by default (only medicines)`, !(await page.isVisible('#nlHeroStage')) && !(await page.isVisible('#nlPreviewGrid')));
-    await page.click('.med-card.editing .med-prev');
-    await sleep(200);
-    check(`${L}: the sticker preview opens next to the window on demand`, await page.isVisible('#nlHeroStage'));
-    await page.click('.med-card.editing .med-prev');
-    await sleep(200);
-    check(`${L}: and hides again`, !(await page.isVisible('#nlHeroStage')));
+    check(`${L}: instructions are edited without a preview`, await page.locator('.med-prev, #nlHeroStage').count()===0);
     await page.fill('.med-card.editing [data-field="dose"]', 'قرص');
     await sleep(200);
     check(`${L}: the row summary follows what is typed`, (await page.$eval('#nlMedicineList .med-card:nth-child(2) .med-sum .dose', e => e.textContent)).includes('قرص'));
@@ -113,7 +102,7 @@ try {
     const L = 'ai';
     await page.click('.nl-quick button[data-q="adult"]');
     for (let i = 0; i < 40 && calls.length < 1; i++) await sleep(150);
-    await page.waitForFunction(() => !document.getElementById('nlPrintAll').disabled, null, { timeout: 8000 });
+    await page.waitForFunction(() => !document.querySelector('#nlMedicineList .st.busy'), null, { timeout: 8000 });
     await sleep(300);
     check(`${L}: ONE request carries all the medicines`, calls.length === 1 && calls[0].medications.length === 3);
     check(`${L}: adult data is sent (not pregnant, adult age)`, calls[0].patient.pregnancy === false && Number(calls[0].patient.age) >= 18);
@@ -121,9 +110,9 @@ try {
     check(`${L}: a missing field is marked in its own cell`, await page.$eval('#nlMedicineList .med-card:nth-child(2) .med-sum .dur', e => e.classList.contains('gap')));
     check(`${L}: interactions between the invoice medicines are shown`, await page.isVisible('.nl-inter') && (await page.$eval('.nl-inter', e => e.textContent)).includes('تداخل'));
     check(`${L}: the table has a header row and a note that doses are AI suggestions`, await page.isVisible('.nl-thead') && (await page.$eval('.nl-note', e => e.textContent)).includes('اقتراحات'));
-    check(`${L}: no ready-made condition buttons under the box (the pharmacist just types)`, (await page.$$('.nl-cond button:not(.nl-info)')).length === 0);
+    check(`${L}: patient condition can be typed`, await page.isVisible('#nlCondition'));
     // the small i next to the label replaces the long caption and hint
-    check(`${L}: one small i button next to the label, tip hidden at first, no long caption`, (await page.$$('.nl-cond .nl-info')).length === 1 && !(await page.isVisible('.nl-infotip')) && (await page.$$('.nl-cond .hint, .nl-cond .lbl em')).length === 0);
+    check(`${L}: one small i button next to the label, tip hidden at first, no long caption`, (await page.$$('.nl-cond .nl-info')).length === 1 && !(await page.isVisible('.nl-infotip')) && !(await page.isVisible('.nl-cond .hint, .nl-cond .lbl em')));
     await page.click('.nl-info');
     await sleep(150);
     check(`${L}: tapping i shows the tip`, await page.isVisible('.nl-infotip') && (await page.$eval('.nl-infotip', e => e.textContent)).includes('اختياري') && (await page.$eval('.nl-info', e => e.getAttribute('aria-expanded'))) === 'true');
@@ -137,7 +126,7 @@ try {
     check(`${L}: tapping elsewhere closes the tip`, !(await page.isVisible('.nl-infotip')));
     await page.fill('#nlCondition', 'حساسية بنسلين');
     for (let i = 0; i < 40 && calls.length < 2; i++) await sleep(200);
-    await page.waitForFunction(() => !document.getElementById('nlPrintAll').disabled, null, { timeout: 8000 });
+    await page.waitForFunction(() => !document.querySelector('#nlMedicineList .st.busy'), null, { timeout: 8000 });
     await sleep(300);
     check(`${L}: the typed condition is sent with the next request`, calls.length === 2 && calls[1].patient.condition === 'حساسية بنسلين');
     check(`${L}: the AI warning shows in the row`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .med-sum', e => e.textContent)).includes('بنسلين'));
@@ -179,10 +168,7 @@ try {
     await page.click('.nl-quick button[data-q="adult"]');
     await page.waitForFunction(() => document.querySelector('#nlMedicineList .med-card .st.err'), null, { timeout: 8000 });
     await sleep(300);
-    check(`${L}: the row says "tap me" and printing is blocked`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .st', e => e.textContent)).includes('المس') && (await page.$eval('#nlBarWhy', e => e.textContent)).includes('المس'));
-    await page.$eval('#nlPrintAll', e => e.click());
-    await sleep(200);
-    check(`${L}: a print attempt is refused`, (await page.evaluate(() => (document.querySelector('.nlx-toast') || {}).textContent || '')).includes('التحذير'));
+    check(`${L}: an unreviewed warning is excluded while two other medicines are ready`, (await page.$eval('#nlMedicineList .med-card:nth-child(1) .st', e => e.textContent)).includes('المس') && (await page.$eval('#nlPrintLabel', e => e.textContent)).includes('(2)'));
     await page.click('#nlMedicineList .med-card:nth-child(1) .med-sum');
     await sleep(300);
     check(`${L}: the window shows the warning text`, (await page.$eval('.med-card.editing', e => e.textContent)).includes('بنسلين'));

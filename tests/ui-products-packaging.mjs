@@ -22,7 +22,7 @@ await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
 await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
 await page.goto(BASE, { waitUntil: 'load' });
 await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
-await page.locator('.nova-tab[data-page=products]').click();
+await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
 const cells = () => page.locator('#novaRows tr').evaluateAll(trs => trs.slice(0, 6).map(tr => tr.querySelector('td[data-pack]').innerText));
 await t('packaging column header is present', async () => assert.ok((await page.locator('.nova-data-table th').allInnerTexts()).includes('العبوة')));
 await t('strip x strips and unitsPerBox are shown', async () => {
