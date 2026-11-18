@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const stamp=new Date().toISOString();
 let searchCalls=0;
 const stock=Array.from({length:4},(_,i)=>({id:String(i+1),code:String(1201+i),name:`صنف اختباري ${i+1}`,nameEn:`Testdrug${i+1} 500mg 20 tabs`,stock:2,minStock:4,idealStock:10,dailySales:null,observedDays:0}));
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true, executablePath: process.env.CHROME_PATH || undefined});
 try{
  const context=await browser.newContext({viewport:{width:1280,height:800}});
  await context.addInitScript(()=>{localStorage.setItem('novaApiPin','test-pin');localStorage.setItem('novaPurchasePrefsV1',JSON.stringify({days:21,level:'ideal',suppliers:['aumet'],aumetSellers:['one','two']}));});
@@ -26,7 +26,9 @@ try{
  assert.equal(await page.locator('[data-action=qty]').first().inputValue(),'8');
  await page.locator('#coverBtn').click();await page.locator('#days').fill('٢٣');await page.locator('#days').press('Tab');assert.equal(await page.locator('[data-action=qty]').first().inputValue(),'8');
  await page.locator('#selectAll').check();await page.locator('#distribute').click();await page.locator('#distributionProgress').waitFor({state:'visible'});assert(/^[0-9]+%$/.test(await page.locator('#progressPercent').innerText()));await page.waitForFunction(()=>!document.getElementById('distribute').disabled,{timeout:30000});
- assert.equal(await page.locator('#groups .group').count(),2);assert(!(await page.locator('#groups').innerText()).includes('مخزن مستبعد'));assert.equal(await page.locator('.supplier-select').count(),4);assert(!(await page.locator('.supplier-select').first().innerText()).includes('مخزن مستبعد'));assert.equal(searchCalls,4);assert(await page.locator('#distributionProgress').isHidden());assert(!/[٠-٩]/.test(await page.locator('#groups').innerText()));assert.equal(await page.locator('.nova-topbar nav a').count(),8);
+ assert.equal(await page.locator('#groups .group').count(),2);assert(!(await page.locator('#groups').innerText()).includes('مخزن مستبعد'));assert.equal(await page.locator('.supplier-select').count(),4);assert(!(await page.locator('.supplier-select').first().innerText()).includes('مخزن مستبعد'));assert.equal(searchCalls,4);assert(await page.locator('#distributionProgress').isHidden());assert(!/[٠-٩]/.test(await page.locator('#groups').innerText()));
+ const navLinks = await page.locator('.nova-topbar nav a').evaluateAll(links => links.map(link => link.getAttribute('href')));
+ assert.deepEqual(navLinks, ['/#sale', '/#invoices', '/#customers', '/purchases', '/#receiving', '/#products', '/#reports', '/#settings']);
  await page.locator('#review').click();assert((await page.locator('#reviewDialog').innerText()).includes('لم تُرسل'));await page.locator('#saveDraft').click();assert((await page.locator('#savedState').innerText()).includes('لم تُضف'));
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('novaPurchaseDraftV1')));assert.equal(saved.state,'local-draft');assert.equal(saved.groups.length,2);await page.locator('#prepareAumet').click();await page.waitForFunction(()=>!document.getElementById('prepareAumet').disabled,{timeout:40000});assert(!(await page.locator('#applyAumet').isHidden()));await page.locator('#applyAumet').click();await page.waitForFunction(()=>!document.getElementById('applyAumet').disabled,{timeout:30000});assert((await page.locator('#cartStatus').innerText()).includes('تم التحقق'));assert(await page.locator('#applyAumet').isHidden());await page.locator('#closeReview').click();
  await page.locator('#openSettings').click();await page.locator('#refreshSellers').click();await page.locator('[data-seller=two]').waitFor();await page.locator('[data-seller=two]').uncheck();await page.locator('#settings .close').click();
