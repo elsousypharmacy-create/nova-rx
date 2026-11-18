@@ -469,3 +469,26 @@ dialog#settings .qs-adv>*:not(summary){margin-top:10px}
 dialog#settings .qs-adv p,dialog#settings .qs-adv small,dialog#settings .qs-adv .hint{font-size:13px;color:#8896a4}
 dialog#settings .dialog-actions{padding:12px 18px!important;border-top:1px solid #20262d}
 dialog#settings #saveSettings{width:100%;min-height:44px}
+
+/* UX-P28: PIN-only window for refresh, stores pill facing the search, cleaner refresh icon */
+dialog#settings[data-mode=pin]{width:min(380px,94vw)!important}
+dialog#settings[data-mode=pin] .qs>*:not(#advSettings){display:none!important}
+dialog#settings[data-mode=pin] .qs-adv{border:0;padding:0;margin:0}
+dialog#settings[data-mode=pin] .qs-adv>*:not(.credential){display:none!important}
+dialog#settings[data-mode=pin] .qs-adv>.credential{margin:0;display:flex;flex-direction:column;gap:8px;font-size:14px;color:#cfd7de}
+dialog#settings[data-mode=pin] #dashboardPin{min-height:44px;font-size:16px;letter-spacing:2px}
+html body .products #openSettings{order:-1;flex:none;width:auto!important;margin:0!important;height:38px!important;min-height:38px!important;padding:0 12px!important;border:1px solid #2a313a!important;border-radius:10px!important;background:#111418!important;color:#cfd7de!important;font-size:13px!important;font-weight:600!important;display:inline-flex!important;align-items:center;gap:8px;white-space:nowrap}
+html body .products #openSettings::before{content:"";flex:none;width:18px;height:18px;background:#76b8d5;-webkit-mask:var(--ic-store) center/contain no-repeat;mask:var(--ic-store) center/contain no-repeat}
+html body .products #openSettings::after{content:"";flex:none;width:14px;height:14px;background:currentColor;opacity:.6;-webkit-mask:var(--ic-chev) center/contain no-repeat;mask:var(--ic-chev) center/contain no-repeat}
+html body .products #openSettings:hover{border-color:#4a8aa6!important;background:#16232b!important;color:#fff!important}
+html body .products #openSettings[data-state=warn]{border-color:#6b5a2e!important;color:#f0d9a0!important}
+html body .products #openSettings[data-state=warn]::before{background:#e8c27a}
+:root{--ic-refresh:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11.5A8 8 0 1 0 17.66 17.66'/%3E%3Cpath d='M20 4.5v7h-7'/%3E%3C/svg%3E")}
+html body .controls #load{gap:9px!important;padding-inline:14px 16px!important}
+html body .controls #load::before{width:22px!important;height:22px!important;border-radius:50%;background:currentColor;-webkit-mask:var(--ic-refresh) center/14px no-repeat,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:var(--ic-refresh) center/14px no-repeat exclude,linear-gradient(#000 0 0)}
+main:not(:has(#rows td.empty)) .controls #load::before{color:#76b8d5}
+html body .products .panel-tools{gap:8px!important;min-width:0}
+html body .products .panel-tools>#chips,html body .products .panel-tools>.cover,html body .products .panel-tools>.mode-segment{flex:none!important}
+html body .products .panel-tools>#search{flex:1 1 160px!important;min-width:140px!important;width:auto!important}
+html body .products .cover-btn{white-space:nowrap}
+html body .products #chips{flex-wrap:nowrap!important;white-space:nowrap}
