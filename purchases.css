@@ -426,3 +426,13 @@ html body main td.empty{color:#cfd7de;font-size:15px}
  .products .panel-tools{flex-wrap:nowrap!important}
  .cart .group:not(.no-offer) ul{display:none}
 }
+/* UX-P25: suppliers scope is one clear pill button (icon + scope + chevron), not loose text + link */
+@media(min-width:801px){
+ html body .controls #scopeChip{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;margin:0!important;padding:0!important}
+ html body .controls #openSettings{order:1!important;margin-inline-start:18px!important;height:36px!important;min-height:36px!important;padding:0 12px!important;border:1px solid #2a313a!important;border-radius:10px!important;background:#111418!important;color:#cfd7de!important;font-size:13px!important;font-weight:600!important;text-decoration:none!important;display:inline-flex!important;align-items:center;gap:8px}
+ html body .controls #openSettings::before{display:inline-block!important;--ic:var(--ic-store)!important;color:#76b8d5}
+ html body .controls #openSettings::after{content:"";width:14px;height:14px;background:currentColor;opacity:.6;-webkit-mask:var(--ic-chev) center/contain no-repeat;mask:var(--ic-chev) center/contain no-repeat}
+ html body .controls #openSettings:hover{border-color:#4a8aa6!important;background:#16232b!important;color:#fff!important}
+ html body .controls #openSettings[data-state=warn]{border-color:#6b5a2e!important;color:#f0d9a0!important}
+ html body .controls #openSettings[data-state=warn]::before{color:#e8c27a}
+}

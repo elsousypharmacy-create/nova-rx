@@ -25,7 +25,7 @@ function scopeView(){
  if(p)parts.push('فارما أوفرسيز');
  chip.textContent=parts.length?parts.join(' · '):'لا موردين مختارين';
  chip.dataset.state=(!parts.length||(a&&!n))?'warn':'ok';
- chip.title=a&&!n?'أوميت لن يُبحث فيه قبل اختيار المخازن':'نطاق البحث الحالي، اضغط للتعديل';
+ chip.title=a&&!n?'أوميت لن يُبحث فيه قبل اختيار المخازن':'نطاق البحث الحالي، اضغط للتعديل';const os=$('openSettings');if(os){const seg=[];if(a)seg.push(n?'أوميت ('+fmt(n)+' '+(n===1?'مخزن':'مخازن')+')':'أوميت (لا مخازن)');if(p)seg.push('فارما أوفرسيز');os.innerHTML='<span class="os-t">'+esc(seg.length?seg.join('، '):'اختَر الموردين')+'</span>';os.dataset.state=chip.dataset.state;os.title='الموردون والمخازن — اضغط للتعديل';}
 }
 function modeView(){
  if($('modeAuto'))$('modeAuto').setAttribute('aria-pressed',String(prefs.mode==='auto'));
