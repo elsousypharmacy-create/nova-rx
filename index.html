@@ -1613,6 +1613,29 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 .pos-root{height:calc(100dvh - 104px)}
 .nova-page-view{height:calc(100dvh - 104px);overflow:auto;background:#0c0e11;padding:24px 30px}
 .nova-page-view[hidden]{display:none}
+.nova-invoice-search{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0c0e12;padding:8px 0;margin-bottom:8px}
+.nova-invoice-search .nova-page-search{flex:1;min-width:0;min-height:48px;margin:0}
+.nova-invoice-search button,.nova-invoice-number{min-width:48px;min-height:48px}
+.nova-invoice-search button{display:grid;place-items:center}
+.nova-invoice-search-status:not(:empty){flex-basis:100%;color:#ffb4a8}
+.nova-invoice-number{background:none;border:0;color:#9edcf4;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+.nova-invoice-row{cursor:pointer}
+.nova-invoice-detail-overlay{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:12px;background:#000a}
+.nova-invoice-detail{width:min(100%,520px);max-height:min(90dvh,700px);display:flex;flex-direction:column;background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:12px;overflow:hidden}
+.nova-invoice-detail header,.nova-invoice-detail footer{display:flex;align-items:center;gap:8px;padding:12px;position:relative}
+.nova-invoice-detail h2{font-size:18px;margin:0}
+.nova-invoice-detail header .nova-dlg-x{position:static;flex:none;margin-inline-start:auto;width:48px;height:48px;min-height:48px}
+.nova-invoice-detail-body{padding:0 12px;overflow:auto}
+.nova-invoice-summary{display:flex;justify-content:space-between;gap:12px}
+.nova-invoice-detail ul{margin:0;padding:0;list-style:none}
+.nova-invoice-detail li{padding:8px 0;border-top:1px solid #303841}
+.nova-invoice-detail li small{display:block;color:#b7c5d0}
+.nova-invoice-detail footer{align-items:flex-start;flex-wrap:wrap;border-top:1px solid #303841}
+.nova-invoice-detail footer :is(button,summary){min-height:48px}
+.nova-invoice-detail footer summary{display:flex;align-items:center;padding:0 10px;cursor:pointer}
+.nova-invoice-detail footer details[open]{flex-basis:100%}
+.nova-return-overlay [hidden]{display:none!important}
+@media(max-width:600px){.nova-invoice-row td.nova-actions{display:none!important}}
 .nova-page-header{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);margin-bottom:22px}
 .nova-page-header h1{font-size:23px;font-weight:800;color:#f1f3f5;margin:0}
 .nova-page-header p{font-size:12px;color:#a4adb7;margin-top:5px}
@@ -2192,13 +2215,13 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 @media (max-width:600px){
  .top-header{padding:6px 9px!important;gap:4px!important}
  .top-header .brand-section{flex:1 1 100%}
- .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:nowrap!important;gap:4px!important;flex:1 1 100%;justify-content:flex-start}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:wrap!important;gap:4px!important;flex:1 1 100%;justify-content:flex-start}
  .nova-sale-actions .nova-hold-action,.nova-sale-actions .nova-held-action{padding:0!important;width:44px!important;min-width:44px!important;justify-content:center;position:relative}
  .nova-sale-actions .nova-hold-action>span,.nova-sale-actions .nova-held-action>span:not(.nova-held-count){display:none}
  .nova-sale-actions .nova-held-action .nova-held-count{position:absolute;top:1px;inset-inline-end:2px;font-size:10px}
  .nova-sale-actions .nova-sale-number{font-size:11px;max-width:none;overflow:visible;text-overflow:clip;white-space:nowrap;flex:0 0 auto;padding:7px 6px}
  .empty-invoice-state{height:auto!important;min-height:0!important;padding:18px 0}
- .nova-sale-actions .nova-new-sale{padding:0 8px!important;flex:0 1 auto}
+ .nova-sale-actions .nova-new-sale{width:auto!important;min-width:48px!important;padding:0 8px!important;flex:none}
 }
 @media (hover:none),(pointer:coarse){.nova-help-chip{display:none!important}}
 /* UX10: mobile sale layout (toast/FAB/totals/table) */
@@ -3438,37 +3461,31 @@ window.NovaFmt=(function(){
         const query = state.mode === "PRODUCT" ? parseQtyQuery(e.target.value).query : e.target.value.trim();
         state.searchQuery = query;
 
-        // Check if user is typing or scanning a product barcode directly in Customer Mode
-        if (state.mode === "CUSTOMER" && query.length >= 5) {
-          const matchedByBarcode = findExactBarcodeProduct(query);
-          if (matchedByBarcode) {
-            // Immediate match on valid product barcode! Add and switch mode.
-            addProductToInvoice(matchedByBarcode);
-            setSearchMode("PRODUCT");
-            showToast(addedPrefix() + escH(matchedByBarcode.name));
-            return;
-          }
-        }
-
         if (query.length === 0) {
           closeSuggestions();
           return;
         }
 
         if (state.mode === "CUSTOMER") {
-          const qLower = query.toLowerCase();
-          const matches = DEMO_CUSTOMERS.filter(c => 
-            c.name.toLowerCase().includes(qLower) || c.phone.includes(query)
+          const normalize = window.novaNormAr || (value => value.toLowerCase());
+          const q = normalize(query);
+          const phoneDigits = value => String(value ?? "").replace(/[٠-٩۰-۹]/g, d => String(d.charCodeAt(0) - (d < '۰' ? 0x660 : 0x6f0))).replace(/[^0-9]/g, "");
+          const phone = /^[+٠-٩۰-۹0-9 ()-]+$/.test(query) ? phoneDigits(query) : "";
+          const matches = DEMO_CUSTOMERS.filter(c =>
+            normalize(c.name).includes(q) || (phone && phoneDigits(c.phone).includes(phone))
           );
-          renderCustomerSuggestions(matches);
+          const products = matches.length ? [] : searchProducts(query).slice(0, 40);
+          if (products.length) renderProductSuggestions(products);
+          else renderCustomerSuggestions(matches);
         } else {
           renderProductSuggestions(searchProducts(query).slice(0, 40));
         }
       }
 
       function renderCustomerSuggestions(matches) {
+        elements.suggestionsBox.dataset.mode = "CUSTOMER";
         state.suggestions = matches;
-        state.selectedIndex = matches.length > 0 ? 0 : -1;
+        state.selectedIndex = matches.length === 1 ? 0 : -1;
         if (matches.length === 0) {
           elements.suggestionsBox.innerHTML = `
             <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
@@ -3482,8 +3499,8 @@ window.NovaFmt=(function(){
         elements.suggestionsBox.innerHTML = matches.map((cust, idx) => `
           <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
             <div>
-              <div class="sugg-primary" dir="auto">${cust.name}</div>
-              <div class="sugg-sub">Phone: ${cust.phone} • Visits: ${cust.visits}</div>
+              <div class="sugg-primary" dir="auto">${escH(cust.name)}</div>
+              <div class="sugg-sub">${novaEn() ? "Phone" : "الموبايل"}: <bdi>${escH(cust.phone)}</bdi> · ${novaEn() ? "Visits" : "الزيارات"}: ${escH(cust.visits)}</div>
             </div>
             <div class="sugg-meta">
               <span class="sugg-tag" style="background:#4c1d95; color:#ddd6fe;">${tierAr(cust.tier)}</span>
@@ -3508,6 +3525,7 @@ window.NovaFmt=(function(){
       };
 
       function renderProductSuggestions(matches) {
+        elements.suggestionsBox.dataset.mode = "PRODUCT";
         state.suggestions = matches;
         state.selectedIndex = matches.length > 0 ? 0 : -1;
         if (matches.length === 0) {
@@ -3522,7 +3540,10 @@ window.NovaFmt=(function(){
         }
 
         const q = state.searchQuery;
-        elements.suggestionsBox.innerHTML = matches.map((prod, idx) => {
+        const heading = state.mode === "CUSTOMER"
+          ? `<div class="sugg-sub" style="padding:8px 12px">${novaEn() ? "Matching medicines" : "أصناف مطابقة"}</div>`
+          : "";
+        elements.suggestionsBox.innerHTML = heading + matches.map((prod, idx) => {
           const str = extractStrength(prod), pk = extractPack(prod), gen = prod.generic || prod.activeIngredient || "";
           const measureNote = sourceMeasureNeedsReview(str) ? (novaEn() ? 'Source value — verify pack/strength' : 'قيمة من المصدر — راجع العبوة والتركيز') : (novaEn() ? 'Source description' : 'وصف المصدر');
           const sub = [
@@ -3550,6 +3571,7 @@ window.NovaFmt=(function(){
       function closeSuggestions() {
         elements.suggestionsBox.classList.remove("open");
         elements.suggestionsBox.innerHTML = "";
+        delete elements.suggestionsBox.dataset.mode;
         state.suggestions = [];
         state.selectedIndex = -1;
       }
@@ -3569,12 +3591,13 @@ window.NovaFmt=(function(){
         } else if (e.key === "ArrowUp") {
           e.preventDefault();
           if (state.suggestions.length > 0) {
-            state.selectedIndex = (state.selectedIndex - 1 + state.suggestions.length) % state.suggestions.length;
+            state.selectedIndex = (state.selectedIndex < 0 ? state.suggestions.length - 1 : (state.selectedIndex - 1 + state.suggestions.length) % state.suggestions.length);
             updateSelectedSuggestionDOM();
           }
         } else if (e.key === "Enter") {
+          if (e.isComposing) return;
           e.preventDefault();
-          
+
           // Workflow A: Enter on blank customer search skips customer and switches to Product Mode!
           if (state.mode === "CUSTOMER" && query === "") {
             setSearchMode("PRODUCT");
@@ -3582,8 +3605,8 @@ window.NovaFmt=(function(){
             return;
           }
 
-          // In Customer Mode with query: check exact barcode first (Requirement D)
-          if (state.mode === "CUSTOMER") {
+          // A matching customer takes priority over a product with the same digits.
+          if (state.mode === "CUSTOMER" && (elements.suggestionsBox.dataset.mode !== "CUSTOMER" || !state.suggestions.length)) {
             const barcodeMatch = findExactBarcodeProduct(query);
             if (barcodeMatch) {
               addProductToInvoice(barcodeMatch);
@@ -3595,7 +3618,7 @@ window.NovaFmt=(function(){
 
           // When a medicine name is typed in customer mode with no matching customer,
           // preserve the query and continue the search as a product instead of trapping the cashier.
-          if (state.mode === "CUSTOMER" && query && state.suggestions.length === 0) {
+          if (state.mode === "CUSTOMER" && (elements.suggestionsBox.dataset.mode !== "CUSTOMER" || !state.suggestions.length)) {
             setSearchMode("PRODUCT");
             elements.mainSearchInput.value = query;
             handleSearchInput({ target: elements.mainSearchInput });
@@ -3639,6 +3662,10 @@ window.NovaFmt=(function(){
           if (state.suggestions.length > 0) {
             const selected = state.suggestions[Math.max(0, state.selectedIndex)];
             if (state.mode === "CUSTOMER") {
+              if (state.selectedIndex < 0) {
+                showToast(novaEn() ? "Choose a customer from the results." : "اختار عميل من النتايج.");
+                return;
+              }
               attachCustomer(selected);
               setSearchMode("PRODUCT");
             } else {
@@ -4809,8 +4836,8 @@ window.NovaFmt=(function(){
         detachCustomer();
         state.customerGateSkipped = true;
         state.customerGatePending = false;
-        setSearchMode("PRODUCT");
-        showToast("New sale ready. Scan barcode or search medicine.");
+        setSearchMode("CUSTOMER");
+        showToast(novaEn() ? "New sale ready." : "الفاتورة الجديدة جاهزة.");
       }
 
       // POS-05 (this device only): Arabic PDF receipt, 58mm/80mm thermal layouts with SVG barcode, printer disconnect/reconnect handling, reprint with copy mark, and mock Bluetooth/HID barcode scanner.
@@ -5159,10 +5186,11 @@ window.NovaFmt=(function(){
           const selected = state.suggestions[idx];
           if (!selected) return;
 
-          if (state.mode === "CUSTOMER") {
+          if (elements.suggestionsBox.dataset.mode === "CUSTOMER") {
             attachCustomer(selected);
             setSearchMode("PRODUCT");
           } else {
+            if (state.mode === "CUSTOMER") setSearchMode("PRODUCT");
             addProductToInvoice(selected);
             elements.mainSearchInput.value = "";
             closeSuggestions();
@@ -5598,7 +5626,7 @@ window.NovaFmt=(function(){
         if (restoredCustomer) attachCustomer(restoredCustomer);
       }
       renderInvoice();
-      setSearchMode("PRODUCT");
+      setSearchMode(state.attachedCustomer || state.invoiceLines.length ? "PRODUCT" : "CUSTOMER");
 
     })();
   </script>
@@ -5631,6 +5659,8 @@ window.NovaFmt=(function(){
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const tr=(ar,en)=>localStorage.getItem('nova-rx-language')==='en'?en:ar;
  const money=n=>(Number(n)||0).toFixed(2)+(localStorage.getItem('nova-rx-language')==='en'?' EGP':' ج.م');
+ const invoiceCode=value=>String(value??'').trim().replace(/^\*|\*$/g,'').replace(/[٠-٩۰-۹]/g,d=>String(d.charCodeAt(0)-(d<'۰'?0x660:0x6f0))).toUpperCase();
+ const invoicePhone=value=>invoiceCode(value).replace(/[^0-9]/g,'');
  const payLbl=m=>m==='cash'?tr('نقدي','Cash'):m==='credit'?tr('آجل','Credit'):m==='mixed'?tr('مشترك','Mixed'):m==='card'?tr('بطاقة','Card'):'—';
  const RET_REASONS=[['عيب/تالف',tr('عيب/تالف','Defective/damaged')],['خطأ في الصرف',tr('خطأ في الصرف','Dispensing error')],['رجوع العميل',tr('رجوع العميل','Customer return')],['انتهاء صلاحية',tr('انتهاء صلاحية','Expired')]];
  const retCat=t=>{const k=String(t||'').trim();const h=RET_REASONS.find(r=>r[0]===k);return h?h[0]:'__other'};
@@ -5649,7 +5679,7 @@ window.NovaFmt=(function(){
 
  function dlgA11y(ov,close0,focusEl){
   const prev=document.activeElement,ob=document.body.style.overflow;document.body.style.overflow='hidden';
-  const fs=()=>[...ov.querySelectorAll('button,input,select,a[href],[tabindex]:not([tabindex="-1"])')].filter(e=>!e.disabled&&e.offsetParent!==null);
+  const fs=()=>[...ov.querySelectorAll('button,input,select,summary,a[href],[tabindex]:not([tabindex="-1"])')].filter(e=>!e.disabled&&e.offsetParent!==null);
   const tab=e=>{if(e.key!=='Tab')return;const f=fs();if(!f.length)return;const a=document.activeElement,i=f.indexOf(a);if(e.shiftKey&&(i<=0)){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&(i===f.length-1||i<0)){e.preventDefault();f[0].focus()}};
   document.addEventListener('keydown',tab,true);
   return ()=>{document.removeEventListener('keydown',tab,true);document.body.style.overflow=ob;ov.remove();try{if(prev&&prev.isConnected)prev.focus()}catch(e){}};
@@ -5824,17 +5854,23 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
  }else if(page==='invoices'){
  const deviceRecords=window.novaSales?window.novaSales.list():[];
  const demoDeviceRecords=deviceRecords.filter(x=>x.source==='DEMO');
- const saved=deviceRecords.filter(x=>x.source!=='DEMO').map(x=>({at:x.at,sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، '),hist:retHistory(x.id,x.lines),full:(()=>{const d=window.novaSales.returnedQty(x.id);return x.lines.length>0&&x.lines.every((l,k)=>l.qty-(d[k]||0)<=0)})()}));
+ const phoneByCustomer=new Map(customers.map(c=>[String(c.id),c.phone]));
+ const saved=deviceRecords.filter(x=>x.source!=='DEMO').map(x=>({at:x.at,sid:x.id,ret:window.novaSales.returnedAmount(x.id),cx:window.novaSales.isCancelled(x.id),id:x.number,date:window.NovaFmt.formatDateTime(x.at),customer:x.customer||tr('عميل نقدي','Walk-in Customer'),phone:invoicePhone(x.phone||phoneByCustomer.get(String(x.customerId))),total:x.total,pay:x.payment==='cash'?tr('نقدي','Cash'):x.payment==='credit'?tr('آجل','Credit'):x.payment==='mixed'?tr('مشترك','Mixed'):tr('بطاقة','Card'),items:x.lines.map(l=>l.name+' ×'+l.qty).join('، '),hist:retHistory(x.id,x.lines),full:(()=>{const d=window.novaSales.returnedQty(x.id);return x.lines.length>0&&x.lines.every((l,k)=>l.qty-(d[k]||0)<=0)})()}));
  const per=window.__novaInvPer||'all',nowP=new Date(),dayOf=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),today0=dayOf(nowP),yday0=new Date(nowP.getFullYear(),nowP.getMonth(),nowP.getDate()-1).getTime(),week0=new Date(nowP.getFullYear(),nowP.getMonth(),nowP.getDate()-6).getTime();
  const inPer=at=>{const d=new Date(at);if(isNaN(d))return per==='all';const t=dayOf(d);return per==='all'?true:per==='today'?t===today0:per==='yday'?t===yday0:per==='week'?t>=week0&&t<=today0:per==='month'?d.getFullYear()===nowP.getFullYear()&&d.getMonth()===nowP.getMonth():true};
- const sl=filtered(saved,['id','customer','date','items']).filter(i=>inPer(i.at));
+ const phoneQuery=/^[+٠-٩۰-۹0-9 ()-]+$/.test(filter.trim()) ? invoicePhone(filter) : '';
+ const exact=saved.filter(i=>filter.trim()&&invoiceCode(i.id)===invoiceCode(filter));
+ const sl=exact.length?exact:saved.filter(i=>inPer(i.at)&&(
+  [i.id,i.customer,i.date,i.items].some(value=>nAr(value).includes(q)) || (phoneQuery&&i.phone.includes(phoneQuery))
+ ));
  const perBar=saved.length?'<div class="nova-inv-per" role="group" aria-label="'+tr('الفترة','Period')+'">'+[['all',tr('الكل','All')],['today',tr('اليوم','Today')],['yday',tr('أمس','Yesterday')],['week',tr('آخر 7 أيام','Last 7 days')],['month',tr('الشهر','This month')]].map(p=>'<button type="button" class="chip" data-inv-per="'+p[0]+'" aria-pressed="'+(per===p[0])+'">'+p[1]+'</button>').join('')+'</div>':'';
  const backupBar='<details class="nova-kebab"><summary aria-label="'+tr('خيارات النسخ الاحتياطي','Backup options')+'">⋯</summary><div class="nova-kebab-pop"><button type="button" id="novaSalesExport" class="btn btn-secondary nova-return-btn">'+tr('تصدير نسخة احتياطية (JSON)','Export backup (JSON)')+'</button><button type="button" id="novaSalesImport" class="btn btn-secondary nova-return-btn">'+tr('استيراد نسخة احتياطية','Import backup')+'</button><input type="file" id="novaSalesImportFile" accept="application/json,.json" hidden></div></details><span id="novaBackupMsg" role="status" style="font-size:13px;color:#9eacb9"></span>';
  const savedBlock=saved.length?perBar+'<div class="nova-kpis">'+kpi('فواتير محفوظة',sl.length)+kpi('إجمالي المبيعات',money(sl.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(sl.length?sl.reduce((s,i)=>s+i.total,0)/sl.length:0))+'</div>'
-  +'<div class="nova-panel nova-inv-panel"><div style="overflow:auto"><table class="nova-data-table nova-cards"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="الدفع">'+esc(i.pay)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="المرتجع">'+(i.ret>0?money(i.ret):'—')+(i.cx?' <span class="nova-ret-badge nova-ret-cx" data-ret-status="cancelled">'+tr('ملغاة','Cancelled')+'</span>':i.full?' <span class="nova-ret-badge nova-ret-full" data-ret-status="full">'+tr('مرتجع بالكامل','Fully returned')+'</span>':i.ret>0?' <span class="nova-ret-badge nova-ret-part" data-ret-status="partial">'+tr('مرتجع جزئي','Partially returned')+'</span>':'')+i.hist+'</td><td data-label="الأصناف">'+esc(i.items)+'</td><td class="nova-actions" data-label="إجراء"><button type="button" class="nova-return-btn nova-act-ghost" data-reprint="'+esc(i.sid)+'" title="'+tr('إعادة طباعة نسخة','Reprint Copy')+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg><span>'+tr('إعادة طباعة نسخة','Reprint Copy')+'</span></button>'+(i.full?'<button type="button" class="nova-return-btn nova-act-return nova-act-done" data-return-done="'+esc(i.sid)+'" aria-disabled="true" disabled title="'+(i.cx?tr('الفاتورة ملغاة — لا يوجد ما يُرجع','Invoice cancelled — nothing left to return'):tr('تم إرجاع كل الأصناف — لا يوجد ما يُرجع','All items returned — nothing left to return'))+'"><span>'+tr('تم الإرجاع بالكامل','Fully returned')+'</span></button>':'<button type="button" class="nova-return-btn nova-act-return" data-return="'+esc(i.sid)+'" title="'+tr('مرتجع / إلغاء','Return / Void')+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span>'+tr('مرتجع / إلغاء','Return / Void')+'</span></button>')+'</td></tr>')+(sl.length?'':'<tr><td colspan="8" role="status">'+tr('لا توجد فواتير مطابقة للبحث','No invoices match your search')+'</td></tr>')+'</tbody></table></div></div>'
+  +'<div class="nova-panel nova-inv-panel"><div style="overflow:auto"><table class="nova-data-table nova-cards"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الدفع</th><th>القيمة</th><th>المرتجع</th><th>الأصناف</th><th>إجراء</th></tr></thead><tbody>'+rows(sl,i=>'<tr class="nova-invoice-row"><td dir="ltr" data-label="رقم الفاتورة"><button type="button" class="nova-invoice-number" data-invoice-details="'+esc(i.sid)+'" aria-label="'+tr('افتح فاتورة ','Open invoice ')+esc(i.id)+'">'+esc(i.id)+'</button></td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="الدفع">'+esc(i.pay)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="المرتجع">'+(i.ret>0?money(i.ret):'—')+(i.cx?' <span class="nova-ret-badge nova-ret-cx" data-ret-status="cancelled">'+tr('ملغاة','Cancelled')+'</span>':i.full?' <span class="nova-ret-badge nova-ret-full" data-ret-status="full">'+tr('مرتجع بالكامل','Fully returned')+'</span>':i.ret>0?' <span class="nova-ret-badge nova-ret-part" data-ret-status="partial">'+tr('مرتجع جزئي','Partially returned')+'</span>':'')+i.hist+'</td><td data-label="الأصناف">'+esc(i.items)+'</td><td class="nova-actions" data-label="إجراء"><button type="button" class="nova-return-btn nova-act-ghost" data-reprint="'+esc(i.sid)+'" title="'+tr('إعادة طباعة نسخة','Reprint Copy')+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg><span>'+tr('إعادة طباعة نسخة','Reprint Copy')+'</span></button>'+(i.full?'<button type="button" class="nova-return-btn nova-act-return nova-act-done" data-return-done="'+esc(i.sid)+'" aria-disabled="true" disabled title="'+(i.cx?tr('الفاتورة ملغاة — لا يوجد ما يُرجع','Invoice cancelled — nothing left to return'):tr('تم إرجاع كل الأصناف — لا يوجد ما يُرجع','All items returned — nothing left to return'))+'"><span>'+tr('تم الإرجاع بالكامل','Fully returned')+'</span></button>':'<button type="button" class="nova-return-btn nova-act-return" data-return="'+esc(i.sid)+'" title="'+tr('مرتجع / إلغاء','Return / Void')+'"><svg class="nova-act-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span>'+tr('مرتجع / إلغاء','Return / Void')+'</span></button>')+'</td></tr>')+(sl.length?'':'<tr><td colspan="8" role="status">'+tr('لا توجد فواتير مطابقة للبحث','No invoices match your search')+'</td></tr>')+'</tbody></table></div></div>'
   :'<div class="nova-panel nova-empty-card" role="status"><strong>'+tr('لا توجد فواتير محفوظة بعد','No saved invoices yet')+'</strong><span>'+tr('أتمّ عملية بيع وستظهر الفاتورة على هذا الجهاز.','Complete a sale to save its invoice on this device.')+'</span><button type="button" class="btn btn-primary" id="novaInvStartSale">'+tr('ابدأ فاتورة','Start an invoice')+'</button></div>';
  const list=filtered(inv,['id','customer','date','branch']);
- content=head(title,tr('فواتير محفوظة على هذا الجهاز؛ بيانات العرض منفصلة. تتزامن مع الأجهزة الأخرى عند تفعيل المزامنة.','Invoices saved on this device; demo records are separate. Synced to other devices when sync is on.'),true).replace('placeholder="بحث بالاسم أو الرقم أو الباركود"','placeholder="'+tr('رقم الفاتورة أو العميل أو الصنف…','Invoice no., customer or item…')+'"').replace(/<\/div>$/,backupBar+'</div>')+savedBlock
+ content=head(title,tr('فواتير محفوظة على هذا الجهاز؛ بيانات العرض منفصلة. تتزامن مع الأجهزة الأخرى عند تفعيل المزامنة.','Invoices saved on this device; demo records are separate. Synced to other devices when sync is on.')).replace(/<\/div>$/,backupBar+'</div>')
+  +'<form id="novaInvoiceSearch" role="search" class="nova-invoice-search"><input class="nova-page-search" id="novaFilter" type="search" dir="auto" autocomplete="off" enterkeyhint="search" aria-label="'+tr('بحث عن فاتورة','Find invoice')+'" placeholder="'+tr('العميل، الموبايل، رقم الفاتورة أو الباركود','Customer, phone, invoice no. or barcode')+'"><button type="submit" class="btn btn-secondary" aria-label="'+tr('بحث عن فاتورة','Find invoice')+'"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/></svg></button><span id="novaInvoiceSearchStatus" class="nova-invoice-search-status" role="status"></span></form>'+savedBlock
  +(demoDeviceRecords.length?'<details class="nova-demo-wm"><summary>'+tr('فواتير محفوظة لمنتجات تجريبية — ليست فواتير منتجات STOCK LIVE','Saved demo-product invoices — not STOCK LIVE product invoices')+' ('+demoDeviceRecords.length+')</summary><p>'+tr('هذه سجلات بيع محفوظة لمصدر DEMO، منفصلة عن فواتير قائمة الأسعار الحقيقية.','These are saved DEMO-source sales, separated from real price-list invoices.')+'</p>'+demoDeviceRecords.map(x=>'<div style="padding:8px"><bdi dir="ltr">'+esc(x.number)+'</bdi> · '+esc(window.NovaFmt.formatDateTime(x.at))+' · '+money(x.total)+' · '+tr('تجريبي','Demo')+'</div>').join('')+'</details>':'')
   +(window.NOVA_DEMO_MODE&&inv.length?'<details class="nova-demo-wm"><summary>'+tr('فواتير تجريبية — منفصلة عن فواتير الجهاز','Demo invoices — separate from device invoices')+'</summary>'+'<div class="nova-kpis">'+kpi('عدد الفواتير',inv.length)+kpi('إجمالي القيمة',money(inv.reduce((s,i)=>s+i.total,0)))+kpi('متوسط الفاتورة',money(inv.length?inv.reduce((s,i)=>s+i.total,0)/inv.length:0))+kpi('الأصناف المباعة',inv.reduce((s,i)=>s+(i.items||[]).reduce((n,x)=>n+x.qty,0),0))+'</div>'
  +cards(['رقم الفاتورة','التاريخ','العميل','القيمة','الأصناف'],rows(list,i=>'<tr><td dir="ltr" data-label="رقم الفاتورة">'+esc(i.id)+'</td><td dir="ltr" data-label="التاريخ">'+esc(i.date)+'</td><td data-label="العميل">'+esc(i.customer)+'</td><td data-label="القيمة">'+money(i.total)+'</td><td data-label="الأصناف">'+esc((i.items||[]).length)+'</td></tr>'))+'</details>':'');
@@ -5963,16 +5999,50 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   setTimeout(()=>{tr_.removeAttribute('data-ret-flash');tr_.style.outline=''},2500)}
 }
  view.querySelectorAll('[data-reprint]').forEach(b=>b.onclick=()=>{if(window.novaReceipt)window.novaReceipt.reopenSale(b.dataset.reprint,{copy:true})});
- view.querySelectorAll('[data-return]').forEach(b=>b.onclick=()=>{
-  const sale=(window.novaSales.list()).find(x=>x.id===b.dataset.return);if(!sale)return;
+ view.querySelectorAll('[data-return]').forEach(b=>b.onclick=()=>openInvoiceReturn(b.dataset.return,b));
+ view.querySelectorAll('[data-invoice-details]').forEach(b=>{
+  b.onclick=()=>openInvoiceDetails(b.dataset.invoiceDetails,b);
+  b.closest('tr').onclick=e=>{
+   if(!e.target.closest('button,summary,details,a,input,select')&&!window.getSelection()?.toString()) b.click();
+  };
+ });
+ function openInvoiceDetails(id,opener){
+  const sale=window.novaSales?.list().find(x=>x.id===id&&x.source!=='DEMO');
+  if(!sale||document.getElementById('novaInvoiceDetails'))return;
+  const returned=window.novaSales.returnedQty(id);
+  const canReturn=sale.lines.some((line,i)=>line.qty>(returned[i]||0))&&!window.novaSales.isCancelled(id);
+  const ov=document.createElement('div');ov.id='novaInvoiceDetails';ov.className='nova-invoice-detail-overlay';ov.dir=tr('rtl','ltr');
+  const amounts=(line,i)=>tr('المُباع ','Sold ')+line.qty+' · '+tr('المرتجع ','Returned ')+(returned[i]||0)+' · '+tr('المتاح للإرجاع ','Can return ')+Math.max(0,line.qty-(returned[i]||0));
+  ov.innerHTML='<section class="nova-invoice-detail" role="dialog" aria-modal="true" aria-labelledby="novaInvoiceTitle"><header><h2 id="novaInvoiceTitle">'+tr('فاتورة ','Invoice ')+'<bdi>'+esc(sale.number)+'</bdi></h2><button type="button" class="nova-dlg-x" data-dlg-close aria-label="'+tr('إغلاق','Close')+'">×</button></header>'
+   +'<div class="nova-invoice-detail-body"><div class="nova-invoice-summary"><strong dir="auto">'+esc(sale.customer||tr('عميل نقدي','Walk-in Customer'))+'</strong><bdi>'+money(sale.total)+'</bdi></div><p class="nova-muted"><bdi>'+esc(window.NovaFmt.formatDateTime(sale.at))+'</bdi> · '+payLbl(sale.payment)+'</p>'
+   +'<ul>'+sale.lines.map((line,i)=>'<li><strong dir="auto">'+esc(line.name)+'</strong><small>'+amounts(line,i)+'</small></li>').join('')+'</ul>'+retHistory(id,sale.lines)+'</div>'
+   +'<footer><button type="button" class="btn btn-primary nova-return-btn" data-detail-return'+(canReturn?'':' disabled')+'>'+tr('عمل مرتجع','Start return')+'</button><button type="button" class="btn btn-secondary nova-return-btn" data-detail-print>'+tr('إعادة الطباعة','Reprint')+'</button>'
+   +(canReturn?'<details><summary>'+tr('المزيد','More')+'</summary><button type="button" class="btn btn-secondary nova-return-btn" data-detail-cancel>'+tr('إلغاء الفاتورة','Cancel invoice')+'</button></details>':'')+'</footer></section>';
+  document.body.appendChild(ov);
+  const release=dlgA11y(ov);
+  const close=()=>{document.removeEventListener('keydown',key,true);release();opener?.focus()};
+  const key=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}};
+  document.addEventListener('keydown',key,true);
+  const closeButton=ov.querySelector('[data-dlg-close]');
+  closeButton.onclick=close;
+  ov.onclick=e=>{if(e.target===ov)close()};
+  ov.querySelector('[data-detail-print]').onclick=()=>{close();window.novaReceipt?.reopenSale(id,{copy:true})};
+  ov.querySelector('[data-detail-return]').onclick=()=>{close();openInvoiceReturn(id,opener,'return')};
+  const cancel=ov.querySelector('[data-detail-cancel]');
+  if(cancel)cancel.onclick=()=>{close();openInvoiceReturn(id,opener,'cancel')};
+  closeButton.focus();
+ }
+ function openInvoiceReturn(id,b,mode='both'){
+  const cancel=mode==='cancel';
+  const sale=window.novaSales?.list().find(x=>x.id===id&&x.source!=='DEMO');if(!sale)return;
   const done=window.novaSales.returnedQty(sale.id);
   const nothingLeft=sale.lines.every((l,k)=>l.qty-(done[k]||0)<=0);
   const ov=document.createElement('div');ov.className='nova-return-overlay';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
   const box=document.createElement('div');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.style.cssText='background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-2);max-width:560px;width:100%;max-height:90vh;overflow:hidden;padding:0;position:relative;display:flex;flex-direction:column';box.className='nova-ret-box';
-  box.innerHTML='<div class="nova-ret-body"><div class="nova-ret-head"><h3 id="novaRetTitle">'+tr('مرتجع / إلغاء — فاتورة ','Return / Void — Invoice ')+esc(sale.number)+'</h3><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button></div><p style="margin:0 0 10px;color:#9eacb9;font-size:13px">اختر الكمية المرتجعة لكل صنف. '+(sale.payment==='credit'?tr('المبلغ يُخصم من مديونية العميل (آجل).','The amount is deducted from the customer\'s balance (credit).'):'المبلغ يرجع بنفس طريقة الدفع الأصلية ('+(sale.payment==='cash'?tr('نقدي','cash'):sale.payment==='mixed'?tr('مشترك','mixed'):tr('بطاقة','card'))+').')+'</p>'
+  box.innerHTML='<div class="nova-ret-body"><div class="nova-ret-head"><h3 id="novaRetTitle">'+(cancel?tr('إلغاء الفاتورة ','Cancel invoice '):mode==='return'?tr('مرتجع فاتورة ','Return for invoice '):tr('مرتجع / إلغاء — فاتورة ','Return / Void — Invoice '))+esc(sale.number)+'</h3><button type="button" class="nova-dlg-x" aria-label="إغلاق" data-dlg-close>✕</button></div><p class="nova-ret-instructions" style="margin:0 0 10px;color:#9eacb9;font-size:13px">اختر الكمية المرتجعة لكل صنف. '+(sale.payment==='credit'?tr('المبلغ يُخصم من مديونية العميل (آجل).','The amount is deducted from the customer\'s balance (credit).'):'المبلغ يرجع بنفس طريقة الدفع الأصلية ('+(sale.payment==='cash'?tr('نقدي','cash'):sale.payment==='mixed'?tr('مشترك','mixed'):tr('بطاقة','card'))+').')+'</p>'
    +(nothingLeft?'<div id="novaRetNone" role="status" style="margin:0 0 8px;padding:8px 10px;border:1px solid #8f6b1e;border-radius:var(--r-1);background:#1f1a0e;color:#e9c46a;font-weight:700;font-size:13px">'+tr('تم إرجاع كل أصناف هذه الفاتورة — لا توجد كميات متاحة للإرجاع.','All items on this invoice were returned — nothing is available to return.')+'</div>':'')
    +'<div style="margin:0 0 8px"><button type="button" id="novaRetAll" class="btn btn-secondary nova-return-btn" style="font-weight:700"'+(nothingLeft?' disabled aria-disabled="true"':'')+'>إرجاع كل الأصناف</button></div>'
-   +sale.lines.map((l,i)=>{const left=l.qty-(done[i]||0);return '<div style="display:flex;justify-content:space-between;gap:var(--sp-2);align-items:center;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(l.name)+' <small style="color:#9eacb9">('+tr('متاح للإرجاع ','can return ')+left+')</small><small data-ret-err="'+i+'" role="alert" style="display:block;color:#ffb4a8;font-size:12px;min-height:0"></small></span><input type="number" inputmode="numeric" aria-label="'+tr('الكمية المرتجعة: ','Return qty: ')+esc(l.name)+'" min="0" max="'+left+'" step="1" value="0" data-ret-idx="'+i+'" '+(left?'':'disabled')+' style="width:80px;padding:6px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1)"></div>'}).join('')
+   +sale.lines.map((l,i)=>{const left=l.qty-(done[i]||0);return '<div style="display:flex;justify-content:space-between;gap:var(--sp-2);align-items:center;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(l.name)+' <small style="display:block;color:#9eacb9">'+tr('المُباع ','Sold ')+l.qty+' · '+tr('المرتجع ','Returned ')+(done[i]||0)+' · '+tr('المتاح للإرجاع ','Can return ')+left+'</small><small data-ret-err="'+i+'" role="alert" style="display:block;color:#ffb4a8;font-size:12px;min-height:0"></small></span><input type="number" inputmode="numeric" aria-label="'+tr('الكمية المرتجعة: ','Return qty: ')+esc(l.name)+'" min="0" max="'+left+'" step="1" value="0" data-ret-idx="'+i+'" '+(left?'':'disabled')+' style="width:80px;padding:6px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1)"></div>'}).join('')
    +'<label for="novaRetReason" style="display:block;margin:10px 0 4px;font-size:13px">سبب المرتجع (مطلوب)</label><input type="text" id="novaRetReason" maxlength="200" style="width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1)">'
    +'<div id="novaRetChips">'+['عيب/تالف','خطأ في الصرف','رجوع العميل','انتهاء صلاحية'].map(r=>'<button type="button" class="nova-chip" data-ret-chip="'+r+'">'+r+'</button>').join('')+'</div>'
    +'<div id="novaRetAmount" style="margin:10px 0;font-weight:700;min-height:22px"></div>'
@@ -5990,11 +6060,11 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   box.addEventListener('focusout',e=>{const i=e.target;if(!i.matches||!i.matches('[data-ret-idx]'))return;const v=Number(i.value),max=Number(i.max);i.value=String(Number.isFinite(v)?Math.min(max,Math.max(0,Math.floor(v))):0);upd()});
   box.querySelector('#novaRetAll').onclick=()=>{box.querySelectorAll('[data-ret-idx]:not([disabled])').forEach(i=>{i.value=i.max});clearRetMsg();upd()};
   box.querySelectorAll('[data-ret-chip]').forEach(c=>c.onclick=()=>{const r=box.querySelector('#novaRetReason');r.value=c.dataset.retChip;clearRetMsg();r.focus()});
-  box.querySelector('#novaRetReason').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){e.preventDefault();box.querySelector('#novaRetOk').click()}});
+  box.querySelector('#novaRetReason').addEventListener('keydown',e=>{if(!cancel&&e.key==='Enter'&&e.target.value.trim()){e.preventDefault();box.querySelector('#novaRetOk').click()}});
   const opener=b,prevOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
   const hh=box.querySelector('h3');hh.id='novaRetTitle';box.setAttribute('aria-labelledby','novaRetTitle');
   const closeRet=()=>{if(!ov.isConnected)return;ov.remove();document.removeEventListener('keydown',retKey,true);document.body.style.overflow=prevOverflow;
-   const back=()=>{const t=opener.isConnected?opener:document.querySelector('[data-return="'+String(sale.id).replace(/["\\]/g,'')+'"]');if(t)t.focus()};back();setTimeout(back,0)};
+   const back=()=>{const t=opener?.isConnected?opener:document.getElementById('novaFilter');if(t)t.focus()};back();setTimeout(back,0)};
   function retKey(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeRet();return}
    if(e.key!=='Tab')return;
    const f=[...box.querySelectorAll('button,input,select,textarea,summary,[tabindex]')].filter(x=>!x.disabled&&x.tabIndex>=0&&x.getClientRects().length);
@@ -6005,16 +6075,27 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   document.addEventListener('keydown',retKey,true);
   box.querySelector('[data-dlg-close]').onclick=closeRet;ov.addEventListener('mousedown',e=>{if(e.target===ov)closeRet()});
   box.querySelector('#novaRetCancel').onclick=closeRet;
-  box.querySelector('#novaCxOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
+  box.querySelector('#novaCxOk').onclick=()=>{if(mode==='return')return;if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب الإلغاء',permission:'ليس لديك صلاحية إلغاء الفاتورة (مدير أو مالك فقط)',approval:'اكتب اسمك واسم المعتمد','self-approval':'المعتمد لازم يكون شخصًا آخر','already-cancelled':'الفاتورة ملغاة بالفعل',empty:'لا توجد كميات متاحة للإلغاء','too-many':'لا توجد كميات متاحة للإلغاء',storage:'تعذر حفظ الإلغاء على هذا الجهاز'}[res.error]||'تعذر تنفيذ الإلغاء';return}
    closeRet();render(page,filter)};
-  box.querySelector('#novaRetOk').onclick=()=>{if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
+  box.querySelector('#novaRetOk').onclick=()=>{if(cancel)return;if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب المرتجع',empty:'اختر كمية واحدة على الأقل','too-many':'الكمية أكبر من المتاح للإرجاع',invalid:'كمية غير صالحة',storage:'تعذر حفظ المرتجع على هذا الجهاز'}[res.error]||'تعذر تنفيذ المرتجع';return}
    if(sale.payment==='credit'&&sale.customerId&&window.NovaCredit&&res.ret){try{const l=ledger(),b=l.balance(String(sale.customerId)),a=Math.min(b,Math.round(res.ret.amount*100)/100);if(a>0)l.collect({id:'ret-'+res.ret.id,customerId:String(sale.customerId),amount:a,method:'return'})}catch(e){}}
    const credited=sale.payment==='credit'&&sale.customerId&&window.NovaCredit;
    closeRet();render(page,filter);novaReturnNotice(sale,res.ret,!credited,()=>render(page,filter))};
-  (box.querySelector('#novaRetAll')||box.querySelector('input:not([disabled])'))?.focus();
- });
+  if(mode==='return')box.querySelector('#novaCancelBox').hidden=true;
+  if(cancel){
+   box.querySelector('#novaCancelBox').open=true;
+   box.querySelector('.nova-ret-instructions').hidden=true;
+   box.querySelector('#novaRetAll').parentElement.hidden=true;
+   box.querySelectorAll('[data-ret-idx]').forEach(input=>{input.parentElement.hidden=true});
+   box.querySelector('#novaRetOk').hidden=true;
+   box.querySelector('[for="novaRetReason"]').textContent=tr('سبب الإلغاء (مطلوب)','Cancellation reason (required)');
+   box.querySelector('#novaRetReason').focus();
+  }else{
+   (box.querySelector('#novaRetAll')||box.querySelector('input:not([disabled])'))?.focus();
+  }
+ }
  const purchaseBtn=document.getElementById('novaInventoryPurchase');if(purchaseBtn)purchaseBtn.onclick=()=>document.getElementById('novaAiPanel').classList.add('open');
  const recvBtn=document.getElementById('novaManualReceive');if(recvBtn)recvBtn.onclick=()=>{
   if(document.getElementById('novaManualRecv'))return;
@@ -6081,9 +6162,21 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  document.querySelectorAll('th [data-sort]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.sort,c=window.__novaSort||{};const same=c.key===k&&(c.page||'products')===page;window.__novaSort={page:page,key:k,dir:same&&c.dir==='asc'?'desc':'asc'};const f=document.getElementById('novaFilter');render(page,f?f.value:'');const nb=document.querySelector('th [data-sort="'+k+'"]');if(nb)nb.focus()}));
  const nrows=document.getElementById('novaRows');if(nrows&&!nrows.__kb){nrows.__kb=1;nrows.addEventListener('keydown',e=>{if((e.key==='Enter'||(e.key===' '&&e.target.hasAttribute&&e.target.hasAttribute('data-cust-row')))&&e.target.tagName==='TR'){e.preventDefault();e.target.click()}})}
  const input=document.getElementById('novaFilter');
+ const invoiceSearch=document.getElementById('novaInvoiceSearch');
+ if(invoiceSearch)invoiceSearch.onsubmit=e=>{
+  e.preventDefault();
+  const code=invoiceCode(input.value);
+  if(!code)return;
+  const matches=(window.novaSales?.list()||[]).filter(x=>x.source!=='DEMO'&&invoiceCode(x.number)===code);
+  if(matches.length===1){input.select();openInvoiceDetails(matches[0].id,input)}
+  else if(/^S-/.test(code)&&!matches.length){
+   document.getElementById('novaInvoiceSearchStatus').textContent=tr('الفاتورة مش موجودة','Invoice not found');
+   input.focus();input.select();
+  }
+ };
  if(input){input.value=filter;const clr=document.getElementById('novaFilterClear');if(clr){clr.hidden=!filter;clr.onclick=()=>{render(page,'');const n=document.getElementById('novaFilter');if(n)n.focus()}}const cc=document.getElementById('novaCustClear');if(cc)cc.onclick=()=>{render(page,'');const n=document.getElementById('novaFilter');if(n)n.focus()};input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings','receiving'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings','receiving'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);if(page==='invoices')document.getElementById('novaFilter')?.focus();history.replaceState(null,'','#'+page)}
  window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{if(e.target.closest('[data-nav-receive]')){e.preventDefault();switchPage('products');openReceive();return}const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  const hashPage=()=>location.hash.slice(1).split('&')[0];
