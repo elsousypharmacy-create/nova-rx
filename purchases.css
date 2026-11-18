@@ -581,3 +581,18 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
 /* UX-P35: hidden tips take no space (no stray scrollbars) */
 .info::after{display:none}
 .info:hover::after,.info:focus::after,.info:focus-visible::after{display:block}
+
+/* UX-P36 G1: purchases top bar = app top bar (brand, WhatsApp, live dot, refresh, demo label) */
+html body .nova-topbar .nova-nav-brand{display:flex;align-items:center;gap:8px;padding:0 14px 0 0;flex:none}
+html body .nova-topbar .nova-brand-name{font-size:19px!important;font-weight:800!important;letter-spacing:.25px;color:#f2f3f5!important;text-decoration:none!important;display:inline-flex;align-items:baseline;gap:4px}
+html body .nova-topbar .nova-brand-name span{font-size:12px;font-weight:800;color:#94acc5}
+html body .nova-topbar .pharmacy-banner-right{display:flex;align-items:center;gap:8px}
+html body .nova-topbar .nova-refresh-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:6px;background:transparent;border:0;color:#9ba7b5;cursor:pointer;padding:0;text-decoration:none}
+html body .nova-topbar .nova-refresh-icon:hover{background:#20262d;color:#e6eaee}
+html body .nova-topbar .nova-refresh-icon:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+html body .nova-topbar .pharmacy-banner-live{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px}
+html body .nova-topbar .pharmacy-banner-live b{display:block;width:9px;height:9px;border-radius:50%;background:#60b99b;box-shadow:0 0 0 3px rgba(105,198,168,.12)}
+html body .nova-topbar .nova-demo-label{font-size:13px;color:#8f98a3;background:#191c21;border:1px solid #2d333a;border-radius:6px;padding:3px 9px;white-space:nowrap}
+@media (max-width:800px){html body .nova-topbar .nova-demo-label{display:none}}
+html body .nova-topbar .pharmacy-banner-live.off b{background:#e8c27a;box-shadow:0 0 0 3px rgba(232,194,122,.15)}
+@media (pointer:coarse){html body .nova-topbar .nova-refresh-icon{width:44px;height:44px}}
