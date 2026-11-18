@@ -11087,6 +11087,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     }
   });
   window.novaReceiving = { render: render, open: openForm };
+  var pv = document.getElementById('novaPageView'); if (pv && document.body.dataset.activePage === 'receiving') render(pv);
 })();
 </script>
 </body>
