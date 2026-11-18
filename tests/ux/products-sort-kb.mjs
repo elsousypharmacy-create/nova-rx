@@ -32,7 +32,7 @@ async function open(w, h) {
 try {
   for (const [w, h] of [[1366, 768], [390, 844]]) {
     const p = await open(w, h);
-    await p.locator('[data-page="products"]').click();
+    await p.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
     await p.waitForSelector('#novaRows tr');
     await p.waitForSelector('#novaRows[data-rows-complete]', { timeout: 5000 }).catch(() => {});
     const rows = p.locator('#novaRows tr');
