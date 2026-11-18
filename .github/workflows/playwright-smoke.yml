@@ -26,7 +26,7 @@ jobs:
     # Pin OS: Playwright 1.58.2 cannot install Chromium deps on ubuntu26.04-x64
     # (what ubuntu-latest currently resolves to on GitHub Actions).
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
