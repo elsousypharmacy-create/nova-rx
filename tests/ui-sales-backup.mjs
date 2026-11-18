@@ -31,7 +31,7 @@ const importText = async (text, accept = true) => {
 await t('seed two sales and a return; Export downloads a JSON file with them', async () => {
   await page.evaluate(([a, b]) => { window.novaSales.add(a); window.novaSales.add(b); const s = window.novaSales.list().find(x => x.id === 'a1'); window.novaSales.addReturn(s, { 0: 1 }, 'test'); }, [A, B]);
   await openInvoices();
-  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#novaSalesExport').click()]);
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.evaluate(()=>{const k=document.querySelector('#novaPageView .nova-kebab');if(k)k.open=true}).then(()=>page.locator('#novaSalesExport').click())]);
   assert.match(dl.suggestedFilename(), /^nova-rx-sales-\d{4}-\d{2}-\d{2}\.json$/);
   const file = join(dir, 'export.json'); await dl.saveAs(file);
   const d = JSON.parse(readFileSync(file, 'utf8')); assert.equal(d.format, 'nova-rx-sales-backup'); assert.equal(d.sales.length, 2); assert.equal(d.returns.length, 1);
