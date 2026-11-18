@@ -146,7 +146,7 @@ try {
   await page.goto(pageUrl, { waitUntil: 'load' });
 
   // Load mock dataset via UI button
-  await page.locator('#loadMock').click();
+  await page.evaluate(()=>{const m=document.querySelector('.tools-menu');if(m)m.open=true}); await page.locator('#loadMock').click();
   await page.waitForFunction(() => document.querySelectorAll('#rows tr[data-key]').length === 2);
   assert.equal(apiCalls, 0, 'mock mode never contacts backend or real supplier endpoints');
 

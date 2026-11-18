@@ -9,7 +9,7 @@ try {
   await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(BASE) || u.startsWith('data:')) return r.continue(); if (!/fonts\.g/.test(u)) external.push(u); return r.abort(); });
   const page = await ctx.newPage(), errors = []; page.on('pageerror', e => errors.push(String(e)));
   let confirms = 0; page.on('dialog', d => { confirms++; d.accept(); });
-  await page.goto(BASE + 'purchases.html'); await page.locator('#openPo').click();
+  await page.goto(BASE + 'purchases.html'); await page.evaluate(()=>{const m=document.querySelector('.tools-menu');if(m)m.open=true}); await page.locator('#openPo').click();
   await page.fill('#poSupplier', 'MOCK'); await page.fill('#poLines', 'A1,10,20,Panadol');
   await page.locator('#poCreate').click();
   assert.equal(await page.locator('[data-po=PO-1]').getAttribute('data-state'), 'draft');
