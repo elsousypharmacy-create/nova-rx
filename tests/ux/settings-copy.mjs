@@ -28,7 +28,9 @@ try {
   assert.equal(/[a-z]+\.[a-z]+/.test(txt), false, 'expanded matrix shows a permission key: ' + (txt.match(/[a-z]+\.[a-z]+/) || [])[0]);
   for (const w of ['المالك', 'المدير', 'الصيدلي', 'الكاشير', 'المخزن', 'المحاسب', 'المندوب', 'إنشاء بيع']) assert.ok(txt.includes(w), 'missing ' + w);
   // copy cleanup
-  assert.ok(txt.includes('المظهر: Black Edition، خط Cairo، مناسب للتابلت'));
+  // UX-P35: the About card shows visible facts (version, connection, items source) instead of hidden paragraphs
+  const about = await page.locator('#novaAboutCard').innerText();
+  for (const w of ['النسخة', 'الاتصال', 'الأصناف', 'قائمة أسعار الصيدلية']) assert.ok(about.includes(w), 'about card missing ' + w);
   assert.ok(!txt.includes('اختار') && txt.includes('اختر لغة العرض'));
   // language switch journey: tab + switch = well within 3 clicks
   await page.locator('.nova-lang-btn[data-lang=en]').first().click(); clicks++;
