@@ -16,7 +16,7 @@ try {
     await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
     await page.goto(BASE, { waitUntil: 'load' });
     await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
-    await page.locator('.nova-tab[data-page="products"]').click();
+    await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
     await page.waitForSelector('#novaAiLaunch', { state: 'attached' });
     // let idle chunks render all rows, then scroll every scroller to the end
     await page.waitForTimeout(1500);

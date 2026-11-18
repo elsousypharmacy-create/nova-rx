@@ -14,7 +14,7 @@ try {
   await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
-  await page.locator('.nova-tab[data-page="products"]').click();
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
   await page.waitForSelector('#novaProductsKpis');
   const kpiTexts = () => page.locator('#novaProductsKpis .nova-kpi small').allInnerTexts();
   let k = await kpiTexts();
