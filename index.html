@@ -2,6 +2,145 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
+<script>
+/* Receipt corrections share the existing device stores. Call mutations under the stock lock. */
+(function (root) {
+  'use strict';
+  const KEYS = { receipts: 'nova-rx-receipts-v1', orders: 'nova.purchase.orders',
+    lots: 'nova-rx-lots-v1', ledger: 'nova.stock.ledger', journal: 'nova.receipt-transaction-v1' };
+  function fail(code) { const error = new Error(code); error.code = code; throw error; }
+  function read(storage, key) {
+    const rows = JSON.parse(readRaw(storage, key) || '[]');
+    if (!Array.isArray(rows)) fail('invalid-store');
+    return rows;
+  }
+  // Readers use the committed journal image while a failed write awaits locked recovery.
+  function readRaw(storage, key) {
+    const journal = storage.getItem(KEYS.journal);
+    const writes = journal ? JSON.parse(journal).writes : null;
+    return writes && Object.prototype.hasOwnProperty.call(writes, key) ? writes[key] : storage.getItem(key);
+  }
+  function recover(storage) {
+    const raw = storage.getItem(KEYS.journal);
+    if (!raw) return;
+    const transaction = JSON.parse(raw);
+    for (const [key, value] of Object.entries(transaction.writes)) {
+      if (!Object.values(KEYS).includes(key) || key === KEYS.journal) fail('invalid-journal');
+      storage.setItem(key, value);
+    }
+    storage.removeItem(KEYS.journal);
+  }
+  function commit(storage, writes) {
+    storage.setItem(KEYS.journal, JSON.stringify({ writes }));
+    recover(storage);
+  }
+  function effectiveLines(receipt) {
+    return receipt.lines.map((line, index) => ({ ...line, qty: line.qty +
+      (receipt.corrections || []).reduce((sum, correction) => sum +
+        correction.changes.filter(change => change.index === index).reduce((n, change) => n + change.delta, 0), 0) }));
+  }
+  function review(po, lines) {
+    const codes = new Set([...(po?.lines || []).map(line => line.code), ...lines.map(line => line.code)]);
+    return [...codes].map(code => {
+      const ordered = po?.lines.find(line => line.code === code);
+      const incoming = lines.filter(line => line.code === code);
+      const quantity = incoming.reduce((sum, line) => sum + Number(line.qty), 0);
+      const remaining = ordered ? Math.max(0, ordered.qty - ordered.received - (ordered.cancelledQty || 0)) : 0;
+      return { code, name: incoming[0]?.name || ordered?.name || code,
+        ordered: ordered?.qty ?? null, prior: ordered?.received || 0, quantity,
+        remaining: ordered ? Math.max(0, remaining - quantity) : null,
+        excess: ordered ? Math.max(0, quantity - remaining) : 0,
+        unordered: !!po && !ordered, expectedCost: ordered?.cost ?? null,
+        costs: [...new Set(incoming.map(line => Number(line.cost)))],
+        costChanged: !!ordered && incoming.some(line => Math.round(line.cost * 100) !== Math.round(ordered.cost * 100)) };
+    });
+  }
+  function correct(storage, request, context) {
+    recover(storage);
+    const receipts = read(storage, KEYS.receipts);
+    const receipt = receipts.find(row => row.id === request.receiptId);
+    if (!receipt || receipt.pending) fail('receipt-unavailable');
+    const previous = (receipt.corrections || []).find(row => row.id === request.id);
+    if (previous) {
+      if (previous.signature !== JSON.stringify(request)) fail('correction-conflict');
+      return previous;
+    }
+    if (!context.actor?.id || !context.allowed) fail('permission');
+    if (!request.id || !request.reason?.trim()) fail('reason-required');
+    if ((receipt.corrections || []).length !== request.version) fail('receipt-changed');
+    if (!Array.isArray(request.quantities) || request.quantities.length !== receipt.lines.length) fail('bad-qty');
+    const effective = effectiveLines(receipt);
+    const changes = effective.flatMap((line, index) => {
+      const quantity = request.quantities[index];
+      if (!Number.isSafeInteger(quantity) || quantity < 0) fail('bad-qty');
+      return quantity === line.qty ? [] : [{ index, code: line.code, key: line.key,
+        lot: line.lot, expiry: line.expiry, cost: line.cost, before: line.qty, after: quantity, delta: quantity - line.qty }];
+    });
+    if (!changes.length) fail('no-changes');
+    const lots = read(storage, KEYS.lots);
+    const reductions = new Map();
+    changes.filter(change => change.delta < 0).forEach(change => {
+      const key = JSON.stringify([change.key, change.lot, change.expiry]);
+      reductions.set(key, (reductions.get(key) || 0) - change.delta);
+    });
+    for (const [key, quantity] of reductions) {
+      const [product, lot, expiry] = JSON.parse(key);
+      if (context.hasHold(product)) fail('stock-reserved');
+      if (context.available(product, lot, expiry) < quantity) fail('insufficient-stock');
+    }
+    const movements = read(storage, KEYS.ledger);
+    const orders = read(storage, KEYS.orders);
+    const po = receipt.poId ? orders.find(row => row.id === receipt.poId) : null;
+    if (receipt.poId && !po) fail('po-not-found');
+    const at = context.now || new Date().toISOString();
+    // Older manual receipts predate ledger wiring. Preserve their original receipt movement on first correction.
+    if (!po) receipt.lines.forEach((line, index) => {
+      const ref = receipt.id + '/original/' + index;
+      if (!movements.some(row => row.ref === ref)) movements.push({ seq: movements.length + 1,
+        at: receipt.at, kind: 'receive', code: line.code, qty: line.qty, delta: line.qty,
+        ref, lot: line.lot, expiry: line.expiry, cost: line.cost });
+    });
+    changes.forEach(change => {
+      let left = -change.delta;
+      const matching = lots.filter(row => row.key === change.key && row.lot === change.lot && row.expiry === change.expiry);
+      if (change.delta > 0) {
+        if (matching.length) matching[0].qty += change.delta;
+        else lots.push({ key: change.key, lot: change.lot, expiry: change.expiry, cost: change.cost, qty: change.delta });
+      } else {
+        for (const row of matching) { const take = Math.min(row.qty, left); row.qty -= take; left -= take; }
+        if (left > 0) fail('insufficient-stock');
+      }
+      movements.push({ seq: movements.length + 1, at, kind: 'adjustment', code: change.code,
+        qty: change.delta, delta: change.delta, ref: receipt.id + '/correction/' + request.id + '/' + change.index });
+      const ordered = po?.lines.find(line => line.code === change.code);
+      if (ordered) {
+        ordered.received += change.delta;
+        if (ordered.received < 0) fail('bad-po-total');
+        if (po.closure) ordered.cancelledQty = Math.max(0, ordered.qty - ordered.received);
+      }
+    });
+    const record = { id: request.id, at, by: { id: context.actor.id, name: context.actor.name },
+      reason: request.reason.trim(), changes, signature: JSON.stringify(request) };
+    receipt.corrections = [...(receipt.corrections || []), record];
+    if (po) {
+      if (!po.closure) po.state = po.lines.every(line => line.received >= line.qty) ? 'received' : 'partial';
+      po.history.push({ at, state: po.state, by: context.actor.id, correction: request.id, receiptId: receipt.id });
+      const grn = po.grns.find(row => row.ref === receipt.invoice);
+      if (!grn) fail('receipt-link-missing');
+      grn.corrections = [...(grn.corrections || []), record];
+    }
+    commit(storage, { [KEYS.receipts]: JSON.stringify(receipts), [KEYS.orders]: JSON.stringify(orders),
+      [KEYS.lots]: JSON.stringify(lots.filter(row => row.receiptRefs || row.qty > 0)), [KEYS.ledger]: JSON.stringify(movements) });
+    return record;
+  }
+  const api = { KEYS, readRaw, recover, review, correct, effectiveLines };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.NovaReceiptOperations = api;
+})(typeof window === 'undefined' ? globalThis : window);
+</script>
+<script>
+if (navigator.locks?.request) navigator.locks.request('nova-rx-stock', () => NovaReceiptOperations.recover(localStorage)).catch(() => {});
+</script>
 <style id="NOVA_SPLASH">
 #novaSplash{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-5);background:#08090b;color:#f1f3f5;opacity:1;transition:opacity .3s ease;pointer-events:none;direction:ltr}
 #novaSplash.out{opacity:0}
@@ -4245,7 +4384,7 @@ window.NovaFmt=(function(){
           catch (_) { return { ok: false, error: 'storage' }; }
         };
         const lotRecords = () => {
-          const records = JSON.parse(localStorage.getItem(LK) || '[]');
+          const records = JSON.parse(window.NovaReceiptOperations.readRaw(localStorage, LK) || '[]');
           if (!Array.isArray(records)) throw new Error('invalid-lot-store');
           return records;
         };
@@ -4261,6 +4400,7 @@ window.NovaFmt=(function(){
         const isRecalled = (key, lot) => recalls().some(r => r.key === keyOf(key) && r.lot === lot);
         const saveLots = (lots, receiptRef) => {
           try {
+            if (localStorage.getItem('nova.receipt-transaction-v1')) return false;
             const refs = receiptMarkers();
             if (receiptRef) refs.push(receiptRef);
             localStorage.setItem(LK, JSON.stringify(refs.length ? [...lots, { receiptRefs: refs }] : lots));
@@ -4484,7 +4624,7 @@ window.NovaFmt=(function(){
             return save(rest) ? { ok: true } : { ok: false, error: 'storage' };
           },
           release(owner) { const all = holds(); if (all.some(h => h.owner === owner)) save(all.filter(h => h.owner !== owner)); },
-          withLock(fn) { return navigator.locks && navigator.locks.request ? navigator.locks.request('nova-rx-stock', () => fn()) : Promise.resolve().then(fn); },
+          withLock(fn) { const run = () => { window.NovaReceiptOperations?.recover(localStorage); return fn(); }; return navigator.locks && navigator.locks.request ? navigator.locks.request('nova-rx-stock', run) : Promise.resolve().then(run); },
           newKey: () => (crypto.randomUUID ? crypto.randomUUID() : 'S' + Date.now() + Math.random().toString(36).slice(2, 8))
         };
       })();
@@ -6111,6 +6251,52 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
  }
  const enExtra={
+"تعذر قراءة بيانات الاستلام. راجع مساحة التخزين ثم أعد المحاولة.":"Receipt data could not be read. Check storage space and retry.",
+"مراجعة الاستلام":"Review receipt",
+"مراجعة فروق الاستلام":"Review receipt differences",
+"سبق استلامه":"Previously received",
+"الواصل الآن":"Arriving now",
+"الباقي":"Remaining",
+"الزيادة":"Excess",
+"خارج الطلبية":"Outside this order",
+"سعر الطلبية":"Order price",
+"تفاصيل الطلبية":"Order details",
+"الطلبية الأصلية":"Original order",
+"حركة المخزون وسجل التعديل":"Stock movements and audit history",
+"تصحيح الكميات":"Correct quantities",
+"الصلاحية":"Expiry",
+"الكمية الحالية":"Current quantity",
+"الكمية الصحيحة":"Correct quantity",
+"الفرق":"Difference",
+"سبب التصحيح":"Correction reason",
+"مراجعة وتأكيد التصحيح":"Review and confirm correction",
+"الاستلام الأصلي":"Original receipt",
+"الكمية المضافة":"Quantity added",
+"التصحيحات":"Corrections",
+"لا توجد تصحيحات.":"No corrections.",
+"فواتير الاستلام":"Receipt invoices",
+"المنتظر":"Pending",
+"ملغي من الباقي":"Cancelled remainder",
+"لم يتم الاستلام بعد.":"Nothing received yet.",
+"الكمية الناقصة ما زالت منتظرة.":"The remaining quantity is still pending.",
+"إلغاء الكمية الباقية":"Cancel remaining quantity",
+"سبب إلغاء الباقي":"Reason for cancelling the remainder",
+"تأكيد إلغاء الباقي":"Confirm cancellation of remainder",
+"تم إنهاء الطلبية وإلغاء الباقي":"Order closed and remainder cancelled",
+"تم تسجيل تصحيح الاستلام":"Receipt correction saved",
+"راجع الكميات الصحيحة. سيتم تسجيل حركة فرق مرتبطة بالفاتورة.":"Review the correct quantities. A linked adjustment will be recorded.",
+"اكتب سبب التعديل.":"Enter the reason for the change.",
+"اكتب كميات صحيحة أكبر من أو تساوي صفر.":"Enter whole quantities of zero or greater.",
+"لم تتغير أي كمية.":"No quantities changed.",
+"سجل دخول مستخدم لديه صلاحية الإجراء من الإعدادات.":"Sign in through Settings with permission for this action.",
+"الصنف محجوز في فاتورة بيع. أكملها أو ألغها أولًا.":"The item is reserved in a sale. Complete or cancel that sale first.",
+"الكمية المتبقية لا تسمح بالتصحيح بعد حركات البيع أو التحويل.":"Remaining stock cannot cover this correction after sales or transfers.",
+"الفاتورة اتعدلت من شاشة أخرى. افتح التصحيح من جديد.":"The invoice changed in another window. Reopen the correction.",
+"الطلبية اتغيرت. افتح تفاصيلها من جديد.":"The order changed. Reopen its details.",
+"أكمل حفظ الاستلام قبل التصحيح.":"Finish saving the receipt before correcting it.",
+"حالة الطلبية اتغيرت. افتحها من جديد.":"The order status changed. Reopen it.",
+"أكمل الاستلام المتوقف قبل إلغاء الكمية الباقية.":"Resume the interrupted receipt before cancelling the remainder.",
+"تعذر إكمال الحفظ. أعد المحاولة لاستكمال نفس العملية.":"Saving could not finish. Retry to resume this operation.",
 "خصم بالجنيه":"Discount (EGP)","مسح الفاتورة":"Clear invoice","تأكيد البيع (Enter)":"Confirm sale (Enter)","جاري حفظ الفاتورة…":"Saving invoice…","بطاقة بنكية (F10)":"Bank card (F10)","البطاقة محاكاة فقط — لا يُخصم مبلغ بنكي. تأكيد البيع يحفظ الفاتورة، وبعده تختار الطباعة.":"Card payment is simulated; no bank debit. Confirm saves the sale, then choose whether to print.","الاسم (مطلوب)":"Name (required)","رقم الهاتف (مطلوب)":"Phone (required)","من 9 إلى 15 رقمًا؛ الأرقام العربية مقبولة، ولا يمكن تكرار رقم مسجّل.":"9–15 digits; Arabic digits are accepted. An existing phone number cannot be reused.",
 
  'حالات تانية ▾':'More conditions ▾','أقل ▴':'Less ▴','حساسية':'Allergies','أمراض مزمنة':'Chronic conditions','حالات خاصة':'Special cases','أسبرين ومسكنات':'Aspirin & painkillers','سلفا':'Sulfa','مضاد حيوي تاني':'Other antibiotic','ربو':'Asthma','غدة درقية':'Thyroid','صرع':'Epilepsy','جلوكوما':'Glaucoma','سيولة دم':'Blood thinner','مناعة ضعيفة':'Weak immunity','علاج كيماوي':'Chemotherapy','كبير سن':'Elderly','قبل عملية':'Before surgery','بيسوق':'Drives','مش بيبلع أقراص':'Cannot swallow pills','أدوية مزمنة':'Chronic medicines',
@@ -9288,7 +9474,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     key = key || 'nova.stock.ledger';
     now = now || function () { return new Date().toISOString(); };
     function load() {
-      var raw = storage.getItem(key);
+      var raw = root.NovaReceiptOperations ? root.NovaReceiptOperations.readRaw(storage, key) : storage.getItem(key);
       if (!raw) return [];
       try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { fail('ledger-corrupt'); }
     }
@@ -9296,6 +9482,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
       /* qty: positive integer for sale/return/receive; non-zero signed integer for adjustment.
          ref is required (invoice no., PO no., reason). Same kind+ref+code twice is rejected (idempotent replay). */
       append: function (m) {
+        if (storage.getItem('nova.receipt-transaction-v1')) fail('receipt-recovery-required');
         if (!m || !Object.prototype.hasOwnProperty.call(KINDS, m.kind)) fail('bad-kind');
         if (typeof m.code !== 'string' || !m.code) fail('bad-code');
         if (typeof m.ref !== 'string' || !m.ref) fail('missing-ref');
@@ -10949,7 +11136,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
    A PO never changes state without an explicit human confirmation ({confirmed:true}). Works as <script> (window.NovaPurchaseOrders) and in Node. */
 (function (root) {
   'use strict';
-  var STATES = ['draft', 'sent', 'accepted', 'partial', 'received', 'cancelled'];
+  var STATES = ['draft', 'sent', 'accepted', 'partial', 'received', 'closed-short', 'cancelled'];
   function fail(code) { var e = new Error(code); e.code = code; throw e; }
   function copy(o) { return JSON.parse(JSON.stringify(o)); }
   function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
@@ -10960,11 +11147,14 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     key = key || 'nova.purchase.orders';
     now = now || function () { return new Date().toISOString(); };
     function load() {
-      var raw = storage.getItem(key);
+      var raw = root.NovaReceiptOperations ? root.NovaReceiptOperations.readRaw(storage, key) : storage.getItem(key);
       if (!raw) return [];
       try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { fail('po-store-corrupt'); }
     }
-    function save(a) { storage.setItem(key, JSON.stringify(a)); }
+    function save(a) {
+      if (storage.getItem('nova.receipt-transaction-v1')) fail('receipt-recovery-required');
+      storage.setItem(key, JSON.stringify(a));
+    }
     function find(a, id) { for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; fail('po-not-found'); }
     function confirmed(c) { if (!c || c.confirmed !== true) fail('confirmation-required'); }
     function remaining(po, code) {
@@ -11003,6 +11193,26 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
         if (po.state === 'received' || po.state === 'cancelled') fail('bad-transition');
         if (po.grns.length) fail('has-receipts');   // received stock is in the ledger; reverse it by an adjustment, not by cancelling
         po.state = 'cancelled'; po.history.push({ at: now(), state: 'cancelled', by: c.by || null }); save(a); return copy(po);
+      },
+      closeRemaining: function (id, request, c) {
+        confirmed(c);
+        if (!c.by) fail('actor-required');
+        if (!request || !request.id || !String(request.reason || '').trim()) fail('reason-required');
+        var a = load(), po = find(a, id);
+        if (po.closure) {
+          if (po.closure.id === request.id && po.closure.reason === request.reason.trim()) return copy(po);
+          fail('bad-transition');
+        }
+        if (po.state !== 'partial') fail('bad-transition');
+        if (request.version !== po.history.length) fail('po-changed');
+        var cancelled = po.lines.map(function (line) {
+          line.cancelledQty = Math.max(0, line.qty - line.received);
+          return { code: line.code, qty: line.cancelledQty };
+        });
+        po.closure = { id: request.id, reason: request.reason.trim(), by: c.by, at: now(), cancelled: cancelled };
+        po.state = 'closed-short';
+        po.history.push({ at: now(), state: po.state, by: c.by, reason: po.closure.reason });
+        save(a); return copy(po);
       },
       /* GRN: { ref, invoice?: {qty:{code:n}}, lines:[{code, lot, expiry:'YYYY-MM-DD', qty, cost}] }
          Whole GRN is validated first; nothing is written on rejection. Returns { po, warnings }.
@@ -11059,6 +11269,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NovaPurchaseOrders = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
+
 <script id="ux-p37-inv-per">document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-inv-per]');if(!b)return;window.__novaInvPer=b.getAttribute('data-inv-per');var t=document.querySelector('.nova-tab[data-page=invoices]');if(t)t.click();var nb=document.querySelector('[data-inv-per="'+window.__novaInvPer+'"]');if(nb)nb.focus();});</script>
 <script id="ux-p38-settings-sections">(function(){
  var SECS=[['setup','تجهيز الصيدلية'],['general','عام'],['accounts','الحسابات والصلاحيات'],['devices','الطابعات والأجهزة'],['stock','التشغيلات والصلاحية'],['suppliers','الموردين'],['sync','الربط والمفاتيح'],['about','عن النظام']];
@@ -11095,6 +11306,25 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
  window.addEventListener('load',function(){if(document.body.dataset.activePage!=='settings')return;var c=document.getElementById('novaAuthCard');if(c&&c.children.length)return;var tb=document.querySelector('.nova-tab[data-page=settings]');if(tb)tb.click()});
 })();</script>
 <style id="ux-p30-receiving">
+.rcv-review{padding:8px 18px;min-height:0;flex-shrink:0}
+.rcv-review h3{margin:0 0 8px;font-size:15px}
+.rcv-review-scroll{max-height:190px;overflow:auto;border:1px solid #303841;border-radius:8px}
+.rcv-review-scroll table{width:100%;border-collapse:collapse;font-size:13px;text-align:start}
+.rcv-review-scroll th,.rcv-review-scroll td{padding:9px 10px;border-bottom:1px solid #303841;text-align:start;vertical-align:top}
+.rcv-review-scroll th{position:sticky;top:0;background:#20262d;color:#cfd7de}
+.rcv-review-scroll small{display:block;color:#f0d9a0}
+.rcv-review-scroll .rcv-difference{background:#332b1b}
+.rcv-receipt-actions{padding:12px}
+.rcv-control-body{padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.rcv-control-body p,.rcv-control-body h3{margin:0}
+.rcv-control-body input{width:100px;max-width:100%;min-height:44px}
+.rcv-control-label{display:flex;flex-direction:column;gap:8px}
+.rcv-control-label textarea{font:inherit;min-height:70px;background:#0b0e11;color:#e8eef3;border:1px solid #343b44;border-radius:8px;padding:10px}
+.rcv-audit{padding:12px;border:1px solid #343b44;border-radius:8px;font-size:13px}
+.rcv-control-body [role=alert]{color:#ffaaa5}
+.rcv-control-body button:disabled{opacity:.55;cursor:wait}
+@media(max-width:700px){.rcv-review-scroll table{min-width:650px}.rcv-review-scroll{max-height:150px}.rcv-dlg .rcv-grid{min-height:100px}}
+
 /* UX-P30 receiving page */
 .rcv{display:flex;flex-direction:column;gap:16px;max-width:1200px;margin:0 auto;width:100%}
 .rcv-head{display:flex!important;align-items:center;gap:12px;flex-wrap:wrap}
@@ -11289,7 +11519,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { return (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م'; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-  function read(k) { try { var a = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(a) ? a : []; } catch (_) { return []; } }
+  function read(k) { const a = JSON.parse(window.NovaReceiptOperations.readRaw(localStorage, k) || '[]'); if (!Array.isArray(a)) throw new Error('invalid-store'); return a; }
   function receipts() { return read(RK).filter(function (r) { return r && Array.isArray(r.lines); }); }
   function saveReceipt(receipt) {
     const rows = JSON.parse(localStorage.getItem(RK) || '[]');
@@ -11325,7 +11555,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       const po = store.get(receipt.poId);
       const prior = po.grns.find(entry => entry.ref === grn.ref);
       if (prior && JSON.stringify(prior.lines) !== JSON.stringify(grn.lines)) throw new Error('receipt-conflict');
-      poResult = prior ? { po, warnings: prior.warnings || [] } : store.receive(receipt.poId, grn, { confirmed: true });
+      poResult = prior ? { po, warnings: prior.warnings || [] } : store.receive(receipt.poId, grn, { confirmed: true, by: receipt.by });
     }
     for (const [index, line] of lines.entries()) {
       if (!window.novaStock.addLot(line, receipt.id + '/' + index)?.ok) throw new Error('stock-save-failed');
@@ -11338,8 +11568,8 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     }
   }
   function pendingPOs() { return read(POK).filter(function (p) { return p && Array.isArray(p.lines) && ['sent', 'accepted', 'partial'].indexOf(p.state) >= 0; }); }
-  function boxes(r) { return r.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0); }, 0); }
-  function total(r) { return r.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0) * (Number(l.cost) || 0); }, 0); }
+  function boxes(r) { return window.NovaReceiptOperations.effectiveLines(r).reduce(function (s, l) { return s + (Number(l.qty) || 0); }, 0); }
+  function total(r) { return window.NovaReceiptOperations.effectiveLines(r).reduce(function (s, l) { return s + (Number(l.qty) || 0) * (Number(l.cost) || 0); }, 0); }
   function nItems(n) { return n === 1 ? 'صنف واحد' : n === 2 ? 'صنفين' : n + (n >= 3 && n <= 10 ? ' أصناف' : ' صنف'); }
   function disp(name) { return window.novaDispName ? window.novaDispName(name) : String(name || ''); }
   function fmtDate(s) { if (!s) return '—'; var d = String(s).slice(0, 10).split('-'); return d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : s; }
@@ -11351,8 +11581,169 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     x: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>'
   };
 
+  const receiptOps = window.NovaReceiptOperations;
+  function reviewTable(po, lines) {
+    const rows = receiptOps.review(po, lines);
+    if (!rows.length) return '';
+    return '<h3>مراجعة الاستلام</h3><div class="rcv-review-scroll"><table><thead><tr>' +
+      ['الصنف', 'المطلوب', 'سبق استلامه', 'الواصل الآن', 'الباقي', 'الزيادة', 'سعر الشراء'].map(label => '<th>' + label + '</th>').join('') +
+      '</tr></thead><tbody>' + rows.map(row => '<tr' + (row.excess || row.unordered || row.costChanged ? ' class="rcv-difference"' : '') + '><td>' + esc(disp(row.name)) +
+        (row.unordered ? '<small>خارج الطلبية</small>' : '') + '</td><td>' + (row.ordered ?? '—') + '</td><td>' + row.prior + '</td><td>' + row.quantity +
+        '</td><td>' + (row.remaining ?? '—') + '</td><td>' + row.excess + '</td><td>' + row.costs.map(money).join(' / ') +
+        (row.costChanged ? '<small>سعر الطلبية ' + money(row.expectedCost) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
+  }
+  function modal(title, content) {
+    const previous = document.activeElement;
+    const overlay = document.createElement('div');
+    overlay.className = 'rcv-ov'; overlay.dir = 'rtl';
+    overlay.innerHTML = '<div class="rcv-dlg rcv-controls" role="dialog" aria-modal="true" aria-label="' + esc(title) + '">' +
+      '<div class="rcv-dlg-h"><h2>' + esc(title) + '</h2><button type="button" class="rcv-x" aria-label="إغلاق" data-control-close>×</button></div>' +
+      '<div class="rcv-control-body">' + content + '</div></div>';
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); document.removeEventListener('keydown', onKey, true); if (previous?.isConnected) previous.focus(); }
+    function onKey(event) {
+      if (!overlay.contains(document.activeElement)) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
+      if (event.key === 'Tab') {
+        const controls = [...overlay.querySelectorAll('button,input,textarea,a[href]')].filter(el => !el.disabled && el.offsetParent !== null);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    }
+    overlay.querySelector('[data-control-close]').onclick = close;
+    document.addEventListener('keydown', onKey, true);
+    overlay.querySelector('button').focus();
+    return { overlay, close };
+  }
+  function actionActor(action) {
+    const actor = window.novaAuth?.current();
+    if (!actor || !window.novaPerms?.require(action)) throw new Error('permission');
+    return actor;
+  }
+  const controlErrors = {
+    permission: 'سجل دخول مستخدم لديه صلاحية الإجراء من الإعدادات.',
+    'reason-required': 'اكتب سبب التعديل.', 'bad-qty': 'اكتب كميات صحيحة أكبر من أو تساوي صفر.',
+    'no-changes': 'لم تتغير أي كمية.', 'stock-reserved': 'الصنف محجوز في فاتورة بيع. أكملها أو ألغها أولًا.',
+    'insufficient-stock': 'الكمية المتبقية لا تسمح بالتصحيح بعد حركات البيع أو التحويل.',
+    'receipt-changed': 'الفاتورة اتعدلت من شاشة أخرى. افتح التصحيح من جديد.',
+    'po-changed': 'الطلبية اتغيرت. افتح تفاصيلها من جديد.',
+    'receipt-unavailable': 'أكمل حفظ الاستلام قبل التصحيح.', 'bad-transition': 'حالة الطلبية اتغيرت. افتحها من جديد.',
+    'pending-receipt': 'أكمل الاستلام المتوقف قبل إلغاء الكمية الباقية.'
+  };
+  function errorText(error) { return controlErrors[error.code || error.message] || 'تعذر إكمال الحفظ. أعد المحاولة لاستكمال نفس العملية.'; }
+  function receiptActions(receipt) {
+    return '<div class="rcv-actions rcv-receipt-actions">' +
+      (receipt.poId ? '<button type="button" class="rcv-btn sm" data-rcv-order="' + esc(receipt.poId) + '">الطلبية الأصلية</button>' : '') +
+      '<button type="button" class="rcv-btn sm" data-rcv-moves="' + esc(receipt.id) + '">حركة المخزون وسجل التعديل</button>' +
+      '<button type="button" class="rcv-btn sm" data-rcv-correct="' + esc(receipt.id) + '">تصحيح الكميات</button></div>';
+  }
+  function openCorrection(id) {
+    const receipt = receipts().find(row => row.id === id && !row.pending);
+    if (!receipt) return;
+    const lines = receiptOps.effectiveLines(receipt);
+    const view = modal('تصحيح كميات الفاتورة ' + receipt.invoice,
+      '<p>راجع الكميات الصحيحة. سيتم تسجيل حركة فرق مرتبطة بالفاتورة.</p><div class="rcv-review-scroll"><table><thead><tr><th>الصنف</th><th>الصلاحية</th><th>الكمية الحالية</th><th>الكمية الصحيحة</th><th>الفرق</th></tr></thead><tbody>' +
+      lines.map((line, index) => '<tr><td>' + esc(disp(line.name)) + '</td><td dir="ltr">' + esc(line.expiry) + '</td><td>' + line.qty +
+        '</td><td><input type="number" min="0" step="1" data-correct-index="' + index + '" value="' + line.qty + '" aria-label="الكمية الصحيحة ' + esc(disp(line.name)) + '"></td><td data-correct-delta="' + index + '">0</td></tr>').join('') +
+      '</tbody></table></div><label class="rcv-control-label">سبب التصحيح<textarea id="rcvCorrectionReason" maxlength="500" required></textarea></label>' +
+      '<p id="rcvCorrectionError" role="alert"></p><button type="button" class="rcv-btn primary" id="rcvCorrectionSave">مراجعة وتأكيد التصحيح</button>');
+    const inputs = [...view.overlay.querySelectorAll('[data-correct-index]')];
+    inputs.forEach((input, index) => input.oninput = () => { view.overlay.querySelector('[data-correct-delta="' + index + '"]').textContent = Number(input.value) - lines[index].qty; });
+    const operationId = window.novaStock.newKey();
+    const save = view.overlay.querySelector('#rcvCorrectionSave');
+    let request = null;
+    save.onclick = async () => {
+      if (save.disabled) return;
+      save.disabled = true;
+      try {
+        const actor = actionActor('stock.adjust');
+        if (!request) {
+          if (inputs.some(input => input.value.trim() === '')) throw new Error('bad-qty');
+          const reason = view.overlay.querySelector('#rcvCorrectionReason').value.trim();
+          if (!reason) throw new Error('reason-required');
+          if (!window.confirm('تأكيد تسجيل فرق الكميات على المخزون؟')) return;
+          request = { id: operationId, receiptId: id, version: (receipt.corrections || []).length,
+            quantities: inputs.map(input => Number(input.value)), reason };
+        }
+        await window.novaStock.withLock(() => receiptOps.correct(localStorage, request, {
+          actor: actionActor('stock.adjust'), allowed: window.novaPerms.require('stock.adjust'),
+          available: (key, lot, expiry) => window.novaStock.lots(key).find(row => row.lot === lot && row.expiry === expiry)?.onHand || 0,
+          hasHold: key => window.novaStock.holds().some(row => row.key === key)
+        }));
+        view.close(); render(); openMovements(id); toast('تم تسجيل تصحيح الاستلام');
+      } catch (error) {
+        // A persisted journal owns the submitted values until recovery completes.
+        if (!localStorage.getItem(receiptOps.KEYS.journal)) request = null;
+        view.overlay.querySelector('#rcvCorrectionError').textContent = errorText(error);
+      } finally { save.disabled = false; }
+    };
+  }
+  function openMovements(id) {
+    const receipt = receipts().find(row => row.id === id);
+    if (!receipt) return;
+    const original = receipt.lines.map(line => '<tr><td>' + esc(disp(line.name)) + '</td><td>' + line.qty + '</td><td>' + esc(line.expiry) + '</td><td>' + money(line.cost) + '</td></tr>').join('');
+    modal('حركة المخزون · فاتورة ' + receipt.invoice,
+      '<p>' + esc(receipt.supplier) + ' · ' + fmtDate(receipt.date) + (receipt.poId ? ' · ' + esc(receipt.poId) : '') + '</p>' +
+      '<h3>الاستلام الأصلي</h3><div class="rcv-review-scroll"><table><thead><tr><th>الصنف</th><th>الكمية المضافة</th><th>الصلاحية</th><th>سعر الشراء</th></tr></thead><tbody>' + original + '</tbody></table></div>' +
+      '<h3>التصحيحات</h3>' + ((receipt.corrections || []).map(correction => '<section class="rcv-audit"><b>' + esc(correction.by.name) + '</b> · <time dir="ltr">' + esc(correction.at) + '</time><p>' + esc(correction.reason) + '</p>' +
+        correction.changes.map(change => '<p>' + esc(disp(receipt.lines[change.index].name)) + ' · ' + change.before + ' ← ' + change.after + ' · فرق المخزون <b dir="ltr">' + (change.delta > 0 ? '+' : '') + change.delta + '</b></p>').join('') + '</section>').join('') || '<p>لا توجد تصحيحات.</p>'));
+  }
+  function openOrder(id) {
+    const po = read(POK).find(row => row.id === id);
+    if (!po) return;
+    const related = receipts().filter(receipt => receipt.poId === id);
+    const view = modal('الطلبية ' + po.id,
+      '<p>' + esc(po.supplier) + '</p><div class="rcv-review-scroll"><table><thead><tr><th>الصنف</th><th>المطلوب</th><th>المستلم</th><th>المنتظر</th><th>ملغي من الباقي</th></tr></thead><tbody>' +
+      po.lines.map(line => '<tr><td>' + esc(disp(line.name || line.code)) + '</td><td>' + line.qty + '</td><td>' + line.received + '</td><td>' + Math.max(0, line.qty - line.received - (line.cancelledQty || 0)) + '</td><td>' + (line.cancelledQty || 0) + '</td></tr>').join('') +
+      '</tbody></table></div><h3>فواتير الاستلام</h3>' + (related.map(receipt => '<button type="button" class="rcv-btn" data-open-receipt="' + esc(receipt.id) + '">' + esc(receipt.invoice) + (receipt.pending ? ' · يحتاج استكمال' : '') + '</button>').join('') || '<p>لم يتم الاستلام بعد.</p>') +
+      (po.state === 'partial' ? '<p>الكمية الناقصة ما زالت منتظرة.</p><button type="button" class="rcv-btn" data-rcv-close-rest="' + esc(po.id) + '">إلغاء الكمية الباقية</button>' : '') +
+      (po.closure ? '<p class="rcv-audit">تم إنهاء الطلبية مع إلغاء الباقي · ' + esc(po.closure.reason) + ' · ' + esc(po.closure.by) + ' · ' + esc(po.closure.at) + '</p>' : ''));
+    const closeRest = view.overlay.querySelector('[data-rcv-close-rest]');
+    if (closeRest) closeRest.onclick = event => { event.stopPropagation(); view.close(); closeRemaining(id); };
+    view.overlay.querySelectorAll('[data-open-receipt]').forEach(button => button.onclick = () => {
+      view.close(); render();
+      const row = document.getElementById('rcv-' + button.dataset.openReceipt);
+      if (row) { row.open = true; row.scrollIntoView({ block: 'center' }); row.querySelector('summary').focus(); }
+      else { const receipt = related.find(row => row.id === button.dataset.openReceipt); if (receipt?.pending) openForm(receipt); else openMovements(button.dataset.openReceipt); }
+    });
+  }
+  function closeRemaining(id) {
+    const po = read(POK).find(row => row.id === id);
+    if (!po) return;
+    const view = modal('إلغاء الكمية الباقية من ' + id,
+      '<label class="rcv-control-label">سبب إلغاء الباقي<textarea id="rcvCloseReason" maxlength="500" required></textarea></label>' +
+      '<p id="rcvCloseError" role="alert"></p><button type="button" class="rcv-btn primary" id="rcvCloseSave">تأكيد إلغاء الباقي</button>');
+    const operationId = window.novaStock.newKey(), save = view.overlay.querySelector('#rcvCloseSave');
+    save.onclick = async () => {
+      if (save.disabled) return;
+      save.disabled = true;
+      try {
+        const actor = actionActor('purchases.manage');
+        const reason = view.overlay.querySelector('#rcvCloseReason').value.trim();
+        if (!reason) throw new Error('reason-required');
+        if (!window.confirm('تأكيد إنهاء الطلبية وإلغاء الكمية التي لم تصل؟')) return;
+        await window.novaStock.withLock(() => {
+          const currentActor = actionActor('purchases.manage');
+          if (receipts().some(row => row.poId === id && row.pending)) throw new Error('pending-receipt');
+          const store = window.NovaPurchaseOrders.createStore(localStorage, window.NovaStockLedger.createLedger(localStorage));
+          store.closeRemaining(id, { id: operationId, reason, version: po.history.length }, { confirmed: true, by: currentActor.id });
+        });
+        view.close(); render(); toast('تم إنهاء الطلبية وإلغاء الباقي');
+      } catch (error) { view.overlay.querySelector('#rcvCloseError').textContent = errorText(error); }
+      finally { save.disabled = false; }
+    };
+  }
+
   var host = null;
   function render(view) {
+    host = view || host;
+    try { return renderContent(host); }
+    catch (_) {
+      if (host) host.innerHTML = '<div class="rcv"><p role="alert">تعذر قراءة بيانات الاستلام. راجع مساحة التخزين ثم أعد المحاولة.</p><button type="button" class="rcv-btn" data-rcv="retry">إعادة المحاولة</button></div>';
+    }
+  }
+  function renderContent(view) {
     host = view || host; if (!host) return;
     var receiptsList = receipts().slice().reverse(), all = receiptsList.filter(r => !r.pending), pending = receiptsList.filter(r => r.pending), pos = pendingPOs(), t = today();
     var todays = all.filter(function (r) { return String(r.at || '').slice(0, 10) === t; });
@@ -11373,7 +11764,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       return '<div class="rcv-po"><div class="rcv-po-top"><b>' + esc(p.supplier) + '</b><span class="rcv-tag" data-state="' + esc(p.state) + '">' + (p.state === 'partial' ? 'وصل جزء' : 'مستني') + '</span></div>'
         + '<small>' + esc(p.id) + ' · ' + fmtDate(p.sentAt || p.createdAt) + ' · ' + nItems(p.lines.length) + '</small>'
         + '<div class="rcv-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div>'
-        + '<div class="rcv-po-foot"><span>' + got + ' / ' + q + ' علبة</span><button type="button" class="rcv-btn sm primary" data-rcv-po="' + esc(p.id) + '">استلم</button></div></div>';
+        + '<div class="rcv-po-foot"><span>' + got + ' / ' + q + ' علبة</span><button type="button" class="rcv-btn sm" data-rcv-order="' + esc(p.id) + '">تفاصيل الطلبية</button><button type="button" class="rcv-btn sm primary" data-rcv-po="' + esc(p.id) + '">استلم</button></div></div>';
     }).join('') + '</div>';
     h += '</section>';
     if (pending.length) h += '<section class="rcv-sec"><h2>استلامات تحتاج استكمال</h2>' + pending.map(r =>
@@ -11384,8 +11775,8 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     if (!all.length) h += '<div class="rcv-empty">' + I.truck + '<b>لسه مفيش استلامات</b><span>لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.</span></div>';
     else h += '<div class="rcv-table"><div class="rcv-tr rcv-th"><span>التاريخ</span><span>المورد</span><span>رقم الفاتورة</span><span>الأصناف</span><span>الإجمالي</span></div>'
       + all.slice(0, 50).map(function (r) {
-        return '<details class="rcv-row"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b>' + (r.poId ? ' <small class="rcv-po-ref">' + esc(r.poId) + '</small>' : '') + (r.warnings && r.warnings.length ? ' <small class="rcv-warn" title="' + esc(r.warnings.join('، ')) + '">⚠ ' + r.warnings.length + '</small>' : '') + '</span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
-          + '<div class="rcv-lines">' + r.lines.map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.autoLot ? '—' : l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div></details>';
+        return '<details class="rcv-row" id="rcv-' + esc(r.id) + '"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b>' + (r.poId ? ' <small class="rcv-po-ref">' + esc(r.poId) + '</small>' : '') + (r.warnings && r.warnings.length ? ' <small class="rcv-warn" title="' + esc(r.warnings.join('، ')) + '">⚠ ' + r.warnings.length + '</small>' : '') + '</span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
+          + '<div class="rcv-lines">' + window.NovaReceiptOperations.effectiveLines(r).map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.autoLot ? '—' : l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div>' + receiptActions(r) + '</details>';
       }).join('') + '</div>';
     h += '</section></div>';
     host.innerHTML = h;
@@ -11408,9 +11799,11 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       + '<div class="rcv-grid-h"><span>الصنف</span><span>الكمية</span><span>التشغيلة (اختياري)</span><span>الصلاحية</span><span>سعر الشراء</span><span>الإجمالي</span><span></span></div>'
       + '<div id="rcvLines" class="rcv-grid"></div>'
       + '<button type="button" class="rcv-add" data-rcv-add>' + I.plus + 'إضافة صنف</button>'
+      + '<section id="rcvReview" class="rcv-review" aria-label="مراجعة فروق الاستلام"></section>'
       + '<div class="rcv-dlg-f"><div class="rcv-sum" id="rcvSum"></div><div id="rcvMsg" class="rcv-msg" role="alert"></div>'
       + '<div class="rcv-dlg-btns"><button type="button" class="rcv-btn" data-rcv-close>إلغاء</button><button type="button" class="rcv-btn primary" id="rcvOk">تأكيد الاستلام وإضافة للمخزون</button></div></div></div>';
     document.body.appendChild(ov); form = { ov: ov, st: st };
+    if (st.poId || st.pending) ov.querySelector('#rcvSup').readOnly = true;
     var box = ov.querySelector('#rcvLines');
     function rowHtml(l, i) {
       return '<div class="rcv-line" data-i="' + i + '">'
@@ -11431,6 +11824,10 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         if (l.key || l.name) { n++; b += q; t += q * c; }
       });
       ov.querySelector('#rcvSum').innerHTML = '<span>' + nItems(n) + '</span><span>' + b + ' علبة</span><b>' + money(t) + '</b>';
+      const po = st.poId ? read(POK).find(row => row.id === st.poId) : null;
+      const lines = st.lines.filter(line => line.key).map(line => ({ ...line, code: line.code || line.key }));
+      ov.querySelector('#rcvReview').innerHTML = reviewTable(po, lines);
+
     }
     function lineOf(el) { var r = el.closest('.rcv-line'); return r ? +r.getAttribute('data-i') : -1; }
     var found = {};
@@ -11445,7 +11842,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     }
     function pick(i, k) {
       var p = (found[i] || [])[k]; if (!p) return;
-      var l = st.lines[i]; l.key = window.novaStock ? window.novaStock.keyOf(p) : (p.key || p.barcode || p.name); l.name = p.name;
+      var l = st.lines[i]; l.key = window.novaStock ? window.novaStock.keyOf(p) : (p.key || p.barcode || p.name); l.name = p.name; l.code = p.barcode || l.key;
       if (l.cost === '' && p.cost) l.cost = p.cost;
       var row = box.children[i], inp = row.querySelector('[data-f=q]');
       inp.value = disp(p.name); inp.setAttribute('data-ok', '1');
@@ -11511,12 +11908,13 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
       }
       var b = out.reduce(function (s, o) { return s + o.qty; }, 0);
+      if (st.poId && read(POK).find(row => row.id === st.poId)?.supplier !== sup) { msg('مورد الفاتورة يختلف عن الطلبية'); return; }
       if (!window.confirm('تأكيد استلام ' + nItems(out.length) + ' (' + b + ' علبة) من ' + sup + ' وإضافتهم للمخزون؟' + (short ? '\nتنبيه: ' + short + ' صنف صلاحيته أقل من 3 شهور.' : ''))) return;
       if (st.poId) {
         const po = pendingPOs().find(entry => entry.id === st.poId);
         if (!po || po.grns?.some(entry => entry.ref === inv)) { msg('الفاتورة دي اتسجلت قبل كده للطلبية أو الطلبية اكتملت'); return; }
       }
-      return { id, at: new Date().toISOString(), date, supplier: sup, invoice: inv, poId: st.poId || null, lines: out, pending: true };
+      return { id, at: new Date().toISOString(), date, supplier: sup, invoice: inv, poId: st.poId || null, lines: out, pending: true, by: window.novaAuth?.current()?.id || null };
     }
     const submit = ov.querySelector('#rcvOk');
     function showPending() {
@@ -11568,8 +11966,13 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     if (pn) pn.classList.add('open'); else location.hash = '#products&receive=1';
   }
   document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('[data-rcv],[data-rcv-po],[data-rcv-resume]'); if (!a || !a.closest('.rcv')) return;
-    if (a.getAttribute('data-rcv') === 'new') openForm();
+    var a = e.target.closest && e.target.closest('[data-rcv],[data-rcv-po],[data-rcv-resume],[data-rcv-correct],[data-rcv-order],[data-rcv-moves],[data-rcv-close-rest]'); if (!a || !a.closest('.rcv,.rcv-controls')) return;
+    if (a.hasAttribute('data-rcv-correct')) openCorrection(a.dataset.rcvCorrect);
+    else if (a.hasAttribute('data-rcv-order')) openOrder(a.dataset.rcvOrder);
+    else if (a.hasAttribute('data-rcv-moves')) openMovements(a.dataset.rcvMoves);
+    else if (a.hasAttribute('data-rcv-close-rest')) closeRemaining(a.dataset.rcvCloseRest);
+    else if (a.getAttribute('data-rcv') === 'retry') render();
+    else if (a.getAttribute('data-rcv') === 'new') openForm();
     else if (a.getAttribute('data-rcv') === 'photo') openPhoto();
     else if (a.hasAttribute('data-rcv-resume')) {
       const receipt = receipts().find(r => r.pending && r.id === a.getAttribute('data-rcv-resume'));
@@ -11583,7 +11986,9 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       }) });
     }
   });
-  window.novaReceiving = { render: render, open: openForm };
+  window.novaReceiving = { render: render, open: openForm, openOrder };
+  const incomingOrder = new URLSearchParams(location.search).get('order');
+  if (incomingOrder && location.hash === '#receiving') openOrder(incomingOrder);
   var pv = document.getElementById('novaPageView'); if (pv && document.body.dataset.activePage === 'receiving') render(pv);
 })();
 </script>

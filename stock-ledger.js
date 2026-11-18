@@ -13,7 +13,7 @@
     key = key || 'nova.stock.ledger';
     now = now || function () { return new Date().toISOString(); };
     function load() {
-      var raw = storage.getItem(key);
+      var raw = root.NovaReceiptOperations ? root.NovaReceiptOperations.readRaw(storage, key) : storage.getItem(key);
       if (!raw) return [];
       try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { fail('ledger-corrupt'); }
     }
@@ -21,6 +21,7 @@
       /* qty: positive integer for sale/return/receive; non-zero signed integer for adjustment.
          ref is required (invoice no., PO no., reason). Same kind+ref+code twice is rejected (idempotent replay). */
       append: function (m) {
+        if (storage.getItem('nova.receipt-transaction-v1')) fail('receipt-recovery-required');
         if (!m || !Object.prototype.hasOwnProperty.call(KINDS, m.kind)) fail('bad-kind');
         if (typeof m.code !== 'string' || !m.code) fail('bad-code');
         if (typeof m.ref !== 'string' || !m.ref) fail('missing-ref');

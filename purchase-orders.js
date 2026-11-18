@@ -3,7 +3,7 @@
    A PO never changes state without an explicit human confirmation ({confirmed:true}). Works as <script> (window.NovaPurchaseOrders) and in Node. */
 (function (root) {
   'use strict';
-  var STATES = ['draft', 'sent', 'accepted', 'partial', 'received', 'cancelled'];
+  var STATES = ['draft', 'sent', 'accepted', 'partial', 'received', 'closed-short', 'cancelled'];
   function fail(code) { var e = new Error(code); e.code = code; throw e; }
   function copy(o) { return JSON.parse(JSON.stringify(o)); }
   function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
@@ -14,11 +14,14 @@
     key = key || 'nova.purchase.orders';
     now = now || function () { return new Date().toISOString(); };
     function load() {
-      var raw = storage.getItem(key);
+      var raw = root.NovaReceiptOperations ? root.NovaReceiptOperations.readRaw(storage, key) : storage.getItem(key);
       if (!raw) return [];
       try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { fail('po-store-corrupt'); }
     }
-    function save(a) { storage.setItem(key, JSON.stringify(a)); }
+    function save(a) {
+      if (storage.getItem('nova.receipt-transaction-v1')) fail('receipt-recovery-required');
+      storage.setItem(key, JSON.stringify(a));
+    }
     function find(a, id) { for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; fail('po-not-found'); }
     function confirmed(c) { if (!c || c.confirmed !== true) fail('confirmation-required'); }
     function remaining(po, code) {
@@ -57,6 +60,26 @@
         if (po.state === 'received' || po.state === 'cancelled') fail('bad-transition');
         if (po.grns.length) fail('has-receipts');   // received stock is in the ledger; reverse it by an adjustment, not by cancelling
         po.state = 'cancelled'; po.history.push({ at: now(), state: 'cancelled', by: c.by || null }); save(a); return copy(po);
+      },
+      closeRemaining: function (id, request, c) {
+        confirmed(c);
+        if (!c.by) fail('actor-required');
+        if (!request || !request.id || !String(request.reason || '').trim()) fail('reason-required');
+        var a = load(), po = find(a, id);
+        if (po.closure) {
+          if (po.closure.id === request.id && po.closure.reason === request.reason.trim()) return copy(po);
+          fail('bad-transition');
+        }
+        if (po.state !== 'partial') fail('bad-transition');
+        if (request.version !== po.history.length) fail('po-changed');
+        var cancelled = po.lines.map(function (line) {
+          line.cancelledQty = Math.max(0, line.qty - line.received);
+          return { code: line.code, qty: line.cancelledQty };
+        });
+        po.closure = { id: request.id, reason: request.reason.trim(), by: c.by, at: now(), cancelled: cancelled };
+        po.state = 'closed-short';
+        po.history.push({ at: now(), state: po.state, by: c.by, reason: po.closure.reason });
+        save(a); return copy(po);
       },
       /* GRN: { ref, invoice?: {qty:{code:n}}, lines:[{code, lot, expiry:'YYYY-MM-DD', qty, cost}] }
          Whole GRN is validated first; nothing is written on rejection. Returns { po, warnings }.

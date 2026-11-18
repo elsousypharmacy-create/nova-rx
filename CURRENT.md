@@ -6,6 +6,7 @@ Last updated: 2026-11-16 (UX-AHMED). App merge @ bb4eb4d. Index of the present s
 Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 2026-11-11): only two Claude sessions work here; ChatGPT, Gemini, Kimi and Grok are out (old instructions: docs/archive/retired-agents/, not active).
 
 ## Priorities (newest first)
+- Issue #550 receiving controls on ux/receiving-controls, stacked on #549. Local logic/auth checks passed. Browser CI and review pending. See the receiving-controls checkpoint in HANDOFF.md.
 - Sale stickers: branch `ux/sticker-print-ready` implements direct printing of ready labels from the instructions screen. Owner review and release are pending.
 - Draft #549: local purchasing through receiving and stock passed browser checks at tablet and desktop sizes. GitHub CI and review pending. See the 2026-11-18 checkpoint in HANDOFF.md.
 - POS invoice UX: owner-requested customer-first entry and invoice lookup. Scoped PR from `ux/invoice-search-and-returns`; local browser checks passed. See HANDOFF for evidence and release status.
