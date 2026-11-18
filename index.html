@@ -10936,6 +10936,8 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   })}
  var gObs=null;function hook(){enhance();var g=document.querySelector('#novaPageView .nova-settings-grid[data-secs]');if(!g&&gObs){gObs.disconnect();gObs=null;hook.g=null}if(g&&window.MutationObserver&&g!==hook.g){hook.g=g;if(gObs)gObs.disconnect();gObs=new MutationObserver(place);gObs.observe(g,{childList:true})}place()}
  var v=document.getElementById('novaPageView');if(v&&window.MutationObserver)new MutationObserver(hook).observe(v,{childList:true});hook();
+ /* direct open on #settings: the card fillers load after the first render, so redraw once everything is loaded */
+ window.addEventListener('load',function(){if(document.body.dataset.activePage!=='settings')return;var c=document.getElementById('novaAuthCard');if(c&&c.children.length)return;var tb=document.querySelector('.nova-tab[data-page=settings]');if(tb)tb.click()});
 })();</script>
 <style id="ux-p30-receiving">
 /* UX-P30 receiving page */
