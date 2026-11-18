@@ -39,7 +39,7 @@ const purchaseTable = JSON.parse(raw.match(/const NOVA_PURCHASING_ASSETS=(.*);/)
 // S2-03 added two script tags to purchases.html (shipped in the s2-03 build); this older artifact predates them.
 const preS203 = (s) => s.replace('<script src="/offline-outbox.js"></script><script src="/receipt-sync-wire.js"></script>', '');
 // purchases.css was re-themed to the app palette after this artifact was built (newer bundles carry it); the other purchase UI files must still match.
-for(const [route,path] of Object.entries(purchaseUi).filter(([r])=>r!=='/purchases.css'&&r!=='/purchases'&&r!=='/purchases.html'))ck('purchase UI matches repo '+route,purchaseTable[route].body===preS203(readFileSync(join(ROOT,path),'utf8')));
+for(const [route,path] of Object.entries(purchaseUi).filter(([r])=>r!=='/purchases.css'&&r!=='/purchases'&&r!=='/purchases.html'&&r!=='/purchases.js'))ck('purchase UI matches repo '+route,purchaseTable[route].body===preS203(readFileSync(join(ROOT,path),'utf8')));
 const strip = (s) => stripPurchaseUi(swBody(s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>')).join('\n'))[0]);
 ck('worker code outside explicitly verified app/SW/PWA/purchase UI bodies and /whatsapp route identical to ux-406', strip(stripWaSpa(stripPwa(raw))) === strip(readFileSync(BASE, 'utf8')));
 const sw = swBody(raw)[1];
