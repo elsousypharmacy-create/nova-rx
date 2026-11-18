@@ -334,3 +334,12 @@ html body .controls #scopeChip[data-state=warn]::before{background:#e8c27a}
 /* UX-P21b: kill the legacy full-width row break pseudo-element */
 @media(min-width:801px){html body .controls::before,html body .controls::after{display:none!important;content:none!important}}
 
+
+/* UX-P22: loading / error / retry states in the items table, "no offer" block in the result panel */
+td.empty .primary{margin-top:14px;min-height:40px;padding:0 22px;border-radius:10px;background:#387e9e!important;border:1px solid #387e9e!important;color:#fff!important;font-weight:700;font-size:14px;cursor:pointer}
+td.empty .load-error{color:#e8c27a;font-weight:600}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #343b44;border-top-color:#76b8d5;border-radius:50%;vertical-align:-3px;margin-inline-end:8px;animation:nxspin .8s linear infinite}
+@keyframes nxspin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+.group.no-offer{border-color:#6b5a2e}
+.group.no-offer h3{color:#e8c27a}
