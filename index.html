@@ -1484,7 +1484,8 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 .nova-invoice-detail-overlay{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:12px;background:#000a}
 .nova-invoice-detail{width:min(100%,520px);max-height:min(90dvh,700px);display:flex;flex-direction:column;background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:12px;overflow:hidden}
 .nova-invoice-detail header,.nova-invoice-detail footer{display:flex;align-items:center;gap:8px;padding:12px;position:relative}
-.nova-invoice-detail h2{font-size:18px;margin:0;padding-inline-end:50px}
+.nova-invoice-detail h2{font-size:18px;margin:0}
+.nova-invoice-detail header .nova-dlg-x{position:static;flex:none;margin-inline-start:auto;width:48px;height:48px;min-height:48px}
 .nova-invoice-detail-body{padding:0 12px;overflow:auto}
 .nova-invoice-summary{display:flex;justify-content:space-between;gap:12px}
 .nova-invoice-detail ul{margin:0;padding:0;list-style:none}
@@ -2075,13 +2076,13 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
 @media (max-width:600px){
  .top-header{padding:6px 9px!important;gap:4px!important}
  .top-header .brand-section{flex:1 1 100%}
- .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:nowrap!important;gap:4px!important;flex:1 1 100%;justify-content:flex-start}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:wrap!important;gap:4px!important;flex:1 1 100%;justify-content:flex-start}
  .nova-sale-actions .nova-hold-action,.nova-sale-actions .nova-held-action{padding:0!important;width:44px!important;min-width:44px!important;justify-content:center;position:relative}
  .nova-sale-actions .nova-hold-action>span,.nova-sale-actions .nova-held-action>span:not(.nova-held-count){display:none}
  .nova-sale-actions .nova-held-action .nova-held-count{position:absolute;top:1px;inset-inline-end:2px;font-size:10px}
  .nova-sale-actions .nova-sale-number{font-size:11px;max-width:none;overflow:visible;text-overflow:clip;white-space:nowrap;flex:0 0 auto;padding:7px 6px}
  .empty-invoice-state{height:auto!important;min-height:0!important;padding:18px 0}
- .nova-sale-actions .nova-new-sale{padding:0 8px!important;flex:0 1 auto}
+ .nova-sale-actions .nova-new-sale{width:auto!important;min-width:48px!important;padding:0 8px!important;flex:none}
 }
 @media (hover:none),(pointer:coarse){.nova-help-chip{display:none!important}}
 /* UX10: mobile sale layout (toast/FAB/totals/table) */
@@ -3360,7 +3361,7 @@ window.NovaFmt=(function(){
           <div class="suggestion-item ${idx === state.selectedIndex ? 'selected' : ''}" data-idx="${idx}">
             <div>
               <div class="sugg-primary" dir="auto">${escH(cust.name)}</div>
-              <div class="sugg-sub">Phone: ${escH(cust.phone)} • Visits: ${escH(cust.visits)}</div>
+              <div class="sugg-sub">${novaEn() ? "Phone" : "الموبايل"}: <bdi>${escH(cust.phone)}</bdi> · ${novaEn() ? "Visits" : "الزيارات"}: ${escH(cust.visits)}</div>
             </div>
             <div class="sugg-meta">
               <span class="sugg-tag" style="background:#4c1d95; color:#ddd6fe;">${tierAr(cust.tier)}</span>
