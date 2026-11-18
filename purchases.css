@@ -246,4 +246,27 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
 .products .panel-tools .cover{order:0}
 #coverText::before{content:"التغطية: ";color:#8896a4;font-weight:500}
 .products .panel-tools .cover-btn{min-height:44px}
+/* UX-P13: one type scale - 23 title / 17 panel / 15 card / 14 body+controls / 13 meta (nothing below 13) */
+@media(min-width:801px){
+ html body main td,html body main .cart li{font-size:14px}
+ html body main td.rate,html body main td .rate{font-size:14px}
+ html body main td strong,html body main td b,html body main .products td .product-ar{font-size:14px;font-weight:700}
+ html body main th{font-size:13px;font-weight:700}
+ html body main td small,html body main td .product-en,html body main td .offer-specs,html body main td .split-note,html body main td .discount,html body main .money small,html body main section.group small,html body main .cart li small,html body main .cart li span,html body main .cart li b,html body main .cart small{font-size:13px}
+ html body main td .row-action,html body main #loadMock,html body main .mode-segment button,html body main #sourceState,html body main #sourceTime,html body main #status,html body main #count{font-size:13px}
+ html body main #groupCount,html body main .cover-btn,html body main .search,html body main #search{font-size:14px}
+ html body main .cart-footer #total{font-size:20px;font-weight:700}
+ html body main .controls #scopeChip{font-size:13px}
+ html body main .products .panel-head h2,html body main .cart .panel-head h2{font-size:17px;font-weight:700}
+ html body main .group h3,html body main .group strong{font-size:15px;font-weight:700}
+}
+/* UX-P13b: fixed column plan so the offer column keeps its room and headers do not break */
+@media(min-width:801px){
+ html body main table{table-layout:fixed;width:100%}
+ html body main th:nth-child(1){width:44px}html body main th:nth-child(2){width:18%}
+ html body main th:nth-child(3),html body main th:nth-child(4){width:8%}
+ html body main th:nth-child(5){width:11%}html body main th:nth-child(6),html body main th:nth-child(7){width:9%}
+ html body main th:nth-child(8){width:auto}html body main th:nth-child(9){width:86px}
+ html body main td{overflow-wrap:anywhere}html body main th{white-space:normal;line-height:1.35}
+}
 
