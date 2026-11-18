@@ -139,8 +139,8 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
 .cover-btn .dots{font-size:18px;line-height:1;letter-spacing:1px;color:var(--light)}
 .cover-pop{position:absolute;top:calc(100% + 8px);inset-inline-start:0;z-index:25;min-width:270px;display:flex;flex-direction:column;gap:12px;padding:14px;background:#1b2026;border:1px solid #3a444e;border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.5)}
 .cover-pop[hidden]{display:none!important}
-.controls .cover-pop label{display:flex;flex-direction:column;align-items:stretch;gap:6px;font-size:13px;font-weight:700}
-.controls .cover-pop label:after{content:none}
+.cover-pop label{display:flex;flex-direction:column;align-items:stretch;gap:6px;font-size:13px;font-weight:700}
+.cover-pop label:after{content:none}
 .cover-pop #days{width:100%;font-size:16px}
 .cover-pop fieldset{border:0;margin:0;padding:0}
 .cover-pop legend{display:block!important;font-size:13px;font-weight:700;padding:0 0 6px}
@@ -242,4 +242,8 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
  tbody tr td{height:56px;padding-block:8px}
  [data-action=qty]{min-width:84px;min-height:42px}
 }
+/* UX-P12: coverage chip lives with the items it affects (panel tools), not beside the page title */
+.products .panel-tools .cover{order:0}
+#coverText::before{content:"التغطية: ";color:#8896a4;font-weight:500}
+.products .panel-tools .cover-btn{min-height:44px}
 
