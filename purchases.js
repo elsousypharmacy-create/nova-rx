@@ -35,7 +35,23 @@ function persist(){scopeView();modeView();try{localStorage.setItem(PREF,JSON.str
 function invalidate(){cartPlans=[];generation++;items.forEach(i=>{i.allocations=[];i.unallocated=i.qty;delete i.offerState;delete i.expiredMessage;delete i.manualSplit;delete i.splitExplanation;});render();}
 function setBusy(value){busy=value;['load','distribute','days','minimum','ideal','openSettings','modeAuto','modeManual','loadMock'].forEach(id=>{if($(id))$(id).disabled=value;});}
 function levelView(){['minimum','ideal'].forEach(id=>$(id).setAttribute('aria-pressed',String(id===prefs.level)));}
-function rebuild(){try{prefs.days=readDays($('days').value);$('days').value=prefs.days;items=buildNeeds(rawItems,{...prefs,limits});offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
+function pendingIncoming() {
+ const quantities = new Map();
+ let orders;
+ try { orders = JSON.parse(localStorage.getItem('nova.purchase.orders') || '[]'); }
+ catch (_) { return quantities; }
+ if (!Array.isArray(orders)) return quantities;
+ for (const order of orders) {
+  if (!['accepted', 'partial'].includes(order?.state) || !Array.isArray(order.lines)) continue;
+  for (const line of order.lines) {
+   if (!line?.code) continue;
+   const remaining = numberOrNull(line.qty) - (numberOrNull(line.received) ?? 0) - (numberOrNull(line.cancelledQty) ?? 0);
+   if (remaining > 0) quantities.set(String(line.code), (quantities.get(String(line.code)) || 0) + remaining);
+  }
+ }
+ return quantities;
+}
+function rebuild(){try{prefs.days=readDays($('days').value);$('days').value=prefs.days;items=buildNeeds(rawItems,{...prefs,limits,incomingByCode:pendingIncoming()});offersByItem.clear();generation++;persist();render();}catch(e){status(e.message,true);}}
 function isOut(i){const s=numberOrNull(i.stock);return s!==null&&s<=0;}
 function isNoOffer(i){return offersByItem.has(i.key)&&!(i.allocations&&i.allocations.length)&&!i.issue;}
 function filterPass(i){return listFilter==='out'?isOut(i):listFilter==='nooffer'?isNoOffer(i):listFilter==='selected'?!!i.selected:true;}
@@ -63,7 +79,7 @@ function render(){
   const allocation=i.allocations?.[0],found=allocation?.offer;
   const warning=i.issue||(i.unallocated>0&&i.allocations?.length?'كمية متبقية بلا عرض':'');
   const splitDetail=i.allocations?.length>1?`<small class="split-note" data-split-explanation="${esc(i.splitExplanation||'')}" title="${esc(i.splitExplanation||'')}">مقسم على ${fmt(i.allocations.length)} عروض (${i.allocations.map(a=>`${esc(a.offer.sellerName||supplierName(a.offer.supplierId))}: ${fmt(a.qty)}`).join(' + ')})</small>`:i.manualSplit?`<small class="split-note" data-split-explanation="${esc(i.splitExplanation||'')}" title="${esc(i.splitExplanation||'')}">توزيع يدوي (${fmt(allocation?.qty)} علبة)</small>`:'';
-  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small>${i.suggested&&!i.selected?'<small class="suggested">كمية مقترحة: تحتاج تأكيد الصيدلي</small>':''}</td><td class="stk"><span class="num${isOut(i)?' out':''}">${fmt(numberOrNull(i.stock))}</span> <span class="of">/ ${fmt(i.target)}</span>${i.mergedLines>1?`<small title="تم دمج الأسطر المكررة">مدموج ${fmt(i.mergedLines)} أسطر</small>`:''}<div class="lim"><label>أدنى <input class="qty lim-in" type="text" inputmode="numeric" data-action="min" aria-label="الحد الأدنى ${esc(i.name)}" value="${esc(i.minLimit??'')}" ${busy?'disabled':''}></label><label>أقصى <input class="qty lim-in" type="text" inputmode="numeric" data-action="max" aria-label="الحد الأقصى ${esc(i.name)}" value="${esc(i.maxLimit??'')}" ${busy?'disabled':''}></label></div></td><td class="rate"><span class="num">${fmt(i.dailyRate)}</span><small>${i.leadTimeDays===null||i.leadTimeDays===undefined?'مدة التوريد غير معلومة':'توريد '+fmt(i.leadTimeDays)+' يوم'}</small></td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td title="${esc(i.splitExplanation||'')}">${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small><small class="offer-specs">${esc([allocation.strength,allocation.form,allocation.packSize,allocation.quantity!=null?`متاح ${fmt(allocation.quantity)}`:null,allocation.date].filter(Boolean).join(' · '))}</small>${splitDetail}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}${i.searchComplete===false?'<small class="warning partial-note">بعض الموردين لم يرد؛ النتيجة ناقصة</small>':''}`:offerNote(i)}${i.expiredMessage?`<small class="warning expired-session">${esc(i.expiredMessage)}</small>`:''}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action ico-edit" data-action="offers" title="العروض" aria-label="العروض ${esc(i.name)}" ${busy?'disabled':''}></button></td></tr>`;
+  return `<tr data-key="${esc(i.key)}" class="${warning?'warning-row':''}"><td><input type="checkbox" data-action="select" aria-label="تحديد ${esc(i.name)}" ${i.selected?'checked':''} ${i.issue||busy?'disabled':''}></td><td><div class="product-name">${esc(i.name)}</div><div class="product-en">${esc(i.nameEn||'')}</div><small title="${esc(i.basis||i.issue||'')}">${esc(i.code||'')}</small>${i.suggested&&!i.selected?'<small class="suggested">كمية مقترحة: تحتاج تأكيد الصيدلي</small>':''}</td><td class="stk"><span class="num${isOut(i)?' out':''}">${fmt(numberOrNull(i.stock))}</span> <span class="of">/ ${fmt(i.target)}</span>${i.incoming > 0 ? `<small>في الطريق ${fmt(i.incoming)} علبة</small>` : ''}${i.mergedLines>1?`<small title="تم دمج الأسطر المكررة">مدموج ${fmt(i.mergedLines)} أسطر</small>`:''}<div class="lim"><label>أدنى <input class="qty lim-in" type="text" inputmode="numeric" data-action="min" aria-label="الحد الأدنى ${esc(i.name)}" value="${esc(i.minLimit??'')}" ${busy?'disabled':''}></label><label>أقصى <input class="qty lim-in" type="text" inputmode="numeric" data-action="max" aria-label="الحد الأقصى ${esc(i.name)}" value="${esc(i.maxLimit??'')}" ${busy?'disabled':''}></label></div></td><td class="rate"><span class="num">${fmt(i.dailyRate)}</span><small>${i.leadTimeDays===null||i.leadTimeDays===undefined?'مدة التوريد غير معلومة':'توريد '+fmt(i.leadTimeDays)+' يوم'}</small></td><td><input class="qty" type="text" inputmode="numeric" data-action="qty" aria-label="الكمية المطلوبة ${esc(i.name)}" value="${esc(i.qty)}" ${i.issue||busy?'disabled':''}></td><td title="${esc(i.splitExplanation||'')}">${found?`${supplierSelect(i,found)}<small class="money">${fmt(allocation.price)} ج.م <span class="discount">${fmt(allocation.discount)}٪</span></small><small class="offer-specs">${esc([allocation.strength,allocation.form,allocation.packSize,allocation.quantity!=null?`متاح ${fmt(allocation.quantity)}`:null,allocation.date].filter(Boolean).join(' · '))}</small>${splitDetail}${allocation.quantityUnconfirmed?'<small class="warning">كمية المورد غير محددة</small>':''}${i.searchComplete===false?'<small class="warning partial-note">بعض الموردين لم يرد؛ النتيجة ناقصة</small>':''}`:offerNote(i)}${i.expiredMessage?`<small class="warning expired-session">${esc(i.expiredMessage)}</small>`:''}${warning?`<small class="warning">${esc(warning)}</small>`:''}</td><td><button class="row-action ico-edit" data-action="offers" title="العروض" aria-label="العروض ${esc(i.name)}" ${busy?'disabled':''}></button></td></tr>`;
  }).join(''):'<tr><td colspan="7" class="empty">'+emptyHtml()+'</td></tr>';
  $('selectAll').disabled=busy;
  $('selectAll').checked=view.length>0&&view.every(i=>i.selected||i.issue);
@@ -129,7 +145,7 @@ async function loadMockData(){
  sellers=mockScenario.sellers.map(s=>({...s,id:String(s.id)}));
  prefs={...prefs,...mockScenario.prefs,mode:prefs.mode||'auto'};
  $('days').value=prefs.days;levelView();modeView();
- rawItems=mockScenario.items;items=buildNeeds(rawItems,{...prefs,limits});
+ rawItems=mockScenario.items;items=buildNeeds(rawItems,{...prefs,limits,incomingByCode:pendingIncoming()});
  items.forEach(i=>{if(!i.issue)i.selected=true;});
  offersByItem.clear();
  persist();

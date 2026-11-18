@@ -44,15 +44,16 @@ export function mergeDuplicateLines(items) {
 }
 // limits: { [key]: { min, max } } pharmacist overrides per item (local only).
 // Every suggested quantity starts unselected: the pharmacist must confirm it.
-export function buildNeeds(items, { days, level = 'ideal', limits = {} }) {
+export function buildNeeds(items, { days, level = 'ideal', limits = {}, incomingByCode = new Map() }) {
   days = readDays(days);
   if (!['minimum', 'ideal'].includes(level)) throw new Error('مستوى مخزون غير صحيح');
   return mergeDuplicateLines(items).flatMap(item => {
     const key = item.key;
     const own = limits[key] || {};
     const stock = numberOrNull(item.stock);
+    const incoming = Math.max(0, numberOrNull(incomingByCode.get(String(item.code || ''))) ?? 0);
     const minimum = numberOrNull(own.min) ?? numberOrNull(item.minStock), maximum = numberOrNull(own.max) ?? numberOrNull(item.idealStock);
-    const common = { dailyRate: numberOrNull(item.dailySales), leadTimeDays: numberOrNull(item.leadTimeDays), maxLimit: maximum, minLimit: minimum };
+    const common = { incoming, dailyRate: numberOrNull(item.dailySales), leadTimeDays: numberOrNull(item.leadTimeDays), maxLimit: maximum, minLimit: minimum };
     const savedTarget = level === 'minimum' ? minimum : maximum;
     const daily = numberOrNull(item.dailySales);
     const observation = numberOrNull(item.observedDays);
@@ -61,7 +62,7 @@ export function buildNeeds(items, { days, level = 'ideal', limits = {} }) {
     const cap = numberOrNull(own.max); // only the pharmacist's own max is a hard cap
     if (target !== null && cap !== null) target = Math.min(target, cap);
     if (stock === null || target === null) return [{ ...item, ...common, key, qty: 0, target, selected: false, issue: stock === null ? 'الرصيد غير معلوم' : 'مستوى المخزون ومعدل البيع غير متاحين' }];
-    const qty = Math.max(0, Math.ceil(target - stock - 1e-9));
+    const qty = Math.max(0, Math.ceil(target - stock - incoming - 1e-9));
     if (qty === 0) return [];
     // Minimum mode means only items currently below their saved minimum (or zero).
     if (level === 'minimum' && !(stock <= 0 || (minimum !== null && stock < minimum))) return [];

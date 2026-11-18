@@ -5660,12 +5660,12 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
   for (const receipt of records('nova-rx-receipts-v1')) {
    if (receipt.pending || !Array.isArray(receipt.lines)) continue;
    for (const line of receipt.lines.filter(matches)) {
-    movements.push({ at: receipt.at, label: tr('استلام', 'Receipt'), ref: receipt.invoice, delta: line.qty });
+    movements.push({ at: receipt.at, label: tr('استلام', 'Receipt'), ref: receipt.invoice, source: receipt, delta: line.qty });
    }
    for (const correction of receipt.corrections || []) {
     for (const change of correction.changes || []) {
      if (receipt.lines[change.index] && matches(receipt.lines[change.index])) movements.push({
-      at: correction.at, label: tr('تصحيح استلام', 'Receipt correction'), ref: receipt.invoice, delta: change.delta, reason: correction.reason
+      at: correction.at, label: tr('تصحيح استلام', 'Receipt correction'), ref: receipt.invoice, source: receipt, delta: change.delta, reason: correction.reason
      });
     }
    }
@@ -5676,10 +5676,10 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
    sale.lines.forEach((line, index) => {
     if (!matches(line)) return;
     const factor = Number(line.unitFactor) || 1;
-    movements.push({ at: sale.at, label: tr('بيع', 'Sale'), ref: sale.number, delta: -line.qty / factor });
+    movements.push({ at: sale.at, label: tr('بيع', 'Sale'), ref: sale.number, source: sale, delta: -line.qty / factor });
     for (const returned of returns.filter(row => row.saleId === sale.id)) {
      for (const item of returned.lines.filter(row => row.idx === index)) movements.push({
-      at: returned.at, label: tr('مرتجع', 'Return'), ref: sale.number, delta: item.qty / factor
+      at: returned.at, label: tr('مرتجع', 'Return'), ref: sale.number, source: sale, delta: item.qty / factor
      });
     }
    });
@@ -5700,10 +5700,29 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
     (lot.expired || lot.recalled ? '<span>'+heading('غير متاح للبيع','Unavailable for sale')+'</span>' : '')+'</li>').join('')+'</ul>' :
     '<p>'+heading('لا توجد دفعات مسجلة','No recorded batches')+'</p>')+
    '<h3>'+heading('آخر الحركات المسجلة على الجهاز','Recent movements on this device')+'</h3>'+
-   (movements.length ? '<ul>'+movements.slice(0,100).map(move => '<li><span>'+esc(move.label)+' <bdi>'+esc(move.ref)+'</bdi></span><b dir="ltr">'+
+   (movements.length ? '<ul>'+movements.slice(0,100).map((move, index) => '<li><span>'+esc(move.label)+' <button class="btn btn-secondary" type="button" data-movement-source="'+index+'"><bdi>'+esc(move.ref)+'</bdi></button></span><b dir="ltr">'+
     (move.delta > 0 ? '+' : '')+displayNumber(move.delta)+'</b><small><bdi>'+esc(move.at ? window.NovaFmt.formatDateTime(move.at) : '')+'</bdi> '+esc(move.reason || '')+'</small></li>').join('')+'</ul>' :
     '<p>'+heading('لا توجد حركات مسجلة','No recorded movements')+'</p>');
   dialog.querySelector('button').onclick = () => dialog.close();
+  dialog.addEventListener('click', event => {
+   const link = event.target.closest('[data-movement-source]');
+   if (!link) return;
+   const movement = movements[Number(link.dataset.movementSource)];
+   const invoice = movement.source;
+   const detail = document.createElement('dialog');
+   detail.className = 'nova-stock-details';
+   detail.dir = dialog.dir;
+   detail.setAttribute('aria-label', tr('الفاتورة الأصلية','Original invoice'));
+   detail.innerHTML = '<header><h2>'+heading('الفاتورة الأصلية','Original invoice')+' <bdi>'+esc(movement.ref)+'</bdi></h2>'+
+    '<button class="btn btn-secondary" type="button">'+heading('إغلاق','Close')+'</button></header>'+
+    (invoice.supplier ? '<p>'+esc(invoice.supplier)+'</p>' : '')+
+    '<ul>'+invoice.lines.map(line => '<li><span>'+esc(line.name || line.code)+'</span><b>'+displayNumber(line.qty)+'</b></li>').join('')+'</ul>';
+   detail.querySelector('button').onclick = () => detail.close();
+   detail.addEventListener('close', () => { detail.remove(); link.focus(); }, { once: true });
+   document.body.appendChild(detail);
+   detail.showModal();
+  });
+
   dialog.addEventListener('close', () => { dialog.remove(); trigger.focus(); }, { once: true });
   document.body.appendChild(dialog);
   dialog.showModal();
