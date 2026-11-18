@@ -140,16 +140,19 @@ try {
   await page.locator('#offers .offer').first().waitFor({ state: 'visible' });
 
   const modalText = await page.locator('#offerRows').innerText();
-  assert(modalText.includes('التركيز: 500 mg'), 'comparison modal shows strength');
-  assert(modalText.includes('الشكل: أقراص'), 'comparison modal shows tablet form');
-  assert(modalText.includes('الشكل: كبسولات'), 'comparison modal shows capsule form');
-  assert(modalText.includes('العبوة: 20 قرص'), 'comparison modal shows 20-tab pack size');
-  assert(modalText.includes('العبوة: 12 كبسولة'), 'comparison modal shows 12-cap pack size');
-  assert(modalText.includes('الكمية: المتاح 15'), 'comparison modal shows available quantity 15');
-  assert(modalText.includes('الكمية: المتاح 40'), 'comparison modal shows available quantity 40');
-  assert(modalText.includes('التكلفة: 55 ج.م'), 'comparison modal shows cost 55 EGP');
-  assert(modalText.includes('التكلفة: 48 ج.م'), 'comparison modal shows cost 48 EGP');
-  assert(modalText.includes('التاريخ: 2026-11-12'), 'comparison modal shows offer date');
+  // UX-P37 turned the comparison into a table (columns instead of «التركيز:/الشكل:/العبوة:» labels). Strength and the word for the form are no longer
+  // printed in these rows; the pack line and the product/pack match warning are. Row 1 = the eligible 20-tablet offer, row 2 = the 12-capsule offer.
+  const lines = modalText.split('\n').map((x) => x.trim()).filter(Boolean);
+  const row = (needle) => { const k = lines.findIndex((x) => x.includes(needle)); assert(k >= 0, 'offer row present: ' + needle); return lines.slice(k, k + 8).join(' | '); };
+  const r1 = row('20 قرص'), r2 = row('12 كبسولة');
+  assert(r1.includes('أوميت') && r1.includes('الحد الأدنى 1 علبة'), 'comparison row 1 shows supplier, 20-tab pack size and minimum order');
+  assert(r2.includes('أوميت') && r2.includes('الحد الأدنى 1 علبة'), 'comparison row 2 shows supplier, 12-cap pack size and minimum order');
+  assert(r1.includes('15'), 'comparison row 1 shows available quantity 15');
+  assert(r2.includes('40'), 'comparison row 2 shows available quantity 40');
+  assert(r1.includes('55 ج.م') && r2.includes('48 ج.م'), 'comparison rows show cost 55 and 48 EGP');
+  assert(r1.includes('45٪') && r2.includes('40٪'), 'comparison rows show the discount');
+  assert(r1.includes('2026-11-12') && r2.includes('2026-11-12'), 'comparison rows show the offer date');
+  assert(r2.includes('راجع مطابقة الصنف والعبوة') && !r1.includes('راجع مطابقة الصنف والعبوة'), 'only the mismatching capsule offer asks to review the product/pack match');
   assert(
     modalText.includes('الجلسة منتهية عند فارما أوفرسيز — جدّد جلسة المورد لإكمال المقارنة'),
     'comparison modal shows clear expired-session message',

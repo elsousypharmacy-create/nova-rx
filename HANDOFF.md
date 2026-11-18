@@ -936,6 +936,11 @@ Owner explicitly asked to execute the remaining review/merge/deploy. Latest head
 - Live browser reload displayed new visible clear action and fixed-discount label. Searched real price list, opened split checkout (total/allocation/actions visible, credit disabled without customer), cancelled checkout, confirmed clearing the test cart, opened purchases and visually checked numbered flow/buttons/cart footer. No invoice committed, payment or supplier action. Browser tab retained for review.
 - WhatsApp and backend unchanged. Physical tablet/keyboard/printer and real supplier flows remain untested; this is scoped UX release evidence, not acceptance of all ERP stages. Local sandbox sticker/INV03 timing failures reproduced on base; final remote CI passes those suites.
 
+## 2026-11-18 — Sale stickers from the instructions screen
+- Branch `ux/sticker-print-ready`. The pharmacist approves and prints ready labels with one click. The count includes copies. The separate visual preview is removed from the sale flow. The separate Sticker Studio keeps its existing workflow.
+- Identifiable diaper lines are excluded by name on invoice load. The pharmacist can include a skipped line manually. Incomplete AI results and unreviewed warnings stay visible, and the rest of the batch can go to print. After a partial submission, the remaining lines stay open and already submitted labels can be included again explicitly.
+- Local checks: `npm run check` and `CHROME_PATH=/tmp/chromium node tests/sale-sticker-modal.mjs` with simulated AI results and print submission. Physical printer, live AI, GitHub CI and independent review remain pending.
+- Source-only draft. No merge, release artifact or deployment. Owner review is the next step before building the preview release from the approved source.
 ## 2026-11-18 — Draft #549 purchasing and receiving verification
 - Updated the purchasing browser assertion to verify navigation destinations, including Receiving. The local purchasing browser suite passed with synthetic supplier responses.
 - The receiving browser test creates and confirms a local order from the Purchases UI, records a supplier invoice, resumes after an interrupted write, verifies stock quantities and rejects the same completed invoice. The manual receipt case also passed. Both cases ran at 1280×800 and 1440×900, with external requests blocked.

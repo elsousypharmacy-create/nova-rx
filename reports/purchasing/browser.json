@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "syntheticData": true,
+  "geometry": {
+    "width": 1280,
+    "scrollWidth": 1280,
+    "height": 800,
+    "scrollHeight": 800
+  },
+  "checks": [
+    "free-form Arabic days",
+    "read-only stock",
+    "real seller ids filtering",
+    "highest discount",
+    "split allocation",
+    "draft truthful status",
+    "cancel settings",
+    "invalidate allocations",
+    "tablet and phone layout"
+  ],
+  "errors": []
+}
