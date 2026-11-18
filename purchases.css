@@ -296,3 +296,16 @@ html body .controls .tools-pop #loadMock{color:#8896a4!important;font-size:13px!
  .workspace{min-height:calc(100dvh - 150px)!important}
  .panel,.cart{min-height:max(380px,calc(100dvh - 150px))!important}
 }
+
+/* UX-P20: steps as light pills (not a connected slab); scope is a plain status line with a dot */
+@media(min-width:801px){
+html body .controls{gap:8px!important;column-gap:8px!important}
+html body .controls .compact-title{margin:0 0 0 2px!important}
+html body .controls #openSettings,html body .controls #load,html body .controls #distribute{margin:0!important;min-height:36px!important;height:36px;padding:0 16px!important;border-radius:18px!important;background:transparent!important;border:1px solid #343b44!important;color:#cfd7de!important;font-size:14px!important;font-weight:600!important}
+html body .controls #openSettings{margin-inline-start:20px!important}
+html body .controls #openSettings:hover,html body .controls #load:hover{background:#20262d!important;border-color:#4a8aa6!important;color:#fff!important}
+html body .controls #distribute{background:#387e9e!important;border-color:#387e9e!important;color:#fff!important;font-weight:700!important}
+html body .controls #scopeChip{border:0!important;background:none!important;padding:0!important;margin:0 12px 0 0!important;color:#8896a4!important;font-size:13px!important}
+html body .controls #scopeChip::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#5fb27a;margin-inline-end:8px;vertical-align:middle}
+html body .controls #scopeChip[data-state=warn]::before{background:#e8c27a}
+}
