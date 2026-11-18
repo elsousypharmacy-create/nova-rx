@@ -10905,6 +10905,38 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script id="ux-p37-inv-per">document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-inv-per]');if(!b)return;window.__novaInvPer=b.getAttribute('data-inv-per');var t=document.querySelector('.nova-tab[data-page=invoices]');if(t)t.click();var nb=document.querySelector('[data-inv-per="'+window.__novaInvPer+'"]');if(nb)nb.focus();});</script>
+<script id="ux-p38-settings-sections">(function(){
+ var SECS=[['setup','تجهيز الصيدلية'],['general','عام'],['accounts','الحسابات والصلاحيات'],['devices','الطابعات والأجهزة'],['stock','التشغيلات والصلاحية'],['suppliers','الموردين'],['sync','الربط والمفاتيح'],['about','عن النظام']];
+ function secOf(c){var id=c.id,h=((c.querySelector('h2,h3,h4')||{}).textContent)||'';
+  if(id==='novaSetupCard'||id==='novaOnboardingCard')return 'setup';
+  if(id==='novaAuthCard')return 'accounts';if(id==='novaDevicesCard')return 'devices';if(id==='novaAboutCard')return 'about';
+  if(id==='novaBackendCard'||/API|التكاملات/.test(h))return 'sync';
+  if(c.querySelector('.nova-lang-switch')||/ضريبة/.test(h))return 'general';
+  if(/التشغيلات|الصلاحية/.test(h))return 'stock';if(/الموردين/.test(h))return 'suppliers';return 'general'}
+ function enhance(){var g=document.querySelector('#novaPageView .nova-settings-grid');if(!g||g.getAttribute('data-secs'))return;g.setAttribute('data-secs','1');
+  var cards=[].filter.call(g.children,function(c){return c.classList.contains('nova-setting-card')}),groups={};
+  cards.forEach(function(c){var s=secOf(c);c.setAttribute('data-sec',s);(groups[s]=groups[s]||[]).push(c)});
+  var wrap=document.createElement('div');wrap.className='nova-set-layout';g.parentNode.insertBefore(wrap,g);
+  var nav=document.createElement('nav');nav.className='nova-set-nav';nav.setAttribute('aria-label','أقسام الإعدادات');
+  SECS.forEach(function(s){var k=s[0];if(!groups[k])return;var hd=document.createElement('h2');hd.className='nova-set-sec';hd.id='set-sec-'+k;hd.textContent=s[1];g.appendChild(hd);groups[k].forEach(function(c){g.appendChild(c)});
+   var a=document.createElement('a');a.href='#set-sec-'+k;a.setAttribute('data-set-sec',k);a.textContent=s[1];nav.appendChild(a)});
+  wrap.appendChild(nav);wrap.appendChild(g);
+  if(nav.firstChild)nav.firstChild.setAttribute('aria-current','true');
+  nav.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-set-sec]');if(!a)return;e.preventDefault();
+   [].forEach.call(nav.querySelectorAll('[data-set-sec]'),function(x){x.removeAttribute('aria-current')});a.setAttribute('aria-current','true');try{a.scrollIntoView({inline:'nearest',block:'nearest'})}catch(_){}
+   var t=document.getElementById('set-sec-'+a.getAttribute('data-set-sec'));if(t){t.setAttribute('tabindex','-1');t.focus({preventScroll:true});var sc=document.getElementById('novaPageView');if(sc){var navH=getComputedStyle(nav).flexDirection==='row'?nav.offsetHeight:0;var top=t.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-navH-12;sc.scrollTo({top:top})}else t.scrollIntoView({block:'start'})}});
+ }
+ function place(){var g=document.querySelector('#novaPageView .nova-settings-grid[data-secs]');if(!g)return;var nav=g.parentNode.querySelector('.nova-set-nav');
+  [].forEach.call(g.children,function(c){if(!c.classList.contains('nova-setting-card')||c.getAttribute('data-sec'))return;var k=secOf(c);c.setAttribute('data-sec',k);
+   var hd=document.getElementById('set-sec-'+k);
+   if(!hd){var idx=-1;SECS.forEach(function(s,i){if(s[0]===k)idx=i});hd=document.createElement('h2');hd.className='nova-set-sec';hd.id='set-sec-'+k;hd.textContent=SECS[idx][1];
+    var next=null;for(var i=idx+1;i<SECS.length&&!next;i++)next=document.getElementById('set-sec-'+SECS[i][0]);g.insertBefore(hd,next);g.insertBefore(c,next);
+    if(nav){var a=document.createElement('a');a.href='#set-sec-'+k;a.setAttribute('data-set-sec',k);a.textContent=SECS[idx][1];var na=null;for(var j=idx+1;j<SECS.length&&!na;j++)na=nav.querySelector('[data-set-sec="'+SECS[j][0]+'"]');nav.insertBefore(a,na)}
+   }else{var end=hd.nextElementSibling;while(end&&!end.classList.contains('nova-set-sec'))end=end.nextElementSibling;g.insertBefore(c,end)}
+  })}
+ var gObs=null;function hook(){enhance();var g=document.querySelector('#novaPageView .nova-settings-grid[data-secs]');if(!g&&gObs){gObs.disconnect();gObs=null;hook.g=null}if(g&&window.MutationObserver&&g!==hook.g){hook.g=g;if(gObs)gObs.disconnect();gObs=new MutationObserver(place);gObs.observe(g,{childList:true})}place()}
+ var v=document.getElementById('novaPageView');if(v&&window.MutationObserver)new MutationObserver(hook).observe(v,{childList:true});hook();
+})();</script>
 <style id="ux-p30-receiving">
 /* UX-P30 receiving page */
 .rcv{display:flex;flex-direction:column;gap:16px;max-width:1200px;margin:0 auto;width:100%}
@@ -11066,7 +11098,23 @@ html body #checkoutModal:not(:has([data-method=card].active,[data-method=split].
 html body #checkoutModal .modal-footer{display:flex!important;align-items:center;gap:8px!important;flex-wrap:wrap}
 html body #checkoutModal .modal-footer #checkoutAllocation{flex-basis:100%}
 html body #checkoutModal #btnConfirmPayment{flex:1 1 auto;min-height:48px!important;padding:0 18px!important;font-size:16px!important;font-weight:800!important;justify-content:center}
-html body #checkoutModal #btnCancelCheckout{flex:none;min-height:48px!important}/* chips / filters */
+html body #checkoutModal #btnCancelCheckout{flex:none;min-height:48px!important}/* UX-P38 settings: side menu of sections, setup first */
+html body #novaPageView .nova-set-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}
+html body #novaPageView .nova-set-nav{position:sticky;top:0;z-index:2;display:flex;flex-direction:column;gap:2px;padding:8px;background:#111418;border:1px solid #2a313a;border-radius:12px}
+html body #novaPageView .nova-set-nav a{padding:9px 12px;border-radius:8px;color:#aab1bb;font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap}
+html body #novaPageView .nova-set-nav a:hover{background:#20262d;color:#e6eaee}
+html body #novaPageView .nova-set-nav a[aria-current]{background:#1d3340;color:#bfe3f2;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)}
+html body #novaPageView .nova-set-nav a:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+html body #novaPageView .nova-set-layout>.nova-settings-grid{margin:0!important;min-width:0}
+html body #novaPageView .nova-set-sec{grid-column:1/-1;margin:18px 0 0!important;padding:0 0 6px;font-size:17px!important;font-weight:700!important;color:#e6eaee;border-bottom:1px solid #20262d;scroll-margin-top:12px;outline:none}
+html body #novaPageView .nova-set-sec:first-child{margin-top:0!important}
+@media (max-width:900px){
+ html body #novaPageView .nova-set-layout{grid-template-columns:1fr;gap:12px}
+ html body #novaPageView .nova-set-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding:6px}
+ html body #novaPageView .nova-set-nav::-webkit-scrollbar{display:none}
+ html body #novaPageView .nova-set-nav a{flex:none;min-height:40px;display:inline-flex;align-items:center}
+}
+/* chips / filters */
 html body :is(.chip,.nova-stock-chip){min-height:32px!important;height:32px;padding:0 12px!important;border-radius:16px!important;font-size:13px!important;font-weight:600!important;background:#171b20!important;border:1px solid var(--ui-in-b)!important;color:#cfd7de!important;display:inline-flex!important;align-items:center;gap:6px}
 html body :is(.chip[aria-pressed=true],.nova-stock-chip.active){background:var(--ui-soft)!important;border-color:var(--ui-accent)!important;color:var(--ui-soft-t)!important}
 /* titles */
