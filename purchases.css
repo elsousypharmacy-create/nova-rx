@@ -330,3 +330,7 @@ html body .controls #scopeChip[data-state=warn]::before{background:#e8c27a}
  .workspace:has(.cart #groups>.empty){grid-template-columns:minmax(0,1fr)!important}
  .workspace:has(.cart #groups>.empty) .cart{display:none!important}
 }
+
+/* UX-P21b: kill the legacy full-width row break pseudo-element */
+@media(min-width:801px){html body .controls::before,html body .controls::after{display:none!important;content:none!important}}
+
