@@ -180,3 +180,13 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
  .cart-footer{padding:14px 16px;gap:10px}
  th,td{padding:12px 14px}
 }
+
+/* UX-P9: slimmer top bar, less wasted space above the content */
+@media(min-width:801px){
+ .app{grid-template-rows:48px minmax(0,1fr)!important}
+ .nova-topbar{padding:0 12px!important;min-height:0!important}
+ .nova-topbar .brand{min-height:36px!important}
+ .nova-topbar nav a{min-height:36px!important;padding:6px 12px!important}
+ main{padding:12px 30px 20px!important}
+ .controls{margin-bottom:12px!important}
+}
