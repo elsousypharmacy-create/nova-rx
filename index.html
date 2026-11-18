@@ -6158,6 +6158,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
  }
  const enExtra={
+"تعذر قراءة بيانات الاستلام. راجع مساحة التخزين ثم أعد المحاولة.":"Receipt data could not be read. Check storage space and retry.",
 "مراجعة الاستلام":"Review receipt",
 "مراجعة فروق الاستلام":"Review receipt differences",
 "سبق استلامه":"Previously received",
@@ -11630,9 +11631,10 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         if (!reason) throw new Error('reason-required');
         if (!window.confirm('تأكيد إنهاء الطلبية وإلغاء الكمية التي لم تصل؟')) return;
         await window.novaStock.withLock(() => {
+          const currentActor = actionActor('purchases.manage');
           if (receipts().some(row => row.poId === id && row.pending)) throw new Error('pending-receipt');
           const store = window.NovaPurchaseOrders.createStore(localStorage, window.NovaStockLedger.createLedger(localStorage));
-          store.closeRemaining(id, { id: operationId, reason, version: po.history.length }, { confirmed: true, by: actor.id });
+          store.closeRemaining(id, { id: operationId, reason, version: po.history.length }, { confirmed: true, by: currentActor.id });
         });
         view.close(); render(); toast('تم إنهاء الطلبية وإلغاء الباقي');
       } catch (error) { view.overlay.querySelector('#rcvCloseError').textContent = errorText(error); }
@@ -11642,6 +11644,13 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
 
   var host = null;
   function render(view) {
+    host = view || host;
+    try { return renderContent(host); }
+    catch (_) {
+      if (host) host.innerHTML = '<div class="rcv"><p role="alert">تعذر قراءة بيانات الاستلام. راجع مساحة التخزين ثم أعد المحاولة.</p><button type="button" class="rcv-btn" data-rcv="retry">إعادة المحاولة</button></div>';
+    }
+  }
+  function renderContent(view) {
     host = view || host; if (!host) return;
     var receiptsList = receipts().slice().reverse(), all = receiptsList.filter(r => !r.pending), pending = receiptsList.filter(r => r.pending), pos = pendingPOs(), t = today();
     var todays = all.filter(function (r) { return String(r.at || '').slice(0, 10) === t; });
@@ -11869,6 +11878,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     else if (a.hasAttribute('data-rcv-order')) openOrder(a.dataset.rcvOrder);
     else if (a.hasAttribute('data-rcv-moves')) openMovements(a.dataset.rcvMoves);
     else if (a.hasAttribute('data-rcv-close-rest')) closeRemaining(a.dataset.rcvCloseRest);
+    else if (a.getAttribute('data-rcv') === 'retry') render();
     else if (a.getAttribute('data-rcv') === 'new') openForm();
     else if (a.getAttribute('data-rcv') === 'photo') openPhoto();
     else if (a.hasAttribute('data-rcv-resume')) {

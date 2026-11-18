@@ -59,6 +59,11 @@ for (let failure = 1; failure <= 6; failure++) {
   f.storage.setItem = (key, value) => { if (++attempts === failure) throw Error('disk'); write(key, value); };
   f.storage.removeItem = key => { if (++attempts === failure) throw Error('disk'); remove(key); };
   assert.throws(() => Ops.correct(f.storage, f.request, f.context), /disk/);
+  if (f.storage.getItem(Ops.KEYS.journal)) {
+    assert.equal(JSON.parse(Ops.readRaw(f.storage, Ops.KEYS.lots))[0].qty, 3);
+    assert.equal(JSON.parse(Ops.readRaw(f.storage, Ops.KEYS.orders))[0].lines[0].received, 3);
+    assert.throws(() => f.ledger.append({ kind: 'sale', code: 'A', qty: 1, ref: 'UNLOCKED' }), /receipt-recovery-required/);
+  }
   f.storage.setItem = write; f.storage.removeItem = remove;
   Ops.correct(f.storage, f.request, f.context);
   assert.equal(f.ledger.onHand('A'), 3);
