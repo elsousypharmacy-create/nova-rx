@@ -596,3 +596,42 @@ html body .nova-topbar .nova-demo-label{font-size:13px;color:#8f98a3;background:
 @media (max-width:800px){html body .nova-topbar .nova-demo-label{display:none}}
 html body .nova-topbar .pharmacy-banner-live.off b{background:#e8c27a;box-shadow:0 0 0 3px rgba(232,194,122,.15)}
 @media (pointer:coarse){html body .nova-topbar .nova-refresh-icon{width:44px;height:44px}}
+
+/* UX-P37 offers window: summary line + one table of offers */
+dialog#offers{width:min(980px,96vw)!important;max-width:980px!important}
+#offerRows .sc2{background:#10201a;border:1px solid #1f4a37;border-radius:12px;padding:10px 14px;margin:0 0 12px;display:flex;flex-direction:column;gap:4px}
+#offerRows .sc2-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#offerRows .sc2-lbl{font-weight:700;color:#cfe9dc;font-size:14px}
+#offerRows .sc2-save{margin-inline-start:auto;font-size:13px;font-weight:700}
+#offerRows .sc2-main{margin:0;font-size:13px;color:#b8c2cc;line-height:1.7}
+#offerRows .sc2-more>summary{cursor:pointer;color:#76b8d5;font-size:13px;font-weight:600}
+#offerRows .sc2-more p{margin:6px 0 0;font-size:13px;color:#8896a4;line-height:1.7}
+#offerRows .of-table{border:1px solid #2d343c;border-radius:12px;overflow:hidden;background:#151a1f}
+#offerRows .of-head,#offerRows .of-row{display:grid;grid-template-columns:minmax(0,2.4fr) 70px 100px 100px 70px 90px 140px;gap:10px;align-items:center;padding:10px 14px}
+#offerRows .of-head{font-size:12px;font-weight:700;color:#8896a4;border-bottom:1px solid #2a313a;background:#111418}
+#offerRows .of-row{margin:0!important;border:0!important;border-bottom:1px solid #20262d!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#offerRows .of-row:last-child{border-bottom:0!important}
+#offerRows .of-row.of-best{background:#0f1a15!important}
+#offerRows .of-row.of-best .of-disc{color:#7fd3ac;font-weight:800}
+#offerRows .of-row.of-off{opacity:.55}
+#offerRows .of-row.of-off .of-ex{opacity:1}
+#offerRows .of-who{display:flex;flex-direction:column;gap:2px;min-width:0}
+#offerRows .of-who b{font-size:14px}
+#offerRows .of-who small{font-size:12px;color:#8896a4;line-height:1.6}
+#offerRows .of-who small.warning{color:#f0d9a0}
+#offerRows .of-c{font-size:14px;font-variant-numeric:tabular-nums}
+#offerRows .of-price b{font-size:15px}
+#offerRows .of-qty input{width:72px!important;height:36px!important;min-height:36px!important;text-align:center;margin:0!important}
+#offerRows .of-qty label{margin:0!important}
+#offerRows .of-act{display:flex;gap:6px;justify-content:flex-end}
+#offerRows .of-act button{height:34px!important;min-height:34px!important;padding:0 12px!important;font-size:13px!important;width:auto!important;margin:0!important}
+#offerRows .split-editor-actions{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+#offerRows .split-editor-actions #splitEditStatus{flex-basis:100%;margin:0;text-align:end}
+@media (max-width:760px){
+ #offerRows .of-head{display:none}
+ #offerRows .of-row{grid-template-columns:1fr 1fr;row-gap:6px}
+ #offerRows .of-who,#offerRows .of-act{grid-column:1/-1}
+ #offerRows .of-c[data-label]::before{content:attr(data-label) ": ";color:#8896a4;font-size:12px}
+ #offerRows .of-act{justify-content:stretch}#offerRows .of-act button{flex:1}
+}
+@media (pointer:coarse){#offerRows .of-act button{min-height:44px!important;height:44px!important;min-width:44px}}
