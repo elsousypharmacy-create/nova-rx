@@ -6,6 +6,7 @@ Last updated: 2026-11-16 (UX-AHMED). App merge @ bb4eb4d. Index of the present s
 Nothing new for you here or on #87? Stop and report IDLE. Governance (owner, 2026-11-11): only two Claude sessions work here; ChatGPT, Gemini, Kimi and Grok are out (old instructions: docs/archive/retired-agents/, not active).
 
 ## Priorities (newest first)
+- Sale stickers: branch `ux/sticker-print-ready` implements direct printing of ready labels from the instructions screen. Owner review and release are pending.
 - UX-AHMED: PR #537 merged bb4eb4d after exact-head independent review + all 5 CI PASS. Preview deployed run 43941072035; SHA256 a14f7676d19d6e7a297a5f197d618d96ba21ceec52ce75cf082846d708d06df5. Live browser verified search, split checkout, clear confirmation and purchases UI; no sale saved. WhatsApp unchanged. Physical keyboard/printer untested.
 1. **Sale readiness (2026-11-15): sell today from preview/app.** Operator guide: docs/ops/SALE_DAY.md (Arabic). Cloud queue tasks SALE-01–06 and UX3xx/UX4xx run via the cloud scheduler (state: .nova/cloud-queue.json; scheduler opens PRs and squash-merges on green CI).
 2. Merged on main (not necessarily deployed to preview): UX420 design tokens, UX421/UX422 Black Edition pages, UX400 conversations without PIN on staging/preview (production PIN still required), SALE-02 VAT default 14% + static assets + demo text hidden, UX323/UX324 sticker and emergency-sales fixes.
