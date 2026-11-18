@@ -41,7 +41,7 @@ jobs:
         run: NOVA_RECEIVING_URL=http://127.0.0.1:8766 node tests/ux/receiving-resume.mjs
       - name: Prepare receiving comparison baseline
         run: |
-          git fetch --depth=1 origin ux/resume-receiving
+          git fetch --depth=1 origin main
           git show FETCH_HEAD:index.html > receipt-before.html
       - name: Receiving review, corrections and remaining quantities
         run: NOVA_RECEIVING_URL=http://127.0.0.1:8766 node tests/ux/receiving-controls.mjs

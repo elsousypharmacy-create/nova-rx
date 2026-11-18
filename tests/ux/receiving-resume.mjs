@@ -30,7 +30,7 @@ try {
     await page.locator('#novaOpsNav [data-page=receiving]').click();
     assert.equal(await page.locator('[data-rcv=new]:visible').count(), 1);
     await page.locator(linked ? '[data-rcv-po]' : '[data-rcv=new]').click();
-    await page.locator('#rcvSup').fill('Test supplier');
+    { const sup = page.locator('#rcvSup'); if (await sup.evaluate(e => e.readOnly)) assert.equal(await sup.inputValue(), 'Test supplier'); else await sup.fill('Test supplier'); } // linked to an order (#551): the supplier is the order's and read-only
     await page.locator('#rcvInv').fill('TEST-RESUME');
     const codes = ['6281001234567', '6281001234568'];
     for (const [index, code] of codes.entries()) {
@@ -70,7 +70,7 @@ try {
     assert.deepEqual(receipt, { pending: false, stock: [4, 4] });
     if (linked) assert.equal(await page.locator('[data-rcv-po]').count(), 0);
     await page.locator('[data-rcv=new]').first().click();
-    await page.locator('#rcvSup').fill('Test supplier');
+    { const sup = page.locator('#rcvSup'); if (await sup.evaluate(e => e.readOnly)) assert.equal(await sup.inputValue(), 'Test supplier'); else await sup.fill('Test supplier'); } // linked to an order (#551): the supplier is the order's and read-only
     await page.locator('#rcvInv').fill('TEST-RESUME');
     await page.locator('#rcvOk').click();
     await page.locator('#rcvMsg').getByText('اتسجلت قبل كده', { exact: false }).waitFor();
