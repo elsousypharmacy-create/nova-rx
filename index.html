@@ -10934,6 +10934,36 @@ html body #displayChangeDue{font-size:14px!important;font-weight:700}
 #novaPageView .nova-panel:has(.nova-return-btn)+.nova-empty-card{min-height:calc(100dvh - 240px)!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 #novaPageView .nova-panel:has(.nova-return-btn)+.nova-empty-card .btn{margin-top:10px}
 }
+/* UX-P17 explanatory text -> small "i" with a tooltip (source text stays in the DOM, visually hidden, so screen readers and tests still see it) */
+.nx-src{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:0!important;padding:0!important;border:0!important}
+.nx-i{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;justify-content:center;width:20px!important;height:20px!important;min-width:0!important;min-height:0!important;padding:0!important;margin-inline:8px 0;vertical-align:middle;border:1px solid #55616d;border-radius:50%;color:#a4adb7;font:italic 700 12px/1 Georgia,"Times New Roman",serif;cursor:help;-webkit-tap-highlight-color:transparent}
+html body .nx-i,html body #novaPageView .nx-i{width:20px!important;height:20px!important;min-width:0!important;min-height:0!important;padding:0!important}
+h1:has(+.nx-i),h2:has(+.nx-i),h3:has(+.nx-i),h4:has(+.nx-i){display:inline-block}
+.nx-i:hover,.nx-i:focus-visible{color:#fff;border-color:#76b8d5;background:#1d3340}
+.nx-i:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+.nx-i::after{content:attr(data-tip);position:absolute;z-index:60;top:calc(100% + 8px);inset-inline-start:-8px;width:max-content;max-width:min(320px,80vw);padding:10px 12px;background:#0e1216;border:1px solid #3a444e;border-radius:10px;color:#e8ecef;font:400 13px/1.7 Cairo,Tahoma,sans-serif;font-style:normal;text-align:start;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.5);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s}
+.nx-i:hover::after,.nx-i:focus-visible::after{opacity:1;visibility:visible}
 </style>
+<script id="NOVA_INFO_TIPS">(function(){
+ if(window.__novaInfoTips)return;window.__novaInfoTips=1;
+ var HEAD='h1,h2,h3,h4';
+ function tipBtn(host){var b=host.nextElementSibling;if(!(b&&b.classList&&b.classList.contains('nx-i'))){b=document.createElement('button');b.type='button';b.className='nx-i';b.setAttribute('aria-label','توضيح');b.textContent='i';host.insertAdjacentElement('afterend',b)}return b}
+ function setTip(b,t){if(b.getAttribute('data-tip')!==t)b.setAttribute('data-tip',t)}
+ function prevHost(s){var h=s.previousElementSibling;while(h&&h.classList&&h.classList.contains('nx-i'))h=h.previousElementSibling;return h}
+ function eligible(p){return p&&!p.id&&!p.querySelector('button,a,input,select')&&!p.closest('.nova-notice,.nova-stock-notice,[role=alert],dialog')&&(p.textContent||'').trim().length>0&&(p.textContent||'').indexOf('الفترة:')<0}
+ function scan(){
+  /* page subtitles: <h1>Title</h1><p>explanation</p> */
+  document.querySelectorAll('.nova-page-header h1,.nova-page-header h2').forEach(function(h){var p=h.nextElementSibling;if(p&&p.tagName==='P'&&eligible(p)){p.classList.add('nx-src');setTip(tipBtn(h),p.textContent.trim())}});
+  /* settings cards: heading followed by explanatory paragraphs */
+  document.querySelectorAll('.nova-setting-card').forEach(function(c){var h=c.querySelector(':scope > h2,:scope > h3,:scope > h4');if(!h)return;var ps=[].filter.call(c.querySelectorAll(':scope > p'),eligible);if(!ps.length)return;ps.forEach(function(p){p.classList.add('nx-src')});setTip(tipBtn(h),ps.map(function(p){return p.textContent.trim()}).join('\n'))});
+  /* sale screen: small helper lines */
+  document.querySelectorAll('.discount-title > span:nth-child(2),.discount-title > span.nx-src').forEach(function(s){var h=prevHost(s);if(h&&(s.textContent||'').trim()){s.classList.add('nx-src');setTip(tipBtn(h),s.textContent.trim())}});
+  document.querySelectorAll('.nova-auth-help').forEach(function(s){var h=s.parentElement&&s.parentElement.querySelector('h2,h3,h4,strong');if(h&&(s.textContent||'').trim()){s.classList.add('nx-src');setTip(tipBtn(h),s.textContent.trim())}});
+  document.querySelectorAll('.customer-empty-sub').forEach(function(s){var h=prevHost(s);if(h&&h.tagName!=='svg'&&(s.textContent||'').trim()){s.classList.add('nx-src');setTip(tipBtn(h),s.textContent.trim())}});
+ }
+ var t=0;function later(){clearTimeout(t);t=setTimeout(scan,120)}
+ function start(){scan();try{new MutationObserver(later).observe(document.body||document.documentElement,{childList:true,subtree:true,characterData:true})}catch(e){}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();</script>
 </html>
 
