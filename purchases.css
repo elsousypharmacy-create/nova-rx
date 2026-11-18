@@ -227,4 +227,19 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
  #review:disabled{background:#20262d!important;border-color:#343b44!important;color:#6b7785!important;opacity:1}
  .controls #scopeChip{margin-top:-4px}
 }
+/* UX-P11: no big header box, filter bar on top of the table, roomier rows for data entry */
+@media(min-width:801px){
+ .controls{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important;margin-bottom:12px!important;row-gap:10px!important}
+ .controls #scopeChip{flex:1 1 240px!important;margin:0 18px 0 0!important}
+ main{padding:12px 30px 20px!important}
+ .workspace{min-height:calc(100dvh - 200px)!important}
+ .panel,.cart{min-height:max(380px,calc(100dvh - 200px))!important}
+ .panel-head{padding:14px 18px!important}
+ .products .panel-tools{flex:1;justify-content:flex-start;gap:12px}
+ .products .panel-tools #search{order:-1;width:340px!important;min-height:44px}
+ .products .panel-head h2{white-space:nowrap}
+ thead th{white-space:nowrap;padding-inline:12px}
+ tbody tr td{height:56px;padding-block:8px}
+ [data-action=qty]{min-width:84px;min-height:42px}
+}
 
