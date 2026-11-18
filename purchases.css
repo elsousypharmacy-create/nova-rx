@@ -492,3 +492,23 @@ html body .products .panel-tools>#chips,html body .products .panel-tools>.cover,
 html body .products .panel-tools>#search{flex:1 1 160px!important;min-width:140px!important;width:auto!important}
 html body .products .cover-btn{white-space:nowrap}
 html body .products #chips{flex-wrap:nowrap!important;white-space:nowrap}
+/* UX-P29 nav: العمليات groups المشتريات + استلام الطلبيات + المخزون */
+.nova-ops{display:inline-flex;flex:none}
+.nova-ops>summary{list-style:none;cursor:pointer;display:inline-flex!important;align-items:center;gap:6px;white-space:nowrap}
+.nova-ops>summary::-webkit-details-marker{display:none}
+.nova-ops>summary::before{content:"";width:12px;height:12px;order:2;background:currentColor;opacity:.7;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .15s}
+.nova-ops[open]>summary::before{transform:rotate(180deg)}
+.nova-ops-pop{position:fixed;z-index:1000;width:290px;display:flex;flex-direction:column;gap:2px;padding:6px;background:#171b20;border:1px solid #2d343c;border-radius:12px;box-shadow:0 14px 40px #000a}
+.nova-ops-pop>.nova-ops-item{all:unset;box-sizing:border-box;display:flex!important;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 10px;border-radius:9px;cursor:pointer;color:#dfe5ea;text-decoration:none;text-align:start;background:none!important;box-shadow:none!important}
+.nova-ops-pop>.nova-ops-item::after{display:none!important}
+.nova-ops-pop>.nova-ops-item:hover,.nova-ops-pop>.nova-ops-item:focus-visible{background:#20262d!important}
+.nova-ops-pop>.nova-ops-item.active,.nova-ops-pop>.nova-ops-item[aria-current]{background:#16232b!important;color:#fff}
+.nova-ops-pop .ops-ico{flex:none;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:#1d3340;color:#8fcbe4}
+.nova-ops-pop .ops-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.nova-ops-pop .ops-txt b{font-size:14px;font-weight:700}
+.nova-ops-pop .ops-txt small{font-size:12px;color:#8896a4;font-weight:500}
+html body .nova-topbar nav .nova-ops>summary{position:relative;padding:6px 10px;font-size:13px;font-weight:700;border-radius:10px;color:#a4adb7}
+html body .nova-topbar nav .nova-ops>summary:hover{background:#252b32;color:#e6eaee}
+html body .nova-topbar nav .nova-ops>summary[aria-current]{background:#1d3340;color:#bfe3f2;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)}
+html body .nova-topbar nav .nova-ops-pop a.nova-ops-item{padding:8px 10px!important;font-size:inherit!important;border:0!important}
+html body .nova-nav:has(.nova-ops[open]),html body .nova-topbar nav:has(.nova-ops[open]){-webkit-mask-image:none!important;mask-image:none!important}
