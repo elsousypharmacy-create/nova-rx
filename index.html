@@ -10926,6 +10926,14 @@ html body :is(#btnCancelCheckout,#btnPrintReceiptBtn,#btnReprintReceipt,#btnExpo
 html body :is(.tot-row.grand-total span:first-child,.checkout-mock-note strong){font-size:15px!important;font-weight:700}
 html body #displayGrandTotal{font-size:20px!important;font-weight:700}
 html body #displayChangeDue{font-size:14px!important;font-weight:700}
+/* UX-P16 invoices: backup actions as a light toolbar (not a full panel), empty state fills the page */
+@media(min-width:801px){
+#novaPageView .nova-panel:has(.nova-return-btn){background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 12px!important;display:flex!important;justify-content:flex-start;gap:8px;min-height:0}
+#novaPageView .nova-panel:has(.nova-return-btn) .nova-return-btn{height:36px!important;min-height:36px!important;padding:0 14px!important;font-size:13px!important;font-weight:600!important;background:transparent!important;border:1px solid #2a313a!important;color:#a9b5c2!important}
+#novaPageView .nova-panel:has(.nova-return-btn) .nova-return-btn:hover{background:#20262d!important;color:#e6eaee!important}
+#novaPageView .nova-panel:has(.nova-return-btn)+.nova-empty-card{min-height:calc(100dvh - 240px)!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+#novaPageView .nova-panel:has(.nova-return-btn)+.nova-empty-card .btn{margin-top:10px}
+}
 </style>
 </html>
 
