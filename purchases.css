@@ -440,3 +440,32 @@ html body main td.empty{color:#cfd7de;font-size:15px}
 :root{--ic-store:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z'/%3E%3Cpath d='M6 18h12'/%3E%3Cpath d='M6 14h12'/%3E%3Crect x='6' y='10' width='12' height='12'/%3E%3C/svg%3E");--ic-refresh:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8'/%3E%3Cpath d='M21 3v5h-5'/%3E%3Cpath d='M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16'/%3E%3Cpath d='M8 16H3v5'/%3E%3C/svg%3E")}
 html body .controls #openSettings::before,html body .controls #load::before{width:18px!important;height:18px!important}
 html body .controls #load:disabled::before{animation:nxspin 1s linear infinite}
+/* UX-P27: simple suppliers & stores window - choices first, advanced (PIN, session, status) folded */
+dialog#settings{width:min(460px,94vw)!important;max-width:460px!important;border:1px solid #2a313a!important;border-radius:16px!important;background:#111418!important;padding:0!important;box-shadow:0 24px 80px #000a}
+dialog#settings .dialog-head{padding:16px 18px!important;border-bottom:1px solid #20262d}
+dialog#settings .dialog-head h2{font-size:17px!important;font-weight:700}
+dialog#settings .qs{padding:14px 18px!important;display:flex;flex-direction:column;gap:10px;max-height:min(66dvh,560px);overflow:auto}
+dialog#settings .qs-h{margin:0;font-size:13px!important;font-weight:700;color:#8896a4}
+dialog#settings .qs-sup{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+dialog#settings .qs-sup .check{margin:0;min-height:44px;padding:0 12px;border:1px solid #2a313a;border-radius:10px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer}
+dialog#settings .qs-sup .check:has(input:checked){border-color:#387e9e;background:#16232b}
+dialog#settings .qs-sup .check span{margin-inline-start:auto;font-size:12px;color:#8896a4;font-weight:500}
+dialog#settings .qs-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+dialog#settings .qs-tools{display:flex;gap:6px;align-items:center}
+dialog#settings .qs-tools #sellerSearch{flex:1;min-height:38px!important;height:38px;margin:0!important}
+dialog#settings .qs-mini{min-height:34px!important;height:34px;padding:0 12px!important;font-size:13px!important;font-weight:600;border-radius:9px!important;width:auto!important;margin:0!important}
+dialog#settings #sellers{display:flex;flex-direction:column;border:1px solid #20262d;border-radius:10px;max-height:260px;overflow:auto}
+dialog#settings #sellers .check{margin:0;min-height:44px;padding:0 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1a1f25;font-size:14px;cursor:pointer}
+dialog#settings #sellers .check:last-child{border-bottom:0}
+dialog#settings #sellers .check:has(input:checked){background:#0e161b}
+dialog#settings #sellers>p{margin:0;padding:14px;color:#8896a4;font-size:13px}
+dialog#settings #excludedSummary{margin:0;font-size:13px;color:#8896a4}
+dialog#settings .qs-adv{border-top:1px solid #20262d;padding-top:10px;margin-top:4px}
+dialog#settings .qs-adv>summary{cursor:pointer;color:#76b8d5;font-size:13px;font-weight:600;list-style:none}
+dialog#settings .qs-adv>summary::-webkit-details-marker{display:none}
+dialog#settings .qs-adv>summary::after{content:" ▾"}
+dialog#settings .qs-adv[open]>summary::after{content:" ▴"}
+dialog#settings .qs-adv>*:not(summary){margin-top:10px}
+dialog#settings .qs-adv p,dialog#settings .qs-adv small,dialog#settings .qs-adv .hint{font-size:13px;color:#8896a4}
+dialog#settings .dialog-actions{padding:12px 18px!important;border-top:1px solid #20262d}
+dialog#settings #saveSettings{width:100%;min-height:44px}
