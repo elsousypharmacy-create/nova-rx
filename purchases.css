@@ -279,3 +279,20 @@ html[data-nx-page=purchases] #receiveInvoice{color:var(--text)!important}
 html body .controls .tools-pop :is(#openSupplierCarts,a#receiveInvoice,#openPo,#loadMock){display:flex;align-items:center;justify-content:flex-start;width:100%;min-height:40px;margin:0!important;padding:6px 12px;text-align:start;background:transparent!important;border:1px solid transparent!important;color:#e6eaee!important;font-size:14px!important;font-weight:600!important;order:0}
 html body .controls .tools-pop :is(#openSupplierCarts,a#receiveInvoice,#openPo,#loadMock):hover{background:#20262d!important}
 html body .controls .tools-pop #loadMock{color:#8896a4!important;font-size:13px!important}
+
+/* UX-P19: steps as one compact icon row with the title; explanations become the i tip */
+.sr-only-lite{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#status:not(.warning),#coverageHint,#tableHint,.cart-footer>small{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
+#statusTip.warn::before{border-color:#e8c27a;color:#e8c27a}
+@media(min-width:801px){
+ .controls{row-gap:0!important;margin-bottom:14px!important;align-items:center!important}
+ .controls #statusTip{order:1;margin:-12px 0!important;margin-inline-start:2px!important}
+ .controls #openSettings,.controls #load,.controls #distribute{min-width:0!important;min-height:40px!important;padding:0 18px!important;font-size:14px!important;margin-inline-start:-1px}
+ .controls #openSettings{margin-inline-start:16px!important}
+ .controls #distribute small{display:none}
+ .controls #scopeChip{order:7!important;flex:0 1 auto!important;margin:0 14px 0 0!important;padding:5px 12px!important;border:1px solid #2a313a!important;border-radius:999px!important;background:#14181d!important;font-size:13px!important;white-space:nowrap!important}
+ .controls #scopeChip:empty{display:none}
+ .controls .tools-menu{order:9;margin-inline-start:auto}
+ .workspace{min-height:calc(100dvh - 150px)!important}
+ .panel,.cart{min-height:max(380px,calc(100dvh - 150px))!important}
+}

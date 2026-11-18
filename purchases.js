@@ -17,7 +17,7 @@ const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
 let offerCacheHits=0;
 const offerSearch=createOfferSearch({request:async(query,opts)=>{const r=await provider().search(query,opts);return {rows:(r.results||[]).flatMap(x=>x.offers||[]),suppliers:r.suppliers||[],complete:opts.supplierIds.length>0&&opts.supplierIds.every(id=>(r.suppliers||[]).some(s=>s.id===id&&s.state==='ok'))};}});
 
-function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);}
+function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);const tp=$('statusTip');if(tp){tp.setAttribute('data-tip',text);tp.classList.toggle('warn',!!error);}}
 function scopeView(){
  const chip=$('scopeChip');if(!chip)return;
  const a=prefs.suppliers.includes('aumet'),p=prefs.suppliers.includes('pharmaoverseas'),n=prefs.aumetSellers.length,parts=[];
