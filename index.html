@@ -10920,6 +10920,12 @@ body .btn-secondary:hover:not(:disabled){background:#29313a!important}
 #novaPageView #novaDupes,#novaPageView #novaDupes *{font-size:13px}
 #novaPageView table th,.nova-page-view table th{font-size:13px}
 #novaPageView .nova-kpi-delta[data-dir=up]{color:#3ddc84}#novaPageView .nova-kpi-delta[data-dir=down]{color:#ff8a8f}
+/* UX-P14 one type scale for the whole app (same as purchases): 23 title / 17 section / 15 card / 14 body+controls / 13 meta; nothing below 13 */
+html body :is(th,small,kbd,.kbd-hint,.nova-sale-number,.nova-held-count,#totalItemsCount,#displaySubtotal,#displayVatLabel,#displayVat,.sidebar-title,.customer-empty-sub,#btnAttachLoyalty,.checkout-mock-note,#modalCustomerInfo,.nova-checkout-customer,.quick-cash-btn,.nova-receipt-width-btn,.nova-printer-toggle,.nova-stock-notice,.nova-product-en-name,.nova-sale-labels,.tot-row span:not(#displayGrandTotal),#novaStockNotice,#btnDismissHelp kbd,.nova-demo-label,.pharmacy-banner-copy span,.nova-held-action span,.discount-title,.discount-title+*,.input-grp label,.input-grp span,.checkout-amount-display .label,.change-due-box .title,.nova-setting-card p,[id*="heckout"] label,[class*="checkout"] label){font-size:13px!important}
+html body :is(#btnCancelCheckout,#btnPrintReceiptBtn,#btnReprintReceipt,#btnExportReceiptPdf,#btnReceiptNewSale,#btnDismissHelp,#btnAttachLoyalty,.quick-cash-btn,.nova-checkout-customer){font-size:14px!important}
+html body :is(.tot-row.grand-total span:first-child,.checkout-mock-note strong){font-size:15px!important;font-weight:700}
+html body #displayGrandTotal{font-size:20px!important;font-weight:700}
+html body #displayChangeDue{font-size:14px!important;font-weight:700}
 </style>
 </html>
 
