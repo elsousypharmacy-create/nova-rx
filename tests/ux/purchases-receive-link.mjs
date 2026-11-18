@@ -16,7 +16,7 @@ try {
   const page = await context.newPage(), errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   await page.goto(BASE + 'purchases.html');
-  const link = page.locator('#receiveInvoice');
+  await page.evaluate(()=>{const m=document.querySelector('.tools-menu');if(m)m.open=true}); const link = page.locator('#receiveInvoice');
   assert.equal((await link.innerText()).trim(), 'استلام فاتورة');
   assert.ok((await link.boundingBox()).height >= 44, 'receive button >=44px');
   let clicks = 0;
