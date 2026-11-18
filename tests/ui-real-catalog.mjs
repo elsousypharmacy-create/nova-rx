@@ -129,7 +129,11 @@ await t('scanning a hostile-named item by barcode or by code never runs its mark
     await page.locator('#mainSearchInput').fill(q); await page.waitForTimeout(350);
     if (await page.evaluate(() => document.querySelector('#mainSearchInput').value) !== '') { await page.locator('#mainSearchInput').press('Enter'); await page.waitForTimeout(350); }
     assert.equal(await page.evaluate(() => window.__pwned), undefined, 'onerror ran after customer-mode scan ' + q);
-    assert.ok((await page.locator('.toast').innerText()).includes('<img src=x'), 'customer-mode toast shows the tag as text for ' + q);
+    const toast = await page.locator('.toast').innerText();
+    // Since «speed up new sales» (#546) Enter in customer mode links the ONE customer a query matches. «12345» is also a customer's number in the demo data,
+    // so it now links that customer (the hostile product is not scanned on that path); the product-scan toast stays covered by the first query.
+    if (q === '12345') assert.ok(toast.includes('تم ربط العميل') && !toast.includes('<'), 'a query that matches exactly one customer links it: ' + toast);
+    else assert.ok(toast.includes('<img src=x'), 'customer-mode toast shows the tag as text for ' + q);
   }
   await ctx.close();
 });
