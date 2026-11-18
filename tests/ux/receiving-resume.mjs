@@ -4,11 +4,16 @@ import assert from 'node:assert/strict';
 const origin = process.env.NOVA_RECEIVING_URL || 'http://127.0.0.1:8790';
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
 try {
-  for (const linked of [false, true]) {
-    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  for (const [linked, width, height] of [[false, 1280, 800], [true, 1280, 800], [false, 1440, 900], [true, 1440, 900]]) {
+    const context = await browser.newContext({ viewport: { width, height }, hasTouch: width === 1280 });
     await context.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
     const page = await context.newPage();
     page.on('dialog', dialog => dialog.accept());
+    if (!linked) {
+      await page.goto(origin + '/purchases.html');
+      await page.locator('#modeManual').click();
+      assert.ok(await page.locator('#search').evaluate(input => input === document.activeElement));
+    }
     await page.goto(origin + '/index.html#sale');
     await page.locator('#novaSplash').waitFor({ state: 'hidden' });
     if (linked) await page.evaluate(() => {
@@ -19,7 +24,8 @@ try {
     });
     await page.locator('#novaOpsNav summary').click();
     await page.locator('#novaOpsNav [data-page=receiving]').click();
-    await page.locator(linked ? '[data-rcv-po]' : '[data-rcv=new]').first().click();
+    assert.equal(await page.locator('[data-rcv=new]:visible').count(), 1);
+    await page.locator(linked ? '[data-rcv-po]' : '[data-rcv=new]').click();
     await page.locator('#rcvSup').fill('Test supplier');
     await page.locator('#rcvInv').fill('TEST-RESUME');
     const codes = ['6281001234567', '6281001234568'];
@@ -30,7 +36,10 @@ try {
         await row.locator('[data-f=q]').fill(code);
         await row.locator('[data-pick]').first().click();
       }
-      await row.locator('[data-f=qty]').fill('4');
+      const quantity = row.locator('[data-f=qty]');
+      await quantity.fill('4');
+      await quantity.press('Enter');
+      assert.ok(await row.locator('[data-f=exp]').evaluate(input => input === document.activeElement));
       await row.locator('[data-f=exp]').fill('2035-12');
       await row.locator('[data-f=cost]').fill('25');
     }
@@ -61,7 +70,7 @@ try {
     await page.locator('#rcvInv').fill('TEST-RESUME');
     await page.locator('#rcvOk').click();
     await page.locator('#rcvMsg').getByText('اتسجلت قبل كده', { exact: false }).waitFor();
-    console.log(linked ? 'PASS linked order resumes exactly once' : 'PASS manual receipt resumes exactly once');
+    console.log(`PASS ${width}×${height}: ${linked ? 'linked order' : 'manual receipt'} resumes exactly once`);
     await context.close();
   }
 } finally { await browser.close(); }

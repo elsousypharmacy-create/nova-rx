@@ -11194,7 +11194,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       appliedCount(r) + ' من ' + r.lines.length + '</span><button type="button" class="rcv-btn sm primary" data-rcv-resume="' +
       esc(r.id) + '">كمّل الاستلام</button></div></div>').join('') + '</section>';
     h += '<section class="rcv-sec"><div class="rcv-sec-h"><h2>آخر الاستلامات</h2><span class="rcv-count">' + all.length + '</span></div>';
-    if (!all.length) h += '<div class="rcv-empty">' + I.truck + '<b>لسه مفيش استلامات</b><span>لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.</span><button type="button" class="rcv-btn primary" data-rcv="new">' + I.plus + 'استلام فاتورة</button></div>';
+    if (!all.length) h += '<div class="rcv-empty">' + I.truck + '<b>لسه مفيش استلامات</b><span>لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.</span></div>';
     else h += '<div class="rcv-table"><div class="rcv-tr rcv-th"><span>التاريخ</span><span>المورد</span><span>رقم الفاتورة</span><span>الأصناف</span><span>الإجمالي</span></div>'
       + all.slice(0, 50).map(function (r) {
         return '<details class="rcv-row"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b>' + (r.poId ? ' <small class="rcv-po-ref">' + esc(r.poId) + '</small>' : '') + (r.warnings && r.warnings.length ? ' <small class="rcv-warn" title="' + esc(r.warnings.join('، ')) + '">⚠ ' + r.warnings.length + '</small>' : '') + '</span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
@@ -11280,7 +11280,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       var f = e.target.getAttribute('data-f'), i = lineOf(e.target); if (i < 0) return;
       e.preventDefault(); e.stopPropagation();
       if (f === 'q') { if (found[i] && found[i].length) pick(i, 0); return; }
-      var order = ['qty', 'lot', 'exp', 'cost'], nx = order[order.indexOf(f) + 1];
+      var nx = { qty: 'exp', lot: 'exp', exp: 'cost' }[f];
       if (nx) box.children[i].querySelector('[data-f=' + nx + ']').focus();
       else addLine();
     });

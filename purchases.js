@@ -228,7 +228,10 @@ $('days').value=prefs.days;levelView();modeView();
 $('days').addEventListener('change',rebuild);
 ['minimum','ideal'].forEach(level=>$(level).onclick=()=>{prefs.level=level;levelView();rebuild();});
 if($('modeAuto'))$('modeAuto').onclick=()=>setMode('auto');
-if($('modeManual'))$('modeManual').onclick=()=>setMode('manual');
+if($('modeManual'))$('modeManual').onclick=()=>{
+ setMode('manual');
+ $('search').focus();
+};
 if($('loadMock'))$('loadMock').onclick=loadMockData;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('distributionProgress').hidden){e.preventDefault();$('stopDistribute').click();}});
 $('stopDistribute').onclick=()=>{generation++;$('stopDistribute').disabled=true;$('progressProduct').textContent='جارٍ إيقاف المقارنة…';status('تم إيقاف المقارنة؛ النتائج المكتملة محفوظة. جارٍ إنهاء البحث الحالي إن وُجد.');};
