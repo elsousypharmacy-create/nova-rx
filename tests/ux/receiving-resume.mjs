@@ -9,19 +9,23 @@ try {
     await context.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
     const page = await context.newPage();
     page.on('dialog', dialog => dialog.accept());
-    if (!linked) {
-      await page.goto(origin + '/purchases.html');
+    await page.goto(origin + '/purchases.html');
+    if (linked) {
+      await page.locator('.tools-menu summary').click();
+      await page.locator('#openPo').click();
+      await page.locator('#poSupplier').fill('Test supplier');
+      await page.locator('#poLines').fill('6281001234567,4,25\n6281001234568,4,25');
+      await page.locator('#poCreate').click();
+      await page.locator('#poList [data-state="draft"]').getByRole('button', { name: 'إرسال', exact: true }).click();
+      await page.locator('#poList [data-state="sent"]').getByRole('button', { name: 'قبول المورد', exact: true }).click();
+      await page.locator('#poList [data-state="accepted"]').waitFor();
+      await page.locator('#closePo').click();
+    } else {
       await page.locator('#modeManual').click();
       assert.ok(await page.locator('#search').evaluate(input => input === document.activeElement));
     }
     await page.goto(origin + '/index.html#sale');
     await page.locator('#novaSplash').waitFor({ state: 'hidden' });
-    if (linked) await page.evaluate(() => {
-      const store = window.NovaPurchaseOrders.createStore(localStorage, window.NovaStockLedger.createLedger(localStorage, 'nova.stock.ledger'));
-      const po = store.create({ supplier: 'Test supplier', lines: ['6281001234567', '6281001234568'].map(code => ({ code, qty: 4, cost: 25 })) });
-      store.send(po.id, { confirmed: true });
-      store.accept(po.id, { confirmed: true });
-    });
     await page.locator('#novaOpsNav summary').click();
     await page.locator('#novaOpsNav [data-page=receiving]').click();
     assert.equal(await page.locator('[data-rcv=new]:visible').count(), 1);
