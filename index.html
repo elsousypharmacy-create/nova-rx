@@ -2,6 +2,21 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
+<style>
+.nova-stock-item{min-height:44px;border:0;background:transparent;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.nova-stock-item:hover{text-decoration:underline}
+.nova-stock-item:focus-visible{outline:2px solid #76b8d5}
+.nova-stock-details{box-sizing:border-box;width:min(760px,94vw);max-height:88dvh;overflow:auto;padding:20px;background:#171b20;color:#e8eef3;border:1px solid #343b44;border-radius:14px}
+.nova-stock-details::backdrop{background:#000a}
+.nova-stock-details header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.nova-stock-details h2{margin:0;font-size:21px}
+.nova-stock-details dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px}
+.nova-stock-details dl div{padding:10px;background:#232930;border-radius:8px}
+.nova-stock-details dd{margin:4px 0 0;font-weight:700}
+.nova-stock-details ul{list-style:none;margin:0;padding:0}
+.nova-stock-details li{display:flex;align-items:center;flex-wrap:wrap;gap:10px;justify-content:space-between;padding:8px;border-bottom:1px solid #343b44}
+.nova-stock-details li small{flex-basis:100%;color:#c2ccd6}
+</style>
 <style id="NOVA_SPLASH">
 #novaSplash{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-5);background:#08090b;color:#f1f3f5;opacity:1;transition:opacity .3s ease;pointer-events:none;direction:ltr}
 #novaSplash.out{opacity:0}
@@ -5617,6 +5632,82 @@ window.NovaFmt=(function(){
  }
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-stmt]');if(b)openStatement(b.getAttribute('data-stmt'))});
 function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'ok',en=localStorage.getItem('nova-rx-language')==='en',lb=en?(out?'Out':low?'Low':'In stock'):(out?'نفد':low?'منخفض':'متوفر'),ic=out?'\u2715':low?'\u26A0':'\u2713';return '<td class="pc-stock"'+(low||out?' data-low="1"':'')+' data-stock-state="'+st+'" data-label="'+(en?'Stock':'الرصيد')+'"><span class="nova-stock nova-stock-'+st+(low||out?' nova-low-badge':'')+'" role="img" aria-label="'+lb+': '+esc(n)+'" title="'+lb+'"><span class="nova-stock-ic" aria-hidden="true">'+ic+'</span><span class="nova-stock-n">'+esc(n)+'</span><span class="nova-stock-t">'+lb+'</span></span></td>'}window.novaStockChip=novaStockChip;
+ // Display recorded device movements without treating a price-only product as zero stock.
+ view.addEventListener('click', event => {
+  const trigger = event.target.closest('[data-stock-item]');
+  if (!trigger) return;
+  const key = trigger.dataset.stockItem;
+  const stock = window.novaStock;
+  const product = data().products.find(item => stock.keyOf(item) === key);
+  if (!product) return;
+  const lots = stock.lots(key);
+  const qty = value => Number.isFinite(value) ? String(Math.round(value * 1000) / 1000) : tr('غير مُدخل', 'Not entered');
+  const available = stock.available(key);
+  const reserved = stock.holds().filter(hold => hold.key === key).reduce((sum, hold) => sum + hold.qty, 0);
+  const onHand = lots.length ? lots.reduce((sum, lot) => sum + lot.onHand, 0) : available + reserved;
+  const records = storageKey => {
+   try {
+    const raw = window.NovaReceiptOperations?.readRaw(localStorage, storageKey) ?? localStorage.getItem(storageKey);
+    const entries = JSON.parse(raw || '[]');
+    return Array.isArray(entries) ? entries.filter(Boolean) : [];
+   } catch (_) { return []; }
+  };
+  const matches = line => stock.keyOf(line) === key || String(line.code || '') === key;
+  const incoming = records('nova.purchase.orders').filter(order => ['sent','accepted','partial'].includes(order.state))
+   .flatMap(order => order.lines || []).filter(line => String(line.code) === key)
+   .reduce((sum, line) => sum + Math.max(0, line.qty - (line.received || 0) - (line.cancelledQty || 0)), 0);
+  const movements = [];
+  for (const receipt of records('nova-rx-receipts-v1')) {
+   if (receipt.pending || !Array.isArray(receipt.lines)) continue;
+   for (const line of receipt.lines.filter(matches)) {
+    movements.push({ at: receipt.at, label: tr('استلام', 'Receipt'), ref: receipt.invoice, delta: line.qty });
+   }
+   for (const correction of receipt.corrections || []) {
+    for (const change of correction.changes || []) {
+     if (receipt.lines[change.index] && matches(receipt.lines[change.index])) movements.push({
+      at: correction.at, label: tr('تصحيح استلام', 'Receipt correction'), ref: receipt.invoice, delta: change.delta, reason: correction.reason
+     });
+    }
+   }
+  }
+  const sales = window.novaSales;
+  const returns = sales.returns();
+  for (const sale of sales.list()) {
+   sale.lines.forEach((line, index) => {
+    if (!matches(line)) return;
+    const factor = Number(line.unitFactor) || 1;
+    movements.push({ at: sale.at, label: tr('بيع', 'Sale'), ref: sale.number, delta: -line.qty / factor });
+    for (const returned of returns.filter(row => row.saleId === sale.id)) {
+     for (const item of returned.lines.filter(row => row.idx === index)) movements.push({
+      at: returned.at, label: tr('مرتجع', 'Return'), ref: sale.number, delta: item.qty / factor
+     });
+    }
+   });
+  }
+  movements.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+  const dialog = document.createElement('dialog');
+  dialog.className = 'nova-stock-details';
+  dialog.dir = document.documentElement.dir;
+  dialog.setAttribute('aria-labelledby', 'novaStockDetailsTitle');
+  const heading = (ar, en) => esc(tr(ar, en));
+  const displayNumber = value => esc(qty(value));
+  const entry = (label, value) => '<div><dt>'+label+'</dt><dd>'+displayNumber(value)+'</dd></div>';
+  dialog.innerHTML = '<header><h2 id="novaStockDetailsTitle">'+esc(product.name)+'</h2><button class="btn btn-secondary" type="button">'+heading('إغلاق','Close')+'</button></header>'+
+   '<dl>'+entry(heading('الرصيد الفعلي بالعلب','On hand in boxes'), onHand)+entry(heading('متاح للبيع','Available to sell'), Number.isFinite(available) ? Math.max(0, available) : available)+
+   entry(heading('محجوز','Reserved'), reserved)+entry(heading('في الطريق','Incoming'), incoming)+'</dl>'+
+   '<h3>'+heading('الكميات حسب الصلاحية','Quantities by expiry')+'</h3>'+
+   (lots.length ? '<ul>'+lots.map(lot => '<li><bdi>'+esc(lot.expiry)+'</bdi><b>'+displayNumber(lot.onHand)+'</b>'+
+    (lot.expired || lot.recalled ? '<span>'+heading('غير متاح للبيع','Unavailable for sale')+'</span>' : '')+'</li>').join('')+'</ul>' :
+    '<p>'+heading('لا توجد دفعات مسجلة','No recorded batches')+'</p>')+
+   '<h3>'+heading('آخر الحركات المسجلة على الجهاز','Recent movements on this device')+'</h3>'+
+   (movements.length ? '<ul>'+movements.slice(0,100).map(move => '<li><span>'+esc(move.label)+' <bdi>'+esc(move.ref)+'</bdi></span><b dir="ltr">'+
+    (move.delta > 0 ? '+' : '')+displayNumber(move.delta)+'</b><small><bdi>'+esc(move.at ? window.NovaFmt.formatDateTime(move.at) : '')+'</bdi> '+esc(move.reason || '')+'</small></li>').join('')+'</ul>' :
+    '<p>'+heading('لا توجد حركات مسجلة','No recorded movements')+'</p>');
+  dialog.querySelector('button').onclick = () => dialog.close();
+  dialog.addEventListener('close', () => { dialog.remove(); trigger.focus(); }, { once: true });
+  document.body.appendChild(dialog);
+  dialog.showModal();
+ });
  let novaStockFilter='all';
  function render(page,filter=''){
  if(page==='receiving'){if(window.novaReceiving)window.novaReceiving.render(view);else view.innerHTML='<p style="padding:24px">تعذر تحميل صفحة الاستلام</p>';return}
@@ -5656,13 +5747,13 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
  content=head(tr('المخزون','Stock')+' <small class="nova-inv-count">'+products.length.toLocaleString('en-US')+tr(' صنف',' items')+'</small>',real?tr('قائمة أسعار حقيقية من STOCK LIVE','Real price list from STOCK LIVE')+(when?' ('+tr('آخر تحديث ','Last updated ')+when+')':tr(' — وقت التحديث غير متاح',' — Update time unavailable'))+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false).replace(/<\/div>$/,'<div class="nova-products-toolbar nova-inv-tools"><span class="nova-search-wrap"><input class="nova-page-search" id="novaFilter" placeholder="ابحث بالاسم أو الباركود…" aria-label="بحث في المخزون"><button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span><button type="button" id="novaManualReceive" class="nova-inventory-action nova-inv-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg><span>استلام بضاعة</span></button><details class="nova-kebab nova-inv-more"><summary aria-label="أدوات المخزون" title="أدوات المخزون">⋯</summary><div class="nova-kebab-pop"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 9h8M8 12h8M8 15h5"/></svg><span>قراءة فاتورة مشتريات</span></button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span>طباعة استيكرات الأدوية</span></button><a href="#receiving" class="nova-inventory-action secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span>صفحة استلام الطلبيات</span></a></div></details></div></div>')
  +(real?'<div class="nova-inv-meta"><div class="nova-kpis nova-kpis-compact" id="novaProductsKpis">'+(q?kpi('نتيجة البحث',list.length):'')+nearKpi(products)+'</div><span class="nova-stock-notice" id="novaStockNotice" role="note">'+tr('الأسعار من STOCK LIVE · الرصيد غير متوفر من المصدر','Prices from STOCK LIVE · stock not available from the source')+'</span>'+dupBlock+'</div>'
  :'<div class="nova-kpis nova-kpis-prod">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',products.reduce((s,p)=>s+p.stock,0))+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(fAct==='low'?' active':'')+'" aria-pressed="'+(fAct==='low')+'" title="'+tr('نقص مسجّل','Logged shortages')+': '+window.novaShortages.list().length+' — '+tr('أقل من '+LOW_T+' وحدة؛ اضغط للتصفية','under '+LOW_T+' units; click to filter')+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(fTests.low).length+'</strong>'+(fAct==='low'?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+p.stock*p.price,0)))+nearKpi(products)+'</div>')
- +chipBar+(real?'':dupBlock)+trfBlock+(()=>{const cols=[['الصنف',p=>'<td class="pc-name" data-label="الصنف">'+nameOf(p)+'</td>'],['الباركود',p=>'<td dir="ltr" class="pc-bar" data-label="الباركود">'+hl(p.barcode,q)+'</td>'],['السعر',p=>'<td class="pc-price" data-label="السعر">'+money(p.price)+'</td>']];
+ +chipBar+(real?'':dupBlock)+trfBlock+(()=>{const cols=[['الصنف',p=>'<td class="pc-name" data-label="الصنف">'+'<button type="button" class="nova-stock-item" data-stock-item="'+esc(window.novaStock.keyOf(p))+'">'+nameOf(p)+'</button></td>'],['الباركود',p=>'<td dir="ltr" class="pc-bar" data-label="الباركود">'+hl(p.barcode,q)+'</td>'],['السعر',p=>'<td class="pc-price" data-label="السعر">'+money(p.price)+'</td>']];
  if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack class="pc-pack" data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
  if(!real){cols.push(['الرصيد',p=>window.novaStockChip(p.stock)],['التصنيف',p=>'<td class="pc-cat" data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
  if(shown.some(p=>expInfo(p)))cols.push(['أقرب صلاحية',expBadge]);
  const SK={'الصنف':'name','السعر':'price','الرصيد':'stock'},ss=(window.__novaSort&&(window.__novaSort.page||'products')==='products')?window.__novaSort:{},sh=ss.key?shown.slice().sort((a,b)=>{const x=a[ss.key],y=b[ss.key],r=ss.key==='name'?String(x).localeCompare(String(y),'ar'):(Number(x)||0)-(Number(y)||0);return ss.dir==='desc'?-r:r}):shown;
  const hd=cols.map(c=>{const k=SK[c[0]];if(!k)return c[0];const on=ss.key===k,d=on?ss.dir:'none';return '<button type="button" class="nova-sort-btn" data-sort="'+k+'" data-sort-dir="'+d+'"><span>'+c[0]+'</span><svg class="nova-sort-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(d==='asc'?'<path d="M12 19V5M5 12l7-7 7 7"/>':d==='desc'?'<path d="M12 5v14M19 12l-7 7-7-7"/>':'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>')+'</svg></button>'});
- const rowFn=p=>'<tr tabindex="0" class="nova-row-focus">'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=sh.length>40?{items:sh.slice(40),fn:rowFn}:null;return cards(hd,rows(sh.slice(0,40),rowFn)).replace('nova-data-table nova-cards','nova-data-table nova-cards nova-prod-cards').replace('class="nova-panel"','class="nova-panel nova-prod-panel"').replace('لا توجد نتائج مطابقة',fEmpty[fAct]);})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
+ const rowFn=p=>'<tr>'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=sh.length>40?{items:sh.slice(40),fn:rowFn}:null;return cards(hd,rows(sh.slice(0,40),rowFn)).replace('nova-data-table nova-cards','nova-data-table nova-cards nova-prod-cards').replace('class="nova-panel"','class="nova-panel nova-prod-panel"').replace('لا توجد نتائج مطابقة',fEmpty[fAct]);})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة</div>':'');
  }else if(page==='customers'){
  const qNs=q.replace(/\s+/g,''),custAll=qNs?customers.filter(x=>['name','phone','tier'].some(k=>nAr(x[k]).replace(/\s+/g,'').includes(qNs))):customers;
  const debtMap={},overdueMap={};let ledgerCust=[];try{const l=ledger();if(l){ledgerCust=l.customers();ledgerCust.forEach(x=>{debtMap[x.customerId]=x.balance;try{const g=l.aging(x.customerId);overdueMap[x.customerId]=(g.total-g.current)>0.005}catch(e){}})}}catch(e){}
