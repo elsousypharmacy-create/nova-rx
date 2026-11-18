@@ -512,3 +512,33 @@ html body .nova-topbar nav .nova-ops>summary:hover{background:#252b32;color:#e6e
 html body .nova-topbar nav .nova-ops>summary[aria-current]{background:#1d3340;color:#bfe3f2;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)}
 html body .nova-topbar nav .nova-ops-pop a.nova-ops-item{padding:8px 10px!important;font-size:inherit!important;border:0!important}
 html body .nova-nav:has(.nova-ops[open]),html body .nova-topbar nav:has(.nova-ops[open]){-webkit-mask-image:none!important;mask-image:none!important}
+
+/* UX-P32: supplier carts window - one card per supplier */
+dialog#supplierCarts{width:min(560px,94vw)!important;max-width:560px!important;border:1px solid #2a313a!important;border-radius:16px!important;background:#111418!important;padding:0!important;box-shadow:0 24px 80px #000a}
+dialog#supplierCarts .dialog-head{padding:16px 18px!important;border-bottom:1px solid #20262d}
+dialog#supplierCarts .dialog-head h2{font-size:17px!important;font-weight:700}
+dialog#supplierCarts .sc{padding:14px 18px 18px!important;display:flex;flex-direction:column;gap:12px}
+dialog#supplierCarts .sc-note{margin:0;font-size:13px;color:#8896a4;line-height:1.7}
+dialog#supplierCarts .sc-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog#supplierCarts .sc-card{border:1px solid #2a313a;border-radius:12px;background:#151a1f;padding:12px;display:flex;flex-direction:column;gap:12px}
+dialog#supplierCarts .sc-card[data-empty="0"]{border-color:#2f5468}
+dialog#supplierCarts .sc-top{display:flex;align-items:center;gap:10px}
+dialog#supplierCarts .sc-logo{flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#1d3340;color:#8fcbe4;font-weight:800;font-size:17px}
+dialog#supplierCarts .sc-card[data-sc=pharmaoverseas] .sc-logo{background:#2a2540;color:#c3b4f0}
+dialog#supplierCarts .sc-name{min-width:0;flex:1}
+dialog#supplierCarts .sc-name h3{margin:0;font-size:15px;font-weight:700}
+dialog#supplierCarts .sc-conn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#8896a4}
+dialog#supplierCarts .sc-conn::before{content:"";width:7px;height:7px;border-radius:50%;background:#5b6672}
+dialog#supplierCarts .sc-conn[data-state=ok]::before,dialog#supplierCarts .sc-conn[data-state=connected]::before{background:#3fb37f}
+dialog#supplierCarts .sc-conn[data-state=expired]::before,dialog#supplierCarts .sc-conn[data-state=error]::before,dialog#supplierCarts .sc-conn[data-state=disconnected]::before{background:#e07b6b}
+dialog#supplierCarts .sc-tag{flex:none;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#20262d;color:#a9b5c2}
+dialog#supplierCarts .sc-tag[data-state=on]{background:#16302a;color:#7fd3ac}
+dialog#supplierCarts .sc-tag[data-state=pending]{background:#3a3220;color:#f0d9a0}
+dialog#supplierCarts .sc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;min-height:46px;align-items:center}
+dialog#supplierCarts .sc-stats>div{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+dialog#supplierCarts .sc-stats b{font-size:15px;color:#e8eef3}
+dialog#supplierCarts .sc-stats small{font-size:11px;color:#8896a4}
+dialog#supplierCarts .sc-stats p{grid-column:1/-1;margin:0;font-size:13px;color:#7d8894}
+dialog#supplierCarts .sc-card [data-review-order]{width:100%!important;min-height:42px!important;margin:0!important;border-radius:10px!important;font-size:14px!important;font-weight:700}
+dialog#supplierCarts .sc-card[data-empty="1"] [data-review-order]{background:transparent!important;border:1px solid #343b44!important;color:#cfd7de!important}
+@media(max-width:560px){dialog#supplierCarts .sc-cards{grid-template-columns:1fr}}

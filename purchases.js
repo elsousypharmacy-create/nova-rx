@@ -311,7 +311,22 @@ function orderReceipt(result){
   $('orderStatus').textContent=`تم تنفيذ الطلب والتحقق منه عند ${supplierName(orderSupplier)}. رقم الطلب: ${ids}. الإجمالي ${fmt(result.total)} ${result.currency}.`;
  }else{$('orderStatus').textContent=`${orderError(result.error)}${ids?' أرقام مستلمة تحتاج تحقق: '+ids:''}`;$('checkSupplierOrder').hidden=false;}
 }
-$('openSupplierCarts').onclick=()=>$('supplierCarts').showModal();$('closeSupplierCarts').onclick=()=>$('supplierCarts').close();
+function fillSupplierCarts(){
+ const groups=groupCart(items),lang=localStorage.getItem('nova-rx-language'),S=window.NovaSupplierStatus;
+ for(const id of ['aumet','pharmaoverseas']){
+  const c=document.querySelector('#scCards [data-sc="'+id+'"]');if(!c)continue;
+  const gs=groups.filter(g=>g.supplierId===id),n=gs.reduce((s,g)=>s+g.lines.length,0),b=gs.reduce((s,g)=>s+g.lines.reduce((t,l)=>t+(Number(l.qty)||0),0),0),t=gs.reduce((s,g)=>s+(Number(g.total)||0),0);
+  c.querySelector('[data-sc-stats]').innerHTML=n?'<div><b>'+esc(nItems(n))+'</b><small>في التوزيع</small></div><div><b>'+fmt(b)+'</b><small>علبة</small></div><div><b>'+fmt(t)+'</b><small>ج.م</small></div>':'<p>مفيش أصناف متوزعة عليه دلوقتي.</p>';
+  let pending=false;try{pending=!!localStorage.getItem(orderKey(id));}catch{}
+  const on=prefs.suppliers.includes(id)&&!prefs.excludedSuppliers.includes(id),tag=c.querySelector('[data-sc-tag]');
+  const tg=pending?['pending','طلب مستني تحقق']:on?['on','مختار']:['off','مش مختار'];tag.hidden=false;tag.dataset.state=tg[0];tag.textContent=tg[1];
+  c.dataset.empty=n?'0':'1';
+  const cn=c.querySelector('[data-sc-conn]');cn.dataset.state='';cn.textContent=mockScenario?'بيانات تجريبية':'جارٍ فحص الاتصال…';
+ }
+ if(mockScenario||!provider())return;
+ provider().listSuppliers().then(list=>{for(const id of ['aumet','pharmaoverseas']){const s=(list||[]).find(x=>x.id===id)||{id,state:'unknown'},k=S?S.classify(s):'unknown',cn=document.querySelector('#scCards [data-sc="'+id+'"] [data-sc-conn]');if(cn){cn.dataset.state=k;cn.textContent=S?S.label(k,lang):'غير معروف';}}}).catch(()=>{document.querySelectorAll('#scCards [data-sc-conn]').forEach(cn=>{cn.dataset.state='unknown';cn.textContent='تعذر فحص الاتصال';});});
+}
+$('openSupplierCarts').onclick=()=>{fillSupplierCarts();$('supplierCarts').showModal();};$('closeSupplierCarts').onclick=()=>$('supplierCarts').close();
 document.querySelectorAll('[data-review-order]').forEach(b=>b.onclick=()=>openOrder(b.dataset.reviewOrder));
 $('closeOrder').onclick=()=>{if(!orderInFlight){orderLoad++;orderPlan=null;$('orderDialog').close();}};$('orderDialog').addEventListener('cancel',e=>{if(orderInFlight)e.preventDefault();else{orderLoad++;orderPlan=null;}});
 $('orderConfirmed').onchange=orderControls;$('orderTerms').onchange=orderControls;
