@@ -2148,7 +2148,7 @@ html body .header-actions #btnHelpShortcuts{display:block;min-height:44px}
 </head>
 <body><div id="novaSplash" aria-hidden="true"><div class="ns-mark">NOVA<small>Rx</small></div><div class="ns-sub">&#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1578;&#1581;&#1605;&#1610;&#1604;&#8230;</div><div class="ns-bar"><i></i></div></div><script>(function(){var s=document.getElementById('novaSplash');if(!s)return;var done=false;function hide(){if(done)return;done=true;document.documentElement.classList.remove('nova-boot');try{var a=document.activeElement;if(!a||a===document.body){var m=document.getElementById('mainSearchInput');if(m&&m.offsetParent)m.focus()}}catch(e){}s.classList.add('out');setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},400)}function ready(){var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();Promise.race([f,new Promise(function(r){setTimeout(r,1500)})]).then(function(){requestAnimationFrame(function(){setTimeout(hide,150)})})}if(document.readyState==='complete')ready();else window.addEventListener('load',ready);setTimeout(hide,4000)})();</script><script>try{document.body.classList.add(localStorage.getItem('nova-rx-language')==='en'?'lang-en':'lang-ar')}catch(e){}</script>
   <div class="nova-nav-row"><nav class="nova-nav" aria-label="التنقل الرئيسي" dir="rtl">
-  <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="customers">العملاء</button><details class="nova-ops" id="novaOpsNav"><summary class="nova-tab nova-ops-sum">العمليات</summary><div class="nova-ops-pop" role="menu" aria-label="العمليات"><a id="novaPurchasesNav" class="nova-ops-item" role="menuitem" href="/purchases"><span class="ops-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z M6 6 5 3H2 M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg></span><span class="ops-txt"><b>المشتريات</b><small>طلب النواقص من الموردين</small></span></a><button type="button" class="nova-ops-item" role="menuitem" data-nav-receive><span class="ops-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z M14 10h4l3 3v3h-7 M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></span><span class="ops-txt"><b>استلام الطلبيات</b><small>استلام فاتورة ودخولها المخزون</small></span></button><button class="nova-tab nova-ops-item" role="menuitem" data-page="products"><span class="ops-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z M3 8l9 5 9-5 M12 13v8"/></svg></span><span class="ops-txt"><b>المخزون</b><small>الأرصدة والصلاحيات والجرد</small></span></button></div></details><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
+  <button class="nova-tab active" data-page="sale">البيع</button><button class="nova-tab" data-page="invoices">الفواتير</button><button class="nova-tab" data-page="customers">العملاء</button><details class="nova-ops" id="novaOpsNav"><summary class="nova-tab nova-ops-sum">العمليات</summary><div class="nova-ops-pop" role="menu" aria-label="العمليات"><a id="novaPurchasesNav" class="nova-ops-item" role="menuitem" href="/purchases"><span class="ops-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z M6 6 5 3H2 M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg></span><span class="ops-txt"><b>المشتريات</b><small>طلب النواقص من الموردين</small></span></a><button class="nova-tab nova-ops-item" role="menuitem" data-page="receiving"><span class="ops-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z M14 10h4l3 3v3h-7 M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></span><span class="ops-txt"><b>استلام الطلبيات</b><small>استلام فاتورة ودخولها المخزون</small></span></button><button class="nova-tab nova-ops-item" role="menuitem" data-page="products"><span class="ops-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z M3 8l9 5 9-5 M12 13v8"/></svg></span><span class="ops-txt"><b>المخزون</b><small>الأرصدة والصلاحيات والجرد</small></span></button></div></details><button class="nova-tab" data-page="reports">التقارير</button><button class="nova-tab" data-page="settings">الإعدادات</button>
 <script>(function(){var d=document.getElementById('novaOpsNav');if(!d)return;var p=d.querySelector('.nova-ops-pop'),s=d.querySelector('summary');function place(){if(!d.open)return;var r=s.getBoundingClientRect(),w=p.offsetWidth||280;var x=document.dir==='rtl'||document.documentElement.dir==='rtl'?r.right-w:r.left;p.style.top=(r.bottom+6)+'px';p.style.left=Math.max(8,Math.min(x,innerWidth-w-8))+'px'}d.addEventListener('toggle',place);addEventListener('resize',place);addEventListener('scroll',place,true);document.addEventListener('click',function(e){if(d.open&&!d.contains(e.target))d.open=false});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&d.open){d.open=false;s.focus()}});p.addEventListener('click',function(e){if(e.target.closest('a,button'))d.open=false})})();</script>
   <span class="nova-demo-label">نسخة تجريبية</span>
   
@@ -5601,6 +5601,7 @@ window.NovaFmt=(function(){
 function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'ok',en=localStorage.getItem('nova-rx-language')==='en',lb=en?(out?'Out':low?'Low':'In stock'):(out?'نفد':low?'منخفض':'متوفر'),ic=out?'\u2715':low?'\u26A0':'\u2713';return '<td class="pc-stock"'+(low||out?' data-low="1"':'')+' data-stock-state="'+st+'" data-label="'+(en?'Stock':'الرصيد')+'"><span class="nova-stock nova-stock-'+st+(low||out?' nova-low-badge':'')+'" role="img" aria-label="'+lb+': '+esc(n)+'" title="'+lb+'"><span class="nova-stock-ic" aria-hidden="true">'+ic+'</span><span class="nova-stock-n">'+esc(n)+'</span><span class="nova-stock-t">'+lb+'</span></span></td>'}window.novaStockChip=novaStockChip;
  let novaStockFilter='all';
  function render(page,filter=''){
+ if(page==='receiving'){if(window.novaReceiving)window.novaReceiving.render(view);else view.innerHTML='<p style="padding:24px">تعذر تحميل صفحة الاستلام</p>';return}
  const nAr=window.novaNormAr||(window.novaNormAr=x=>String(x==null?'':x).toLowerCase().replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g,'').replace(/[\u0622\u0623\u0625\u0671]/g,'\u0627').replace(/\u0649/g,'\u064A').replace(/\u0629/g,'\u0647').replace(/\u0624/g,'\u0648').replace(/\u0626/g,'\u064A').replace(/[\u0660-\u0669]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[\u06F0-\u06F9]/g,d=>String(d.charCodeAt(0)-0x6F0)));
  const hl=(txt,nq)=>{txt=String(txt==null?'':txt);if(!nq)return esc(txt);let f='';const map=[];for(let i=0;i<txt.length;i++){const c=nAr(txt[i]);for(let j=0;j<c.length;j++){f+=c[j];map.push(i)}}const at=f.indexOf(nq);if(at<0)return esc(txt);const a=map[at],b=map[at+nq.length-1]+1;return esc(txt.slice(0,a))+'<mark class="nova-hl">'+esc(txt.slice(a,b))+'</mark>'+esc(txt.slice(b))};
  const {products,customers}=data();const q=nAr(filter).trim();
@@ -5916,7 +5917,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  const input=document.getElementById('novaFilter');
  if(input){input.value=filter;const clr=document.getElementById('novaFilterClear');if(clr){clr.hidden=!filter;clr.onclick=()=>{render(page,'');const n=document.getElementById('novaFilter');if(n)n.focus()}}const cc=document.getElementById('novaCustClear');if(cc)cc.onclick=()=>{render(page,'');const n=document.getElementById('novaFilter');if(n)n.focus()};input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
+ function switchPage(page){if(!['sale','invoices','products','customers','reports','settings','receiving'].includes(page))page='sale';try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page);if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}catch(e){}}const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale)render(page);history.replaceState(null,'','#'+page)}
  window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
  nav.addEventListener('click',e=>{if(e.target.closest('[data-nav-receive]')){e.preventDefault();switchPage('products');openReceive();return}const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
  const hashPage=()=>location.hash.slice(1).split('&')[0];
@@ -10784,6 +10785,310 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 @media(max-width:640px){#novaSetupCard .nsw-row{flex-wrap:wrap}#novaSetupCard .nsw-act{width:100%}}
 </style>
 <!-- SETUP-WIZARD:END -->
+<style id="ux-p30-receiving">
+/* UX-P30 receiving page */
+.rcv{display:flex;flex-direction:column;gap:16px;max-width:1200px;margin:0 auto;width:100%}
+.rcv-head{display:flex!important;align-items:center;gap:12px;flex-wrap:wrap}
+.rcv-head>div:first-child{margin-inline-end:auto}
+.rcv-actions{display:flex;gap:8px;flex-wrap:wrap}
+.rcv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 16px;border-radius:10px;border:1px solid #343b44;background:transparent;color:#cfd7de;font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.rcv-btn:hover{background:#20262d;border-color:#4a8aa6;color:#fff}
+.rcv-btn.primary{background:#387e9e;border-color:#387e9e;color:#fff}
+.rcv-btn.primary:hover{background:#4590b2}
+.rcv-btn.sm{min-height:34px;padding:0 14px;font-size:13px}
+.rcv-btn:focus-visible,.rcv-add:focus-visible,.rcv-x:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+.rcv-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.rcv-kpi{background:#171b20;border:1px solid #2d343c;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.rcv-kpi small{color:#8896a4;font-size:13px}
+.rcv-kpi strong{font-size:22px;color:#e8eef3}
+.rcv-kpi span{color:#8896a4;font-size:12px}
+.rcv-sec{background:#171b20;border:1px solid #2d343c;border-radius:12px;padding:14px 16px}
+.rcv-sec-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rcv-sec-h h2{margin:0;font-size:16px}
+.rcv-count{min-width:24px;height:22px;padding:0 7px;border-radius:11px;background:#20262d;color:#a9b5c2;font-size:12px;font-weight:700;display:inline-grid;place-items:center}
+.rcv-empty-line{margin:0;color:#8896a4;font-size:14px}
+.rcv-pos{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.rcv-po{border:1px solid #2a313a;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:#111418}
+.rcv-po-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rcv-po small{color:#8896a4}
+.rcv-tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#1d3340;color:#8fcbe4}
+.rcv-tag[data-state=partial]{background:#3a3220;color:#f0d9a0}
+.rcv-bar{height:6px;border-radius:3px;background:#20262d;overflow:hidden}
+.rcv-bar i{display:block;height:100%;background:#4a9cc0;border-radius:3px}
+.rcv-po-foot{display:flex;align-items:center;justify-content:space-between;color:#a9b5c2;font-size:13px}
+.rcv-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 12px;text-align:center;color:#8896a4}
+.rcv-empty svg{color:#76b8d5}
+.rcv-empty b{color:#dfe5ea;font-size:15px}
+.rcv-empty .rcv-btn{margin-top:6px}
+.rcv-table{display:flex;flex-direction:column}
+.rcv-tr{display:grid;grid-template-columns:110px minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.2fr) 140px;gap:10px;align-items:center;padding:10px 8px;font-size:14px}
+.rcv-th{color:#8896a4;font-size:12px;font-weight:700;border-bottom:1px solid #2a313a}
+.rcv-row{border-bottom:1px solid #20262d}
+.rcv-row>summary{list-style:none;cursor:pointer;border-radius:8px}
+.rcv-row>summary::-webkit-details-marker{display:none}
+.rcv-row>summary:hover{background:#1c2127}
+.rcv-row[open]>summary{background:#1a2026}
+.rcv-lines{padding:4px 8px 12px;display:flex;flex-direction:column;gap:2px}
+.rcv-lines>div{display:grid;grid-template-columns:minmax(0,2fr) 80px 110px 80px 110px;gap:10px;font-size:13px;color:#b8c2cc;padding:4px 0}
+/* form */
+.rcv-ov{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit}
+.rcv-dlg{width:min(980px,100%);max-height:92vh;display:flex;flex-direction:column;background:#14181d;border:1px solid #2a3139;border-radius:14px;color:#e8eef3;box-shadow:0 24px 80px #000a}
+.rcv-dlg-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #20262d}
+.rcv-dlg-h h2{margin:0;font-size:18px}
+.rcv-dlg-h h2 small{font-size:13px;color:#8896a4;font-weight:500}
+.rcv-x{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;border:1px solid #2a313a;background:none;color:#a9b5c2;cursor:pointer}
+.rcv-x:hover{background:#20262d;color:#fff}
+.rcv-meta{display:grid;grid-template-columns:1.4fr 1fr 170px;gap:10px;padding:14px 18px 6px}
+.rcv-meta label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#a9b5c2}
+.rcv-ov input{min-height:40px;padding:0 10px;background:#0b0e11;color:#e8eef3;border:1px solid #2a3139;border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box;width:100%;min-width:0}
+.rcv-ov input:focus{outline:none;border-color:#4a8aa6;box-shadow:0 0 0 3px rgba(74,138,166,.25)}
+.rcv-grid-h,.rcv-line{display:grid;grid-template-columns:minmax(0,2.4fr) 80px minmax(0,1fr) 130px 100px 100px 36px;gap:8px;align-items:center;padding:0 18px}
+.rcv-grid-h{margin-top:10px;padding-bottom:6px;color:#8896a4;font-size:12px;font-weight:700}
+.rcv-grid{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-bottom:4px;min-height:60px}
+.rcv-pick{position:relative}
+.rcv-pick input[data-ok]{border-color:#2f5d4a;background:#0d1512}
+.rcv-sug{position:absolute;inset-inline:0;top:calc(100% + 4px);z-index:5;background:#1a1f25;border:1px solid #2d343c;border-radius:10px;box-shadow:0 10px 30px #000a;padding:4px;max-height:240px;overflow:auto}
+.rcv-sug button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;gap:8px;width:100%;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:14px;color:#dfe5ea}
+.rcv-sug button:hover,.rcv-sug button:focus-visible{background:#263039}
+.rcv-sug small{color:#8896a4}
+.rcv-lt{font-size:13px;color:#b8c2cc;text-align:end}
+.rcv-del{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:#7d8894;cursor:pointer}
+.rcv-del:hover{background:#3a1f22;color:#ff8a80}
+.rcv-add{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin:6px 18px 0;padding:8px 10px;border-radius:8px;color:#76b8d5;font-weight:700;font-size:14px;align-self:flex-start}
+.rcv-add:hover{background:#16232b}
+.rcv-dlg-f{margin-top:10px;padding:12px 18px;border-top:1px solid #20262d;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rcv-sum{display:flex;gap:14px;align-items:center;color:#a9b5c2;font-size:14px}
+.rcv-sum b{color:#e8eef3;font-size:16px}
+.rcv-msg{flex:1;min-width:160px;color:#ff8a80;font-size:14px}
+.rcv-msg.warn{color:#f0d9a0}
+.rcv-dlg-btns{display:flex;gap:8px;margin-inline-start:auto}
+@media (max-width:780px){
+ .rcv-kpis{grid-template-columns:1fr 1fr}
+ .rcv-kpis .rcv-kpi:last-child{grid-column:1/-1}
+ .rcv-tr{grid-template-columns:1fr 1fr;row-gap:2px}
+ .rcv-th{display:none}
+ .rcv-lines>div{grid-template-columns:1fr 1fr}
+ .rcv-meta{grid-template-columns:1fr}
+ .rcv-grid-h{display:none}
+ .rcv-line{grid-template-columns:1fr 1fr;padding:10px 12px;margin:0 12px;border:1px solid #2a313a;border-radius:10px}
+ .rcv-line .rcv-pick{grid-column:1/-1}
+ .rcv-ov{padding:0;align-items:stretch}
+ .rcv-dlg{max-height:none;height:100%;border-radius:0}
+ .rcv-dlg-btns{width:100%}.rcv-dlg-btns .rcv-btn{flex:1}
+ .rcv-ov input{font-size:16px}
+}
+</style>
+<script>
+/* UX-P30 receiving page (العمليات › استلام الطلبيات). On-device only: stock goes in through window.novaStock.addLot (same path as manual receive);
+   a local receipts log (nova-rx-receipts-v1) keeps supplier / invoice / lines. Pending orders are read from the local PO store (nova.purchase.orders). Nothing is sent to any supplier. */
+(function () {
+  'use strict';
+  var RK = 'nova-rx-receipts-v1', POK = 'nova.purchase.orders';
+  var SUPPLIERS = ['أوميت', 'فارما أوفرسيز'];
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(n) { return (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م'; }
+  function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function read(k) { try { var a = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(a) ? a : []; } catch (_) { return []; } }
+  function receipts() { return read(RK).filter(function (r) { return r && Array.isArray(r.lines); }); }
+  function pendingPOs() { return read(POK).filter(function (p) { return p && Array.isArray(p.lines) && ['sent', 'accepted', 'partial'].indexOf(p.state) >= 0; }); }
+  function boxes(r) { return r.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0); }, 0); }
+  function total(r) { return r.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0) * (Number(l.cost) || 0); }, 0); }
+  function nItems(n) { return n === 1 ? 'صنف واحد' : n === 2 ? 'صنفين' : n + (n >= 3 && n <= 10 ? ' أصناف' : ' صنف'); }
+  function disp(name) { return window.novaDispName ? window.novaDispName(name) : String(name || ''); }
+  function fmtDate(s) { if (!s) return '—'; var d = String(s).slice(0, 10).split('-'); return d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : s; }
+  function toast(m) { if (typeof window.novaToast === 'function') window.novaToast(m); }
+  var I = {
+    cam: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+    truck: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
+    x: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+  };
+
+  var host = null;
+  function render(view) {
+    host = view || host; if (!host) return;
+    var all = receipts().slice().reverse(), pos = pendingPOs(), t = today();
+    var todays = all.filter(function (r) { return String(r.at || '').slice(0, 10) === t; });
+    var month = all.filter(function (r) { return String(r.date || r.at || '').slice(0, 7) === t.slice(0, 7); });
+    var h = '<div class="rcv">'
+      + '<div class="nova-page-header rcv-head"><div><h1>استلام الطلبيات</h1><p>استلم فاتورة المورد وأضفها للمخزون بالتشغيلة والصلاحية.</p></div>'
+      + '<div class="rcv-actions"><button type="button" class="rcv-btn" data-rcv="photo">' + I.cam + 'قراءة فاتورة بالصورة</button><button type="button" class="rcv-btn primary" data-rcv="new">' + I.plus + 'استلام فاتورة</button></div></div>'
+      + '<div class="rcv-kpis">'
+      + '<div class="rcv-kpi"><small>استلامات النهارده</small><strong>' + todays.length + '</strong><span>' + (todays.length ? todays.reduce(function (s, r) { return s + boxes(r); }, 0) + ' علبة' : 'لسه مفيش') + '</span></div>'
+      + '<div class="rcv-kpi"><small>طلبيات مستنية</small><strong>' + pos.length + '</strong><span>من صفحة المشتريات</span></div>'
+      + '<div class="rcv-kpi"><small>استلامات الشهر</small><strong>' + money(month.reduce(function (s, r) { return s + total(r); }, 0)) + '</strong><span>' + month.length + ' فاتورة</span></div>'
+      + '</div>';
+    h += '<section class="rcv-sec"><div class="rcv-sec-h"><h2>طلبيات مستنية الاستلام</h2><span class="rcv-count">' + pos.length + '</span></div>';
+    if (!pos.length) h += '<p class="rcv-empty-line">مفيش طلبيات مستنية. الطلبيات اللي بتتأكد من صفحة المشتريات هتظهر هنا.</p>';
+    else h += '<div class="rcv-pos">' + pos.map(function (p) {
+      var q = p.lines.reduce(function (s, l) { return s + (Number(l.qty) || 0); }, 0), got = p.lines.reduce(function (s, l) { return s + Math.min(Number(l.received) || 0, Number(l.qty) || 0); }, 0);
+      var pct = q ? Math.round(got * 100 / q) : 0;
+      return '<div class="rcv-po"><div class="rcv-po-top"><b>' + esc(p.supplier) + '</b><span class="rcv-tag" data-state="' + esc(p.state) + '">' + (p.state === 'partial' ? 'وصل جزء' : 'مستني') + '</span></div>'
+        + '<small>' + esc(p.id) + ' · ' + fmtDate(p.sentAt || p.createdAt) + ' · ' + nItems(p.lines.length) + '</small>'
+        + '<div class="rcv-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div>'
+        + '<div class="rcv-po-foot"><span>' + got + ' / ' + q + ' علبة</span><button type="button" class="rcv-btn sm primary" data-rcv-po="' + esc(p.id) + '">استلم</button></div></div>';
+    }).join('') + '</div>';
+    h += '</section>';
+    h += '<section class="rcv-sec"><div class="rcv-sec-h"><h2>آخر الاستلامات</h2><span class="rcv-count">' + all.length + '</span></div>';
+    if (!all.length) h += '<div class="rcv-empty">' + I.truck + '<b>لسه مفيش استلامات</b><span>لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.</span><button type="button" class="rcv-btn primary" data-rcv="new">' + I.plus + 'استلام فاتورة</button></div>';
+    else h += '<div class="rcv-table"><div class="rcv-tr rcv-th"><span>التاريخ</span><span>المورد</span><span>رقم الفاتورة</span><span>الأصناف</span><span>الإجمالي</span></div>'
+      + all.slice(0, 50).map(function (r) {
+        return '<details class="rcv-row"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b></span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
+          + '<div class="rcv-lines">' + r.lines.map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div></details>';
+      }).join('') + '</div>';
+    h += '</section></div>';
+    host.innerHTML = h;
+  }
+
+  // ---------- invoice form ----------
+  var form = null;
+  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && p.qty || '', lot: '', exp: '', cost: p && p.cost != null ? p.cost : '' }; }
+  function openForm(pre) {
+    if (document.getElementById('rcvForm')) return;
+    pre = pre || {};
+    var st = { lines: (pre.lines && pre.lines.length ? pre.lines : [null]).map(blankLine), poId: pre.poId || '' };
+    var sups = SUPPLIERS.concat(receipts().map(function (r) { return r.supplier; })).filter(function (s, i, a) { return s && a.indexOf(s) === i; });
+    var ov = document.createElement('div'); ov.id = 'rcvForm'; ov.className = 'rcv-ov'; ov.dir = 'rtl';
+    ov.innerHTML = '<div class="rcv-dlg" role="dialog" aria-modal="true" aria-labelledby="rcvTitle">'
+      + '<div class="rcv-dlg-h"><h2 id="rcvTitle">استلام فاتورة' + (st.poId ? ' <small>' + esc(st.poId) + '</small>' : '') + '</h2><button type="button" class="rcv-x" data-rcv-close aria-label="إغلاق">' + I.x + '</button></div>'
+      + '<div class="rcv-meta"><label>المورد<input id="rcvSup" list="rcvSupList" autocomplete="off" value="' + esc(pre.supplier || '') + '" placeholder="اسم المورد"><datalist id="rcvSupList">' + sups.map(function (s) { return '<option value="' + esc(s) + '">'; }).join('') + '</datalist></label>'
+      + '<label>رقم الفاتورة<input id="rcvInv" dir="ltr" autocomplete="off" placeholder="مثلًا 10452"></label>'
+      + '<label>تاريخ الفاتورة<input id="rcvDate" type="date" dir="ltr" value="' + today() + '"></label></div>'
+      + '<div class="rcv-grid-h"><span>الصنف</span><span>الكمية</span><span>التشغيلة</span><span>الصلاحية</span><span>سعر الشراء</span><span>الإجمالي</span><span></span></div>'
+      + '<div id="rcvLines" class="rcv-grid"></div>'
+      + '<button type="button" class="rcv-add" data-rcv-add>' + I.plus + 'إضافة صنف</button>'
+      + '<div class="rcv-dlg-f"><div class="rcv-sum" id="rcvSum"></div><div id="rcvMsg" class="rcv-msg" role="alert"></div>'
+      + '<div class="rcv-dlg-btns"><button type="button" class="rcv-btn" data-rcv-close>إلغاء</button><button type="button" class="rcv-btn primary" id="rcvOk">تأكيد الاستلام وإضافة للمخزون</button></div></div></div>';
+    document.body.appendChild(ov); form = { ov: ov, st: st };
+    var box = ov.querySelector('#rcvLines');
+    function rowHtml(l, i) {
+      return '<div class="rcv-line" data-i="' + i + '">'
+        + '<div class="rcv-pick"><input data-f="q" autocomplete="off" placeholder="ابحث بالاسم أو امسح الباركود" value="' + esc(l.key ? disp(l.name) : (l.name || '')) + '" aria-label="الصنف"' + (l.key ? ' data-ok="1"' : '') + '><div class="rcv-sug" hidden></div></div>'
+        + '<input data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="' + esc(l.qty) + '" aria-label="الكمية بالعلب" placeholder="علب">'
+        + '<input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة" placeholder="Lot">'
+        + '<input data-f="exp" type="month" dir="ltr" value="' + esc(l.exp) + '" aria-label="تاريخ الصلاحية">'
+        + '<input data-f="cost" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.cost) + '" aria-label="سعر الشراء للعلبة" placeholder="0.00">'
+        + '<span class="rcv-lt" data-lt>—</span>'
+        + '<button type="button" class="rcv-del" data-rcv-del aria-label="حذف السطر">' + I.x + '</button></div>';
+    }
+    function draw() { box.innerHTML = st.lines.map(rowHtml).join(''); sum(); }
+    function sum() {
+      var n = 0, b = 0, t = 0;
+      st.lines.forEach(function (l, i) {
+        var q = Number(l.qty) || 0, c = Number(l.cost) || 0, row = box.children[i];
+        if (row) row.querySelector('[data-lt]').textContent = q && c ? money(q * c) : '—';
+        if (l.key || l.name) { n++; b += q; t += q * c; }
+      });
+      ov.querySelector('#rcvSum').innerHTML = '<span>' + nItems(n) + '</span><span>' + b + ' علبة</span><b>' + money(t) + '</b>';
+    }
+    function lineOf(el) { var r = el.closest('.rcv-line'); return r ? +r.getAttribute('data-i') : -1; }
+    var found = {};
+    function suggest(inp, i) {
+      var t = inp.value.trim(), sug = inp.parentNode.querySelector('.rcv-sug');
+      st.lines[i].key = ''; st.lines[i].name = t; inp.removeAttribute('data-ok');
+      var res = t && window.novaSearch ? window.novaSearch.search(t, 6) : [];
+      found[i] = res;
+      if (!res.length) { sug.hidden = true; sug.innerHTML = ''; return; }
+      sug.innerHTML = res.map(function (p, k) { return '<button type="button" data-pick="' + k + '">' + esc(disp(p.name)) + (p.price ? '<small>' + money(p.price) + '</small>' : '') + '</button>'; }).join('');
+      sug.hidden = false;
+    }
+    function pick(i, k) {
+      var p = (found[i] || [])[k]; if (!p) return;
+      var l = st.lines[i]; l.key = window.novaStock ? window.novaStock.keyOf(p) : (p.key || p.barcode || p.name); l.name = p.name;
+      if (l.cost === '' && p.cost) l.cost = p.cost;
+      var row = box.children[i], inp = row.querySelector('[data-f=q]');
+      inp.value = disp(p.name); inp.setAttribute('data-ok', '1');
+      row.querySelector('.rcv-sug').hidden = true;
+      if (l.cost !== '') row.querySelector('[data-f=cost]').value = l.cost;
+      row.querySelector('[data-f=qty]').focus(); sum();
+    }
+    box.addEventListener('input', function (e) {
+      var f = e.target.getAttribute('data-f'), i = lineOf(e.target); if (i < 0) return;
+      if (f === 'q') suggest(e.target, i); else { st.lines[i][f] = e.target.value; sum(); }
+      msg('');
+    });
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-pick]'); if (b) { pick(lineOf(b), +b.getAttribute('data-pick')); return; }
+      if (e.target.closest('[data-rcv-del]')) { var i = lineOf(e.target); st.lines.splice(i, 1); if (!st.lines.length) st.lines.push(blankLine()); draw(); }
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var f = e.target.getAttribute('data-f'), i = lineOf(e.target); if (i < 0) return;
+      e.preventDefault(); e.stopPropagation();
+      if (f === 'q') { if (found[i] && found[i].length) pick(i, 0); return; }
+      var order = ['qty', 'lot', 'exp', 'cost'], nx = order[order.indexOf(f) + 1];
+      if (nx) box.children[i].querySelector('[data-f=' + nx + ']').focus();
+      else addLine();
+    });
+    function addLine() { st.lines.push(blankLine()); draw(); box.lastElementChild.querySelector('[data-f=q]').focus(); }
+    function msg(m, warn) { var el = ov.querySelector('#rcvMsg'); el.textContent = m || ''; el.className = 'rcv-msg' + (warn ? ' warn' : ''); }
+    function dirty() { return ov.querySelector('#rcvInv').value.trim() || st.lines.some(function (l) { return l.key || l.qty || l.lot; }); }
+    function close(force) { if (!force && dirty() && !window.confirm('تقفل من غير ما تحفظ الاستلام؟')) return; ov.remove(); document.removeEventListener('keydown', key, true); form = null; }
+    function key(e) { if (e.key === 'Escape') { var s = ov.querySelector('.rcv-sug:not([hidden])'); e.preventDefault(); e.stopPropagation(); if (s) { s.hidden = true; return; } close(); } }
+    document.addEventListener('keydown', key, true);
+    ov.addEventListener('click', function (e) {
+      if (e.target.closest('[data-rcv-close]')) close();
+      else if (e.target.closest('[data-rcv-add]')) addLine();
+      else if (!e.target.closest('.rcv-pick')) ov.querySelectorAll('.rcv-sug').forEach(function (s) { s.hidden = true; });
+    });
+    ov.querySelector('#rcvOk').addEventListener('click', function () {
+      var sup = ov.querySelector('#rcvSup').value.trim(), inv = ov.querySelector('#rcvInv').value.trim(), date = ov.querySelector('#rcvDate').value || today();
+      if (!sup) { msg('اكتب اسم المورد'); ov.querySelector('#rcvSup').focus(); return; }
+      if (!inv) { msg('اكتب رقم الفاتورة'); ov.querySelector('#rcvInv').focus(); return; }
+      if (receipts().some(function (r) { return r.supplier === sup && r.invoice === inv; })) { msg('الفاتورة دي (' + inv + ') اتسجلت قبل كده للمورد ده'); return; }
+      var used = st.lines.filter(function (l) { return l.key || l.name || l.qty || l.lot; });
+      if (!used.length) { msg('ضيف صنف واحد على الأقل'); return; }
+      var now = new Date(), t0 = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()), soon = t0 + 90 * 864e5, out = [], short = 0;
+      for (var i = 0; i < st.lines.length; i++) {
+        var l = st.lines[i]; if (used.indexOf(l) < 0) continue;
+        var row = box.children[i], bad = function (f, m) { msg('سطر ' + (i + 1) + ': ' + m); row.querySelector('[data-f=' + f + ']').focus(); };
+        if (!l.key) return bad('q', 'اختار الصنف من القائمة');
+        var q = Number(l.qty); if (!Number.isInteger(q) || q <= 0) return bad('qty', 'اكتب كمية صحيحة بالعلب');
+        if (!String(l.lot).trim()) return bad('lot', 'اكتب رقم التشغيلة');
+        if (!/^\d{4}-\d{2}$/.test(l.exp)) return bad('exp', 'اختار تاريخ الصلاحية');
+        var y = +l.exp.slice(0, 4), mo = +l.exp.slice(5), last = new Date(Date.UTC(y, mo, 0));
+        if (last.getTime() < t0) return bad('exp', 'الصلاحية منتهية');
+        if (last.getTime() < soon) short++;
+        if (out.some(function (o) { return o.key === l.key && o.lot === String(l.lot).trim(); })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
+        out.push({ key: l.key, name: l.name, qty: q, lot: String(l.lot).trim(), expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
+      }
+      var b = out.reduce(function (s, o) { return s + o.qty; }, 0);
+      if (!window.confirm('تأكيد استلام ' + nItems(out.length) + ' (' + b + ' علبة) من ' + sup + ' وإضافتهم للمخزون؟' + (short ? '\nتنبيه: ' + short + ' صنف صلاحيته أقل من 3 شهور.' : ''))) return;
+      var done = [];
+      for (var k = 0; k < out.length; k++) {
+        var r = window.novaStock ? window.novaStock.addLot({ key: out[k].key, lot: out[k].lot, expiry: out[k].expiry, qty: out[k].qty, cost: out[k].cost }) : { ok: false };
+        if (!r || !r.ok) break; done.push(out[k]);
+      }
+      if (done.length) {
+        var all = read(RK); all.push({ id: 'RCV-' + Date.now(), at: new Date().toISOString(), date: date, supplier: sup, invoice: inv, poId: st.poId || null, lines: done });
+        try { localStorage.setItem(RK, JSON.stringify(all)); } catch (_) {}
+      }
+      if (done.length < out.length) { msg('اتسجل ' + done.length + ' من ' + out.length + ' بس — تعذر حفظ الباقي على الجهاز. راجع السطور اللي فضلت.'); st.lines = st.lines.filter(function (l) { return !done.some(function (d) { return d.key === l.key && d.lot === String(l.lot).trim(); }); }); draw(); render(); return; }
+      close(true); toast('تم استلام ' + nItems(done.length) + ' (' + b + ' علبة) من ' + sup); render();
+    });
+    draw();
+    (pre.supplier ? ov.querySelector('#rcvInv') : ov.querySelector('#rcvSup')).focus();
+  }
+
+  function openPhoto() {
+    var pn = document.getElementById('novaAiPanel');
+    if (pn) pn.classList.add('open'); else location.hash = '#products&receive=1';
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('[data-rcv],[data-rcv-po]'); if (!a || !a.closest('.rcv')) return;
+    if (a.getAttribute('data-rcv') === 'new') openForm();
+    else if (a.getAttribute('data-rcv') === 'photo') openPhoto();
+    else if (a.hasAttribute('data-rcv-po')) {
+      var po = read(POK).filter(function (p) { return p.id === a.getAttribute('data-rcv-po'); })[0]; if (!po) return;
+      openForm({ supplier: po.supplier, poId: po.id, lines: po.lines.filter(function (l) { return (l.qty - (l.received || 0)) > 0; }).map(function (l) {
+        var hit = window.novaSearch && l.code ? window.novaSearch.search(l.code, 1)[0] : null;
+        return { key: hit ? (window.novaStock ? window.novaStock.keyOf(hit) : hit.name) : '', name: hit ? hit.name : (l.name || l.code), qty: l.qty - (l.received || 0), cost: l.cost };
+      }) });
+    }
+  });
+  window.novaReceiving = { render: render, open: openForm };
+})();
+</script>
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
