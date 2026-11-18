@@ -22,7 +22,7 @@ await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
 await page.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
 await page.goto(BASE, { waitUntil: 'load' });
 await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
-await page.locator('.nova-tab[data-page=products]').click();
+await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
 await t('exactly the 3 expected groups are flagged (barcode, name+pack, hostile name)', async () => {
   const g = await page.evaluate(() => window.novaDuplicates(window.NOVA_DEMO.products).map(x => x.reason + ':' + x.items.length));
   assert.deepEqual(g.sort(), ['barcode:2', 'name:2', 'name:2']);

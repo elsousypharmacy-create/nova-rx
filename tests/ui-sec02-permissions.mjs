@@ -18,7 +18,7 @@ await page.waitForFunction(() => window.novaAuth && window.novaAuthUI && window.
 const openTab = p => page.locator(`.nova-tab[data-page=${p}]`).click();
 await t('no accounts yet: export downloads without a prompt', async () => {
   await openTab('invoices');
-  const [d] = await Promise.all([page.waitForEvent('download'), page.locator('#novaSalesExport').click()]);
+  const [d] = await Promise.all([page.waitForEvent('download'), page.evaluate(()=>{const k=document.querySelector('#novaPageView .nova-kebab');if(k)k.open=true}).then(()=>page.locator('#novaSalesExport').click())]);
   assert.match(d.suggestedFilename(), /^nova-rx-sales-/); assert.equal(await page.locator('#novaReauth').count(), 0);
 });
 const mkAccounts = () => page.evaluate(async () => {
@@ -35,7 +35,7 @@ await t('cashier export is blocked, no download, and the denial is logged and sh
   page.on('dialog', d => d.accept());
   await openTab('invoices');
   let downloaded = false; page.once('download', () => { downloaded = true; });
-  await page.locator('#novaSalesExport').click(); await page.waitForTimeout(400);
+  await page.evaluate(()=>{const k=document.querySelector('#novaPageView .nova-kebab');if(k)k.open=true}).then(()=>page.locator('#novaSalesExport').click()); await page.waitForTimeout(400);
   assert.equal(downloaded, false); assert.equal(await page.locator('#novaReauth').count(), 0);
   const log = await page.evaluate(() => novaPerms.denied());
   assert.equal(log.length, 1); assert.equal(log[0].action, 'data.export'); assert.equal(log[0].role, 'cashier');

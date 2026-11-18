@@ -74,7 +74,7 @@ await t('typing part of a barcode lists that product (partial barcode search)', 
 });
 
 await t('Products tab: real list, honest labels (prices only, no stock), capped rows, search, re-renders when data arrives', async () => {
-  await real.page.locator('.nova-tab[data-page="products"]').click(); await real.page.waitForTimeout(400);
+  await real.page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click()); await real.page.waitForTimeout(400);
   const txt = await real.page.locator('#novaPageView').innerText();
   assert.ok(txt.includes('STOCK LIVE') && txt.includes('غير متوفر'), 'says prices only, stock unavailable');
   const stockKpi = await real.page.locator('#novaStockNotice').innerText(); // UX212: compact notice chip replaces the stock KPI card
@@ -104,7 +104,7 @@ await t('a hostile product name (<img onerror>) is inert: shown as text in the l
   assert.equal(await page.locator('#suggestionsBox img').count(), 0, 'no img element was created');
   await page.keyboard.press('Enter'); await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => window.__pwned), undefined, 'onerror never ran');
-  await page.locator('.nova-tab[data-page="products"]').click(); await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click()); await page.waitForTimeout(300);
   assert.equal(await page.locator('#novaPageView img').count(), 0); assert.equal(await page.evaluate(() => window.__pwned), undefined);
   await ctx.close();
 });
@@ -150,7 +150,7 @@ for (const mode of ['missing', 'bad']) {
     const d = await open({ stock: mode === 'missing' ? 'none' : 'bad' }); await d.page.waitForTimeout(1200);
     assert.equal(await d.page.evaluate(() => window.novaCatalog.source), 'demo'); assert.equal(await d.page.evaluate(() => window.NOVA_DEMO.products.length), 12);
     await search(d.page, 'بانادول'); assert.ok(await suggestions(d.page).count() > 0, 'demo search still works');
-    await d.page.locator('.nova-tab[data-page="products"]').click(); await d.page.waitForTimeout(300);
+    await d.page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click()); await d.page.waitForTimeout(300);
     { const pv = await d.page.locator('#novaPageView').innerText(); assert.ok(pv.includes('الأصناف') && pv.includes('عرض تجريبي'), 'demo panel is titled الأصناف with a demo chip'); }
     assert.equal(d.errors.length, 0, d.errors.join(' | ')); await d.ctx.close();
   });

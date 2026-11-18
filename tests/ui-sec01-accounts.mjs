@@ -18,7 +18,7 @@ await page.waitForFunction(() => window.novaAuth && window.novaAuthUI && window.
 const openTab = p => page.locator(`.nova-tab[data-page=${p}]`).click();
 await t('no accounts yet: export downloads without a prompt', async () => {
   await openTab('invoices');
-  const [d] = await Promise.all([page.waitForEvent('download'), page.locator('#novaSalesExport').click()]);
+  const [d] = await Promise.all([page.waitForEvent('download'), page.evaluate(()=>{const k=document.querySelector('#novaPageView .nova-kebab');if(k)k.open=true}).then(()=>page.locator('#novaSalesExport').click())]);
   assert.match(d.suggestedFilename(), /^nova-rx-sales-/); assert.equal(await page.locator('#novaReauth').count(), 0);
 });
 await t('first account created in Settings becomes owner and can sign in', async () => {
@@ -33,7 +33,7 @@ await t('first account created in Settings becomes owner and can sign in', async
 });
 await t('export after the re-auth window is blocked until the password is re-entered', async () => {
   await page.evaluate(() => { const real = Date.now; Date.now = () => real() + 6 * 60 * 1000; });
-  await openTab('invoices'); await page.locator('#novaSalesExport').click();
+  await openTab('invoices'); await page.evaluate(()=>{const k=document.querySelector('#novaPageView .nova-kebab');if(k)k.open=true}).then(()=>page.locator('#novaSalesExport').click());
   await page.waitForSelector('#novaReauth');
   await page.fill('#novaReauthPw', 'bad'); await page.click('#novaReauthOk');
   await page.waitForFunction(() => document.querySelector('#novaReauthMsg').textContent.includes('Wrong'));

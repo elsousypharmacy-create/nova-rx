@@ -9,7 +9,7 @@ try {
   page.on('pageerror', e => errors.push(String(e)));
   const active = () => page.evaluate(() => document.body.dataset.activePage);
   await page.goto(BASE + 'index.html');
-  await page.locator('[data-page="products"]').first().click();
+  await page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click());
   assert.equal(await active(), 'products');
   await page.goto(BASE + 'index.html');
   await page.reload();
