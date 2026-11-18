@@ -40,7 +40,7 @@
 /* UX214: reserve space on desktop so load-time text/i18n swaps do not shift layout (CLS). */
 @media (min-width:1100px) and (min-height:651px){
   html body .invoice-footer{height:163px;min-height:163px;max-height:163px;box-sizing:border-box}
-  html body .nova-sale-number{min-width:72px;min-height:30px;box-sizing:border-box;display:inline-block;text-align:center}
+  html body .nova-sale-number{min-width:72px;min-height:32px;box-sizing:border-box;display:inline-block;text-align:center}
   html body .nova-sale-actions .nova-new-sale{min-width:114px;box-sizing:border-box}
   html body .nova-sale-actions .nova-help-chip{min-width:88px;box-sizing:border-box}
 }
