@@ -50,8 +50,9 @@ try {
 
   const activeId = () => page.evaluate(() => document.activeElement && (document.activeElement.id || document.activeElement.className));
 
-  await t('initial focus starts on #mainSearchInput in Product mode', async () => {
+  await t('initial focus starts on #mainSearchInput in Customer mode', async () => {
     assert.equal(await activeId(), 'mainSearchInput');
+    assert.match(await page.locator('#searchModeTag').getAttribute('class'), /customer/);
   });
 
   await t('touch/click on autocomplete suggestion adds item and keeps focus on #mainSearchInput', async () => {
