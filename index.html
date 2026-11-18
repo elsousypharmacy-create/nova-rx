@@ -4553,11 +4553,16 @@ window.NovaFmt=(function(){
         // UX12: reject rapid clicks/Enter before the async stock lock is acquired.
         if (state.paymentSubmitting || !elements.checkoutModal.classList.contains('active') || elements.btnConfirmPayment.disabled) return;
         state.paymentSubmitting = true;
-        elements.btnConfirmPayment.disabled = true;
+        const button = elements.btnConfirmPayment;
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.textContent = 'جاري حفظ الفاتورة…';
         return Promise.resolve().then(() => window.novaStock.withLock(confirmPaymentCore)).catch(() => {
           showToast(novaEn() ? 'Unable to confirm sale. Check saved invoices before retrying.' : 'تعذر تأكيد البيع. راجع الفواتير المحفوظة قبل المحاولة مرة أخرى.', 'error');
         }).finally(() => {
           state.paymentSubmitting = false;
+          button.removeAttribute('aria-busy');
+          button.textContent = 'تأكيد البيع (Enter)';
           if (elements.checkoutModal.classList.contains('active')) refreshChange();
         });
       }
@@ -5995,7 +6000,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   else if(!kAr&&vAr){if(!(v in toEn))toEn[v]=k}
  }
  const enExtra={
-"خصم بالجنيه":"Discount (EGP)","مسح الفاتورة":"Clear invoice","تأكيد البيع (Enter)":"Confirm sale (Enter)","بطاقة بنكية (F10)":"Bank card (F10)","البطاقة محاكاة فقط — لا يُخصم مبلغ بنكي. تأكيد البيع يحفظ الفاتورة، وبعده تختار الطباعة.":"Card payment is simulated; no bank debit. Confirm saves the sale, then choose whether to print.","الاسم (مطلوب)":"Name (required)","رقم الهاتف (مطلوب)":"Phone (required)","من 9 إلى 15 رقمًا؛ الأرقام العربية مقبولة، ولا يمكن تكرار رقم مسجّل.":"9–15 digits; Arabic digits are accepted. An existing phone number cannot be reused.",
+"خصم بالجنيه":"Discount (EGP)","مسح الفاتورة":"Clear invoice","تأكيد البيع (Enter)":"Confirm sale (Enter)","جاري حفظ الفاتورة…":"Saving invoice…","بطاقة بنكية (F10)":"Bank card (F10)","البطاقة محاكاة فقط — لا يُخصم مبلغ بنكي. تأكيد البيع يحفظ الفاتورة، وبعده تختار الطباعة.":"Card payment is simulated; no bank debit. Confirm saves the sale, then choose whether to print.","الاسم (مطلوب)":"Name (required)","رقم الهاتف (مطلوب)":"Phone (required)","من 9 إلى 15 رقمًا؛ الأرقام العربية مقبولة، ولا يمكن تكرار رقم مسجّل.":"9–15 digits; Arabic digits are accepted. An existing phone number cannot be reused.",
 
  'حالات تانية ▾':'More conditions ▾','أقل ▴':'Less ▴','حساسية':'Allergies','أمراض مزمنة':'Chronic conditions','حالات خاصة':'Special cases','أسبرين ومسكنات':'Aspirin & painkillers','سلفا':'Sulfa','مضاد حيوي تاني':'Other antibiotic','ربو':'Asthma','غدة درقية':'Thyroid','صرع':'Epilepsy','جلوكوما':'Glaucoma','سيولة دم':'Blood thinner','مناعة ضعيفة':'Weak immunity','علاج كيماوي':'Chemotherapy','كبير سن':'Elderly','قبل عملية':'Before surgery','بيسوق':'Drives','مش بيبلع أقراص':'Cannot swallow pills','أدوية مزمنة':'Chronic medicines',
  'مثال: 4':'e.g. 4','مش عارف الوزن':'Weight unknown','بانتظار بيانات العميل':'Waiting for customer data','تحذير — المس':'Warning — tap','اطلعت':'Reviewed',
