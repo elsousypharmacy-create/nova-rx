@@ -10785,6 +10785,122 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 @media(max-width:640px){#novaSetupCard .nsw-row{flex-wrap:wrap}#novaSetupCard .nsw-act{width:100%}}
 </style>
 <!-- SETUP-WIZARD:END -->
+<script id="ux-p31-po-store">
+/* NOVA Rx — N29 / BUY-05 local purchase order + receiving (GRN) with lot/expiry/cost.
+   On-device only: no network, no supplier contact. Stock changes ONLY through the append-only ledger (stock-ledger.js, receive movements).
+   A PO never changes state without an explicit human confirmation ({confirmed:true}). Works as <script> (window.NovaPurchaseOrders) and in Node. */
+(function (root) {
+  'use strict';
+  var STATES = ['draft', 'sent', 'accepted', 'partial', 'received', 'cancelled'];
+  function fail(code) { var e = new Error(code); e.code = code; throw e; }
+  function copy(o) { return JSON.parse(JSON.stringify(o)); }
+  function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
+  function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s)); }
+  function money(n) { return Math.round(n * 100) / 100; }
+
+  function createStore(storage, ledger, key, now) {
+    key = key || 'nova.purchase.orders';
+    now = now || function () { return new Date().toISOString(); };
+    function load() {
+      var raw = storage.getItem(key);
+      if (!raw) return [];
+      try { var a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { fail('po-store-corrupt'); }
+    }
+    function save(a) { storage.setItem(key, JSON.stringify(a)); }
+    function find(a, id) { for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; fail('po-not-found'); }
+    function confirmed(c) { if (!c || c.confirmed !== true) fail('confirmation-required'); }
+    function remaining(po, code) {
+      for (var i = 0; i < po.lines.length; i++) if (po.lines[i].code === code) return po.lines[i].qty - po.lines[i].received;
+      return null;
+    }
+
+    function transition(id, c, from, to, stamp) {
+      confirmed(c);
+      var a = load(), po = find(a, id);
+      if (from.indexOf(po.state) < 0) fail('bad-transition');
+      po.state = to; po.history.push({ at: now(), state: to, by: c.by || null }); if (stamp) po[stamp] = now();
+      save(a); return copy(po);
+    }
+
+    return {
+      /* draft: { supplier, lines:[{code, name?, qty, cost}] }  -> state 'draft' (nothing sent anywhere) */
+      create: function (d) {
+        if (!d || typeof d.supplier !== 'string' || !d.supplier) fail('bad-supplier');
+        if (!Array.isArray(d.lines) || !d.lines.length) fail('no-lines');
+        var seen = {}, lines = d.lines.map(function (l) {
+          if (!l || typeof l.code !== 'string' || !l.code) fail('bad-code');
+          if (seen[l.code]) fail('duplicate-line'); seen[l.code] = 1;
+          if (!isInt(l.qty) || l.qty <= 0) fail('bad-qty');
+          if (typeof l.cost !== 'number' || !isFinite(l.cost) || l.cost < 0) fail('bad-cost');
+          return { code: l.code, name: l.name || '', qty: l.qty, cost: l.cost, received: 0 };
+        });
+        var a = load(), po = { id: 'PO-' + (a.length + 1), supplier: d.supplier, state: 'draft', createdAt: now(), lines: lines, grns: [], history: [{ at: now(), state: 'draft', by: null }] };
+        a.push(po); save(a); return copy(po);
+      },
+      send: function (id, c) { return transition(id, c, ['draft'], 'sent', 'sentAt'); },
+      accept: function (id, c) { return transition(id, c, ['sent'], 'accepted', 'acceptedAt'); },
+      cancel: function (id, c) {
+        confirmed(c);
+        var a = load(), po = find(a, id);
+        if (po.state === 'received' || po.state === 'cancelled') fail('bad-transition');
+        if (po.grns.length) fail('has-receipts');   // received stock is in the ledger; reverse it by an adjustment, not by cancelling
+        po.state = 'cancelled'; po.history.push({ at: now(), state: 'cancelled', by: c.by || null }); save(a); return copy(po);
+      },
+      /* GRN: { ref, invoice?: {qty:{code:n}}, lines:[{code, lot, expiry:'YYYY-MM-DD', qty, cost}] }
+         Whole GRN is validated first; nothing is written on rejection. Returns { po, warnings }.
+         Warnings (never block): over-receipt, unordered code, cost differs from PO, expiry already past / under 90 days, invoice qty differs from GRN qty or PO qty. */
+      receive: function (id, grn, c) {
+        confirmed(c);
+        if (!grn || typeof grn.ref !== 'string' || !grn.ref) fail('missing-ref');
+        if (!Array.isArray(grn.lines) || !grn.lines.length) fail('no-lines');
+        var a = load(), po = find(a, id);
+        if (po.state !== 'accepted' && po.state !== 'partial' && po.state !== 'sent') fail('bad-transition');
+        for (var g = 0; g < po.grns.length; g++) if (po.grns[g].ref === grn.ref) fail('duplicate-grn');
+        var keys = {};
+        grn.lines.forEach(function (l) {
+          if (!l || typeof l.code !== 'string' || !l.code) fail('bad-code');
+          if (!l.lot || typeof l.lot !== 'string') fail('bad-lot');
+          if (!validDate(l.expiry)) fail('bad-expiry');
+          if (!isInt(l.qty) || l.qty <= 0) fail('bad-qty');
+          if (typeof l.cost !== 'number' || !isFinite(l.cost) || l.cost < 0) fail('bad-cost');
+          if (keys[l.code + '\u0000' + l.lot]) fail('duplicate-lot-line'); keys[l.code + '\u0000' + l.lot] = 1;
+        });
+        var warnings = [], today = now().slice(0, 10), soon = new Date(Date.parse(today) + 90 * 864e5).toISOString().slice(0, 10), got = {};
+        grn.lines.forEach(function (l) {
+          got[l.code] = (got[l.code] || 0) + l.qty;
+          if (l.expiry <= today) warnings.push({ type: 'expired', code: l.code, lot: l.lot, expiry: l.expiry });
+          else if (l.expiry < soon) warnings.push({ type: 'short-expiry', code: l.code, lot: l.lot, expiry: l.expiry });
+        });
+        Object.keys(got).forEach(function (code) {
+          var rem = remaining(po, code);
+          if (rem === null) warnings.push({ type: 'unordered', code: code, received: got[code] });
+          else if (got[code] > rem) warnings.push({ type: 'over-receipt', code: code, ordered: rem + 0, received: got[code] });
+        });
+        grn.lines.forEach(function (l) {
+          for (var i = 0; i < po.lines.length; i++) if (po.lines[i].code === l.code && money(po.lines[i].cost) !== money(l.cost)) warnings.push({ type: 'cost-differs', code: l.code, lot: l.lot, po: po.lines[i].cost, grn: l.cost });
+        });
+        if (grn.invoice && grn.invoice.qty) Object.keys(grn.invoice.qty).forEach(function (code) {
+          var inv = grn.invoice.qty[code], rem = remaining(po, code);
+          if (inv !== (got[code] || 0)) warnings.push({ type: 'invoice-vs-grn', code: code, invoice: inv, grn: got[code] || 0 });
+          else if (rem !== null && inv !== rem && inv > rem) warnings.push({ type: 'invoice-vs-po', code: code, invoice: inv, po: rem });
+        });
+        // all valid: write through the ledger (a ledger error aborts before PO state is saved; replays are rejected there)
+        grn.lines.forEach(function (l) { ledger.append({ kind: 'receive', code: l.code, qty: l.qty, ref: po.id + '/' + grn.ref, lot: l.lot, expiry: l.expiry, cost: l.cost }); });
+        grn.lines.forEach(function (l) { for (var i = 0; i < po.lines.length; i++) if (po.lines[i].code === l.code) po.lines[i].received += l.qty; });
+        po.grns.push({ ref: grn.ref, at: now(), by: c.by || null, lines: copy(grn.lines), warnings: warnings });
+        var done = po.lines.every(function (l) { return l.received >= l.qty; });
+        po.state = done ? 'received' : 'partial'; po.history.push({ at: now(), state: po.state, by: c.by || null });
+        save(a); return { po: copy(po), warnings: warnings };
+      },
+      get: function (id) { return copy(find(load(), id)); },
+      list: function () { return copy(load()); }
+    };
+  }
+
+  var api = { STATES: STATES, createStore: createStore };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NovaPurchaseOrders = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
 <style id="ux-p30-receiving">
 /* UX-P30 receiving page */
 .rcv{display:flex;flex-direction:column;gap:16px;max-width:1200px;margin:0 auto;width:100%}
@@ -10852,6 +10968,8 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 .rcv-sug button:hover,.rcv-sug button:focus-visible{background:#263039}
 .rcv-sug small{color:#8896a4}
 .rcv-lt{font-size:13px;color:#b8c2cc;text-align:end}
+.rcv-po-ref{font-size:11px;color:#8fcbe4;background:#1d3340;border-radius:8px;padding:1px 6px}
+.rcv-warn{font-size:11px;color:#f0d9a0;background:#3a3220;border-radius:8px;padding:1px 6px}
 .rcv-del{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:#7d8894;cursor:pointer}
 .rcv-del:hover{background:#3a1f22;color:#ff8a80}
 .rcv-add{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin:6px 18px 0;padding:8px 10px;border-radius:8px;color:#76b8d5;font-weight:700;font-size:14px;align-self:flex-start}
@@ -10933,7 +11051,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     if (!all.length) h += '<div class="rcv-empty">' + I.truck + '<b>لسه مفيش استلامات</b><span>لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.</span><button type="button" class="rcv-btn primary" data-rcv="new">' + I.plus + 'استلام فاتورة</button></div>';
     else h += '<div class="rcv-table"><div class="rcv-tr rcv-th"><span>التاريخ</span><span>المورد</span><span>رقم الفاتورة</span><span>الأصناف</span><span>الإجمالي</span></div>'
       + all.slice(0, 50).map(function (r) {
-        return '<details class="rcv-row"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b></span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
+        return '<details class="rcv-row"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b>' + (r.poId ? ' <small class="rcv-po-ref">' + esc(r.poId) + '</small>' : '') + (r.warnings && r.warnings.length ? ' <small class="rcv-warn" title="' + esc(r.warnings.join('، ')) + '">⚠ ' + r.warnings.length + '</small>' : '') + '</span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
           + '<div class="rcv-lines">' + r.lines.map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div></details>';
       }).join('') + '</div>';
     h += '</section></div>';
@@ -11050,21 +11168,32 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
         if (last.getTime() < t0) return bad('exp', 'الصلاحية منتهية');
         if (last.getTime() < soon) short++;
         if (out.some(function (o) { return o.key === l.key && o.lot === String(l.lot).trim(); })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
-        out.push({ key: l.key, name: l.name, qty: q, lot: String(l.lot).trim(), expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
+        out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: String(l.lot).trim(), expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
       }
       var b = out.reduce(function (s, o) { return s + o.qty; }, 0);
       if (!window.confirm('تأكيد استلام ' + nItems(out.length) + ' (' + b + ' علبة) من ' + sup + ' وإضافتهم للمخزون؟' + (short ? '\nتنبيه: ' + short + ' صنف صلاحيته أقل من 3 شهور.' : ''))) return;
+      var poRes = null, grn = null;
+      if (st.poId) {
+        if (!window.NovaPurchaseOrders || !window.NovaStockLedger) { msg('تعذر ربط الاستلام بالطلبية على الجهاز ده'); return; }
+        var ERR = { 'bad-transition': 'الطلبية دي مش مستنية استلام', 'duplicate-grn': 'رقم الفاتورة ده اتسجل على الطلبية قبل كده', 'po-not-found': 'الطلبية مش موجودة', 'bad-lot': 'رقم التشغيلة ناقص', 'bad-expiry': 'تاريخ صلاحية غلط', 'bad-qty': 'كمية غلط', 'bad-cost': 'سعر غلط', 'duplicate-lot-line': 'تشغيلة متكررة' };
+        grn = { ref: inv, lines: out.map(function (o) { return { code: o.code, lot: o.lot, expiry: o.expiry, qty: o.qty, cost: o.cost }; }) };
+        try {
+          var store = window.NovaPurchaseOrders.createStore(localStorage, window.NovaStockLedger.createLedger(localStorage, 'nova.stock.ledger'));
+          poRes = store.receive(st.poId, grn, { confirmed: true });
+        } catch (e) { msg(ERR[e && e.code] || ('تعذر تسجيل الاستلام على الطلبية: ' + (e && (e.code || e.message)))); return; }
+        try { if (window.novaReceiptSync) window.novaReceiptSync.afterReceive(poRes.po, grn); } catch (_) {}
+      }
       var done = [];
       for (var k = 0; k < out.length; k++) {
         var r = window.novaStock ? window.novaStock.addLot({ key: out[k].key, lot: out[k].lot, expiry: out[k].expiry, qty: out[k].qty, cost: out[k].cost }) : { ok: false };
         if (!r || !r.ok) break; done.push(out[k]);
       }
       if (done.length) {
-        var all = read(RK); all.push({ id: 'RCV-' + Date.now(), at: new Date().toISOString(), date: date, supplier: sup, invoice: inv, poId: st.poId || null, lines: done });
+        var all = read(RK); all.push({ id: 'RCV-' + Date.now(), at: new Date().toISOString(), date: date, supplier: sup, invoice: inv, poId: st.poId || null, poState: poRes ? poRes.po.state : null, warnings: poRes ? poRes.warnings.map(function (w) { return w.type; }) : [], lines: done });
         try { localStorage.setItem(RK, JSON.stringify(all)); } catch (_) {}
       }
       if (done.length < out.length) { msg('اتسجل ' + done.length + ' من ' + out.length + ' بس — تعذر حفظ الباقي على الجهاز. راجع السطور اللي فضلت.'); st.lines = st.lines.filter(function (l) { return !done.some(function (d) { return d.key === l.key && d.lot === String(l.lot).trim(); }); }); draw(); render(); return; }
-      close(true); toast('تم استلام ' + nItems(done.length) + ' (' + b + ' علبة) من ' + sup); render();
+      close(true); toast('تم استلام ' + nItems(done.length) + ' (' + b + ' علبة) من ' + sup + (poRes ? (poRes.po.state === 'received' ? ' — الطلبية اكتملت' : ' — الطلبية وصل جزء منها') + (poRes.warnings.length ? ' · ' + poRes.warnings.length + ' تنبيه' : '') : '')); render();
     });
     draw();
     (pre.supplier ? ov.querySelector('#rcvInv') : ov.querySelector('#rcvSup')).focus();
@@ -11082,7 +11211,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
       var po = read(POK).filter(function (p) { return p.id === a.getAttribute('data-rcv-po'); })[0]; if (!po) return;
       openForm({ supplier: po.supplier, poId: po.id, lines: po.lines.filter(function (l) { return (l.qty - (l.received || 0)) > 0; }).map(function (l) {
         var hit = window.novaSearch && l.code ? window.novaSearch.search(l.code, 1)[0] : null;
-        return { key: hit ? (window.novaStock ? window.novaStock.keyOf(hit) : hit.name) : '', name: hit ? hit.name : (l.name || l.code), qty: l.qty - (l.received || 0), cost: l.cost };
+        return { key: hit ? (window.novaStock ? window.novaStock.keyOf(hit) : hit.name) : '', name: hit ? hit.name : (l.name || l.code), code: l.code, qty: l.qty - (l.received || 0), cost: l.cost };
       }) });
     }
   });
