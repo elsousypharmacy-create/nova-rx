@@ -451,8 +451,11 @@ function render() {
       sup !== '—' || pr !== null ? `<span>${esc(sup !== '—' ? sup : '')}${sup !== '—' && pr !== null ? ' ' : ''}${pr !== null ? fmt(pr) + ' ج' : ''}</span>` : ''
     ].filter(Boolean).join(' · ');
 
+    const splitDetail = item.allocations?.length > 1
+      ? `<small class="split-note" data-split-explanation="${esc(item.splitExplanation || '')}" title="${esc(item.splitExplanation || '')}">مقسم على ${fmt(item.allocations.length)} عروض (${item.allocations.map(a => `${esc(a.offer.sellerName || supplierName(a.offer.supplierId))}: ${fmt(a.qty)}`).join(' + ')})</small>`
+      : '';
     const offerDetail = item.allocations?.[0]
-      ? `<small class="needs-offer-meta">${esc([item.allocations[0].strength, item.allocations[0].form, item.allocations[0].packSize, item.allocations[0].quantity != null ? `متاح ${fmt(item.allocations[0].quantity)}` : null, item.allocations[0].date].filter(Boolean).join(' · '))}</small>`
+      ? `<small class="needs-offer-meta">${esc([item.allocations[0].strength, item.allocations[0].form, item.allocations[0].packSize, item.allocations[0].quantity != null ? `متاح ${fmt(item.allocations[0].quantity)}` : null, item.allocations[0].date].filter(Boolean).join(' · '))}</small>${splitDetail}`
       : '';
     const expMsg = item.expiredMessage ? `<small class="needs-offer-warn">${esc(item.expiredMessage)}</small>` : '';
 
@@ -1083,6 +1086,7 @@ function renderOffersDialog(item, rows) {
       const applied = applyManualSplit(item, rows, entries, prefs);
       Object.assign(item, applied);
       item.selected = true;
+      status(applied.splitExplanation);
       $('offers').close();
       renderKeep();
     } catch (e) {
@@ -1163,16 +1167,17 @@ function renderSupplierStatus(list) {
       const a = document.createElement('a');
       a.href = 'https://github.com/elsousypharmacy-create/nova-rx/actions/workflows/supplier-sessions.yml';
       a.target = '_blank'; a.rel = 'noopener'; a.className = 'supplier-renew-link';
-      a.textContent = 'فتح تجديد الاتصال';
+      a.textContent = localStorage.getItem('nova-rx-language') === 'en' ? 'Open connection renewal' : 'فتح تجديد الاتصال';
       d.appendChild(a);
     } else if (st === 'unknown' || st === 'down') {
       const n = document.createElement('small');
-      n.textContent = ' — أعد فحص الاتصال من إعدادات الموردين؛ لا نفترض أن الجلسة منتهية.';
+      n.textContent = localStorage.getItem('nova-rx-language') === 'en' ? ' — Recheck connection in supplier settings; session expiry is not assumed.' : ' — أعد فحص الاتصال من إعدادات الموردين؛ لا نفترض أن الجلسة منتهية.';
       d.appendChild(n);
     }
     return d;
   }), Object.assign(document.createElement('small'), { textContent: 'آخر فحص: ' + t }));
 }
+// UX06/07: labels only; opening renewal goes to the existing workflow page, never runs it.
 
 function openSettings(checkConnection = true) {
   if ($('needsFilterDialog')?.open) $('needsFilterDialog').close();
@@ -1212,6 +1217,11 @@ async function loadMockData() {
   lastUpdatedDate = new Date();
   if ($('sourceState')) $('sourceState').textContent = '🔓 بيانات تجريبية محلية';
   rebuild();
+  for (const item of items) {
+    const rows = await searchOffers(item);
+    Object.assign(item, distribute(item, rows, prefs));
+  }
+  render();
 }
 
 /* ---- Session Banner (read-only, non-shifting) ---- */
@@ -1384,8 +1394,16 @@ document.querySelectorAll('[data-filter-days]').forEach(btn => {
 if ($('days')) $('days').addEventListener('change', rebuild);
 if ($('ideal')) $('ideal').onclick = () => { prefs.level = 'ideal'; rebuild(); };
 if ($('minimum')) $('minimum').onclick = () => { prefs.level = 'minimum'; rebuild(); };
-if ($('modeAuto')) $('modeAuto').onclick = () => { prefs.mode = 'auto'; persist(); render(); };
-if ($('modeManual')) $('modeManual').onclick = () => { prefs.mode = 'manual'; persist(); render(); };
+if ($('modeAuto')) $('modeAuto').onclick = () => {
+  prefs.mode = 'auto';
+  items.forEach(item => { if (offersByItem.has(item.key)) { delete item.manualSplit; Object.assign(item, distribute(item, offersByItem.get(item.key), prefs)); } });
+  persist(); render();
+};
+if ($('modeManual')) $('modeManual').onclick = () => {
+  prefs.mode = 'manual';
+  items.forEach(item => { if (offersByItem.has(item.key)) { delete item.manualSplit; Object.assign(item, distribute(item, offersByItem.get(item.key), prefs)); } });
+  persist(); render();
+};
 
 // Sticky Search & Autocomplete events
 if ($('needsSearchInput')) {
@@ -1591,6 +1609,140 @@ if ($('dismissSessionBanner')) $('dismissSessionBanner').onclick = hideSessionBa
   if (!dlg) return;
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 });
+
+// Existing supplier cart review / fail-closed reconciliation dialogs (separate from Phase 1 local-only «جهّز طلبية»)
+let orderPlan = null, orderSupplier = null, orderInFlight = false, orderPending = false, orderLoad = 0;
+const orderKey = id => 'novaPendingSupplierOrder:' + id;
+const orderError = code => ({
+  'order-cart-empty': 'سلة حسابك عند المورد فارغة. أضف الأصناف للسلة أولًا.',
+  'order-extra-sellers': 'سلة أوميت فيها مخازن خارج اختيارك؛ راجعها في أوميت أو عدّل اختيارات المخازن.',
+  'order-cart-needs-review': 'المورد طلب مراجعة بعض الأصناف؛ راجع سلة حسابك عنده.',
+  'order-minimum-not-met': 'إجمالي أحد المخازن أقل من الحد الأدنى للطلب.',
+  'order-seller-unavailable': 'أحد المخازن غير متاح للتنفيذ حاليًا.',
+  'order-cart-changed': 'السلة أو السعر أو الدفع اتغير بعد المراجعة؛ أغلق النافذة واقرأ السلة من جديد.',
+  'cart-plan-expired': 'انتهت مدة المراجعة؛ أغلق النافذة واقرأ السلة من جديد.',
+  'cart-session-changed': 'جلسة المورد اتجددت؛ أغلق النافذة واقرأ السلة من جديد.',
+  'cart-account-busy': 'هناك عملية سابقة غير محسومة لهذا المورد؛ راجع نتيجتها قبل طلب جديد.',
+  'cart-operation-pending': 'هذه العملية سبق إرسالها؛ استخدم التحقق من النتيجة، ولا تنشئ طلبًا جديدًا.',
+  'cart-journal-unavailable': 'سجل التنفيذ غير متاح؛ لم يُرسل الطلب.',
+  'order-not-started': 'الطلب لم يبدأ؛ يمكنك إغلاق النافذة وقراءة السلة من جديد.'
+})[code] || 'تعذّر تأكيد النتيجة. راجع طلبات حسابك عند المورد؛ لن نعيد إرسال طلب الشراء تلقائيًا.';
+function orderView(cart) {
+  return `<h3>${esc(supplierName(cart.supplierId))}</h3><p>السلة: ${esc(cart.cartId)}</p><ul>${cart.lines.map(l => `<li>${esc(l.name)} — ${fmt(l.quantity)} × ${fmt(l.unitPrice)} = ${fmt(l.total)} ${esc(cart.currency)} ${l.seller ? ' · ' + esc(l.seller) : ''}</li>`).join('')}</ul><p>الإجمالي النهائي: <strong>${fmt(cart.total)} ${esc(cart.currency)}</strong></p><p>الضريبة: ${fmt(cart.tax)} · الخصم: ${fmt(cart.discount)}</p><p>طريقة الدفع المسجلة: ${esc(cart.payment)}</p><p>التوصيل: ${esc(cart.delivery)}</p>`;
+}
+function orderControls() {
+  if (!$('submitSupplierOrder')) return;
+  $('submitSupplierOrder').disabled = orderInFlight || orderPending || !orderPlan || !$('orderConfirmed').checked || (orderSupplier === 'pharmaoverseas' && !$('orderTerms').checked);
+  $('closeOrder').disabled = orderInFlight;
+  $('checkSupplierOrder').disabled = orderInFlight;
+  $('orderConfirmed').disabled = orderInFlight || orderPending;
+  $('orderTerms').disabled = orderInFlight || orderPending;
+}
+async function openOrder(supplier) {
+  if (busy || orderInFlight || !$('orderDialog')) return;
+  const loading = ++orderLoad;
+  orderSupplier = supplier; orderPlan = null; orderPending = false;
+  $('orderConfirmed').checked = false; $('orderTerms').checked = false;
+  $('orderTermsLabel').hidden = supplier !== 'pharmaoverseas';
+  $('checkSupplierOrder').hidden = true;
+  $('orderCart').textContent = 'جارٍ قراءة السلة الفعلية…';
+  $('orderStatus').textContent = '';
+  $('orderTitle').textContent = 'مراجعة طلب ' + supplierName(supplier);
+  $('orderDialog').showModal();
+  orderControls();
+  try {
+    const saved = JSON.parse(localStorage.getItem(orderKey(supplier)) || 'null');
+    if (saved) {
+      orderPlan = saved.plan; orderPending = true;
+      $('orderCart').innerHTML = orderView(saved.cart);
+      $('checkSupplierOrder').hidden = false;
+      $('orderStatus').textContent = 'هناك محاولة تنفيذ سابقة. سنقرأ نتيجتها فقط؛ لن نرسل طلب شراء جديدًا.';
+    } else {
+      const result = await provider().previewSupplierOrder(supplier, prefs.aumetSellers);
+      if (loading !== orderLoad) return;
+      if (!result.ok) throw new Error(result.error);
+      orderPlan = result;
+      $('orderCart').innerHTML = orderView(result.cart);
+    }
+  } catch (e) {
+    if (loading !== orderLoad) return;
+    $('orderCart').textContent = '';
+    $('orderStatus').textContent = orderError(e.message);
+  } finally { orderControls(); }
+}
+function orderReceipt(result) {
+  const ids = (result.orderIds || []).map(String).join('، ');
+  if (result.ok && result.state === 'verified') {
+    localStorage.removeItem(orderKey(orderSupplier));
+    orderPlan = null; orderPending = false;
+    $('checkSupplierOrder').hidden = true;
+    $('orderStatus').textContent = `تم تنفيذ الطلب والتحقق منه عند ${supplierName(orderSupplier)}. رقم الطلب: ${ids}. الإجمالي ${fmt(result.total)} ${result.currency}.`;
+  } else {
+    $('orderStatus').textContent = `${orderError(result.error)}${ids ? ' أرقام مستلمة تحتاج تحقق: ' + ids : ''}`;
+    $('checkSupplierOrder').hidden = false;
+  }
+}
+function fillSupplierCarts() {
+  const groups = groupCart(items), lang = localStorage.getItem('nova-rx-language'), S = window.NovaSupplierStatus;
+  for (const id of ['aumet', 'pharmaoverseas']) {
+    const c = document.querySelector('#scCards [data-sc="' + id + '"]');
+    if (!c) continue;
+    const gs = groups.filter(g => g.supplierId === id), n = gs.reduce((s, g) => s + g.lines.length, 0), b = gs.reduce((s, g) => s + g.lines.reduce((t, l) => t + (Number(l.qty) || 0), 0), 0), t = gs.reduce((s, g) => s + (Number(g.total) || 0), 0);
+    c.querySelector('[data-sc-stats]').innerHTML = n ? `<div><b>${fmt(n)} صنف</b><small>في التوزيع</small></div><div><b>${fmt(b)}</b><small>علبة</small></div><div><b>${fmt(t)}</b><small>ج.م</small></div>` : '<p>مفيش أصناف متوزعة عليه دلوقتي.</p>';
+    let pending = false; try { pending = !!localStorage.getItem(orderKey(id)); } catch {}
+    const on = prefs.suppliers.includes(id) && !prefs.excludedSuppliers.includes(id), tag = c.querySelector('[data-sc-tag]');
+    const tg = pending ? ['pending', 'طلب مستني تحقق'] : on ? ['on', 'مختار'] : ['off', 'مش مختار'];
+    tag.hidden = false; tag.dataset.state = tg[0]; tag.textContent = tg[1];
+    c.dataset.empty = n ? '0' : '1';
+    const cn = c.querySelector('[data-sc-conn]'); cn.dataset.state = ''; cn.textContent = mockScenario ? 'بيانات تجريبية' : 'جارٍ فحص الاتصال…';
+  }
+  if (mockScenario || !provider()) return;
+  provider().listSuppliers().then(list => {
+    for (const id of ['aumet', 'pharmaoverseas']) {
+      const s = (list || []).find(x => x.id === id) || { id, state: 'unknown' }, k = S ? S.classify(s) : 'unknown', cn = document.querySelector('#scCards [data-sc="' + id + '"] [data-sc-conn]');
+      if (cn) { cn.dataset.state = k; cn.textContent = S ? S.label(k, lang) : 'غير معروف'; }
+    }
+  }).catch(() => { document.querySelectorAll('#scCards [data-sc-conn]').forEach(cn => { cn.dataset.state = 'unknown'; cn.textContent = 'تعذر فحص الاتصال'; }); });
+}
+if ($('openSupplierCarts')) $('openSupplierCarts').onclick = () => { if ($('draftsDialog')?.open) $('draftsDialog').close(); fillSupplierCarts(); $('supplierCarts').showModal(); };
+if ($('closeSupplierCarts')) $('closeSupplierCarts').onclick = () => $('supplierCarts').close();
+document.querySelectorAll('[data-review-order]').forEach(b => b.onclick = () => openOrder(b.dataset.reviewOrder));
+if ($('closeOrder')) $('closeOrder').onclick = () => { if (!orderInFlight) { orderLoad++; orderPlan = null; $('orderDialog').close(); } };
+if ($('orderDialog')) $('orderDialog').addEventListener('cancel', e => { if (orderInFlight) e.preventDefault(); else { orderLoad++; orderPlan = null; } });
+if ($('orderConfirmed')) $('orderConfirmed').onchange = orderControls;
+if ($('orderTerms')) $('orderTerms').onchange = orderControls;
+if ($('submitSupplierOrder')) {
+  $('submitSupplierOrder').onclick = async () => {
+    if ($('submitSupplierOrder').disabled || !orderPlan || orderPending) return;
+    orderInFlight = true; orderControls();
+    try {
+      localStorage.setItem(orderKey(orderSupplier), JSON.stringify({ plan: orderPlan, cart: orderPlan.cart }));
+      orderPending = true;
+      $('orderStatus').textContent = 'جارٍ إرسال الطلب والتحقق من رقم المورد…';
+      orderReceipt(await provider().applySupplierOrder({ plan: orderPlan.plan, signature: orderPlan.signature, confirmed: true, termsAccepted: $('orderTerms').checked }));
+    } catch (e) {
+      if (['cart-plan-expired', 'order-cart-changed', 'cart-session-changed', 'order-confirmation-required', 'order-terms-required', 'order-cart-empty', 'order-minimum-not-met', 'order-extra-sellers'].includes(e.message)) {
+        localStorage.removeItem(orderKey(orderSupplier)); orderPending = false; orderPlan = null;
+      }
+      $('orderStatus').textContent = orderError(e.message);
+      $('checkSupplierOrder').hidden = !orderPending;
+    } finally { orderInFlight = false; orderControls(); }
+  };
+}
+if ($('checkSupplierOrder')) {
+  $('checkSupplierOrder').onclick = async () => {
+    if (orderInFlight || !orderPlan) return;
+    orderInFlight = true; orderControls();
+    try {
+      const r = await provider().supplierOrderStatus({ plan: orderPlan.plan, signature: orderPlan.signature });
+      if (r.state === 'not-started' || r.state === 'failed') {
+        localStorage.removeItem(orderKey(orderSupplier)); orderPending = false; orderPlan = null;
+        $('checkSupplierOrder').hidden = true; $('orderStatus').textContent = orderError('order-not-started');
+      } else orderReceipt(r);
+    } catch (e) { $('orderStatus').textContent = orderError(e.message); }
+    finally { orderInFlight = false; orderControls(); }
+  };
+}
 
 // Page-scoped keyboard shortcuts (ONLY on /purchases, NEVER on the sale screen)
 document.addEventListener('keydown', e => {
