@@ -60,7 +60,7 @@ ck('inject is idempotent', once === twice);
 ck('strip after inject restores pre-route worker (modulo nothing)', stripWaSpa(once) === readFileSync(copy, 'utf8'));
 rmSync(dir, { recursive: true });
 
-ck('index.html keeps /whatsapp even without the query', html.includes("path==='/whatsapp'||path==='/wa'") && html.includes('function waKeepUrl()') && html.includes("var swUrl = '/sw.js?v=6';"));
+ck('index.html keeps /whatsapp even without the query', html.includes("path==='/whatsapp'||path==='/wa'") && html.includes('function waKeepUrl()') && html.includes("var swUrl = '/sw.js?v=7';"));
 ck('index.html opens inbox in standalone when the launch URL is marked', html.includes("display-mode: standalone") && html.includes("sessionStorage.setItem('nova.wa.standalone','1')"));
 
 console.log(fail ? 'FAILED ' + fail : 'ALL PASS');
