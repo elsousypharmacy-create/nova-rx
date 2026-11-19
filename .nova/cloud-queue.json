@@ -3,6 +3,27 @@
  "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
   {
+   "id": "PUR-02",
+   "phase": 22,
+   "title": "المشتريات: شاشة واحدة بتابات طلب | استلام | سجل الفواتير",
+   "brief": "Purchases redesign task 2 of 3 — purchases hub (targets: after/01-talab.png, after/02-session.png, after/03-receive.png; today: before/A-empty-purchases.png, before/B-tools-menu.png, before/C-suppliers-modal-crop.png, before/D-receiving.png).\n\nProblems today: /purchases opens empty and «حدّث النواقص» is buried in a dense low-contrast row; receiving is hidden behind ⋮ → «استلام فاتورة» → full reload to /#receiving → press «استلام فاتورة» again; the ⋮ menu mixes «بيانات تجريبية»; routes are inconsistent (/purchases vs /#receiving); the «جدّد الجلسة» warning has no button and missing-credentials text is muted; chips like «أوميت 0 · فارما» are unlabelled; help icons are tiny.\n\nGoal:\n- One purchases screen with three tabs: طلب | استلام | سجل الفواتير. Switching tabs never does a full page reload; deep links work (e.g. /purchases#receive, /purchases#history), and the old /#receiving keeps working by opening the استلام tab. Pick the least invasive way given that purchases.html is a separate page and receiving lives in index.html; explain the choice in the PR.\n- طلب tab: needs (النواقص) load automatically on open (with loading + error states); one primary CTA; chips labelled in words (e.g. «موردين: 2 · مخازن أوميت: 3»); supplier/warehouse settings grouped in one settings entry.\n- Session banner: when a supplier session is expired/missing, a warn-coloured banner with a real «جدّد الجلسة» button that opens the existing (read-only) reconnect/settings flow. Supplier work stays read-only; no real cart/order writes.\n- استلام tab: readable KPI numbers and captions; primary «+ استلام فاتورة» opens the PUR-01 dialog directly; secondary «قراءة فاتورة بالصورة»; empty state with a button «اطلب من النواقص» that switches to طلب.\n- سجل الفواتير tab: placeholder empty state only (PUR-03 fills it).\n- Move «بيانات تجريبية» out of the purchases ⋮ menu (to settings/dev area, or behind the existing demo flag).\n\nDesign reference (committed on main): docs/design/purchases/README.md, after/*.png (target), before/*.png (today), html/*.html (source mockups), research.md. Code today: purchases page = purchases.html + purchases.js + purchases.css (+ purchases-core.js, purchases-prep.js, purchases-po.js); receiving + invoice dialog live in index.html (search `rcv-`, `#rcvSup`, `rcvSupList`, `receipts()`, `#receiving`, around lines 12150-12410); receipt corrections in receipt-operations.js (localStorage keys nova-rx-receipts-v1 etc.). Inspect origin/main first and cite real paths. Tests: keep all existing CI green (Purchasing page checks .github/workflows/purchasing-checks.yml, UX contrast ratchet, Playwright POS smoke, Secret scan); add focused unit/browser tests; capture a 390x844 Playwright screenshot of each changed screen into qa/screens/<task-id>/ and list them in the PR body. Fake/local data only. Do not change data formats destructively: existing receipts/orders in localStorage must still load (read old shape, write compatible shape). No backend changes beyond read-only use; no production or staging deploy.\n\nHARD RULES: Do not print, log, or commit secret values or PINs (name them only). Do not roll or regenerate any token. Do not spend money or enable R2. Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers (no test sends). Do not call /register or /deregister, and do not migrate the number. Do not touch WA_TOKEN. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). Do not deploy production or staging (Nova deploys via deploy-backend-staging.yml / deploy-backend-production.yml after backup + tests + rollback). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only; no admin bypass. Tests with fake/local data; Playwright must block non-GET / no live writes. Preserve Arabic RTL. Preview artifact: when index.html, sw.js or purchases.* change, after merging origin/main build a NEW artifact worker/live/nova-rx-preview.<task-id-lowercase>.js from the newest worker/live/nova-rx-preview.*.js (by git commit time; today s3-07) with `node tools/build-worker-artifact.mjs <newest> index.html <new>` (`--sw sw.js` if sw.js changed). purchases.html/.js/.css are embedded as separate assets in the artifact: update only those asset bodies, the same way earlier purchasesN artifacts did (check git log), never other routes. Add tests/unit/artifact-<task>.check.mjs like artifact-s307.check.mjs. Update CURRENT.md in the same PR if project state changes. Supplier work stays read-only. Real supplier cart/order writes need explicit owner approval.",
+   "acceptance": "Tabs طلب/استلام/سجل الفواتير in one route with no full reload (browser test asserts no navigation on tab switch); /#receiving still reaches استلام. Needs auto-load on open. One primary CTA; labelled chips; settings grouped. Session banner has a working 'جدّد الجلسة' button (mocked). Receiving empty state links to طلب. 'بيانات تجريبية' not in the purchases menu. PUR-01 behaviour intact. 390x844 screenshots of each tab in qa/screens/PUR-02/. All CI green. New preview artifact + artifact check. No deploy.",
+   "after": [
+    "PUR-01"
+   ],
+   "status": "running",
+   "attempts": 1,
+   "fix_attempts": 0,
+   "source": "owner-purchases-2026-11-19",
+   "note": "Owner Ahmed approved 2026-11-19 (Asia/Riyadh): purchases redesign first, Claude on slot A (ahmed m), Sonnet.",
+   "model": "sonnet",
+   "max_turns": 60,
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-19T14:18:30+00:00",
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/44540405275"
+  },
+  {
    "id": "UX414",
    "phase": 10,
    "title": "تفعيل إشعارات الخلفية للواتساب (Web Push) والأبلكيشن مقفول",
@@ -6103,26 +6124,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/564"
   },
   {
-   "id": "PUR-02",
-   "phase": 22,
-   "title": "المشتريات: شاشة واحدة بتابات طلب | استلام | سجل الفواتير",
-   "brief": "Purchases redesign task 2 of 3 — purchases hub (targets: after/01-talab.png, after/02-session.png, after/03-receive.png; today: before/A-empty-purchases.png, before/B-tools-menu.png, before/C-suppliers-modal-crop.png, before/D-receiving.png).\n\nProblems today: /purchases opens empty and «حدّث النواقص» is buried in a dense low-contrast row; receiving is hidden behind ⋮ → «استلام فاتورة» → full reload to /#receiving → press «استلام فاتورة» again; the ⋮ menu mixes «بيانات تجريبية»; routes are inconsistent (/purchases vs /#receiving); the «جدّد الجلسة» warning has no button and missing-credentials text is muted; chips like «أوميت 0 · فارما» are unlabelled; help icons are tiny.\n\nGoal:\n- One purchases screen with three tabs: طلب | استلام | سجل الفواتير. Switching tabs never does a full page reload; deep links work (e.g. /purchases#receive, /purchases#history), and the old /#receiving keeps working by opening the استلام tab. Pick the least invasive way given that purchases.html is a separate page and receiving lives in index.html; explain the choice in the PR.\n- طلب tab: needs (النواقص) load automatically on open (with loading + error states); one primary CTA; chips labelled in words (e.g. «موردين: 2 · مخازن أوميت: 3»); supplier/warehouse settings grouped in one settings entry.\n- Session banner: when a supplier session is expired/missing, a warn-coloured banner with a real «جدّد الجلسة» button that opens the existing (read-only) reconnect/settings flow. Supplier work stays read-only; no real cart/order writes.\n- استلام tab: readable KPI numbers and captions; primary «+ استلام فاتورة» opens the PUR-01 dialog directly; secondary «قراءة فاتورة بالصورة»; empty state with a button «اطلب من النواقص» that switches to طلب.\n- سجل الفواتير tab: placeholder empty state only (PUR-03 fills it).\n- Move «بيانات تجريبية» out of the purchases ⋮ menu (to settings/dev area, or behind the existing demo flag).\n\nDesign reference (committed on main): docs/design/purchases/README.md, after/*.png (target), before/*.png (today), html/*.html (source mockups), research.md. Code today: purchases page = purchases.html + purchases.js + purchases.css (+ purchases-core.js, purchases-prep.js, purchases-po.js); receiving + invoice dialog live in index.html (search `rcv-`, `#rcvSup`, `rcvSupList`, `receipts()`, `#receiving`, around lines 12150-12410); receipt corrections in receipt-operations.js (localStorage keys nova-rx-receipts-v1 etc.). Inspect origin/main first and cite real paths. Tests: keep all existing CI green (Purchasing page checks .github/workflows/purchasing-checks.yml, UX contrast ratchet, Playwright POS smoke, Secret scan); add focused unit/browser tests; capture a 390x844 Playwright screenshot of each changed screen into qa/screens/<task-id>/ and list them in the PR body. Fake/local data only. Do not change data formats destructively: existing receipts/orders in localStorage must still load (read old shape, write compatible shape). No backend changes beyond read-only use; no production or staging deploy.\n\nHARD RULES: Do not print, log, or commit secret values or PINs (name them only). Do not roll or regenerate any token. Do not spend money or enable R2. Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers (no test sends). Do not call /register or /deregister, and do not migrate the number. Do not touch WA_TOKEN. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). Do not deploy production or staging (Nova deploys via deploy-backend-staging.yml / deploy-backend-production.yml after backup + tests + rollback). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only; no admin bypass. Tests with fake/local data; Playwright must block non-GET / no live writes. Preserve Arabic RTL. Preview artifact: when index.html, sw.js or purchases.* change, after merging origin/main build a NEW artifact worker/live/nova-rx-preview.<task-id-lowercase>.js from the newest worker/live/nova-rx-preview.*.js (by git commit time; today s3-07) with `node tools/build-worker-artifact.mjs <newest> index.html <new>` (`--sw sw.js` if sw.js changed). purchases.html/.js/.css are embedded as separate assets in the artifact: update only those asset bodies, the same way earlier purchasesN artifacts did (check git log), never other routes. Add tests/unit/artifact-<task>.check.mjs like artifact-s307.check.mjs. Update CURRENT.md in the same PR if project state changes. Supplier work stays read-only. Real supplier cart/order writes need explicit owner approval.",
-   "acceptance": "Tabs طلب/استلام/سجل الفواتير in one route with no full reload (browser test asserts no navigation on tab switch); /#receiving still reaches استلام. Needs auto-load on open. One primary CTA; labelled chips; settings grouped. Session banner has a working 'جدّد الجلسة' button (mocked). Receiving empty state links to طلب. 'بيانات تجريبية' not in the purchases menu. PUR-01 behaviour intact. 390x844 screenshots of each tab in qa/screens/PUR-02/. All CI green. New preview artifact + artifact check. No deploy.",
-   "after": [
-    "PUR-01"
-   ],
-   "status": "running",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "owner-purchases-2026-11-19",
-   "note": "Owner Ahmed approved 2026-11-19 (Asia/Riyadh): purchases redesign first, Claude on slot A (ahmed m), Sonnet.",
-   "model": "sonnet",
-   "max_turns": 60,
-   "pin_slot": "A",
-   "slot": "A",
-   "dispatched_at": "2026-11-19T14:07:17+00:00"
-  },
-  {
    "id": "PUR-03",
    "phase": 22,
    "title": "المشتريات: تاب سجل الفواتير + تحسين التباين وأيقونات المساعدة",
@@ -6142,7 +6143,7 @@
    "assigned_to": "gemini agy-a (box Antigravity)"
   }
  ],
- "updated": "2026-11-19T14:07:17+00:00",
+ "updated": "2026-11-19T14:18:30+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
