@@ -8,7 +8,11 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
-const EXTRA_ROUTES = { '/receipt-operations.js': ['receipt-operations.js', 'application/javascript; charset=utf-8'] };
+const EXTRA_ROUTES = {
+  '/receipt-operations.js': ['receipt-operations.js', 'application/javascript; charset=utf-8'],
+  '/purchases-history.js': ['purchases-history.js', 'application/javascript; charset=utf-8'],
+  '/purchases-history.css': ['purchases-history.css', 'text/css; charset=utf-8']
+};
 const TABLES = ['NOVA_PURCHASING_ASSETS', 'NOVA_STATIC_ASSETS'];
 const [base, out] = process.argv.slice(2);
 if (!base || !out) { console.error('usage: build-preview-refresh.mjs BASE_WORKER.js OUT_WORKER.js'); process.exit(2); }
