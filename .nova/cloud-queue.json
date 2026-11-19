@@ -6182,17 +6182,19 @@
     "PUR-01b",
     "PUR-03"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
    "note": "Owner Ahmed 2026-11-19 (Asia/Riyadh): preview QA follow-up after PUR-01/02/01b/03, plus «شيل الحمايه بتاعتها» (remove dashboard PIN gate on staging/preview only, same approach as UX400 /whatsapp; production stays protected; never put a PIN in code/logs/PR). Slot A (ahmed m), Sonnet, execute. No prod/staging deploy.",
    "model": "sonnet",
    "max_turns": 60,
-   "pin_slot": "A"
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-19T15:31:20+00:00"
   }
  ],
- "updated": "2026-11-19T15:30:44+00:00",
+ "updated": "2026-11-19T15:31:20+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
