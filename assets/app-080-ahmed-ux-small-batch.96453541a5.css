@@ -1,0 +1,13 @@
+
+html body .pos-root .qty-btn,html body .pos-root .btn-icon-del,html body .nova-clear-invoice{min-width:44px!important;min-height:44px!important}
+html body .pos-root .customer-empty-box{padding:12px 8px;gap:8px;min-height:0}
+html body .pos-root .customer-empty-box>svg{width:24px;height:24px}
+html body .pos-root .customer-empty-sub{line-height:1.6}
+html body .pos-root .discount-inputs .input-grp label{font-size:12px;white-space:nowrap}
+html body .nova-clear-invoice{color:#ffb4a8;border:1px solid #74423e;background:transparent;flex-shrink:0}
+html body .header-actions #btnHelpShortcuts{display:block;min-height:44px}
+.nova-product-en-name{display:block;white-space:normal;overflow-wrap:anywhere;font-size:12px;color:var(--text-dim)}
+.nova-product-full-name{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.8}
+.nova-rep-example{padding:16px;border:1px dashed #46515b;border-radius:8px;color:#b7c4ce;margin-top:14px}
+.checkout-mock-note{font-size:12px;line-height:1.7;color:#e4c98f;margin:0 0 12px}
+.nova-settings-grid{align-items:start}.nova-setting-card h3{margin-block:0 12px}.nova-devices-settings ul{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:6px;color:#c9d2dc}.nova-devices-settings li{padding:8px 12px;background:#1b2026;border:1px solid #2a3037;border-radius:var(--r-2)}.nova-devices-settings label{display:block;margin-bottom:6px;font-weight:600}.nova-devices-settings select{min-height:44px;width:100%;max-width:360px;padding:8px 12px;background:#1b2026;color:#f1f3f5;border:1px solid #2a3037;border-radius:var(--r-2)}.nova-devices-settings p{margin-top:12px;color:#a4adb7;font-size:13px}.nova-page-view .nova-panel>[data-pay-row],.nova-page-view .nova-panel>[data-ret-reason-row],.nova-page-view .nova-panel>[data-top-row],.nova-page-view .nova-panel>[data-shift-row],.nova-page-view .nova-panel>#novaShiftExpected,.nova-page-view .nova-panel>#novaShiftFormula{padding-inline:16px!important}.nova-setting-card p{line-height:1.8}

@@ -1,0 +1,215 @@
+
+/* UX422: UX420 design-system skin for the main SPA pages (البيع، الفواتير، المنتجات، العملاء، التقارير، الإعدادات).
+   Scope: top nav tabs, .pos-root (sale) and #novaPageView only. The conversations view (#novaInboxView, wa-*, novaWa*, #novaWaBtn,
+   .nova-nav-brand icons) is deliberately NOT targeted. Black Edition dark stays the default; every colour is an --nx-* token so a
+   [data-theme=light] root follows ux-tokens.css. Motion is opacity/transform/colour only (compositor-friendly) and off under reduced motion. */
+body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
+::selection{background:rgba(118,184,213,.32);color:var(--nx-text-main)}
+/* --- top navigation tabs --- */
+.nova-nav{background:var(--nx-bg-panel);border-bottom-color:var(--nx-border-subtle)}
+.nova-nav .nova-tab{position:relative;font-size:var(--nx-fs-sm);font-weight:var(--nx-fw-bold);letter-spacing:.1px;border-radius:var(--nx-r-2);transition:background-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
+.nova-nav .nova-tab::after{content:"";position:absolute;inset-inline:22%;inset-block-end:2px;height:2px;border-radius:var(--nx-r-pill);background:var(--nx-accent);transform:scaleX(0);opacity:0;transition:transform var(--nx-dur-base) var(--nx-ease),opacity var(--nx-dur-base) var(--nx-ease)}
+.nova-nav .nova-tab.active{background:#1d3340;color:#bfe3f2;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)}
+.nova-nav .nova-tab.active::after{transform:scaleX(1);opacity:1}
+.nova-nav .nova-tab:hover:not(.active){background:var(--nx-bg-surface);color:var(--nx-text-main)}
+.nova-nav .nova-tab:focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:-2px}
+@media (pointer:coarse){.nova-nav .nova-tab{min-height:44px}}
+/* --- page canvas + enter transition --- */
+#novaPageView{background:var(--nx-bg-base);scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#2f3741 transparent}
+#novaPageView:not([hidden]){animation:nx422-in var(--nx-dur-slow) var(--nx-ease)}
+@keyframes nx422-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#novaPageView .nova-page-header{margin-bottom:var(--nx-sp-5)}
+#novaPageView .nova-page-header h1{font-weight:800;letter-spacing:-.2px;color:var(--nx-text-main)}
+#novaPageView .nova-page-header p{font-size:var(--nx-fs-sm);color:var(--nx-text-muted);margin-top:var(--nx-sp-1)}
+/* --- cards: KPI, panels, settings --- */
+#novaPageView .nova-kpis{gap:var(--nx-sp-3)}
+#novaPageView .nova-kpi,#novaPageView .nova-panel,#novaPageView .nova-setting-card,.nova-page-view .nova-kpi,.nova-page-view .nova-panel,.nova-page-view .nova-setting-card{background:linear-gradient(180deg,#191e24 0%,var(--nx-bg-panel) 100%);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1);transition:border-color var(--nx-dur-base) var(--nx-ease),box-shadow var(--nx-dur-base) var(--nx-ease),transform var(--nx-dur-base) var(--nx-ease)}
+#novaPageView .nova-kpi:hover,#novaPageView .nova-setting-card:hover{border-color:#3a4652;box-shadow:var(--nx-shadow-2)}
+#novaPageView button.nova-kpi-btn:hover{transform:translateY(-1px)}
+#novaPageView button.nova-kpi-btn:active{transform:none}
+#novaPageView .nova-kpi small{font-size:var(--nx-fs-xs);font-weight:var(--nx-fw-semibold);color:var(--nx-text-muted);letter-spacing:.2px}
+#novaPageView .nova-kpi strong{font-variant-numeric:tabular-nums;color:var(--nx-text-main)}
+#novaPageView .nova-panel-title{font-size:var(--nx-fs-md);font-weight:var(--nx-fw-bold);color:var(--nx-text-main);border-bottom-color:var(--nx-border-subtle)}
+#novaPageView .nova-setting-card h3{font-size:var(--nx-fs-md);font-weight:var(--nx-fw-bold)}
+#novaPageView .nova-setting-card p{font-size:var(--nx-fs-sm);color:var(--nx-text-muted)}
+/* --- tables --- */
+#novaPageView .nova-data-table th{background:#181d23;color:var(--nx-text-muted);font-size:var(--nx-fs-xs);font-weight:var(--nx-fw-bold);letter-spacing:.2px}
+#novaPageView .nova-data-table td{font-size:var(--nx-fs-sm);border-top-color:#232a31;font-variant-numeric:tabular-nums;transition:background-color var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-data-table tbody tr:hover td{background:#1a2027}
+#novaPageView .nova-data-table tbody tr:focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:-2px}
+/* --- buttons, chips, inputs --- */
+#novaPageView .nova-page-btn,#novaPageView .btn,.pos-root .btn{border-radius:var(--nx-r-2);font-weight:var(--nx-fw-bold);transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease),transform var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-page-btn{background:#1f3a4a;border-color:#3f6a80;color:#e3f2f9;box-shadow:var(--nx-shadow-1)}
+#novaPageView .nova-page-btn:hover{background:#28495c;border-color:var(--nx-accent)}
+#novaPageView .nova-page-btn:active,#novaPageView .btn:active,.pos-root .btn:active{transform:translateY(1px)}
+#novaPageView .nova-page-btn:disabled,#novaPageView .btn:disabled,.pos-root .btn:disabled{transform:none}
+#novaPageView :is(.nova-page-btn,.btn,button,a,input,select,textarea,summary):focus-visible,.pos-root :is(.btn,button,input,select,textarea):focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:2px}
+#novaPageView .nova-tag{border-radius:var(--nx-r-pill);padding-inline:var(--nx-sp-3)}
+#novaPageView .nova-chip,#novaPageView .nova-stock-chip{transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-page-search,#novaPageView .nova-field{border-radius:var(--nx-r-2);background:var(--nx-bg-panel);border-color:#333c46;transition:border-color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease)}
+#novaPageView .nova-page-search:hover{border-color:#3f4a55}
+#novaPageView .nova-page-search:focus,#novaPageView .nova-field:focus{outline:none;border-color:var(--nx-border-focus);box-shadow:0 0 0 3px rgba(118,184,213,.18)}
+#novaPageView .nova-empty{color:var(--nx-text-muted);line-height:var(--nx-lh-base)}
+#novaPageView .nova-lang-switch{border-radius:var(--nx-r-2)}
+#novaPageView .nova-lang-btn{transition:background-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
+/* --- sale screen (.pos-root): same tokens, layout untouched --- */
+.pos-root .top-header,.pos-root .sidebar-header,.pos-root .invoice-footer{background:var(--nx-bg-panel);border-color:var(--nx-border-subtle)}
+.pos-root .customer-sidebar{background:var(--nx-bg-base)}
+.pos-root .invoice-table th{font-weight:var(--nx-fw-bold);letter-spacing:.2px}
+.pos-root .invoice-table tbody tr{transition:background-color var(--nx-dur-fast) var(--nx-ease)}
+.pos-root .main-search-input{transition:border-color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease)}
+@media (prefers-reduced-motion:reduce){#novaPageView:not([hidden]){animation:none}#novaPageView{scroll-behavior:auto}.nova-nav .nova-tab::after{transition:none}#novaPageView .nova-page-btn:active,#novaPageView .btn:active,.pos-root .btn:active,#novaPageView button.nova-kpi-btn:hover{transform:none}}
+
+#novaPageView .nova-kpi-group{margin-block-end:var(--nx-sp-4)}
+#novaPageView .nova-kpi-group-title{margin:0 0 var(--nx-sp-2);font-size:var(--nx-fs-sm,14px);font-weight:700;color:var(--nx-text-main)}
+#novaPageView .nova-kpi-group-quiet .nova-kpi-group-title{font-size:12px;font-weight:600;color:var(--nx-text-muted)}
+#novaPageView .nova-kpis-period .nova-kpi strong{font-size:26px}
+#novaPageView .nova-kpis-totals .nova-kpi{padding:8px 12px!important;opacity:.85}#novaPageView .nova-kpis-totals .nova-kpi strong{font-size:16px;margin-top:2px;font-weight:600}
+#novaPageView .nova-kpi-delta{display:block;margin-top:4px;font-size:12px;color:var(--nx-text-muted)}
+/* UX-P3 consistency: every data table (invoices, products, customers, reports) uses ONE header + cell style; same page rhythm */
+#novaPageView table th,.nova-page-view table th{background:#181d23;color:#a4adb7;font-size:12px;font-weight:700;letter-spacing:.2px;padding:12px 14px;text-align:start;white-space:nowrap}
+#novaPageView table td,.nova-page-view table td{padding:11px 14px;font-size:13px;border-top:1px solid #232a31;vertical-align:middle}
+#novaPageView .nova-page-header{margin-bottom:var(--nx-sp-4,16px)}
+#novaPageView .nova-page-header h1{font-size:23px;line-height:1.3}
+#novaPageView .nova-setting-card{padding:18px 20px}
+#novaPageView .nova-setting-card h3{margin:0 0 6px}
+/* UX-P4 (owner screenshot, customers page): KPI row never leaves one orphan card, header has breathing room, compact table header */
+:root:not([data-theme="light"]){--nx-text-muted:#a9b5c2}
+@media(min-width:801px){
+#novaPageView table td,.nova-page-view table td{height:48px}
+#novaPageView .nova-kpis,.nova-page-view .nova-kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+#novaPageView .nova-kpi,.nova-page-view .nova-kpi{min-height:0}
+#novaPageView .nova-page-header,.nova-page-view .nova-page-header{flex-wrap:wrap;align-items:center;gap:12px 24px}
+#novaPageView .nova-page-header>div:first-child,.nova-page-view .nova-page-header>div:first-child{flex:1 1 320px;min-width:0}
+#novaPageView .nova-search-wrap,.nova-page-view .nova-search-wrap{flex:0 1 420px;min-width:260px}
+#novaPageView .nova-data-table th,.nova-page-view .nova-data-table th{padding:8px 14px}
+#novaPageView .nova-data-table th:has(.nova-sort-btn),.nova-page-view .nova-data-table th:has(.nova-sort-btn){padding-block:0}
+}
+/* UX-P7 one button system, one empty state, one warning (ChatGPT decisions, brand colours kept; CSS drafted by Gemini, reviewed + measured): colour/radius/type only, no layout change */
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action:not(.secondary),.nova-page-btn,.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice){border-radius:10px!important;font-size:14px;font-weight:700;border:1px solid transparent!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.btn-checkout,.nova-inventory-action:not(.secondary),.nova-page-btn){background:#387e9e!important;border-color:#76b8d5!important;color:#fff!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.btn-checkout,.nova-inventory-action:not(.secondary),.nova-page-btn):hover:not(:disabled){background:#438ead!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale){background:#20262d!important;border-color:#343b44!important;color:#e6eaee!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale):hover:not(:disabled){background:#29313a!important}
+:is(#novaPageView,.nova-page-view,.pos-root) .nova-clear-invoice{background:transparent!important;border-color:#7a2d33!important;color:#ffb4b8!important}
+:is(#novaPageView,.nova-page-view,.pos-root) .nova-clear-invoice:hover:not(:disabled){background:#3a1519!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action,.nova-page-btn,.btn-secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice):focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action,.nova-page-btn,.btn-secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice):disabled{opacity:.45}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-empty-card,.nova-empty){text-align:center;padding:40px 16px;border:1px dashed #343b44!important;border-radius:14px!important;background:transparent!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-empty-card,.nova-empty) strong{display:block;margin-bottom:6px;font-size:15px;font-weight:700;color:#e6eaee!important}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-empty-card,.nova-empty) span{font-size:13px;color:#a9b5c2!important}
+#novaPageView .nova-notice,.nova-page-view .nova-notice,.pos-root .nova-notice{background:#2a2412!important;border:1px solid #6b5a2a!important;color:#e6d9a6!important;border-radius:10px!important;padding:10px 14px;font-size:13px}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-sale-labels,.btn:not([class*="btn-"]):not([class*="nova-"])){background:#20262d!important;border:1px solid #343b44!important;border-radius:10px!important;color:#e6eaee!important;font-size:14px;font-weight:700}
+:is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-sale-labels,.btn:not([class*="btn-"]):not([class*="nova-"])):hover:not(:disabled){background:#29313a!important}
+body .btn-primary{background:#387e9e!important;border:1px solid #76b8d5!important;color:#fff!important;border-radius:10px!important}
+body .btn-primary:hover:not(:disabled){background:#438ead!important}
+body .modal-footer .btn-primary,body [class*="modal"] .btn-primary{background:#387e9e!important;border:1px solid #76b8d5!important;color:#fff!important;border-radius:10px!important}
+body .modal-footer .btn-secondary,body [class*="modal"] .btn-secondary{background:#20262d!important;border:1px solid #343b44!important;color:#e6eaee!important;border-radius:10px!important}
+body .btn-secondary{background:#20262d!important;border:1px solid #343b44!important;color:#e6eaee!important;border-radius:10px!important}
+body .btn-secondary:hover:not(:disabled){background:#29313a!important}
+/* sale toolbar: every button the same height (was 34px next to 44px) */
+.nova-sale-actions .btn,.nova-sale-actions .nova-more-wrap>.btn,.nova-sale-actions>.btn{height:44px!important;min-height:44px!important}
+/* minimum 13px for operational text (products "same name and pack" alert was 11.7px) */
+#novaPageView #novaDupes,#novaPageView #novaDupes *{font-size:13px}
+#novaPageView table th,.nova-page-view table th{font-size:13px}
+#novaPageView .nova-kpi-delta[data-dir=up]{color:#3ddc84}#novaPageView .nova-kpi-delta[data-dir=down]{color:#ff8a8f}
+/* UX-P14 one type scale for the whole app (same as purchases): 23 title / 17 section / 15 card / 14 body+controls / 13 meta; nothing below 13 */
+html body :is(th,small,kbd,.kbd-hint,.nova-sale-number,.nova-held-count,#totalItemsCount,#displaySubtotal,#displayVatLabel,#displayVat,.sidebar-title,.customer-empty-sub,#btnAttachLoyalty,.checkout-mock-note,#modalCustomerInfo,.nova-checkout-customer,.quick-cash-btn,.nova-receipt-width-btn,.nova-printer-toggle,.nova-stock-notice,.nova-product-en-name,.nova-sale-labels,.tot-row span:not(#displayGrandTotal),#novaStockNotice,#btnDismissHelp kbd,.nova-demo-label,.pharmacy-banner-copy span,.nova-held-action span,.discount-title,.discount-title+*,.input-grp label,.input-grp span,.checkout-amount-display .label,.change-due-box .title,.nova-setting-card p,[id*="heckout"] label,[class*="checkout"] label){font-size:13px!important}
+html body :is(#btnCancelCheckout,#btnPrintReceiptBtn,#btnReprintReceipt,#btnExportReceiptPdf,#btnReceiptNewSale,#btnDismissHelp,#btnAttachLoyalty,.quick-cash-btn,.nova-checkout-customer){font-size:14px!important}
+html body :is(.tot-row.grand-total span:first-child,.checkout-mock-note strong){font-size:15px!important;font-weight:700}
+html body #displayGrandTotal{font-size:20px!important;font-weight:700}
+html body #displayChangeDue{font-size:14px!important;font-weight:700}
+/* UX-P18 invoices: kebab menu in the header row, table takes the full page */
+.nova-kebab{position:relative;flex:0 0 auto}
+.nova-kebab>summary{list-style:none;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid #2a313a;border-radius:10px;color:#a9b5c2;font-size:20px;line-height:1}
+.nova-kebab>summary::-webkit-details-marker{display:none}
+.nova-kebab>summary:hover,.nova-kebab[open]>summary{background:#20262d;color:#e6eaee}
+.nova-kebab-pop{position:absolute;inset-inline-end:0;top:46px;z-index:30;min-width:230px;display:flex;flex-direction:column;gap:6px;padding:8px;background:#171b20;border:1px solid #2d343c;border-radius:10px;box-shadow:0 8px 24px #0008}
+.nova-kebab-pop .nova-return-btn{height:40px!important;min-height:40px!important;width:100%;text-align:start;font-size:14px!important}
+#novaBackupMsg:empty{display:none}
+.nova-page-header:has(.nova-kebab){display:flex;align-items:center;gap:10px}
+.nova-page-header:has(.nova-kebab)>div:first-child{margin-inline-end:auto}
+/* UX-P33 stock page (was المنتجات): one header row, ⋯ tools, slim meta row, table takes the page */
+#novaPageView .nova-page-header:has(.nova-inv-tools){display:flex!important;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px!important}
+#novaPageView .nova-page-header:has(.nova-inv-tools)>div:first-child{margin-inline-end:auto}
+#novaPageView .nova-page-header h1 .nova-inv-count{font-size:14px;font-weight:600;color:#8896a4;margin-inline-start:8px;background:#20262d;border-radius:12px;padding:2px 10px;vertical-align:middle}
+.nova-inv-tools{display:flex!important;align-items:center;gap:8px!important;margin:0!important;padding:0!important;background:none!important;border:0!important;flex-wrap:nowrap!important}
+.nova-inv-tools .nova-search-wrap{width:min(340px,40vw)}
+.nova-inv-tools #novaFilter{height:42px!important;min-height:42px!important;margin:0!important;padding-inline-start:36px!important;background:#111418 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238896a4' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat right 11px center/16px!important;border:1px solid #2a313a!important;border-radius:10px!important}
+.nova-inv-tools .nova-inventory-action{display:inline-flex!important;align-items:center;gap:8px;height:42px!important;min-height:42px!important;padding:0 16px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important;white-space:nowrap;margin:0!important;width:auto!important}
+.nova-inv-tools .nova-inv-primary{background:#387e9e!important;border:1px solid #387e9e!important;color:#fff!important}
+.nova-inv-tools .nova-inv-primary:hover{background:#4590b2!important}
+.nova-inv-more>summary{width:42px!important;height:42px!important}
+.nova-inv-more .nova-kebab-pop{min-width:250px}
+.nova-inv-more .nova-kebab-pop .nova-inventory-action{width:100%!important;justify-content:flex-start;background:transparent!important;border:0!important;color:#dfe5ea!important;font-weight:600!important;text-decoration:none}
+.nova-inv-more .nova-kebab-pop .nova-inventory-action:hover{background:#20262d!important}
+.nova-inv-more .nova-kebab-pop svg{color:#8fcbe4}
+.nova-inv-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.nova-inv-meta #novaProductsKpis:empty{display:none!important}
+.nova-inv-meta #novaProductsKpis{margin:0!important}
+.nova-inv-meta .nova-stock-notice{display:inline!important;padding:0!important;margin:0!important;border:0!important;background:none!important;color:#8896a4!important;font-size:13px!important}
+#novaPageView #novaDupes{display:block;flex:0 0 auto;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important}#novaPageView #novaDupes[open]{flex-basis:100%}
+#novaPageView #novaDupes>summary{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:15px;border:1px solid #4a3f22;background:#1f1b12;color:#f0d9a0;font-size:13px;font-weight:700;cursor:pointer;list-style:none}
+#novaPageView #novaDupes>summary::-webkit-details-marker{display:none}
+#novaPageView #novaDupes>summary::before{content:"⚠"}
+#novaPageView #novaDupes>summary::after{content:"▾";opacity:.7}
+#novaPageView #novaDupes[open]>summary::after{content:"▴"}
+#novaPageView #novaDupes>summary b{background:#3a3220;border-radius:9px;padding:0 6px}
+#novaPageView #novaDupes>:not(summary){margin:0;padding:8px 14px;background:#171b20;border-inline:1px solid #2d343c}
+#novaPageView #novaDupes>p{border-top:1px solid #2d343c;border-radius:10px 10px 0 0;margin-top:2px}
+#novaPageView #novaDupes>:last-child{border-bottom:1px solid #2d343c;border-radius:0 0 10px 10px}
+#novaPageView #novaDupes [data-dupe-group]{border-top:1px solid #20262d!important}
+#novaPageView .nova-kpis-prod{gap:8px!important;margin-bottom:10px!important}
+#novaPageView .nova-kpis-prod .nova-kpi{padding:10px 14px!important;min-height:0!important}
+#novaPageView .nova-kpis-prod .nova-kpi strong{font-size:18px!important}
+#novaPageView .nova-prod-panel{padding:0!important;overflow:hidden}
+#novaPageView .nova-prod-panel>.nova-panel-title:not(:has(.nova-demo-chip)){display:none!important}
+@media (max-width:780px){
+ .nova-inv-tools{width:100%;flex-wrap:wrap!important}
+ .nova-inv-tools .nova-search-wrap{width:100%;order:-1}
+ .nova-inv-tools .nova-inv-primary{flex:1;justify-content:center}
+}
+/* UX-P35 about card: visible facts instead of hidden paragraphs */
+#novaAboutCard .nova-about{margin:8px 0 0;display:flex;flex-direction:column}
+#novaAboutCard .nova-about>div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-top:1px solid #20262d;font-size:14px}
+#novaAboutCard .nova-about>div:first-child{border-top:0}
+#novaAboutCard .nova-about dt{color:#8896a4}
+#novaAboutCard .nova-about dd{margin:0;color:#e6eaee;text-align:end}
+#novaAboutCard .nova-about-on{color:#7fd3ac}
+#novaAboutCard .nova-about-off{color:#f0d9a0}
+.nova-inv-panel{padding:0!important;display:block!important;background:#171b20!important;border:1px solid #2d343c!important;margin:0!important}
+/* UX-P29 nav: العمليات groups المشتريات + استلام الطلبيات + المخزون */
+.nova-ops{display:inline-flex;flex:none}
+.nova-ops>summary{list-style:none;cursor:pointer;display:inline-flex!important;align-items:center;gap:6px;white-space:nowrap}
+.nova-ops>summary::-webkit-details-marker{display:none}
+.nova-ops>summary::before{content:"";width:12px;height:12px;order:2;background:currentColor;opacity:.7;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .15s}
+.nova-ops[open]>summary::before{transform:rotate(180deg)}
+.nova-ops-pop{position:fixed;z-index:1000;width:290px;display:flex;flex-direction:column;gap:2px;padding:6px;background:#171b20;border:1px solid #2d343c;border-radius:12px;box-shadow:0 14px 40px #000a}
+.nova-ops-pop>.nova-ops-item{all:unset;box-sizing:border-box;display:flex!important;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 10px;border-radius:9px;cursor:pointer;color:#dfe5ea;text-decoration:none;text-align:start;background:none!important;box-shadow:none!important}
+.nova-ops-pop>.nova-ops-item::after{display:none!important}
+.nova-ops-pop>.nova-ops-item:hover,.nova-ops-pop>.nova-ops-item:focus-visible{background:#20262d!important}
+.nova-ops-pop>.nova-ops-item.active,.nova-ops-pop>.nova-ops-item[aria-current]{background:#16232b!important;color:#fff}
+.nova-ops-pop .ops-ico{flex:none;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:#1d3340;color:#8fcbe4}
+.nova-ops-pop .ops-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.nova-ops-pop .ops-txt b{font-size:14px;font-weight:700}
+.nova-ops-pop .ops-txt small{font-size:12px;color:#8896a4;font-weight:500}
+.nova-nav:has(.nova-ops[open]),.nova-topbar nav:has(.nova-ops[open]){-webkit-mask-image:none!important;mask-image:none!important}
+html body .nova-nav .nova-ops:has(.nova-tab.active)>summary{background:#1d3340!important;color:#bfe3f2!important;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)!important}
+.nova-nav .nova-ops:has(.nova-tab.active)>summary::after{transform:scaleX(1);opacity:1}
+.nova-inv-panel>div{max-height:none!important;overflow:visible!important}/* UX-P16 invoices: backup actions as a light toolbar (not a full panel), empty state fills the page */
+@media(min-width:801px){
+#novaPageView .nova-panel.nova-p16-off{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 12px!important;display:flex!important;justify-content:flex-start;gap:8px;min-height:0}
+#novaPageView .nova-panel.nova-p16-off .nova-return-btn{height:36px!important;min-height:36px!important;padding:0 14px!important;font-size:13px!important;font-weight:600!important;background:transparent!important;border:1px solid #2a313a!important;color:#a9b5c2!important}
+#novaPageView .nova-panel.nova-p16-off .nova-return-btn:hover{background:#20262d!important;color:#e6eaee!important}
+#novaPageView .nova-panel.nova-p16-off+.nova-empty-card{min-height:calc(100dvh - 240px)!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+#novaPageView .nova-panel.nova-p16-off+.nova-empty-card .btn{margin-top:10px}
+}
+/* UX-P17 explanatory text -> small "i" with a tooltip (source text stays in the DOM, visually hidden, so screen readers and tests still see it) */
+.nx-src{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:0!important;padding:0!important;border:0!important}
+.nx-i{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;justify-content:center;width:20px!important;height:20px!important;min-width:0!important;min-height:0!important;padding:0!important;margin-inline:8px 0;vertical-align:middle;border:1px solid #55616d;border-radius:50%;color:#a4adb7;font:italic 700 12px/1 Georgia,"Times New Roman",serif;cursor:help;-webkit-tap-highlight-color:transparent}
+html body .nx-i,html body #novaPageView .nx-i{width:20px!important;height:20px!important;min-width:0!important;min-height:0!important;padding:0!important}
+h1:has(+.nx-i),h2:has(+.nx-i),h3:has(+.nx-i),h4:has(+.nx-i){display:inline-block}
+.nx-i:hover,.nx-i:focus-visible{color:#fff;border-color:#76b8d5;background:#1d3340}
+.nx-i:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+.nx-i::after{content:attr(data-tip);position:absolute;z-index:60;top:calc(100% + 8px);inset-inline-start:-8px;width:max-content;max-width:min(320px,80vw);padding:10px 12px;background:#0e1216;border:1px solid #3a444e;border-radius:10px;color:#e8ecef;font:400 13px/1.7 Cairo,Tahoma,sans-serif;font-style:normal;text-align:start;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.5);display:none;pointer-events:none}
+.nx-i:hover::after,.nx-i:focus::after,.nx-i:focus-visible::after{display:block}

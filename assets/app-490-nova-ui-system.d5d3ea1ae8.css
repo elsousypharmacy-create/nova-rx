@@ -1,0 +1,88 @@
+
+/* NOVA-UI: one identity for every page (app pages + purchases). Same values in index.html and purchases.css.
+   Type: 23/800 title · 17/700 section · 14 body + controls · 13 meta. Controls: 44 page-header actions · 40 panel toolbar · 34 mini.
+   Primary = accent fill. Secondary = grey fill (#20262d / #343b44). Inputs = #111418 / #2a313a. Radius 10, chips 16. */
+:root{--ui-h:44px;--ui-h-md:40px;--ui-h-sm:34px;--ui-accent:#387e9e;--ui-accent-h:#4590b2;--ui-sec:#20262d;--ui-sec-h:#29313a;--ui-sec-b:#343b44;--ui-sec-t:#e6eaee;--ui-in:#111418;--ui-in-b:#2a313a;--ui-focus:#4a8aa6;--ui-soft:#1d3340;--ui-soft-t:#bfe3f2}
+html body{background:#090a0d}
+html body .app>main{background:#0c0e12}
+/* top navigation: same tabs on every page */
+html body :is(.nova-nav .nova-tab:not(.nova-ops-item),.nova-nav .nova-ops>summary,.nova-topbar nav>a,.nova-topbar nav .nova-ops>summary){height:40px!important;min-height:40px!important;padding:0 12px!important;display:inline-flex!important;align-items:center;font-size:13px!important;font-weight:700!important;border-radius:10px!important;color:#aab1bb!important;background:transparent!important;border:0!important;box-shadow:none!important;text-decoration:none!important}
+html body :is(.nova-nav .nova-tab:not(.nova-ops-item),.nova-nav .nova-ops>summary,.nova-topbar nav>a,.nova-topbar nav .nova-ops>summary):hover{background:var(--ui-sec)!important;color:var(--ui-sec-t)!important}
+html body :is(.nova-nav .nova-tab.active:not(.nova-ops-item),.nova-nav .nova-ops:has(.nova-tab.active)>summary,.nova-topbar nav>a[aria-current],.nova-topbar nav .nova-ops>summary[aria-current]){background:var(--ui-soft)!important;color:var(--ui-soft-t)!important;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)!important}
+@media (pointer:coarse){html body :is(.nova-nav .nova-tab:not(.nova-ops-item),.nova-nav .nova-ops>summary,.nova-topbar nav>a,.nova-topbar nav .nova-ops>summary){height:44px!important;min-height:44px!important}}
+/* buttons: one primary, one secondary, same font everywhere */
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary,.nova-inv-primary){border-radius:10px!important;font-size:14px!important;font-weight:700!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary,.nova-inv-primary):not(:disabled){background:var(--ui-accent)!important;border:1px solid var(--ui-accent)!important;color:#fff!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary,.nova-inv-primary):not(:disabled):hover{background:var(--ui-accent-h)!important;border-color:var(--ui-accent-h)!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary):disabled{background:var(--ui-sec)!important;border:1px solid var(--ui-sec-b)!important;color:#6b7785!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.secondary,a.secondary,.rcv-btn:not(.primary)):not(.close):not(.row-action):not(.chip){background:var(--ui-sec)!important;border:1px solid var(--ui-sec-b)!important;color:var(--ui-sec-t)!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.secondary,a.secondary,.rcv-btn:not(.primary)):not(.close):not(.row-action):not(.chip):not(:disabled):hover{background:var(--ui-sec-h)!important;border-color:var(--ui-focus)!important;color:#fff!important}
+html body main:not(:has(#rows td.empty)) .controls #load{background:var(--ui-sec)!important;border-color:var(--ui-sec-b)!important;color:var(--ui-sec-t)!important;font-weight:700!important}
+/* sizes: page-header actions 44, panel toolbars 40 */
+html body :is(#novaPageView .nova-page-header,.app>main .controls) :is(button:not(.info),a.secondary,input,.nova-kebab>summary,.tools-menu>summary){height:var(--ui-h)!important;min-height:var(--ui-h)!important}
+html body :is(#novaPageView .nova-page-header,.app>main .controls) :is(.nova-kebab>summary,.tools-menu>summary){width:var(--ui-h)!important}
+html body .app>main .panel-tools :is(#search,#openSettings,.cover-btn){height:var(--ui-h-md)!important;min-height:var(--ui-h-md)!important}
+html body .app>main .panel-tools .mode-segment button{height:var(--ui-h-md)!important;min-height:var(--ui-h-md)!important}
+/* inputs */
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(input[type=search],input[type=text]:not(.qty):not(.lim-in),input[type=number]:not(.qty):not(.lim-in),input[type=date],input[type=month],input[type=password],input:not([type]):not(.qty):not(.lim-in),select,textarea){font-family:inherit!important;font-size:14px!important;border-radius:10px!important;background-color:var(--ui-in)!important;border:1px solid var(--ui-in-b)!important;color:#f1f3f5!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(input,select,textarea):focus-visible{outline:none!important;border-color:var(--ui-focus)!important;box-shadow:0 0 0 3px rgba(74,138,166,.25)!important}
+html body :is(.nova-kebab>summary,.tools-menu>summary){background:var(--ui-sec)!important;border:1px solid var(--ui-sec-b)!important;color:var(--ui-sec-t)!important;border-radius:10px!important}
+html body :is(.nova-kebab>summary,.tools-menu>summary):hover,html body :is(.nova-kebab[open]>summary,.tools-menu[open]>summary){background:var(--ui-sec-h)!important;border-color:var(--ui-focus)!important}
+/* UX-P36 G2: number boxes become one slim strip on work pages (reports keeps its big cards) */
+html body:not([data-active-page=reports]) #novaPageView .nova-kpis{display:flex!important;flex-wrap:wrap;gap:8px!important;margin:0 0 12px!important;grid-template-columns:none!important}
+html body:not([data-active-page=reports]) #novaPageView .nova-kpis>.nova-kpi{flex:0 1 auto!important;display:inline-flex!important;flex-direction:row!important;align-items:baseline;gap:8px;min-height:0!important;height:auto!important;padding:7px 14px!important;border-radius:10px!important;background:#171b20!important;border:1px solid #2a313a!important;box-shadow:none!important}
+html body:not([data-active-page=reports]) #novaPageView .nova-kpis>.nova-kpi small{font-size:13px!important;color:#8896a4!important;margin:0!important}
+html body:not([data-active-page=reports]) #novaPageView .nova-kpis>.nova-kpi strong{font-size:16px!important;font-weight:800!important;margin:0!important;line-height:1.3}
+html body:not([data-active-page=reports]) #novaPageView .nova-kpis>.nova-kpi .nova-kpi-delta{display:none!important}
+html body .rcv-kpis{display:flex!important;flex-wrap:wrap;gap:8px!important}
+html body .rcv-kpis>.rcv-kpi{flex:0 1 auto!important;flex-direction:row!important;align-items:baseline;gap:8px!important;padding:7px 14px!important;border-radius:10px!important}
+html body .rcv-kpis>.rcv-kpi strong{font-size:16px!important}
+html body .rcv-kpis>.rcv-kpi span{font-size:12px!important}/* UX-P36 G3: invoice row actions are icon buttons (name stays for screen readers and as a hover title) */
+html body #novaPageView td.nova-actions{white-space:nowrap}
+html body #novaPageView td.nova-actions :is(.nova-act-ghost,.nova-act-return:not(.nova-act-done)){width:36px!important;min-width:36px!important;max-width:36px;padding:0!important;justify-content:center!important;gap:0!important;position:relative}
+html body #novaPageView td.nova-actions :is(.nova-act-ghost,.nova-act-return:not(.nova-act-done))>span{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;margin:0!important;padding:0!important}
+html body #novaPageView td.nova-actions .nova-act-ico{margin:0!important}
+@media (pointer:coarse),(max-width:780px){html body #novaPageView td.nova-actions :is(.nova-act-ghost,.nova-act-return:not(.nova-act-done)){width:44px!important;min-width:44px!important;max-width:44px}}
+html body #novaPageView button.nova-kpi-btn{font:inherit;cursor:pointer}
+@media (pointer:coarse){html body:not([data-active-page=reports]) #novaPageView .nova-kpis>button.nova-kpi-btn{min-height:44px!important;align-items:center!important}}/* UX-P37 invoices period chips */
+html body #novaPageView .nova-inv-per{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+/* UX-P37 sale header: «مسح الفاتورة» is a real (danger-outline) button like its neighbours; one font size for all header actions */
+html body .nova-sale-actions #btnClearInvoice{background:transparent!important;border:1px solid rgba(255,138,128,.45)!important;color:#ffb4b8!important;border-radius:10px!important;padding:0 14px!important;display:inline-flex!important;align-items:center;gap:6px}
+html body .nova-sale-actions #btnClearInvoice::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6'/%3E%3C/svg%3E") center/contain no-repeat}
+html body .nova-sale-actions #btnClearInvoice:hover{background:rgba(255,138,128,.1)!important;border-color:#ff8a80!important;color:#fff!important}
+html body .nova-sale-actions #btnSaleLabels{font-size:14px!important}
+@media (forced-colors:active){html body .nova-sale-actions #btnClearInvoice::before{background-color:ButtonText;forced-color-adjust:none}}
+/* UX-P37 sale footer: invoice discount in one compact row (desktop) */
+@media (min-width:1000px){
+ html body #discountControls{display:flex!important;flex-direction:column;justify-content:center;gap:6px!important;padding:8px 12px!important}
+ html body #discountControls .discount-title{font-size:13px!important;margin:0!important}
+ html body #discountControls .discount-inputs{display:flex!important;gap:8px!important}
+ html body #discountControls .input-grp{flex:1;min-height:0!important}
+ html body #discountControls input{height:38px!important;min-height:38px!important}
+}/* UX-P37 checkout: card note only when card or split is chosen; confirm is the wide main button */
+html body #checkoutModal:not(:has([data-method=card].active,[data-method=split].active)) .checkout-mock-note{display:none!important}
+html body #checkoutModal .modal-footer{display:flex!important;align-items:center;gap:8px!important;flex-wrap:wrap}
+html body #checkoutModal .modal-footer #checkoutAllocation{flex-basis:100%}
+html body #checkoutModal #btnConfirmPayment{flex:1 1 auto;min-height:48px!important;padding:0 18px!important;font-size:16px!important;font-weight:800!important;justify-content:center}
+html body #checkoutModal #btnCancelCheckout{flex:none;min-height:48px!important}/* UX-P38 settings: side menu of sections, setup first */
+html body #novaPageView .nova-set-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}
+html body #novaPageView .nova-set-nav{position:sticky;top:0;z-index:2;display:flex;flex-direction:column;gap:2px;padding:8px;background:#111418;border:1px solid #2a313a;border-radius:12px}
+html body #novaPageView .nova-set-nav a{padding:9px 12px;border-radius:8px;color:#aab1bb;font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap}
+html body #novaPageView .nova-set-nav a:hover{background:#20262d;color:#e6eaee}
+html body #novaPageView .nova-set-nav a[aria-current]{background:#1d3340;color:#bfe3f2;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)}
+html body #novaPageView .nova-set-nav a:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+html body #novaPageView .nova-set-layout>.nova-settings-grid{margin:0!important;min-width:0}
+html body #novaPageView .nova-set-sec{grid-column:1/-1;margin:18px 0 0!important;padding:0 0 6px;font-size:17px!important;font-weight:700!important;color:#e6eaee;border-bottom:1px solid #20262d;scroll-margin-top:12px;outline:none}
+html body #novaPageView .nova-set-sec:first-child{margin-top:0!important}
+@media (max-width:900px){
+ html body #novaPageView .nova-set-layout{grid-template-columns:1fr;gap:12px}
+ html body #novaPageView .nova-set-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding:6px}
+ html body #novaPageView .nova-set-nav::-webkit-scrollbar{display:none}
+ html body #novaPageView .nova-set-nav a{flex:none;min-height:40px;display:inline-flex;align-items:center}
+}
+/* chips / filters */
+html body :is(.chip,.nova-stock-chip){min-height:32px!important;height:32px;padding:0 12px!important;border-radius:16px!important;font-size:13px!important;font-weight:600!important;background:#171b20!important;border:1px solid var(--ui-in-b)!important;color:#cfd7de!important;display:inline-flex!important;align-items:center;gap:6px}
+html body :is(.chip[aria-pressed=true],.nova-stock-chip.active){background:var(--ui-soft)!important;border-color:var(--ui-accent)!important;color:var(--ui-soft-t)!important}
+/* titles */
+html body :is(#novaPageView .nova-page-header h1,.app>main .compact-title){font-size:23px!important;font-weight:800!important;letter-spacing:0!important}
+html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.rcv-sec-h h2){font-size:17px!important;font-weight:700!important}

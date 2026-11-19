@@ -1,0 +1,30 @@
+
+/* sale screen layout, applied BEFORE first paint (lives in <head>) so nothing jumps after load */
+#nova-wa-nav{display:none!important}
+#novaAiLaunch{background:#203d4c!important;border:1px solid #47758b!important;color:#e3f5ff!important;box-shadow:0 6px 22px #0006!important}
+#novaAiLaunch:hover{background:#2b5165!important}
+.toast-container{top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center;z-index:9000}
+.toast{max-width:min(380px,92vw)}.toast>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media(min-width:900px) and (orientation:landscape){
+html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width:none!important}
+html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}
+}
+@media(min-width:1100px) and (orientation:landscape){
+html body .invoice-footer{min-height:108px!important}
+}
+@media(orientation:portrait) and (min-width:700px){
+html body .pos-root{flex-direction:column!important;height:auto!important;min-height:calc(100dvh - 104px)!important;overflow:visible!important}
+html body .main-workspace,html body .customer-sidebar{flex:0 0 auto!important;width:100%!important;max-width:100%!important;height:auto!important;overflow:visible!important}
+html body .main-workspace{border-right:0!important}
+html body .customer-sidebar{min-height:0!important}
+html body .table-container{min-height:46dvh!important;overflow-x:auto}
+html body .invoice-footer{position:sticky;bottom:0;z-index:20}
+}
+/* UX1 — mobile sale topbar wraps to two rows so the search field stays tappable */
+@media (max-width:600px){
+ .top-header{flex-wrap:wrap!important;height:auto!important;min-height:48px!important;row-gap:var(--sp-2);padding-block:6px!important}
+ .top-header .brand-section{flex:1 1 100%;flex-wrap:wrap;min-width:0}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex:1 1 100%;flex-wrap:wrap!important;justify-content:flex-start;row-gap:var(--sp-2)}
+ .nova-sale-number{flex:0 0 auto;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .search-container{position:relative;z-index:1;clear:both}
+}

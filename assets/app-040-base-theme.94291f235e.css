@@ -1,0 +1,1977 @@
+
+    :root {
+      --bg-base: #08090b;
+      --bg-panel: #111418;
+      --bg-surface: #1b2026;
+      --bg-surface-hover: #252b32;
+      --bg-surface-active: #333b44;
+      --border-subtle: #2a3037;
+      --border-focus: #76b8d5;
+      --text-main: #f1f3f5;
+      --text-muted: #a4adb7;
+      --text-dim: #808b96;
+      --accent-cyan: #387e9e;
+      --accent-cyan-light: #76b8d5;
+      --accent-green: #60b99b;
+      --accent-green-bg: rgba(16, 185, 129, 0.12);
+      --accent-green-border: rgba(16, 185, 129, 0.35);
+      --accent-red: #ef4444;
+      --accent-red-bg: rgba(239, 68, 68, 0.12);
+      --accent-amber: #bba477;
+      --accent-amber-bg: rgba(245, 158, 11, 0.12);
+      --badge-customer: #718ba0;
+      --badge-customer-bg: rgba(139, 92, 246, 0.16);
+      --badge-product: #387e9e;
+      --badge-product-bg: rgba(2, 132, 199, 0.16);
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.6);
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Segoe UI Arabic", "Noto Sans Arabic", Tahoma, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      font-size: 13px;
+      line-height: 1.4;
+      user-select: none;
+    }
+
+    /* Fixed Layout: 72% Left, 28% Right */
+    .pos-root {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .main-workspace {
+      flex: 0 0 72%;
+      width: 72%;
+      max-width: 72%;
+      min-width: 72%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid var(--border-subtle);
+      background-color: var(--bg-panel);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cust-refill-box{display:flex;flex-direction:column;gap:var(--sp-2);padding:10px 12px;border:1px solid #2b3037;background:#171a1f;border-radius:var(--r-2);font-size:12px;color:#d9e0e9}
+    .cust-refill-box[hidden]{display:none}
+    .customer-sidebar {
+      flex: 0 0 28%;
+      width: 28%;
+      max-width: 28%;
+      min-width: 28%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: var(--bg-base);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header Bar */
+    .top-header {
+      height: 48px;
+      min-height: 48px;
+      background-color: #111418;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: var(--sp-3);
+      z-index: 20;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      color: #f1f3f5;
+    }
+
+    .brand-logo span.rx {
+      color: var(--accent-cyan-light);
+      font-weight: 800;
+      background: rgba(56, 189, 248, 0.15);
+      padding: 2px 6px;
+      border-radius: var(--r-1);
+      font-size: 12px;
+    }
+
+    .task-badge {
+      background: #1b2026;
+      color: #a4adb7;
+      border: 1px solid var(--border-subtle);
+      padding: 2px 8px;
+      border-radius: var(--r-2);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 3px 10px;
+      border-radius: var(--r-2);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
+    }
+
+    .status-pill.customer-mode {
+      background: var(--badge-customer-bg);
+      color: #b4c4cf;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .status-pill.product-mode {
+      background: var(--badge-product-bg);
+      color: #9ccde1;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: var(--r-1);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn kbd {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1px 4px;
+      border-radius: var(--r-1);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #c7d0d9;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-surface-hover);
+      border-color: var(--text-dim);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-cyan);
+      color: #f1f3f5;
+    }
+
+    .btn-primary:hover {
+      background-color: #286e91;
+    }
+
+    .btn-loyalty {
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #c5d3dc;
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-loyalty:hover {
+      background-color: rgba(139, 92, 246, 0.3);
+      border-color: #a6bdcc;
+    }
+
+    .btn-danger {
+      background-color: var(--accent-red-bg);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background-color: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Single Unified Search Area */
+    .search-container {
+      padding: 10px 16px;
+      background-color: #111418;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+      z-index: 15;
+    }
+
+    .search-box-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .search-mode-tag {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      padding: 3px 8px;
+      border-radius: var(--r-1);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      pointer-events: auto;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .search-mode-tag.customer {
+      background: #26323d;
+      color: #d1dce5;
+      border: 1px solid #526a7c;
+    }
+
+    .search-mode-tag.product {
+      background: #286e91;
+      color: #d5ebf4;
+      border: 1px solid #387e9e;
+    }
+
+    .main-search-input {
+      width: 100%;
+      height: 42px;
+      background-color: #090b0e;
+      border: 1px solid #333b44;
+      border-radius: var(--r-1);
+      color: #f1f3f5;
+      font-size: 14px;
+      padding-left: 150px;
+      padding-right: 140px;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .main-search-input:focus {
+      border-color: var(--accent-cyan-light);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+
+    .search-hints {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      font-size: 12px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .search-hints kbd {
+      background: #1b2026;
+      padding: 1px 5px;
+      border-radius: var(--r-1);
+      border: 1px solid #333b44;
+      color: #a4adb7;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    /* Autocomplete Suggestions Dropdown */
+    .suggestions-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 16px;
+      right: 16px;
+      background: #111418;
+      border: 1px solid #76b8d5;
+      border-radius: var(--r-1);
+      margin-top: 4px;
+      box-shadow: var(--shadow-lg);
+      max-height: 380px;
+      overflow-y: auto;
+      z-index: 50;
+      display: none;
+    }
+
+    .suggestions-dropdown.open {
+      display: block;
+    }
+
+    .suggestion-item {
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item.selected, .suggestion-item:hover {
+      background: #1b2026;
+      border-left: 3px solid var(--accent-cyan-light);
+    }
+
+    .sugg-primary {
+      font-weight: 600;
+      color: #f1f3f5;
+      font-size: 13px;
+    }
+
+    .sugg-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sugg-meta {
+      text-align: right;
+    }
+
+    .sugg-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-cyan-light);
+      font-family: var(--font-mono);
+    }
+
+    .sugg-tag {
+      font-size: 12px;
+      padding: 1px 6px;
+      border-radius: var(--r-1);
+      background: #1b2026;
+      color: #a4adb7;
+      margin-top: 2px;
+      display: inline-block;
+      font-family: var(--font-mono);
+    }
+
+    mark.sugg-hl {
+      background: rgba(56, 189, 248, 0.22);
+      color: #7dd3fc;
+      padding: 0 2px;
+      border-radius: var(--r-1);
+      font-weight: inherit;
+    }
+
+    /* Invoice Workspace: High Density Table */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    table.invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    table.invoice-table th {
+      position: sticky;
+      top: 0;
+      background: #111418;
+      color: #a4adb7;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 10;
+    }
+
+    table.invoice-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      font-size: 12px;
+    }
+
+    table.invoice-table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .col-idx { width: 36px; text-align: center; color: var(--text-dim); }
+    .col-item { min-width: 220px; }
+    .col-barcode { width: 120px; font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+    .col-price { width: 85px; text-align: right; font-family: var(--font-mono); }
+    .col-qty { width: 120px; text-align: center; }
+    .col-disc { width: 90px; text-align: right; }
+    .col-total { width: 100px; text-align: right; font-weight: 700; color: #f1f3f5; font-family: var(--font-mono); }
+    .col-act { width: 44px; text-align: center; }
+
+    .item-title {
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .item-generic {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .qty-control {
+      display: inline-flex;
+      align-items: center;
+      background: #090b0e;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-1);
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      width: 26px;
+      height: 26px;
+      background: transparent;
+      border: none;
+      color: #c7d0d9;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s;
+    }
+
+    .qty-btn:hover {
+      background: #1b2026;
+      color: #f1f3f5;
+    }
+
+    .qty-input {
+      width: 36px;
+      height: 26px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      text-align: center;
+      color: #f1f3f5;
+      font-weight: 600;
+      font-size: 12px;
+      outline: none;
+      font-family: var(--font-mono);
+    }
+
+    .btn-icon-del {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--r-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-icon-del:hover {
+      color: var(--accent-red);
+      background: var(--accent-red-bg);
+    }
+
+    .nova-first-run-hint{margin-top:10px;padding:10px 16px;border:1px solid var(--border,#333);border-radius:10px;text-align:start;font-size:13px;color:var(--text-main,inherit)}
+    .nova-first-run-hint[hidden]{display:none}
+    .nova-first-run-hint ol{margin:0 0 8px;padding-inline-start:20px;line-height:1.9}
+    .nova-first-run-hint button{min-height:36px}
+    #btnCloseReceipt,#btnCloseHelp,#btnCloseCheckout{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+    .nova-help-chip{min-height:44px;padding:0 10px;border-radius:999px;border:1px solid var(--border,#444);background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+    .empty-invoice-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 280px;
+      color: var(--text-dim);
+      gap: var(--sp-2);
+    }
+
+    .empty-invoice-state svg {
+      opacity: 0.35;
+    }
+
+    /* Bottom Totals & Action Section */
+    .invoice-footer {
+      height: 115px;
+      min-height: 115px;
+      background: #111418;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      padding: 10px 16px;
+      gap: var(--sp-5);
+      align-items: center;
+      z-index: 20;
+    }
+
+    .discount-controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      background: #090b0e;
+      padding: 8px 12px;
+      border-radius: var(--r-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .discount-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #a4adb7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .discount-inputs {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .input-grp {
+      display: flex;
+      align-items: center;
+      background: #111418;
+      border: 1px solid #333b44;
+      border-radius: var(--r-1);
+      padding: 2px 6px;
+      flex: 1;
+    }
+
+    .input-grp span {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .input-grp input {
+      background: transparent;
+      border: none;
+      color: #f1f3f5;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      width: 100%;
+      padding: 2px 4px;
+      font-family: var(--font-mono);
+      text-align: right;
+    }
+
+    .totals-breakdown {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-1);
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .tot-row {
+      display: flex;
+      justify-content: space-between;
+      color: #a4adb7;
+    }
+
+    .tot-row span:last-child {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #c7d0d9;
+    }
+
+    .tot-row.discount-applied {
+      color: var(--accent-green);
+    }
+    .tot-row.discount-applied span:last-child {
+      color: var(--accent-green);
+    }
+
+    .tot-row.grand-total {
+      border-top: 1px solid #333b44;
+      padding-top: 4px;
+      margin-top: 2px;
+      color: #f1f3f5;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .tot-row.grand-total span:last-child {
+      color: #76b8d5;
+      font-size: 18px;
+    }
+
+    .checkout-action-box {
+      width: 170px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+
+    .btn-checkout {
+      height: 100%;
+      background: linear-gradient(135deg, #387e9e 0%, #286e91 100%);
+      color: #f1f3f5;
+      border: 1px solid #76b8d5;
+      border-radius: var(--r-1);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      padding: 8px;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+
+    .btn-checkout:hover {
+      background: linear-gradient(135deg, #286e91 0%, #075985 100%);
+      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
+    }
+
+    .btn-checkout:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* UX216: one merged empty-state block; tips replace the sub line (no duplicate message). */
+    .empty-invoice-state .nova-first-run-hint{border:0;margin-top:2px;padding:0}
+    .empty-invoice-state .nova-first-run-hint:not([hidden]) + .empty-invoice-sub{display:none}
+    .empty-invoice-state .nova-first-run-hint ol{margin:0 0 6px;line-height:1.7}
+    /* UX216: disabled pay button, opaque, text >=4.5:1 on its bg, clearly "off" (dashed border). */
+    #btnCheckout.btn-checkout:disabled,#btnCheckout.btn-checkout:disabled:hover{opacity:1!important;background:#1d2730!important;border:1px dashed #6f8596!important;color:#c9d6de!important;box-shadow:none!important;cursor:not-allowed}
+    #btnCheckout.btn-checkout:disabled kbd{background:#10161b!important;color:#c9d6de!important}
+    .btn-checkout kbd {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 1px 6px;
+      border-radius: var(--r-1);
+      font-size: 12px;
+      font-weight: 600;
+      color: #d5ebf4;
+    }
+
+    /* Customer Sidebar (Fixed 28% Right) */
+    .sidebar-header {
+      height: 48px;
+      min-height: 48px;
+      background: #111418;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #c7d0d9;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+    }
+
+    /* Empty Customer State */
+    .customer-empty-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 16px;
+      border: 1px dashed var(--border-subtle);
+      border-radius: var(--r-2);
+      background: rgba(15, 23, 42, 0.5);
+      text-align: center;
+      gap: var(--sp-3);
+      color: var(--text-dim);
+    }
+
+    .customer-empty-box svg {
+      opacity: 0.4;
+    }
+
+    .customer-empty-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .customer-empty-sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* Active Customer Card */
+    .cust-card {
+      background: #111418;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-2);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+    }
+
+    .cust-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--sp-2);
+    }
+
+    .cust-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f1f3f5;
+    }
+
+    .cust-phone {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    .cust-stats-row {
+      display: flex;
+      gap: var(--sp-2);
+      margin-top: 4px;
+    }
+
+    .cust-stat-pill {
+      background: #1b2026;
+      padding: 3px 8px;
+      border-radius: var(--r-1);
+      font-size: 12px;
+      color: #a4adb7;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+    }
+
+    .cust-stat-pill strong {
+      color: #f1f3f5;
+    }
+
+    .cust-stat-pill.tier-gold {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .cust-actions-bar {
+      display: flex;
+      gap: var(--sp-2);
+      margin-top: 2px;
+    }
+
+    /* Subtle Green Accent for Offers */
+    .offers-section {
+      background: var(--accent-green-bg);
+      border: 1px solid var(--accent-green-border);
+      border-radius: var(--r-1);
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+
+    .offers-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .offer-item {
+      font-size: 12px;
+      color: #d1fae5;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      line-height: 1.3;
+    }
+
+    .offer-bullet {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #60b99b;
+      flex-shrink: 0;
+    }
+
+    /* Purchase History Area */
+    .history-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      flex: 1;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #c7d0d9;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .history-search-input {
+      width: 100%;
+      height: 32px;
+      background: #090b0e;
+      border: 1px solid #333b44;
+      border-radius: var(--r-1);
+      color: #f1f3f5;
+      font-size: 12px;
+      padding: 0 8px;
+      outline: none;
+    }
+
+    .history-search-input:focus {
+      border-color: var(--accent-cyan-light);
+    }
+
+    .invoices-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      max-height: 290px;
+      overflow-y: auto;
+    }
+
+    .past-inv-card {
+      background: #111418;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-1);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+
+    .past-inv-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-dim);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
+    }
+
+    .past-inv-meta strong {
+      color: #a4adb7;
+    }
+
+    .past-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-2);
+      padding: 3px 0;
+      font-size: 12px;
+    }
+
+    .past-item-info {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .past-item-price {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-cyan-light);
+      font-weight: 600;
+    }
+
+    .btn-add-history {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--r-1);
+      background: #1b2026;
+      border: 1px solid #333b44;
+      color: #76b8d5;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s;
+    }
+
+    .btn-add-history:hover {
+      background: #387e9e;
+      color: #f1f3f5;
+      border-color: #76b8d5;
+    }
+
+    /* Modals & Dialogs */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden; /* closed modals are not Tab-reachable; delay keeps the fade-out */
+      transition: opacity 0.15s ease, visibility 0s linear 0.15s;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+      transition: opacity 0.15s ease, visibility 0s;
+    }
+
+    /* Keep the receipt above the labels/AI overlays (z-index 9000+) so its close button stays clickable. */
+    #receiptModal.modal-backdrop {
+      z-index: 9200;
+    }
+
+    .modal-card {
+      background: #111418;
+      border: 1px solid #333b44;
+      border-radius: var(--r-2);
+      width: 90%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalSlide 0.2s ease;
+    }
+
+    @keyframes modalSlide {
+      from { transform: scale(0.96) translateY(10px); }
+      to { transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 12px 16px;
+      background: #111418;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f1f3f5;
+    }
+
+    .modal-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-4);
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      background: #111418;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--sp-3);
+    }
+
+    /* Checkout specific modal styles */
+    .checkout-amount-display {
+      background: #090b0e;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-1);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .checkout-amount-display .label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .checkout-amount-display .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #76b8d5;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .pay-methods-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--sp-2);
+    }
+    @media (max-width: 600px) { .pay-methods-grid { grid-template-columns: repeat(2, 1fr); } }
+    #checkoutCreditHint { color:#ff6b6b; font-size:12px; font-weight:600; margin-top:6px; }
+    #checkoutCreditHint[hidden] { display:none; }
+    #btnCancelCheckout { order:1; } #btnConfirmPayment { order:2; }
+    #btnConfirmPayment:disabled { opacity:.45; cursor:not-allowed; }
+
+    .pay-method-btn {
+      padding: 10px;
+      border: 1px solid #333b44;
+      background: #1b2026;
+      color: #c7d0d9;
+      border-radius: var(--r-1);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-1);
+      transition: all 0.15s;
+    }
+
+    .pay-method-btn.active {
+      border-color: #76b8d5;
+      background: rgba(2, 132, 199, 0.2);
+      color: #f1f3f5;
+    }
+
+    .quick-cash-row {
+      display: flex;
+      gap: var(--sp-2);
+      margin-top: 4px;
+    }
+
+    .quick-cash-btn {
+      flex: 1;
+      padding: 6px 0;
+      background: #1b2026;
+      border: 1px solid #333b44;
+      color: #c7d0d9;
+      border-radius: var(--r-1);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      text-align: center;
+    }
+
+    .quick-cash-btn:hover {
+      background: #333b44;
+      color: #f1f3f5;
+    }
+
+    .change-due-box {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 10px 14px;
+      border-radius: var(--r-1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .change-due-box span.title {
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .change-due-box span.amount {
+      font-size: 18px;
+      font-weight: 800;
+      color: #60b99b;
+      font-family: var(--font-mono);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      top: 142px;
+      left: 16px;
+      max-width: min(380px, calc(100vw - 32px));
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #1b2026;
+      border: 1px solid #76b8d5;
+      color: #f1f3f5;
+      padding: 10px 16px;
+      border-radius: var(--r-1);
+      box-shadow: var(--shadow-lg);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      animation: toastIn 0.25s ease;
+      pointer-events: auto;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Print Receipt View */
+    .receipt-slip {
+      background: #f1f3f5;
+      color: #000;
+      padding: 16px;
+      border-radius: var(--r-1);
+      font-family: Cairo, var(--font-sans, sans-serif);
+      font-size: 12px;
+      line-height: 1.5;
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 0 auto;
+    }
+    .receipt-slip[data-width="58mm"] { width: 58mm; max-width: 100%; padding: 10px 8px; }
+    .receipt-slip[data-width="80mm"] { width: 80mm; max-width: 100%; padding: 14px 12px; }
+    .nova-receipt-toolbar { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .nova-receipt-widths { display: inline-flex; gap: var(--sp-2); }
+    .nova-receipt-width-btn, .nova-printer-toggle { min-height: 44px; min-width: 44px; padding: 6px 12px; font-size: 12px; border-radius: var(--r-2); background: #222a33; border: 1px solid #3a4652; color: #d9e2e9; cursor: pointer; }
+    .nova-receipt-width-btn.active { background: #1a3444; color: #f1f3f5; border-color: #6dbde0; font-weight: 700; }
+    .nova-printer-toggle[data-connected="false"] { background: #29181c; color: #efa2a8; border-color: #56323a; }
+    .nova-receipt-alert[hidden] { display: none !important; }
+    .nova-receipt-alert { background: #29181c; color: #fecaca; border: 1px solid #56323a; border-radius: var(--r-2); padding: 8px 10px; margin-bottom: 10px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+    .nova-receipt-copy { background: #fef3c7; color: #78350f; border: 1px dashed #b45309; padding: 4px 8px; text-align: center; font-weight: 800; font-size: 12px; margin-bottom: 8px; border-radius: var(--r-1); }
+    .nova-receipt-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 12px; }
+    .nova-receipt-table th, .nova-receipt-table td { padding: 3px 2px; border-bottom: 1px dashed #cbd5e1; color: #000; text-align: right; }
+    .nova-receipt-barcode { text-align: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #94a3b8; }
+    .nova-receipt-barcode svg { display: block; margin: 0 auto 2px; max-width: 100%; height: 40px; }
+    @media print {
+      body > *:not(#receiptModal) { display: none !important; }
+      #receiptModal { position: static !important; background: #fff !important; display: block !important; padding: 0 !important; }
+      #receiptModal .modal-card { max-width: none !important; border: 0 !important; box-shadow: none !important; background: #fff !important; color: #000 !important; }
+      #receiptModal .modal-header, #receiptModal .modal-footer, .nova-receipt-toolbar, .nova-receipt-alert { display: none !important; }
+      .receipt-slip { max-height: none !important; overflow: visible !important; background: #fff !important; padding: 0 !important; }
+    }
+  
+
+/* UX13: reports period selector + end-of-day print */
+.nova-rep-bar{display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:center;justify-content:space-between;margin:0 0 12px}
+.nova-rep-seg{display:inline-flex;border:1px solid var(--border-subtle);border-radius:var(--r-2);overflow:hidden}
+.nova-rep-seg button{min-height:44px;padding:0 16px;background:var(--bg-surface);color:var(--text-main);border:0;font-family:inherit;font-size:14px;cursor:pointer}
+.nova-rep-seg button.active{background:var(--accent-cyan);color:#fff;font-weight:700}
+#novaDayReport{display:none}
+#novaDayReport .nova-dr-head{text-align:center;margin:0 0 6px;font-size:12px;line-height:1.5}#novaDayReport .nova-dr-ph{font-size:17px}
+#novaDayReport .nova-dr-blank{display:inline-block;min-width:40mm;border-bottom:1px solid #000}
+#novaDayReport .nova-dr-sigs{display:flex;gap:6mm;margin-top:14mm;font-size:12px}#novaDayReport .nova-dr-sigs>div{flex:1;text-align:center}#novaDayReport .nova-dr-sigs i{display:block;border-bottom:1px solid #000;height:12mm}
+@media print{
+ @page{margin:8mm}
+ body.nova-printing-report>*:not(#novaDayReport){display:none!important}
+ body.nova-printing-report>#novaDayReport{display:block!important;background:#fff;color:#000;font-family:Cairo,sans-serif;max-width:80mm;margin:0 auto;padding:0}
+ #novaDayReport h1{font-size:16px;margin:0 0 4px}#novaDayReport p{font-size:12px;margin:0 0 8px}
+ #novaDayReport table{width:100%;border-collapse:collapse;font-size:13px}
+ #novaDayReport td{padding:4px 2px;border-bottom:1px dashed #666;color:#000}#novaDayReport td+td{text-align:left}
+}
+@media print and (min-width:150mm){body.nova-printing-report>#novaDayReport{max-width:190mm!important}#novaDayReport table{font-size:14px}}
+@media print and (max-width:60mm){body.nova-printing-report>#novaDayReport{max-width:54mm!important}#novaDayReport table{font-size:11px}}
+
+
+/* UX68: customer statement print */
+#novaStmtDoc{display:none}
+#novaStatement .nova-stmt-table th,#novaStatement .nova-stmt-table td{padding:6px 4px;border-bottom:1px solid #2a3139;text-align:right}
+#novaStatement .nova-dlg-x{width:44px;height:44px;min-height:44px;top:4px;inset-inline-start:4px}
+#novaStatement button{min-height:44px}
+@media print{
+ body.nova-printing-stmt>*:not(#novaStmtDoc){display:none!important}
+ body.nova-printing-stmt>#novaStmtDoc{display:block!important;background:#fff;color:#000;font-family:Cairo,sans-serif;width:var(--stmt-w,80mm);max-width:100%;margin:0 auto;padding:0}
+ #novaStmtDoc h1{font-size:16px;margin:0 0 4px}#novaStmtDoc p{font-size:12px;margin:0 0 8px}
+ #novaStmtDoc table{width:100%;border-collapse:collapse;font-size:11px}#novaStmtDoc th,#novaStmtDoc td{padding:3px 2px;border-bottom:1px dashed #666;color:#000;text-align:right}
+}
+/* NOVA Rx / BLACK EDITION — unified design system */
+:root{color-scheme:dark;--bg-base:#050607;--bg-panel:#0b0d10;--bg-surface:#171b20;--bg-surface-hover:#21272e;--bg-surface-active:#29313a;--border-subtle:#272c33;--border-focus:#5badd6;--text-main:#f4f5f6;--text-muted:#a7afb9;--text-dim:#77828f;--accent-cyan:#2b90bd;--accent-cyan-light:#79c9eb;--accent-green:#69c6a8;--accent-green-bg:#10231e;--accent-green-border:#254c40;--accent-red:#e88e96;--accent-red-bg:#29181c;--accent-amber:#c5aa79;--badge-customer:#b8a6d7;--badge-customer-bg:#221d2a;--badge-product:#79c9eb;--badge-product-bg:#142530;--shadow-sm:0 2px 8px #0005;--shadow-md:0 8px 24px #0007;--shadow-lg:0 18px 48px #0009}
+html,body{background:#050607!important;color:#f4f5f6!important;color-scheme:dark}
+body{font-size:14px;line-height:1.45}
+.pharmacy-brand-banner{height:56px;min-height:56px;padding:6px 20px;background:#080a0d;border-bottom:1px solid #242b33;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
+.pharmacy-brand-banner:after{display:none}
+.pharmacy-banner-identity,.pharmacy-banner-right{display:flex;align-items:center;gap:var(--sp-3)}
+.pharmacy-mark{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;background:#14232d;border:1px solid #2d4e61;border-radius:var(--r-2);color:#80c9e9;font-size:24px;font-weight:800;box-shadow:none}
+.pharmacy-banner-copy{display:flex;flex-direction:column;gap:1px}
+.pharmacy-banner-copy strong{color:#f1f4f7;font-size:17px;line-height:1.25}
+.pharmacy-banner-copy span{color:#929da8;font-size:12px}
+.pharmacy-banner-copy i{display:inline-block;width:3px;height:3px;border-radius:50%;background:#bca77e;margin:0 6px;vertical-align:middle}
+.pharmacy-banner-live{display:inline-flex;align-items:center;gap:var(--sp-2);background:#121b22;border:1px solid #293c49;color:#a9bdcb;padding:6px 11px;border-radius:var(--r-1);font-size:12px;direction:ltr}
+.pharmacy-banner-live b{height:6px;width:6px;border-radius:50%;background:#69c6a8}
+.pharmacy-banner-phone{color:#b6a37e;font-size:12px;direction:ltr}
+.pos-root{height:calc(100dvh - 56px);background:#050607;display:flex;overflow:hidden}
+.main-workspace{flex:0 0 73%;width:73%;min-width:0;max-width:73%;background:#0b0d10;border-right:1px solid #272c33}
+.customer-sidebar{flex:0 0 27%;width:27%;min-width:0;max-width:27%;background:#090b0e}
+.top-header,.sidebar-header{height:52px;min-height:52px;background:#101318;border-bottom:1px solid #272c33;padding:0 14px}
+.brand-logo{color:#f4f5f6;font-size:17px}.brand-logo span.rx{color:#79c9eb;background:#172631;font-size:12px}
+.task-badge{display:none}
+.status-pill{font-size:12px;padding:5px 8px}
+.status-pill.customer-mode,.search-mode-tag.customer{background:#241e2c;color:#c7b6e3;border:1px solid #514460}
+.status-pill.product-mode,.search-mode-tag.product{background:#132530;color:#90d5f0;border:1px solid #315568}
+.header-actions{gap:var(--sp-2)}
+:root{--nova-btn-radius:var(--r-2);--nova-btn-h:40px}
+.btn{font-size:12px;min-height:var(--nova-btn-h);padding:8px 11px;border-radius:var(--nova-btn-radius);box-shadow:none}
+.btn-secondary{background:#1b2027;color:#dce3ea;border-color:#343c46}
+.btn-secondary:hover{background:#262d36;border-color:#4b5967}
+.btn-loyalty{background:#231f2b;color:#c8b7df;border-color:#50455c}
+.btn-danger{background:#29191e;color:#efa2a8;border-color:#56323a}
+.search-container{padding:12px 14px;background:#0e1115;border-bottom:1px solid #272c33}
+.main-search-input{height:52px;background:#080a0d!important;color:#f4f5f6!important;border:1px solid #3b444e;border-radius:var(--r-2);font-size:16px;padding-left:138px;padding-right:15px;box-shadow:none}
+.main-search-input::placeholder{color:#7d8996}
+.main-search-input:focus{border-color:#79c9eb;box-shadow:0 0 0 2px #79c9eb22}
+.search-mode-tag{font-size:12px;padding:6px 8px}.search-hints{display:none}
+.suggestions-dropdown{left:14px;right:14px;background:#15191f;border:1px solid #3b5565;border-radius:var(--r-2);max-height:50dvh;box-shadow:var(--shadow-lg)}
+.suggestion-item{padding:12px;min-height:50px;border-bottom:1px solid #292f37}
+.suggestion-item.selected,.suggestion-item:hover{background:#212b34;border-left:2px solid #79c9eb}
+.sugg-primary{color:#f0f3f6;font-size:14px}.sugg-sub{color:#9da8b4}.sugg-price{color:#8bcce9}.sugg-tag{background:#252b32;color:#a6b2bd}
+.table-container{background:#0b0d10;min-height:0;overscroll-behavior:contain}
+table.invoice-table th{background:#15191f;color:#aeb8c2;font-size:12px;padding:12px 8px;border-bottom:1px solid #2b3037}
+table.invoice-table td{color:#e6ebef;font-size:13px;padding:11px 8px;border-bottom:1px solid #22272d}
+table.invoice-table tbody tr:hover{background:#171d23}
+.col-item{min-width:160px}.col-qty{width:110px}
+.qty-control,.input-grp{background:#10151a;border:1px solid #343e49;border-radius:var(--r-1)}
+.qty-btn{width:36px;height:38px;color:#d5e5ee;font-size:18px}.qty-btn:hover{background:#28343e;color:#f1f3f5}
+.qty-input,.input-grp input{background:#10151a!important;color:#f3f5f6!important;height:38px}
+.invoice-footer{height:auto;min-height:118px;background:#101318;border-top:1px solid #2b3138;padding:10px 14px;gap:var(--sp-3);box-shadow:none}
+.discount-controls{background:#14191f;border:1px solid #2c343d;border-radius:var(--r-2);padding:9px}
+.discount-title{color:#aab6c1;font-size:12px}.discount-title span:last-child{display:none}
+.totals-breakdown,.tot-row{color:#aab4bf;font-size:12px}
+.tot-row span:last-child{color:#e8edf1}
+.tot-row.grand-total{border-color:#35404a;color:#f4f6f8}
+.tot-row.grand-total span:last-child{color:#91d7f3}
+.checkout-action-box{width:145px;min-width:145px;align-self:stretch}
+.btn-checkout{background:#257fa9;border:1px solid #3b94be;color:#f1f3f5;border-radius:var(--r-2);box-shadow:none;font-size:14px;min-height:72px}
+.btn-checkout:hover{background:#328db5;box-shadow:none}
+.sidebar-title{color:#eef1f4;font-size:14px}
+.sidebar-body{background:#090b0e;padding:12px;gap:var(--sp-3)}
+.customer-empty-box{background:#12161b;border:1px dashed #39414a;border-radius:var(--r-2);color:#aab6c1;padding:25px 12px}
+.customer-empty-text{color:#bec7d0;font-size:13px}.customer-empty-sub{color:#8795a3;font-size:12px}
+.cust-card,.past-inv-card{background:#15191e;border:1px solid #2c333b;border-radius:var(--r-2);padding:12px;box-shadow:none}
+.cust-name{color:#f1f3f5;font-size:16px}.cust-phone{color:#a7b3be;font-size:12px}
+.cust-stat-pill{background:#222830;color:#abb8c4;border-radius:var(--r-1);padding:6px 8px;font-size:12px}
+.cust-stat-pill strong{color:#f1f3f5}
+.cust-stat-pill.tier-gold{background:#2c271d;color:#d7bd85;border:1px solid #544831}
+.cust-actions-bar{gap:var(--sp-2);flex-wrap:wrap}
+.offers-section{background:#10221e;border:1px solid #285145;border-radius:var(--r-2);padding:10px}
+.offers-header{color:#83d8b9;font-size:12px}.offer-item{color:#b8e7d6;font-size:12px}
+.history-header{color:#dce4eb;font-size:13px}
+.history-search-input{height:40px;background:#0d1217;color:#eef2f5;border:1px solid #343e48;border-radius:var(--r-1);font-size:13px;padding:0 10px}
+.invoices-scroll{max-height:none;min-height:0}
+.past-inv-meta{color:#98a7b5;border-bottom:1px solid #2a3138;font-size:12px}
+.past-inv-meta strong{color:#d2dde5}
+.past-item-row{color:#dbe3e9;font-size:12px}.past-item-price{color:#8dcde9;font-size:12px}
+.btn-add-history{width:34px;height:34px;background:#1c2b36;border:1px solid #345063;color:#95d5f1;border-radius:var(--r-1)}
+.btn-add-history:hover{background:#257fa9;color:#f1f3f5}
+.modal-backdrop{background:#000b}
+.modal-card{background:#171b21;border:1px solid #343c45;border-radius:var(--r-2);color:#eaf0f4}
+.modal-header,.modal-footer{background:#11151a;border-color:#2c333b}
+.modal-header h3{color:#f2f4f6}.modal-body{color:#e3eaf0}
+.checkout-amount-display{background:#0e1419;border:1px solid #303d47;border-radius:var(--r-2)}
+.checkout-amount-display .label{color:#9eacb9}.checkout-amount-display .val{color:#90d7f3}
+.pay-method-btn,.quick-cash-btn{background:#222a33;border:1px solid #3a4652;color:#d9e2e9;border-radius:var(--r-2)}
+.pay-method-btn.active{background:#1a3444;color:#f1f3f5;border-color:#6dbde0}
+.change-due-box{background:#11251e;border-color:#2d5947;border-radius:var(--r-2)}
+.change-due-box span.title,.change-due-box span.amount{color:#82d7b8}
+.toast{background:#1a232c;border:1px solid #46728b;color:#edf3f7;border-radius:var(--r-2)}
+button,input{touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
+@media(max-width:1300px){.col-barcode{display:none}.top-header{padding:0 9px}.header-actions{gap:var(--sp-1)}.btn{padding:7px 8px}.invoice-footer{gap:var(--sp-2)}.checkout-action-box{width:125px;min-width:125px}}
+@media(max-width:1050px){.pharmacy-brand-banner{height:52px;min-height:52px;padding:6px 12px}.pos-root{height:calc(100dvh - 52px)}.pharmacy-banner-phone{display:none}.pharmacy-mark{width:34px;height:34px;flex-basis:34px}.pharmacy-banner-copy strong{font-size:15px}.header-actions #btnHelpShortcuts{display:none}.header-actions kbd{display:none}.col-disc{display:none}.invoice-footer{flex-wrap:wrap}.discount-controls{flex:1 1 42%}.totals-breakdown{flex:1 1 48%}.checkout-action-box{width:100%;flex:1 1 100%}.btn-checkout{min-height:46px}}
+@media(max-height:650px) and (orientation:landscape){.top-header,.sidebar-header{height:44px;min-height:44px}.search-container{padding:7px 10px}.main-search-input{height:44px}.invoice-footer{min-height:94px;padding:6px 10px}}
+@media(orientation:portrait){body{overflow:auto;height:auto}.pos-root{height:auto;min-height:calc(100dvh - 52px);flex-direction:column;overflow:visible}.main-workspace,.customer-sidebar{width:100%;max-width:100%;min-width:0;flex:auto;height:auto}.main-workspace{min-height:70dvh}.customer-sidebar{min-height:260px}.table-container{min-height:320px;overflow-x:auto}.top-header{flex-wrap:wrap;height:auto;padding:10px}.header-actions{flex-wrap:wrap}.invoice-footer{flex-wrap:wrap}}
+
+
+#btnRefreshApp{border:1px solid #3c4b57;background:#19212a;color:#cce4f0;min-width:43px;gap:var(--sp-1)}#btnRefreshApp:hover{background:#263542;color:#f1f3f5}#btnRefreshApp.refreshing{opacity:.65;pointer-events:none}#btnRefreshApp.refreshing::first-letter{color:#79c9eb}@media(max-width:1050px){#btnRefreshApp .refresh-label{display:none}}
+
+
+/* NOVA Rx — final monochrome palette / single accent */
+:root{color-scheme:dark;--bg-base:#08090b;--bg-panel:#101216;--bg-surface:#1b2026;--bg-surface-hover:#252b32;--bg-surface-active:#303841;--border-subtle:#2a3037;--border-focus:#76b8d5;--text-main:#f1f3f5;--text-muted:#a4adb7;--text-dim:#808b96;--accent-cyan:#387e9e;--accent-cyan-light:#76b8d5;--badge-customer:#a5bac9;--badge-customer-bg:#1c2832;--badge-product:#76b8d5;--badge-product-bg:#1c303b}
+.pharmacy-brand-banner{background:#101216;border-color:#2a3037}
+.pharmacy-mark{background:#1b2933;border-color:#374d5b;color:#a9d3e4}
+.pharmacy-banner-copy strong{color:#f1f3f5}.pharmacy-banner-copy span{color:#a4adb7}.pharmacy-banner-phone{color:#a4adb7}
+.pharmacy-banner-live{background:#1b2026;border-color:#333b44;color:#b9c5ce}
+.pharmacy-banner-live b{background:#60b99b}
+body,.pos-root{background:#08090b;color:#f1f3f5}
+.main-workspace,.table-container{background:#101216}
+.customer-sidebar,.sidebar-body{background:#0d0f12}
+.top-header,.sidebar-header,.invoice-footer{background:#171b20}
+.search-container{background:#13171b}
+.main-search-input,.history-search-input{background:#0c0e11!important;border-color:#333b44;color:#f1f3f5!important}
+table.invoice-table th{background:#1a1f25;color:#b6bec7}
+table.invoice-table td{color:#e3e8ec}
+table.invoice-table tbody tr:hover{background:#1d242b}
+.cust-card,.past-inv-card{background:#191e24;border-color:#303841}
+.cust-stat-pill,.sugg-tag{background:#252b32;color:#c3cbd3}
+.cust-stat-pill strong{color:#f1f3f5}
+.customer-empty-box{background:#15191e;border-color:#39434c}
+.offers-section{background:#15231f;border-color:#2e5548}
+.offers-header,.offer-item{color:#a8d7c6}
+.btn-secondary,#btnRefreshApp{background:#222830;color:#e1e6eb;border-color:#38414a}
+.btn-secondary:hover,#btnRefreshApp:hover{background:#2b333c;color:#fff}
+.btn-primary,.btn-checkout{background:#387e9e;color:#fff;border-color:#4d91b0;box-shadow:none}
+.btn-primary:hover,.btn-checkout:hover{background:#458dad;box-shadow:none}
+.btn-loyalty{background:#25303a;color:#c4d3df;border-color:#425565}
+.status-pill.customer-mode,.search-mode-tag.customer{background:#25303a;color:#c4d3df;border-color:#425565}
+.status-pill.product-mode,.search-mode-tag.product{background:#20323c;color:#a5d5e9;border-color:#416276}
+.suggestions-dropdown{background:#1a1f25;border-color:#455966}
+.suggestion-item.selected,.suggestion-item:hover{background:#29323a}
+.qty-control,.input-grp,.qty-input,.input-grp input{background:#11161b!important;color:#f1f3f5!important;border-color:#39434c}
+.discount-controls{background:#191e24;border-color:#303841}
+.modal-card{background:#191e24;border-color:#39434c;color:#f1f3f5}
+.modal-header,.modal-footer,.checkout-amount-display{background:#14181d;border-color:#303841}
+.pay-method-btn,.quick-cash-btn{background:#252b32;border-color:#414b55;color:#e2e8ec}
+.pay-method-btn.active{background:#203847;border-color:#76b8d5}
+
+/* Navigation + purpose-built secondary pages */
+body{font-family:"Cairo",Tahoma,Arial,sans-serif}
+.nova-nav{height:48px;display:flex;align-items:center;gap:var(--sp-1);padding:5px 16px;background:#111418;border-bottom:1px solid #2a3037;overflow-x:auto;scrollbar-width:none}
+.nova-nav::-webkit-scrollbar{display:none}
+.nova-tab{border:0;background:transparent;color:#a7b0ba;font-family:inherit;font-size:12px;font-weight:700;padding:8px 15px;white-space:nowrap;border-radius:var(--r-1);cursor:pointer;min-height:37px}
+.nova-tab:hover{background:#222930;color:#fff}
+.nova-tab.active{background:#263d4b;color:#a9d9ec}
+.nova-demo-label{margin-inline-start:auto;color:#8c98a3;font-size:12px;white-space:nowrap;border:1px solid #35404a;padding:4px 9px;border-radius:var(--r-1)}
+.pos-root{height:calc(100dvh - 104px)}
+.nova-page-view{height:calc(100dvh - 104px);overflow:auto;background:#0c0e11;padding:24px 30px}
+.nova-page-view[hidden]{display:none}
+.nova-invoice-search{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0c0e12;padding:8px 0;margin-bottom:8px}
+.nova-invoice-search .nova-page-search{flex:1;min-width:0;min-height:48px;margin:0}
+.nova-invoice-search button,.nova-invoice-number{min-width:48px;min-height:48px}
+.nova-invoice-search button{display:grid;place-items:center}
+.nova-invoice-search-status:not(:empty){flex-basis:100%;color:#ffb4a8}
+.nova-invoice-number{background:none;border:0;color:#9edcf4;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+.nova-invoice-row{cursor:pointer}
+.nova-invoice-detail-overlay{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:12px;background:#000a}
+.nova-invoice-detail{width:min(100%,520px);max-height:min(90dvh,700px);display:flex;flex-direction:column;background:#14181d;color:#e7ebf0;border:1px solid #303841;border-radius:12px;overflow:hidden}
+.nova-invoice-detail header,.nova-invoice-detail footer{display:flex;align-items:center;gap:8px;padding:12px;position:relative}
+.nova-invoice-detail h2{font-size:18px;margin:0}
+.nova-invoice-detail header .nova-dlg-x{position:static;flex:none;margin-inline-start:auto;width:48px;height:48px;min-height:48px}
+.nova-invoice-detail-body{padding:0 12px;overflow:auto}
+.nova-invoice-summary{display:flex;justify-content:space-between;gap:12px}
+.nova-invoice-detail ul{margin:0;padding:0;list-style:none}
+.nova-invoice-detail li{padding:8px 0;border-top:1px solid #303841}
+.nova-invoice-detail li small{display:block;color:#b7c5d0}
+.nova-invoice-detail footer{align-items:flex-start;flex-wrap:wrap;border-top:1px solid #303841}
+.nova-invoice-detail footer :is(button,summary){min-height:48px}
+.nova-invoice-detail footer summary{display:flex;align-items:center;padding:0 10px;cursor:pointer}
+.nova-invoice-detail footer details[open]{flex-basis:100%}
+.nova-return-overlay [hidden]{display:none!important}
+@media(max-width:600px){.nova-invoice-row td.nova-actions{display:none!important}}
+.nova-page-header{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);margin-bottom:22px}
+.nova-page-header h1{font-size:23px;font-weight:800;color:#f1f3f5;margin:0}
+.nova-page-header p{font-size:12px;color:#a4adb7;margin-top:5px}
+.nova-page-search{min-height:44px;max-width:380px;width:100%;border:1px solid #38424b;border-radius:var(--r-2);background:#15191e;color:#f1f3f5;padding:8px 13px;font:inherit;font-size:13px}
+.nova-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3);margin-bottom:20px}
+.nova-kpi,.nova-panel{background:#171b20;border:1px solid #2d343c;border-radius:var(--r-2);padding:17px}
+.nova-kpi small{display:block;color:#9da9b4;font-size:12px}.nova-kpi strong{display:block;color:#f0f3f5;font-size:23px;margin-top:7px;font-weight:800}
+.nova-panel{padding:0;overflow:hidden}.nova-panel-title{padding:16px 18px;color:#e9eef2;font-size:14px;font-weight:700;border-bottom:1px solid #2d343c}
+.nova-data-table{border-collapse:collapse;width:100%;text-align:right}
+.nova-data-table th{background:#1c2229;color:#a7b3bd;font-size:12px;padding:13px 16px;white-space:nowrap}
+.nova-data-table td{padding:13px 16px;border-top:1px solid #292f36;color:#dce3e9;font-size:12px}
+.nova-data-table tr:hover td{background:#20262d}
+.nova-muted{color:#9aa7b3;font-size:12px}.nova-empty{padding:35px;text-align:center;color:#a4adb7}
+.nova-tag{border:1px solid #385260;background:#1b2e38;color:#a6d5e9;padding:3px 8px;border-radius:var(--r-1);font-size:12px}
+.nova-page-btn{background:#263d4b;border:1px solid #4b7185;color:#d7eaf2;border-radius:var(--nova-btn-radius,8px);min-height:var(--nova-btn-h,40px);padding:8px 12px;font:inherit;cursor:pointer}
+.nova-page-btn:hover{background:#335365}
+.nova-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-4);align-items:stretch}
+.nova-setting-card p+p{margin-top:6px}.nova-setting-card#novaAuthCard,.nova-card-wide{grid-column:1/-1}.nova-vat-row{display:flex;align-items:center;gap:var(--sp-2);margin-top:10px}
+.nova-setting-card .nova-field{height:44px;min-height:44px;width:120px;min-width:96px;box-sizing:border-box;padding:6px 12px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-2);font-size:15px}
+.nova-vat-row .nova-unit{color:#a4adb7;font-size:14px}
+.nova-setting-card{background:#171b20;border:1px solid #303841;border-radius:var(--r-2);padding:20px}
+.nova-setting-card h3{font-size:14px;color:#f1f3f5;margin:0 0 8px}.nova-setting-card p{font-size:12px;color:#a4adb7;line-height:1.8}
+@media(max-width:1050px){.nova-nav{height:44px;padding:4px 8px}.nova-tab{padding:7px 10px}.pos-root,.nova-page-view{height:calc(100dvh - 96px)}.nova-page-view{padding:15px}.nova-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(orientation:portrait){.pos-root,.nova-page-view{height:auto;min-height:calc(100dvh - 96px)}.nova-settings-grid{grid-template-columns:1fr}.nova-page-header{flex-wrap:wrap}.nova-page-view{overflow-x:auto}}
+
+
+.nova-lang-switch{display:flex;gap:2px;padding:3px;background:#1b2026;border:1px solid #303841;border-radius:var(--r-2);margin-inline-start:auto}
+.nova-lang-btn{border:0;background:transparent;color:#aab6c0;font-family:inherit;font-size:12px;font-weight:700;border-radius:var(--r-1);padding:5px 10px;cursor:pointer;white-space:nowrap}
+.nova-lang-btn.active{background:#344b59;color:#e2f4fc}
+.lang-ar .pos-root{direction:ltr}
+.lang-ar .main-workspace,.lang-ar .customer-sidebar{direction:rtl}
+.lang-ar .invoice-table{text-align:right}
+.lang-ar .search-box-wrapper{direction:ltr}
+.lang-ar .search-box-wrapper input{text-align:right;padding-right:110px;padding-left:15px}
+.lang-ar .search-mode-tag{left:10px;right:auto}
+.lang-ar .nova-page-view{direction:rtl}
+.lang-en .nova-page-view,.lang-en .nova-nav{direction:ltr}
+.lang-en .nova-data-table{text-align:left}
+.lang-en .pharmacy-brand-banner{direction:ltr}
+.lang-en .pharmacy-banner-copy{text-align:left}
+@media(max-width:700px){.nova-demo-label{display:none}.nova-lang-btn{padding:5px 7px}}
+
+/* v8 — verified bilingual layout rules */
+html,body{min-width:0}
+.lang-ar{font-family:"Cairo",Tahoma,Arial,sans-serif}
+.lang-en{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+.lang-ar .nova-nav{direction:rtl}
+.lang-en .nova-nav{direction:ltr}
+.lang-ar .pharmacy-brand-banner{direction:rtl}
+.lang-ar .nova-page-view,.lang-ar .nova-page-header,.lang-ar .nova-panel,.lang-ar .nova-kpi{text-align:right}
+.lang-en .nova-page-view,.lang-en .nova-page-header,.lang-en .nova-panel,.lang-en .nova-kpi{text-align:left}
+.lang-ar .nova-data-table{text-align:right}
+.lang-en .nova-data-table{text-align:left}
+.lang-ar .top-header,.lang-ar .sidebar-header,.lang-ar .invoice-footer{direction:rtl}
+.lang-en .top-header,.lang-en .sidebar-header,.lang-en .invoice-footer{direction:ltr}
+.lang-ar .invoice-table{text-align:right}
+.lang-en .invoice-table{text-align:left}
+.lang-ar .search-box-wrapper{direction:rtl}
+.lang-en .search-box-wrapper{direction:ltr}
+.lang-ar .main-search-input{padding-right:120px;padding-left:15px;text-align:right}
+.lang-en .main-search-input{padding-left:120px;padding-right:15px;text-align:left}
+.lang-ar .search-mode-tag{right:10px;left:auto}
+.lang-en .search-mode-tag{left:10px;right:auto}
+.lang-ar .search-hints{left:12px;right:auto}
+.lang-en .search-hints{right:12px;left:auto}
+.lang-ar .suggestion-item,.lang-ar .cust-card,.lang-ar .past-inv-card{text-align:right}
+.lang-en .suggestion-item,.lang-en .cust-card,.lang-en .past-inv-card{text-align:left}
+.lang-ar .sugg-meta{text-align:left}
+.lang-en .sugg-meta{text-align:right}
+.nova-nav{flex-shrink:0}
+.nova-lang-switch{flex-shrink:0}
+.nova-demo-label{flex-shrink:0}
+.nova-tab{flex-shrink:0}
+.nova-page-view{min-width:0}
+.nova-kpi{min-width:0}
+button.nova-kpi-btn{font:inherit;cursor:pointer;text-align:inherit;color:inherit;min-height:44px}.nova-kpi-btn.active{border-color:#e5484d!important}.nova-chip{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:var(--r-2);background:#3a1519;color:#ff8a8f;font-size:12px}.nova-exp-badge{display:inline-block;padding:1px 8px;border-radius:var(--r-2);font-weight:700;font-size:12px}.nova-exp-expired{background:#3a1519;color:#ff8a8f}.nova-exp-d30{background:#3a3210;color:#ffd84d}.nova-exp-d90{background:#3a2a10;color:#ffb347}.nova-exp-ok{background:#12301f;color:#6fdc9a}
+.nova-low-badge{display:inline-block;min-width:28px;text-align:center;padding:1px 8px;border-radius:var(--r-2);background:#3a1519;color:#ff8a8f;font-weight:700}
+.nova-kpi small{color:#b8c3cd}button.nova-kpi-btn.nova-kpi small{font-size:13px!important}
+.nova-stock{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:var(--r-2);font-weight:700;font-size:13px;white-space:nowrap}
+.nova-stock-ok{background:#12301f;color:#8fe3ae}.nova-stock-low{background:#3d2a05;color:#ffc766}.nova-stock-out{background:#4a1418;color:#ffb3b6}
+.nova-stock .nova-stock-t{font-size:12px;font-weight:600}
+.nova-kpi strong{overflow-wrap:anywhere}
+@media(max-width:1150px){.nova-nav{gap:2px}.nova-tab{padding:7px 10px}.nova-demo-label{display:none}}
+@media(max-width:780px){.nova-nav{padding-inline:6px}.nova-tab{font-size:12px;padding:6px 8px}.nova-lang-switch{position:sticky;inset-inline-end:0;z-index:3;background:#1b2026}.nova-page-view{padding:12px}.nova-kpis{gap:var(--sp-2)}}
+
+
+/* v9 — tablet viewport and edge clipping repair */
+html{width:100%;height:100%;overflow:hidden}
+body{width:100%;height:100dvh;min-width:0;overflow:hidden;display:flex;flex-direction:column}
+.pharmacy-brand-banner{flex:0 0 56px;width:100%;min-width:0;max-width:100%;padding-inline:clamp(8px,1.3vw,18px)}
+.pharmacy-banner-identity,.pharmacy-banner-right,.pharmacy-banner-copy{min-width:0}
+.pharmacy-banner-copy strong,.pharmacy-banner-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nova-nav{flex:0 0 48px;width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden}
+.pos-root{flex:1 1 auto;height:auto!important;min-height:0;width:100%!important;max-width:100%;overflow:hidden}
+.main-workspace{flex:0 0 73%!important;width:73%!important;max-width:73%!important;min-width:0!important;height:100%;min-height:0;overflow:hidden}
+.customer-sidebar{flex:0 0 27%!important;width:27%!important;max-width:27%!important;min-width:0!important;height:100%;min-height:0;overflow:hidden}
+.top-header{flex-shrink:0;min-width:0;padding-inline:10px;gap:var(--sp-2)}
+.brand-section,.header-actions{min-width:0;gap:var(--sp-1)}
+.header-actions{flex-shrink:1;flex-wrap:nowrap}
+.header-actions .btn{min-width:0;padding:6px 8px;font-size:12px}
+.search-container{flex-shrink:0;min-width:0;padding-inline:10px}
+.table-container{min-height:0;min-width:0;overflow:auto}
+.invoice-table{min-width:640px}
+.invoice-footer{flex:0 0 auto;min-width:0;width:100%;gap:var(--sp-3);padding:8px 10px;height:auto;min-height:105px;max-height:38%;overflow-y:auto}
+.discount-controls,.totals-breakdown{min-width:0}
+.customer-sidebar .sidebar-body,.invoices-scroll{min-height:0;overflow-y:auto}
+.nova-page-view{flex:1 1 auto;height:auto!important;min-height:0;width:100%;max-width:100%;overflow-y:auto;overflow-x:hidden}
+.nova-page-header,.nova-kpis,.nova-panel{min-width:0;max-width:100%}
+.nova-page-header{flex-wrap:wrap}
+.nova-panel>div[style*="overflow:auto"]{max-width:100%;overflow-x:auto!important}
+.nova-data-table{min-width:540px}
+.modal-backdrop{max-width:100vw;max-height:100dvh;padding:12px;overflow:auto}
+.modal-card{max-width:min(96vw,700px);max-height:calc(100dvh - 24px);overflow-y:auto}
+@media(max-width:1100px){
+ .pharmacy-banner-right{gap:var(--sp-1)}
+ .top-header{padding-inline:7px}
+ .brand-logo{font-size:12px}
+ .header-actions .btn{padding:5px 6px;font-size:12px}
+ .header-actions kbd{display:none}
+ .invoice-footer{gap:var(--sp-2);padding:6px;min-height:95px}
+ .discount-controls{padding:6px}
+ .main-workspace{flex-basis:70%!important;width:70%!important;max-width:70%!important}
+ .customer-sidebar{flex-basis:30%!important;width:30%!important;max-width:30%!important}
+}
+@media(max-width:780px){
+ .pharmacy-brand-banner{flex-basis:48px;height:48px;min-height:48px}
+ .nova-nav{flex-basis:44px}
+ .main-workspace{flex-basis:67%!important;width:67%!important;max-width:67%!important}
+ .customer-sidebar{flex-basis:33%!important;width:33%!important;max-width:33%!important}
+ .invoice-footer{flex-wrap:wrap;max-height:48%}
+ .discount-controls{flex:1 1 42%}
+ .totals-breakdown{flex:1 1 48%}
+}
+
+
+/* NOVA Rx classic layout refinement: retain original components and behavior */
+@media (min-width: 850px) and (orientation: landscape) {
+ .pos-root{display:flex;flex-direction:row-reverse;min-height:0}
+ .main-workspace{flex:1 1 72%;width:72%;min-width:0}
+ .customer-sidebar{flex:0 0 28%;width:28%;min-width:0;max-width:28%}
+}
+.top-header{height:44px;min-height:44px;padding:0 10px;gap:var(--sp-2)}
+.task-badge{display:none!important}
+.header-actions{gap:var(--sp-1);flex-wrap:nowrap}
+.header-actions .btn{padding:6px 9px;min-height:34px;font-size:12px;white-space:nowrap}
+.header-actions kbd{display:none}
+.search-container{padding-top:7px;padding-bottom:7px}
+.invoice-footer{padding-top:7px;padding-bottom:7px}
+.discount-title span:last-child{display:none}
+.nova-nav{gap:var(--sp-1);padding:3px 10px;min-height:39px;height:39px}
+.nova-tab{padding:6px 10px}
+.nova-settings-grid .nova-lang-switch{display:flex;margin:12px 0 0;width:max-content}
+.nova-settings-grid .nova-lang-btn{min-width:75px;min-height:40px;font-size:13px}
+@media(max-width:1100px) and (orientation:landscape){.header-actions .btn{padding:6px 7px;font-size:12px}.top-header{padding:0 8px}.nova-nav{height:38px;min-height:38px}}
+
+.offline-chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--r-2);background:#3a2a05;color:#ffd166;border:1px solid #8a6a1a;font-size:12px;font-weight:700}.offline-chip[hidden]{display:none}
+.elsousy-brand-mark{width:30px;height:30px;object-fit:contain;flex:none;border-radius:var(--r-1)}
+.nova-refresh-icon{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;padding:0;border:1px solid #34434c;border-radius:var(--r-1);background:#1b252d;color:#7dd3fc;cursor:pointer;margin-inline-start:2px;flex:none}
+.nova-refresh-icon:hover,.nova-refresh-icon:focus-visible{background:#29404d;color:#fff;outline-offset:2px}
+.brand-logo{gap:var(--sp-1);white-space:nowrap}
+
+.pharmacy-banner-identity>.elsousy-brand-mark{width:36px;height:36px;object-fit:contain;border-radius:var(--r-2);flex:0 0 36px}
+.pharmacy-banner-right>.nova-refresh-icon{margin:0 0 0 3px;width:28px;height:28px}
+
+.pharmacy-banner-live{padding:0;width:24px;height:24px;justify-content:center;background:transparent;border:0}
+.pharmacy-banner-live b{width:9px;height:9px;box-shadow:0 0 0 3px rgba(105,198,168,.12)}
+
+.pharmacy-banner-right{gap:var(--sp-2)}
+.pharmacy-banner-right>.nova-refresh-icon{width:26px;height:26px;border:0;background:transparent;color:#9baeb9;margin:0}
+.pharmacy-banner-right>.nova-refresh-icon:hover{background:#1b252d;color:#fff}
+
+/* Customer sidebar heading: centered, compact and closer to the top */
+.customer-sidebar .sidebar-header{height:34px!important;min-height:34px!important;padding:0 8px!important;justify-content:center!important;position:relative}
+.customer-sidebar .sidebar-title{width:100%;justify-content:center;text-align:center;gap:var(--sp-2);font-size:13px;line-height:1.2}
+.customer-sidebar #sidebarCustBadge{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%)}
+.customer-sidebar .sidebar-body{padding-top:6px}
+
+/* Compact sale toolbar — primary action, customer icon, overflow menu */
+.top-header{overflow:visible;position:relative;z-index:25}
+.nova-sale-actions{display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;overflow:visible}
+.nova-sale-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);height:34px;min-height:34px;border-radius:var(--r-2);white-space:nowrap}
+.nova-sale-actions .nova-new-sale{background:#203d4c;border:1px solid #47758b;color:#e3f5ff;font-weight:700;padding:0 12px;font-size:12px}
+.nova-sale-actions .nova-new-sale:hover{background:#2b5165}
+.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action{width:34px;min-width:34px;padding:0;background:#1b242c;border:1px solid #34434c;color:#c6d7e1}
+.nova-more-wrap{position:relative;flex:none}
+.nova-more-menu{position:absolute;z-index:120;top:calc(100% + 7px);inset-inline-end:0;width:184px;background:#1b222a;border:1px solid #3b4a55;border-radius:var(--r-2);padding:5px;box-shadow:0 12px 28px rgba(0,0,0,.4)}
+.nova-more-menu[hidden]{display:none!important}
+.nova-more-item{display:block;width:100%;padding:10px 12px;text-align:start;background:transparent;border:0;border-radius:var(--r-1);color:#e4ebf0;font:600 12px Cairo,Arial,sans-serif;cursor:pointer}
+.nova-more-item:hover{background:#2a3944}
+.nova-more-danger{color:#f2b4b7}
+@media(max-width:900px){.nova-sale-actions{gap:var(--sp-1)}.nova-sale-actions .nova-new-sale{padding:0 8px;font-size:12px}}
+
+.nova-sale-actions .nova-held-action{height:34px;padding:0 9px;background:#222b33;border:1px solid #3c4c56;color:#d8e4eb;font-size:12px}
+.nova-held-count{background:#394b56;color:#e7f3fa;border-radius:var(--r-2);min-width:18px;padding:1px 4px;font-size:12px}
+.nova-held-panel{position:absolute;z-index:110;top:auto;margin-top:4px;inset-inline-end:12px;width:min(360px,calc(100vw - 24px));max-height:min(440px,75dvh);overflow:auto;background:#19222b;color:#eaf0f4;border:1px solid #40515c;border-radius:var(--r-2);padding:12px;box-shadow:0 16px 40px #0008}
+.nova-held-panel[hidden]{display:none!important}
+.nova-held-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;font-size:13px}
+.nova-held-heading button{border:0;background:transparent;color:#dce8ef;font-size:23px;cursor:pointer}
+.nova-held-list{display:flex;flex-direction:column;gap:var(--sp-2)}
+.nova-held-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:9px;border:1px solid #334550;border-radius:var(--r-2);background:#202c36}
+.nova-held-meta{min-width:0;font-size:12px}.nova-held-meta small{display:block;color:#a8bac7;margin-top:3px;font-size:12px}
+.nova-held-row-actions{display:flex;gap:var(--sp-1);flex-shrink:0}
+.nova-held-row-actions button,.nova-hold-current{border:1px solid #4d6574;background:#304554;color:#eaf5fa;border-radius:var(--r-1);padding:7px 9px;font-size:12px;cursor:pointer}
+.nova-held-row-actions .nova-held-delete{background:#38272c;border-color:#63434b;color:#ffc5ca}
+.nova-hold-current{width:100%;margin-top:10px;background:#244354}
+@media(max-width:780px){.nova-sale-actions .nova-held-action{padding:0 6px;gap:var(--sp-1)}.nova-sale-actions .nova-held-action svg{display:none}}
+
+/* Brand placement: pharmacy in sales toolbar, NOVA on navigation row left */
+.pharmacy-brand-banner .nova-top-label{font-size:12px;font-weight:600;color:#8da0ad}
+.top-header .pharmacy-banner-identity{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
+.top-header .pharmacy-banner-copy{display:flex;flex-direction:column;min-width:0}
+.top-header .pharmacy-banner-copy strong{font-size:13px;white-space:nowrap;line-height:1.3}
+.top-header .pharmacy-banner-copy span{font-size:12px;color:#9aadb9;white-space:nowrap}
+.top-header .elsousy-brand-mark{width:30px;height:30px}
+.nova-nav{position:relative;padding-inline-end:100px!important}
+.nova-nav-brand{position:absolute;left:13px;right:auto;top:50%;transform:translateY(-50%);font-weight:800;font-size:13px;letter-spacing:.4px;color:#e9f2f8;white-space:nowrap}
+.nova-nav-brand span{font-size:12px;color:#86c9e9}
+@media(max-width:780px){.nova-nav{padding-inline-end:75px!important}.nova-nav-brand{left:7px;right:auto;font-size:12px}.top-header .pharmacy-banner-copy span{font-size:12px}}
+
+/* Keep NOVA Rx opposite the RTL navigation tabs, on the physical left. */
+.nova-nav-brand{left:13px!important;right:auto!important;inset-inline-end:auto!important;inset-inline-start:auto!important}
+@media(max-width:780px){.nova-nav-brand{left:7px!important}}
+
+/* Actual opposite-side alignment: NOVA is last flex child, pushed to the far left. */
+.nova-nav{display:flex!important;direction:rtl!important;position:relative;min-width:0}
+.nova-nav .nova-nav-brand{position:static!important;transform:none!important;left:auto!important;right:auto!important;top:auto!important;inset:auto!important;margin-inline-start:auto!important;margin-inline-end:0!important;padding-inline-start:14px;flex:0 0 auto;order:99;align-self:center}
+.nova-nav .nova-tab{flex-shrink:0}
+
+/* Separate NOVA from the scrollable navigation: brand is a fixed left-side sibling. */
+.nova-nav-row{display:flex;direction:rtl;align-items:center;width:100%;height:48px;min-height:48px;background:#111418;border-bottom:1px solid #2a3037;overflow:hidden}
+.nova-nav-row>.nova-nav{flex:1 1 0!important;width:auto!important;max-width:none!important;min-width:0!important;height:100%!important;min-height:0!important;border-bottom:0!important;overflow-x:auto!important;padding:3px 8px!important;direction:rtl!important}
+.nova-nav-row>.nova-nav-brand{position:static!important;display:flex!important;align-items:baseline;gap:var(--sp-1);flex:0 0 112px!important;width:112px!important;height:100%;margin:0!important;padding:0 12px!important;transform:none!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;justify-content:flex-start;border-inline-start:1px solid #2a3037;direction:ltr;text-align:left;background:#111418}
+@media(max-width:780px){.nova-nav-row{height:44px;min-height:44px}.nova-nav-row>.nova-nav-brand{flex-basis:80px!important;width:80px!important;padding:0 6px!important}}
+
+/* Refined brand proportions, aligned to the navigation height. */
+.nova-nav-row>.nova-nav-brand{flex-basis:116px!important;width:116px!important;padding:0 14px!important;align-items:center!important;justify-content:center!important;gap:var(--sp-1)!important;font-size:19px!important;line-height:1!important;font-weight:800!important;letter-spacing:.25px!important}
+.nova-nav-row>.nova-nav-brand span{font-size:12px!important;font-weight:800!important;line-height:1!important}
+@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:89px!important;width:89px!important;padding:0 7px!important;font-size:16px!important}.nova-nav-row>.nova-nav-brand span{font-size:12px!important}}
+
+/* Compact status + reload beside NOVA Rx in the top-left brand area. */
+.nova-nav-row>.nova-nav-brand{flex-basis:170px!important;width:170px!important;gap:var(--sp-3)!important;justify-content:center!important;padding:0 10px!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name{font-size:19px!important;font-weight:800!important;white-space:nowrap;line-height:1}
+.nova-nav-row>.nova-nav-brand .nova-brand-name>span{font-size:12px!important}
+.nova-nav-row>.nova-nav-brand .pharmacy-banner-right{display:flex;align-items:center;gap:var(--sp-1);flex:none}
+.nova-nav-row>.nova-nav-brand .pharmacy-banner-live{width:14px;height:22px;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center}
+.nova-nav-row>.nova-nav-brand .nova-refresh-icon{width:24px;height:24px;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center}
+@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:132px!important;width:132px!important;gap:var(--sp-1)!important;padding:0 5px!important}.nova-nav-row>.nova-nav-brand .nova-brand-name{font-size:15px!important}.nova-nav-row>.nova-nav-brand .nova-brand-name>span{font-size:12px!important}.nova-nav-row>.nova-nav-brand .nova-refresh-icon{width:21px;height:21px}}
+
+/* Hide redundant search-mode caption while retaining its JS state updates. */
+.top-header #modePill{display:none!important}
+/* Brand controls now live in the top navigation; remove empty banner height. */
+.nova-nav-row>.nova-nav-brand{flex-basis:170px!important;width:170px!important;gap:var(--sp-2)!important;align-items:center!important}
+.nova-nav-row>.nova-nav-brand .pharmacy-banner-right{display:flex!important;align-items:center;gap:var(--sp-1)}
+@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex-basis:132px!important;width:132px!important;gap:var(--sp-1)!important}}
+
+/* NOVA Rx — premium charcoal; restrained blue reserved for interaction */
+:root{
+ --bg-base:#090a0d;--bg-panel:#101216;--bg-surface:#1b1e23;--bg-surface-hover:#262a30;--bg-surface-active:#30353d;
+ --border-subtle:#2b3037;--border-focus:#6589b0;--text-main:#f2f3f5;--text-muted:#a9b0b9;--text-dim:#858e99;
+ --accent-cyan:#426d98;--accent-cyan-light:#8eaccb;--accent-green:#69bd9a;
+ --badge-customer:#b4c1d0;--badge-customer-bg:#232a33;--badge-product:#a4bad0;--badge-product-bg:#202b35;
+}
+html,body{background:#090a0d!important;color:#f2f3f5!important}
+.nova-nav-row{background:#111317;border-bottom-color:#292e35}
+.nova-nav-row>.nova-nav,.nova-nav-row>.nova-nav-brand{background:#111317!important}
+.nova-nav-row>.nova-nav-brand{border-inline-start-color:#292e35!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name{color:#f2f3f5!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name>span{color:#8eaccb!important}
+.nova-nav-row>.nova-nav-brand .nova-refresh-icon{color:#9ba7b5!important;background:transparent!important;border:0!important}
+.nova-nav-row>.nova-nav-brand .nova-refresh-icon:hover{background:#242b33!important;color:#f2f3f5!important}
+.nova-tab{color:#adb5c0!important;border-radius:var(--r-1)}
+.nova-tab:hover{background:#22272e!important;color:#f2f3f5!important}
+.nova-tab.active{background:#242d38!important;color:#c6d9ed!important;box-shadow:inset 0 -2px 0 #6589b0}
+.nova-demo-label{background:#1b1e23;color:#8f99a5;border-color:#30363e}
+.pos-root,.main-workspace,.customer-sidebar,.sidebar-body,.table-container,.nova-page-view{background:#0c0e12!important}
+.main-workspace{background:#111317!important;border-right-color:#2b3037!important}
+.customer-sidebar{background:#0e1014!important}
+.top-header,.search-container,.sidebar-header,.table-header{background:#16191e!important;border-color:#2b3037!important}
+.top-header{padding-inline:16px!important}
+.search-container{padding:10px 14px!important}
+.main-search-input,.search-input,.sidebar-search-input{background:#0d1015!important;border-color:#363d46!important;color:#f2f3f5!important;border-radius:var(--r-2)!important}
+.main-search-input:focus,.search-input:focus,.sidebar-search-input:focus{border-color:#6589b0!important;box-shadow:0 0 0 2px #6589b01c!important}
+.search-mode-tag.customer,.search-mode-tag.product,.status-pill.customer-mode,.status-pill.product-mode{background:#252b33!important;color:#c0cbd7!important;border-color:#404b57!important}
+.btn-primary,.btn-checkout{background:#385e85!important;border-color:#4e759c!important;color:#f7faff!important;box-shadow:none!important}
+.btn-primary:hover,.btn-checkout:hover{background:#446e99!important}
+.nova-sale-actions .nova-new-sale{background:#2b4057!important;border-color:#4a637c!important;color:#dfeaf5!important}
+.nova-sale-actions .nova-new-sale:hover{background:#344e68!important}
+.nova-sale-actions .nova-held-action,.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action,.btn-secondary{background:#22262d!important;border-color:#393f48!important;color:#d9dee5!important}
+.nova-sale-actions .nova-held-action:hover,.nova-sale-actions .nova-customer-action:hover,.nova-sale-actions .nova-more-action:hover,.btn-secondary:hover{background:#2c323a!important}
+.suggestions-dropdown,.modal-card{background:#1a1e24!important;border-color:#3b4652!important}
+.suggestion-item.selected,.suggestion-item:hover{background:#252d36!important;border-left-color:#7999b9!important}
+.qty-control,.input-grp,.qty-input,.input-grp input{background:#15191f!important;border-color:#363e48!important}
+.discount-controls,.checkout-amount-display,.modal-header,.modal-footer{background:#191d23!important;border-color:#323942!important}
+.pay-method-btn.active{background:#27384a!important;border-color:#6c8faf!important}
+.nova-panel,.nova-kpi,.nova-card{border-color:#343b44!important;background:#191d23!important}
+.nova-page-header h1{color:#f2f3f5!important}
+:focus-visible{outline-color:#8eaccb!important}
+@media(max-width:780px){
+ .top-header{padding-inline:9px!important}
+ .search-container{padding:8px 9px!important}
+ .nova-nav-row>.nova-nav{padding-inline:6px!important}
+}
+
+/* Premium polish v2 — restrained blue, neutral surfaces, consistent controls */
+.nova-nav-row{box-shadow:0 1px 0 #ffffff05}
+.nova-nav-row>.nova-nav-brand{border-inline-start:1px solid #292e35!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name>span{color:#94acc5!important}
+.nova-tab{background:transparent!important;color:#aab1bb!important;transition:background .15s,color .15s!important}
+.nova-tab.active{background:#20252c!important;color:#e1e9f3!important;box-shadow:inset 0 -2px 0 #6485a7!important}
+.nova-tab:hover:not(.active){background:#1e2329!important;color:#e5eaf0!important}
+.top-header,.search-container{border-bottom:1px solid #292e35!important}
+.top-header .pharmacy-banner-copy strong{color:#f1f2f4!important}
+.top-header .pharmacy-banner-copy span{color:#949da8!important}
+.nova-sale-actions{gap:var(--sp-2)!important;align-items:center!important}
+.nova-sale-actions>.btn,.nova-sale-actions .nova-more-wrap>.btn{height:34px!important;min-height:34px!important;border-radius:var(--r-1)!important;box-shadow:none!important}
+.nova-sale-actions .nova-new-sale{background:#27394b!important;border:1px solid #3b556e!important;color:#e3ecf6!important}
+.nova-sale-actions .nova-new-sale:hover{background:#30465b!important}
+.nova-sale-actions .nova-held-action,.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action{background:#1d2127!important;border:1px solid #323840!important;color:#d2d8df!important}
+.nova-sale-actions .nova-held-action:hover,.nova-sale-actions .nova-customer-action:hover,.nova-sale-actions .nova-more-action:hover{background:#272d34!important}
+.btn-checkout,.btn-primary{background:#355d82!important;border:1px solid #476e92!important;color:#f6f9fd!important}
+.btn-checkout:hover,.btn-primary:hover{background:#406d96!important}
+.btn-secondary{background:#20242a!important;border:1px solid #343a42!important}
+.btn-secondary:hover{background:#292f37!important}
+.nova-panel,.nova-kpi,.nova-card{background:#171a1f!important;border:1px solid #2b3037!important;box-shadow:none!important;border-radius:var(--r-2)!important}
+.nova-kpi{padding:14px!important}
+.nova-panel{box-shadow:0 3px 16px #00000016!important}
+.customer-sidebar,.sidebar-body{background:#0f1115!important}
+.main-search-input{border-color:#343b44!important;background:#101318!important}
+.main-search-input:focus{border-color:#6589b0!important;box-shadow:0 0 0 2px #6589b01a!important}
+.suggestions-dropdown{border-color:#3c4651!important}
+.nova-demo-label{border-color:#2d333a!important;color:#8f98a3!important;background:#191c21!important}
+@media(max-width:780px){
+ .nova-sale-actions{gap:var(--sp-1)!important}
+ .nova-sale-actions>.btn,.nova-sale-actions .nova-more-wrap>.btn{height:32px!important;min-height:32px!important}
+ .nova-kpi{padding:11px!important}
+}
+
+/* NOVA Rx permanent typography standard: Cairo across the entire interface. */
+:root{--font-ui:"Cairo",Tahoma,Arial,sans-serif;--font-mono:"Cairo",Tahoma,Arial,sans-serif}
+html,body,button,input,select,textarea,option,table,th,td,label,kbd,
+.btn,.nova-tab,.nova-page-view,.nova-nav-row,.nova-panel,.nova-kpi,
+.modal-card,.toast,.status-pill,.task-badge,.nova-data-table,
+[contenteditable="true"]{
+ font-family:var(--font-ui)!important;
+}
+body *:not(svg):not(svg *){
+ font-family:var(--font-ui)!important;
+}
+
+/* Pharmacy identity: soft square logo, aligned with the navigation above. */
+.top-header{min-height:48px!important;display:flex!important;align-items:center!important}
+.top-header .brand-section{display:flex!important;align-items:center!important;min-width:0}
+.top-header .pharmacy-banner-identity{display:inline-flex!important;align-items:center!important;gap:var(--sp-3)!important;min-width:0}
+.top-header .pharmacy-banner-identity>.elsousy-brand-mark{
+ display:block!important;width:34px!important;height:34px!important;flex:0 0 34px!important;
+ object-fit:contain!important;object-position:center!important;
+ border-radius:var(--r-2)!important;overflow:hidden!important;
+ background:#20252c!important;border:1px solid #343b44!important;
+ padding:3px!important;box-sizing:border-box!important;box-shadow:none!important;
+}
+.top-header .pharmacy-banner-copy{justify-content:center!important;gap:2px!important}
+.top-header .pharmacy-banner-copy strong{line-height:1.3!important}
+.top-header .pharmacy-banner-copy span{line-height:1.25!important}
+@media(max-width:780px){
+ .top-header{min-height:44px!important}
+ .top-header .pharmacy-banner-identity{gap:var(--sp-2)!important}
+ .top-header .pharmacy-banner-identity>.elsousy-brand-mark{
+  width:32px!important;height:32px!important;flex-basis:32px!important;
+  border-radius:var(--r-2)!important;padding:3px!important;
+ }
+}
+
+/* Identity finishing: logo is a quiet brand mark, never a button. */
+.top-header .brand-section{align-items:center!important;gap:var(--sp-3)!important}
+.top-header .pharmacy-banner-identity{align-self:center!important;align-items:center!important;gap:var(--sp-2)!important}
+.top-header .pharmacy-banner-identity>.elsousy-brand-mark{
+ width:32px!important;height:32px!important;flex:0 0 32px!important;
+ border-radius:var(--r-2)!important;padding:2px!important;
+ border:1px solid #ffffff0b!important;background:#ffffff05!important;
+ box-shadow:none!important;vertical-align:middle!important;
+}
+.top-header .pharmacy-banner-copy{align-self:center!important;justify-content:center!important;gap:1px!important}
+.top-header .pharmacy-banner-copy strong{line-height:1.35!important;font-weight:700!important}
+.top-header .pharmacy-banner-copy span{line-height:1.3!important}
+@media(max-width:780px){
+ .top-header .brand-section{gap:var(--sp-2)!important}
+ .top-header .pharmacy-banner-identity{gap:var(--sp-2)!important}
+ .top-header .pharmacy-banner-identity>.elsousy-brand-mark{
+  width:30px!important;height:30px!important;flex-basis:30px!important;
+  border-radius:var(--r-2)!important;padding:2px!important;
+ }
+}
+
+/* Compact customer sidebar — key data at a glance; history on demand. */
+.customer-compact-layout{gap:var(--sp-3)!important;min-width:0}
+.customer-compact-layout .cust-card-compact{padding:13px!important;background:#171a1f!important;border:1px solid #2b3037!important;border-radius:var(--r-2)!important;box-shadow:none!important}
+.customer-compact-layout .cust-card-top{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:var(--sp-3)!important;min-width:0}
+.customer-compact-layout .cust-identity{min-width:0;flex:1}
+.customer-compact-layout .cust-name{font-size:15px!important;font-weight:750!important;line-height:1.5!important;overflow-wrap:anywhere}
+.customer-compact-layout .cust-phone{font-size:12px!important;color:#aab3bf!important;margin-top:2px}
+.customer-compact-layout #custCardTier{flex-shrink:0;max-width:42%;font-size:12px!important;padding:3px 7px!important}
+.customer-compact-layout .cust-stats-compact{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)!important;margin:12px 0!important}
+.customer-compact-layout .cust-stats-compact>.cust-stat-pill{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:var(--sp-2)!important;padding:8px 9px!important;background:#20242a!important;border:1px solid #2d333a!important;border-radius:var(--r-2)!important;font-size:12px!important;color:#aeb7c2!important;min-width:0}
+.customer-compact-layout .cust-stats-compact strong{font-size:14px!important;color:#eef1f5!important}
+.customer-compact-layout .cust-actions-bar{display:flex!important;gap:var(--sp-2)!important;margin-top:0!important}
+.customer-compact-layout .cust-actions-bar .btn{height:32px!important;min-height:32px!important;padding:0 9px!important;border-radius:var(--r-1)!important;font-size:12px!important;flex:1!important}
+.customer-compact-layout .cust-actions-bar #btnRemoveCust{flex:0 0 auto!important;background:transparent!important;border:1px solid #393c42!important;color:#c5a9a9!important}
+.customer-compact-layout .cust-extra-details{border:1px solid #2b3037!important;background:#171a1f!important;border-radius:var(--r-2)!important;overflow:hidden}
+.customer-compact-layout .cust-extra-details>summary{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:11px 13px;cursor:pointer;list-style:none;font-size:12px;font-weight:700;color:#d9e0e9;user-select:none}
+.customer-compact-layout .cust-extra-details>summary::-webkit-details-marker{display:none}
+.customer-compact-layout .cust-detail-chevron{color:#9aa8b7;transition:transform .15s}
+.customer-compact-layout .cust-extra-details[open] .cust-detail-chevron{transform:rotate(180deg)}
+.customer-compact-layout .cust-extra-content{padding:0 11px 12px;display:flex;flex-direction:column;gap:var(--sp-3)}
+.customer-compact-layout .offers-section,.customer-compact-layout .history-section{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.customer-compact-layout .offers-header,.customer-compact-layout .history-header{margin-bottom:7px!important;font-size:12px!important}
+.customer-compact-layout .cust-history-hint{font-size:12px;color:#8793a0}
+.customer-compact-layout .invoices-scroll{max-height:240px!important;overflow-y:auto!important}
+
+/* UX pass 02: visible search mode switch for keyboard and touch */
+#searchModeTag{cursor:pointer;font:inherit}
+#searchModeTag:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
+/* NOVA Rx prototype UX pass 01 — visual-only, 2026-11-04 */
+@media (min-width:1101px) and (orientation:landscape){
+ .main-workspace{flex-basis:75%!important;width:75%!important;max-width:75%!important}
+ .customer-sidebar{flex-basis:25%!important;width:25%!important;max-width:25%!important}
+}
+@media (min-width:781px) and (max-width:1100px) and (orientation:landscape){
+ .main-workspace{flex-basis:72%!important;width:72%!important;max-width:72%!important}
+ .customer-sidebar{flex-basis:28%!important;width:28%!important;max-width:28%!important}
+}
+.search-container{padding-block:10px!important}
+.main-search-input{min-height:52px!important;font-size:16px!important}
+.main-search-input:focus-visible{outline:2px solid #79c9eb!important;outline-offset:1px}
+.table-container{min-height:0!important}
+.btn-checkout{min-height:48px!important;font-weight:800!important}
+@media (max-width:780px) and (orientation:portrait){
+ .main-workspace,.customer-sidebar{width:100%!important;max-width:100%!important;flex-basis:auto!important}
+ .main-search-input{font-size:16px!important}
+ .invoice-footer{position:relative;z-index:2}
+}
+
+/* NOVA Rx UX pass 03 — quiet customer card */
+.customer-sidebar .sidebar-header{min-height:42px!important;height:42px!important;padding:8px 14px!important}
+.customer-sidebar .sidebar-title{font-size:12px!important}
+.customer-sidebar .sidebar-body{padding:12px!important}
+.customer-sidebar .customer-empty-box{padding:18px 12px!important;gap:var(--sp-3)!important}
+.customer-sidebar .customer-empty-box>svg{width:26px!important;height:26px!important;opacity:.55}
+.customer-sidebar .customer-empty-sub{font-size:12px!important;line-height:1.65!important;max-width:240px;margin:auto}
+.customer-sidebar .customer-compact-layout{gap:var(--sp-2)!important}
+.customer-sidebar .cust-card-compact{padding:12px!important}
+.customer-sidebar .cust-card-top{gap:var(--sp-2)!important}
+.customer-sidebar .cust-name{font-size:14px!important;font-weight:700!important}
+.customer-sidebar .cust-phone{font-size:12px!important}
+.customer-sidebar .cust-stats-compact{gap:var(--sp-2)!important;margin-top:9px!important}
+.customer-sidebar .cust-stats-compact .cust-stat-pill{padding:4px 8px!important;font-size:12px!important}
+.customer-sidebar .cust-actions-bar{gap:var(--sp-2)!important;margin-top:10px!important}
+.customer-sidebar .cust-actions-bar .btn{font-size:12px!important;padding:7px 9px!important;min-height:34px}
+.customer-sidebar .cust-extra-details{margin-top:0!important}
+.customer-sidebar .cust-extra-details>summary{padding:10px 12px!important;font-size:12px!important}
+
+/* NOVA Rx UX pass 04 — purchases-first customer detail */
+.customer-sidebar #btnChangeCust{display:none!important}
+.customer-sidebar .history-header{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2)}
+.customer-sidebar .cust-history-search-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 30px;background:transparent;border:1px solid transparent;border-radius:var(--r-1);color:var(--text-muted);cursor:pointer}
+.customer-sidebar .cust-history-search-icon:hover,.customer-sidebar .cust-history-search-icon:focus-visible{background:var(--bg-surface-hover);color:var(--text-main);border-color:var(--border-subtle)}
+.customer-sidebar #historySearchInput[hidden]{display:none!important}
+.customer-sidebar #historySearchInput:not([hidden]){display:block;margin:6px 0 8px}
+
+/* NOVA Rx UX pass 05 — compact customer controls */
+.customer-sidebar .cust-name-actions{display:flex;align-items:center;gap:var(--sp-1);min-width:0}
+.customer-sidebar .cust-name-actions .cust-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.customer-sidebar .cust-name-actions .cust-history-search-icon{width:27px;height:27px;flex-basis:27px}
+.customer-sidebar .cust-actions-bar{justify-content:flex-end!important;margin-top:4px!important}
+.customer-sidebar .cust-remove-icon{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.35);border-radius:var(--r-1);color:#f87171;cursor:pointer}
+.customer-sidebar .cust-remove-icon:hover,.customer-sidebar .cust-remove-icon:focus-visible{background:rgba(239,68,68,.19);outline:1px solid #ef4444}
+
+/* NOVA Rx UX pass 06 — centered customer identity and compact tier/action row */
+.customer-sidebar .cust-card-compact .cust-card-top{display:flex!important;justify-content:center!important;text-align:center!important}
+.customer-sidebar .cust-card-compact .cust-identity{width:100%!important;min-width:0!important;text-align:center!important}
+.customer-sidebar .cust-card-compact .cust-name{width:100%!important;text-align:center!important;font-size:15px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.customer-sidebar .cust-card-compact .cust-phone{text-align:center!important;margin-top:3px!important}
+.customer-sidebar .cust-secondary-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-top:10px}
+.customer-sidebar .cust-secondary-actions{display:flex;align-items:center;gap:var(--sp-1)}
+.customer-sidebar .cust-secondary-row .cust-stat-pill{margin:0!important}
+.customer-sidebar .cust-secondary-actions .cust-history-search-icon,.customer-sidebar .cust-secondary-actions .cust-remove-icon{width:30px;height:30px;flex:0 0 30px}
+
+/* NOVA Rx UX pass 07 — bilingual customer identity */
+.customer-sidebar .cust-card-compact .cust-name{white-space:normal!important;overflow-wrap:anywhere!important;overflow:visible!important;text-overflow:clip!important;line-height:1.5!important}
+.customer-sidebar .cust-card-compact .cust-name-en{display:block;text-align:center;font-size:12px;line-height:1.45;color:var(--text-muted);overflow-wrap:anywhere;margin-top:2px}
+.customer-sidebar .cust-card-compact .cust-name-en[hidden]{display:none!important}
+
+/* NOVA Rx UX pass 08 — tidy, deduplicated past purchases */
+.customer-sidebar .cust-extra-content{gap:0!important;padding:0 9px 10px!important}
+.customer-sidebar .history-section{min-width:0}
+.customer-sidebar .history-header{padding:8px 2px 9px!important;font-size:12px!important}
+.customer-sidebar .invoices-scroll{display:flex;flex-direction:column;gap:var(--sp-2);max-height:340px;overflow-y:auto;overflow-x:hidden}
+.customer-sidebar .cust-purchase-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-width:0;padding:10px 9px;border:1px solid #30353d;background:#1b1f25;border-radius:var(--r-2)}
+.customer-sidebar .cust-purchase-info{flex:1;min-width:0}
+.customer-sidebar .cust-purchase-name{font-size:12px;font-weight:650;line-height:1.55;overflow-wrap:anywhere;color:#e5e9ee}
+.customer-sidebar .cust-purchase-meta{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-3);margin-top:5px;color:#9ba7b5;font-size:12px;line-height:1.45}
+.customer-sidebar .cust-purchase-side{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-2);flex:0 0 auto}
+.customer-sidebar .cust-purchase-price{font-size:12px;color:#8dc9e5;font-variant-numeric:tabular-nums;white-space:nowrap}
+.customer-sidebar .cust-purchase-side .btn-add-history{width:29px;height:29px;border-radius:var(--r-1);font-size:17px}
+.customer-sidebar .cust-purchase-empty{text-align:center;color:#9ba7b5;padding:18px 8px;font-size:12px}
+
+/* Compact customer purchase list */
+.customer-sidebar .invoices-scroll{gap:0!important;border:1px solid #30353d;border-radius:var(--r-2);background:#171a1f;max-height:380px!important}
+.customer-sidebar .cust-purchase-row{border:0!important;border-bottom:1px solid #30353d!important;border-radius:0!important;background:transparent!important;padding:10px 9px!important}
+.customer-sidebar .cust-purchase-row:last-child{border-bottom:0!important}
+.customer-sidebar .cust-purchase-meta{font-size:12px!important;gap:var(--sp-2)!important}
+.customer-sidebar .cust-purchase-side{flex-direction:row!important;align-items:center!important;gap:var(--sp-2)!important}
+.customer-sidebar .cust-purchase-name{font-size:12px!important;line-height:1.5!important}
+
+.nova-sale-number{font:600 12px var(--font-mono);color:#a9c8d8;border:1px solid #34424e;border-radius:var(--r-1);padding:7px 8px;white-space:nowrap}
+.nova-checkout-customer{margin-top:7px;background:transparent;border:1px solid #3b5665;color:#9bd6f2;border-radius:var(--r-1);padding:6px 9px;font-size:12px;cursor:pointer}
+.nova-checkout-customer[hidden]{display:none}
+
+/* Required customer decision before checkout; skip is explicitly allowed */
+.nova-customer-gate[hidden]{display:none!important}
+.nova-customer-gate{position:fixed;inset:0;background:#000b;z-index:110;display:flex;align-items:center;justify-content:center;padding:16px}
+.nova-customer-gate-card{background:#181d24;border:1px solid #3c4a57;border-radius:var(--r-2);width:min(100%,370px);padding:22px;box-shadow:0 18px 60px #0008;text-align:right}
+.nova-customer-gate-card h3{font-size:18px;color:#f2f5f8;margin:0 0 9px}
+.nova-customer-gate-card p{font-size:13px;line-height:1.8;color:#aeb9c5;margin:0 0 17px}
+.nova-customer-gate-card button{width:100%;border-radius:var(--r-2);padding:11px;font-size:13px;font-weight:650;cursor:pointer;margin-top:8px}
+.nova-gate-primary{background:#247ca9;color:white;border:1px solid #3e9cc6}
+.nova-gate-secondary{background:#232b34;color:#e1e9f1;border:1px solid #465462}
+.nova-gate-cancel{background:transparent;color:#aeb9c5;border:0}
+.nova-sale-actions .nova-hold-action{background:#2a3541;border:1px solid #526476;color:#e8f2fb;font-weight:700;padding:0 10px;font-size:12px}.nova-sale-actions .nova-hold-action:hover{background:#364657}@media(max-width:420px){.nova-sale-actions .nova-hold-action{padding:0 8px}.nova-sale-actions .nova-hold-action span{font-size:12px}}
+.nova-customer-gate-card input{width:100%;box-sizing:border-box;background:#101820;border:1px solid #52687a;border-radius:var(--r-2);padding:13px;color:#fff;font-size:17px;outline:none}.nova-customer-gate-card input:focus{border-color:#6ec9f2;box-shadow:0 0 0 2px #6ec9f222}#gateCustomerResult{font-size:12px;color:#f5b7a5;min-height:0;margin-top:5px}.nova-customer-gate-card .nova-gate-primary{margin-top:10px}
+#gateCustomerResult.nova-customer-found{color:#86d9b4;font-weight:700;background:#183328;border:1px solid #35664e;border-radius:var(--r-1);padding:9px;margin-top:9px;line-height:1.6}
+/* UX204: keep the NOVA Rx wordmark whole and off the screen edge (content-sized block, safe-area padding, no shrink/clip). */
+.nova-nav-row>.nova-nav-brand{flex:0 0 auto!important;width:auto!important;min-width:max-content!important;box-sizing:border-box!important;overflow:visible!important;padding-block:0!important;padding-inline:max(14px,env(safe-area-inset-left)) 14px!important;justify-content:flex-start!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name{flex:none!important;min-width:max-content!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important}
+@media(max-width:780px){.nova-nav-row>.nova-nav-brand{flex:0 0 auto!important;width:auto!important;padding-inline:max(12px,env(safe-area-inset-left)) 8px!important}}
