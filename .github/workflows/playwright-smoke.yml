@@ -75,6 +75,7 @@ jobs:
           node tests/ux/ux414-wa-smooth-redraw.mjs
           node tests/ux/ux415-theme.mjs
           node tests/ux/ux419-push-card.mjs
+          node tests/ux/ux420-wa-push-renew.mjs
           node tests/ux/ux417-register-customer-button.mjs
           node tests/ux/ux418-image-no-shift.mjs
       - name: UX413 standalone list flush + 16px edge inset
