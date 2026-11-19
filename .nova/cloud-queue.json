@@ -6144,9 +6144,28 @@
    "max_turns": 60,
    "pin_slot": "A",
    "assigned_to": "gemini agy-a (box Antigravity)"
+  },
+  {
+   "id": "PUR-01b",
+   "phase": 22,
+   "title": "المشتريات: إصلاح زر تأكيد الاستلام وتنبيه الصلاحية الناقصة",
+   "brief": "Purchases redesign follow-up to PUR-01 (now on main via PR #564) — receive-invoice confirm-button and expiry-hint bugs found by Gemini agy-b.\n\nReview (source of bugs): https://github.com/elsousypharmacy-create/nova-rx/pull/564#issuecomment-7011712239\n\nBUG 1 (blocking, now on main): the confirm button «تأكيد الاستلام وإضافة للمخزون» enables when quantity is empty (new item lines start blank instead of 1) or when a second line is only half-filled. Clicking confirm then errors. See index.html around the receive-invoice dialog validation / confirm handler (~12296-12310, 12384 in the PUR-01 review; inspect origin/main and cite the real current paths — code may also live in purchases.* after PUR-02).\n\nBUG 2 (blocking, now on main): expiry is missing from the «ناقص» hint at first because of a leftover `&& false` (index.html around 12308 in the review). The hint must list «الصلاحية» whenever expiry is missing/invalid.\n\nGoal:\n- Confirm stays disabled until the form is valid AND every item line is valid, including qty > 0 and a valid expiry (MM/YY, existing PUR-01 rules). Either default qty to 1 on new lines, or treat empty/0 qty as invalid — either way confirm must not enable.\n- A half-filled second (or later) line must not enable confirm and must not throw on click; keep confirm disabled until that line is completed or removed.\n- The «ناقص» hint lists every missing required field from the start, including «الصلاحية». Remove the leftover `&& false` (or equivalent) that hid expiry.\n- Unit tests covering: (a) empty qty keeps confirm disabled / does not error; (b) a half-filled second line keeps confirm disabled / does not error. Keep all existing CI green (Purchasing page checks, UX contrast ratchet, Playwright POS smoke, Secret scan). Capture a 390x844 Playwright screenshot of the fixed dialog into qa/screens/PUR-01b/ and list it in the PR body.\n- Fake/local data only. Do not change receipt data formats destructively. No backend changes; no production or staging deploy.\n\nDesign reference (committed on main): docs/design/purchases/README.md, after/04-invoice-form.png, before/E-receive-invoice-app.png, html/*.html, research.md. Code today: receiving + invoice dialog may still live in index.html (search `rcv-`, `#rcvSup`, confirm / «ناقص» / expiry validation) and/or in purchases.* after PUR-02. Inspect origin/main first and cite real paths. Tests: add focused unit/browser tests for the two bugs above; capture the screenshot; do not weaken existing tests.\n\nHARD RULES: Do not print, log, or commit secret values or PINs (name them only). Do not roll or regenerate any token. Do not spend money or enable R2. Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers (no test sends). Do not call /register or /deregister, and do not migrate the number. Do not touch WA_TOKEN. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). Do not deploy production or staging (Nova deploys via deploy-backend-staging.yml / deploy-backend-production.yml after backup + tests + rollback). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only; no admin bypass. Tests with fake/local data; Playwright must block non-GET / no live writes. Preserve Arabic RTL. Preview artifact: when index.html, sw.js or purchases.* change, after merging origin/main build a NEW artifact worker/live/nova-rx-preview.pur-01b.js from the newest worker/live/nova-rx-preview.*.js (by git commit time; after PUR-02 this may be nova-rx-preview.pur-02.js or later) with `node tools/build-worker-artifact.mjs <newest> index.html <new>` (`--sw sw.js` if sw.js changed). purchases.html/.js/.css are embedded as separate assets in the artifact: update only those asset bodies, the same way earlier purchasesN artifacts did (check git log), never other routes. Add tests/unit/artifact-pur-01b.check.mjs like artifact-s307.check.mjs (or the latest artifact-pur-02 check if that is the current pattern). Update CURRENT.md in the same PR if project state changes. Supplier work stays read-only. Real supplier cart/order writes need explicit owner approval. Do not start held tasks (S1-07, S4-02, S3-*, S4-04..S4-06, PUR-03).",
+   "acceptance": "Confirm «تأكيد الاستلام» stays disabled until every item line is valid, including qty > 0 and a valid expiry; the «ناقص» hint lists «الصلاحية» whenever expiry is missing. Unit tests cover empty qty and a half-filled second line (confirm stays disabled; no click error). Existing CI green. 390x844 screenshot in qa/screens/PUR-01b/. New preview artifact + artifact check if index.html / sw.js / purchases.* changed. No deploy.",
+   "after": [
+    "PUR-01",
+    "PUR-02"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-purchases-2026-11-19",
+   "note": "Follow-up to PUR-01. Gemini agy-b review https://github.com/elsousypharmacy-create/nova-rx/pull/564#issuecomment-7011712239 found 2 blocking bugs now on main. Owner Ahmed: use slot A (ahmed m), Sonnet, and execute. No deploy.",
+   "model": "sonnet",
+   "max_turns": 60,
+   "pin_slot": "A"
   }
  ],
- "updated": "2026-11-19T14:29:52+00:00",
+ "updated": "2026-11-19T14:58:17+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
