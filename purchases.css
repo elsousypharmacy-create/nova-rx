@@ -635,3 +635,21 @@ dialog#offers{width:min(980px,96vw)!important;max-width:980px!important}
  #offerRows .of-act{justify-content:stretch}#offerRows .of-act button{flex:1}
 }
 @media (pointer:coarse){#offerRows .of-act button{min-height:44px!important;height:44px!important;min-width:44px}}
+
+/* PUR-02: tabs, session banner, receive frame, history placeholder */
+.pur-tabs{display:flex;gap:6px;padding:4px;margin:0 0 12px;background:var(--panel,#111418);border:1px solid var(--line,#2a3037);border-radius:12px;position:sticky;top:0;z-index:5}
+.pur-tabs [role=tab]{flex:1;min-height:44px;padding:0 14px;border:0;border-radius:9px;background:transparent;color:#cfd7de;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.pur-tabs [role=tab][aria-selected=true]{background:#387e9e;color:#fff}
+.pur-tabs [role=tab]:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
+.pur-panel[hidden]{display:none!important}
+.session-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:12px 14px;border:1px solid #bba477;border-radius:12px;background:#3a3220;color:#f6e3b4;font-size:15px;font-weight:600}
+.session-banner[hidden]{display:none}
+.session-banner span{flex:1;min-width:200px}
+.session-banner button{min-height:44px;margin-inline-start:auto}
+.receive-frame{display:block;width:100%;height:calc(100dvh - 170px);min-height:520px;border:0;border-radius:12px;background:transparent}
+.pur-note{color:#b4bfca;font-size:14px;margin:8px 4px}
+.pur-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:48px 16px;text-align:center;border:1px dashed var(--line,#2a3037);border-radius:12px;color:#b4bfca}
+.pur-empty b{color:#e8eef3;font-size:17px}
+.dev-area{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line,#2a3037)}
+.dev-area small{color:#a4adb7}
+@media(max-width:700px){.pur-tabs{top:0}.receive-frame{height:calc(100dvh - 150px)}}
