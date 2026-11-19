@@ -44,7 +44,7 @@ ck('embedded worker fn matches module rewrite', (() => {
 
 const sw = readFileSync(join(ROOT, 'sw.js'), 'utf8');
 ck('SW cache is v7 (PERF-02: suffix follows the split app files)', /const CACHE='nova-rx-shell-v7-[0-9a-f]{10}'/.test(sw) && !sw.includes("const CACHE='nova-rx-shell-v6'"));
-ck('PERF-02 SW precaches the content-hashed app files and serves them cache-first', /^const NOVA_APP_ASSETS=\["\/assets\/app-/.test(sw) && sw.includes('NOVA_APP_ASSETS.map(u=>c.add(u)') && sw.includes("url.pathname.indexOf('/assets/app-')===0){e.respondWith(caches.match(e.request)"));
+ck('PERF-02 SW precaches the content-hashed app files and serves them cache-first', /^const NOVA_APP_ASSETS=\["\/assets\/app-/.test(sw) && sw.includes("NOVA_APP_ASSETS.map(u=>c.add(new Request(u,{cache:'force-cache'}))") && sw.includes("url.pathname.indexOf('/assets/app-')===0){e.respondWith(caches.match(e.request)"));
 { const errs = splitCheck(ROOT); ck('PERF-02 index.html, assets/app-* and sw.js are in sync with app/ (node tools/split-index.mjs --check)' + (errs.length ? ': ' + errs.slice(0, 5).join('; ') : ''), errs.length === 0); }
 ck('SW treats /whatsapp and ?app=whatsapp as network-first navigations', sw.includes("url.searchParams.get('app')==='whatsapp'") && sw.includes("path==='/whatsapp'") && sw.includes("path==='/wa'"));
 ck('SW never falls back from a WhatsApp navigation to cached /', sw.includes("if(p==='/'||p==='/index.html')return Promise.reject"));
