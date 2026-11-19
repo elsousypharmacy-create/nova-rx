@@ -27,11 +27,12 @@ try {
     page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
     await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
     await page.goto(BASE, { waitUntil: 'load' });
-    await page.waitForSelector('#btnAttachLoyalty');
-    await page.locator('#btnAttachLoyalty').click();
+    await page.waitForSelector('#btnAddLoyalty');
+    await page.locator('#btnAddLoyalty').click();
     await page.locator('#mainSearchInput').fill('طارق');
     await page.waitForSelector('#suggestionsBox .suggestion-item');
     await page.locator('#suggestionsBox .suggestion-item').first().click();
+    if (await page.evaluate(() => window.novaSaleRail?.isOn())) await page.locator('#novaCustChip').click(); // UX-P40: card lives in a window on wide screens
     await page.waitForSelector('#custRefillBox', { state: 'attached' }); await page.waitForTimeout(200);
     const out = await page.locator('#custDaysSince').evaluate(el => ({ hidden: el.hidden || el.closest('[hidden]') !== null, text: el.innerText.trim() }));
     out.rtl = await page.evaluate(() => document.documentElement.dir === 'rtl');

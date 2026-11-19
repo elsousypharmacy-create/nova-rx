@@ -28,7 +28,7 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
-  await page.waitForSelector('#btnAttachLoyalty');
+  await page.waitForSelector('#btnAddLoyalty');
 
   // Setup (not counted): one credit sale of 38.50 for the first demo customer.
   await page.evaluate(() => { const id = String(window.NOVA_DEMO.customers[0].id); window.NovaCredit.createCreditLedger(localStorage, 'nova.credit').charge({ id: 'ux68-sale', customerId: id, amount: 38.5 }); });

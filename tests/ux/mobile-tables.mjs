@@ -28,10 +28,10 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
-  await page.waitForSelector('#btnAttachLoyalty');
+  await page.waitForSelector('#btnAddLoyalty');
 
   // Setup (not counted): credit sale to the first demo customer.
-  await page.locator('#btnAttachLoyalty').click();
+  await page.locator('#btnAddLoyalty').click();
   await page.locator('#mainSearchInput').fill('طارق');
   await page.waitForSelector('#suggestionsBox .suggestion-item');
   await page.locator('#suggestionsBox .suggestion-item').first().click();
