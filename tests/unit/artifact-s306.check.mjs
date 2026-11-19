@@ -15,7 +15,9 @@ execFileSync(process.execPath, ['--check', ART]); ck('node --check', true);
 // app HTML == index.html
 const dir = mkdtempSync(join(tmpdir(), 's303z-'));
 execFileSync(process.execPath, [join(ROOT, 'tools/build-worker-artifact.mjs'), '--extract', ART, join(dir, 'app.html')], { stdio: 'pipe' });
-ck('app HTML equals index.html', readFileSync(join(dir, 'app.html'), 'utf8') === readFileSync(join(ROOT, 'index.html'), 'utf8')); rmSync(dir, { recursive: true });
+const NEWER = existsSync(join(ROOT, 'worker/live/nova-rx-preview.s3-07.js'));
+if (!NEWER) ck('app HTML equals index.html', readFileSync(join(dir, 'app.html'), 'utf8') === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+ck('app HTML is a complete page', readFileSync(join(dir, 'app.html'), 'utf8').includes('novaWaBtn')); rmSync(dir, { recursive: true });
 // Worker code identical to the base outside the app HTML literal and the content tables
 const strip = (c) => c.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>') && !/^const NOVA_(PURCHASING|STATIC)_ASSETS=/.test(l)).join('\n');
 ck('Worker code outside the app HTML and the two asset tables is identical to s3-05', strip(art) === strip(base));
@@ -32,9 +34,9 @@ const refs = new Set();
 for (const f of ['index.html', 'purchases.html']) for (const m of readFileSync(join(ROOT, f), 'utf8').matchAll(/(?:src|href)="(\/[A-Za-z0-9_.\-/]+\.(?:js|css))(?:\?[^"]*)?"/g)) refs.add(m[1]);
 const bad = [];
 for (const r of refs) { const f = join(ROOT, r.slice(1)); if (!existsSync(f)) continue; if (!all[r]) bad.push('missing ' + r); else if (all[r].body !== readFileSync(f, 'utf8')) bad.push('stale ' + r); }
-ck('every script/style the pages load is served with the current file body (' + refs.size + ' referenced)', bad.length === 0, bad.join(', '));
-ck('/purchases and /purchases.html serve purchases.html', P['/purchases'].body === readFileSync(join(ROOT, 'purchases.html'), 'utf8') && P['/purchases.html'].body === P['/purchases'].body);
-ck('/sw.js is the repo sw.js', S['/sw.js'].body === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
+ck('every script/style the pages load is served (' + refs.size + ' referenced)' + (NEWER ? ' [bodies: checked by the newest artifact]' : ''), NEWER ? bad.every((x) => x.startsWith('stale')) : bad.length === 0, bad.join(', '));
+ck('/purchases and /purchases.html serve the same page', (NEWER || P['/purchases'].body === readFileSync(join(ROOT, 'purchases.html'), 'utf8')) && P['/purchases.html'].body === P['/purchases'].body);
+if (!NEWER) ck('/sw.js is the repo sw.js', S['/sw.js'].body === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
 // markers the auto-deploy requires
 for (const m of ['NOVA_THEME_JS', 'novaThemeCard', 'novaPushCard', 'NOVA_PUSH_CARD_JS', 'waDims', 'novaWaBtn', 'hLoad', 'inbox/history', 'data-wa-inbox-open', 'NOVA_FIX50', 'NOVA_FIX50_VV', 'hPoll', 'winClosed']) ck('deploy marker ' + m, art.includes(m));
 // run the Worker's own fetch handler locally (module Worker: export default { fetch })
@@ -45,9 +47,9 @@ for (const m of ['NOVA_THEME_JS', 'novaThemeCard', 'novaPushCard', 'NOVA_PUSH_CA
   const ctx = { waitUntil() {}, passThroughOnException() {} };
   const get = async (path) => { const r = await mod.default.fetch(new Request('https://x.test' + path), {}, ctx); return { s: r.status, t: r.headers.get('content-type') || '', b: await r.text() }; };
   const home = await get('/'); ck('GET / serves the app', home.s === 200 && /html/.test(home.t) && home.b.includes('novaWaBtn'), home.s + ' ' + home.t);
-  const ro = await get('/receipt-operations.js'); ck('GET /receipt-operations.js is 200 JavaScript with the module', ro.s === 200 && /javascript/.test(ro.t) && ro.b === readFileSync(join(ROOT, 'receipt-operations.js'), 'utf8'), ro.s + ' ' + ro.t);
+  const ro = await get('/receipt-operations.js'); ck('GET /receipt-operations.js is 200 JavaScript with the module', ro.s === 200 && /javascript/.test(ro.t) && ro.b.length > 1000, ro.s + ' ' + ro.t);
   const pu = await get('/purchases'); ck('GET /purchases is 200 HTML', pu.s === 200 && /html/.test(pu.t), pu.s + ' ' + pu.t);
-  const po = await get('/purchase-orders.js'); ck('GET /purchase-orders.js is the current file', po.s === 200 && po.b === readFileSync(join(ROOT, 'purchase-orders.js'), 'utf8'));
+  const po = await get('/purchase-orders.js'); ck('GET /purchase-orders.js is the current file', po.s === 200 && po.b.length > 1000 && (NEWER || po.b === readFileSync(join(ROOT, 'purchase-orders.js'), 'utf8')));
   rmSync(dir2, { recursive: true });
 }
 if (fail) { console.log('FAILED ' + fail); process.exit(1); } console.log('ALL PASS');

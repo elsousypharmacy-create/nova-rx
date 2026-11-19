@@ -30,6 +30,13 @@ t('mergeLive: server thread + pending local bubbles, no duplicates', () => {
   assert.deepEqual(U.mergeLive(null, [{ id: 'tmp_a' }, { id: 'tmp_a' }]).map((m) => m.id), ['tmp_a'], 'tmp listed twice => once');
   assert.deepEqual(U.mergeLive(srv, null).length, 2);
   assert.notEqual(U.mergeLive(srv, []), srv, 'returns a new array');
+  const at = 1000000, s2 = [{ id: 'ps_1', dir: 'out', text: 'تمام', at: at + 3000 }];
+  assert.deepEqual(U.mergeLive(s2, [{ id: 'tmp_x', dir: 'out', text: 'تمام', at, status: 'sending' }]).map((m) => m.id), ['ps_1'], 'server row already there while sending => one bubble');
+  assert.deepEqual(U.mergeLive(s2, [{ id: 'tmp_x', dir: 'out', text: 'تمام', at, status: 'sending' }, { id: 'tmp_y', dir: 'out', text: 'تمام', at: at + 1, status: 'sending' }]).map((m) => m.id), ['ps_1', 'tmp_y'], 'two sends of the same text => the second still shows');
+  assert.deepEqual(U.mergeLive(s2, [{ id: 'tmp_x', dir: 'out', text: 'تمام', at, status: 'failed' }]).map((m) => m.id), ['ps_1', 'tmp_x'], 'a failed bubble is never hidden');
+  assert.deepEqual(U.mergeLive(s2, [{ id: 'tmp_x', dir: 'out', text: 'تمام', at: at + 300000, status: 'sending' }]).map((m) => m.id), ['ps_1', 'tmp_x'], 'old same text is a different message');
+  assert.deepEqual(U.mergeLive([{ id: 'ps_2', dir: 'out', text: '[صورة] روشتة', at }], [{ id: 'tmp_p', dir: 'out', text: 'روشتة', at, status: 'sending' }]).map((m) => m.id), ['ps_2'], 'photo caption matches its [صورة] row');
+  assert.deepEqual(U.mergeLive([{ id: 'wa_9', dir: 'in', text: 'تمام', at }], [{ id: 'tmp_x', dir: 'out', text: 'تمام', at, status: 'sending' }]).map((m) => m.id), ['wa_9', 'tmp_x'], 'the customer saying the same word is not a twin');
 });
 t('newIds: first render none, later only ids not on screen before', () => {
   assert.deepEqual(U.newIds(null, ['a', 'b']), []);
