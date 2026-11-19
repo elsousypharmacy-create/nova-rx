@@ -219,7 +219,7 @@
   S.check = check;
   /* Conversations need a server session: open the login screen in server mode (the app behind stays usable after «مش دلوقتي»). */
   S.requireServer = function (note) { show('login', { server: true, note: note || '' }); };
-  S.logout = function () { S.signOut(); show(); changed(); };
+  S.logout = function () { S.signOut(); if (S.enforced()) show(); changed(); }; // not enforced (loopback harness): just sign out
 
   check();
   root.setInterval(check, 30000); // the 8 h session ends while the screen is open
