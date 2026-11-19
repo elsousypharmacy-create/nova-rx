@@ -670,10 +670,22 @@
   function mergeLive(server, local) {
     var out = arr(server).slice(), have = {};
     out.forEach(function (m) { if (m) { have['i' + m.id] = 1; if (m.clientId) have['c' + m.clientId] = 1; } });
+    /* the server writes the sent row before the send call answers; a poll in between used to show it next to the
+       local "sending" bubble for a few seconds. Same text, outgoing, within 2 minutes => the same message (each server row claimed once). */
+    var claimed = {}, norm = function (t) { return String(t == null ? '' : t).replace(/^\[صورة\]\s*/, '').trim(); };
+    var twin = function (m) {
+      if (m.status !== 'sending') return false;
+      for (var i = 0; i < out.length; i++) {
+        var s = out[i];
+        if (s && !claimed[i] && s.dir === 'out' && String(s.id).indexOf('tmp_') !== 0 && norm(s.text) === norm(m.text) && Math.abs((Number(s.at) || 0) - (Number(m.at) || 0)) <= 120000) { claimed[i] = 1; return true; }
+      }
+      return false;
+    };
     arr(local).forEach(function (m) {
       if (!m || String(m.id).indexOf('tmp_') !== 0) return;
       var cl = String(m.id).slice(4);
       if (have['i' + m.id] || have['c' + cl] || (m.clientId && have['c' + m.clientId])) return;
+      if (twin(m)) return;
       have['i' + m.id] = 1; out.push(m);
     });
     return out;
