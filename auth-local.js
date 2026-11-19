@@ -77,6 +77,23 @@
           write(K.ses, all); storage.setItem(K.cur, s.id); trust(); return s;
         });
       },
+      /* SEC-01 (S1-07): after the SERVER verified name + password (staff-gate.js, POST /api/v1/auth/login 200), mirror that account
+         on this device (same name, server role, salted hash of the same password) and sign in locally, so the pharmacist can keep
+         working offline on this device later. Only staff-gate.js calls it, and only with a server-confirmed role. */
+      adoptVerified: function (o) {
+        var name = norm(o && o.name), role = o && o.role, pw = String((o && o.password) || '');
+        if (!name || name.length > 60) fail('bad-name');
+        if (ROLES.indexOf(role) < 0) fail('bad-role');
+        if (!pw) fail('bad-credentials');
+        var self = this, salt = rid(c);
+        return hash(salt, pw).then(function (h) {
+          var list = accounts(), a = findByName(name);
+          if (a) list.forEach(function (x) { if (x.id === a.id) { x.salt = salt; x.hash = h; x.role = role; } });
+          else list.push({ id: 'acc-' + rid(c), name: name, role: role, salt: salt, hash: h, createdAt: iso(nowMs()), server: true });
+          write(K.acc, list);
+          return self.signIn(name, pw);
+        });
+      },
       signOut: function () { var id = storage.getItem(K.cur); if (id) { var all = sessions(); all.forEach(function (s) { if (s.id === id) s.revoked = true; }); write(K.ses, all); } storage.removeItem(K.cur); },
       current: function () {
         var s = activeSession(); if (!s) return null;
