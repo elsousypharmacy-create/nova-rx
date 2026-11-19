@@ -10,6 +10,7 @@ import { processQueue } from '../../backend/src/whatsapp-intake.js';
 import { makeProcessor, messageText } from '../../backend/src/whatsapp-process.js';
 import { decodeBase64, mediaKey, MAX_MEDIA_BYTES } from '../../backend/src/inbox-media.js';
 import { MAX_BRIDGE_BODY } from '../../backend/src/whatsapp-bridge.js';
+import { staffBearer } from './helpers/staff-session.mjs';
 
 const db = new DatabaseSync(':memory:');
 await applyMigrations(db, await loadMigrationsFromDir(fileURLToPath(new URL('../../backend/migrations', import.meta.url))));
@@ -78,9 +79,10 @@ assert.deepEqual([...new Uint8Array(await r.arrayBuffer())], [...PNG]);
 r = await get('/api/v1/inbox/history/media?id=wa_doc1'); assert.equal(r.status, 200); assert.equal(r.headers.get('Content-Type'), 'application/pdf');
 assert.match(r.headers.get('Content-Disposition'), /filename\*=UTF-8''%D8%AA/);
 r = await get('/api/v1/inbox/history/media?id=wa_aud1'); assert.equal(r.headers.get('Content-Type'), 'audio/ogg');
-assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {})).status, 401); // PIN gate (non-staging env)
+assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {})).status, 401); // session/PIN gate
 assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', { 'X-Nova-Pin': 'wrong-pin-000000' })).status, 401);
-assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {}, { ...env, NOVA_ENV: 'staging' })).status, 200); // UX400 staging pinless
+assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', {}, { ...env, NOVA_ENV: 'staging' })).status, 401); // SEC-01: staging needs a staff session too
+assert.equal((await get('/api/v1/inbox/history/media?id=wa_img1', (await staffBearer(KV)).headers, { ...env, NOVA_ENV: 'staging' })).status, 200); // SEC-01: staff session opens it
 // fallbacks: metadata-only, KV miss, not media, unknown id, bad id -> clear Arabic JSON, never 500
 for (const [id, code, st] of [['wa_big1', 'MEDIA_UNAVAILABLE', 404], ['wa_txt1', 'MEDIA_NOT_FOUND', 404], ['nope', 'MEDIA_NOT_FOUND', 404], ['', 'MEDIA_BAD_ID', 400]]) {
   r = await get('/api/v1/inbox/history/media?id=' + id); j = await r.json();

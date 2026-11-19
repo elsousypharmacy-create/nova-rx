@@ -92,7 +92,8 @@ async function issueSession(kv, user, { deviceId, trust, now, scope }) {
   idx.push(ah);
   await kput(kv, 'usess:' + user.username, idx.slice(-50));
   if (trusted) await kput(kv, `dev:${user.username}:${deviceId}`, { since: t }, TRUSTED_TTL_S);
-  return { access_token: access, refresh_token: refresh, expires_in: ACCESS_TTL_S, trusted_device: trusted };
+  // SEC-01: the client mirrors the verified username + role so the pharmacist can keep working offline on this device.
+  return { access_token: access, refresh_token: refresh, expires_in: ACCESS_TTL_S, refresh_expires_in: refreshTtl, trusted_device: trusted, user: user.username, role: user.role };
 }
 
 export async function login(env, body, opts) {

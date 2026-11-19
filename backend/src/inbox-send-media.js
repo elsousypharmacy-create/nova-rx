@@ -1,6 +1,6 @@
 // WA-SEND-IMG: the pharmacist sends a PHOTO from the conversations screen to the real customer on WhatsApp.
 // Route: POST /api/v1/inbox/history/send-media { id, mime, data(base64), caption?, clientId?, by? }.
-// Same gate as the text send (checkPin; staging/preview need no PIN) plus its OWN flag NOVA_INBOX_SEND_MEDIA === '1' (default OFF).
+// Same gate as the text send (checkPin = staff session, SEC-01) plus its OWN flag NOVA_INBOX_SEND_MEDIA === '1' (default OFF).
 // Delivery reuses the pharmacy bot's Apps Script op novaWhatsAppBridge/sendMedia (the bot validates again and holds the WhatsApp token;
 // NOVA never does). JPEG/PNG only, magic bytes checked, <= 5 MB, caption <= 1024. Target = the conversation's own chat id (never a phone).
 // Only after the bot confirms: the message row + bytes in KV are stored; the bot's echo (wb_<wamid>) is replaced by ours. Every attempt is logged in wa_send_log.

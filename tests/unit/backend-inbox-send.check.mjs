@@ -39,7 +39,7 @@ const send = async (body, pin = PIN, e = env, ip) => {
 };
 
 // auth
-let [s, j] = await send({ id: 'wa_201111', text: 'hi' }, null); assert.equal(s, 401); assert.equal(j.code, 'PIN_REQUIRED');
+let [s, j] = await send({ id: 'wa_201111', text: 'hi' }, null); assert.equal(s, 401); assert.equal(j.code, 'AUTH_REQUIRED');
 [s, j] = await send({ id: 'wa_201111', text: 'hi' }, 'wrong-pin-000000'); assert.equal(s, 401);
 assert.equal(calls.length, 0, 'no bot call without a valid PIN');
 // flag / config

@@ -48,6 +48,10 @@ assert.ok(!JSON.stringify(db.prepare('SELECT * FROM users').all()).includes(PIN)
 
 // 3. cashier logs in; cannot manage staff; the session carries a scope so sync works
 [s, j] = await login('nour', 'pw-nour-12345'); assert.equal(s, 200); const nourTok = j.access_token;
+// SEC-01: login returns the verified username + role (the client mirrors them for offline work); the REAL token opens the chat history, none => 401
+assert.deepEqual([j.user, j.role], ['nour', 'cashier']);
+[s, j] = await call('GET', '/api/v1/inbox/history/conversations', undefined, nourTok); assert.equal(s, 200, 'staff session opens history: ' + JSON.stringify(j)); assert.ok(Array.isArray(j.conversations));
+[s, j] = await call('GET', '/api/v1/inbox/history/conversations', undefined, undefined); assert.equal(s, 401); assert.equal(j.conversations, undefined);
 [s, j] = await call('GET', '/api/v1/staff', undefined, nourTok); assert.deepEqual([s, j.code], [403, 'FORBIDDEN']);
 [s, j] = await call('POST', '/api/v1/staff', { username: 'evil', password: 'pw-evil-12345', role: 'owner' }, nourTok); assert.equal(s, 403);
 [s, j] = await call('GET', '/api/v1/sync/pull?cursor=0', undefined, nourTok); assert.equal(s, 200, 'staff session scope accepted by sync: ' + JSON.stringify(j));

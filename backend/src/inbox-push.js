@@ -1,6 +1,6 @@
 // UX406: Web Push notifications for new inbound WhatsApp customer messages (free: Web Push + VAPID, no push vendor).
 // Subscriptions live in D1 push_subscriptions (UX414, migration 0025) and KV (wapush:<tenant>:<sha256(endpoint)[0..32]>, 90-day TTL, fallback).
-// Routes share the history gate (checkPin: pinless on staging/preview, PIN elsewhere):
+// Routes share the history gate (checkPin: staff session on every env, SEC-01):
 //   GET  /api/v1/inbox/history/push/key          -> { enabled, publicKey }
 //   POST /api/v1/inbox/history/push/subscribe    -> store { endpoint, keys:{p256dh, auth} }
 //   POST /api/v1/inbox/history/push/unsubscribe  -> delete by endpoint

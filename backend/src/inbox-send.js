@@ -1,7 +1,7 @@
 // WA-SEND: pharmacist replies from the in-app conversations screen to the REAL customer on WhatsApp
 // (owner approved 2026-11-14 «افتح الإرسال من شاشة المحادثات للعملاء الحقيقيين").
-// Route: POST /api/v1/inbox/history/send, gated exactly like the history by checkPin: X-Nova-Pin == NOVA_API_PIN,
-// except on the staging/preview backend (UX400, NOVA_ENV 'staging'|'preview') where no PIN is needed. Production stays PIN-gated.
+// Route: POST /api/v1/inbox/history/send, gated exactly like the history (historyAccess): a signed-in staff session on every
+// NOVA_ENV (SEC-01 closed the UX400 staging/preview opening); the old X-Nova-Pin only during PIN_TRANSITION_UNTIL.
 // Delivery reuses the pharmacy bot's EXISTING Apps Script op novaWhatsAppBridge/reply (same WA_BACKEND_URL +
 // NOVA_WA_BRIDGE_TOKEN as the auto-reply toggle). NOVA never holds the WhatsApp token; secrets by NAME only.
 // Safety: flag NOVA_INBOX_SEND === '1'; text only; 1..1000 chars; target = the conversation's own chat id
@@ -9,7 +9,7 @@
 // the send is attempted and, when WhatsApp refuses it, the reply is a plain note (SEND_WINDOW_CLOSED / SEND_FAILED), nothing is blocked up front;
 // per-IP and per-tenant rate limits; duplicate guard by client id; every attempt logged in wa_send_log.
 import { sha256Hex } from './auth/auth.js';
-import { checkPin, historyTenant, atMs } from './inbox-history.js';
+import { historyAccess, historyTenant, atMs } from './inbox-history.js';
 
 export const MAX_TEXT = 1000;
 export const WINDOW_MS = 24 * 3600 * 1000 - 2 * 60 * 1000; // 2-minute safety margin
@@ -86,8 +86,8 @@ export function registerInboxSendRoutes(route, { errorResponse }) {
   route('POST', '/api/v1/inbox/history/send', async (ctx) => {
     const { env, requestId, request } = ctx;
     const err = (code) => errorResponse(code, SEND_ERR[code][0], SEND_ERR[code][1], requestId);
-    const bad = await checkPin(request, env);
-    if (bad) return errorResponse(bad.code, bad.message_ar, bad.status, requestId);
+    const acc = await historyAccess(request, env); // SEC-01: staff session (or the transition PIN)
+    if (acc.bad) return errorResponse(acc.bad.code, acc.bad.message_ar, acc.bad.status, requestId);
     if (!inboxSendEnabled(env)) return err('SEND_DISABLED');
     const token = env.NOVA_WA_BRIDGE_TOKEN;
     if (typeof env.WA_BACKEND_URL !== 'string' || !env.WA_BACKEND_URL || typeof token !== 'string' || token.length < 32) return err('SEND_NOT_CONFIGURED');
@@ -101,7 +101,8 @@ export function registerInboxSendRoutes(route, { errorResponse }) {
     if (!text) return err('SEND_EMPTY');
     if (text.length > MAX_TEXT) return err('SEND_TOO_LONG');
     const clientId = typeof body.clientId === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body.clientId) ? body.clientId : null;
-    const by = typeof body.by === 'string' ? body.by.trim().slice(0, 60) || null : null;
+    // SEC-01: the sender name comes from the verified staff session; the body value is only used on the transition PIN path.
+    const by = acc.session && acc.session.user ? String(acc.session.user).slice(0, 60) : (typeof body.by === 'string' ? body.by.trim().slice(0, 60) || null : null);
     const t = historyTenant(env), db = env.DB;
     const conv = await db.prepare('SELECT id FROM inbox_conversations WHERE tenant_id = ? AND id = ?').bind(t, cid).first();
     if (!conv) return err('SEND_UNKNOWN_CHAT');

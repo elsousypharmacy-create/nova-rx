@@ -42,7 +42,7 @@ await ok('pure: planLinks skips unknown chats, same names, bad ids, numbers; one
   assert.deepEqual(p, [{ id: 'wa_1', name: 'علي' }]);
 });
 await ok('auth: no / wrong PIN -> 401 and the bot is never called', async () => {
-  let [s, j] = await link(null); assert.equal(s, 401); assert.equal(j.code, 'PIN_REQUIRED'); [s] = await link('wrong-pin-000000'); assert.equal(s, 401); assert.equal(calls.length, 0);
+  let [s, j] = await link(null); assert.equal(s, 401); assert.equal(j.code, 'AUTH_REQUIRED'); [s] = await link('wrong-pin-000000'); assert.equal(s, 401); assert.equal(calls.length, 0);
 });
 await ok('config: missing bot URL / short token -> 503, no bot call', async () => {
   let [s, j] = await link(PIN, { ...env, WA_BACKEND_URL: '' }); assert.equal(s, 503); assert.equal(j.code, 'LINK_NOT_CONFIGURED');
