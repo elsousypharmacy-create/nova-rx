@@ -12294,20 +12294,26 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         if (row) row.querySelector('[data-lt]').textContent = q && c ? money(q * c) : '—';
         if (l.key || l.name) { n++; b += q; t += q * c; }
       });
-      var miss = [], now0 = new Date(), tt = Date.UTC(now0.getFullYear(), now0.getMonth(), now0.getDate()), anyItem = false, expBad = false;
+      var miss = [], now0 = new Date(), tt = Date.UTC(now0.getFullYear(), now0.getMonth(), now0.getDate()), anyItem = false, expBad = false, qtyBad = false, pickBad = false;
       if (!supValue()) miss.push('المورد');
+      var usedAny = false;
       st.lines.forEach(function (l, i) {
         var row = box.children[i], er = row && row.querySelector('[data-err]'), raw = String(l.exp || '').trim(), pe = parseExp(raw), msgE = '';
+        var used = !!(l.key || l.name || l.qty || l.lot || raw), q = Number(l.qty);
         if (l.key) anyItem = true;
         if (raw) {
-          if (!pe) { if (row.dataset.touched || raw.length >= 5) msgE = 'اكتب الشهر والسنة مثل 11/26'; }
+          if (!pe) { if (row && (row.dataset.touched || raw.length >= 5)) msgE = 'اكتب الشهر والسنة مثل 11/26'; }
           else { var y = +pe.slice(0, 4), mo = +pe.slice(5); if (Date.UTC(y, mo, 0) < tt) msgE = 'الصلاحية منتهية (الشهر ده عدّى)'; }
         }
         if (er) er.textContent = msgE;
-        if (l.key && (!pe || msgE)) expBad = true;
+        if (used) usedAny = true;
+        if (used && !l.key) pickBad = true;
+        if (used && (!Number.isInteger(q) || q <= 0)) qtyBad = true;
+        if (used && (!pe || msgE || +pe.slice(5) < 1 || +pe.slice(5) > 12)) expBad = true;
       });
-      if (!anyItem) miss.push('صنف واحد على الأقل');
-      if (expBad || (!st.lines.some(function (l) { return l.key; }) && false)) miss.push('الصلاحية');
+      if (!anyItem || pickBad) miss.push('صنف واحد على الأقل');
+      if (qtyBad) miss.push('الكمية');
+      if (expBad || !usedAny) miss.push('الصلاحية');
       var mEl = ov.querySelector('#rcvMissing'); mEl.textContent = miss.length && !st.pending ? 'ناقص: ' + miss.join('، ') : '';
       var okBtn = ov.querySelector('#rcvOk'); if (okBtn && !st.pending) { okBtn.disabled = miss.length > 0; okBtn.setAttribute('aria-disabled', String(miss.length > 0)); }
       ov.querySelector('#rcvSum').innerHTML = '<span>' + nItems(n) + '</span><span>' + b + ' علبة</span><b>' + money(t) + '</b>';
