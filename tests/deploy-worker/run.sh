@@ -10,6 +10,7 @@ open(sys.argv[1],"w").write(body)
 PY
 }
 mkdir -p "$T/repo/worker/live" && cd "$T/repo" && git init -q && git config user.email t@t && git config user.name t
+mkdir -p tools && cp "$HERE/../../tools/worker-download-content.py" tools/
 pad worker/live/live-old.js old; pad worker/live/new.js new; git add -A && git commit -qm t
 OLD="$T/repo/worker/live/live-old.js"; SHA="$(sha256sum worker/live/new.js | cut -d' ' -f1)"
 start(){ python3 "$HERE/mock_cf.py" $PORT "$OLD" & MOCK=$!; sleep 0.7; }
@@ -19,7 +20,7 @@ mode(){ curl -s -H "Authorization: Bearer x" "http://127.0.0.1:$PORT/__mode?m=$1
 run(){ # name, expected exit, env assignments...
   local name="$1" want="$2"; shift 2
   env CF_API_TOKEN=tok CF_API_BASE="http://127.0.0.1:$PORT" SCRIPT_NAME=nova-rx-preview ARTIFACT_PATH=worker/live/new.js ARTIFACT_REF=HEAD \
-      WANT_SHA256="$SHA" EXPECTED_MODIFIED_ON=2026-11-07T01:57:40 DRY_RUN=true CONFIRM= "$@" bash "$SCRIPT" > "$T/out.txt" 2>&1; local got=$?
+      WANT_SHA256="$SHA" EXPECTED_MODIFIED_ON=2026-11-07T01:57:40 DRY_RUN=true CONFIRM= VERIFY_SLEEP=0 VERIFY_TRIES=4 "$@" bash "$SCRIPT" > "$T/out.txt" 2>&1; local got=$?
   if [ "$got" = "$want" ]; then echo "PASS $name"; else echo "FAIL $name (exit $got, wanted $want)"; sed 's/^/    /' "$T/out.txt" | tail -6; fails=$((fails+1)); fi
 }
 expect(){ if eval "$2"; then echo "PASS $1"; else echo "FAIL $1"; fails=$((fails+1)); fi; }
@@ -51,6 +52,10 @@ stop
 start; mode truncate
 run "truncated live code is detected and rolled back" 1 DRY_RUN=false "CONFIRM=DEPLOY nova-rx-preview"
 expect "rollback attempted" 'grep -q "ROLLING BACK" "$T/out.txt"'
+stop
+start; mode stale_read
+run "stale code read right after upload is retried, not rolled back" 0 DRY_RUN=false "CONFIRM=DEPLOY nova-rx-preview"
+expect "no rollback on a stale read" '! grep -q "ROLLING BACK" "$T/out.txt" && [ "$(state | jq ".puts|length")" = 1 ]'
 stop
 rm -rf "$T"
 [ "$fails" = 0 ] && echo "ALL DEPLOY-WORKER CHECKS PASSED" || { echo "FAILED: $fails"; exit 1; }

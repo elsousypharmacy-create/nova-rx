@@ -23,7 +23,10 @@ class H(BaseHTTPRequestHandler):
         if p == "/accounts": return self.send({"success": True, "result": [{"id": ACC}]})
         if p == f"/accounts/{ACC}/workers/scripts": return self.send({"success": True, "result": [{"id": NAME, "modified_on": S["modified_on"]}]})
         if p == f"/accounts/{ACC}/workers/scripts/{NAME}/settings": return self.send({"success": True, "result": S["settings"]})
-        if p == f"/accounts/{ACC}/workers/scripts/{NAME}": return self.send(None, raw=S["script"])
+        if p == f"/accounts/{ACC}/workers/scripts/{NAME}":
+            if S["mode"] == "stale_read" and S.get("stale", 0) > 0:
+                S["stale"] -= 1; return self.send(None, raw=S["old"])
+            return self.send(None, raw=S["script"])
         self.send({"success": False}, 404)
     def do_PUT(self):
         p = urlparse(self.path).path
@@ -33,6 +36,7 @@ class H(BaseHTTPRequestHandler):
         parts = {pt.get_param("name", header="content-disposition"): pt.get_payload(decode=True) for pt in msg.get_payload()}
         meta = json.loads(parts["metadata"]); S["puts"].append(meta)
         if S["mode"] == "put_fail": return self.send({"success": False, "errors": [{"message": "boom"}]}, 400)
+        S["old"] = S["script"]; S["stale"] = 2 if S["mode"] == "stale_read" else 0
         S["script"] = parts["script"]
         if S["mode"] == "drop_bindings" and S["puts"].__len__() == 1: S["settings"]["bindings"] = [b for b in S["settings"]["bindings"] if b["type"] != "kv_namespace"]
         if S["mode"] == "truncate" and S["puts"].__len__() == 1: S["script"] = S["script"][: len(S["script"]) // 2]

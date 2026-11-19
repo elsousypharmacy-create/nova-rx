@@ -91,13 +91,16 @@ verify(){ # $1 = file whose content must be live
   [ "$after" = "$BEFORE" ] || { echo "bindings differ: $after"; return 1; }
   [ "$(jq -c '.result.compatibility_date' "$WORK/after.json")" = "$(jq -c '.result.compatibility_date' "$WORK/settings.json")" ] || { echo "compatibility_date differs"; return 1; }
   [ "$(jq -c '.result.compatibility_flags//[]' "$WORK/after.json")" = "$(jq -c '.result.compatibility_flags//[]' "$WORK/settings.json")" ] || { echo "compatibility_flags differ"; return 1; }
-  local got=0 n2
-  for n2 in 1 2 3 4 5 6; do
+  # The code download is eventually consistent: right after an upload it can still return the
+  # previous code for a few seconds (seen 19 Nov 18:19 and 23:13). Retry until the digest matches.
+  local got=0 n2 wantsha; wantsha="$(sha256sum "$1" | cut -d' ' -f1)"
+  for n2 in $(seq 1 "${VERIFY_TRIES:-12}"); do
     if cf -D "$WORK/live_now.headers" "$API/accounts/$ACC/workers/scripts/$SCRIPT_NAME" > "$WORK/live_now.raw" \
       && python3 tools/worker-download-content.py "$WORK/live_now.headers" "$WORK/live_now.raw" "$WORK/live_now.js" >/dev/null; then
-      got=1; break
+      got=1
+      [ "$(sha256sum "$WORK/live_now.js" | cut -d' ' -f1)" = "$wantsha" ] && break
     fi
-    sleep 5
+    sleep "${VERIFY_SLEEP:-5}"
   done
   [ "$got" = 1 ] || { echo "Worker code missing from download"; return 1; }
   local want have; want="$(wc -c < "$1")"; have="$(wc -c < "$WORK/live_now.js")"
@@ -123,9 +126,23 @@ if [ -n "${LIVE_URL:-}" ]; then
   CODE="$(curl -sS -o "$WORK/live.html" -w '%{http_code}' --max-time 30 -H "User-Agent: nova-smoke" -H "Cache-Control: no-cache" "$LIVE_URL/" || echo 000)"
   say "HTTP check $LIVE_URL/ -> $CODE (informational; the code check above is the real proof)"
   [ "$CODE" = 200 ] || { say "SMOKE FAILED: $LIVE_URL/ -> $CODE"; false; }
-  for m in novaWaBtn hLoad inbox/history data-wa-inbox-open NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed; do
-    grep -q "$m" "$WORK/live.html" || { say "SMOKE FAILED: live HTML missing marker $m"; false; }
+  # Since PERF-02 (#578) the app code lives in /assets/*.js|css referenced by the shell HTML, so the
+  # markers are checked in the shell plus its same-origin assets. The edge can serve the previous build
+  # for a short while after upload, so retry a few times before failing.
+  MISSING=""
+  for n3 in $(seq 1 "${SMOKE_TRIES:-6}"); do
+    [ "$n3" = 1 ] || { sleep "${SMOKE_SLEEP:-10}"; curl -sS -o "$WORK/live.html" --max-time 30 -H "User-Agent: nova-smoke" -H "Cache-Control: no-cache" "$LIVE_URL/" || true; }
+    cp "$WORK/live.html" "$WORK/live_all.txt"
+    for a in $(grep -o '\(src\|href\)="/assets/[A-Za-z0-9._-]*\.\(js\|css\)"' "$WORK/live.html" | sed 's/^[a-z]*="//; s/"$//' | sort -u); do
+      curl -sS --max-time 30 -H "User-Agent: nova-smoke" "$LIVE_URL$a" >> "$WORK/live_all.txt" 2>/dev/null || true
+    done
+    MISSING=""
+    for m in novaWaBtn hLoad inbox/history data-wa-inbox-open NOVA_FIX50 NOVA_FIX50_VV hPoll winClosed; do
+      grep -q "$m" "$WORK/live_all.txt" || MISSING="$MISSING $m"
+    done
+    [ -z "$MISSING" ] && break
   done
+  [ -z "$MISSING" ] || { say "SMOKE FAILED: live HTML + assets missing marker(s):$MISSING"; false; }
   curl -sS --max-time 60 -H "User-Agent: nova-smoke" -H "Accept: application/json" -o "$WORK/stock.json" "$LIVE_URL/emergency/stock.json" || { say "SMOKE FAILED: stock.json download"; false; }
   jq -e '.items|length>0' "$WORK/stock.json" >/dev/null || { say "SMOKE FAILED: stock.json empty"; false; }
   grep -q "جافيسكون" "$WORK/stock.json" || { say "SMOKE FAILED: stock.json has no جافيسكون"; false; }
