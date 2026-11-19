@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Auto-deploy the newest worker/live/nova-rx-preview.*.js (by git commit time) to nova-rx-preview.
+# Auto-deploy the newest worker/live/nova-rx-preview.*.js (by NOVA_BUILD stamp, fallback to git commit time) to nova-rx-preview.
 # Never deploys an older artifact over a newer one. Preview only; never production or api-staging.
 # Used by .github/workflows/auto-deploy-preview.yml. Secrets are used, never printed.
 set -euo pipefail
@@ -28,16 +28,25 @@ if git rev-parse --verify -q origin/main >/dev/null; then
   ORIGIN_ROOT="$(mktemp -d)"
   git --work-tree="$ORIGIN_ROOT" --git-dir="$ROOT/.git" checkout -q origin/main -- worker/live 2>/dev/null || true
   if [ -d "$ORIGIN_ROOT/worker/live" ]; then
-    # reuse this repo's git log (commit times) with files from origin/main names
-    mapfile -t _on < <(git ls-tree -r --name-only origin/main -- worker/live | grep -E 'worker/live/nova-rx-preview\..+\.js$' || true)
-    best_t=0; best_p=""
-    for rel in "${_on[@]}"; do
-      t="$(git log -1 --format=%ct origin/main -- "$rel" 2>/dev/null || echo 0)"
-      if [ "${t:-0}" -gt "$best_t" ] || { [ "${t:-0}" -eq "$best_t" ] && [ "$rel" \> "$best_p" ]; }; then
-        best_t=$t; best_p=$rel
-      fi
-    done
-    [ -n "$best_p" ] && ORIGIN_NEWEST="$best_p	$best_t"
+    ORIGIN_NEWEST="$(python3 - "$ROOT" "$ORIGIN_ROOT" <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(sys.argv[1]) / "tools"))
+import preview_auto_deploy as P
+
+git_root, origin_root = Path(sys.argv[1]), Path(sys.argv[2])
+times = {}
+for p in P.artifact_paths(origin_root):
+    rel = p.relative_to(origin_root).as_posix()
+    times[rel] = P.commit_time(git_root, rel)
+picked = P.newest_artifact(origin_root, times=times)
+if picked:
+    rel, ts = picked
+    stamp = P.parse_build_stamp(origin_root / rel) or {}
+    sha = stamp.get("main_sha") or ""
+    print(f"{rel}\t{ts}\t{sha}")
+PY
+)"
   fi
   rm -rf "$ORIGIN_ROOT"
 fi
@@ -67,11 +76,21 @@ LIVE_MOD="$(curl -sS --max-time 30 -H "Authorization: Bearer $CF_API_TOKEN" \
 
 # Re-check we are still the newest on origin/main immediately before upload.
 if [ -n "$ORIGIN_NEWEST" ]; then
-  opath="${ORIGIN_NEWEST%%	*}"; otime="${ORIGIN_NEWEST#*	}"
-  mytime="$(git log -1 --format=%ct -- "$ARTIFACT_PATH" || echo 0)"
+  IFS=$'\t' read -r opath otime osha <<< "$ORIGIN_NEWEST"
+  mytime="$(printf '%s\n' "$SEL" | sed -n 's/^COMMIT_TIME=//p' | head -1)"
+  mysha="$(printf '%s\n' "$SEL" | sed -n 's/^MAIN_SHA=//p' | head -1)"
+  if [ -z "$mytime" ]; then
+    mytime="$(git log -1 --format=%ct -- "$ARTIFACT_PATH" || echo 0)"
+  fi
   if [ "${otime:-0}" -gt "${mytime:-0}" ]; then
     echo "auto-deploy: origin/main now has newer $opath; not uploading $ARTIFACT_PATH"
     exit 0
+  fi
+  if [ -n "${osha:-}" ] && [ -n "${mysha:-}" ] && [ "$osha" != "$mysha" ]; then
+    if ! git merge-base --is-ancestor "$osha" "$mysha" 2>/dev/null; then
+      echo "auto-deploy: $ARTIFACT_PATH (main_sha=$mysha) is not descendant-or-equal of origin/main $opath (main_sha=$osha); not uploading"
+      exit 0
+    fi
   fi
 fi
 

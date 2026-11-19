@@ -10,10 +10,11 @@ on:
       - "index.html"
       - "sw.js"
       - "tools/build-worker-artifact.mjs"
-      - "tests/unit/artifact-ux406*.check.mjs"
-      - "tests/unit/artifact-ux407*.check.mjs"
+      - "tools/build-preview-refresh.mjs"
+      - "tools/preview_auto_deploy.py"
+      - "tests/unit/preview_auto_deploy_test.py"
+      - "tests/unit/artifact-*.check.mjs"
       - "tests/unit/ux412-whatsapp-spa.check.mjs"
-      - "tests/unit/ux430-*-artifact.check.mjs"
       - "tools/whatsapp-spa.mjs"
       - "manifest-whatsapp.webmanifest"
       - "sw.js"
@@ -43,3 +44,5 @@ jobs:
           python3 .github/scripts/pick_artifact_check.py --base origin/main
       - name: UX412 /whatsapp SPA unit check
         run: node tests/unit/ux412-whatsapp-spa.check.mjs
+      - name: Preview auto-deploy selection unit check
+        run: python3 tests/unit/preview_auto_deploy_test.py

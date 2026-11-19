@@ -45,7 +45,7 @@ ck('SW cache is v6', sw.includes("const CACHE='nova-rx-shell-v6'") && !sw.includ
 ck('SW treats /whatsapp and ?app=whatsapp as network-first navigations', sw.includes("url.searchParams.get('app')==='whatsapp'") && sw.includes("path==='/whatsapp'") && sw.includes("path==='/wa'"));
 ck('SW never falls back from a WhatsApp navigation to cached /', sw.includes("if(p==='/'||p==='/index.html')return Promise.reject"));
 
-const art = readFileSync(join(ROOT, 'worker/live/nova-rx-preview.ux-407.js'), 'utf8');
+const art = readFileSync(join(ROOT, 'worker/live/nova-rx-preview.pur-04.js'), 'utf8');
 ck('artifact has /whatsapp route and rewrite fn', art.includes('novaWhatsAppSpaHtml(url.pathname,') && art.includes("url.pathname==='/whatsapp'") && art.includes('function novaWhatsAppSpaHtml'));
 const dir = mkdtempSync(join(tmpdir(), 'ux412-spa-'));
 const copy = join(dir, 'w.js');

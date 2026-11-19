@@ -9,15 +9,18 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 
-const BASE = process.argv[2] || 'worker/live/nova-rx-preview.with-ux-batch1-3-stickers27.js';
+import { pathToFileURL } from 'node:url';
+
+const BASE = process.argv[2] || 'worker/live/nova-rx-preview.pur-04.js';
 const dir = mkdtempSync(path.join(tmpdir(), 'nova-art-'));
-const out = path.join(dir, 'art.js');
+const out = path.join(dir, 'art.mjs');
 execFileSync('node', ['tools/build-supplier-artifact.mjs', BASE, out], { stdio: 'pipe' });
 const code = readFileSync(out, 'utf8');
 
 const searchFixture = JSON.parse(readFileSync('tests/fixtures/pharmaoverseas/search-panadol.json', 'utf8'));
 const kv = new Map();
 let listener = null;
+let modWorker = null;
 const supplierCalls = [];
 const sandbox = {
   addEventListener: (type, fn) => { if (type === 'fetch') listener = fn; },
@@ -36,11 +39,20 @@ const sandbox = {
   NOVA_API_PIN: 'a-long-test-pin-123',
   NOVA_INGEST_SECRET: 'a-long-ingest-secret-456',
 };
-vm.createContext(sandbox);
-vm.runInContext(code, sandbox, { filename: 'artifact.js' });
-assert.equal(typeof listener, 'function', 'fetch listener registered once');
+if (/\bexport\s+default\b/.test(code)) {
+  globalThis.fetch = sandbox.fetch;
+  modWorker = (await import(pathToFileURL(out).href)).default;
+} else {
+  vm.createContext(sandbox);
+  vm.runInContext(code, sandbox, { filename: 'artifact.js' });
+  assert.equal(typeof listener, 'function', 'fetch listener registered once');
+}
 
 async function call(pathname, init = {}) {
+  if (modWorker) {
+    const ctx = { waitUntil() {}, passThroughOnException() {} };
+    return await modWorker.fetch(new Request('https://worker.test' + pathname, init), sandbox, ctx);
+  }
   let result = null;
   listener({ request: new Request('https://worker.test' + pathname, init), respondWith: (p) => { result = p; } });
   assert.ok(result, `route ${pathname} answered`);

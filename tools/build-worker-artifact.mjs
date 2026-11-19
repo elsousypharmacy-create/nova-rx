@@ -5,6 +5,40 @@
 // UX406: optional trailing `--sw sw.js` also replaces the embedded "/sw.js" asset body (Service Worker) and nothing else.
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+
+function inferTask(outPath) {
+  const m = path.basename(String(outPath || '')).match(/^nova-rx-preview\.([A-Za-z0-9._-]+)\.js$/);
+  return m ? m[1] : path.basename(String(outPath || ''), '.js');
+}
+
+function getMainSha() {
+  for (const ref of ['origin/main', 'main', 'HEAD']) {
+    try {
+      const s = execFileSync('git', ['rev-parse', ref], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+      if (/^[0-9a-f]{40}$/i.test(s)) return s;
+    } catch {}
+  }
+  return '';
+}
+
+export function stampBuild(code, opts = {}) {
+  const stamp = {
+    built_at: opts.built_at || process.env.NOVA_BUILD_AT || new Date().toISOString(),
+    main_sha: opts.main_sha !== undefined ? opts.main_sha : (process.env.NOVA_BUILD_MAIN_SHA !== undefined ? process.env.NOVA_BUILD_MAIN_SHA : getMainSha()),
+    task: opts.task || process.env.NOVA_BUILD_TASK || inferTask(opts.outPath),
+  };
+  const line = `const NOVA_BUILD=${JSON.stringify(stamp)};`;
+  const lines = code.split('\n').filter(l => !/^const NOVA_BUILD\s*=/.test(l));
+  if (lines[0] && lines[0].startsWith('// NOVA_MODULE_ADAPTER')) {
+    lines.splice(1, 0, line);
+  } else {
+    lines.unshift(line);
+  }
+  return lines.join('\n');
+}
 
 function locate(code) {
   const lines = code.split('\n');
@@ -30,25 +64,28 @@ function replaceSw(code, swSrc) {
   return code.slice(0, j) + JSON.stringify(swSrc) + code.slice(e + 1);
 }
 
-const argv = process.argv.slice(2);
-const swAt = argv.indexOf('--sw');
-const swPath = swAt >= 0 ? argv.splice(swAt, 2)[1] : null;
-const [a, b, c] = argv;
-if (a === '--extract') {
-  const code = fs.readFileSync(b, 'utf8');
-  const { line, start, end } = locate(code);
-  const lit = line.slice(start, end);
-  const html = (0, eval)(lit);
-  if (JSON.stringify(html) !== lit) throw new Error('literal does not round-trip; refusing');
-  fs.writeFileSync(c, html);
-  console.log('extracted', html.length, 'chars');
-} else {
-  const code = fs.readFileSync(a, 'utf8');
-  const html = fs.readFileSync(b, 'utf8');
-  const { lines, idx, line, start, end } = locate(code);
-  lines[idx] = line.slice(0, start) + JSON.stringify(html) + line.slice(end);
-  let out = lines.join('\n');
-  if (swPath) out = replaceSw(out, fs.readFileSync(swPath, 'utf8'));
-  fs.writeFileSync(c, out);
-  console.log('wrote', c, Buffer.byteLength(out), 'bytes, sha256', crypto.createHash('sha256').update(out).digest('hex'));
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  const argv = process.argv.slice(2);
+  const swAt = argv.indexOf('--sw');
+  const swPath = swAt >= 0 ? argv.splice(swAt, 2)[1] : null;
+  const [a, b, c] = argv;
+  if (a === '--extract') {
+    const code = fs.readFileSync(b, 'utf8');
+    const { line, start, end } = locate(code);
+    const lit = line.slice(start, end);
+    const html = (0, eval)(lit);
+    if (JSON.stringify(html) !== lit) throw new Error('literal does not round-trip; refusing');
+    fs.writeFileSync(c, html);
+    console.log('extracted', html.length, 'chars');
+  } else {
+    const code = fs.readFileSync(a, 'utf8');
+    const html = fs.readFileSync(b, 'utf8');
+    const { lines, idx, line, start, end } = locate(code);
+    lines[idx] = line.slice(0, start) + JSON.stringify(html) + line.slice(end);
+    let out = lines.join('\n');
+    if (swPath) out = replaceSw(out, fs.readFileSync(swPath, 'utf8'));
+    out = stampBuild(out, { outPath: c });
+    fs.writeFileSync(c, out);
+    console.log('wrote', c, Buffer.byteLength(out), 'bytes, sha256', crypto.createHash('sha256').update(out).digest('hex'));
+  }
 }
