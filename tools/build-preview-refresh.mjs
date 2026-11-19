@@ -11,7 +11,8 @@ import { execFileSync } from 'node:child_process';
 const EXTRA_ROUTES = {
   '/receipt-operations.js': ['receipt-operations.js', 'application/javascript; charset=utf-8'],
   '/purchases-history.js': ['purchases-history.js', 'application/javascript; charset=utf-8'],
-  '/purchases-history.css': ['purchases-history.css', 'text/css; charset=utf-8']
+  '/purchases-history.css': ['purchases-history.css', 'text/css; charset=utf-8'],
+  '/staff-gate.js': ['staff-gate.js', 'application/javascript; charset=utf-8'] // SEC-01 / S1-07 staff login gate
 };
 const TABLES = ['NOVA_PURCHASING_ASSETS', 'NOVA_STATIC_ASSETS'];
 const [base, out] = process.argv.slice(2);
