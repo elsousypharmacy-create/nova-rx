@@ -1,5 +1,5 @@
 // NOVA_MODULE_ADAPTER_V1
-const NOVA_BUILD={"built_at":"2026-11-19T19:08:48.508Z","main_sha":"e66f18f832ddfd73420a8e5f0d843b53a7a7c62f","task":"perf-02"};
+const NOVA_BUILD={"built_at":"2026-11-19T19:25:59.551Z","main_sha":"79edbd85349c205641c1921d564ba10d15f7139a","task":"perf-02"};
 const NOVA_RUNTIMES=new WeakMap();
 function novaRuntime(env){
 const {GEMINI_API_KEY,NOVA_API_PIN,NOVA_INGEST_SECRET,NOVA_SECRET_ENCRYPTION_KEY,NOVA_SECRETS_KV,NOVA_PURCHASE_OPS}=env;
