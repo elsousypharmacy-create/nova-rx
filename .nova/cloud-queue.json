@@ -6182,7 +6182,7 @@
     "PUR-01b",
     "PUR-03"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
@@ -6193,22 +6193,11 @@
    "slot": "A",
    "dispatched_at": "2026-11-19T15:31:20+00:00",
    "pr": 569,
-   "ci_dispatched": {
-    "sha": "a96ea58b3cea88b86d52e025f758c16550fc868d",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "procurement-unit.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-19T15:36:02+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-19T15:45:04+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/569"
   }
  ],
- "updated": "2026-11-19T15:36:02+00:00",
+ "updated": "2026-11-19T15:45:04+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
