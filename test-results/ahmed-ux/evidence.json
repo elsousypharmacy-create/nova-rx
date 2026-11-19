@@ -1,0 +1,151 @@
+{
+  "sha": "dd756b2a050d198c2fb632e5bf4c5f94c2dd6566",
+  "synthetic": true,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/suppliers/status",
+      "intercepted": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/suppliers/status",
+      "intercepted": true
+    }
+  ],
+  "screens": {
+    "13-1280x800": {
+      "file": "13-1280x800-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "url": "http://nova-audit.test/index.html#sale",
+      "geometry": {
+        "x": 307,
+        "y": 727,
+        "width": 576.09375,
+        "height": 48
+      }
+    },
+    "13-1280x720": {
+      "file": "13-1280x720-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "url": "http://nova-audit.test/index.html#sale",
+      "geometry": {
+        "x": 303,
+        "y": 651,
+        "width": 584.09375,
+        "height": 48
+      }
+    },
+    "13-390x844": {
+      "file": "13-390x844-after.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://nova-audit.test/index.html#sale",
+      "geometry": {
+        "x": 47.3125,
+        "y": 771,
+        "width": 205.484375,
+        "height": 48
+      }
+    },
+    "invoices-1280": {
+      "file": "invoices-1280-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "url": "http://nova-audit.test/index.html#invoices",
+      "synthetic": true
+    },
+    "products-1280": {
+      "file": "products-1280-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "url": "http://nova-audit.test/index.html#products",
+      "synthetic": true
+    },
+    "customers-1280": {
+      "file": "customers-1280-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "url": "http://nova-audit.test/index.html#customers",
+      "synthetic": true
+    },
+    "reports-1280": {
+      "file": "reports-1280-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "url": "http://nova-audit.test/index.html#reports",
+      "synthetic": true
+    },
+    "settings-1280": {
+      "file": "settings-1280-after.png",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "url": "http://nova-audit.test/index.html#settings",
+      "synthetic": true
+    },
+    "invoices-390": {
+      "file": "invoices-390-after.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://nova-audit.test/index.html#invoices",
+      "synthetic": true
+    },
+    "products-390": {
+      "file": "products-390-after.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://nova-audit.test/index.html#products",
+      "synthetic": true
+    },
+    "customers-390": {
+      "file": "customers-390-after.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://nova-audit.test/index.html#customers",
+      "synthetic": true
+    },
+    "reports-390": {
+      "file": "reports-390-after.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://nova-audit.test/index.html#reports",
+      "synthetic": true
+    },
+    "settings-390": {
+      "file": "settings-390-after.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://nova-audit.test/index.html#settings",
+      "synthetic": true
+    }
+  },
+  "pageErrors": []
+}
