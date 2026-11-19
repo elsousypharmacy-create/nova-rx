@@ -66,13 +66,18 @@ try {
   await page.evaluate(() => { document.body.classList.add('x-lang-pass'); document.body.classList.remove('x-lang-pass'); }); await page.waitForTimeout(150); // a translator pass must not touch the name
   assert.ok((await page.locator('#btnAddLoyalty').innerText()).includes(name), 'tile shows the customer name');
   assert.equal(await page.locator('#btnAddLoyalty').getAttribute('aria-label'), null, 'visible text names the tile');
+  assert.equal(await page.locator('#btnAddLoyalty').getAttribute('data-nova-original-aria-label'), null, 'translator has no aria-label to re-apply in the rail');
+  assert.equal(await page.locator('#btnAddLoyalty').getAttribute('aria-keyshortcuts'), 'F3', 'shortcut exposed as aria-keyshortcuts');
+  assert.equal(await page.locator('#btnAddLoyalty .nx-k').getAttribute('aria-hidden'), 'true', 'F3 badge is not read as part of the name');
   assert.equal(await page.locator('#customerSelectedBox').isVisible(), false, 'card is not on the screen until asked');
   await page.locator('#novaCustChip').click();
   await page.locator('#novaCustModal').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#novaCustModal #customerSelectedBox').isVisible(), true, 'card shows in the window');
   assert.equal(await page.evaluate(() => document.getElementById('custExtraDetails').open), true, 'past purchases open');
+  assert.equal(await page.evaluate(() => document.querySelector('.pos-root').inert), true, 'POS behind the window is inert');
   await page.keyboard.press('Escape');
   await page.locator('#novaCustModal').waitFor({ state: 'hidden' });
+  assert.equal(await page.evaluate(() => document.querySelector('.pos-root').inert), false, 'POS usable again after closing');
   await page.locator('#novaCustChipX').click(); await page.waitForTimeout(300);
   assert.equal(await page.locator('#novaCustChip').isVisible(), false, 'chip gone after removing the customer');
   console.log('  ok customer chip and window');
