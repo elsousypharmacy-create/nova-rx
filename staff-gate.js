@@ -21,8 +21,10 @@
     return (loc && loc.protocol === 'file:') || h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '::1';
   }
   function qs(loc, k) { try { return new URLSearchParams((loc && loc.search) || '').get(k); } catch (e) { return null; } }
-  /* Fail closed: a non-loopback host is ALWAYS gated; a flag can only switch the gate ON. */
-  function enforced(loc, flag) { return flag === true || !isLoopback(loc) || qs(loc, 'staffGate') === '1'; }
+  /* SEC-01c (owner Ahmed 2026-11-19 22:18 Riyadh): the staff login wall is OFF by default on every host so the team can use
+     WhatsApp on the preview link again. It is ON only when window.NOVA_STAFF_GATE === true (set it in index.html to re-enable)
+     or with ?staffGate=1 (test harness). The code stays here behind that flag. */
+  function enforced(loc, flag) { return flag === true || qs(loc, 'staffGate') === '1'; }
   function waMode(loc) {
     var p = String((loc && loc.pathname) || '').replace(/\/+$/, '') || '/';
     return p === '/whatsapp' || p === '/wa' || qs(loc, 'app') === 'whatsapp';

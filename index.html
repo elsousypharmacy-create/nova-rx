@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
 <script id="NOVA_STAFF_PRELOCK">
 /* SEC-01 / S1-07: hide the app before first paint unless a valid staff session (auth-local.js, 8 h) exists; staff-gate.js then shows the login screen.
-   Fail closed: any error locks. Off only on a developer loopback host unless window.NOVA_STAFF_GATE===true or ?staffGate=1 (see staff-gate.js). */
-(function(){var d=document.documentElement;try{var L=location,h=L.hostname,lb=L.protocol==='file:'||h==='localhost'||h==='127.0.0.1'||h==='[::1]';if(!(window.NOVA_STAFF_GATE===true||!lb||/[?&]staffGate=1(&|$)/.test(L.search)))return;var ok=false,id=localStorage.getItem('nova.auth.current');if(id){var ss=JSON.parse(localStorage.getItem('nova.auth.sessions')||'[]');for(var i=0;i<ss.length;i++)if(ss[i]&&ss[i].id===id&&!ss[i].revoked&&Date.parse(ss[i].expiresAt)>Date.now())ok=true}if(!ok)d.classList.add('nova-staff-locked')}catch(e){d.classList.add('nova-staff-locked')}
+   SEC-01c (owner 2026-11-19 22:18): OFF by default on every host; ON only with window.NOVA_STAFF_GATE===true or ?staffGate=1 (see staff-gate.js). When on, any error locks. */
+(function(){var d=document.documentElement;try{var L=location,h=L.hostname,lb=L.protocol==='file:'||h==='localhost'||h==='127.0.0.1'||h==='[::1]';if(!(window.NOVA_STAFF_GATE===true||/[?&]staffGate=1(&|$)/.test(L.search)))return;var ok=false,id=localStorage.getItem('nova.auth.current');if(id){var ss=JSON.parse(localStorage.getItem('nova.auth.sessions')||'[]');for(var i=0;i<ss.length;i++)if(ss[i]&&ss[i].id===id&&!ss[i].revoked&&Date.parse(ss[i].expiresAt)>Date.now())ok=true}if(!ok)d.classList.add('nova-staff-locked')}catch(e){d.classList.add('nova-staff-locked')}
 setTimeout(function(){if(d.classList.contains('nova-staff-locked')&&!window.novaStaff&&document.body&&!document.getElementById('novaStaffGate')){var g=document.createElement('div');g.id='novaStaffGate';g.dir='rtl';g.setAttribute('role','alert');g.innerHTML='<div class="nsg-card"><h1>تسجيل دخول الموظفين</h1><p class="nsg-sub">تعذّر تحميل شاشة الدخول. اتصل بالإنترنت وافتح الصفحة تاني.</p></div>';document.body.appendChild(g)}},8000)})();
 </script>
 <style id="NOVA_STAFF_GATE_CSS">

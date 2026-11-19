@@ -35,19 +35,19 @@ function rig(href, opts = {}) {
   const auth = NovaAuth.create({ storage, crypto: webcrypto, now: clock });
   const perms = Perms.create({ storage, current: () => auth.current(), hasAccounts: () => auth.hasAccounts() });
   const srv = opts.server || fakeServer();
-  const g = Gate.create({ storage, fetch: srv.fetch, location: L(href), auth, now: clock, flag: opts.flag, perms: () => perms });
+  const g = Gate.create({ storage, fetch: srv.fetch, location: L(href), auth, now: clock, flag: 'flag' in opts ? opts.flag : true, /* SEC-01c: gate is opt-in; these tests exercise it switched on */ perms: () => perms });
   return { g, auth, storage, srv, perms, tick: (ms) => { now += ms; } };
 }
 
-await t('gate is enforced on every real host; on loopback only with the flag or ?staffGate=1; a flag can never switch it off', () => {
-  assert.equal(Gate.enforced(L(PREVIEW + '/')), true);
-  assert.equal(Gate.enforced(L(PREVIEW + '/whatsapp')), true);
-  assert.equal(Gate.enforced(L(PREVIEW + '/'), false), true, 'false flag ignored off loopback');
+await t('SEC-01c: gate is OFF by default on every host; ON only with the flag or ?staffGate=1', () => {
+  assert.equal(Gate.enforced(L(PREVIEW + '/')), false);
+  assert.equal(Gate.enforced(L(PREVIEW + '/whatsapp')), false);
+  assert.equal(Gate.enforced(L(PREVIEW + '/'), false), false);
+  assert.equal(Gate.enforced(L(PREVIEW + '/'), true), true, 'flag switches it on');
+  assert.equal(Gate.enforced(L(PREVIEW + '/?staffGate=1')), true);
   assert.equal(Gate.enforced(L('http://127.0.0.1:8765/')), false);
-  assert.equal(Gate.enforced(L('http://localhost:8765/')), false);
   assert.equal(Gate.enforced(L('http://127.0.0.1:8765/?staffGate=1')), true);
   assert.equal(Gate.enforced(L('http://127.0.0.1:8765/'), true), true);
-  assert.equal(Gate.enforced(L('http://127.0.0.1.evil.test/')), true, 'look-alike host is gated');
 });
 await t('WhatsApp mode: /whatsapp, /wa, /?app=whatsapp', () => {
   for (const p of ['/whatsapp', '/whatsapp/', '/wa', '/?app=whatsapp']) assert.equal(Gate.waMode(L(PREVIEW + p)), true, p);
@@ -129,12 +129,16 @@ await t('a token from another local session is never used', async () => {
   assert.equal(x.g.bearer(), '');
 });
 await t('loopback without the flag: gate open (test harness), sale allowed', async () => {
-  const { g } = rig('http://127.0.0.1:8765/');
+  const { g } = rig('http://127.0.0.1:8765/', { flag: undefined });
   assert.equal(g.ok(), true); assert.equal(g.allow('sale.create'), true);
 });
 await t('locked account (429) is reported, not retried locally', async () => {
   const srv = { calls: [], fetch: async () => ({ ok: false, status: 429, json: async () => ({ ok: false, code: 'AUTH_LOCKED' }) }) };
   const { g } = rig(PREVIEW + '/', { server: srv });
   await assert.rejects(g.signIn('x', 'y'), /locked/);
+});
+await t('SEC-01c: preview /whatsapp with the flag unset: gate open, chats allowed without a session', async () => {
+  const { g } = rig(PREVIEW + '/whatsapp?app=whatsapp', { flag: undefined });
+  assert.equal(g.enforced(), false); assert.equal(g.ok(), true);
 });
 console.log(`staff-gate: ${n} passed`);
