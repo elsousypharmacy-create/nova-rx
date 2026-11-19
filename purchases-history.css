@@ -589,8 +589,8 @@ html[data-nx-page="purchases"] .info::before {
 }
 
 html[data-nx-page="purchases"] input[type="checkbox"] {
-  min-width: 24px;
-  min-height: 24px;
+  min-width: 32px;
+  min-height: 32px;
 }
 
 @media (max-width: 800px) {

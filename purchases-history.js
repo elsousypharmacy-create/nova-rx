@@ -325,7 +325,7 @@
         '</div>' +
         '<div class="pur-hist-dlg-body">' +
           '<div class="pur-hist-summary-bar">' +
-            '<div><small>الحالة</small><span class="st ' + stClass + '">' + esc(item.statusLabel) + '</span></div>' +
+            '<div><small>الحالة</small><span class="st ' + stClass + '">' + esc(item.statusLabel + (item.raw && item.raw.pending ? ' · يحتاج استكمال' : '')) + '</span></div>' +
             '<div><small>عدد الأصناف</small><b>' + esc(item.lines.length) + '</b></div>' +
             '<div><small>إجمالي العلب</small><b>' + esc(item.boxes) + ' علبة</b></div>' +
             '<div><small>إجمالي الفاتورة</small><b dir="ltr">' + esc(item.totalFormatted) + '</b></div>' +
