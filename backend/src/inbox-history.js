@@ -39,11 +39,17 @@ async function safeEq(a, b) {
 // SEC-01: the old pharmacy PIN is accepted only during this documented transition (UTC end of day). Afterwards: staff session only.
 export const PIN_TRANSITION_UNTIL = '2026-12-31T23:59:59Z';
 export const pinTransitionOpen = (nowMs = Date.now()) => nowMs <= Date.parse(PIN_TRANSITION_UNTIL);
+const PINLESS_ENVS = Object.freeze(['staging', 'preview']);
+export const historyPinless = (env) => !!env && String(env.NOVA_STAFF_GATE || '') !== '1' && PINLESS_ENVS.includes(String(env.NOVA_ENV || ''));
 const hasBearer = (request) => /^Bearer\s+\S/.test(request.headers.get('Authorization') || '');
 
 // Returns { session } (staff session, or null when the transition PIN opened it) or { bad: {status, code, message_ar} }.
 export async function historyAccess(request, env, opts = {}) {
   if (!env || !env.DB) return { bad: { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' } };
+  // SEC-01c (owner Ahmed 2026-11-19 22:18 Riyadh): staff gate OFF by default on the STAGING/PREVIEW backend again (UX400 pinless),
+  // so the team can use WhatsApp on the preview link. Set NOVA_STAFF_GATE='1' to require a staff session there again.
+  // Every other NOVA_ENV (production, dev, unset, unknown) is unchanged: staff session or transition PIN.
+  if (historyPinless(env) && !hasBearer(request)) return { session: null };
   if (hasBearer(request)) {
     if (!env.KV) return { bad: { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' } };
     let a;

@@ -100,7 +100,7 @@ const KV = { async get(k) { return kvm.has(k) ? kvm.get(k) : null; }, async put(
 const sent = []; let pushStatus = 201;
 const NOVA_PUSH_FETCH = async (u, o) => { sent.push({ u, o }); if (pushStatus === 'throw') throw new Error('net'); return { status: pushStatus }; };
 const TOK = 'a'.repeat(40);
-const env = { NOVA_ENV: 'staging', NOVA_WA_BRIDGE_INTAKE: '1', NOVA_WA_BRIDGE_DIRECT: '1', NOVA_WA_BRIDGE_TOKEN: TOK, DB: D1, KV, VAPID_PUBLIC_KEY: VPUB, VAPID_PRIVATE_KEY: vjwk.d, NOVA_PUSH_FETCH };
+const env = { NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1', NOVA_WA_BRIDGE_INTAKE: '1', NOVA_WA_BRIDGE_DIRECT: '1', NOVA_WA_BRIDGE_TOKEN: TOK, DB: D1, KV, VAPID_PUBLIC_KEY: VPUB, VAPID_PRIVATE_KEY: vjwk.d, NOVA_PUSH_FETCH };
 // SEC-01: push routes share the history gate, so every call carries a FAKE staff session; a logged-out call is 401.
 const STAFF = (await staffBearer(KV, { user: 'push.test', role: 'cashier' })).headers;
 const api = async (path, body, e = env, auth = STAFF) => { const r = await handle(new Request('https://x.test/api/v1/inbox/history/push/' + path, body === undefined ? { headers: { ...auth } } : { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...auth } }), e); return [r.status, await r.json()]; };

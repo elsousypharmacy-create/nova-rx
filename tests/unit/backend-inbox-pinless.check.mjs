@@ -27,7 +27,7 @@ const NOVA_FETCH = async (u, o) => {
   return { ok: true, status: 200, async json() { return p.operation === 'get' ? botGet : botReply; } };
 };
 const base = { DB: D1, KV, NOVA_API_PIN: PIN, NOVA_INBOX_SEND: '1', WA_BACKEND_URL: URL_, NOVA_WA_BRIDGE_TOKEN: TOKEN, NOVA_FETCH, CORS_ALLOW_ORIGINS: 'https://p.test' };
-const staging = { ...base, NOVA_ENV: 'staging' }, preview = { ...base, NOVA_ENV: 'preview' }, production = { ...base, NOVA_ENV: 'production' };
+const staging = { ...base, NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1' }, preview = { ...base, NOVA_ENV: 'preview', NOVA_STAFF_GATE: '1' }, production = { ...base, NOVA_ENV: 'production' };
 const now = Date.now();
 db.prepare("INSERT INTO inbox_conversations (tenant_id, id, customer, updated_at) VALUES ('default','wa_201111','منى',?),('default','wa_old','قديم',1)").run(now);
 db.prepare("INSERT INTO inbox_messages (tenant_id, id, conversation_id, dir, text, status, at) VALUES ('default','wa_wamid.A','wa_201111','in','عايزة بنادول',NULL,?),('default','h_u_1','wa_old','in','قديم',NULL,1760799000000)").run(now - 3600e3);
@@ -52,7 +52,7 @@ const revoked = await staffBearer(KV, { user: 'gone', role: 'cashier', revoked: 
 const ALL = [staging, preview, production, { ...base, NOVA_ENV: 'dev' }, base, { ...staging, NOVA_API_PIN: undefined }];
 
 // no DB is still "not configured" (never data)
-assert.equal((await checkPin(new Request('https://x.test/'), { NOVA_ENV: 'staging' })).status, 503);
+assert.equal((await checkPin(new Request('https://x.test/'), { NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1' })).status, 503);
 
 // READ without a session => 401 on EVERY env (staging/preview included), no chat data in the body
 for (const e of ALL) {
@@ -132,3 +132,14 @@ assert.equal(last[0], 429); assert.equal(last[1].code, 'SEND_RATE_LIMITED');
 }
 
 console.log('backend-inbox-pinless (SEC-01 session gate) OK');
+
+// SEC-01c (owner 2026-11-19 22:18 Riyadh): with NOVA_STAFF_GATE unset, the STAGING/PREVIEW backend is pinless again (UX400);
+// production and every other env stay gated.
+{
+  const offStg = { ...base, NOVA_ENV: 'staging' }, offPrev = { ...base, NOVA_ENV: 'preview' }, prod = { ...base, NOVA_ENV: 'production' };
+  assert.deepEqual(await historyAccess(new Request('https://x.test/'), offStg), { session: null }, 'staging gate off: open');
+  assert.deepEqual(await historyAccess(new Request('https://x.test/'), offPrev), { session: null }, 'preview gate off: open');
+  assert.equal((await historyAccess(new Request('https://x.test/'), prod)).bad.status, 401, 'production stays gated');
+  assert.equal((await historyAccess(new Request('https://x.test/'), { ...base, NOVA_ENV: 'dev' })).bad.status, 401, 'dev stays gated');
+  console.log('ok SEC-01c staging/preview pinless when NOVA_STAFF_GATE is not 1; production gated');
+}
