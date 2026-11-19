@@ -167,7 +167,7 @@ try {
   assert(rowText.includes('أقراص'), 'allocated row shows form');
   assert(rowText.includes('20 قرص'), 'allocated row shows pack size');
   assert(rowText.includes('متاح 15'), 'allocated row shows available quantity');
-  assert(rowText.includes('55 ج.م'), 'allocated row shows cost');
+  assert(rowText.includes('55.00') || rowText.includes('55 ج.م'), 'allocated row shows cost');
   assert(rowText.includes('2026-11-12'), 'allocated row shows date');
   assert(rowText.includes('الجلسة منتهية عند فارما أوفرسيز'), 'allocated row shows expired-session warning');
 

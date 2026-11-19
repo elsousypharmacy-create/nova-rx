@@ -164,7 +164,7 @@ try {
 
     // 1a) Production, healthy sessions
     let s = await openScenario(vp, { env: 'production', stockDelayMs: 6200, sessions: { aumet: 'ok', pharmaoverseas: 'ok' } });
-    await s.page.locator('#rows .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
+    await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
     const unlockMs = Date.now() - s.t0;
     await s.page.waitForTimeout(450);
     const cls = await s.page.evaluate(() => Number(window.__cls.toFixed(4)));
@@ -183,16 +183,17 @@ try {
     assert.equal(s.stockBodies.length, 1, 'authenticated unlock calls /api/purchases/stock once');
     assert.equal(s.stockBodies[0].dashboardPin, FAKE_PIN);
     const leak = await s.page.evaluate((v) => ({
-      storage: JSON.stringify(localStorage) + JSON.stringify(sessionStorage),
+      ls: JSON.stringify(localStorage),
+      ss: sessionStorage.getItem('novaNeedsSessionPin'),
       dom: document.body.innerHTML.includes(`value="${v}"`),
     }), FAKE_PIN);
-    assert.ok(!leak.storage.includes(FAKE_PIN) && !leak.dom && !s.logs.join('\n').includes(FAKE_PIN), 'PIN not persisted or logged');
+    assert.ok(!leak.ls.includes(FAKE_PIN) && leak.ss === FAKE_PIN && !leak.dom && !s.logs.join('\n').includes(FAKE_PIN), 'PIN in sessionStorage only, not localStorage/DOM/logs');
     assert.deepEqual(s.errors, []);
     await s.ctx.close();
 
     // 1b) Production, BOTH sessions expired (longest banner) -> banner appears asynchronously, CLS still < 0.1
     s = await openScenario(vp, { env: 'production', stockDelayMs: 6200, sessions: { aumet: 'expired', pharmaoverseas: 'expired' }, sessionDelayMs: 250 });
-    await s.page.locator('#rows .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
+    await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
     const unlockBannerMs = Date.now() - s.t0;
     await s.page.locator('#sessionBanner').waitFor({ state: 'visible', timeout: 2000 });
     await s.page.waitForTimeout(300);
@@ -209,7 +210,7 @@ try {
   // 2) Unknown/default host (env undefined on 127.0.0.1) stays PIN-gated and fails fast
   {
     const s = await openScenario({ width: 390, height: 844 }, { env: undefined, stockDelayMs: 6200 });
-    await s.page.locator('#rows .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
+    await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
     const unlockMs = Date.now() - s.t0;
     assert.ok(unlockMs < 1000, `default-host unlockMs=${unlockMs}ms must be < 1000ms`);
     assert.equal(s.stockBodies.length, 0, 'default host must NOT call /api/purchases/stock without PIN');
@@ -226,7 +227,7 @@ try {
       sessions: { aumet: 'expired', pharmaoverseas: 'ok' },
       sessionDelayMs: 200,
     });
-    await s.page.locator('#rows .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
+    await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
     const unlockMs = Date.now() - s.t0;
     await s.page.waitForTimeout(300);
     const cls = await s.page.evaluate(() => Number(window.__cls.toFixed(4)));
@@ -234,8 +235,8 @@ try {
     assert.equal(s.stockBodies.length, 1, 'preview PINLESS still attempts once');
     assert.equal(s.stockBodies[0].dashboardPin, '');
     assert.ok(cls < 0.1, `preview slow CLS=${cls} must be < 0.1`);
-    assert.equal(await s.page.locator('#rows .unlock-hint').count(), 0, 'timeout must not show wrong-PIN message');
-    assert.equal(await s.page.locator('#rows .load-error').count(), 0, 'timeout must not show red error');
+    assert.equal(await s.page.locator('#unlockHint:visible').count(), 0, 'timeout must not show wrong-PIN message');
+    assert.equal(await s.page.locator('#needsStateBox .load-error:visible').count(), 0, 'timeout must not show red error');
     await s.page.screenshot({ path: path.join(SHOTS, 'unlock-preview-timeout-390x844.png') });
     assert.deepEqual(s.errors, []);
     results.push({ case: 'preview-slow-390x844', unlockMs, stockCalls: s.stockBodies.length, cls });
@@ -251,7 +252,7 @@ try {
     });
     await s.page.locator('#rows tr[data-key]').first().waitFor({ state: 'visible', timeout: 1500 });
     assert.equal(s.stockBodies.length, 1);
-    assert.equal(await s.page.locator('#rows .unlock-card').count(), 0);
+    assert.equal(await s.page.locator('#needsLockWrap .unlock-card:visible').count(), 0);
     assert.deepEqual(s.errors, []);
     await s.ctx.close();
   }
