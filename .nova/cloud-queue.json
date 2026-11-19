@@ -6217,20 +6217,14 @@
    "dispatched_at": "2026-11-19T17:13:08+00:00",
    "pr": 570,
    "ci_dispatched": {
-    "sha": "ffe14a6e7f0d4058d6c4dcb04f0f3d5c99ef8142",
-    "wf": [
-     "playwright-smoke.yml",
-     "preview-artifact-unit.yml",
-     "purchasing-checks.yml",
-     "secret-scan.yml",
-     "ux-unit.yml"
-    ],
-    "at": "2026-11-19T17:14:39+00:00",
+    "sha": "789cbbbf3de14ed63b7022e3dc5d049c55b6df46",
+    "wf": [],
+    "at": "2026-11-19T17:19:50+00:00",
     "na": []
    }
   }
  ],
- "updated": "2026-11-19T17:14:39+00:00",
+ "updated": "2026-11-19T17:19:50+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
