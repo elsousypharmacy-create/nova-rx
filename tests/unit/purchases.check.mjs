@@ -38,4 +38,14 @@ assert.equal((await api(req('/api/suppliers/sellers'))).status,200);
 for(const [data,code]of [[{lockError:true},403],[{ok:true,status:'Staff API'},503]]){
  const a=createSupplierApi({hub:{},env:{NOVA_API_PIN:'test'},fetch:async()=>Response.json(data)});assert.equal((await a(req('/api/purchases/stock',{dashboardPin:'x'},'test'))).status,code);
 }
+// PUR-04: dashboard PIN is optional ONLY when NOVA_ENV is staging/preview; production/dev/unset stay gated. Fake secret value, never a real PIN.
+{
+ const seen=[];
+ const mk=env=>createSupplierApi({hub:{},env:{NOVA_API_PIN:'test',...env},fetch:async(url,init)=>{seen.push(JSON.parse(init.body).pin);return Response.json({ok:true,schemaVersion:1,items:[]});}});
+ const post=(a,pin)=>a(req('/api/purchases/stock',{dashboardPin:pin},'test'));
+ for(const name of ['staging','preview']){seen.length=0;const a=mk({NOVA_ENV:name,NOVA_STOCK_SOURCE_PIN:'fake-secret'});assert.equal((await post(a,'')).status,200);assert.deepEqual(seen,['fake-secret']);
+  seen.length=0;assert.equal((await post(mk({NOVA_ENV:name}),'')).status,403);assert.equal(seen.length,0);
+  seen.length=0;assert.equal((await post(a,'typed')).status,200);assert.deepEqual(seen,['typed']);}
+ for(const env of [{NOVA_ENV:'production'},{NOVA_ENV:'dev'},{},{NOVA_ENV:'prod-staging'}]){seen.length=0;const a=mk({...env,NOVA_STOCK_SOURCE_PIN:'fake-secret'});assert.equal((await post(a,'')).status,403);assert.equal(seen.length,0);}
+}
 console.log('PASS: purchasing quantities, exact matching, seller restrictions, partial distribution, expiry, auth, source and supplier filtering');

@@ -178,12 +178,19 @@ export function createSupplierApi({ hub, store, env = {}, fetch: fetchImpl = glo
       const denied = await requirePin(request); if (denied) return denied;
       const body = await readJson(request);
       if (!body || typeof body.dashboardPin !== 'string' || body.dashboardPin.length > 128) return json({ error: 'bad-request' }, 400);
+      // PUR-04 (owner 2026-11-19): staging/preview only (same NOVA_ENV rule as UX400) may omit the dashboard PIN; the
+      // server-side Worker secret NOVA_STOCK_SOURCE_PIN (never sent to the browser) is used instead when it exists.
+      // Production / dev / unset / unknown NOVA_ENV never take this path.
+      const envName = String(env.NOVA_ENV || '').toLowerCase();
+      const pinless = envName === 'staging' || envName === 'preview';
+      const stockPin = body.dashboardPin || (pinless && typeof env.NOVA_STOCK_SOURCE_PIN === 'string' ? env.NOVA_STOCK_SOURCE_PIN : '');
+      if (!stockPin) return json({ ok: false, error: 'source-auth-required' }, 403);
       const retry = searchLimited(Date.now());
       if (retry) return json({ error: 'rate-limited' }, 429, { 'Retry-After': String(retry) });
       try {
         const upstream = await fetchImpl(env.NOVA_STOCK_SOURCE_URL || 'https://script.google.com/macros/s/AKfycbyETI5UTPwpMFOu-aWoKKHqyppa7ctTVJjckmbTxegDq7E3R3p6aEBzqt275HNL8SBfWg/exec', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'novaPurchasingFeed', pin: body.dashboardPin }),
+          body: JSON.stringify({ action: 'novaPurchasingFeed', pin: stockPin }),
           signal: AbortSignal.timeout(45000), redirect: 'follow',
         });
         const data = await upstream.json();
