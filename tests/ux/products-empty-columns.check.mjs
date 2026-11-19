@@ -1,5 +1,6 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import fs from 'node:fs';
-const h=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+const h=readAppHtml(new URL('../../index.html',import.meta.url),'utf8');
 const ok=(c,m)=>{if(!c){console.error('FAIL',m);process.exit(1)}};
 ok(!h.includes("kpi('الرصيد','غير متاح')"),'old KPI message removed');
 ok(h.includes("tr('غير متوفر من مصدر الأسعار','Not available from price source')"),'new KPI message');

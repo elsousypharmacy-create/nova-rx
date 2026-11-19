@@ -1,3 +1,5 @@
+import { check as splitCheck } from '../../tools/split-index.mjs';
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX412: dedicated /whatsapp path — manifest start_url, HTML head rewrite, SW must
 // not fall back to the cached POS shell, Worker route inject/strip is idempotent.
 // No network, no deploy, never prints secrets.
@@ -22,7 +24,7 @@ ck('manifest id is /whatsapp', manifest.id === '/whatsapp');
 ck('manifest display standalone', manifest.display === 'standalone');
 ck('manifest uses existing WhatsApp icons', Array.isArray(manifest.icons) && manifest.icons.some(i => i.src === '/icons/nova-whatsapp-192.png') && manifest.icons.some(i => i.src === '/icons/nova-whatsapp-512.png'));
 
-const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+const html = readAppHtml(join(ROOT, 'index.html'), 'utf8');
 ck('POS index keeps NOVA Rx head (iOS reads this on /)', html.includes('<meta name="apple-mobile-web-app-title" content="NOVA Rx">') && html.includes('href="/manifest.webmanifest?v=3">') && html.includes('<title>NOVA Rx |'));
 ck('isWhatsAppPath covers /whatsapp and /wa', isWhatsAppPath('/whatsapp') && isWhatsAppPath('/whatsapp/') && isWhatsAppPath('/wa') && isWhatsAppPath('/wa/') && !isWhatsAppPath('/') && !isWhatsAppPath('/index.html') && !isWhatsAppPath('/whatsappx'));
 ck('novaWhatsAppSpaHtml leaves / unchanged', novaWhatsAppSpaHtml('/', html) === html);
@@ -41,7 +43,9 @@ ck('embedded worker fn matches module rewrite', (() => {
 })());
 
 const sw = readFileSync(join(ROOT, 'sw.js'), 'utf8');
-ck('SW cache is v6', sw.includes("const CACHE='nova-rx-shell-v6'") && !sw.includes("const CACHE='nova-rx-shell-v5'"));
+ck('SW cache is v7 (PERF-02: suffix follows the split app files)', /const CACHE='nova-rx-shell-v7-[0-9a-f]{10}'/.test(sw) && !sw.includes("const CACHE='nova-rx-shell-v6'"));
+ck('PERF-02 SW precaches the content-hashed app files and serves them cache-first', /^const NOVA_APP_ASSETS=\["\/assets\/app-/.test(sw) && sw.includes("NOVA_APP_ASSETS.map(u=>c.add(new Request(u,{cache:'force-cache'}))") && sw.includes("url.pathname.indexOf('/assets/app-')===0){e.respondWith(caches.match(e.request)"));
+{ const errs = splitCheck(ROOT); ck('PERF-02 index.html, assets/app-* and sw.js are in sync with app/ (node tools/split-index.mjs --check)' + (errs.length ? ': ' + errs.slice(0, 5).join('; ') : ''), errs.length === 0); }
 ck('SW treats /whatsapp and ?app=whatsapp as network-first navigations', sw.includes("url.searchParams.get('app')==='whatsapp'") && sw.includes("path==='/whatsapp'") && sw.includes("path==='/wa'"));
 ck('SW never falls back from a WhatsApp navigation to cached /', sw.includes("if(p==='/'||p==='/index.html')return Promise.reject"));
 
@@ -56,7 +60,7 @@ ck('inject is idempotent', once === twice);
 ck('strip after inject restores pre-route worker (modulo nothing)', stripWaSpa(once) === readFileSync(copy, 'utf8'));
 rmSync(dir, { recursive: true });
 
-ck('index.html keeps /whatsapp even without the query', html.includes("path==='/whatsapp'||path==='/wa'") && html.includes('function waKeepUrl()') && html.includes("var swUrl = '/sw.js?v=6';"));
+ck('index.html keeps /whatsapp even without the query', html.includes("path==='/whatsapp'||path==='/wa'") && html.includes('function waKeepUrl()') && html.includes("var swUrl = '/sw.js?v=7';"));
 ck('index.html opens inbox in standalone when the launch URL is marked', html.includes("display-mode: standalone") && html.includes("sessionStorage.setItem('nova.wa.standalone','1')"));
 
 console.log(fail ? 'FAILED ' + fail : 'ALL PASS');

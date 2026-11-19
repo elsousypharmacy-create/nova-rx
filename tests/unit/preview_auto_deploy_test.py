@@ -174,7 +174,8 @@ def test_markers_and_no_regression():
 
 
 def test_real_artifacts():
-    app = Path(ROOT, "index.html").read_text(encoding="utf-8")
+    # PERF-02: index.html is a shell; the markers live in its split app/ files, so check the joined page
+    app = subprocess.run(["node", os.path.join(ROOT, "tools/split-index.mjs"), "--join"], cwd=ROOT, check=True, capture_output=True, text=True).stdout
     assert P.missing_markers(app) == []
     assert "waHistPin" not in app
     picked = P.newest_artifact(ROOT)

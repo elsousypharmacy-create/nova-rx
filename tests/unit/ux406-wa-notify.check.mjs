@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX406: unread tracker (per chat + total), document.title badge, permission/mute control HTML, list badge wiring,
 // storage never holds chat ids, permission requested only from the button. Run: node tests/unit/ux406-wa-notify.check.mjs
 import assert from 'node:assert/strict';
@@ -114,7 +115,7 @@ t('chat list uses the unread hook for per-chat badges; renderWa shows the contro
   assert.match(U.noteHtml('إشعارات الخلفية لسه مش متفعلة على السيرفر'), /wa-nnote-toast/);
 });
 t('index.html: permission only from the button, SW message hooks, title/tab wiring', () => {
-  const h = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+  const h = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
   assert.equal((h.match(/Notification\.requestPermission\(/g) || []).length, 1);
   const ask = /function nAsk\(\)\{[\s\S]*?\nbox\.addEventListener/.exec(h)[0];
   assert.ok(ask.includes('requestPermission'));

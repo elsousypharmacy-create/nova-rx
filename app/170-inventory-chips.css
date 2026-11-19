@@ -1,0 +1,36 @@
+
+.nova-inventory-actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin:12px 0 18px}
+.nova-inventory-action{border:1px solid #4772aa;background:#1e4f96;color:#fff;border-radius:var(--r-2);padding:11px 16px;font:700 13px Cairo;cursor:pointer}
+.nova-inventory-action.secondary{background:#20262f;border-color:#454e59}
+.nova-stock-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}.nova-stock-chip{font:inherit;font-size:13px;min-height:44px;padding:0 14px;border-radius:var(--r-2);border:1px solid #292f36;background:#1c2229;color:#dce3e9;cursor:pointer}.nova-stock-chip.active{border-color:#e5484d;background:#3a1519;color:#ff8a8f}.nova-stock-chip b{margin-inline-start:4px}.nova-stock-legend{font-size:12px;color:#a7b3bd}
+@media(max-width:640px){.nova-stock-chips{flex-wrap:nowrap;gap:6px;margin:0 0 8px}.nova-stock-chip{flex:1 1 0;min-width:0;padding:0 4px;font-size:12px;white-space:nowrap}.nova-stock-legend{display:none}}
+.nova-search-wrap{position:relative;flex:1 1 auto;min-width:0;display:flex}.nova-search-wrap .nova-page-search{padding-inline-end:44px}
+.nova-search-clear{position:absolute;inset-inline-end:2px;top:0;bottom:0;width:44px;border:0;background:transparent;color:#c4ceda;font-size:22px;line-height:1;cursor:pointer;border-radius:var(--r-2)}.nova-search-clear:hover,.nova-search-clear:focus-visible{color:#fff;background:#2a3139}.nova-search-clear[hidden]{display:none}
+mark.nova-hl{background:#5b4a12;color:#ffe9a3;border-radius:3px;padding:0 1px}
+.nova-products-toolbar{display:flex;align-items:stretch;gap:var(--sp-3);margin:0 0 18px}
+.nova-products-toolbar .nova-page-search{flex:1 1 auto;max-width:none;width:auto;min-width:0;box-sizing:border-box;height:44px}
+.nova-products-toolbar .nova-inventory-action{flex:none;box-sizing:border-box;height:44px;padding:0 16px;white-space:nowrap;display:inline-flex;align-items:center}
+@media(max-width:640px){.nova-products-toolbar{flex-wrap:wrap}.nova-products-toolbar .nova-page-search{flex:1 1 100%}.nova-products-toolbar .nova-inventory-action{flex:1 1 0;white-space:normal;height:auto;min-height:44px;justify-content:center}}
+.nova-kpis-compact{grid-template-columns:repeat(auto-fit,minmax(0,1fr));margin-bottom:8px}
+.nova-kpis-compact .nova-kpi{padding:8px 12px!important}.nova-kpis-compact .nova-kpi strong{font-size:18px;margin-top:2px}
+.nova-stock-notice{display:inline-block;max-width:100%;box-sizing:border-box;margin:0 0 12px;padding:3px 12px;border:1px solid #343b44;border-radius:var(--r-2);background:#171a1f;color:#9da9b4;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:640px){.nova-kpis-compact{grid-template-columns:repeat(2,minmax(0,1fr))}.nova-products-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.nova-products-toolbar .nova-search-wrap{grid-column:1/-1}.nova-products-toolbar .nova-inventory-action{white-space:normal!important;overflow:visible;text-overflow:clip;min-width:0;padding:6px 8px;display:flex;justify-content:center;text-align:center;line-height:1.35;height:auto;min-height:44px;font-size:12px}}
+.nova-cust-namebox{min-width:0}
+.nova-data-table.nova-cards td.nova-cust-name{justify-content:space-between}
+.nova-cust-name .nova-cust-ar{display:block;unicode-bidi:isolate;font-weight:700}
+.nova-cust-name .nova-cust-en{display:block;unicode-bidi:isolate;text-align:start;font-size:11px;color:#8d98a5;font-weight:400}
+html[dir=rtl] .nova-cust-name .nova-cust-en{text-align:right}
+.nova-num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.nova-data-table td.nova-num{text-align:end}
+.nova-tier-badge{display:inline-block;padding:2px 10px;border-radius:999px;font:700 11px Cairo;border:1px solid #454e59;background:#20262f;color:#c4ceda}
+.nova-tier-badge[data-tier=gold]{background:#3a2f12;border-color:#8a6d1f;color:#f0c75e}
+.nova-tier-badge[data-tier=silver]{background:#2a2f36;border-color:#7b8794;color:#d5dbe3}
+.nova-tier-badge[data-tier=bronze]{background:#3a2518;border-color:#8a5a33;color:#e0a272}
+.nova-demo-chip{display:inline-block;margin-inline-start:8px;padding:1px 8px;border-radius:999px;border:1px solid #454e59;background:#20262f;color:#c4ceda;font:700 11px Cairo;vertical-align:middle}
+#novaLabelsPanel{display:none;position:fixed;inset:0;z-index:9100;background:#000d;padding:12px;align-items:center;justify-content:center}
+#novaLabelsPanel.open{display:flex}
+#novaLabelsPanel .labels-sheet{display:flex;flex-direction:column;width:min(1080px,100%);height:min(94dvh,960px);background:#171b20;border:1px solid #39424e;border-radius:var(--r-2);overflow:hidden}
+#novaLabelsPanel .labels-toolbar{display:flex;gap:var(--sp-3);align-items:center;justify-content:space-between;padding:10px 14px;color:#fff;font:700 13px Cairo;direction:rtl}
+#novaLabelsPanel button,#novaLabelsPanel a{font:600 12px Cairo;color:#fff;border:1px solid #526170;background:#29313c;border-radius:var(--r-2);padding:8px 11px;text-decoration:none;cursor:pointer}
+#novaLabelsPanel iframe{width:100%;flex:1;border:0;background:white}
+@media(max-width:600px){#novaLabelsPanel{padding:3px}#novaLabelsPanel .labels-sheet{height:98dvh;border-radius:var(--r-2)}}

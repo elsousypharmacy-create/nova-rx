@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // SALE-06: «تجهيز صيدلية جديدة (تجريبي)» inline helper (index.html <script id="sale06-onboarding">). DEFAULT OFF.
 // No network: every fetch is a mock. No payment code. Run: node tests/unit/backend-onboarding-ui-sale06.check.mjs
 import assert from 'node:assert/strict';
@@ -5,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const PROD = 'https://nova-rx-api.elsousypharmacy.workers.dev';
-const html = readFileSync('index.html', 'utf8');
+const html = readAppHtml('index.html', 'utf8');
 const src = /<script id="sale06-onboarding">([\s\S]*?)<\/script>/.exec(html)[1];
 const flagSrc = /<script id="sale01-backend-flag">([\s\S]*?)<\/script>/.exec(html)[1];
 const mem = (init = {}) => { const m = new Map(Object.entries(init)); return { m, getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) }; };

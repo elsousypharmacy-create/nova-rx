@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+const indexHtml = readAppHtml(path.join(ROOT, 'index.html'));
 const purchasesHtml = fs.readFileSync(path.join(ROOT, 'purchases.html'), 'utf8');
 const purchasesCss = fs.readFileSync(path.join(ROOT, 'purchases.css'), 'utf8');
 const purchasesJs = fs.readFileSync(path.join(ROOT, 'purchases.js'), 'utf8');

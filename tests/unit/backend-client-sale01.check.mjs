@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // SALE-01: production backend hookup behind a per-device flag, DEFAULT OFF. No network: every fetch is a mock.
 // Run: node tests/unit/backend-client-sale01.check.mjs
 import assert from 'node:assert/strict';
@@ -38,7 +39,7 @@ assert.equal(resolveBaseUrl({ getItem() { throw new Error('blocked'); } }), '', 
 }
 
 // index.html inline helper (window.novaBackendFlag)
-const html = readFileSync('index.html', 'utf8');
+const html = readAppHtml('index.html', 'utf8');
 const helperSrc = /<script id="sale01-backend-flag">([\s\S]*?)<\/script>/.exec(html)[1];
 function runHelper(local = {}, session = {}) {
   const ls = mem(local), ss = mem(session);

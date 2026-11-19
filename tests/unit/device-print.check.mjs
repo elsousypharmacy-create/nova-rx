@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // S3-01: invoice print through a MOCK device gateway (no physical printer): browser fallback, one print per click, reprint on purpose,
 // failure keeps the sale and gives an Arabic message, retry after recovery prints once. Run: node tests/unit/device-print.check.mjs
 import assert from 'node:assert/strict';
@@ -108,7 +109,7 @@ const rNo = await noUser.printInvoice({ id: 'S-300', lines: [] }, 0);
 assert.equal(rNo.ok, false); assert.equal(rNo.message_ar, ERRORS_AR['not-permitted']);
 
 // 9. index.html: the print path uses the wire with the browser fallback, and the settings card is mounted
-const page = readFileSync('index.html', 'utf8');
+const page = readAppHtml('index.html', 'utf8');
 assert.ok(page.includes('window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0)'), 'printNow uses the device wire');
 assert.ok(page.includes('id="novaDevicesCard"'), 'devices card in settings');
 assert.ok(page.includes("devicesHtml(localStorage.getItem('nova-rx-language')==='en'?'en':'ar')"), 'card follows the UI language');

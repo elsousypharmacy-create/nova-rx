@@ -1,6 +1,11 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
+
+// PERF-02: receipt-before.html is main's index.html (a shell). Its split files /assets/app-*.<hash> may not exist in this
+// checkout when the branch changed them, so serve those from the fetched main commit instead.
+const mainAsset = (p) => { for (const ref of ['FETCH_HEAD', 'origin/main']) { try { return execFileSync('git', ['show', ref + ':' + p], { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 << 20 }); } catch {} } return null; };
 
 const origin = process.env.NOVA_RECEIVING_URL || 'http://127.0.0.1:8766';
 const output = process.env.NOVA_RECEIVING_OUTPUT || 'reports/receiving';
@@ -32,7 +37,16 @@ try {
   for (const width of [1280, 1440]) {
     if (fs.existsSync('receipt-before.html')) {
       const beforeContext = await browser.newContext({ viewport: { width, height: width === 1280 ? 800 : 900 } });
-      await beforeContext.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
+      await beforeContext.route('**/*', route => {
+        const url = route.request().url();
+        if (!url.startsWith(origin)) return route.abort();
+        const p = new URL(url).pathname.slice(1);
+        if (/^assets\/app-[\w.-]+\.(js|css)$/.test(p) && !fs.existsSync(p)) {
+          const body = mainAsset(p);
+          if (body) return route.fulfill({ status: 200, contentType: p.endsWith('.js') ? 'application/javascript' : 'text/css', body });
+        }
+        return route.continue();
+      });
       const beforePage = await beforeContext.newPage();
       beforePage.on('dialog', dialog => dialog.accept());
       await beforePage.goto(origin + '/receipt-before.html#receiving');
