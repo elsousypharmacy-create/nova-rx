@@ -1,0 +1,2 @@
+# PERF-02: generated content-hashed copies of app/*; edit app/ and run node tools/split-index.mjs
+assets/app-*

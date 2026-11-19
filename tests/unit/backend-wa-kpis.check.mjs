@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX430: WhatsApp KPIs (Home card + KPIs page). Pure KPI maths on fixture events, the read-only metrics endpoint on a fake
 // D1 (node:sqlite + real migrations), and the shared ES5 block copied verbatim into index.html / the ux-430 artifact.
 // Run: node --no-warnings tests/unit/backend-wa-kpis.check.mjs   (no network, never prints secrets)
@@ -150,7 +151,7 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const src = readFileSync(join(ROOT, 'backend/src/wa-kpis.js'), 'utf8');
 const block = src.slice(src.indexOf('// BEGIN-KPI-SHARED'), src.indexOf('// END-KPI-SHARED') + '// END-KPI-SHARED'.length);
 assert.ok(block.length > 2000);
-const idx = readFileSync(join(ROOT, 'index.html'), 'utf8');
+const idx = readAppHtml(join(ROOT, 'index.html'), 'utf8');
 assert.ok(idx.includes(block), 'index.html carries the exact KPI block');
 const ART = join(ROOT, 'worker/live/nova-rx-preview.ux-430.js');
 if (existsSync(ART)) {

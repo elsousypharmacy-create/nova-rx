@@ -1,6 +1,7 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX18: static scan of index.html — Arabic default, no English-only title=/help rows, accessible names, button tokens.
 import fs from 'node:fs';
-const html = fs.readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const html = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 const auth = fs.readFileSync(new URL('../../auth-ui.js', import.meta.url), 'utf8');
 const body = html.slice(html.indexOf('<body'), html.indexOf('<!-- APPLICATION LOGIC -->'));
 const ar = /[؀-ۿ]/;

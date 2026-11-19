@@ -60,5 +60,9 @@ assert S.missing_markers(stale_sample)
 pin_sample = os.path.join(tmp, "pin-wa-live3.js")
 open(pin_sample, "w").write(" ".join(m for m in S.REQUIRED_MARKERS if m != "data-wa-inbox-open") + " waHistPin")
 assert S.missing_markers(pin_sample) == ["data-wa-inbox-open"]
-assert not S.missing_markers("index.html") and "waHistPin" not in S.REQUIRED_MARKERS and "X-Nova-Pin" not in S.REQUIRED_MARKERS
+# PERF-02: index.html is a shell; the markers live in its split app/ files -> check the joined page
+joined = os.path.join(tmp, "index.joined.html")
+import subprocess
+subprocess.run(["node", os.path.join(ROOT, "tools/split-index.mjs"), "--join", joined], check=True, cwd=ROOT)
+assert not S.missing_markers(joined) and "waHistPin" not in S.REQUIRED_MARKERS and "X-Nova-Pin" not in S.REQUIRED_MARKERS
 print("qa_loop tests ok")

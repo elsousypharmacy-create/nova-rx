@@ -1,10 +1,11 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // WA-LINK display: a registered customer name is shown as is; a number-only conversation is shown as a readable number with a person
 // avatar; the chat header shows the customer's number under the name. Pure HTML, no network.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const U = createRequire(import.meta.url)('../../unified-inbox.js');
-const page = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const page = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 const NOW = new Date(2026, 10, 15, 12, 0).getTime();
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 const conv = (id, customer, extra) => Object.assign({ id, customer, updatedAt: NOW - 1000, messages: [{ id: id + 'm', dir: 'in', text: 'مرحبا', at: NOW - 1000 }] }, extra);

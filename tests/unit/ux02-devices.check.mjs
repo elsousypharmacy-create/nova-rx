@@ -1,6 +1,7 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-const h = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const h = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 t('viewport meta present', () => assert.match(h, /<meta name="viewport" content="width=device-width/));
 t('UX-02 block: 44px targets', () => assert.match(h, /UX-02[\s\S]*min-height:44px!important/));

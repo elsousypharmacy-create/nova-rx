@@ -4,21 +4,21 @@
   "recordedAt": "2026-11-19",
   "maxGrowthPct": 5,
   "size": {
-    "indexHtmlBytes": 1200843,
-    "totalJsCssBytes": 1275358,
+    "indexHtmlBytes": 68032,
+    "totalJsCssBytes": 1273237,
     "breakdown": {
-      "inlineJsBytes": 894830,
-      "inlineCssBytes": 264400,
-      "externalJsBytes": 104136,
-      "externalCssBytes": 11992
+      "inlineJsBytes": 11114,
+      "inlineCssBytes": 10008,
+      "externalJsBytes": 988097,
+      "externalCssBytes": 264018
     }
   },
   "lcp": {
     "budgetMs": 2500,
-    "baselineMs": 1000,
-    "domContentLoadedBaselineMs": 5228,
-    "loadBaselineMs": 5248,
-    "mode": "warn",
+    "baselineMs": 1712,
+    "domContentLoadedBaselineMs": 7159,
+    "loadBaselineMs": 7172,
+    "mode": "enforce",
     "maxRegressionPct": 15,
     "runs": 3,
     "viewport": {
@@ -32,6 +32,6 @@
       "label": "Fast 3G (1.6 Mbps down, 150 ms RTT)"
     },
     "cpuThrottleRate": 4,
-    "note": "Warning-only ratchet while DCL/Load on 1.2 MB index.html is ~5.2 s (and preview LCP is ~3.6 s); switch mode to 'enforce' once PERF-02 splits inline JS/CSS and brings LCP reliably under 2500 ms."
+    "note": "Tightened by PERF-02 after splitting inline JS/CSS out of index.html (68 KB shell, 53 immutable content-hashed assets precached by sw.js v7); mobile LCP is enforced against the 2500 ms budget."
   }
 }

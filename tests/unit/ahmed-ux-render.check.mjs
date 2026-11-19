@@ -1,7 +1,8 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // Execute actual page renderers with isolated in-memory fakes, no network or writes.
 // Verifies copy, empty states and data preservation. Does not verify browser layout.
 import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
-const h=readFileSync(process.env.NOVA_UX_HTML||'index.html','utf8');
+const h=readAppHtml(process.env.NOVA_UX_HTML||'index.html','utf8');
 const prelude=h.slice(h.indexOf(' const data=()=>window.NOVA_DEMO'),h.indexOf(' function dlgA11y('));
 const renderer=h.slice(h.indexOf(" function render(page,filter=''){"),h.indexOf(' window.__novaRowFillTok=(window.__novaRowFillTok||0)+1;'))+'return content; }';
 const fakeSales=[];let lang='ar';

@@ -1,6 +1,7 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-const h=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+const h=readAppHtml(new URL('../../index.html',import.meta.url),'utf8');
 assert.match(h,/\.nova-page-view\{padding-bottom:calc\(72px/,'page-view bottom padding rule');
 assert.match(h,/\.totals-breakdown\{margin-bottom:72px\}/,'totals spacing rule');
 assert.match(h,/@media\(max-width:600px\)\{#novaAiLaunch\{[^}]*border-radius:50%/,'icon-only round FAB <=600px');
