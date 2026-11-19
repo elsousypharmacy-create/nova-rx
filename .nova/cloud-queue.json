@@ -6155,17 +6155,19 @@
     "PUR-01",
     "PUR-02"
    ],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
    "note": "Follow-up to PUR-01. Gemini agy-b review https://github.com/elsousypharmacy-create/nova-rx/pull/564#issuecomment-7011712239 found 2 blocking bugs now on main. Owner Ahmed: use slot A (ahmed m), Sonnet, and execute. No deploy.",
    "model": "sonnet",
    "max_turns": 60,
-   "pin_slot": "A"
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-19T14:58:49+00:00"
   }
  ],
- "updated": "2026-11-19T14:58:17+00:00",
+ "updated": "2026-11-19T14:58:49+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
