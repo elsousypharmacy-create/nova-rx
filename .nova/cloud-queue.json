@@ -5497,15 +5497,15 @@
       "brief": "Stage 1 task 1 of 13 — SECURITY FIRST. Anyone with the preview link can today read and reply to real customer WhatsApp chats.\n\nCurrent state (origin/main, verified):\n- UX400 removed the PIN gate on staging/preview on purpose (`backend/src/inbox-history.js`: `historyPinless()` is true when `NOVA_ENV` is `staging` or `preview`; comment says the owner accepted that anyone with the link can read and reply). Every other env (production, dev, unset) still requires `X-Nova-Pin` == `NOVA_API_PIN` (>= 12 chars), rate-limited in KV.\n- The conversations UI (`index.html` `hGet` / `hUrl`, around the `/api/v1/inbox/history/` client) calls staging by default (`https://nova-rx-api-staging.elsousypharmacy.workers.dev/api/v1/inbox/history/`) with ONLY `Accept: application/json` — it does not send `X-Nova-Pin` or a session `Authorization` header. `/whatsapp` (UX412, `tools/whatsapp-spa.mjs`, Worker route + `sw.js`) has no login wall. Marker `data-wa-inbox-open` means PIN-free chrome.\n- Tests that currently assert pinless behaviour: `tests/unit/backend-inbox-pinless.check.mjs`, `tests/unit/artifact-ux400-pinless.check.mjs`, plus history tests in `tests/unit/backend-inbox-history.check.mjs`.\n\nGoal: lock the page and the history/send APIs on staging/preview so a stranger with the URL cannot see or reply to chats. Do NOT bring back the old full-width PIN strip (UX240/UX235/UX410 complaints). Use a one-time lock screen (pharmacy PIN or password) that lasts for the tab/device session (sessionStorage / trusted-device), with a clear Arabic RTL form, and send the credential on API calls (header already allowed in CORS: `X-Nova-Pin`). Keep production PIN-gated as it is today. Later S1-07 will replace the shared PIN with per-staff server sessions — design the guard so a bearer session can be accepted too, even if only PIN is implemented now.\n\nScope: `backend/src/inbox-history.js` (and send/media/push guards if they share `checkPin` / `historyPinless`), `index.html` conversations client + a lock screen that also wraps the `/whatsapp` SPA (`tools/whatsapp-spa.mjs`, `unified-inbox.js` if the lock is shared), tests above (update pinless tests: staging is no longer open). Do not touch `WA_TOKEN`, do not send any WhatsApp message, do not change send kill-switches except to require auth. Do not print the PIN. Fake PIN only in tests (>= 12 chars, fixture, never a real value).\n\nDo not deploy. After HTML/SW changes rebuild the ux-407 artifact as in HARD RULES.\n\nHARD RULES: Do not print, log, or commit secret values or PINs (name them only: NOVA_API_PIN, NOVA_INGEST_SECRET, WA_TOKEN, BACKUP_PASSPHRASE, VAPID_*, Cloudflare tokens). Do not roll or regenerate any token. Do not spend money or enable R2 (owner declined; backups are D1 Time Travel + encrypted GitHub artifacts). Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers (no test sends). Do not call /{phone_id}/register or /deregister, and do not migrate the number. Do not touch WA_TOKEN. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). Do not deploy production or staging (Nova deploys via deploy-backend-staging.yml / deploy-backend-production.yml after backup + tests + rollback plan). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only; no admin bypass; do not loosen first-time-contributor approval. Tests with fake/local data; Playwright must block non-GET / no live writes. Preserve Arabic RTL. When index.html or sw.js changes: after merging origin/main, rebuild the preview artifact `node tools/build-worker-artifact.mjs worker/live/nova-rx-preview.ux-407.js index.html worker/live/nova-rx-preview.ux-407.js` (add `--sw sw.js` if sw.js changed) and commit the artifact with the change. Update CURRENT.md in the same PR if project state changes. Supplier work stays read-only.",
       "acceptance": "Staging/preview history and send routes return 401 PIN_REQUIRED (or session required) without a valid credential, and 200 with a valid fake PIN/session in unit tests. Production/dev path remains PIN-gated and is still covered by existing tests. `/whatsapp` and `/?app=whatsapp` show a lock screen and do not render customer threads until unlocked; after unlock, chats load as today. No old PIN strip. No credential in logs, repo, or screenshots. Playwright + unit tests pass with fake data; pinless tests updated. Artifact rebuilt if index.html/sw.js changed. No deploy, no live WhatsApp send.",
       "after": [],
-      "status": "running",
+      "status": "done_noop",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "First Stage 1 task. Security hole on /whatsapp. Do not restore the old PIN strip UX. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "reverted by owner; production PIN-gated (cc869e7, 0440126).\n\nFirst Stage 1 task. Security hole on /whatsapp. Do not restore the old PIN strip UX. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A",
-      "slot": "A",
+      "slot": null,
       "dispatched_at": "2026-11-16T22:21:55+00:00"
     },
     {
@@ -5517,11 +5517,11 @@
       "after": [
         "S1-01"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Opus: disconnected sync/sales/change_feed pipeline. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in e926a92, 218c248, e851078; CI/software only, no live device test.\n\nOpus: disconnected sync/sales/change_feed pipeline. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "opus",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5535,11 +5535,11 @@
       "after": [
         "S1-02"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in dd52b76; CI/software only, no live device test.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5553,11 +5553,11 @@
       "after": [
         "S1-03"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 73b7c7c, d21c9a8; CI/software only, no live device test.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5571,11 +5571,11 @@
       "after": [
         "S1-04"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 3ceeaa5, ea0fae2; staging flags; CI/software only, no live device test.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5589,11 +5589,11 @@
       "after": [
         "S1-05"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Opus: move staff auth from KV to D1 users so backups restore accounts. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 5f0d8a9, 4e50f7f; CI/software only, no live device test.\n\nOpus: move staff auth from KV to D1 users so backups restore accounts. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "opus",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5612,7 +5612,7 @@
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "not done: no staff login wall; /whatsapp on staging/preview is still PIN-less.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5626,11 +5626,11 @@
       "after": [
         "S1-07"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 3891af6; restore drill; CI/software only, no live device test.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5644,11 +5644,11 @@
       "after": [
         "S1-01"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Can proceed once sync apply exists; needed before production writes. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 482a301; daily encrypted backup covers production; scheduled runs succeeded 17–19 Nov; not a live restore drill.\n\nCan proceed once sync apply exists; needed before production writes. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5663,11 +5663,11 @@
         "S1-09",
         "S1-05"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 3891af6; names-only secret check + restore drill; CI/software only, no live device test.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5684,11 +5684,11 @@
         "S1-07",
         "S1-13"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in f02e5dd, 7577f24; production wrangler flags ON, frontend novaBackend.enabled stays OFF; CI/software only, no live device test.\n\nStage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5702,11 +5702,11 @@
       "after": [
         "S1-01"
       ],
-      "status": "pending",
+      "status": "done_noop",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Do not change GitHub visibility. Checklist only. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "checklist only; owner keeps repo public for now (e08b42a).\n\nDo not change GitHub visibility. Checklist only. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5721,11 +5721,11 @@
         "S1-07",
         "S1-10"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-stage1-2026-11-17",
-      "note": "Stage 1 done gate: tablet sale appears on phone; backup restore recovers it. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
+      "note": "software done in 4ae6709; CI in-memory gate only, no live tablet/phone test.\n\nStage 1 done gate: tablet sale appears on phone; backup restore recovers it. Stage 1 (نربط ونحمي البيانات), 2026-11-17 Asia/Riyadh. Inspect origin/main first; cite real paths. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Workflows may be disabled until Nova re-enables them; do not re-enable workflows yourself.",
       "model": "sonnet",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5739,11 +5739,11 @@
       "after": [
         "S1-13"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "S2 can start after Stage 1 done (S1-13). If the owner starts early, minimum dep is S1-04. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in 5f7ba97, 35d2a74, 1745576; CI/software only, no live device test.\n\nS2 can start after Stage 1 done (S1-13). If the owner starts early, minimum dep is S1-04. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5757,11 +5757,11 @@
       "after": [
         "S2-01"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in c55a11c, adc907b; CI/software only, no live device test.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5775,11 +5775,11 @@
       "after": [
         "S2-02"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Opus: receiving + lots + sync apply. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in 5db4615, deca794; CI/software only, no live device test.\n\nOpus: receiving + lots + sync apply. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "opus",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5793,11 +5793,11 @@
       "after": [
         "S2-03"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in e252b63, 140f1fb; CI/software only, no live device test.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5811,11 +5811,11 @@
       "after": [
         "S2-01"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in c55a11c, adc907b; CI/software only, no live device test.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5829,11 +5829,11 @@
       "after": [
         "S2-05"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in 5db4615, deca794; CI/software only, no live device test.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5849,11 +5849,11 @@
         "S2-04",
         "S2-06"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in 79de381; CI/software gate only, no live two-device test.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 80,
       "pin_slot": "A"
@@ -5867,11 +5867,11 @@
       "after": [
         "S2-07"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in 4307639; browser/gateway print only, no physical printer tested.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -5885,11 +5885,11 @@
       "after": [
         "S3-01"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد: تجربة التابلت في السوسي. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed on site (field test). hold so the scheduler will not auto-start this.\n\nيحتاج أحمد: تجربة التابلت في السوسي. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5903,11 +5903,11 @@
       "after": [
         "S3-01"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد: تجربة الطابعة. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed on site (field test). hold so the scheduler will not auto-start this.\n\nيحتاج أحمد: تجربة الطابعة. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5921,11 +5921,11 @@
       "after": [
         "S3-01"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد: تجربة الماسح. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed on site (field test). hold so the scheduler will not auto-start this.\n\nيحتاج أحمد: تجربة الماسح. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5941,11 +5941,11 @@
         "S3-03",
         "S2-07"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد: ورديات حقيقية ومقارنة الحسابات. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed on site (real shifts). hold so the scheduler will not auto-start this.\n\nيحتاج أحمد: ورديات حقيقية ومقارنة الحسابات. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5960,11 +5960,11 @@
         "S3-05",
         "S3-04"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed on site (matching accounts). hold so the scheduler will not auto-start this.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -5979,11 +5979,11 @@
         "S3-06",
         "S1-06"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "software done in 4f06d45, 89fa041; CI/software only; NOVA_ONBOARDING still off in production.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -6001,7 +6001,7 @@
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "docs only (d6d0c5d); no dedicated onboarding-path screen work.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 60,
       "pin_slot": "A"
@@ -6015,11 +6015,11 @@
       "after": [
         "S2-07"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "docs/manuals updated in a9f3e13; no live training session.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -6033,11 +6033,11 @@
       "after": [
         "S4-02"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد: قرار السعر. لا بوابة دفع. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed (price). hold so the scheduler will not auto-start this.\n\nيحتاج أحمد: قرار السعر. لا بوابة دفع. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -6053,11 +6053,11 @@
         "S4-03",
         "S3-06"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد: أول عميل خارجي. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed (first external customer). hold so the scheduler will not auto-start this.\n\nيحتاج أحمد: أول عميل خارجي. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
@@ -6072,17 +6072,17 @@
         "S4-05",
         "S1-12"
       ],
-      "status": "pending",
+      "status": "hold",
       "attempts": 0,
       "fix_attempts": 0,
       "source": "owner-full-plan-2026-11-17",
-      "note": "يحتاج أحمد/Nova: قفل الريبو. الوكيل لا يغيّر الرؤية. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+      "note": "needs Ahmed later (repo private). owner keeps the repo public for now. hold so the scheduler will not auto-start this.\n\nيحتاج أحمد/Nova: قفل الريبو. الوكيل لا يغيّر الرؤية. Full plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
       "model": "sonnet",
       "max_turns": 40,
       "pin_slot": "A"
     }
   ],
-  "updated": "2026-11-17T09:30:41Z",
+  "updated": "2026-11-19T12:14:43Z",
   "slot_cooldown": {},
   "ingested_inbox": [
     "fix-aumet-login.json",
