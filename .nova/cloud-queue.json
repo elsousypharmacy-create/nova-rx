@@ -6088,7 +6088,7 @@
    "brief": "Purchases redesign task 1 of 3 — invoice receive dialog (target: docs/design/purchases/after/04-invoice-form.png; today: before/E-receive-invoice-app.png).\n\nBUG (must fix first): in the receive-invoice dialog, after choosing a supplier from the #rcvSup datalist/combobox, focus stays in the supplier field, so typing the item name appends into the supplier (\"فارما أوفرسيزpan\"). The dropdown is also narrower than the field, and any free-text supplier is accepted.\n\nGoal:\n- Supplier becomes a real select (or accessible combobox) of known suppliers (SUPPLIERS + suppliers from past receipts), placeholder «اختر المورد», plus a «+ مورد جديد» action that adds a named supplier explicitly (no silent free text). After a choice, focus moves to the invoice number (or first item) field; typing never edits the supplier. Dropdown width = field width. RTL.\n- Required markers (*) on المورد, الصنف (at least one line) and الصلاحية. Confirm button «تأكيد الاستلام وإضافة للمخزون» disabled until valid, with a warn-coloured hint listing what is missing (e.g. «ناقص: المورد، صنف واحد على الأقل، الصلاحية»). Enter key must not submit an invalid form.\n- Expiry input is month/year MM/YY (accept 1126, 11/26, 11/2026; store in the same internal date format used today, e.g. last day of month, so stock/lots/expiry alerts keep working). Reject past months with a clear message.\n- Quantity shows a unit label («علبة») next to the field; unit price labelled «سعر العلبة»; line total read-only.\n- Each item line is its own card (mockup). Batch/التشغيلة stays optional.\n- Add «حفظ مسودة» (save draft locally, reopen from the receiving tab later) only if it fits cleanly in the existing receipts storage without changing confirmed-receipt semantics; otherwise leave a TODO in the PR body.\n- Optional, only if a scanner hook already exists in the codebase: a «امسح باركود العلبة» button that fills the item (+ batch/expiry when the code is GS1 DataMatrix: AI 01/17/10). Do not add new dependencies just for this.\n\nDesign reference (committed on main): docs/design/purchases/README.md, after/*.png (target), before/*.png (today), html/*.html (source mockups), research.md. Code today: purchases page = purchases.html + purchases.js + purchases.css (+ purchases-core.js, purchases-prep.js, purchases-po.js); receiving + invoice dialog live in index.html (search `rcv-`, `#rcvSup`, `rcvSupList`, `receipts()`, `#receiving`, around lines 12150-12410); receipt corrections in receipt-operations.js (localStorage keys nova-rx-receipts-v1 etc.). Inspect origin/main first and cite real paths. Tests: keep all existing CI green (Purchasing page checks .github/workflows/purchasing-checks.yml, UX contrast ratchet, Playwright POS smoke, Secret scan); add focused unit/browser tests; capture a 390x844 Playwright screenshot of each changed screen into qa/screens/<task-id>/ and list them in the PR body. Fake/local data only. Do not change data formats destructively: existing receipts/orders in localStorage must still load (read old shape, write compatible shape). No backend changes beyond read-only use; no production or staging deploy.\n\nHARD RULES: Do not print, log, or commit secret values or PINs (name them only). Do not roll or regenerate any token. Do not spend money or enable R2. Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers (no test sends). Do not call /register or /deregister, and do not migrate the number. Do not touch WA_TOKEN. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). Do not deploy production or staging (Nova deploys via deploy-backend-staging.yml / deploy-backend-production.yml after backup + tests + rollback). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only; no admin bypass. Tests with fake/local data; Playwright must block non-GET / no live writes. Preserve Arabic RTL. Preview artifact: when index.html, sw.js or purchases.* change, after merging origin/main build a NEW artifact worker/live/nova-rx-preview.<task-id-lowercase>.js from the newest worker/live/nova-rx-preview.*.js (by git commit time; today s3-07) with `node tools/build-worker-artifact.mjs <newest> index.html <new>` (`--sw sw.js` if sw.js changed). purchases.html/.js/.css are embedded as separate assets in the artifact: update only those asset bodies, the same way earlier purchasesN artifacts did (check git log), never other routes. Add tests/unit/artifact-<task>.check.mjs like artifact-s307.check.mjs. Update CURRENT.md in the same PR if project state changes. Supplier work stays read-only. Real supplier cart/order writes need explicit owner approval.",
    "acceptance": "Picking a supplier never lets later typing change it (browser test reproduces the old 'فارما أوفرسيزpan' bug and passes). Supplier is a select + '+ مورد جديد'; dropdown same width as field. Confirm disabled with a missing-fields hint until supplier + one item + expiry are valid; required markers shown. Expiry MM/YY parsed and stored compatibly; old receipts still load. Unit label present. 390x844 screenshot in qa/screens/PUR-01/. All CI green. New preview artifact + artifact check. No deploy.",
    "after": [],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
@@ -6097,7 +6097,20 @@
    "max_turns": 60,
    "pin_slot": "A",
    "slot": "A",
-   "dispatched_at": "2026-11-19T13:53:52+00:00"
+   "dispatched_at": "2026-11-19T13:53:52+00:00",
+   "pr": 564,
+   "ci_dispatched": {
+    "sha": "6404a57e1f9a04da2664ac176bef71310ced0eaa",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-19T13:59:36+00:00",
+    "na": []
+   }
   },
   {
    "id": "PUR-02",
@@ -6136,7 +6149,7 @@
    "pin_slot": "A"
   }
  ],
- "updated": "2026-11-19T13:53:52+00:00",
+ "updated": "2026-11-19T13:59:36+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
