@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const ART = join(ROOT, 'worker/live/nova-rx-preview.s3-04.js'), BASE = join(ROOT, 'worker/live/nova-rx-preview.s3-04c.js');
+const ART = join(ROOT, 'worker/live/nova-rx-preview.s3-04.js'), BASE = join(ROOT, 'worker/live/nova-rx-preview.s3-05.js');
 let fail = 0; const ck = (n, ok, d = '') => { console.log((ok ? 'PASS ' : 'FAIL ') + n + (ok ? '' : ' -> ' + d)); if (!ok) fail++; };
 const art = readFileSync(ART, 'utf8'), base = readFileSync(BASE, 'utf8');
 
