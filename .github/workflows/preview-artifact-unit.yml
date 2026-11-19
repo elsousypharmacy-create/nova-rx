@@ -20,6 +20,7 @@ on:
       - "sw.js"
       - ".github/workflows/preview-artifact-unit.yml"
       - ".github/scripts/pick_artifact_check.py"
+      - ".github/scripts/retry.sh"
   workflow_dispatch:
 
 permissions:
@@ -39,7 +40,7 @@ jobs:
       - name: Check the artifact(s) this ref changes (skip when worker/live is untouched)
         run: |
           set -euo pipefail
-          git fetch -q origin main
+          bash .github/scripts/retry.sh 3 5 -- git fetch -q origin main
           python3 .github/scripts/pick_artifact_check.py --base origin/main --print
           python3 .github/scripts/pick_artifact_check.py --base origin/main
       - name: UX412 /whatsapp SPA unit check

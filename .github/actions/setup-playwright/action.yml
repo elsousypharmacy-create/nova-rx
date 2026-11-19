@@ -1,0 +1,86 @@
+name: Setup Playwright with cached Chromium
+description: >
+  Installs pinned Playwright npm package(s) and caches Chromium binaries without
+  unconditionally invoking apt-get (--with-deps), avoiding Ubuntu mirror 503/timeout
+  flakes on ubuntu-24.04 runners. Falls back to apt with retries only if ldd detects
+  a missing shared library.
+
+inputs:
+  packages:
+    description: 'Space-separated npm packages to install (e.g. "playwright@1.58.2")'
+    required: true
+  playwright-version:
+    description: 'Pinned Playwright version for the browser cache key'
+    required: false
+    default: '1.58.2'
+
+runs:
+  using: composite
+  steps:
+    - name: Cache npm downloads
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: npm-${{ runner.os }}-${{ inputs.packages }}
+        restore-keys: |
+          npm-${{ runner.os }}-
+
+    - name: Cache Playwright Chromium browser
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-${{ runner.os }}-${{ inputs.playwright-version }}
+
+    - name: Install Playwright npm packages (with retries)
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.packages }}
+      run: |
+        set -euo pipefail
+        read -r -a pkgs <<< "$PACKAGES"
+        bash .github/scripts/retry.sh 3 5 -- \
+          npm install --no-save --no-package-lock \
+            --fetch-retries=5 --fetch-retry-mintimeout=5000 --fetch-retry-maxtimeout=30000 \
+            "${pkgs[@]}"
+
+    - name: Ensure Chromium browser is installed (cached, no apt-get unless needed)
+      shell: bash
+      run: |
+        set -euo pipefail
+        CHROME_BIN="$(node -e "console.log(require('playwright-core').chromium.executablePath())")"
+        if [ -x "$CHROME_BIN" ]; then
+          echo "Playwright Chromium restored from cache: $CHROME_BIN"
+        else
+          echo "Playwright Chromium not in cache; downloading..."
+          bash .github/scripts/retry.sh 3 10 -- ./node_modules/.bin/playwright install chromium
+          CHROME_BIN="$(node -e "console.log(require('playwright-core').chromium.executablePath())")"
+        fi
+
+        # On ubuntu-24.04 GitHub-hosted runners, Chromium's required shared libraries
+        # are pre-installed. Only fall back to apt-get (with retries) if ldd finds
+        # an actual missing library, avoiding flaky Ubuntu mirror 503/timeouts on
+        # optional CJK/X11 font packages.
+        missing=""
+        for bin in "$CHROME_BIN" $(find "$HOME/.cache/ms-playwright" -maxdepth 4 -type f -name 'headless_shell' 2>/dev/null || true); do
+          if [ -x "$bin" ]; then
+            m="$(ldd "$bin" 2>/dev/null | grep 'not found' || true)"
+            if [ -n "$m" ]; then
+              missing="${missing}${bin}:\n${m}\n"
+            fi
+          fi
+        done
+
+        if [ -z "$missing" ]; then
+          echo "All Chromium shared libraries are already satisfied (skipping apt-get)."
+        else
+          echo -e "Missing Chromium shared libraries detected:\n${missing}"
+          echo "Configuring apt retries and running playwright install-deps chromium..."
+          printf '%s\n' \
+            'Acquire::Retries "5";' \
+            'Acquire::http::Timeout "30";' \
+            'Acquire::https::Timeout "30";' \
+            'Acquire::ForceIPv4 "true";' \
+            | sudo tee /etc/apt/apt.conf.d/99-nova-ci-retries >/dev/null
+          bash .github/scripts/retry.sh 3 15 -- ./node_modules/.bin/playwright install-deps chromium
+        fi
