@@ -6135,15 +6135,18 @@
    "after": [
     "PUR-02"
    ],
-   "status": "hold",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
-   "note": "Owner Ahmed approved 2026-11-19 (Asia/Riyadh): purchases redesign first, Claude on slot A (ahmed m), Sonnet. | 2026-11-19: owner asked to use Gemini too -> assigned to gemini agy-a on branch agy-a/PUR-03 (PR opened from box). Scheduler must not start it (hold).",
+   "note": "Owner Ahmed approved 2026-11-19 (Asia/Riyadh): purchases redesign first, Claude on slot A (ahmed m), Sonnet. | 2026-11-19: owner asked to use Gemini too -> assigned to gemini agy-a on branch agy-a/PUR-03 (PR opened from box). Scheduler must not start it (hold). | 2026-11-19 bookkeeping: marked done with pr 567 (Gemini agy-a, merged after PUR-02).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A",
-   "assigned_to": "gemini agy-a (box Antigravity)"
+   "assigned_to": "gemini agy-a (box Antigravity)",
+   "pr": 567,
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/567",
+   "merged_at": "2026-11-19T15:07:44+00:00"
   },
   {
    "id": "PUR-01b",
@@ -6168,9 +6171,28 @@
    "pr": 568,
    "merged_at": "2026-11-19T15:08:57+00:00",
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/568"
+  },
+  {
+   "id": "PUR-04",
+   "phase": 22,
+   "title": "المشتريات: سجل الفواتير على التجربة، تحذير واحد، استلام بعرض كامل، وشيل حماية رقم الداشبورد من التجربة",
+   "brief": "Purchases follow-up after PUR-01/02/01b (Claude) and PUR-03 (#567, Gemini agy-a). Live preview https://nova-rx-preview.elsousypharmacy.workers.dev/purchases still has three UX gaps, plus an owner request to drop the dashboard PIN gate on staging/preview only.\n\nDIAGNOSIS OF GAP 1 (read-only, do not skip this): PUR-03 code IS already wired into purchases.html on main — it links /purchases-history.css, includes /purchases-history.js, and calls window.mountInvoiceHistory on #panelHistory (the PUR-02 placeholder markup «سجل فواتير المشتريات هيظهر هنا قريبًا» is only the initial HTML and should be replaced at runtime when the module mounts). purchases-history.js/.css exist on main; tools/build-preview-refresh.mjs already has EXTRA_ROUTES for those two files; worker/live/nova-rx-preview.pur-03.js was added in #567. The live preview still shows the placeholder because the preview artifact was then overwritten: #568 (PUR-01b) added worker/live/nova-rx-preview.pur-01b.js built FROM pur-02 (commit message says so) and merged ~2 minutes after #567. Auto-deploy preview (auto-deploy-preview.yml / tools/preview_auto_deploy.py) selects the newest worker/live/nova-rx-preview.*.js by git commit time, so workflow_dispatch run 44551577984 (2026-11-19 15:09 UTC, head 6a7a6d925b) deployed pur-01b over the already-deployed pur-03. Consequence on the live preview today: purchases HTML has no history CSS/JS/mount; GET /purchases-history.js and /purchases-history.css return 404. Include this diagnosis in the PR body. Fix by building a NEW artifact from origin/main AFTER merging main, so it contains PUR-03 history assets + PUR-01b confirm fixes + this task — do not rebase or copy only pur-01b/pur-02.\n\nGAP 2: two stacked warnings («بيانات دخول أوميت ناقصة… جدّد الجلسة» and «اكتب رقم دخول الداشبورد في إعدادات الموردين») — merge into one clear banner with one action.\n\nGAP 3: استلام tab content is a narrow ~800px centred column while the tab bar is full width — use full width consistent with the طلب tab; mobile 390 is unchanged/good and must stay good.\n\nOWNER 2026-11-19 (Asia/Riyadh), «شيل الحمايه بتاعتها»: remove the dashboard PIN gate from the purchases page on STAGING and PREVIEW only, same approach as UX400 /whatsapp PIN removal (PR #448: pinless when NOVA_ENV is 'staging' or 'preview'; every other env including production stays gated). Needs (النواقص) must auto-load on open without typing the dashboard number. Identify staging/preview the same way UX400 did (env flag and/or the existing preview/staging host allowlist). Production purchases UI and production stock API stay protected. Never put, log, commit, or screenshot any PIN value (name secrets only). Do not roll or regenerate tokens or secrets. The remaining gate is the dashboard PIN in purchases.js (needPin / loadStock / #dashboardPin) and the dashboardPin field on POST /api/purchases/stock in worker/procurement/provider/http.js (forwarded to the existing stock source). X-Nova-Pin on supplier routes is a separate check — do not loosen production. If a Worker secret for the stock-source PIN already exists, use it server-side only on staging/preview when the request has no pin; never embed it in frontend, tests, or the artifact. If no such secret exists, do not invent or hardcode a PIN; implement the env-gated pinless UI/API contract and say so clearly in the PR.\n\nGoal:\n- History tab on the live preview renders the PUR-03 list/search/empty state («لسه مفيش فواتير» + one CTA to start استلام), not the «هيظهر هنا قريبًا» placeholder. Preview HTML/JS includes the PUR-03 markers (purchases-history.js, purchases-history.css, mountInvoiceHistory) and those routes return 200.\n- Single banner, one action.\n- Full-width receive tab; 390 unchanged/good.\n- Staging/preview: needs auto-load without typing the dashboard number; no PIN prompt / needPin empty state on those hosts. Production unchanged (still requires the dashboard PIN). Empty/error states still have one clear CTA if load fails for a reason other than that PIN.\n- Keep all existing CI green (Purchasing page checks, UX contrast ratchet, Playwright POS smoke, Secret scan). Add focused unit/browser tests (history wired + rendered; single banner; receive width; pinless only on staging/preview hosts/env, production still gated — tests with fakes, never a real PIN). Capture Playwright screenshots at 390x844 and 1280x800 into qa/screens/PUR-04/ and list them in the PR body. Fake/local data only. Do not change receipt data formats destructively. No production or staging deploy.\n\nPreview artifact (required, same pattern as earlier purchases preview updates): after merging origin/main, build a NEW artifact worker/live/nova-rx-preview.pur-04.js from the newest worker/live/nova-rx-preview.*.js by git commit time, but the source of the HTML/JS/CSS bodies must be current origin/main (which already has PUR-03 wiring). Use the existing tools (tools/build-worker-artifact.mjs / tools/build-preview-refresh.mjs — EXTRA_ROUTES for purchases-history.js/.css are already there). Update only the purchases-related asset bodies the same way earlier purchasesN / pur-0* artifacts did (check git log); never other routes. Add tests/unit/artifact-pur-04.check.mjs like artifact-pur01b.check.mjs / the latest artifact-pur-03 check if present, asserting the history markers are in the artifact and the placeholder is not the live history tab. Update CURRENT.md in the same PR if project state changes. Do not deploy; preview auto-deploys when worker/live/** lands on main (scheduler dispatches Auto-deploy preview artifact with dry_run=false after a GITHUB_TOKEN merge).\n\nHARD RULES: Do not print, log, or commit secret values or PINs (name them only). Do not roll or regenerate any token. Do not spend money or enable R2. Do not touch the pharmacy repo, GAS, or WhatsApp Business app settings. Do not send WhatsApp messages to customers (no test sends). Do not call /register or /deregister, and do not migrate the number. Do not touch WA_TOKEN. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). Do not deploy production or staging (Nova deploys via deploy-backend-staging.yml / deploy-backend-production.yml after backup + tests + rollback). Do not merge. Do not edit .nova/cloud-queue.json or unrelated workflows. Scheduler squash-merges on green CI only; no admin bypass. Tests with fake/local data; Playwright must block non-GET / no live writes. Preserve Arabic RTL. Supplier work stays read-only. Real supplier cart/order writes need explicit owner approval. Do not start held tasks (S1-07, S4-02, S3-*, S4-04..S4-06). Do not change repo visibility. DISABLE_SLOT_B stays true (do not edit it).",
+   "acceptance": "History tab on the live preview (https://nova-rx-preview.elsousypharmacy.workers.dev/purchases#history) renders the PUR-03 list/search/empty state, not the PUR-02 placeholder «سجل فواتير المشتريات هيظهر هنا قريبًا»; preview HTML/JS includes purchases-history.js, purchases-history.css, and mountInvoiceHistory, and those routes return 200. One session/auth banner with one action. استلام tab is full width like طلب; 390 layout unchanged/good. On staging and preview only, needs auto-load on open without typing the dashboard PIN; production stays PIN-gated. No PIN value in code, logs, tests, artifacts, screenshots, or the PR. Existing CI green. Screenshots 390x844 and 1280x800 in qa/screens/PUR-04/, listed in the PR body. New preview artifact worker/live/nova-rx-preview.pur-04.js built from origin/main (includes PUR-03 history assets, not a pur-01b/pur-02 rebuild) plus artifact check. No production or staging deploy.",
+   "after": [
+    "PUR-01b",
+    "PUR-03"
+   ],
+   "status": "pending",
+   "attempts": 0,
+   "fix_attempts": 0,
+   "source": "owner-purchases-2026-11-19",
+   "note": "Owner Ahmed 2026-11-19 (Asia/Riyadh): preview QA follow-up after PUR-01/02/01b/03, plus «شيل الحمايه بتاعتها» (remove dashboard PIN gate on staging/preview only, same approach as UX400 /whatsapp; production stays protected; never put a PIN in code/logs/PR). Slot A (ahmed m), Sonnet, execute. No prod/staging deploy.",
+   "model": "sonnet",
+   "max_turns": 60,
+   "pin_slot": "A"
   }
  ],
- "updated": "2026-11-19T15:08:57+00:00",
+ "updated": "2026-11-19T15:30:44+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
