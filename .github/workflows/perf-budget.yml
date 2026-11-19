@@ -1,0 +1,72 @@
+name: Perf budget
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - 'assets/**'
+      - 'js/**'
+      - 'css/**'
+      - 'src/**'
+      - 'tests/perf/**'
+      - '.github/workflows/perf-budget.yml'
+      - '.github/actions/setup-playwright/**'
+      - '.github/scripts/retry.sh'
+  pull_request:
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - 'assets/**'
+      - 'js/**'
+      - 'css/**'
+      - 'src/**'
+      - 'tests/perf/**'
+      - '.github/workflows/perf-budget.yml'
+      - '.github/actions/setup-playwright/**'
+      - '.github/scripts/retry.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  perf-budget:
+    # Pin OS: Playwright 1.58.2 cannot install Chromium deps on ubuntu26.04-x64
+    # (same pin as playwright-smoke.yml). Free GitHub runner only.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run perf budget unit tests
+        run: node tests/perf/perf-budget.unit.mjs
+      - name: Check size ratchet (index.html and total JS/CSS <= +5%)
+        run: PERF_REPORT_PATH=qa/reports/perf-size.json node tests/perf/size-ratchet.mjs
+      - name: Setup Playwright and cached Chromium
+        uses: ./.github/actions/setup-playwright
+        with:
+          packages: '@playwright/test@1.58.2'
+          playwright-version: '1.58.2'
+      - name: Serve static repo locally
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/nova-perf-http.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8765/ >/dev/null && exit 0; sleep 1; done
+          exit 1
+      - name: Measure mobile LCP (390x844, 1.6 Mbps / 150 ms RTT, 4x CPU)
+        run: PERF_REPORT_PATH=qa/reports/perf-lcp.json node tests/perf/lcp-check.mjs
+      - name: Upload perf budget reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-perf-budget-report
+          path: |
+            qa/reports/perf-size.json
+            qa/reports/perf-lcp.json
+          if-no-files-found: ignore
+          retention-days: 14

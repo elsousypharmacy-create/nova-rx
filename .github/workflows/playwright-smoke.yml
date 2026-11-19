@@ -9,6 +9,8 @@ on:
       - 'tests/**'
       - 'playwright.config.cjs'
       - '.github/workflows/playwright-smoke.yml'
+      - '.github/actions/setup-playwright/**'
+      - '.github/scripts/retry.sh'
   pull_request:
     paths:
       - 'index.html'
@@ -16,6 +18,8 @@ on:
       - 'tests/**'
       - 'playwright.config.cjs'
       - '.github/workflows/playwright-smoke.yml'
+      - '.github/actions/setup-playwright/**'
+      - '.github/scripts/retry.sh'
   workflow_dispatch:
 
 permissions:
@@ -32,10 +36,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Playwright test runner
-        run: npm install --no-save --no-package-lock @playwright/test@1.58.2 opus-recorder@8.0.5 # opus-recorder: the voice-note OGG/Opus encoder the page loads from jsDelivr (same pinned file, used by ux413)
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Setup Playwright and cached Chromium
+        # opus-recorder: the voice-note OGG/Opus encoder the page loads from jsDelivr (same pinned file, used by ux413)
+        uses: ./.github/actions/setup-playwright
+        with:
+          packages: '@playwright/test@1.58.2 opus-recorder@8.0.5'
+          playwright-version: '1.58.2'
+      - name: CI reliability guards
+        run: node tests/unit/ci-reliability.check.mjs
       - name: Serve static demo locally
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/nova-http.log 2>&1 &

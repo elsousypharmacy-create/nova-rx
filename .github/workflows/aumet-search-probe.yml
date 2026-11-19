@@ -23,10 +23,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Playwright
-        run: |
-          npm install --no-save --no-package-lock playwright@1.58.2
-          node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Setup Playwright and cached Chromium
+        uses: ./.github/actions/setup-playwright
+        with:
+          packages: 'playwright@1.58.2'
+          playwright-version: '1.58.2'
       - name: Probe
         env:
           AUMET_USERNAME: ${{ secrets.AUMET_USERNAME }}
