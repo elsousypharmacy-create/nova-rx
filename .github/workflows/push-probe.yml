@@ -1,0 +1,22 @@
+# Manual, read-only: is background Web Push live on the staging API? Prints status codes and booleans only (no keys, no endpoints, no chat text).
+name: Push probe (staging, read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: push/key
+        run: |
+          B=https://nova-rx-api-staging.elsousypharmacy.workers.dev/api/v1/inbox/history
+          code=$(curl -s -o k.json -w '%{http_code}' "$B/push/key"); echo "GET push/key -> HTTP $code"
+          jq -r '"enabled: \(.enabled), publicKey present: \(.publicKey!=null), key length: \((.publicKey//"")|length)"' k.json || cat k.json | head -c 200
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' "$B/push/subscribe"); echo "POST push/subscribe (empty body, nothing stored) -> HTTP $code"
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$B/conversations"); echo "conversations without PIN -> HTTP $code (401 = route live)"
+          rm -f k.json
