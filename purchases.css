@@ -337,7 +337,7 @@ html body .controls #scopeChip[data-state=warn]::before{background:#e8c27a}
 
 /* UX-P22: loading / error / retry states in the items table, "no offer" block in the result panel */
 td.empty .primary{margin-top:14px;min-height:40px;padding:0 22px;border-radius:10px;background:#387e9e!important;border:1px solid #387e9e!important;color:#fff!important;font-weight:700;font-size:14px;cursor:pointer}
-td.empty .load-error{color:#e8c27a;font-weight:600}
+td.empty .load-error,td.empty .load-note{color:#cfd7de;font-weight:600}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid #343b44;border-top-color:#76b8d5;border-radius:50%;vertical-align:-3px;margin-inline-end:8px;animation:nxspin .8s linear infinite}
 @keyframes nxspin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.spin{animation:none}}
@@ -653,3 +653,22 @@ dialog#offers{width:min(980px,96vw)!important;max-width:980px!important}
 .dev-area{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line,#2a3037)}
 .dev-area small{color:#a4adb7}
 @media(max-width:700px){.pur-tabs{top:0}.receive-frame{height:calc(100dvh - 150px)}}
+
+/* PUR-05a: calm unlock empty state + neutral load note (no red/warning look) */
+td.empty .load-note{color:#cfd7de;font-weight:600}
+td.empty .unlock-card{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:340px;margin:0 auto;text-align:center}
+td.empty .unlock-title{font-size:17px;color:#f1f3f5}
+td.empty .unlock-body{color:#cfd7de;font-size:14px}
+td.empty .unlock-card input{width:100%;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #343b44;background:#1b2026;color:#f1f3f5;font-size:16px;text-align:center}
+td.empty .unlock-hint{color:#cfd7de;font-size:13px}
+td.empty .unlock-card .primary{width:100%;min-height:44px;margin-top:4px}
+
+/* PUR-05a: keep the unlock card above the fold at 390x844 */
+@media(max-width:800px){
+  #panelNeeds:has([data-unlock]) .purchase-flow,
+  #panelNeeds:has([data-unlock]) #coverageHint{display:none}
+  td.empty:has([data-unlock]){padding:12px 10px}
+  td.empty .unlock-card{gap:8px;max-width:100%}
+  td.empty .unlock-title{font-size:16px}
+  td.empty .unlock-body{font-size:13px}
+}
