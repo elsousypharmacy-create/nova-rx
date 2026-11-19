@@ -50,8 +50,8 @@ const mkctx = () => browser.newContext({ viewport: { width: 390, height: 844 }, 
   const after = await geo(v.page);
   const want = [[200, 300], [300, 150], [300, 300], [120, 90]];
   const r = (a) => a.map((x) => x.map(Math.round));
-  assert.ok(after.imgs[0][0] / after.imgs[0][1] > 0.6 && after.imgs[0][0] / after.imgs[0][1] < 0.7, 'tall keeps 2:3: ' + after.imgs[0]);
-  assert.ok(Math.abs(after.imgs[1][0] / after.imgs[1][1] - 2) < 0.05, 'wide keeps 2:1: ' + after.imgs[1]); assert.ok(Math.abs(after.imgs[2][0] / after.imgs[2][1] - 1) < 0.05, 'square keeps 1:1'); assert.deepEqual(after.imgs[3], [120, 90], 'a small photo is not upscaled');
+  assert.ok(Math.abs(after.imgs[0][0] / after.imgs[0][1] - 0.75) < 0.02, 'a tall 2:3 photo is cropped to 3:4 like WhatsApp: ' + after.imgs[0]); assert.ok(after.imgs.every((s) => Math.abs(s[0] - after.imgs[0][0]) <= 1), 'every photo has the same bubble width: ' + JSON.stringify(after.imgs));
+  assert.ok(Math.abs(after.imgs[1][0] / after.imgs[1][1] - 1.78) < 0.05, 'a 2:1 panorama is cropped to 16:9: ' + after.imgs[1]); assert.ok(Math.abs(after.imgs[2][0] / after.imgs[2][1] - 1) < 0.05, 'square keeps 1:1'); assert.ok(Math.abs(after.imgs[3][0] / after.imgs[3][1] - 4 / 3) < 0.02, 'a small 4:3 photo keeps 4:3 at bubble width: ' + after.imgs[3]);
   assert.ok(after.atEnd, 'still at the newest message after the photos arrived'); assert.ok(Math.abs(after.lastBottom - before.lastBottom) <= 2, 'the last message did not move: ' + before.lastBottom + ' -> ' + after.lastBottom);
   if (SHOTS) await v.page.screenshot({ path: SHOTS + '/ux418-after-load.png' });
   const stored = await v.page.evaluate(() => JSON.parse(localStorage.getItem('nova.wa.dims') || '{}')); assert.deepEqual(stored.tall, [600, 900]); assert.deepEqual(stored.small, [120, 90]);
