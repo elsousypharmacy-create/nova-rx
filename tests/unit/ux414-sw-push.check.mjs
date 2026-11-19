@@ -20,8 +20,8 @@ const push = (d) => ({ data: { json: () => d } });
 {
   const msgs = [], c = { url: 'https://x.test/', visibilityState: 'visible', focused: true, postMessage: (m) => msgs.push(m) };
   const t = mk([c]); await t.run('push', push({ title: 'a', chat: 'wa_2' }));
-  assert.equal(t.shown.length, 0, 'focused tab => no system notification'); assert.equal(msgs[0].type, 'nova-wa-push');
-  console.log('ok focused tab gets a message instead of a notification');
+  assert.equal(t.shown.length, 1, 'focused tab still gets a system notification (iOS drops subscriptions after silent pushes)'); assert.equal(msgs[0].type, 'nova-wa-push');
+  console.log('ok focused tab gets the message AND a notification (no silent push)');
 }
 {
   const t = mk([]); let closed = 0;
