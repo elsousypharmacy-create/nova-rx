@@ -6205,7 +6205,7 @@
    "after": [
     "PUR-04"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
@@ -6214,10 +6214,23 @@
    "max_turns": 60,
    "pin_slot": "A",
    "slot": "A",
-   "dispatched_at": "2026-11-19T16:54:24+00:00"
+   "dispatched_at": "2026-11-19T16:54:24+00:00",
+   "pr": 570,
+   "ci_dispatched": {
+    "sha": "d16515d0c317360322299bf0ef11364158d48326",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-19T16:57:41+00:00",
+    "na": []
+   }
   }
  ],
- "updated": "2026-11-19T16:54:24+00:00",
+ "updated": "2026-11-19T16:57:41+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
