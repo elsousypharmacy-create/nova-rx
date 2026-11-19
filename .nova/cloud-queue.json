@@ -11,11 +11,11 @@
    "after": [
     "SEC-01"
    ],
-   "status": "running",
+   "status": "hold",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "opus",
    "max_turns": 80,
    "pin_slot": "A",
@@ -6064,11 +6064,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks). Slot B (elsousypharmacy) available from Sat 21 Nov 04:00 Riyadh.\n\nprev: held by owner 2026-11-19, purchases first.\n\ndocs only (d6d0c5d); no dedicated onboarding-path screen work.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks). Slot B (elsousypharmacy) available from Sat 21 Nov 04:00 Riyadh.\n\nprev: held by owner 2026-11-19, purchases first.\n\ndocs only (d6d0c5d); no dedicated onboarding-path screen work.\n\nFull plan 2026-11-17 Asia/Riyadh. Inspect origin/main first. Pin slot A (ahmed m). Sonnet default; Opus only where model=opus. Do not enqueue this file unless the owner asks. Cloud scheduler is currently disabled; this JSON is a draft only.",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "B",
@@ -6272,11 +6272,11 @@
    "after": [
     "SEC-01"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6290,11 +6290,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6308,11 +6308,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6327,11 +6327,11 @@
     "PERF-02",
     "UX-S1"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6345,11 +6345,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6363,11 +6363,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6381,11 +6381,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6399,11 +6399,11 @@
    "after": [
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A"
@@ -6418,11 +6418,11 @@
     "SEC-01",
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks). Slot B (elsousypharmacy) available from Sat 21 Nov 04:00 Riyadh.",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks). Slot B (elsousypharmacy) available from Sat 21 Nov 04:00 Riyadh.",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "B",
@@ -6438,11 +6438,11 @@
     "SEC-01",
     "PERF-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks). Slot B (elsousypharmacy) available from Sat 21 Nov 04:00 Riyadh.",
+   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks). Slot B (elsousypharmacy) available from Sat 21 Nov 04:00 Riyadh.",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "B",
