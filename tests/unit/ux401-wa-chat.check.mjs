@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX401: chat pane like WhatsApp Web (pure HTML from unified-inbox.js + controller wiring in index.html).
 // Ticks from status, reply/quote, voice player, document type, emoji picker, attach menu (no file send), send-off / 24h gating.
 // Run: node tests/unit/ux401-wa-chat.check.mjs
@@ -5,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const U = createRequire(import.meta.url)('../../unified-inbox.js');
-const page = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const page = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 const NOW = new Date(2026, 10, 15, 16, 22).getTime();
 const msg = (h, id) => { const i = h.indexOf(`data-mid="${id}"`); assert.ok(i > 0, 'row ' + id); const j = h.indexOf('<div class="wa-msg', i + 5); return h.slice(i, j < 0 ? undefined : j); };

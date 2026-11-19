@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX402: realtime conversations like WhatsApp Web. Pure helpers in unified-inbox.js (poll cadence/backoff, no duplicate bubbles,
 // which bubbles animate in, mute-if-already-viewing toast rule, Arabic toast + browser Notification content) and the index.html
 // wiring (self-scheduling poll, no setInterval, visibilitychange resume, header badge = live count, Notification fallback).
@@ -6,7 +7,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 const U = createRequire(import.meta.url)('../../unified-inbox.js');
-const h = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const h = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 
 t('pollDelay: 4s on screen, 15s on another screen, paused when the tab is hidden', () => {

@@ -1,5 +1,6 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
-const h=readFileSync(process.env.NOVA_UX_HTML||'index.html','utf8');const source=h.slice(h.indexOf('      function refreshChange()'),h.indexOf('      function updateChangeDue('));
+const h=readAppHtml(process.env.NOVA_UX_HTML||'index.html','utf8');const source=h.slice(h.indexOf('      function refreshChange()'),h.indexOf('      function updateChangeDue('));
 const fields={checkoutCreditHint:{hidden:true},inputCreditAmount:{value:'',setAttribute(){}},checkoutAddCustomer:{},checkoutAllocation:{},inputCashReceived:{value:'40'},inputCardAmount:{value:'60'}};
 let plan={ok:true,change:0};const state={checkoutPaymentMethod:'split',attachedCustomer:null};
 const ctx={state,recalculateFinancials:()=>({grandTotal:100}),currentTenderPlan:()=>plan,elements:{displayChangeDue:{},btnConfirmPayment:{}},document:{getElementById:id=>fields[id]},localStorage:{getItem:()=> 'ar'},formatMoney:x=>x.toFixed(2)};

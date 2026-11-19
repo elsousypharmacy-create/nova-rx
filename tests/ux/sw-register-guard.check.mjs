@@ -1,6 +1,7 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const html = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 const m = html.match(/<script>[^<]*serviceWorker[^<]*<\/script>/);
 assert.ok(m, 'sw registration script present');
 const s = m[0];

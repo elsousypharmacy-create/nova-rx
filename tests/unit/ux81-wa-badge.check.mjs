@@ -1,8 +1,9 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX81: WhatsApp header icon + unread badge. Run: node tests/unit/ux81-wa-badge.check.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-const html = readFileSync('index.html', 'utf8');
+const html = readAppHtml('index.html', 'utf8');
 assert.match(html, /id="novaWaBtn"/);
 assert.ok(html.indexOf('id="novaWaBtn"') < html.indexOf('id="novaPageView"'), 'icon is in the all-pages nav bar');
 const src = /<script id="ux81-wa-badge">([\s\S]*?)<\/script>/.exec(html)[1];
@@ -40,7 +41,7 @@ r = run({ store: { tab: 1 } }); r.btn.listeners.click(); assert.equal(r.clicked(
 r = run({}); r.btn.listeners.click(); assert.equal(r.href(), null, 'FIX43: never navigates (no 404)');
 // FIX43: NovaOpenInbox (inline conversations view) is used and no navigation happens
 { let opened = 0; const r2 = run({}); r2.ctx.NovaOpenInbox = () => { opened++; return true; }; r2.btn.listeners.click(); assert.equal(opened, 1); assert.equal(r2.href(), null); }
-const page = readFileSync('index.html', 'utf8');
+const page = readAppHtml('index.html', 'utf8');
 assert.ok(!/location\.href\s*=\s*'integrations\/whatsapp\/inbox\.html'/.test(page), 'no fallback to inbox.html');
 assert.ok(!/s\.src='unified-inbox\.js'/.test(page), 'inbox lib is inlined, not fetched');
 assert.match(page, /<script id="fix43-inbox-lib">/);

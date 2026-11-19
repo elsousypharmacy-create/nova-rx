@@ -1,9 +1,10 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // FIX43: clicking #novaWaBtn lands on the in-app conversations view (#novaInboxView visible, #novaInboxTab active),
 // with flag OFF, and never navigates (no integrations/whatsapp/inbox.html, no unified-inbox.js fetch). Run: node tests/unit/fix43-wa-click-conversations.check.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-const html = readFileSync('index.html', 'utf8');
+const html = readAppHtml('index.html', 'utf8');
 const grab = (re) => re.exec(html)[1];
 const lib = grab(/<script id="fix43-inbox-lib">([\s\S]*?)<\/script>/);
 const ux48 = grab(/<script>(\/\* UX48: hidden local inbox tab[\s\S]*?)<\/script>/);

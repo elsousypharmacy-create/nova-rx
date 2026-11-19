@@ -1,7 +1,8 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-const html = fs.readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const html = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 const m = html.match(/<script>\/\* UX29[\s\S]*?<\/script>/);
 assert.ok(m, 'novaVat module');
 const code = m[0].replace(/^<script>/, '').replace(/<\/script>$/, '');

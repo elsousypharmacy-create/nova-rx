@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX200: WhatsApp Web layout, bubble direction, date separators, badge count, idempotent additive history backfill (local + D1).
 // Run: node tests/unit/ux200-wa-chat.check.mjs
 import assert from 'node:assert/strict';
@@ -50,7 +51,7 @@ assert.equal(U.dateLabel(NOW, NOW), 'اليوم'); assert.equal(U.dateLabel(NOW 
 // XSS
 assert.ok(!U.renderWa([{ id: 'x', customer: '<img onerror=1>', updatedAt: 1, messages: [{ id: 'm', dir: 'in', text: '<script>', at: NOW }] }], { selected: 'x', now: NOW }).includes('<script>'));
 // index.html embeds the same lib and uses renderWa
-const page = readFileSync(fileURLToPath(new URL('../../index.html', import.meta.url)), 'utf8');
+const page = readAppHtml(fileURLToPath(new URL('../../index.html', import.meta.url)), 'utf8');
 assert.ok(page.includes('function renderWa(') && page.includes('U.renderWa('), 'index.html wired');
 assert.ok(!/wa\.sel[^;]*fetch\(/.test(page));
 

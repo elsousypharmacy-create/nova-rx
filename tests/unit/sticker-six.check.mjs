@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../../sticker-studio.html',import.meta.url),'utf8');
@@ -19,7 +20,7 @@ fs.mkdirSync(new URL('../',import.meta.url),{recursive:true});
 fs.writeFileSync(new URL('../.sticker-studio-inline.js',import.meta.url),js);
 console.log('Sticker six static checks PASS');
 // CLN-04: in-sale sheet (index.html)
-const idx=fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+const idx=readAppHtml(new URL('../../index.html',import.meta.url),'utf8');
 for (const token of ['function patientVitals()', "'الوزن: '+w+' كجم'", "'العمر: '+y+' سنة'",
   'localStorage.setItem(SETTINGS_KEY', 'function printSelection()', 'id="nlPrintAll"']) {
   assert.ok(idx.includes(token), 'in-sale ' + token);

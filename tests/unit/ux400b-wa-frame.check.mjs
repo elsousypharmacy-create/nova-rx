@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX400b: WhatsApp Web frame (pure HTML): pin/archive list meta, row options menu, wallpaper, intro pane, composer shell, no PIN UI.
 // Also guards that unified-inbox.js is byte-identical to the inline lib in index.html (the page runs the inline copy).
 // Run: node tests/unit/ux400b-wa-frame.check.mjs
@@ -5,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const U = createRequire(import.meta.url)('../../unified-inbox.js');
-const page = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const page = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 const file = readFileSync(new URL('../../unified-inbox.js', import.meta.url), 'utf8');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 
