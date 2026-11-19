@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المشتريات — استلام فاتورة</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .sheet-title { font-size: 18px; font-weight: 800; }
+  .close-x {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--elevated); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--muted); line-height: 1;
+  }
+  .form-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0;
+  }
+  .page-head { padding-top: 8px; }
+  .page-head h1 { font-size: 20px; }
+  .tabs { margin-top: 8px; }
+  .scan-btn { border-style: dashed; font-size: 13px; padding: 10px; }
+  .hint-small { display:block; font-size: 11px; color: var(--muted); margin-top: 3px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">NOVA <b>Rx</b></div>
+    <div class="badge">نسخة تجريبية</div>
+  </div>
+  <div class="page-head">
+    <h1>المشتريات</h1>
+    <div class="sample-tag"><i></i>بيانات توضيحية</div>
+  </div>
+  <div class="tabs">
+    <div class="tab">طلب</div>
+    <div class="tab active">استلام</div>
+    <div class="tab">سجل الفواتير</div>
+  </div>
+  <div class="content tight">
+    <div class="form-head">
+      <div class="sheet-title">استلام فاتورة</div>
+      <div class="close-x">×</div>
+    </div>
+
+    <div class="field">
+      <label>المورد <span class="req">*</span></label>
+      <select class="control placeholder" aria-label="المورد">
+        <option selected disabled>اختر المورد</option>
+        <option>فارما أوفرسيز</option>
+        <option>أوميت</option>
+      </select>
+      <button class="link">+ مورد جديد</button>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>رقم الفاتورة</label>
+        <input class="control" placeholder="مثال: 10452" value="">
+      </div>
+      <div class="field">
+        <label>تاريخ الفاتورة</label>
+        <input class="control" value="19/11/2026" style="direction:ltr;text-align:right">
+      </div>
+    </div>
+
+    <button class="btn btn-ghost btn-block scan-btn">▦ امسح باركود العلبة — يملأ الصنف والتشغيلة والصلاحية</button>
+    <div class="section-label">الأصناف <span>صنف واحد على الأقل <span class="req">*</span></span></div>
+
+    <div class="item-card">
+      <div class="field">
+        <label>الصنف <span class="req">*</span></label>
+        <input class="control" placeholder="ابحث بالاسم أو امسح الباركود">
+      </div>
+      <div class="row-3">
+        <div class="field">
+          <label>الكمية</label>
+          <div class="qty-wrap">
+            <input class="control" value="1" style="direction:ltr">
+            <span class="unit">علبة</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>سعر العلبة</label>
+          <input class="control" value="0.00" style="direction:ltr;text-align:center">
+          <small class="hint-small">آخر سعر: —</small>
+        </div>
+        <div class="field">
+          <label>الصلاحية <span class="req">*</span></label>
+          <input class="control" placeholder="MM/YY" style="direction:ltr;text-align:center">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>التشغيلة / الباتش</label>
+          <input class="control" placeholder="اختياري">
+        </div>
+        <div class="field">
+          <label>الإجمالي</label>
+          <input class="control" value="0.00 ج.م" readonly style="direction:ltr;text-align:right;color:#c5ced6">
+        </div>
+      </div>
+    </div>
+    <button class="link" style="align-self:start">+ إضافة صنف</button>
+
+    <div class="footer-bar">
+      <div class="hint-missing">ناقص: المورد، صنف واحد على الأقل، الصلاحية</div>
+      <div class="toolbar">
+        <button class="btn btn-ghost btn-sm" style="flex:0 0 auto">حفظ مسودة</button>
+        <button class="btn btn-primary disabled btn-block" disabled>تأكيد الاستلام وإضافة للمخزون</button>
+      </div>
+      <div class="totals">
+        <span>0 صنف · 0 علبة</span>
+        <b>0.00 ج.م</b>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
