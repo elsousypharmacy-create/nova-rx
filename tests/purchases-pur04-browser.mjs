@@ -44,9 +44,9 @@ for (const vp of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   const rows = await t.page.locator('#rows').innerText();
   assert.ok(!rows.includes('رقم دخول الداشبورد'), 'no PIN prompt on preview'); assert.ok(rows.includes('صنف تجريبي'));
   // 3) single banner: session banner visible, duplicate warning status hidden
-  assert.equal(await t.page.locator('#sessionBanner').isVisible(), true);
+  assert.equal(await t.page.locator('#sessionBanner').isVisible(), false, 'owner 20 Nov: no supplier session banner');
   const visibleWarnings = await t.page.locator('#sessionBanner:visible, #status.warning:visible').count();
-  assert.equal(visibleWarnings, 1, 'one warning only');
+  assert.ok(visibleWarnings <= 1, 'at most one warning');
   await t.page.screenshot({ path: `${shots}/needs-banner-${tag}.png` });
   // 4) receive tab full width like needs tab
   await t.page.click('#tabReceive'); await t.page.waitForTimeout(1500);

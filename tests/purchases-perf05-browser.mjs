@@ -195,7 +195,7 @@ try {
     s = await openScenario(vp, { env: 'production', stockDelayMs: 6200, sessions: { aumet: 'expired', pharmaoverseas: 'expired' }, sessionDelayMs: 250 });
     await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
     const unlockBannerMs = Date.now() - s.t0;
-    await s.page.locator('#sessionBanner').waitFor({ state: 'visible', timeout: 2000 });
+    await s.page.waitForTimeout(600); assert.equal(await s.page.locator('#sessionBanner').isVisible(), false, 'owner 20 Nov: no supplier session banner on النواقص');
     await s.page.waitForTimeout(300);
     const clsBanner = await s.page.evaluate(() => Number(window.__cls.toFixed(4)));
     assert.ok(unlockBannerMs < 1000, `prod+banner ${tag} unlockMs=${unlockBannerMs}ms must be < 1000ms`);

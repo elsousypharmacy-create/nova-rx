@@ -36,8 +36,7 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('#rows tr[data-key]').length === 1);
   assert.equal(await page.locator('#tabNeeds').getAttribute('aria-selected'), 'true');
   assert.equal((await page.locator('#scopeChip').innerText()).trim(), 'موردين: 2 · مخازن أوميت: 3');
-  const banner = page.locator('#sessionBanner'); await banner.waitFor({ state: 'visible' });
-  assert.ok((await banner.innerText()).includes('جدّد الجلسة'));
+  await page.waitForTimeout(600); assert.equal(await page.locator('#sessionBanner').isVisible(), false, 'owner 20 Nov: no supplier session banner');
   assert.equal(await page.locator('#loadMock:visible').count(), 0, 'demo data button is not on the page surface');
   await page.locator('.tools-menu summary').click();
   assert.equal(await page.locator('.tools-pop').getByText('بيانات تجريبية').count(), 0, 'no demo data in the ⋮ menu');

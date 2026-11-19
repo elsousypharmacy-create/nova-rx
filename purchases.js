@@ -1229,12 +1229,12 @@ function setBannerSlotState(s) {
   const sl = $('sessionBannerSlot');
   if (sl) sl.dataset.state = s;
 }
+// Owner order 20 Nov 02:36 («بطل اظهر تحذير أوميت»): no supplier session / credentials warning banner on النواقص,
+// locked or unlocked, phone or wide. The banner stays in the markup (hidden) for compat; it is never shown.
 function showSessionBanner(text) {
   const b = $('sessionBanner');
-  if (!b) return;
-  $('sessionBannerText').textContent = text;
-  b.hidden = false;
-  setBannerSlotState('alert');
+  if (b) b.hidden = true;
+  setBannerSlotState('ok');
 }
 function hideSessionBanner() {
   const b = $('sessionBanner');
