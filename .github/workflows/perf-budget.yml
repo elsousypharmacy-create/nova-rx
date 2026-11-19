@@ -13,6 +13,8 @@ on:
       - 'src/**'
       - 'tests/perf/**'
       - '.github/workflows/perf-budget.yml'
+      - '.github/actions/setup-playwright/**'
+      - '.github/scripts/retry.sh'
   pull_request:
     paths:
       - 'index.html'
@@ -24,6 +26,8 @@ on:
       - 'src/**'
       - 'tests/perf/**'
       - '.github/workflows/perf-budget.yml'
+      - '.github/actions/setup-playwright/**'
+      - '.github/scripts/retry.sh'
   workflow_dispatch:
 
 permissions:
@@ -44,10 +48,11 @@ jobs:
         run: node tests/perf/perf-budget.unit.mjs
       - name: Check size ratchet (index.html and total JS/CSS <= +5%)
         run: PERF_REPORT_PATH=qa/reports/perf-size.json node tests/perf/size-ratchet.mjs
-      - name: Install Playwright test runner
-        run: npm install --no-save --no-package-lock @playwright/test@1.58.2
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Setup Playwright and cached Chromium
+        uses: ./.github/actions/setup-playwright
+        with:
+          packages: '@playwright/test@1.58.2'
+          playwright-version: '1.58.2'
       - name: Serve static repo locally
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/nova-perf-http.log 2>&1 &
