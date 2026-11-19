@@ -1,6 +1,7 @@
 // UX5: UI text floor of 12px. Scans CSS (and inline style) font sizes in the UI files.
 // Printed sticker preview/print rules (pt units, .sticker-face, printPage) are exempt.
 import fs from 'node:fs';
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 const FILES = ['index.html', 'sticker-studio.html', 'purchases.css'];
 const FLOOR = 12;
 const EXEMPT = /sticker-face|sticker-preview|function printPage|@page/;
@@ -8,7 +9,7 @@ const bad = [];
 for (const f of FILES) {
   const root = new URL('../../' + f, import.meta.url);
   if (!fs.existsSync(root)) continue;
-  fs.readFileSync(root, 'utf8').split('\n').forEach((line, i) => {
+  readAppHtml(root).split('\n').forEach((line, i) => {
     if (EXEMPT.test(line)) return;
     for (const m of line.matchAll(/font-size\s*:\s*([0-9.]+)px|font\s*:[^;}]*?\b([0-9.]+)px/g)) {
       const v = parseFloat(m[1] ?? m[2]);
