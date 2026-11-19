@@ -6450,18 +6450,18 @@
    "after": [
     "PUR-05a"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:49 Asia/Riyadh: sale-ready purchases. Gemini agy-a sale-readiness review found 3 sale-blocking bugs (invoice form clip, confirm enabled without invoice no., wrong mobile column labels). Slot A (ahmed m), Sonnet. No prod/staging deploy. Do not start until PUR-05a is done.",
+   "note": "Owner Ahmed 2026-11-19 19:49 Asia/Riyadh: sale-ready purchases. Gemini agy-a sale-readiness review found 3 sale-blocking bugs (invoice form clip, confirm enabled without invoice no., wrong mobile column labels). Slot A (ahmed m), Sonnet. No prod/staging deploy. Do not start until PUR-05a is done.\n\nHeld 2026-11-19 20:33 Asia/Riyadh: same sale-blocking items are already being implemented as PUR-08 by Gemini agy-b (direct run, not this queue). Un-hold only if PUR-08 does not land or leaves gaps. Avoids two agents rewriting index.html/purchases.css at once.",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A",
    "slot": "A"
   }
  ],
- "updated": "2026-11-19T17:32:01Z",
+ "updated": "2026-11-19T17:33:17Z",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
