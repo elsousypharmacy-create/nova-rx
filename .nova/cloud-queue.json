@@ -6139,14 +6139,15 @@
    "after": [
     "PUR-02"
    ],
-   "status": "pending",
+   "status": "hold",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
-   "note": "Owner Ahmed approved 2026-11-19 (Asia/Riyadh): purchases redesign first, Claude on slot A (ahmed m), Sonnet.",
+   "note": "Owner Ahmed approved 2026-11-19 (Asia/Riyadh): purchases redesign first, Claude on slot A (ahmed m), Sonnet. | 2026-11-19: owner asked to use Gemini too -> assigned to gemini agy-a on branch agy-a/PUR-03 (PR opened from box). Scheduler must not start it (hold).",
    "model": "sonnet",
    "max_turns": 60,
-   "pin_slot": "A"
+   "pin_slot": "A",
+   "assigned_to": "gemini agy-a (box Antigravity)"
   }
  ],
  "updated": "2026-11-19T13:59:36+00:00",
