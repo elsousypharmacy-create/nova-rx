@@ -11,7 +11,7 @@
    "after": [
     "PUR-01"
    ],
-   "status": "running",
+   "status": "pr_open",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "owner-purchases-2026-11-19",
@@ -21,7 +21,20 @@
    "pin_slot": "A",
    "slot": "A",
    "dispatched_at": "2026-11-19T14:18:30+00:00",
-   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/44540405275"
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/44540405275",
+   "pr": 565,
+   "ci_dispatched": {
+    "sha": "134285ba72a6a50e761bf8778cdd991625072235",
+    "wf": [
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-19T14:19:43+00:00",
+    "na": []
+   }
   },
   {
    "id": "UX414",
@@ -6143,7 +6156,7 @@
    "assigned_to": "gemini agy-a (box Antigravity)"
   }
  ],
- "updated": "2026-11-19T14:18:30+00:00",
+ "updated": "2026-11-19T14:19:43+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
