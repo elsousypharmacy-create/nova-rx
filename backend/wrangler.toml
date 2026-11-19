@@ -35,8 +35,8 @@ NOVA_ENV = "staging"
 NOVA_INBOX_SEND = "1"
 NOVA_INBOX_SEND_MEDIA = "1" # photo sending: staging only, owner-approved test (production stays OFF)
 NOVA_INBOX_SEND_VOICE = "1" # voice notes (converted to OGG/Opus in the browser): staging only
-# S1-05 (Stage 1, staging only): server auth + sync push/pull + sales writes ON so a test device can sync against staging.
-# Production keeps all three OFF (tests/unit/wrangler-stage1-flags.check.mjs locks this split).
+# S1-05 (Stage 1): server auth + sync push/pull + sales writes ON in staging so a test device can sync against staging.
+# S1-11 later turned the same three flags ON in production as well (see [env.production.vars] and tests/unit/wrangler-stage1-flags.check.mjs). The frontend flag novaBackend.enabled stays OFF until the owner enables it per device.
 NOVA_AUTH = "1"
 NOVA_SYNC = "1"
 NOVA_SALES_WRITES = "1"
