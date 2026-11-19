@@ -30,7 +30,7 @@ try {
     await page.locator('#novaOpsNav [data-page=receiving]').click();
     assert.equal(await page.locator('[data-rcv=new]:visible').count(), 1);
     await page.locator(linked ? '[data-rcv-po]' : '[data-rcv=new]').click();
-    { const sup = page.locator('#rcvSup'); if (await sup.evaluate(e => e.readOnly)) assert.equal(await sup.inputValue(), 'Test supplier'); else await sup.fill('Test supplier'); } // linked to an order (#551): the supplier is the order's and read-only
+    { const sup = page.locator('#rcvSup'); if (await sup.isDisabled()) assert.equal(await sup.inputValue(), 'Test supplier'); else await sup.selectOption({ index: 1 }); } // linked to an order (#551): the supplier is fixed; otherwise pick a known supplier from the select
     await page.locator('#rcvInv').fill('TEST-RESUME');
     const codes = ['6281001234567', '6281001234568'];
     for (const [index, code] of codes.entries()) {
@@ -70,8 +70,11 @@ try {
     assert.deepEqual(receipt, { pending: false, stock: [4, 4] });
     if (linked) assert.equal(await page.locator('[data-rcv-po]').count(), 0);
     await page.locator('[data-rcv=new]').first().click();
-    { const sup = page.locator('#rcvSup'); if (await sup.evaluate(e => e.readOnly)) assert.equal(await sup.inputValue(), 'Test supplier'); else await sup.fill('Test supplier'); } // linked to an order (#551): the supplier is the order's and read-only
+    await page.locator('#rcvSup').selectOption(await page.evaluate(() => JSON.parse(localStorage.getItem('nova-rx-receipts-v1'))[0].supplier)); // same supplier + invoice as the saved receipt
     await page.locator('#rcvInv').fill('TEST-RESUME');
+    { const row = page.locator('.rcv-line').first(); // the confirm button stays disabled until an item and an expiry are valid
+      await row.locator('[data-f=q]').fill('6281001234567'); await row.locator('[data-pick]').first().click();
+      await row.locator('[data-f=qty]').fill('1'); await row.locator('[data-f=exp]').fill('12/35'); }
     await page.locator('#rcvOk').click();
     await page.locator('#rcvMsg').getByText('اتسجلت قبل كده', { exact: false }).waitFor();
     console.log(`PASS ${width}×${height}: ${linked ? 'linked order' : 'manual receipt'} resumes exactly once`);

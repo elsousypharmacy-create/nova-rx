@@ -11799,9 +11799,23 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 .rcv-meta label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#a9b5c2}
 .rcv-ov input{min-height:40px;padding:0 10px;background:#0b0e11;color:#e8eef3;border:1px solid #2a3139;border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box;width:100%;min-width:0}
 .rcv-ov input:focus{outline:none;border-color:#4a8aa6;box-shadow:0 0 0 3px rgba(74,138,166,.25)}
-.rcv-grid-h,.rcv-line{display:grid;grid-template-columns:minmax(0,2.4fr) 80px minmax(0,1fr) 130px 100px 100px 36px;gap:8px;align-items:center;padding:0 18px}
+.rcv-line{display:grid;grid-template-columns:minmax(0,2.4fr) 110px 100px 110px minmax(0,1fr) 90px 36px;gap:8px;align-items:center;padding:0 18px}
 .rcv-line[hidden]{display:none}
-.rcv-grid-h{margin-top:10px;padding-bottom:6px;color:#8896a4;font-size:12px;font-weight:700}
+.rcv-supbox>label{display:block!important}
+.rcv-supbox{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#a9b5c2;position:relative}
+.rcv-supbox select{min-height:40px;width:100%;box-sizing:border-box;padding:0 10px;background:#0b0e11;color:#e8eef3;border:1px solid #2a3139;border-radius:8px;font:inherit;font-size:14px}
+.rcv-supbox select:focus{outline:none;border-color:#4a8aa6;box-shadow:0 0 0 3px rgba(74,138,166,.25)}
+.rcv-supbox select:disabled{opacity:.75}
+.rcv-supnew{display:flex;gap:8px}.rcv-supnew[hidden]{display:none}.rcv-supnew input{flex:1}
+.rcv-req{color:#f0b84a}
+.rcv-missing{flex-basis:100%;color:#f0d9a0;font-size:13px;order:5}.rcv-missing:empty{display:none}
+.rcv-dlg-btns .rcv-btn:disabled{opacity:.5;cursor:not-allowed}
+.rcv-fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rcv-lbl{font-size:12px;color:#8896a4;font-weight:700}
+.rcv-unitbox{display:flex;align-items:center;gap:6px}.rcv-unit{font-size:13px;color:#a9b5c2;white-space:nowrap}
+.rcv-err{color:#ff8a80;font-size:12px;min-height:0}.rcv-err:empty{display:none}
+output.rcv-lt{display:flex;align-items:center;min-height:40px;font-weight:700;color:#e8eef3;text-align:start}
+.rcv-line{margin:0 18px;padding:12px!important;border:1px solid #2a313a;border-radius:10px;background:#101418;align-items:start!important}
 .rcv-grid{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-bottom:4px;min-height:60px}
 .rcv-pick{position:relative}
 .rcv-pick input[data-ok]{border-color:#2f5d4a;background:#0d1512}
@@ -11829,8 +11843,9 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
  .rcv-th{display:none}
  .rcv-lines>div{grid-template-columns:1fr 1fr}
  .rcv-meta{grid-template-columns:1fr}
- .rcv-grid-h{display:none}
- .rcv-line{grid-template-columns:1fr 1fr;padding:10px 12px;margin:0 12px;border:1px solid #2a313a;border-radius:10px}
+ .rcv-supbox{grid-column:1/-1}
+ .rcv-line{grid-template-columns:1fr 1fr;margin:0 12px!important}
+ .rcv-line .rcv-del{grid-column:1/-1;justify-self:end}
  .rcv-line .rcv-pick{grid-column:1/-1}
  .rcv-ov{padding:0;align-items:stretch}
  .rcv-dlg{max-height:none;height:100%;border-radius:0}
@@ -12202,6 +12217,16 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
 
   // ---------- invoice form ----------
   var form = null;
+  // Expiry input: MM/YY. Accepts 1126, 11/26, 11/2026, 2026-11. Returns internal 'YYYY-MM' or ''.
+  function parseExp(v) {
+    v = String(v || '').trim(); var m, mo, y;
+    if ((m = /^(\d{4})-(\d{1,2})$/.exec(v))) { y = +m[1]; mo = +m[2]; }
+    else if ((m = /^(\d{1,2})\s*[\/\-.]\s*(\d{2}|\d{4})$/.exec(v)) || (m = /^(\d{2})(\d{2}|\d{4})$/.exec(v))) { mo = +m[1]; y = +m[2]; if (m[2].length === 2) y += 2000; }
+    else return '';
+    if (mo < 1 || mo > 12 || y < 2000 || y > 2099) return '';
+    return y + '-' + String(mo).padStart(2, '0');
+  }
+  function expShow(e) { return /^\d{4}-\d{2}/.test(e || '') ? e.slice(5, 7) + '/' + e.slice(2, 4) : (e || ''); }
   function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && p.qty || '', lot: p && !p.autoLot && p.lot || '', exp: p && p.expiry ? p.expiry.slice(0, 7) : '', cost: p && p.cost != null ? p.cost : '' }; }
   function openForm(pre) {
     if (document.getElementById('rcvForm')) return;
@@ -12211,26 +12236,52 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     var ov = document.createElement('div'); ov.id = 'rcvForm'; ov.className = 'rcv-ov'; ov.dir = 'rtl';
     ov.innerHTML = '<div class="rcv-dlg" role="dialog" aria-modal="true" aria-labelledby="rcvTitle">'
       + '<div class="rcv-dlg-h"><h2 id="rcvTitle">استلام فاتورة' + (st.poId ? ' <small>' + esc(st.poId) + '</small>' : '') + '</h2><button type="button" class="rcv-x" data-rcv-close aria-label="إغلاق">' + I.x + '</button></div>'
-      + '<div class="rcv-meta"><label>المورد<input id="rcvSup" list="rcvSupList" autocomplete="off" value="' + esc(pre.supplier || '') + '" placeholder="اسم المورد"><datalist id="rcvSupList">' + sups.map(function (s) { return '<option value="' + esc(s) + '">'; }).join('') + '</datalist></label>'
+      + '<div class="rcv-meta"><div class="rcv-supbox"><label for="rcvSup">المورد <b class="rcv-req" aria-hidden="true">*</b></label><select id="rcvSup" aria-required="true"></select>'
+      + '<div id="rcvSupNewBox" class="rcv-supnew" hidden><input id="rcvSupNew" autocomplete="off" maxlength="60" placeholder="اسم المورد الجديد" aria-label="اسم المورد الجديد"><button type="button" class="rcv-btn sm primary" id="rcvSupAdd">إضافة</button></div></div>'
       + '<label>رقم الفاتورة<input id="rcvInv" dir="ltr" autocomplete="off" value="' + esc(pre.invoice || '') + '" placeholder="مثلًا 10452"></label>'
       + '<label>تاريخ الفاتورة<input id="rcvDate" type="date" dir="ltr" value="' + esc(pre.date || today()) + '"></label></div>'
-      + '<div class="rcv-grid-h"><span>الصنف</span><span>الكمية</span><span>التشغيلة (اختياري)</span><span>الصلاحية</span><span>سعر الشراء</span><span>الإجمالي</span><span></span></div>'
       + '<div id="rcvLines" class="rcv-grid"></div>'
       + '<button type="button" class="rcv-add" data-rcv-add>' + I.plus + 'إضافة صنف</button>'
       + '<section id="rcvReview" class="rcv-review" aria-label="مراجعة فروق الاستلام"></section>'
-      + '<div class="rcv-dlg-f"><div class="rcv-sum" id="rcvSum"></div><div id="rcvMsg" class="rcv-msg" role="alert"></div>'
+      + '<div class="rcv-dlg-f"><div class="rcv-sum" id="rcvSum"></div><div id="rcvMsg" class="rcv-msg" role="alert"></div><div id="rcvMissing" class="rcv-missing" aria-live="polite"></div>'
       + '<div class="rcv-dlg-btns"><button type="button" class="rcv-btn" data-rcv-close>إلغاء</button><button type="button" class="rcv-btn primary" id="rcvOk">تأكيد الاستلام وإضافة للمخزون</button></div></div></div>';
     document.body.appendChild(ov); form = { ov: ov, st: st };
-    if (st.poId || st.pending) ov.querySelector('#rcvSup').readOnly = true;
+    var supSel = ov.querySelector('#rcvSup');
+    function supOptions(cur) {
+      var list = sups.slice(); if (cur && list.indexOf(cur) < 0) list.push(cur);
+      sups = list;
+      supSel.innerHTML = '<option value="">اختر المورد</option>' + list.map(function (x) { return '<option value="' + esc(x) + '">' + esc(x) + '</option>'; }).join('') + '<option value="__new">+ مورد جديد</option>';
+      supSel.value = cur || '';
+    }
+    supOptions(pre.supplier || '');
+    if (st.poId || st.pending) supSel.disabled = true;
+    var supBox = ov.querySelector('#rcvSupNewBox'), supNew = ov.querySelector('#rcvSupNew'), lastSup = supSel.value;
+    function supValue() { return supSel.value === '__new' ? '' : supSel.value; }
+    function addSupplier() {
+      var n = supNew.value.trim().replace(/\s+/g, ' ');
+      if (!n) { msg('اكتب اسم المورد الجديد'); supNew.focus(); return; }
+      var hit = sups.filter(function (x) { return x === n; })[0] || n;
+      supOptions(hit); lastSup = hit; supBox.hidden = true; supNew.value = ''; msg(''); sum();
+      ov.querySelector('#rcvInv').focus();
+    }
+    supSel.addEventListener('change', function () {
+      if (supSel.value === '__new') { supBox.hidden = false; supNew.focus(); sum(); return; }
+      supBox.hidden = true; lastSup = supSel.value; msg(''); sum();
+      if (supSel.value) ov.querySelector('#rcvInv').focus(); // typing never edits the supplier
+    });
+    ov.querySelector('#rcvSupAdd').addEventListener('click', addSupplier);
+    supNew.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); addSupplier(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); supBox.hidden = true; supOptions(lastSup); sum(); } });
+    ov.querySelector('#rcvInv').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); var f = box.querySelector('[data-f=q]'); if (f) f.focus(); } });
+    ov.querySelector('#rcvInv').addEventListener('input', function () { msg(''); });
     var box = ov.querySelector('#rcvLines');
     function rowHtml(l, i) {
       return '<div class="rcv-line" data-i="' + i + '">'
-        + '<div class="rcv-pick"><input data-f="q" autocomplete="off" placeholder="ابحث بالاسم أو امسح الباركود" value="' + esc(l.key ? disp(l.name) : (l.name || '')) + '" aria-label="الصنف"' + (l.key ? ' data-ok="1"' : '') + '><div class="rcv-sug" hidden></div></div>'
-        + '<input data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="' + esc(l.qty) + '" aria-label="الكمية بالعلب" placeholder="علب">'
-        + '<input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة (اختياري)" placeholder="اختياري">'
-        + '<input data-f="exp" type="month" dir="ltr" value="' + esc(l.exp) + '" aria-label="تاريخ الصلاحية">'
-        + '<input data-f="cost" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.cost) + '" aria-label="سعر الشراء للعلبة" placeholder="0.00">'
-        + '<span class="rcv-lt" data-lt>—</span>'
+        + '<div class="rcv-fld rcv-pick"><span class="rcv-lbl">الصنف <b class="rcv-req" aria-hidden="true">*</b></span><input data-f="q" autocomplete="off" placeholder="ابحث بالاسم أو امسح الباركود" value="' + esc(l.key ? disp(l.name) : (l.name || '')) + '" aria-label="الصنف" aria-required="true"' + (l.key ? ' data-ok="1"' : '') + '><div class="rcv-sug" hidden></div></div>'
+        + '<div class="rcv-fld"><span class="rcv-lbl">الكمية</span><div class="rcv-unitbox"><input data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="' + esc(l.qty) + '" aria-label="الكمية بالعلب" placeholder="0"><span class="rcv-unit">علبة</span></div></div>'
+        + '<div class="rcv-fld"><span class="rcv-lbl">سعر العلبة</span><input data-f="cost" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.cost) + '" aria-label="سعر الشراء للعلبة" placeholder="0.00"></div>'
+        + '<div class="rcv-fld"><span class="rcv-lbl">الصلاحية <b class="rcv-req" aria-hidden="true">*</b></span><input data-f="exp" type="text" dir="ltr" inputmode="numeric" maxlength="7" autocomplete="off" value="' + esc(expShow(l.exp)) + '" aria-label="تاريخ الصلاحية شهر/سنة" aria-required="true" placeholder="MM/YY"><small class="rcv-err" data-err role="alert"></small></div>'
+        + '<div class="rcv-fld"><span class="rcv-lbl">التشغيلة (اختياري)</span><input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة (اختياري)" placeholder="اختياري"></div>'
+        + '<div class="rcv-fld"><span class="rcv-lbl">الإجمالي</span><output class="rcv-lt" data-lt>—</output></div>'
         + '<button type="button" class="rcv-del" data-rcv-del aria-label="حذف السطر">' + I.x + '</button></div>';
     }
     function draw() { box.innerHTML = st.lines.map(rowHtml).join(''); sum(); }
@@ -12241,6 +12292,22 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         if (row) row.querySelector('[data-lt]').textContent = q && c ? money(q * c) : '—';
         if (l.key || l.name) { n++; b += q; t += q * c; }
       });
+      var miss = [], now0 = new Date(), tt = Date.UTC(now0.getFullYear(), now0.getMonth(), now0.getDate()), anyItem = false, expBad = false;
+      if (!supValue()) miss.push('المورد');
+      st.lines.forEach(function (l, i) {
+        var row = box.children[i], er = row && row.querySelector('[data-err]'), raw = String(l.exp || '').trim(), pe = parseExp(raw), msgE = '';
+        if (l.key) anyItem = true;
+        if (raw) {
+          if (!pe) { if (row.dataset.touched || raw.length >= 5) msgE = 'اكتب الشهر والسنة مثل 11/26'; }
+          else { var y = +pe.slice(0, 4), mo = +pe.slice(5); if (Date.UTC(y, mo, 0) < tt) msgE = 'الصلاحية منتهية (الشهر ده عدّى)'; }
+        }
+        if (er) er.textContent = msgE;
+        if (l.key && (!pe || msgE)) expBad = true;
+      });
+      if (!anyItem) miss.push('صنف واحد على الأقل');
+      if (expBad || (!st.lines.some(function (l) { return l.key; }) && false)) miss.push('الصلاحية');
+      var mEl = ov.querySelector('#rcvMissing'); mEl.textContent = miss.length && !st.pending ? 'ناقص: ' + miss.join('، ') : '';
+      var okBtn = ov.querySelector('#rcvOk'); if (okBtn && !st.pending) { okBtn.disabled = miss.length > 0; okBtn.setAttribute('aria-disabled', String(miss.length > 0)); }
       ov.querySelector('#rcvSum').innerHTML = '<span>' + nItems(n) + '</span><span>' + b + ' علبة</span><b>' + money(t) + '</b>';
       const po = st.poId ? read(POK).find(row => row.id === st.poId) : null;
       const lines = st.lines.filter(line => line.key).map(line => ({ ...line, code: line.code || line.key }));
@@ -12270,9 +12337,10 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     }
     box.addEventListener('input', function (e) {
       var f = e.target.getAttribute('data-f'), i = lineOf(e.target); if (i < 0) return;
-      if (f === 'q') suggest(e.target, i); else { st.lines[i][f] = e.target.value; sum(); }
+      if (f === 'q') { suggest(e.target, i); sum(); } else { st.lines[i][f] = e.target.value; sum(); }
       msg('');
     });
+    box.addEventListener('focusout', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-f') === 'exp') { var r = e.target.closest('.rcv-line'); if (r) { r.dataset.touched = '1'; sum(); } } });
     box.addEventListener('click', function (e) {
       var b = e.target.closest('[data-pick]'); if (b) { pick(lineOf(b), +b.getAttribute('data-pick')); return; }
       if (e.target.closest('[data-rcv-del]')) { var i = lineOf(e.target); st.lines.splice(i, 1); if (!st.lines.length) st.lines.push(blankLine()); draw(); }
@@ -12298,8 +12366,8 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       else if (!e.target.closest('.rcv-pick')) ov.querySelectorAll('.rcv-sug').forEach(function (s) { s.hidden = true; });
     });
     function validateReceipt() {
-      var sup = ov.querySelector('#rcvSup').value.trim(), inv = ov.querySelector('#rcvInv').value.trim(), date = ov.querySelector('#rcvDate').value || today();
-      if (!sup) { msg('اكتب اسم المورد'); ov.querySelector('#rcvSup').focus(); return; }
+      var sup = supValue().trim(), inv = ov.querySelector('#rcvInv').value.trim(), date = ov.querySelector('#rcvDate').value || today();
+      if (!sup) { msg('اختر المورد'); supSel.focus(); return; }
       if (!inv) { msg('اكتب رقم الفاتورة'); ov.querySelector('#rcvInv').focus(); return; }
       const previous = receipts().find(r => r.supplier === sup && r.invoice === inv);
       if (previous) {
@@ -12316,14 +12384,14 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
         if (!l.key) return bad('q', 'اختار الصنف من القائمة');
         var q = Number(l.qty); if (!Number.isInteger(q) || q <= 0) return bad('qty', 'اكتب كمية صحيحة بالعلب');
         var autoLot = !String(l.lot).trim(), lot = autoLot ? id + '/' + (i + 1) : String(l.lot).trim();
-        if (!/^\d{4}-\d{2}$/.test(l.exp)) return bad('exp', 'اختار تاريخ الصلاحية');
-        var y = +l.exp.slice(0, 4), mo = +l.exp.slice(5), last = new Date(Date.UTC(y, mo, 0));
+        var pe = parseExp(l.exp); if (!pe) return bad('exp', 'اكتب الصلاحية شهر/سنة مثل 11/26');
+        var y = +pe.slice(0, 4), mo = +pe.slice(5), last = new Date(Date.UTC(y, mo, 0));
         if (mo < 1 || mo > 12) return bad('exp', 'اختار تاريخ صلاحية صحيح');
         if (last.getTime() < t0) return bad('exp', 'الصلاحية منتهية');
         if (last.getTime() < soon) short++;
         if (out.some(function (o) { return o.key === l.key && o.lot === lot; })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
         if (l.cost !== '' && (!Number.isFinite(Number(l.cost)) || Number(l.cost) < 0)) return bad('cost', 'اكتب سعر شراء صحيح');
-        out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: l.exp + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
+        out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: pe + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
       }
       var b = out.reduce(function (s, o) { return s + o.qty; }, 0);
       if (st.poId && read(POK).find(row => row.id === st.poId)?.supplier !== sup) { msg('مورد الفاتورة يختلف عن الطلبية'); return; }
@@ -12342,7 +12410,7 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
       box.querySelectorAll('.rcv-line').forEach((row, index) => {
         try { row.hidden = window.novaStock.hasReceiptLine(receipt.id + '/' + index); } catch (_) {}
       });
-      ov.querySelectorAll('input,[data-rcv-add],[data-rcv-del]').forEach(el => { el.disabled = true; });
+      ov.querySelectorAll('input,select,[data-rcv-add],[data-rcv-del]').forEach(el => { el.disabled = true; });
       submit.textContent = 'كمّل الاستلام';
       msg('اتحفظ ' + done + ' من ' + receipt.lines.length + ' · كمّل نفس الفاتورة');
     }
@@ -12376,7 +12444,8 @@ html body :is(#novaPageView h2,.app>main .panel-head h2,dialog .dialog-head h2,.
     });
     draw();
     if (st.pending) { showPending(); submit.focus(); return; }
-    (pre.supplier ? ov.querySelector('#rcvInv') : ov.querySelector('#rcvSup')).focus();
+    sum();
+    (pre.supplier ? ov.querySelector('#rcvInv') : supSel).focus();
   }
 
   function openPhoto() {
