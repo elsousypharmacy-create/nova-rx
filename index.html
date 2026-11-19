@@ -2549,7 +2549,7 @@ html body.nova-rail .nova-rail-tiles>#btnClearInvoice:hover{background:rgba(255,
 html body.nova-rail .nova-rail-tiles>#btnAddLoyalty.is-on{background:#16232b!important;border-color:#387e9e!important}
 html body.nova-rail .nova-rail-tiles>#btnAddLoyalty.is-on svg{color:#8fcbe4}
 html body.nova-rail .nova-rail-tiles .nx-rail-name{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html body.nova-rail .nova-rail-tiles .nx-k{position:absolute;top:6px;inset-inline-end:8px;color:#6f7b87;font-size:11px;font-weight:600;direction:ltr}
+html body.nova-rail .nova-rail-tiles .nx-k{position:absolute;top:6px;inset-inline-end:8px;color:#8b98a5;font-size:11px;font-weight:600;direction:ltr}
 html body.nova-rail .nova-rail-held-head>#btnHeldInvoices{width:100%!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0 6px!important;display:flex!important;align-items:center!important;gap:8px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#aab1bb!important;font-size:13px!important;font-weight:700!important;justify-content:flex-start!important}
 html body.nova-rail .nova-rail-held-head>#btnHeldInvoices:hover{color:#f1f3f5!important}
 html body.nova-rail .nova-rail-held-head>#btnHeldInvoices .nova-held-count{margin-inline-start:auto;background:#3a3220!important;color:#f0d9a0!important;border-radius:9px;padding:0 8px;min-width:0;font-size:12px}
@@ -2561,6 +2561,7 @@ html[dir=rtl] .nova-rail-row,.lang-ar .nova-rail-row{padding:4px 10px 4px 4px}
 .nova-rail-row .nx-meta{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nova-rail-row button{margin-inline-start:auto;flex:none;min-height:36px;min-width:44px;padding:0 10px;border-radius:8px;border:1px solid #2f5566;background:transparent;color:#8fcbe4;font:inherit;font-weight:700;cursor:pointer}
 .nova-rail-row button:hover{background:#16232b}
+.nova-rail-row button:focus-visible,.nova-rail-more:focus-visible,#novaCustModal .ncm-close:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
 .nova-rail-more{min-height:36px;border-radius:10px;border:1px dashed #2f5566;background:transparent;color:#8fcbe4;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 html body.nova-rail .nova-rail-foot{margin-top:auto}
 html body.nova-rail .nova-rail-foot>#btnSaleLabels{width:100%!important;height:48px!important;min-height:48px!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;border-radius:10px!important;background:#20262d!important;border:1px solid #343b44!important;color:#f1f3f5!important;font-size:14px!important;font-weight:700!important}
@@ -2587,7 +2588,7 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
 @media (prefers-reduced-motion:no-preference){#novaCustModal .ncm-card{animation:ncmIn .14s ease-out}@keyframes ncmIn{from{transform:translateY(6px);opacity:.6}to{transform:none;opacity:1}}}
 @media (forced-colors:active){html body.nova-rail .nova-rail-tiles>.btn,.nova-rail-row,.nova-cust-chip-wrap.on{border:1px solid ButtonText!important}}
 </style>
-<div id="novaCustModal" hidden role="dialog" aria-modal="true" aria-labelledby="novaCustModalTitle"><div class="ncm-card" dir="auto"><div class="ncm-head"><h3 id="novaCustModalTitle">سجل العميل</h3><button type="button" class="ncm-close" id="novaCustModalClose"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>إغلاق</span></button></div><div class="ncm-body customer-sidebar" id="novaCustModalBody"></div></div></div>
+<div id="novaCustModal" hidden role="dialog" aria-modal="true" aria-labelledby="novaCustModalTitle"><div class="ncm-card"><div class="ncm-head"><h3 id="novaCustModalTitle">سجل العميل</h3><button type="button" class="ncm-close" id="novaCustModalClose"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>إغلاق</span></button></div><div class="ncm-body customer-sidebar" id="novaCustModalBody"></div></div></div>
 <script>
 (function(){
   'use strict';
@@ -2619,7 +2620,7 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
   var TILE_IDS = ['btnNewSale', 'holdCurrentInvoice', 'btnAddLoyalty', 'btnClearInvoice'];
   var KEYS = { btnNewSale: 'F2', btnAddLoyalty: 'F3', btnClearInvoice: 'F4' };
   var marks = {};   // id -> comment placeholder at the original spot
-  var on = false;
+  var on = false, origAddAria = 'إضافة أو تغيير العميل', lastEn = isEn();
   function park(el) { if (!el || marks[el.id]) return; var c = document.createComment('ux-p40:' + el.id); el.parentNode.insertBefore(c, el); marks[el.id] = c; }
   function unpark(el) { var c = el && marks[el.id]; if (!c) return; if (c.parentNode) c.parentNode.replaceChild(el, c); delete marks[el.id]; }
   // the app's translator re-applies data-nova-original-* on every language pass, so keep it in step
@@ -2668,16 +2669,18 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
     if (m) { var hb = $('btnHeldInvoices'); if (hb) hb.click(); return; }
     var id = r.getAttribute('data-rail-resume'), list = $('heldInvoiceList');
     var target = list && Array.prototype.find.call(list.querySelectorAll('[data-held-resume]'), function (b) { return b.getAttribute('data-held-resume') === id; });
-    if (target) target.click();
+    if (target) target.click(); else { var hb2 = $('btnHeldInvoices'); if (hb2) hb2.click(); }   // never a dead button: fall back to the held panel
   });
+  // keep keyboard focus inside the window: the POS behind it is inert while it is open
+  function setInert(v) { var root = document.querySelector('.pos-root'); if (root && !root.contains(modal)) root.inert = v; }
   function openModal() {
     if (!custState().attached) return;
     var d = $('custExtraDetails'); if (d) d.open = true;
-    modal.hidden = false;
+    modal.hidden = false; setInert(true);
     var cl = $('novaCustModalClose'); if (cl) cl.focus();
   }
   function closeModal(refocus) {
-    if (modal.hidden) return; modal.hidden = true;
+    if (modal.hidden) return; modal.hidden = true; setInert(false);
     if (refocus !== false) { var ch = $('novaCustChip'); if (ch && ch.offsetParent) ch.focus(); }
   }
   $('novaCustChip').addEventListener('click', openModal);
@@ -2689,9 +2692,15 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
     if (on) return; on = true;
     TILE_IDS.forEach(function (id) {
       var el = $(id); if (!el) return; park(el); tiles.appendChild(el);
-      if (KEYS[id]) addTo(el, KEYS[id], 'nx-k');
+      if (KEYS[id]) { var k = addTo(el, KEYS[id], 'nx-k'); k.setAttribute('aria-hidden', 'true'); el.setAttribute('aria-keyshortcuts', KEYS[id]); }
     });
-    var add = $('btnAddLoyalty'); if (add) addTo(add, isEn() ? 'Link customer' : 'ربط عميل', 'nx-rail-label');
+    var add = $('btnAddLoyalty');
+    if (add) {
+      // the translator re-applies aria-label from data-nova-original-aria-label: drop both while in the rail, restore on leave
+      origAddAria = add.dataset.novaOriginalAriaLabel || add.getAttribute('aria-label') || origAddAria;
+      delete add.dataset.novaOriginalAriaLabel; add.removeAttribute('aria-label');
+      addTo(add, isEn() ? 'Link customer' : 'ربط عميل', 'nx-rail-label');
+    }
     var clr = $('btnClearInvoice'); if (clr) { var ic = document.createElement('span'); ic.className = 'nx-rail-add'; ic.innerHTML = SVG.trash; ic.style.display = 'contents'; clr.insertBefore(ic, clr.firstChild); }
     var hb = $('btnHeldInvoices'); if (hb) { park(hb); heldHead.appendChild(hb); }
     var sl = $('btnSaleLabels'); if (sl) { park(sl); foot.appendChild(sl); }
@@ -2703,7 +2712,8 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
     if (!on) return; on = false;
     closeModal(false);
     document.querySelectorAll('.nx-rail-add').forEach(function (n) { n.remove(); });
-    var add = $('btnAddLoyalty'); if (add) { add.classList.remove('is-on'); setAria(add, 'إضافة أو تغيير العميل'); }
+    var add = $('btnAddLoyalty'); if (add) { add.classList.remove('is-on'); add.removeAttribute('aria-keyshortcuts'); setAria(add, origAddAria); if (isEn()) add.setAttribute('aria-label', 'Add or change customer'); }
+    ['btnNewSale', 'btnClearInvoice'].forEach(function (id) { var b = $(id); if (b) b.removeAttribute('aria-keyshortcuts'); });
     ['customerSelectedBox', 'btnSaleLabels', 'btnHeldInvoices'].concat(TILE_IDS.slice().reverse()).forEach(function (id) { unpark($(id)); });
     document.body.classList.remove('nova-rail');
     heldBox.innerHTML = ''; chipWrap.classList.remove('on');
@@ -2716,11 +2726,12 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
     var hl = $('heldInvoiceList'); if (hl) new MutationObserver(renderHeld).observe(hl, { childList: true });
     var sb = $('customerSelectedBox'); if (sb) new MutationObserver(syncCustomer).observe(sb, { attributes: true, attributeFilter: ['style'] });
     var cn = $('custCardName'); if (cn) new MutationObserver(syncCustomer).observe(cn, { childList: true, characterData: true, subtree: true });
-    new MutationObserver(function () { if (!on) return; renderHeld(); syncCustomer(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    // body class flips for many reasons: rebuild the held rows (and lose a focused «رجّعها») only when the language changed
+    new MutationObserver(function () { if (!on) return; var en = isEn(); if (en !== lastEn) { lastEn = en; renderHeld(); } syncCustomer(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { watch(); renderHeld(); syncCustomer(); }); else watch();
   window.addEventListener('load', function () { renderHeld(); syncCustomer(); });
-  window.addEventListener('storage', function (e) { if (e.key === HELD_KEY) renderHeld(); });
+  window.addEventListener('storage', function (e) { if (e.key === HELD_KEY || e.key === null) renderHeld(); });
   window.novaSaleRail = { isOn: function () { return on; }, open: openModal, close: closeModal };
 })();
 </script>
