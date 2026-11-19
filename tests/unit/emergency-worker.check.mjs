@@ -1,11 +1,25 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import vm from 'node:vm';
-const file = new URL('../../worker/live/nova-rx-preview.with-emergency2.js', import.meta.url);
-const code = fs.readFileSync(file, 'utf8');
-let handler; const ctx = { addEventListener: (t, h) => { if (t === 'fetch') handler = h; }, console, URL, Response, Request, Headers, fetch: async () => new Response('x'), crypto, TextEncoder, TextDecoder, atob, btoa, setTimeout, clearTimeout };
-vm.createContext(ctx); vm.runInContext(code, ctx);
-async function get(p) { let res; await new Promise(r => { handler({ request: new Request('https://w.test' + p), respondWith: v => { res = v; r(); }, waitUntil() {} }); setTimeout(r, 50); }); return res && await res; }
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+const base = new URL('../../worker/live/nova-rx-preview.pur-04.js', import.meta.url);
+const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'emg-')), 'w.mjs');
+execFileSync(process.execPath, ['tools/patch-worker-emergency.mjs', base.pathname, tmp], { stdio: 'pipe' });
+const code = fs.readFileSync(tmp, 'utf8');
+let handler, mod;
+if (/\bexport\s+default\b/.test(code)) {
+  mod = (await import(pathToFileURL(tmp).href)).default;
+} else {
+  const ctx = { addEventListener: (t, h) => { if (t === 'fetch') handler = h; }, console, URL, Response, Request, Headers, fetch: async () => new Response('x'), crypto, TextEncoder, TextDecoder, atob, btoa, setTimeout, clearTimeout };
+  vm.createContext(ctx); vm.runInContext(code, ctx);
+}
+async function get(p) {
+  if (mod) return await mod.fetch(new Request('https://w.test' + p), {}, { waitUntil() {}, passThroughOnException() {} });
+  let res; await new Promise(r => { handler({ request: new Request('https://w.test' + p), respondWith: v => { res = v; r(); }, waitUntil() {} }); setTimeout(r, 50); }); return res && await res;
+}
 for (const p of ['/emergency', '/emergency/']) {
   const r = await get(p); assert.equal(r.status, 200); assert.match(r.headers.get('content-type'), /text\/html/);
   const t = await r.text();

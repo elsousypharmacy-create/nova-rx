@@ -15,7 +15,7 @@ const app = readFileSync(join(dir, 'app.html'), 'utf8'); rmSync(dir, { recursive
 const raw = readFileSync(ART, 'utf8');
 ck('app HTML equals index.html', app === readFileSync('index.html', 'utf8'));
 const TABLE = /^\s*const (?:NOVA_PURCHASING_ASSETS|NOVA_STATIC_ASSETS)\s*=\s*(\{.*\});\s*$/;
-const strip = (s) => s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>') && !TABLE.test(l)).join('\n');
+const strip = (s) => s.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>') && !TABLE.test(l) && !/^const NOVA_BUILD\s*=/.test(l)).join('\n');
 ck('worker code equals base outside the HTML literal and asset tables', strip(raw) === strip(readFileSync(BASE, 'utf8')));
 const tables = raw.split('\n').map((l) => l.match(TABLE)).filter(Boolean).map((m) => JSON.parse(m[1]));
 for (const a of assets) ck('asset ' + a + ' equals repo file', tables.some((t) => t[a] && t[a].body === readFileSync(a.slice(1), 'utf8')));

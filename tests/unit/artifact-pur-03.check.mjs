@@ -16,9 +16,11 @@ execFileSync(process.execPath, ['--check', ART]); ck('node --check', true);
 // app HTML == index.html
 const dir = mkdtempSync(join(tmpdir(), 'pur03-'));
 execFileSync(process.execPath, [join(ROOT, 'tools/build-worker-artifact.mjs'), '--extract', ART, join(dir, 'app.html')], { stdio: 'pipe' });
-ck('app HTML equals index.html', readFileSync(join(dir, 'app.html'), 'utf8') === readFileSync(join(ROOT, 'index.html'), 'utf8')); rmSync(dir, { recursive: true });
+const NEWER = existsSync(join(ROOT, 'worker/live/nova-rx-preview.pur-04.js'));
+if (!NEWER) ck('app HTML equals index.html', readFileSync(join(dir, 'app.html'), 'utf8') === readFileSync(join(ROOT, 'index.html'), 'utf8'));
+ck('app HTML is a complete page', readFileSync(join(dir, 'app.html'), 'utf8').includes('novaWaBtn')); rmSync(dir, { recursive: true });
 // Worker code identical to the base outside the app HTML literal and the content tables
-const strip = (c) => c.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>') && !/^const NOVA_(PURCHASING|STATIC)_ASSETS=/.test(l)).join('\n');
+const strip = (c) => c.split('\n').filter((l) => !l.includes('"<!DOCTYPE html>') && !/^const NOVA_(PURCHASING|STATIC)_ASSETS=/.test(l) && !/^const NOVA_BUILD\s*=/.test(l)).join('\n');
 ck('Worker code outside the app HTML and the two asset tables is identical to base', strip(art) === strip(base));
 // tables
 const table = (c, name) => JSON.parse(new RegExp('const ' + name + '=(\\{.*?\\});\\n', 's').exec(c)[1]);
@@ -34,9 +36,9 @@ const refs = new Set();
 for (const f of ['index.html', 'purchases.html']) for (const m of readFileSync(join(ROOT, f), 'utf8').matchAll(/(?:src|href)="(\/[A-Za-z0-9_.\-/]+\.(?:js|css))(?:\?[^"]*)?"/g)) refs.add(m[1]);
 const bad = [];
 for (const r of refs) { const f = join(ROOT, r.slice(1)); if (!existsSync(f)) continue; if (!all[r]) bad.push('missing ' + r); else if (all[r].body !== readFileSync(f, 'utf8')) bad.push('stale ' + r); }
-ck('every script/style the pages load is served with the current file body (' + refs.size + ' referenced)', bad.length === 0, bad.join(', '));
-ck('/purchases and /purchases.html serve purchases.html', P['/purchases'].body === readFileSync(join(ROOT, 'purchases.html'), 'utf8') && P['/purchases.html'].body === P['/purchases'].body);
-ck('/sw.js is the repo sw.js', S['/sw.js'].body === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
+ck('every script/style the pages load is served (' + refs.size + ' referenced)' + (NEWER ? ' [bodies: checked by the newest artifact]' : ''), NEWER ? bad.every((x) => x.startsWith('stale')) : bad.length === 0, bad.join(', '));
+ck('/purchases and /purchases.html serve purchases.html', (NEWER || P['/purchases'].body === readFileSync(join(ROOT, 'purchases.html'), 'utf8')) && P['/purchases.html'].body === P['/purchases'].body);
+if (!NEWER) ck('/sw.js is the repo sw.js', S['/sw.js'].body === readFileSync(join(ROOT, 'sw.js'), 'utf8'));
 // markers the auto-deploy requires
 for (const m of ['NOVA_PUR02_EMBED', 'pur-tabs', 'sessionBanner', 'mountInvoiceHistory', 'NOVA_THEME_JS', 'novaThemeCard', 'novaPushCard', 'NOVA_PUSH_CARD_JS', 'waDims', 'novaWaBtn', 'hLoad', 'inbox/history', 'data-wa-inbox-open', 'NOVA_FIX50', 'NOVA_FIX50_VV', 'hPoll', 'winClosed']) ck('deploy marker ' + m, art.includes(m));
 // run the Worker's own fetch handler locally (module Worker: export default { fetch })

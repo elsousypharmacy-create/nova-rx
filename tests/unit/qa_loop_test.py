@@ -52,9 +52,13 @@ for st in ("running", "done"):
 items = [{"id": "UX80", "title": "Build worker/live/nova-rx-preview.ux-pro3.js (x)", "status": "done"}]
 S.preview_deploys(items, {"UX80": items[0]}, exists=lambda p: True)
 assert not calls
-# marker helper still flags the stale qa-219 artifact that caused the incident
-assert S.missing_markers("worker/live/nova-rx-preview.qa-219.js")
-# UX400: wa-live3 is the PIN-gated UI; it now lacks only the PIN-free inbox marker. index.html (the next artifact) has all.
-assert S.missing_markers("worker/live/nova-rx-preview.wa-live3.js") == ["data-wa-inbox-open"]
+# marker helper still flags a stale artifact that lacks required markers
+stale_sample = os.path.join(tmp, "stale-qa-219.js")
+open(stale_sample, "w").write("novaWaBtn search only, no history")
+assert S.missing_markers(stale_sample)
+# UX400: a pre-UX400 PIN-gated UI lacks only the PIN-free inbox marker. index.html (the next artifact) has all.
+pin_sample = os.path.join(tmp, "pin-wa-live3.js")
+open(pin_sample, "w").write(" ".join(m for m in S.REQUIRED_MARKERS if m != "data-wa-inbox-open") + " waHistPin")
+assert S.missing_markers(pin_sample) == ["data-wa-inbox-open"]
 assert not S.missing_markers("index.html") and "waHistPin" not in S.REQUIRED_MARKERS and "X-Nova-Pin" not in S.REQUIRED_MARKERS
 print("qa_loop tests ok")

@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { stampBuild } from './build-worker-artifact.mjs';
 
 const EXTRA_ROUTES = {
   '/receipt-operations.js': ['receipt-operations.js', 'application/javascript; charset=utf-8'],
@@ -41,5 +42,6 @@ for (const name of TABLES) {
   }
   code = code.replace(re, () => 'const ' + name + '=' + JSON.stringify(table) + ';\n');
 }
+code = stampBuild(code, { outPath: out });
 fs.writeFileSync(out, code);
 console.log('wrote', out, Buffer.byteLength(code), 'bytes; asset bodies refreshed:', changed, 'added routes:', added, 'sha256', crypto.createHash('sha256').update(code).digest('hex'));

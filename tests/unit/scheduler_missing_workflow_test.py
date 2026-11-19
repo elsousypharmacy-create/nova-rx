@@ -37,16 +37,16 @@ assert disp["na"] == ["preview-artifact-unit.yml"]
 assert S.ci_need(["preview-artifact-unit.yml"], "cloud/UX317", disp, exists=lambda w: 1 / 0) == []
 
 # 4. artifact check picker: skip when worker/live untouched; per-artifact check otherwise
-ex = {"tests/unit/artifact-ux407.check.mjs", "tests/unit/ux430-artifact.check.mjs"}
+ex = {"tests/unit/artifact-pur-04.check.mjs", "tests/unit/ux430-artifact.check.mjs"}
 assert P.plan([("M", "index.html"), ("A", "tests/ui-ux317.mjs")], exists=ex.__contains__) == []
-assert P.plan([("M", "worker/live/nova-rx-preview.ux-407.js")], exists=ex.__contains__) == \
-    [("worker/live/nova-rx-preview.ux-407.js", "tests/unit/artifact-ux407.check.mjs")]
+assert P.plan([("M", "worker/live/nova-rx-preview.pur-04.js")], exists=ex.__contains__) == \
+    [("worker/live/nova-rx-preview.pur-04.js", "tests/unit/artifact-pur-04.check.mjs")]
 assert P.plan([("A", "worker/live/nova-rx-preview.ux430.js")], exists=ex.__contains__) == \
     [("worker/live/nova-rx-preview.ux430.js", "tests/unit/ux430-artifact.check.mjs")]
 assert P.plan([("A", "worker/live/nova-rx-preview.ux-999.js")], exists=ex.__contains__) == \
     [("worker/live/nova-rx-preview.ux-999.js", None)]
-assert P.plan([("D", "worker/live/nova-rx-preview.ux-407.js")], exists=ex.__contains__) == []
-# the real ux-407 check exists in the repo
-assert P.plan([("M", "worker/live/nova-rx-preview.ux-407.js")], exists=lambda p: os.path.exists(os.path.join(ROOT, p)))[0][1] \
-    == "tests/unit/artifact-ux407.check.mjs"
+assert P.plan([("D", "worker/live/nova-rx-preview.pur-04.js")], exists=ex.__contains__) == []
+# the real pur-04 check exists in the repo
+assert P.plan([("M", "worker/live/nova-rx-preview.pur-04.js")], exists=lambda p: os.path.exists(os.path.join(ROOT, p)))[0][1] \
+    == "tests/unit/artifact-pur-04.check.mjs"
 print("scheduler_missing_workflow_test: OK")
