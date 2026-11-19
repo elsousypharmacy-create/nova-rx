@@ -48,13 +48,33 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        CHROME_BIN="$(node -e "console.log(require('playwright-core').chromium.executablePath())")"
-        if [ -x "$CHROME_BIN" ]; then
-          echo "Playwright Chromium restored from cache: $CHROME_BIN"
+        # Use the installed playwright library's own CLI and module rather than
+        # ./node_modules/.bin/playwright or hoisted playwright-core, because
+        # package.json devDependencies can hoist a different @playwright/test version.
+        if [ -f node_modules/playwright/cli.js ]; then
+          PW_CLI="node_modules/playwright/cli.js"
+          PW_PKG="./node_modules/playwright"
+        elif [ -f node_modules/@playwright/test/cli.js ]; then
+          PW_CLI="node_modules/@playwright/test/cli.js"
+          PW_PKG="./node_modules/@playwright/test"
         else
-          echo "Playwright Chromium not in cache; downloading..."
-          bash .github/scripts/retry.sh 3 10 -- ./node_modules/.bin/playwright install chromium
-          CHROME_BIN="$(node -e "console.log(require('playwright-core').chromium.executablePath())")"
+          PW_CLI="./node_modules/.bin/playwright"
+          PW_PKG="playwright-core"
+        fi
+
+        CHROME_BIN="$(node -e "console.log(require(process.argv[1]).chromium.executablePath())" "$PW_PKG")"
+        CHROME_REV="$(printf '%s' "$CHROME_BIN" | sed -n 's|.*/chromium-\([0-9][0-9]*\)/.*|\1|p')"
+        HEADLESS_BIN=""
+        if [ -n "$CHROME_REV" ] && [ -d "$HOME/.cache/ms-playwright/chromium_headless_shell-${CHROME_REV}" ]; then
+          HEADLESS_BIN="$(find "$HOME/.cache/ms-playwright/chromium_headless_shell-${CHROME_REV}" -maxdepth 3 -type f \( -name 'chrome-headless-shell' -o -name 'headless_shell' \) -executable 2>/dev/null | head -n 1 || true)"
+        fi
+
+        if [ -x "$CHROME_BIN" ] && { [ -z "$CHROME_REV" ] || [ -n "$HEADLESS_BIN" ]; }; then
+          echo "Playwright Chromium restored from cache: $CHROME_BIN (headless: ${HEADLESS_BIN:-n/a})"
+        else
+          echo "Playwright Chromium not in cache (or headless shell missing); downloading via $PW_CLI..."
+          bash .github/scripts/retry.sh 3 10 -- node "$PW_CLI" install chromium
+          CHROME_BIN="$(node -e "console.log(require(process.argv[1]).chromium.executablePath())" "$PW_PKG")"
         fi
 
         # On ubuntu-24.04 GitHub-hosted runners, Chromium's required shared libraries
@@ -62,7 +82,7 @@ runs:
         # an actual missing library, avoiding flaky Ubuntu mirror 503/timeouts on
         # optional CJK/X11 font packages.
         missing=""
-        for bin in "$CHROME_BIN" $(find "$HOME/.cache/ms-playwright" -maxdepth 4 -type f -name 'headless_shell' 2>/dev/null || true); do
+        for bin in "$CHROME_BIN" $(find "$HOME/.cache/ms-playwright" -maxdepth 4 -type f \( -name 'chrome-headless-shell' -o -name 'headless_shell' \) 2>/dev/null || true); do
           if [ -x "$bin" ]; then
             m="$(ldd "$bin" 2>/dev/null | grep 'not found' || true)"
             if [ -n "$m" ]; then
@@ -82,5 +102,5 @@ runs:
             'Acquire::https::Timeout "30";' \
             'Acquire::ForceIPv4 "true";' \
             | sudo tee /etc/apt/apt.conf.d/99-nova-ci-retries >/dev/null
-          bash .github/scripts/retry.sh 3 15 -- ./node_modules/.bin/playwright install-deps chromium
+          bash .github/scripts/retry.sh 3 15 -- node "$PW_CLI" install-deps chromium
         fi

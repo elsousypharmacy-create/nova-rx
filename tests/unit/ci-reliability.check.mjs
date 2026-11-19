@@ -58,7 +58,9 @@ assert(actionText.includes('actions/cache@v4'), 'setup-playwright must cache wit
 assert(actionText.includes('~/.cache/ms-playwright'), 'setup-playwright must cache ~/.cache/ms-playwright');
 assert(actionText.includes('~/.npm'), 'setup-playwright must cache ~/.npm');
 assert(actionText.includes('retry.sh'), 'setup-playwright must wrap network installs with retry.sh');
-assert(actionText.includes('playwright install chromium'), 'setup-playwright must install chromium without --with-deps');
+assert(actionText.includes('node_modules/playwright/cli.js'), 'setup-playwright must resolve playwright own CLI to avoid package.json devDependencies version mismatch');
+assert(actionText.includes('install chromium'), 'setup-playwright must install chromium without --with-deps');
+assert(actionText.includes('chrome-headless-shell'), 'setup-playwright must verify chrome-headless-shell in cache and ldd check');
 assert(!actionText.includes('install --with-deps'), 'setup-playwright must not unconditionally pass --with-deps');
 assert(actionText.includes('Acquire::Retries'), 'setup-playwright apt fallback must configure Acquire::Retries');
 
