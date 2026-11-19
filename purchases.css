@@ -689,3 +689,22 @@ dialog#settings .qs-sup .check span{white-space:nowrap}
 .row-action.ico-edit::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:var(--ic-pen) center/contain no-repeat;mask:var(--ic-pen) center/contain no-repeat}
 @media(min-width:801px){.row-action.ico-edit .row-action-txt{display:none}}
 @media(max-width:800px){.nova-topbar{z-index:6}.pur-tabs{top:var(--pur-topbar-h,92px);z-index:5}}
+
+/* PERF-05: reserve session-banner and empty-state space so CLS < 0.1 at 390x844 */
+.session-banner-slot{min-height:64px;margin:0 0 10px;display:flex;align-items:stretch}
+.session-banner-slot[data-state=checking]{border-radius:12px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)}
+.session-banner-slot .session-banner{width:100%;margin:0;min-height:64px;padding:8px 14px}
+@media(min-width:801px){
+  .workspace{min-height:calc(100dvh - 270px)!important}
+  .panel,.cart{min-height:max(380px,calc(100dvh - 270px))!important;max-height:calc(100dvh - 270px)!important}
+}
+@media(max-width:800px){
+  .session-banner-slot{min-height:76px;margin:0 0 12px}
+  .session-banner-slot .session-banner{padding:10px 12px;gap:8px;font-size:13.5px;line-height:1.4;min-height:76px}
+  .session-banner-slot .session-banner span{min-width:170px}
+}
+.table-wrap:has(td.empty){min-height:230px}
+td.empty{min-height:220px;height:220px;vertical-align:middle}
+td.empty .stock-skeleton{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;max-width:340px;min-height:190px;margin:0 auto;text-align:center;color:#cfd7de}
+td.empty .skel-bar{width:100%;height:40px;border-radius:10px;background:rgba(255,255,255,.05)}
+td.empty .skel-bar.short{width:72%;height:36px}

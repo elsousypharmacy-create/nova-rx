@@ -72,7 +72,7 @@
     previewAumetCart: function (line) { return call('/api/purchases/aumet-cart/preview', {method:'POST',body:JSON.stringify(withSelection('aumet',line))}); },
     applyAumetCart: function (plan) { return call('/api/purchases/aumet-cart/apply', {method:'POST',body:JSON.stringify(plan)}); },
     listSellers: function () { return call('/api/suppliers/sellers', { method: 'GET' }); },
-    purchasingStock: function (dashboardPin) { return call('/api/purchases/stock', { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }); },
+    purchasingStock: function (dashboardPin, opts) { var init = { method: 'POST', body: JSON.stringify({ dashboardPin: dashboardPin || '' }) }; if (opts && opts.signal) init.signal = opts.signal; return call('/api/purchases/stock', init); },
     search: function (query, opts) {
       var prefs={suppliers:['aumet','pharmaoverseas'],aumetSellers:[]};
       try{var saved=JSON.parse(localStorage.getItem('novaPurchasePrefsV1')||'null');if(saved)prefs=Object.assign(prefs,saved);}catch(e){}
