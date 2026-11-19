@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // S1-03: a finished POS sale writes the stock ledger and the offline outbox; a return writes local stock only.
 // Fake storage, no network, no DOM. Also checks index.html carries verbatim copies of the three scripts and the two hooks.
 // Run: node tests/unit/pos-outbox-wire.check.mjs
@@ -97,7 +98,7 @@ const sale = (o = {}) => ({ id: 'sale-1', number: 'INV-1', at: '2026-11-17T10:00
 assert.equal(fetched, 0, 'zero network calls');
 
 // index.html: verbatim script copies + the two hooks (sale add, return add)
-const html = readFileSync(root('index.html'), 'utf8');
+const html = readAppHtml(root('index.html'), 'utf8');
 const b = html.indexOf('<!-- S1-03:BEGIN'), e = html.indexOf('<!-- S1-03:END -->');
 assert.ok(b > 0 && e > b, 'S1-03 block present');
 const block = html.slice(b, e);

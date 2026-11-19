@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX300: exact reply-time metrics, Africa/Cairo display, seconds-vs-ms normalization, PIN-gated /metrics endpoint.
 // Run: node tests/unit/ux300-wa-metrics.check.mjs
 import assert from 'node:assert/strict';
@@ -84,7 +85,7 @@ const rg = M.waRange('7d', NOW); assert.equal(rg.from, M.waDayStart(T0 - 6 * 864
 // shared block is byte-identical in index.html (server tags and dashboard compute with the same code)
 const src = readFileSync(new URL('../../backend/src/wa-metrics.js', import.meta.url), 'utf8');
 const shared = src.slice(src.indexOf('// BEGIN-SHARED') + '// BEGIN-SHARED'.length, src.indexOf('// END-SHARED')).trim();
-assert.ok(readFileSync(new URL('../../index.html', import.meta.url), 'utf8').includes(shared), 'index.html embeds the exact shared block');
+assert.ok(readAppHtml(new URL('../../index.html', import.meta.url), 'utf8').includes(shared), 'index.html embeds the exact shared block');
 
 // endpoint: PIN gated, read-only, no message text
 const db = new DatabaseSync(':memory:');

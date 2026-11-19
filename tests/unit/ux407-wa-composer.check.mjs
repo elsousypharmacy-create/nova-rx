@@ -1,3 +1,4 @@
+import { readAppHtml } from '../lib/app-html.mjs'; // PERF-02: index.html + split app/ files
 // UX407: conversations screen — staff-reply prefix stripped for display, WhatsApp sides (outgoing right / incoming left under RTL),
 // composer is not a <form> and has no focus ring, keyboard fit pins to visualViewport offsetTop+height and locks other fields.
 // Run: node tests/unit/ux407-wa-composer.check.mjs
@@ -5,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const U = createRequire(import.meta.url)('../../unified-inbox.js');
-const page = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const page = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 const P = '\u{1F468}‍⚕️';
 const NOW = new Date(2026, 10, 15, 16, 22).getTime();

@@ -1,0 +1,14 @@
+
+.nova-settings-grid #novaSetupCard .nsw-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#novaSetupCard .nsw-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border:1px solid var(--nx-line,#2a3037);border-radius:10px;background:var(--nx-panel-2,#14181c)}
+#novaSetupCard .nsw-dot{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:#2a3037;color:#a4adb7}
+#novaSetupCard .nsw-row[data-ok="1"] .nsw-dot{background:#1f6f43;color:#fff}
+#novaSetupCard .nsw-row[data-ok="0"] .nsw-dot{background:#8a5a12;color:#fff}
+#novaSetupCard .nsw-main{flex:1;min-width:0}
+#novaSetupCard .nsw-body{margin-top:4px}
+#novaSetupCard .nsw-hint{font-size:13px;color:#a4adb7;line-height:1.5}
+#novaSetupCard .nsw-chip{display:inline-flex;gap:6px;align-items:center;margin:2px 0 2px 8px;padding:3px 10px;border-radius:999px;background:#1b2026;font-size:13px}
+#novaSetupCard .nsw-chip[data-s="ok"]{outline:1px solid #1f6f43}
+#novaSetupCard .nsw-chip[data-s="expired"],#novaSetupCard .nsw-chip[data-s="off"]{outline:1px solid #8a5a12}
+#novaSetupCard .nsw-act{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:640px){#novaSetupCard .nsw-row{flex-wrap:wrap}#novaSetupCard .nsw-act{width:100%}}

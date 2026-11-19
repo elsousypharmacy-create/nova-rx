@@ -1,0 +1,12 @@
+/* UX81: WhatsApp icon + unread badge. Unread = conversation whose last message is incoming. Flag/backend off => icon only. */
+(function(){var KEY='nova.inbox.v1',timer=null;
+function unread(cs){var n=0;(Array.isArray(cs)?cs:[]).forEach(function(c){var m=c&&Array.isArray(c.messages)?c.messages:[];if(m.length&&m[m.length-1]&&m[m.length-1].dir==='in')n++});return n}
+function paint(n){var b=document.getElementById('novaWaBadge');if(!b)return;n=Number(n)||0;if(n>0){b.textContent=n>99?'99+':String(n);b.hidden=false}else{b.textContent='';b.hidden=true}var t=document.getElementById('novaWaBtn');if(t){var l='المحادثات (واتساب)'+(n>0?' — '+n+' غير مقروء':'');t.setAttribute('aria-label',l);if(t.dataset)t.dataset.novaOriginalAriaLabel=l}}
+function cfg(){try{var u=localStorage.getItem('novaBackend.url')||'https://nova-rx-api.elsousypharmacy.workers.dev',k=sessionStorage.getItem('novaBackend.token');return localStorage.getItem('novaBackend.enabled')==='true'&&u&&k?{u:String(u).replace(/\/+$/,'')+'/api/v1/inbox/conversations',k:k}:null}catch(e){return null}}
+function local(){try{var raw=localStorage.getItem(KEY),p=raw?JSON.parse(raw):null;return p&&p.conversations?unread(p.conversations):0}catch(e){return 0}}
+function refresh(){var L=window.NovaWaNotify;if(L&&typeof L.live==='function'&&L.live()){L.paint();return Promise.resolve()}/* UX402: conversations loaded => live count */var c=cfg();if(!c||typeof fetch!=='function'){paint(local());return Promise.resolve()}
+return fetch(c.u,{method:'GET',headers:{Accept:'application/json',Authorization:'Bearer '+c.k}}).then(function(r){if(!r.ok)throw new Error('http');return r.json()}).then(function(j){if(!j||!Array.isArray(j.conversations))throw new Error('bad');paint(unread(j.conversations))}).catch(function(){paint(local())})}
+function open(){if(typeof window.NovaOpenInbox==='function'&&window.NovaOpenInbox())return;var t=document.getElementById('novaInboxTab');if(t)t.click()}
+function boot(){var b=document.getElementById('novaWaBtn');if(!b)return;b.addEventListener('click',open);refresh();if(!timer)timer=setInterval(function(){if(!document.hidden)refresh()},30000);window.addEventListener('storage',function(e){if(!e.key||e.key===KEY)refresh()})}
+window.NovaWaBadge={unread:unread,paint:paint,refresh:refresh,open:open};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})()

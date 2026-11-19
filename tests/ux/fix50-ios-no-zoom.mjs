@@ -4,10 +4,11 @@
 import { webkit, chromium, devices } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { readAppHtml } from '../lib/app-html.mjs';
 const BASE = process.env.NOVA_URL || 'http://127.0.0.1:8765/';
 const pages = ['index.html', 'emergency-sales.html', 'sticker-studio.html', 'supplier-compare.html', 'purchases.html', 'integrations/whatsapp/inbox.html'];
 for (const p of pages) {
-  const h = readFileSync(new URL('../../' + p, import.meta.url), 'utf8');
+  const h = readAppHtml(new URL('../../' + p, import.meta.url)); // PERF-02: joins split app/ files (no-op for other pages)
   assert.match(h, /<meta name="viewport" content="[^"]*viewport-fit=cover[^"]*interactive-widget=resizes-content/, p + ' viewport');
   assert.doesNotMatch(h, /user-scalable=no|maximum-scale/, p + ' must not disable pinch zoom');
 }

@@ -1,0 +1,9 @@
+html.app-whatsapp .nova-nav-row,html.app-whatsapp .pos-root,html.app-whatsapp #novaPageView{display:none!important}html.app-whatsapp .wa-home,html.app-whatsapp [data-wa-home]{display:none!important}
+/* UX413: fill the standalone screen (no leftover POS tab-bar / 100dvh shortfall). html/body use the list colour so no near-black band shows. Safe-area lives only as padding inside the scroll area / composer. Horizontal inset ~16px + env(safe-area-inset-left/right) so text does not touch the edges. */
+html.app-whatsapp,html.app-whatsapp body{background:#14171c!important;height:var(--wa-app-h,100dvh)!important;min-height:var(--wa-app-h,100dvh)!important;max-height:none!important;overflow:hidden!important}
+html.app-whatsapp #novaInboxView{position:fixed!important;inset:0!important;width:100%!important;height:var(--wa-app-h,100dvh)!important;min-height:var(--wa-app-h,100dvh)!important;max-height:none!important;box-sizing:border-box!important;overflow:hidden!important;margin:0!important;padding:0!important;background:#14171c!important}
+html.app-whatsapp .wa-chat,html.app-whatsapp .wa-side-head,html.app-whatsapp .wa-head,html.app-whatsapp .wa-search,html.app-whatsapp .wa-chips,html.app-whatsapp .wa-composer,html.app-whatsapp .wa-msgs{padding-left:calc(16px + var(--wa-sal,env(safe-area-inset-left,0px)))!important;padding-right:calc(16px + var(--wa-sar,env(safe-area-inset-right,0px)))!important}
+html.app-whatsapp .wa-list{padding-bottom:var(--wa-sab,env(safe-area-inset-bottom,0px));background:#14171c}
+html.app-whatsapp .wa-composer{margin:0!important;background:#1a1e24!important;padding-bottom:max(8px,var(--wa-sab,env(safe-area-inset-bottom,0px)))!important}
+html.app-whatsapp .wa-root[data-kbd] .wa-composer{padding-bottom:8px!important}
+html.app-whatsapp .wa-sclear{inset-inline-end:24px}
