@@ -12,6 +12,7 @@ import { applyMigrations, loadMigrationsFromDir } from '../../backend/src/db/mig
 import { handle } from '../../backend/src/index.js';
 import { kpRange, kpStats, kpDur, kpCompute, kpTrend, kpHeadline, kpDayKey, kpParts, kpDayStart, mediaKind } from '../../backend/src/wa-kpis.js';
 import { waDayStart } from '../../backend/src/wa-metrics.js';
+import { staffBearer } from './helpers/staff-session.mjs';
 
 const MIN = 60000, H = 3600000, D = 86400000;
 // Africa/Cairo is UTC+2 in November 2026 (DST ended 29 Oct). NOW = Sun 2026-11-15 12:00 Cairo.
@@ -121,12 +122,15 @@ seed("INSERT INTO inbox_messages (tenant_id, id, conversation_id, dir, text, sta
   "('default','wa_b','wa_2','in','audio omitted',NULL,1763190000000)," +
   "('default','ps_1','wa_2','out','تمام يا فندم','sent',1763190120000)");
 seed("INSERT INTO wa_send_log (tenant_id, id, conversation_id, sent_by, text_len, status, created_at, finished_at) VALUES ('default','ws_1','wa_2','د. أحمد',12,'sent',1763190110000,1763190119000)");
-const call = async (env, method = 'GET') => {
-  const res = await handle(new Request('https://x.test/api/v1/inbox/history/metrics', { method, headers: { 'CF-Connecting-IP': '1.1.1.1' } }), env);
+const call = async (env, method = 'GET', auth = {}) => {
+  const res = await handle(new Request('https://x.test/api/v1/inbox/history/metrics', { method, headers: { 'CF-Connecting-IP': '1.1.1.1', ...auth } }), env);
   return [res.status, await res.json()];
 };
-const KV = { async get() { return null; }, async put() {} };
-let [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging' });
+const kvm = new Map(); const KV = { async get(k) { return kvm.has(k) ? kvm.get(k) : null; }, async put(k, v) { kvm.set(k, v); }, async delete(k) { kvm.delete(k); } };
+// SEC-01: staging needs a staff session too (logged out => 401, no data)
+{ const [s0, j0] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }); assert.equal(s0, 401); assert.equal(j0.data, undefined); }
+const STAFF = (await staffBearer(KV, { user: 'kpi.test', role: 'manager' })).headers;
+let [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }, 'GET', STAFF);
 assert.equal(s, 200); assert.equal(j.ok, true);
 const byId = Object.fromEntries(j.data.events.map((e) => [e.c + ':' + e.k, e]));
 assert.equal(byId['wa_1:in'].m, 'image'); assert.equal(byId['wa_2:in'].m, 'audio');
@@ -138,7 +142,7 @@ assert.ok(!body.includes('روشتة') && !body.includes('تمام يا فندم
 [s] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }, 'POST'); assert.equal(s, 405);
 // an old DB without wa_send_log still answers (names fall back to the assignee)
 const D1old = { prepare: (sql) => { if (/wa_send_log/.test(sql)) throw new Error('no such table'); return D1.prepare(sql); } };
-[s, j] = await call({ DB: D1old, KV, NOVA_ENV: 'staging' }); assert.equal(s, 200);
+[s, j] = await call({ DB: D1old, KV, NOVA_ENV: 'staging' }, 'GET', STAFF); assert.equal(s, 200);
 assert.equal(j.data.events.find((e) => e.c === 'wa_2' && e.k === 'pharm').s, undefined);
 
 // --- shared block copied verbatim into the UI ---
