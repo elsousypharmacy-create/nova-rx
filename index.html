@@ -2489,7 +2489,7 @@ html body .header-actions #btnHelpShortcuts{display:block;min-height:44px}
             فاتورة عميل عابر. تقدر تربط عميل في أي وقت.
           </div>
           <button id="btnAttachLoyalty" class="btn btn-loyalty" style="margin-top:6px;">
-            ربط عميل (F3)
+            تسجيل عميل (F3)
           </button>
         </div>
 
@@ -2537,19 +2537,49 @@ html body.nova-rail .pos-root>.customer-sidebar{order:-1;display:flex!important;
 html body.nova-rail .customer-sidebar>.sidebar-header,html body.nova-rail .customer-sidebar>.sidebar-body{display:none!important}
 .nova-rail-box{display:none}
 html body.nova-rail .nova-rail-box{display:flex;flex-direction:column;gap:10px;flex:1 0 auto;min-height:100%}
-.nova-rail-sec{color:#aab1bb;font-size:13px;font-weight:700;margin:0}
+/* customer: one fixed card on top of the column (empty = «تسجيل عميل» bar, attached = customer card) */
+.nova-rail-cust{position:relative}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty{position:relative;width:100%!important;min-width:0!important;height:auto!important;min-height:64px!important;margin:0!important;padding:10px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;border-radius:12px!important;background:transparent!important;border:1px dashed #2f5566!important;color:#8fcbe4!important;font-size:15px!important;font-weight:800!important;line-height:1.3!important;box-shadow:none!important}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty:hover{background:#13202a!important;border-color:#387e9e!important}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty:focus-visible{outline:2px solid #79c9eb!important;outline-offset:2px}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty::before{display:none!important}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty>svg{display:none!important}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty .nx-rail-label{display:inline-flex;align-items:center;gap:8px}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty .nx-rail-label svg{width:20px;height:20px;flex:none}
+html body.nova-rail .nova-rail-cust>#btnAddLoyalty .nx-rail-sub{font-size:11px;color:#8896a4;font-weight:600}
+html body.nova-rail .nova-rail-cust.is-on>#btnAddLoyalty{display:none!important}
+.nova-cust-card{display:none}
+html body.nova-rail .nova-rail-cust.is-on>.nova-cust-card{display:block;position:relative}
+#novaCustCard{width:100%;box-sizing:border-box;text-align:start;display:flex;flex-direction:column;gap:5px;padding:10px 12px;border-radius:12px;background:#16232b;border:1px solid #387e9e;color:#f1f3f5;font:inherit;cursor:pointer}
+#novaCustCard:hover{background:#1a2b35}
+#novaCustCard:focus-visible,#novaCustCardX:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
+#novaCustCard .ncc-name{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;padding-inline-end:34px;min-width:0}
+#novaCustCard .ncc-name svg{flex:none;color:#8fcbe4}
+#novaCustCard .ncc-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#novaCustCard .ncc-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+#novaCustCard .ncc-phone{direction:ltr;font-size:13px;color:#9fb0bf;font-weight:600}
+#novaCustCard .ncc-badges{display:flex;gap:4px;flex-wrap:wrap}
+#novaCustCard .ncc-badges:empty{display:none}
+#novaCustCard .ncc-b{font-size:11.5px;font-weight:700;border-radius:8px;padding:1px 8px;border:1px solid transparent;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#novaCustCard .ncc-pts{background:#1d3340;color:#8fcbe4;border-color:#2f5566}
+#novaCustCard .ncc-debt{background:rgba(255,99,99,.14);color:#ffb0b0;border-color:rgba(255,99,99,.4)}
+#novaCustCard .ncc-chronic{background:#2a2416;color:#f0d9a0;border-color:#5a4a22}
+#novaCustCard .ncc-hist{font-size:12px;color:#79c9eb;font-weight:700;align-self:flex-end}
+#novaCustCardX{position:absolute;top:4px;inset-inline-end:4px;width:36px;height:36px;border-radius:18px;border:0;background:transparent;color:#aab1bb;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+#novaCustCardX:hover{background:#20262d;color:#f1f3f5}
+/* invoice tiles: new + hold side by side, clear as a separate wide button */
 html body.nova-rail .nova-rail-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 html body.nova-rail .nova-rail-tiles>.btn{position:relative;width:auto!important;min-width:0!important;height:96px!important;min-height:96px!important;margin:0!important;padding:8px 6px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:6px!important;border-radius:12px!important;background:#1a1f25!important;border:1px solid #2f363e!important;color:#f1f3f5!important;font-size:15px!important;font-weight:800!important;line-height:1.3!important;text-align:center;box-shadow:none!important}
 html body.nova-rail .nova-rail-tiles>.btn:hover{background:#20262d!important;border-color:#3d4650!important}
 html body.nova-rail .nova-rail-tiles>.btn:focus-visible{outline:2px solid #79c9eb!important;outline-offset:2px}
 html body.nova-rail .nova-rail-tiles>.btn svg{width:26px!important;height:26px!important;flex:none;color:#cfd7de}
 html body.nova-rail .nova-rail-tiles>.btn::before{display:none!important}
+html body.nova-rail .nova-rail-tiles>#btnClearInvoice{grid-column:1/-1;height:52px!important;min-height:52px!important;flex-direction:row!important;gap:8px!important}
+html body.nova-rail .nova-rail-tiles>#btnClearInvoice svg{width:20px!important;height:20px!important}
 html body.nova-rail .nova-rail-tiles>#btnClearInvoice,html body.nova-rail .nova-rail-tiles>#btnClearInvoice svg{color:#ffb4b8!important}
 html body.nova-rail .nova-rail-tiles>#btnClearInvoice:hover{background:rgba(255,138,128,.08)!important;border-color:rgba(255,138,128,.45)!important}
-html body.nova-rail .nova-rail-tiles>#btnAddLoyalty.is-on{background:#16232b!important;border-color:#387e9e!important}
-html body.nova-rail .nova-rail-tiles>#btnAddLoyalty.is-on svg{color:#8fcbe4}
-html body.nova-rail .nova-rail-tiles .nx-rail-name{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html body.nova-rail .nova-rail-tiles .nx-k{position:absolute;top:6px;inset-inline-end:8px;color:#8b98a5;font-size:11px;font-weight:600;direction:ltr}
+html body.nova-rail .nova-rail-box .nx-k{position:absolute;top:6px;inset-inline-end:8px;color:#8b98a5;font-size:11px;font-weight:600;direction:ltr}
+html body.nova-rail .nova-rail-tiles>#btnClearInvoice .nx-k{top:50%;transform:translateY(-50%)}
 html body.nova-rail .nova-rail-held-head>#btnHeldInvoices{width:100%!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0 6px!important;display:flex!important;align-items:center!important;gap:8px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#aab1bb!important;font-size:13px!important;font-weight:700!important;justify-content:flex-start!important}
 html body.nova-rail .nova-rail-held-head>#btnHeldInvoices:hover{color:#f1f3f5!important}
 html body.nova-rail .nova-rail-held-head>#btnHeldInvoices .nova-held-count{margin-inline-start:auto;background:#3a3220!important;color:#f0d9a0!important;border-radius:9px;padding:0 8px;min-width:0;font-size:12px}
@@ -2566,15 +2596,6 @@ html[dir=rtl] .nova-rail-row,.lang-ar .nova-rail-row{padding:4px 10px 4px 4px}
 html body.nova-rail .nova-rail-foot{margin-top:auto}
 html body.nova-rail .nova-rail-foot>#btnSaleLabels{width:100%!important;height:48px!important;min-height:48px!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;border-radius:10px!important;background:#20262d!important;border:1px solid #343b44!important;color:#f1f3f5!important;font-size:14px!important;font-weight:700!important}
 html body.nova-rail .nova-rail-foot>#btnSaleLabels svg{color:#8fcbe4}
-.nova-cust-chip-wrap{display:none}
-html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:center;gap:2px;height:44px;border:1px solid #387e9e;background:#16232b;border-radius:22px;padding:0 4px;max-width:260px;flex:0 1 auto;min-width:0}
-.nova-cust-chip-wrap button{display:inline-flex;align-items:center;gap:6px;height:36px;min-width:36px;border:0;background:transparent;color:#f1f3f5;font:inherit;font-size:13px;font-weight:700;cursor:pointer;border-radius:18px;padding:0 8px}
-.nova-cust-chip-wrap button:hover{background:#1d3340}
-.nova-cust-chip-wrap button:focus-visible{outline:2px solid #79c9eb;outline-offset:1px}
-.nova-cust-chip-wrap #novaCustChip{min-width:0}
-.nova-cust-chip-wrap #novaCustChip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nova-cust-chip-wrap svg{flex:none;color:#8fcbe4}
-.nova-cust-chip-wrap #novaCustChipX{color:#8896a4;padding:0;width:36px;justify-content:center}
 #novaCustModal{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);padding:16px}
 #novaCustModal[hidden]{display:none}
 #novaCustModal .ncm-card{width:min(560px,100%);max-height:min(86dvh,760px);overflow:auto;background:#14181d;border:1px solid #343b44;border-radius:14px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px}
@@ -2586,7 +2607,7 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
 #novaCustModal #customerSelectedBox{width:100%}
 #novaCustModal .invoices-scroll{max-height:none!important}
 @media (prefers-reduced-motion:no-preference){#novaCustModal .ncm-card{animation:ncmIn .14s ease-out}@keyframes ncmIn{from{transform:translateY(6px);opacity:.6}to{transform:none;opacity:1}}}
-@media (forced-colors:active){html body.nova-rail .nova-rail-tiles>.btn,.nova-rail-row,.nova-cust-chip-wrap.on{border:1px solid ButtonText!important}}
+@media (forced-colors:active){html body.nova-rail .nova-rail-tiles>.btn,.nova-rail-row,#novaCustCard,html body.nova-rail .nova-rail-cust>#btnAddLoyalty{border:1px solid ButtonText!important}}
 </style>
 <div id="novaCustModal" hidden role="dialog" aria-modal="true" aria-labelledby="novaCustModalTitle"><div class="ncm-card"><div class="ncm-head"><h3 id="novaCustModalTitle">سجل العميل</h3><button type="button" class="ncm-close" id="novaCustModalClose"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>إغلاق</span></button></div><div class="ncm-body customer-sidebar" id="novaCustModalBody"></div></div></div>
 <script>
@@ -2601,23 +2622,25 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
   var isEn = function () { try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; } };
   var SVG = {
     user: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    hist: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
-    x: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+    userAdd: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m-3-3h6"/></svg>',
+    x: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
     clock: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     trash: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg>'
   };
-  // rail skeleton (inside the aside, hidden unless body.nova-rail)
+  // rail skeleton (inside the aside, hidden unless body.nova-rail): customer card on top, then invoice tiles, held invoices, stickers
   var box = document.createElement('div'); box.className = 'nova-rail-box';
-  box.innerHTML = '<p class="nova-rail-sec">الفاتورة</p><div class="nova-rail-tiles"></div><div class="nova-rail-held-head"></div><div class="nova-rail-held" aria-live="polite"></div><div class="nova-rail-foot"></div>';
+  box.innerHTML = '<div class="nova-rail-cust"><div class="nova-cust-card">'
+    + '<button type="button" id="novaCustCard" aria-haspopup="dialog"><span class="ncc-name">' + SVG.user + '<span class="nx-rail-name" data-ncc="name"></span></span>'
+    + '<span class="ncc-row"><span class="ncc-phone nx-rail-name" data-ncc="phone"></span><span class="ncc-b ncc-pts nx-rail-name" data-ncc="pts"></span></span>'
+    + '<span class="ncc-badges" data-ncc="badges"></span><span class="ncc-hist" data-ncc="hist"></span></button>'
+    + '<button type="button" id="novaCustCardX">' + SVG.x + '</button></div></div>'
+    + '<div class="nova-rail-tiles"></div><div class="nova-rail-held-head"></div><div class="nova-rail-held" aria-live="polite"></div><div class="nova-rail-foot"></div>';
   aside.appendChild(box);
-  var tiles = box.querySelector('.nova-rail-tiles'), heldHead = box.querySelector('.nova-rail-held-head'), heldBox = box.querySelector('.nova-rail-held'), foot = box.querySelector('.nova-rail-foot');
-  // header chip for an attached customer
-  var chipWrap = document.createElement('span'); chipWrap.className = 'nova-cust-chip-wrap';
-  chipWrap.innerHTML = '<button type="button" id="novaCustChip" aria-haspopup="dialog" title="سجل العميل">' + SVG.user + '<span id="novaCustChipName"></span>' + SVG.hist + '</button><button type="button" id="novaCustChipX" title="إزالة العميل" aria-label="إزالة العميل">' + SVG.x + '</button>';
-  var saleNo = $('activeSaleNumber');
-  if (saleNo && saleNo.parentNode === header) saleNo.insertAdjacentElement('afterend', chipWrap); else header.insertBefore(chipWrap, header.firstChild);
+  var custTop = box.querySelector('.nova-rail-cust'), tiles = box.querySelector('.nova-rail-tiles'), heldHead = box.querySelector('.nova-rail-held-head'), heldBox = box.querySelector('.nova-rail-held'), foot = box.querySelector('.nova-rail-foot');
+  var card = $('novaCustCard'), cardX = $('novaCustCardX');
+  var ncc = function (k) { return card.querySelector('[data-ncc="' + k + '"]'); };
   var modal = $('novaCustModal'), modalBody = $('novaCustModalBody');
-  var TILE_IDS = ['btnNewSale', 'holdCurrentInvoice', 'btnAddLoyalty', 'btnClearInvoice'];
+  var TILE_IDS = ['btnNewSale', 'holdCurrentInvoice', 'btnClearInvoice'];
   var KEYS = { btnNewSale: 'F2', btnAddLoyalty: 'F3', btnClearInvoice: 'F4' };
   var marks = {};   // id -> comment placeholder at the original spot
   var on = false, origAddAria = 'إضافة أو تغيير العميل', lastEn = isEn();
@@ -2626,22 +2649,46 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
   // the app's translator re-applies data-nova-original-* on every language pass, so keep it in step
   function setAria(el, v) { el.dataset.novaOriginalAriaLabel = v; el.setAttribute('aria-label', v); }
   function addTo(el, html, cls) { var s = document.createElement('span'); s.className = 'nx-rail-add ' + (cls || ''); s.innerHTML = html; el.appendChild(s); return s; }
+  function txt(id) { var n = $(id); return n ? n.textContent.trim() : ''; }
+  function shown(id) { var n = $(id); return !!n && !n.hidden; }
   function custState() {
-    var b = $('customerSelectedBox'), n = $('custCardName');
-    var attached = !!b && b.style.display !== 'none' && !!(n && n.textContent.trim());
-    return { attached: attached, name: attached ? n.textContent.trim() : '' };
+    var b = $('customerSelectedBox');
+    var attached = !!b && b.style.display !== 'none' && !!txt('custCardName');
+    return { attached: attached, name: attached ? txt('custCardName') : '' };
+  }
+  function debtOf(c) {
+    try { var l = window.NovaCredit && window.NovaCredit.createCreditLedger(localStorage, 'nova.credit'); var v = l && c && c.id != null ? Number(l.balance(String(c.id))) : 0; return v > 0.004 ? v : 0; } catch (e) { return 0; }
+  }
+  function money(v) { var r = Math.round(v * 100) / 100; return (r % 1 ? r.toFixed(2) : String(r)); }
+  function renderCard(c) {
+    var en = isEn(), cust = window.novaAttachedCustomer || null;
+    ncc('name').textContent = c.name;
+    ncc('phone').textContent = txt('custCardPhone');
+    var tier = txt('custCardTier'), pts = txt('custCardPoints');
+    ncc('pts').textContent = [tier, pts !== '' ? pts + (en ? ' pts' : ' نقطة') : ''].filter(Boolean).join(' · ');
+    var badges = ncc('badges'), html = '', debt = debtOf(cust);
+    if (debt) html += '<span class="ncc-b ncc-debt">' + (en ? 'Owes ' + money(debt) + ' EGP' : 'عليه ' + money(debt) + ' ج') + '</span>';
+    var chronic = shown('custRefillBox') ? txt('custChronicList') : '';
+    if (chronic && chronic !== 'لا يوجد' && chronic !== 'None') {
+      var hint = shown('custDaysSince') ? txt('custRefillHint') : '';
+      var full = (en ? 'Chronic: ' : 'مزمن: ') + chronic + (shown('custDaysSince') ? ' · ' + txt('custDaysText') : '') + (hint ? ' · ' + hint : '');
+      html += '<span class="ncc-b ncc-chronic nx-rail-name" title="' + esc(full) + '">' + esc(full) + '</span>';
+    }
+    if (badges.innerHTML !== html) badges.innerHTML = html;
+    ncc('hist').textContent = en ? 'History ›' : 'السجل ‹';
+    card.removeAttribute('aria-label');   // the visible content (name, phone, points, debt, chronic, «السجل») is the accessible name
+    cardX.setAttribute('aria-label', en ? 'Remove customer' : 'إزالة العميل'); cardX.title = cardX.getAttribute('aria-label');
   }
   function syncCustomer() {
-    var c = custState(), tile = $('btnAddLoyalty');
-    chipWrap.classList.toggle('on', on && c.attached);
-    var nm = $('novaCustChipName'); if (nm) nm.textContent = c.name;
-    if (tile && on) {
-      tile.classList.toggle('is-on', c.attached);
-      var lab = tile.querySelector('.nx-rail-label');
-      if (lab) { lab.textContent = c.attached ? c.name : (isEn() ? 'Link customer' : 'ربط عميل'); lab.classList.toggle('nx-rail-name', c.attached); }
-      // no aria-label in the rail: the visible text (name or «ربط عميل») plus the F3 title name the tile, and the translator never rewrites customer names
-      tile.removeAttribute('aria-label');
-
+    var c = custState(), add = $('btnAddLoyalty');
+    custTop.classList.toggle('is-on', on && c.attached);
+    if (on && c.attached) renderCard(c);
+    if (add && on) {
+      var lab = add.querySelector('.nx-rail-label span'), sub = add.querySelector('.nx-rail-sub');
+      if (lab) lab.textContent = isEn() ? 'Register customer' : 'تسجيل عميل';
+      if (sub) sub.textContent = isEn() ? 'Cash sale without a customer' : 'بيع نقدي من غير عميل';
+      // no aria-label in the rail: the visible text names it and the translator has nothing to rewrite
+      add.removeAttribute('aria-label');
     }
     if (!c.attached && !modal.hidden) closeModal(false);
   }
@@ -2654,9 +2701,9 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
     if (!on) { heldBox.innerHTML = ''; return; }
     var list = [];
     try { var s = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(s)) list = s.filter(function (x) { return x && Array.isArray(x.lines); }); } catch (e) {}
-    var shown = list.slice(0, 3), back = isEn() ? 'Resume' : 'رجّعها';
-    var html = shown.map(function (x) {
-      var who = x.customerName ? ' · ' + esc(x.customerName) : '';
+    var first = list.slice(0, 3), back = isEn() ? 'Resume' : 'رجّعها';
+    var html = first.map(function (x) {
+      var who = x.customerName ? ' · <span class="nx-rail-name">' + esc(x.customerName) + '</span>' : '';
       return '<div class="nova-rail-row">' + SVG.clock + '<span class="nx-meta">' + esc(x.saleNumber || x.id) + ' · ' + esc(itemsText(x.lines.length)) + who + '</span><button type="button" data-rail-resume="' + esc(x.id) + '" aria-label="' + back + ' ' + esc(x.saleNumber || x.id) + '">' + back + '</button></div>';
     }).join('');
     if (list.length > 3) html += '<button type="button" class="nova-rail-more" data-rail-more>' + (isEn() ? (list.length - 3) + ' more ›' : 'كمان ' + (list.length - 3) + ' ‹') + '</button>';
@@ -2681,26 +2728,29 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
   }
   function closeModal(refocus) {
     if (modal.hidden) return; modal.hidden = true; setInert(false);
-    if (refocus !== false) { var ch = $('novaCustChip'); if (ch && ch.offsetParent) ch.focus(); }
+    if (refocus !== false && card.offsetParent) card.focus();
   }
-  $('novaCustChip').addEventListener('click', openModal);
-  $('novaCustChipX').addEventListener('click', function () { var b = $('btnRemoveCust'); if (b) b.click(); });
+  card.addEventListener('click', openModal);
+  cardX.addEventListener('click', function () { var b = $('btnRemoveCust'); if (b) b.click(); });
   $('novaCustModalClose').addEventListener('click', function () { closeModal(); });
   modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) { e.stopPropagation(); closeModal(); } }, true);
+  document.addEventListener('keydown', function (e) {
+    if (modal.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeModal(); }
+    else if (/^F\d+$/.test(e.key)) { e.preventDefault(); e.stopPropagation(); }   // no POS shortcuts behind the history window
+  }, true);
+  function markKey(el, key) { var k = addTo(el, key, 'nx-k'); k.setAttribute('aria-hidden', 'true'); el.setAttribute('aria-keyshortcuts', key); }
   function enter() {
     if (on) return; on = true;
-    TILE_IDS.forEach(function (id) {
-      var el = $(id); if (!el) return; park(el); tiles.appendChild(el);
-      if (KEYS[id]) { var k = addTo(el, KEYS[id], 'nx-k'); k.setAttribute('aria-hidden', 'true'); el.setAttribute('aria-keyshortcuts', KEYS[id]); }
-    });
     var add = $('btnAddLoyalty');
     if (add) {
+      park(add); custTop.insertBefore(add, custTop.firstChild); markKey(add, 'F3');
       // the translator re-applies aria-label from data-nova-original-aria-label: drop both while in the rail, restore on leave
       origAddAria = add.dataset.novaOriginalAriaLabel || add.getAttribute('aria-label') || origAddAria;
       delete add.dataset.novaOriginalAriaLabel; add.removeAttribute('aria-label');
-      addTo(add, isEn() ? 'Link customer' : 'ربط عميل', 'nx-rail-label');
+      addTo(add, SVG.userAdd + '<span></span>', 'nx-rail-label'); addTo(add, '', 'nx-rail-sub');
     }
+    TILE_IDS.forEach(function (id) { var el = $(id); if (!el) return; park(el); tiles.appendChild(el); if (KEYS[id]) markKey(el, KEYS[id]); });
     var clr = $('btnClearInvoice'); if (clr) { var ic = document.createElement('span'); ic.className = 'nx-rail-add'; ic.innerHTML = SVG.trash; ic.style.display = 'contents'; clr.insertBefore(ic, clr.firstChild); }
     var hb = $('btnHeldInvoices'); if (hb) { park(hb); heldHead.appendChild(hb); }
     var sl = $('btnSaleLabels'); if (sl) { park(sl); foot.appendChild(sl); }
@@ -2712,27 +2762,26 @@ html body.nova-rail .nova-cust-chip-wrap.on{display:inline-flex;align-items:cent
     if (!on) return; on = false;
     closeModal(false);
     document.querySelectorAll('.nx-rail-add').forEach(function (n) { n.remove(); });
-    var add = $('btnAddLoyalty'); if (add) { add.classList.remove('is-on'); add.removeAttribute('aria-keyshortcuts'); setAria(add, origAddAria); if (isEn()) add.setAttribute('aria-label', 'Add or change customer'); }
-    ['btnNewSale', 'btnClearInvoice'].forEach(function (id) { var b = $(id); if (b) b.removeAttribute('aria-keyshortcuts'); });
-    ['customerSelectedBox', 'btnSaleLabels', 'btnHeldInvoices'].concat(TILE_IDS.slice().reverse()).forEach(function (id) { unpark($(id)); });
+    var add = $('btnAddLoyalty'); if (add) { setAria(add, origAddAria); if (isEn()) add.setAttribute('aria-label', 'Add or change customer'); }
+    ['btnAddLoyalty', 'btnNewSale', 'btnClearInvoice'].forEach(function (id) { var b = $(id); if (b) b.removeAttribute('aria-keyshortcuts'); });
+    ['customerSelectedBox', 'btnSaleLabels', 'btnHeldInvoices'].concat(TILE_IDS.slice().reverse(), ['btnAddLoyalty']).forEach(function (id) { unpark($(id)); });
     document.body.classList.remove('nova-rail');
-    heldBox.innerHTML = ''; chipWrap.classList.remove('on');
+    heldBox.innerHTML = ''; custTop.classList.remove('is-on');
   }
   function apply() { if (mq.matches) enter(); else leave(); }
   apply();
   if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply);
-  // keep in step with the app: held list re-render, customer attach/detach, language switch
+  // keep in step with the app: held list re-render, customer attach/detach/refill info, language switch
   function watch() {
     var hl = $('heldInvoiceList'); if (hl) new MutationObserver(renderHeld).observe(hl, { childList: true });
-    var sb = $('customerSelectedBox'); if (sb) new MutationObserver(syncCustomer).observe(sb, { attributes: true, attributeFilter: ['style'] });
-    var cn = $('custCardName'); if (cn) new MutationObserver(syncCustomer).observe(cn, { childList: true, characterData: true, subtree: true });
+    var sb = $('customerSelectedBox'); if (sb) new MutationObserver(syncCustomer).observe(sb, { attributes: true, attributeFilter: ['style', 'hidden'], childList: true, characterData: true, subtree: true });
     // body class flips for many reasons: rebuild the held rows (and lose a focused «رجّعها») only when the language changed
     new MutationObserver(function () { if (!on) return; var en = isEn(); if (en !== lastEn) { lastEn = en; renderHeld(); } syncCustomer(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { watch(); renderHeld(); syncCustomer(); }); else watch();
   window.addEventListener('load', function () { renderHeld(); syncCustomer(); });
-  window.addEventListener('storage', function (e) { if (e.key === HELD_KEY || e.key === null) renderHeld(); });
-  window.novaSaleRail = { isOn: function () { return on; }, open: openModal, close: closeModal };
+  window.addEventListener('storage', function (e) { if (e.key === HELD_KEY || e.key === null) renderHeld(); if (e.key === null || /credit/.test(e.key || '')) syncCustomer(); });
+  window.novaSaleRail = { isOn: function () { return on; }, open: openModal, close: closeModal, refresh: syncCustomer };
 })();
 </script>
 <!-- UX-P40:END -->
@@ -3674,12 +3723,13 @@ window.NovaFmt=(function(){
         if (state.mode === "CUSTOMER") {
           const normalize = window.novaNormAr || (value => value.toLowerCase());
           const q = normalize(query);
-          const phoneDigits = value => String(value ?? "").replace(/[٠-٩۰-۹]/g, d => String(d.charCodeAt(0) - (d < '۰' ? 0x660 : 0x6f0))).replace(/[^0-9]/g, "");
-          const phone = /^[+٠-٩۰-۹0-9 ()-]+$/.test(query) ? phoneDigits(query) : "";
+          const phone = /^[+٠-٩۰-۹0-9 ()-]+$/.test(query) ? custPhoneDigits(query) : "";
           const matches = DEMO_CUSTOMERS.filter(c =>
-            normalize(c.name).includes(q) || (phone && phoneDigits(c.phone).includes(phone))
+            normalize(c.name).includes(q) || (phone && custPhoneDigits(c.phone).includes(phone))
           );
-          const products = matches.length ? [] : searchProducts(query).slice(0, 40);
+          // UX-P40c: a full phone number with no customer is offered for registration, not searched as medicines (an exact barcode still wins)
+          const newPhone = !matches.length && isNewCustomerPhone(query);
+          const products = matches.length || newPhone ? [] : searchProducts(query).slice(0, 40);
           if (products.length) renderProductSuggestions(products);
           else renderCustomerSuggestions(matches);
         } else {
@@ -3687,16 +3737,83 @@ window.NovaFmt=(function(){
         }
       }
 
+      // --- UX-P40c: quick customer registration from an unknown phone number ---
+      function custPhoneDigits(value) {
+        return String(value ?? "").replace(/[٠-٩۰-۹]/g, d => String(d.charCodeAt(0) - (d < '۰' ? 0x660 : 0x6f0))).replace(/[^0-9]/g, "");
+      }
+      // a phone number = only phone characters, 9 to 15 digits, no customer with it, and not an exact product barcode
+      function isNewCustomerPhone(query) {
+        const q = String(query || "").trim();
+        if (!/^[+٠-٩۰-۹0-9 ()-]+$/.test(q)) return false;
+        const p = custPhoneDigits(q);
+        if (p.length < 9 || p.length > 15) return false;
+        if (DEMO_CUSTOMERS.some(c => custPhoneDigits(c.phone) === p)) return false;
+        return !findExactBarcodeProduct(q);
+      }
+      function openQuickRegister(query) {
+        const en = novaEn(), phone = custPhoneDigits(query);
+        const old = document.getElementById("novaQuickReg"); if (old) { if (old._close) old._close(); else old.remove(); }
+        closeSuggestions();
+        const ov = document.createElement("div");
+        ov.id = "novaQuickReg"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "novaQuickRegT");
+        ov.style.cssText = "position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:16px";
+        const inp = "width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;background:#0d1014;border:1px solid #2a3139;border-radius:8px;color:#e8eef3;font:inherit;font-size:15px";
+        ov.innerHTML = `<form id="novaQuickRegForm" novalidate style="width:min(400px,100%);box-sizing:border-box;background:#14181d;border:1px solid #343b44;border-radius:14px;padding:18px;color:#e8eef3;display:flex;flex-direction:column;gap:10px">
+          <h3 id="novaQuickRegT" style="margin:0;font-size:17px;font-weight:800">${en ? "Register new customer" : "تسجيل عميل جديد"}</h3>
+          <label for="novaQrPhone" style="font-size:13px;color:#aab1bb">${en ? "Mobile" : "الموبايل"}</label>
+          <input id="novaQrPhone" type="tel" inputmode="tel" dir="ltr" autocomplete="off" value="${escH(phone)}" style="${inp};text-align:left">
+          <label for="novaQrName" style="font-size:13px;color:#aab1bb">${en ? "Name" : "الاسم"}</label>
+          <input id="novaQrName" autocomplete="off" dir="auto" style="${inp}" placeholder="${en ? "Customer name" : "اسم العميل"}">
+          <div id="novaQrErr" role="alert" style="color:#ff8a8f;min-height:18px;font-size:13px"></div>
+          <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary" style="min-height:44px;flex:1">${en ? "Save and attach" : "حفظ وربط بالفاتورة"}</button><button type="button" class="btn btn-secondary" id="novaQrCancel" style="min-height:44px">${en ? "Cancel" : "إلغاء"}</button></div>
+        </form>`;
+        document.body.appendChild(ov);
+        const form = ov.querySelector("form"), ph = ov.querySelector("#novaQrPhone"), nm = ov.querySelector("#novaQrName"), err = ov.querySelector("#novaQrErr");
+        const close = () => { document.removeEventListener("keydown", onKey, true); ov.remove(); elements.mainSearchInput.focus(); };
+        ov._close = close;
+        function onKey(e) {
+          if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); }
+          else if (e.key === "Tab") { const f = [...ov.querySelectorAll("input,button")]; const i = f.indexOf(document.activeElement); if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && (i === -1 || i === f.length - 1)) { e.preventDefault(); f[0].focus(); } }
+          else if (/^F\d+$/.test(e.key)) { e.preventDefault(); e.stopPropagation(); }   // no POS shortcuts behind the dialog
+        }
+        document.addEventListener("keydown", onKey, true);
+        ov.addEventListener("mousedown", e => { if (e.target === ov) close(); });
+        ov.querySelector("#novaQrCancel").addEventListener("click", close);
+        form.addEventListener("submit", e => {
+          e.preventDefault();
+          const p = custPhoneDigits(ph.value), name = nm.value.trim();
+          if (p.length < 9 || p.length > 15) { err.textContent = en ? "Mobile number must be 9 to 15 digits." : "رقم الموبايل من 9 إلى 15 رقم."; ph.focus(); return; }
+          if (!name) { err.textContent = en ? "Type the customer's name." : "اكتب اسم العميل."; nm.focus(); return; }
+          let customer = DEMO_CUSTOMERS.find(c => custPhoneDigits(c.phone) === p);
+          if (!customer) {
+            customer = { id: "DEMO-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), name, phone: p, tier: "جديد", points: 0, visits: 0, pastInvoices: [] };
+            DEMO_CUSTOMERS.push(customer);
+            if (!saveDemoCustomers()) { DEMO_CUSTOMERS.pop(); err.textContent = en ? "Could not save on this browser." : "تعذر حفظ العميل على هذا المتصفح."; return; }
+          }
+          close();
+          attachCustomer(customer);
+          setSearchMode("PRODUCT");
+          showToast((en ? "Customer registered and attached: " : "تم تسجيل العميل وربطه بالفاتورة: ") + customer.name);
+        });
+        nm.focus();
+      }
+
       function renderCustomerSuggestions(matches) {
         elements.suggestionsBox.dataset.mode = "CUSTOMER";
         state.suggestions = matches;
         state.selectedIndex = matches.length === 1 ? 0 : -1;
         if (matches.length === 0) {
-          elements.suggestionsBox.innerHTML = `
+          const en = novaEn(), q = state.searchQuery;
+          // UX-P40c: register only from a phone number (names repeat, numbers do not)
+          elements.suggestionsBox.innerHTML = isNewCustomerPhone(q) ? `
+            <div class="nova-cust-new" style="padding:12px; text-align:center; font-size:13px;">
+              <div style="color:var(--text-main,#e8eef3);font-weight:700">${en ? "Number" : "الرقم"} <bdi dir="ltr">${escH(custPhoneDigits(q))}</bdi> ${en ? "is not registered" : "مش مسجل"}</div>
+              <div><button type="button" class="btn btn-primary" id="novaCustRegBtn" style="min-height:44px;margin-top:8px">${en ? "Register" : "سجّله"}</button></div>
+              <div style="color:var(--text-dim);font-size:11px;margin-top:6px">${en ? "Enter = register · clear the box and Enter = cash sale" : "Enter = تسجيل · امسح الخانة وEnter = بيع نقدي"}</div>
+            </div>` : `
             <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
-              No customers found. Press <strong>Enter</strong> to skip and switch to Product Scan.
-            </div>
-          `;
+              ${en ? "No customer with this name. Type their mobile number to register them, or clear the box and press Enter for a cash sale." : "مفيش عميل بالاسم ده. اكتب رقم موبايله عشان تسجّله، أو امسح الخانة واضغط Enter لبيع نقدي."}
+            </div>`;
           elements.suggestionsBox.classList.add("open");
           return;
         }
@@ -3821,6 +3938,12 @@ window.NovaFmt=(function(){
             }
           }
 
+          // UX-P40c: a full phone number with no customer opens the quick registration
+          if (state.mode === "CUSTOMER" && (elements.suggestionsBox.dataset.mode !== "CUSTOMER" || !state.suggestions.length) && isNewCustomerPhone(query)) {
+            openQuickRegister(query);
+            return;
+          }
+
           // When a medicine name is typed in customer mode with no matching customer,
           // preserve the query and continue the search as a product instead of trapping the cashier.
           if (state.mode === "CUSTOMER" && (elements.suggestionsBox.dataset.mode !== "CUSTOMER" || !state.suggestions.length)) {
@@ -3899,6 +4022,7 @@ window.NovaFmt=(function(){
       // --- CUSTOMER PROFILE ACTIONS ---
       function attachCustomer(customer) {
         state.attachedCustomer = customer;
+        window.novaAttachedCustomer = customer;   // UX-P40c: the side-rail customer card reads the debt by customer id
         state.customerGateSkipped = true;
         elements.customerEmptyBox.style.display = "none";
         elements.customerSelectedBox.style.display = "flex";
@@ -3938,6 +4062,7 @@ window.NovaFmt=(function(){
 
       function detachCustomer() {
         state.attachedCustomer = null;
+        window.novaAttachedCustomer = null;
         state.customerGateSkipped = true;
         elements.customerEmptyBox.style.display = "flex";
         elements.customerSelectedBox.style.display = "none";
@@ -5376,9 +5501,10 @@ window.NovaFmt=(function(){
 
         // Click on Autocomplete Suggestion
         elements.suggestionsBox.addEventListener("mousedown", e => {
-          if (e.target.closest(".suggestion-item, #novaShortageBtn")) e.preventDefault();
+          if (e.target.closest(".suggestion-item, #novaShortageBtn, #novaCustRegBtn")) e.preventDefault();
         });
         elements.suggestionsBox.addEventListener("click", e => {
+          if (e.target.closest("#novaCustRegBtn")) { openQuickRegister(state.searchQuery); return; }
           if (e.target.closest("#novaShortageBtn")) {
             const n = window.novaShortages.add(state.searchQuery, 1);
             if (n) showToast("تم تسجيل النقص: " + state.searchQuery + (n > 1 ? " (" + n + " مرات)" : ""));
@@ -6518,7 +6644,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   'لا توجد نتائج مطابقة':'No matching results',
   'F1 اختصارات':'F1 Shortcuts','امسح الباركود أو اكتب الاسم':'Scan the barcode or type the name','Enter لإضافة':'Enter to add','Enter للدفع':'Enter to pay','إخفاء':'Hide','إخفاء النصائح':'Hide tips','اضغط لنسخ رقم الفاتورة':'Tap to copy invoice number','رقم عملية البيع، اضغط للنسخ':'Sale number, tap to copy','إخفاء نصائح البدء':'Hide getting-started tips','عرض اختصارات الكيبورد (F1)':'Show keyboard shortcuts (F1)',
   'الباقي:':'Change:','عميل عابر':'Walk-in customer','فاتورة عميل عابر. تقدر تربط عميل في أي وقت.':'Walk-in invoice. You can attach a customer at any time.',
-  'ربط عميل (F3)':'Attach customer (F3)','مشتريات سابقة':'Past purchases','آخر شراء:':'Last purchase:','أدوية مزمنة:':'Chronic medicines:','إعادة صرف آخر فاتورة':'Refill last invoice','رقم العميل قبل الدفع':'Customer number before payment',
+  'ربط عميل (F3)':'Attach customer (F3)','تسجيل عميل (F3)':'Register customer (F3)','مشتريات سابقة':'Past purchases','آخر شراء:':'Last purchase:','أدوية مزمنة:':'Chronic medicines:','إعادة صرف آخر فاتورة':'Refill last invoice','رقم العميل قبل الدفع':'Customer number before payment',
   'سجّل رقم العميل، أو اضغط Enter بدون رقم للتخطي.':'Enter the customer number, or press Enter with no number to skip.',
   'متابعة بالرقم':'Continue with number','تخطي · عميل نقدي':'Skip · cash customer','رجوع للفاتورة':'Back to invoice',
   'إضافة رقم العميل (اختياري)':'Add customer number (optional)','تعليق':'Hold','المجموع الفرعي (':'Subtotal (',
