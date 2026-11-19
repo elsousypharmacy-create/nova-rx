@@ -128,9 +128,9 @@ const call = async (env, method = 'GET', auth = {}) => {
 };
 const kvm = new Map(); const KV = { async get(k) { return kvm.has(k) ? kvm.get(k) : null; }, async put(k, v) { kvm.set(k, v); }, async delete(k) { kvm.delete(k); } };
 // SEC-01: staging needs a staff session too (logged out => 401, no data)
-{ const [s0, j0] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }); assert.equal(s0, 401); assert.equal(j0.data, undefined); }
+{ const [s0, j0] = await call({ DB: D1, KV, NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1' }); assert.equal(s0, 401); assert.equal(j0.data, undefined); }
 const STAFF = (await staffBearer(KV, { user: 'kpi.test', role: 'manager' })).headers;
-let [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }, 'GET', STAFF);
+let [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1' }, 'GET', STAFF);
 assert.equal(s, 200); assert.equal(j.ok, true);
 const byId = Object.fromEntries(j.data.events.map((e) => [e.c + ':' + e.k, e]));
 assert.equal(byId['wa_1:in'].m, 'image'); assert.equal(byId['wa_2:in'].m, 'audio');
@@ -139,10 +139,10 @@ const body = JSON.stringify(j);
 assert.ok(!body.includes('روشتة') && !body.includes('تمام يا فندم'), 'message text never returned');
 // production-like env without the PIN stays gated; POST is not a route
 [s, j] = await call({ DB: D1, KV, NOVA_ENV: 'production', NOVA_API_PIN: 'pin-123456789012' }); assert.equal(s, 401); assert.equal(j.data, undefined);
-[s] = await call({ DB: D1, KV, NOVA_ENV: 'staging' }, 'POST'); assert.equal(s, 405);
+[s] = await call({ DB: D1, KV, NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1' }, 'POST'); assert.equal(s, 405);
 // an old DB without wa_send_log still answers (names fall back to the assignee)
 const D1old = { prepare: (sql) => { if (/wa_send_log/.test(sql)) throw new Error('no such table'); return D1.prepare(sql); } };
-[s, j] = await call({ DB: D1old, KV, NOVA_ENV: 'staging' }, 'GET', STAFF); assert.equal(s, 200);
+[s, j] = await call({ DB: D1old, KV, NOVA_ENV: 'staging', NOVA_STAFF_GATE: '1' }, 'GET', STAFF); assert.equal(s, 200);
 assert.equal(j.data.events.find((e) => e.c === 'wa_2' && e.k === 'pharm').s, undefined);
 
 // --- shared block copied verbatim into the UI ---
