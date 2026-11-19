@@ -6227,14 +6227,16 @@
    "brief": "S1-07 upgraded. CRITICAL: preview /whatsapp currently opens with NO login and lists real customer conversations (names and messages). Replace the shared/removed lock with a real staff session: opening /, /whatsapp, /?app=whatsapp requires a signed-in staff session (Arabic RTL login reusing auth-ui.js; device trust + 8h session per auth-local.js; re-auth for export/account changes). History/send APIs (backend/src/inbox-history.js and send guards) must reject requests without a valid staff session (may accept X-Nova-Pin during a short documented transition). A logged-out user sees no customer threads and cannot call history. Roles: cashier can sell; only owner/manager manage accounts (auth-permissions.js + server enforcement). When novaBackend.enabled is off, a local NovaAuth session is enough so the pharmacist can work offline after first login on that device. First-run: if no accounts exist, owner creates the first account (no hardcoded passwords/PINs). Do not bring back the old PIN strip. Do not auto-reply; composer respects NOVA_INBOX_SEND + 24h window. Tests: unit + Playwright at 390x844 on / and /whatsapp: no chats and no sale finalize without session; cashier cannot open account management; history API returns 401 without session.\n\nContext: NOVA Rx (elsousypharmacy-create/nova-rx) is being made sale-ready for other pharmacies (owner Ahmed, Egyptian pharmacist; plan in docs or PR history: sale-ready plan 19 Nov 2026). Live preview: https://nova-rx-preview.elsousypharmacy.workers.dev . Measured on preview at 390x844: main HTML 1.19 MB decoded (850 KB inline JS + 257 KB inline CSS), LCP 3.6 s on 4G+4x CPU, /emergency/stock.json 499 KB fetched on every open, WhatsApp link-names 7.8 s, conversations polled every ~4.6 s, purchases stock 6.2 s then 403, CLS 0.23 on purchases, sw.js?v=6 aborted on first load. Inspect origin/main first and cite real file:line in the PR body. Read AGENTS.md and CURRENT.md first.\n\nPREVIEW ARTIFACT: if you change index.html, sw.js, purchases.*, whatsapp SPA or any asset served by the preview Worker, then AFTER merging the latest origin/main build a NEW worker/live/nova-rx-preview.<task-id-lowercase>.js from the newest existing worker/live/nova-rx-preview.*.js (check tools/preview_auto_deploy.py for how 'newest' is chosen; if PERF-07 has landed follow its new build-stamp rule) with tools/build-worker-artifact.mjs / tools/build-preview-refresh.mjs the way recent pur-0x artifacts were built, and add tests/unit/artifact-<task-id-lowercase>.check.mjs. Never modify existing artifacts. If origin/main gains a newer artifact before merge, merge main again and rebuild yours so the preview never loses someone else's change. Update CURRENT.md only if project state changes. Capture 390x844 (and 1280x800 where relevant) Playwright screenshots of changed screens with FAKE data into qa/screens/<TASK-ID>/ and list them in the PR body. Keep ALL existing CI green.\n\nHARD RULES (owner Ahmed, non-negotiable): Do not print, log, or commit secret values, tokens or PINs (name them only). Do not roll or regenerate any token. Nothing that costs money; do not enable R2 or paid plans. Do not touch the pharmacy repo, GAS, WA_TOKEN, or WhatsApp Business settings. No WhatsApp sends of any kind (no test sends); the pharmacy bot must never auto-reply. Never call /register or /deregister and do not migrate the number. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). No production or staging deploy; do not run deploy workflows, wrangler deploy or the Cloudflare API. Do not change repo visibility, branch protection, or first-time-contributor approval settings. Do not edit .nova/cloud-queue.json or the DISABLE_SLOT_B variable. Do not touch PR #566 or the pharmacy repo. Supplier work is read-only; no real supplier cart/order writes. Tests use fake/local data only; Playwright must block non-GET / live writes. Customer data and real-chat screenshots must never be committed (use fake fixtures). Preserve Arabic RTL; mobile 390x844 first. Do not merge (the scheduler squash-merges on green CI; no admin bypass). Do not start held tasks.",
    "acceptance": "Unauthenticated preview shows login only and APIs return 401; staff login works offline-capable; roles enforced client+server; tests; CI green; new artifact. No deploy.",
    "after": [],
-   "status": "pending",
+   "status": "running",
    "attempts": 0,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
    "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "opus",
    "max_turns": 80,
-   "pin_slot": "A"
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-19T17:30:38+00:00"
   },
   {
    "id": "PERF-02",
@@ -6440,7 +6442,7 @@
    "not_before": "2026-11-21T01:00:00+00:00"
   }
  ],
- "updated": "2026-11-19T17:28:45+00:00",
+ "updated": "2026-11-19T17:30:38+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
