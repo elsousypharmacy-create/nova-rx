@@ -6205,16 +6205,16 @@
    "after": [
     "PUR-04"
    ],
-   "status": "pr_open",
+   "status": "fixing",
    "attempts": 0,
-   "fix_attempts": 0,
+   "fix_attempts": 1,
    "source": "owner-purchases-2026-11-19",
    "note": "Owner Ahmed 2026-11-19 19:49 Asia/Riyadh: «اتعامل ي جروك ارجع ليا بالمنتج مظبوط عشان نعرف نبيعه». Nova decision: keep the needs list behind the dashboard PIN on preview (do NOT add NOVA_STOCK_SOURCE_PIN; do not touch Cloudflare secrets, pharmacy repo, or GAS). Slot A (ahmed m), Sonnet, execute. No prod/staging deploy.",
    "model": "sonnet",
    "max_turns": 60,
    "pin_slot": "A",
    "slot": "A",
-   "dispatched_at": "2026-11-19T16:54:24+00:00",
+   "dispatched_at": "2026-11-19T17:13:08+00:00",
    "pr": 570,
    "ci_dispatched": {
     "sha": "57602460e64df1aea97f4abcd2e63ce654891492",
@@ -6224,7 +6224,7 @@
    }
   }
  ],
- "updated": "2026-11-19T17:02:54+00:00",
+ "updated": "2026-11-19T17:13:08+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
