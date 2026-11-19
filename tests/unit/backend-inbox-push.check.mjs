@@ -7,6 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { applyMigrations, loadMigrationsFromDir } from '../../backend/src/db/migrate.js';
 import { handle } from '../../backend/src/index.js';
+import { staffBearer } from './helpers/staff-session.mjs';
 import { pushPayload, encryptPayload, vapidAuth, cleanSubscription, b64u, unb64u, pushConfigured, MAX_SUBS, SUB_PREFIX } from '../../backend/src/inbox-push.js';
 
 let n = 0; const ok = (name) => { n++; console.log('ok', name); };
@@ -100,7 +101,10 @@ const sent = []; let pushStatus = 201;
 const NOVA_PUSH_FETCH = async (u, o) => { sent.push({ u, o }); if (pushStatus === 'throw') throw new Error('net'); return { status: pushStatus }; };
 const TOK = 'a'.repeat(40);
 const env = { NOVA_ENV: 'staging', NOVA_WA_BRIDGE_INTAKE: '1', NOVA_WA_BRIDGE_DIRECT: '1', NOVA_WA_BRIDGE_TOKEN: TOK, DB: D1, KV, VAPID_PUBLIC_KEY: VPUB, VAPID_PRIVATE_KEY: vjwk.d, NOVA_PUSH_FETCH };
-const api = async (path, body, e = env) => { const r = await handle(new Request('https://x.test/api/v1/inbox/history/push/' + path, body === undefined ? {} : { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }), e); return [r.status, await r.json()]; };
+// SEC-01: push routes share the history gate, so every call carries a FAKE staff session; a logged-out call is 401.
+const STAFF = (await staffBearer(KV, { user: 'push.test', role: 'cashier' })).headers;
+const api = async (path, body, e = env, auth = STAFF) => { const r = await handle(new Request('https://x.test/api/v1/inbox/history/push/' + path, body === undefined ? { headers: { ...auth } } : { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...auth } }), e); return [r.status, await r.json()]; };
+{ const [s0, j0] = await api('key', undefined, env, {}); assert.equal(s0, 401); assert.equal(j0.publicKey, undefined); }
 const subs = () => [...kvm.keys()].filter((k) => k.startsWith(SUB_PREFIX));
 {
   let [s, j] = await api('key');
@@ -123,9 +127,11 @@ const subs = () => [...kvm.keys()].filter((k) => k.startsWith(SUB_PREFIX));
   assert.deepEqual([s, j.subscribed, subs().length], [200, false, 1]);
   [s, j] = await api('unsubscribe', {});
   assert.equal(s, 400);
-  // PIN-gated outside staging/preview
+  // SEC-01: logged out is 401 on every env; a staff session opens it on production too
+  [s, j] = await api('key', undefined, { ...env, NOVA_ENV: 'production' }, {});
+  assert.equal(s, 401, String(s));
   [s, j] = await api('key', undefined, { ...env, NOVA_ENV: 'production' });
-  assert.ok(s === 503 || s === 401, String(s));
+  assert.equal(s, 200, String(s));
   // per-tenant cap
   for (let i = 0; i < MAX_SUBS + 2; i++) await api('subscribe', { subscription: SUB('https://fcm.googleapis.com/fcm/send/cap' + i) });
   assert.equal(subs().length, MAX_SUBS);
@@ -191,6 +197,7 @@ const item = (o) => ({ id: 'wamid.p1', from: '201001', timestamp: String(Math.fl
 {
   const rows = () => db.prepare('SELECT * FROM push_subscriptions').all();
   db.prepare('DELETE FROM push_subscriptions').run(); kvm.clear(); sent.length = 0; pushStatus = 201;
+  Object.assign(STAFF, (await staffBearer(KV, { user: 'push.test', role: 'cashier' })).headers); // KV was cleared: fresh fake session
   let [s, j] = await api('subscribe', { subscription: SUB() });
   assert.deepEqual([s, j.subscribed, rows().length], [200, true, 1]);
   assert.equal(rows()[0].endpoint, SUB().endpoint); assert.ok(!rows()[0].id.includes('abc123'), 'id is a hash');

@@ -39,7 +39,10 @@ await t('cashier export is blocked, no download, and the denial is logged and sh
   assert.equal(downloaded, false); assert.equal(await page.locator('#novaReauth').count(), 0);
   const log = await page.evaluate(() => novaPerms.denied());
   assert.equal(log.length, 1); assert.equal(log[0].action, 'data.export'); assert.equal(log[0].role, 'cashier');
-  await openTab('settings'); await page.waitForSelector('#novaPermDenied');
+  // SEC-01 / S1-07: a cashier gets no account management (no matrix, no denial log); the owner sees the logged denial
+  await openTab('settings'); await page.waitForSelector('#novaAuthNoManage', { state: 'attached' });
+  assert.equal(await page.locator('#novaPermDenied, #novaPermMatrix, #novaNewOk, [data-revoke]').count(), 0);
+  await page.evaluate(() => novaAuth.signIn('Ahmed', 'secret1')); await openTab('invoices'); await openTab('settings'); await page.waitForSelector('#novaPermDenied', { state: 'attached' });
   assert.match(await page.locator('#novaPermDenied').innerText(), /Sara.*(cashier|الكاشير).*(data\.export|تصدير البيانات)/);
 });
 await t('manager sees no owner/manager role to grant; owner does', async () => {

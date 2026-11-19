@@ -35,7 +35,7 @@ assert.equal(s, 503); assert.equal(j.conversations, undefined);
 [s, j] = await call('conversations', 'short', { DB: D1, KV, NOVA_API_PIN: 'short' });
 assert.equal(s, 503);
 // no PIN / wrong PIN => 401 and no data
-[s, j] = await call('conversations', null); assert.equal(s, 401); assert.equal(j.code, 'PIN_REQUIRED'); assert.equal(j.conversations, undefined);
+[s, j] = await call('conversations', null); assert.equal(s, 401); assert.equal(j.code, 'AUTH_REQUIRED'); assert.equal(j.conversations, undefined);
 [s, j] = await call('conversation?id=wa_201', 'wrong-pin-0000000'); assert.equal(s, 401); assert.equal(j.code, 'PIN_INVALID'); assert.equal(j.conversation, undefined);
 assert.ok(!JSON.stringify(j).includes('بنادول'));
 // right PIN => list of own tenant only, newest first

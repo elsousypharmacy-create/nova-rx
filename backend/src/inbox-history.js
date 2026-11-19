@@ -1,11 +1,11 @@
-// FIX46: read-only WhatsApp chat history for the in-app conversations screen.
-// Guarded by the pharmacy PIN (X-Nova-Pin == env.NOVA_API_PIN, >= 12 chars), independent of NOVA_AUTH,
-// so the public preview never gets chat data without the PIN. SELECT only: never writes, deletes or sends.
+// FIX46: read-only WhatsApp chat history for the in-app conversations screen. SELECT only: never writes, deletes or sends.
+// SEC-01 / S1-07 (2026-11-19): every /inbox/history/* route (read, send, media, link-names, push) needs a signed-in STAFF
+// session (Authorization: Bearer <access token> from POST /api/v1/auth/login, auth/auth.js) on EVERY NOVA_ENV, staging and
+// preview included. The UX400 "pinless on staging/preview" opening is closed: a logged-out caller gets 401 and no chat data.
+// Transition: until PIN_TRANSITION_UNTIL the old pharmacy PIN (X-Nova-Pin == env.NOVA_API_PIN, >= 12 chars) is still accepted
+// so an already-open device keeps working while staff accounts are created; after that date only a staff session opens it.
 // Failed PIN attempts are rate limited per client IP in KV (10 per 15 minutes).
-// UX400 (owner approved 2026-11-15): on the STAGING/PREVIEW backend only (NOVA_ENV 'staging' or 'preview') the
-// read and send routes no longer require the PIN; the owner accepted that anyone with the preview link can read
-// and reply. Every other NOVA_ENV (production, dev, unset, anything unknown) stays PIN-gated exactly as before.
-import { sha256Hex } from './auth/auth.js';
+import { sha256Hex, authenticate } from './auth/auth.js';
 import { waIsHandoff, waTopics } from './wa-metrics.js';
 import { mediaKind } from './wa-kpis.js';
 import { mediaOfRow, mediaResponse } from './inbox-media.js';
@@ -36,26 +36,43 @@ async function safeEq(a, b) {
   return d === 0 && x.length === y.length;
 }
 
-const PINLESS_ENVS = Object.freeze(['staging', 'preview']);
-export const historyPinless = (env) => !!env && PINLESS_ENVS.includes(String(env.NOVA_ENV || ''));
+// SEC-01: the old pharmacy PIN is accepted only during this documented transition (UTC end of day). Afterwards: staff session only.
+export const PIN_TRANSITION_UNTIL = '2026-12-31T23:59:59Z';
+export const pinTransitionOpen = (nowMs = Date.now()) => nowMs <= Date.parse(PIN_TRANSITION_UNTIL);
+const hasBearer = (request) => /^Bearer\s+\S/.test(request.headers.get('Authorization') || '');
 
-export async function checkPin(request, env) {
-  if (!env || !env.DB) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
-  if (historyPinless(env)) return null;
+// Returns { session } (staff session, or null when the transition PIN opened it) or { bad: {status, code, message_ar} }.
+export async function historyAccess(request, env, opts = {}) {
+  if (!env || !env.DB) return { bad: { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' } };
+  if (hasBearer(request)) {
+    if (!env.KV) return { bad: { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' } };
+    let a;
+    try { a = await authenticate(request, env); } catch { a = { fail: { status: 401, code: 'AUTH_EXPIRED', message_ar: 'انتهت الجلسة. سجّل الدخول مرة أخرى.' } }; }
+    if (a.fail) return { bad: { status: 401, code: a.fail.code, message_ar: a.fail.message_ar } };
+    return { session: a.session };
+  }
+  const given = request.headers.get('X-Nova-Pin') || '';
+  if (!given || !pinTransitionOpen(opts.now ? opts.now() : Date.now())) {
+    return { bad: { status: 401, code: 'AUTH_REQUIRED', message_ar: 'سجّل الدخول بحساب الصيدلية لعرض المحادثات.' } };
+  }
   const pin = env.NOVA_API_PIN;
-  if (!pin || String(pin).length < 12) return { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' };
+  if (!pin || String(pin).length < 12) return { bad: { status: 503, code: 'HISTORY_NOT_CONFIGURED', message_ar: 'سجل المحادثات غير مفعّل.' } };
   const ip = request.headers.get('CF-Connecting-IP') || 'anon';
   const key = 'histfail:' + (await sha256Hex(ip)).slice(0, 32);
   let fails = 0;
   try { fails = Number(env.KV ? await env.KV.get(key) : 0) || 0; } catch { fails = 0; }
-  if (fails >= FAIL_MAX) return { status: 429, code: 'RATE_LIMITED', message_ar: 'محاولات كثيرة. حاول بعد ربع ساعة.' };
-  const given = request.headers.get('X-Nova-Pin') || '';
-  if (!given) return { status: 401, code: 'PIN_REQUIRED', message_ar: 'اكتب رقم PIN الصيدلية لعرض المحادثات.' };
+  if (fails >= FAIL_MAX) return { bad: { status: 429, code: 'RATE_LIMITED', message_ar: 'محاولات كثيرة. حاول بعد ربع ساعة.' } };
   if (!(await safeEq(given, pin))) {
     try { if (env.KV) await env.KV.put(key, String(fails + 1), { expirationTtl: FAIL_WINDOW_S }); } catch { /* fail open on KV errors */ }
-    return { status: 401, code: 'PIN_INVALID', message_ar: 'رقم PIN غير صحيح.' };
+    return { bad: { status: 401, code: 'PIN_INVALID', message_ar: 'رقم PIN غير صحيح.' } };
   }
-  return null;
+  return { session: null };
+}
+
+// Kept for the routes that only need allow/deny: null when allowed, otherwise {status, code, message_ar}.
+export async function checkPin(request, env, opts) {
+  const r = await historyAccess(request, env, opts);
+  return r.bad || null;
 }
 
 export async function listHistory(db, t) {
