@@ -108,7 +108,7 @@ try {
     assert.ok((await page.getByRole('dialog').innerText()).includes('تصحيح عد العبوات'));
     await page.getByRole('dialog').getByRole('button', { name: 'إغلاق', exact: true }).click();
     await page.goto(origin + '/purchases.html');
-    await page.locator('.tools-menu summary').click();
+    await page.evaluate(() => { const d = document.getElementById('draftsDialog'); if (d && !d.open) d.showModal(); });
     await page.locator('#openPo').click();
     await page.getByRole('link', { name: 'تفاصيل الطلبية وفواتير الاستلام' }).click();
     await page.getByRole('dialog', { name: 'الطلبية PO-1', exact: true }).waitFor();
