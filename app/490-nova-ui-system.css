@@ -19,7 +19,7 @@ html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.
 html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.secondary,a.secondary,.rcv-btn:not(.primary)):not(.close):not(.row-action):not(.chip):not(:disabled):hover{background:var(--ui-sec-h)!important;border-color:var(--ui-focus)!important;color:#fff!important}
 html body main:not(:has(#rows td.empty)) .controls #load{background:var(--ui-sec)!important;border-color:var(--ui-sec-b)!important;color:var(--ui-sec-t)!important;font-weight:700!important}
 /* sizes: page-header actions 44, panel toolbars 40 */
-html body :is(#novaPageView .nova-page-header,.app>main .controls) :is(button:not(.info),a.secondary,input,.nova-kebab>summary,.tools-menu>summary){height:var(--ui-h)!important;min-height:var(--ui-h)!important}
+html body :is(#novaPageView .nova-page-header,.app>main .controls) :is(button:not(.info):not(.nx-i),a.secondary,input,.nova-kebab>summary,.tools-menu>summary){height:var(--ui-h)!important;min-height:var(--ui-h)!important}
 html body :is(#novaPageView .nova-page-header,.app>main .controls) :is(.nova-kebab>summary,.tools-menu>summary){width:var(--ui-h)!important}
 html body .app>main .panel-tools :is(#search,#openSettings,.cover-btn){height:var(--ui-h-md)!important;min-height:var(--ui-h-md)!important}
 html body .app>main .panel-tools .mode-segment button{height:var(--ui-h-md)!important;min-height:var(--ui-h-md)!important}

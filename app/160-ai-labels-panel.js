@@ -1,6 +1,7 @@
 
 (()=>{const $=id=>document.getElementById(id),panel=$('novaAiPanel'),status=$('novaAiStatus'),table=$('novaAiTable'),tbody=table.querySelector('tbody');
 $('novaAiLaunch').onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open');{const sl=document.getElementById('btnSaleLabels');if(sl)sl.onclick=()=>document.getElementById('novaLabelsPanel').classList.add('open')}$('novaAiClose').onclick=()=>panel.classList.remove('open');
+$('novaAiFiles').onchange=()=>{const n=($('novaAiFiles').files||[]).length,c=$('novaAiFileCount');if(c)c.textContent=n===0?'لم يتم اختيار صور':n===1?'تم اختيار صورة واحدة':n===2?'تم اختيار صورتين':'تم اختيار '+n+' صور'};
 function field(v){const input=document.createElement('input');input.value=v==null?'':String(v);return input}
 $('novaAiRun').onclick=async()=>{
 const files=Array.from($('novaAiFiles').files||[]);

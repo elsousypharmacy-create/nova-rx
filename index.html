@@ -580,17 +580,17 @@ window.NovaFmt=(function(){
 <button id="novaAiLaunch" type="button" aria-label="طباعة استيكرات الأدوية">✦ استيكرات الأدوية</button>
 <section id="novaAiPanel" role="dialog" aria-modal="true" aria-label="مراجعة فاتورة مشتريات بالذكاء الاصطناعي">
 <div class="ai-sheet">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3)"><h3 style="margin:0">✦ قراءة فواتير المشتريات</h3><button type="button" id="novaAiClose">إغلاق ✕</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3)"><h3 style="margin:0">✦ قراءة فواتير المشتريات</h3><button type="button" id="novaAiClose" class="rcv-btn sm">إغلاق ✕</button></div>
 <p class="ai-note">ارفع صور فاتورة أو أكثر (حد أقصى 4 صور، 4 ميجابايت للصورة). النتائج مسودة قابلة للتعديل فقط؛ لا يوجد ترحيل للمخزون أو اعتماد تلقائي.</p>
-<input id="novaAiFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-<button id="novaAiRun" type="button" style="background:#2563eb;color:#fff;margin:10px 0">تحليل الفاتورة</button>
+<div class="ai-file-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0"><label for="novaAiFiles" class="rcv-btn">اختَر صور الفاتورة<input id="novaAiFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden></label><span id="novaAiFileCount" class="ai-note">لم يتم اختيار صور</span></div>
+<button id="novaAiRun" type="button" class="rcv-btn primary" style="margin:6px 0">تحليل الفاتورة</button>
 <p id="novaAiStatus" role="status" class="ai-note"></p>
 <div style="overflow-x:auto"><table id="novaAiTable" hidden><thead><tr><th>الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الخصم</th><th>التشغيلة</th><th>الصلاحية</th><th>ملاحظات</th></tr></thead><tbody></tbody></table></div>
 <p id="novaAiSupplier" class="ai-note"></p>
 <button id="novaAiExport" type="button" hidden>تنزيل CSV للمراجعة</button>
 <p class="ai-note">راجع كل خانة مقابل الفاتورة الأصلية. الخانات غير المقروءة تُترك فارغة. لا تربط أصنافًا أو تنشئ QR تلقائيًا قبل تأكيدها.</p>
 </div></section>
-<script src="/assets/app-160-ai-labels-panel.2eb6b7b733.js"></script>
+<script src="/assets/app-160-ai-labels-panel.d82dac5e80.js"></script>
 <link rel="stylesheet" href="/assets/app-170-inventory-chips.7e676e1756.css">
 <link rel="stylesheet" href="/assets/app-180-sticker-studio.43b2e8493e.css">
 <section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="استيكرات الأدوية">
@@ -676,15 +676,15 @@ window.NovaFmt=(function(){
 
 <script id="ux-p37-inv-per">document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-inv-per]');if(!b)return;window.__novaInvPer=b.getAttribute('data-inv-per');var t=document.querySelector('.nova-tab[data-page=invoices]');if(t)t.click();var nb=document.querySelector('[data-inv-per="'+window.__novaInvPer+'"]');if(nb)nb.focus();});</script>
 <script id="ux-p38-settings-sections" src="/assets/app-470-ux-p38-settings-sections.764222a9a7.js"></script>
-<link rel="stylesheet" id="ux-p30-receiving" href="/assets/app-480-ux-p30-receiving.abb75b55d2.css">
-<link rel="stylesheet" id="nova-ui-system" href="/assets/app-490-nova-ui-system.d5d3ea1ae8.css">
-<script src="/assets/app-500-receiving.ad85a922f6.js"></script>
+<link rel="stylesheet" id="ux-p30-receiving" href="/assets/app-480-ux-p30-receiving.8de0a3b055.css">
+<link rel="stylesheet" id="nova-ui-system" href="/assets/app-490-nova-ui-system.df5f00b027.css">
+<script src="/assets/app-500-receiving.27044c9397.js"></script>
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
 <link rel="stylesheet" id="ux206-mobile-cart-row" href="/assets/app-510-ux206-mobile-cart-row.36fb86d30c.css">
-<link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.5258b55ef3.css">
+<link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.4b597b7814.css">
 <script id="NOVA_INFO_TIPS" src="/assets/app-530-nova-info-tips.7e85f17416.js"></script>
 </html>
 

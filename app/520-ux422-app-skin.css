@@ -206,8 +206,8 @@ html body .nova-nav .nova-ops:has(.nova-tab.active)>summary{background:#1d3340!i
 }
 /* UX-P17 explanatory text -> small "i" with a tooltip (source text stays in the DOM, visually hidden, so screen readers and tests still see it) */
 .nx-src{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:0!important;padding:0!important;border:0!important}
-.nx-i{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;justify-content:center;width:20px!important;height:20px!important;min-width:0!important;min-height:0!important;padding:0!important;margin-inline:8px 0;vertical-align:middle;border:1px solid #55616d;border-radius:50%;color:#a4adb7;font:italic 700 12px/1 Georgia,"Times New Roman",serif;cursor:help;-webkit-tap-highlight-color:transparent}
-html body .nx-i,html body #novaPageView .nx-i{width:20px!important;height:20px!important;min-width:0!important;min-height:0!important;padding:0!important}
+.nx-i{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:0!important;margin-inline:8px 0;vertical-align:middle;border:1px solid #55616d;border-radius:50%;color:#a4adb7;font:italic 700 13px/1 Georgia,"Times New Roman",serif;cursor:help;-webkit-tap-highlight-color:transparent;flex:none}
+html body button.nx-i,html body #novaPageView button.nx-i,html body #novaPageView .nova-page-header button.nx-i{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:0!important;border-radius:50%!important}
 h1:has(+.nx-i),h2:has(+.nx-i),h3:has(+.nx-i),h4:has(+.nx-i){display:inline-block}
 .nx-i:hover,.nx-i:focus-visible{color:#fff;border-color:#76b8d5;background:#1d3340}
 .nx-i:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
