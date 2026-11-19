@@ -11,11 +11,11 @@
    "after": [
     "SEC-01"
    ],
-   "status": "pr_open",
+   "status": "hold",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
-   "note": "HOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "note": "HOLD 22:05: moved to Gemini (continues from saved/PERF-02-claude); PR #576 closed.\n\nHOLD 2026-11-19 22:00 Riyadh, owner Ahmed: stop Claude implementation to save quota (Claude A 91% weekly). Implementation moved to Gemini agy-a/agy-b; Claude only reviews/merges Gemini PRs.\n\nOwner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
    "model": "opus",
    "max_turns": 80,
    "pin_slot": "A",
