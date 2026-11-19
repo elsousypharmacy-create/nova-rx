@@ -10,7 +10,9 @@ try{
  await context.addInitScript(()=>{localStorage.setItem('novaApiPin','test-pin');localStorage.setItem('novaPurchasePrefsV1',JSON.stringify({days:21,level:'ideal',suppliers:['aumet'],aumetSellers:['one','two']}));});
  await context.route('**/api/**',async route=>{
   const path=new URL(route.request().url()).pathname;let data;
-  if(path==='/api/purchases/stock')data={ok:true,schemaVersion:1,sourceUpdatedAt:stamp,items:stock};
+  if(path==='/api/purchases/stock'){let pin='';try{pin=String((route.request().postDataJSON()||{}).dashboardPin||'')}catch{}
+   if(!pin){await route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({ok:false,error:'source-auth-required'})});return;}
+   data={ok:true,schemaVersion:1,sourceUpdatedAt:stamp,items:stock};}
   else if(path==='/api/suppliers/status')data={suppliers:[{id:'aumet',state:'ok'},{id:'pharmaoverseas',state:'ok'}]};
   else if(path==='/api/suppliers/sellers')data={sellers:[{id:'one',name:'مخزن تجريبي أ'},{id:'excluded',name:'مخزن مستبعد'},{id:'two',name:'مخزن تجريبي ب'}]};
   else if(path==='/api/purchases/aumet-cart/preview'){const line=route.request().postDataJSON();data={ok:true,plan:JSON.stringify(line),signature:'synthetic',before:2,quantity:line.quantity,target:2+line.quantity};}
@@ -22,7 +24,7 @@ try{
   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
  });
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
- await page.goto('http://127.0.0.1:8766/purchases.html');await page.locator('#load').click();await page.locator('#dashboard-style').waitFor({state:'visible'});assert((await page.locator('#sourceState').innerText()).includes('محتاج رقم الداشبورد'));await page.locator('#dashboard-style').fill('synthetic-owner-pin');await page.locator('[data-empty-act=unlock]').click();await page.waitForFunction(()=>document.querySelectorAll('#rows [data-action=qty]').length===4);
+ await page.goto('http://127.0.0.1:8766/purchases.html');await page.locator('#dashboard-style').waitFor({state:'visible'});assert((await page.locator('#sourceState').innerText()).includes('محتاج رقم الداشبورد'));await page.locator('#dashboard-style').fill('synthetic-owner-pin');await page.locator('[data-empty-act=unlock]').click();await page.waitForFunction(()=>document.querySelectorAll('#rows [data-action=qty]').length===4);
  assert.equal(await page.locator('[data-action=qty]').first().inputValue(),'8');
  await page.locator('#coverBtn').click();await page.locator('#days').fill('٢٣');await page.locator('#days').press('Tab');assert.equal(await page.locator('[data-action=qty]').first().inputValue(),'8');
  await page.locator('#selectAll').check();await page.locator('#distribute').click();await page.locator('#distributionProgress').waitFor({state:'visible'});assert(/^[0-9]+%$/.test(await page.locator('#progressPercent').innerText()));await page.waitForFunction(()=>!document.getElementById('distribute').disabled,{timeout:30000});
