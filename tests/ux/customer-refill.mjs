@@ -24,7 +24,7 @@ try {
   await page.locator('#mainSearchInput').fill('طارق');
   await page.waitForSelector('#suggestionsBox .suggestion-item');
   await click('#suggestionsBox .suggestion-item');        // 2: اختيار
-  await click('#novaCustChip');                           // 3: UX-P40 the customer card opens as a window from the header chip
+  await click('#novaCustCard');                           // 3: UX-P40c the customer card on top of the rail opens the history window
   await page.waitForSelector('#custRefillBox:not([hidden])');
 
   const chronic = await page.locator('#custChronicList').innerText();

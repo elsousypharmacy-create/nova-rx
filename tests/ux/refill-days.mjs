@@ -32,7 +32,7 @@ try {
     await page.locator('#mainSearchInput').fill('طارق');
     await page.waitForSelector('#suggestionsBox .suggestion-item');
     await page.locator('#suggestionsBox .suggestion-item').first().click();
-    if (await page.evaluate(() => window.novaSaleRail?.isOn())) await page.locator('#novaCustChip').click(); // UX-P40: card lives in a window on wide screens
+    if (await page.evaluate(() => window.novaSaleRail?.isOn())) await page.locator('#novaCustCard').click(); // UX-P40: card lives in a window on wide screens
     await page.waitForSelector('#custRefillBox', { state: 'attached' }); await page.waitForTimeout(200);
     const out = await page.locator('#custDaysSince').evaluate(el => ({ hidden: el.hidden || el.closest('[hidden]') !== null, text: el.innerText.trim() }));
     out.rtl = await page.evaluate(() => document.documentElement.dir === 'rtl');
