@@ -470,13 +470,7 @@ dialog#settings .qs-adv p,dialog#settings .qs-adv small,dialog#settings .qs-adv 
 dialog#settings .dialog-actions{padding:12px 18px!important;border-top:1px solid #20262d}
 dialog#settings #saveSettings{width:100%;min-height:44px}
 
-/* UX-P28: PIN-only window for refresh, stores pill facing the search, cleaner refresh icon */
-dialog#settings[data-mode=pin]{width:min(380px,94vw)!important}
-dialog#settings[data-mode=pin] .qs>*:not(#advSettings){display:none!important}
-dialog#settings[data-mode=pin] .qs-adv{border:0;padding:0;margin:0}
-dialog#settings[data-mode=pin] .qs-adv>*:not(.credential){display:none!important}
-dialog#settings[data-mode=pin] .qs-adv>.credential{margin:0;display:flex;flex-direction:column;gap:8px;font-size:14px;color:#cfd7de}
-dialog#settings[data-mode=pin] #dashboardPin{min-height:44px;font-size:16px;letter-spacing:2px}
+/* UX-P28: stores pill facing the search, cleaner refresh icon */
 html body .products #openSettings{order:-1;flex:none;width:auto!important;margin:0!important;height:38px!important;min-height:38px!important;padding:0 12px!important;border:1px solid #2a313a!important;border-radius:10px!important;background:#111418!important;color:#cfd7de!important;font-size:13px!important;font-weight:600!important;display:inline-flex!important;align-items:center;gap:8px;white-space:nowrap}
 html body .products #openSettings::before{content:"";flex:none;width:18px;height:18px;background:#76b8d5;-webkit-mask:var(--ic-store) center/contain no-repeat;mask:var(--ic-store) center/contain no-repeat}
 html body .products #openSettings::after{content:"";flex:none;width:14px;height:14px;background:currentColor;opacity:.6;-webkit-mask:var(--ic-chev) center/contain no-repeat;mask:var(--ic-chev) center/contain no-repeat}
@@ -708,3 +702,276 @@ td.empty{min-height:220px;height:220px;vertical-align:middle}
 td.empty .stock-skeleton{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;max-width:340px;min-height:190px;margin:0 auto;text-align:center;color:#cfd7de}
 td.empty .skel-bar{width:100%;height:40px;border-radius:10px;background:rgba(255,255,255,.05)}
 td.empty .skel-bar.short{width:72%;height:36px}
+
+
+/* ============================================================================
+   OPS-NEEDS (Phase 1): النواقص والطلبية — Wide (>=768px) + Phone (<768px)
+   Matches owner-approved v3/v4 mockups, WCAG AA >= 4.5:1, >= 44px tap targets,
+   0 CLS non-shifting session banner, and locked card visible without scroll.
+   ============================================================================ */
+html[data-nx-page=purchases],html[data-nx-page=purchases] body{background:#0e1116!important;color:#e8edf2!important}
+html[data-nx-page=purchases] .app{display:flex!important;flex-direction:column!important;height:100dvh!important;min-height:100dvh;overflow:hidden!important}
+html[data-nx-page=purchases] .nova-topbar{flex:none;height:48px;min-height:48px;padding:0 12px!important;background:#0b0e12!important;border-bottom:1px solid #1f2731!important}
+html[data-nx-page=purchases] main.needs-app-main{flex:1!important;min-height:0!important;display:flex!important;flex-direction:column!important;padding:0!important;overflow:hidden!important;background:#0e1116!important}
+
+/* Internal tabs: compact bar so locked card fits without scroll at 390/1180/1280 */
+html[data-nx-page=purchases] .pur-tabs{flex:none;margin:6px 12px 4px!important;padding:3px!important;gap:4px!important;border-radius:10px!important;background:#12171e!important;border:1px solid #1f2731!important;position:static!important}
+html[data-nx-page=purchases] .pur-tabs [role=tab]{min-height:36px!important;height:36px!important;padding:0 12px!important;font-size:13px!important;font-weight:700!important;border-radius:8px!important;color:#b8c6d3!important;background:transparent!important;border:0!important}
+html[data-nx-page=purchases] .pur-tabs [role=tab][aria-selected=true]{background:#1d3443!important;color:#e8edf2!important;box-shadow:inset 0 0 0 1px #2d5568!important}
+html[data-nx-page=purchases] #panelReceive,html[data-nx-page=purchases] #panelHistory{flex:1;min-height:0;overflow:auto;padding:8px 14px 14px}
+
+/* Non-shifting floating session banner (CLS = 0) */
+html[data-nx-page=purchases] .session-banner-slot{min-height:0!important;height:0!important;margin:0!important;border:0!important;background:transparent!important;overflow:visible!important;position:relative}
+html[data-nx-page=purchases] .session-banner-slot .session-banner{position:fixed!important;top:calc(var(--pur-topbar-h,50px) + 6px);inset-inline:14px;z-index:45;max-width:720px;margin-inline:auto!important;min-height:52px!important;padding:8px 12px!important;box-shadow:0 12px 32px rgba(0,0,0,.65);background:#3a3220!important;border:1px solid #bba477!important;color:#f6e3b4!important}
+html[data-nx-page=purchases] .session-banner-slot .session-banner[hidden]{display:none!important}
+html[data-nx-page=purchases] .needs-banner-close{min-width:36px!important;min-height:36px!important;width:36px;height:36px;padding:0!important;border-radius:8px!important;background:transparent!important;border:1px solid rgba(246,227,180,.35)!important;color:#f6e3b4!important;font-size:18px;line-height:1}
+
+/* Needs Panel Layout */
+.needs-panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.needs-body{flex:1;min-height:0;display:flex;flex-direction:row;overflow:hidden}
+
+/* RIGHT COLUMN (WIDE >= 768px) */
+.needs-col{width:280px;flex:none;border-inline-end:1px solid #1f2731;padding:10px;display:flex;flex-direction:column;gap:8px;background:#0e1217;overflow-y:auto}
+.needs-rail-open{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
+.needs-lock-wrap{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
+
+/* Cards & Tiles */
+.needs-card,.needs-lock-card{border-radius:14px;background:#161c24;border:1px solid #2a3440;padding:12px}
+.needs-summary-card .kv{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:#a8bfd4;padding:2px 0}
+.needs-summary-card .kv b{color:#e8edf2;font-weight:700}
+html[data-nx-page=purchases] .needs-lock-btn{min-height:34px!important;height:34px!important;padding:0 12px!important;border-radius:8px!important;background:#15302a!important;border:1px solid #2f6f57!important;color:#7fd3a0!important;font-size:13px!important;font-weight:800!important}
+html[data-nx-page=purchases] .needs-lock-btn:hover{background:#1b3e36!important;color:#a9ecc3!important}
+
+.needs-g2,.needs-lock-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.needs-lock-shortcuts{margin-top:auto}
+
+html[data-nx-page=purchases] .needs-tile{position:relative;border-radius:14px!important;background:#1a212b!important;border:1px solid #2a3440!important;color:#e8edf2!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800!important;font-size:14px!important;min-height:76px!important;text-align:center;padding:10px 8px!important;line-height:1.3;cursor:pointer}
+html[data-nx-page=purchases] .needs-tile:hover:not(:disabled){background:#222c39!important;border-color:#4aa3c8!important}
+html[data-nx-page=purchases] .needs-tile:disabled{opacity:.5;cursor:not-allowed}
+.needs-tile .i{font-size:20px;line-height:1}
+.needs-tile .k{position:absolute;top:6px;inset-inline-start:8px;font-size:11px;color:#a8bfd4;font-family:monospace;font-weight:700}
+.needs-tile small{font-size:11px;color:#a8bfd4;font-weight:600;line-height:1.35}
+html[data-nx-page=purchases] .needs-tile.pri{background:#1f4f66!important;border-color:#4aa3c8!important;color:#ffffff!important}
+html[data-nx-page=purchases] .needs-tile.pri:hover:not(:disabled){background:#25607c!important}
+.needs-tile.pri .k,.needs-tile.pri small{color:#cfe8f3!important}
+html[data-nx-page=purchases] .needs-tile.wide{min-height:54px!important;flex-direction:row!important;gap:8px;font-size:16px!important;width:100%}
+
+/* Lock Card */
+.needs-lock-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:16px 14px}
+.needs-lock-ico{font-size:32px;line-height:1}
+.needs-lock-card .unlock-title{font-size:17px;font-weight:800;color:#e8edf2;margin:0}
+.needs-lock-card .unlock-body{font-size:13px;color:#a8bfd4;margin:0;line-height:1.5}
+html[data-nx-page=purchases] body #panelNeeds #dashboard-style{width:100%;height:48px!important;min-height:48px!important;border-radius:12px!important;border:2px solid #3d8fb3!important;background:#0d1116!important;color:#e8edf2!important;text-align:center;font-size:22px!important;letter-spacing:8px;padding:0 12px!important}
+.needs-lock-card .unlock-hint{color:#ff8a80;font-size:13px;font-weight:700;margin:0}
+.needs-lock-note{font-size:12px;color:#a8bfd4;margin:2px 0 0;line-height:1.5}
+
+/* Counters */
+html[data-nx-page=purchases] .needs-cnt{display:flex!important;align-items:center;justify-content:space-between;padding:8px 12px!important;min-height:42px!important;font-size:14px!important;font-weight:700!important;color:#d6e0ea!important;background:#12171e!important;border:1px solid #1f2731!important;border-radius:10px!important}
+html[data-nx-page=purchases] .needs-cnt:hover{border-color:#3d8fb3!important;background:#18212c!important}
+html[data-nx-page=purchases] .needs-cnt[aria-pressed=true]{border-color:#5fb4d6!important;background:#16303d!important;color:#ffffff!important}
+.needs-cnt b{background:#3a2f17;color:#f5c26b;border-radius:8px;padding:1px 9px;font-size:13px;font-variant-numeric:tabular-nums}
+
+/* MAIN AREA */
+.needs-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;position:relative;overflow:hidden;background:#0e1116}
+.needs-hd{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px 8px;flex-wrap:wrap}
+.needs-h1{font-size:22px!important;font-weight:800!important;margin:0;color:#e8edf2;line-height:1.2}
+.needs-stage{font-size:12px;font-weight:800;color:#7fd1f0;background:#16303d;border-radius:20px;padding:4px 12px;white-space:nowrap}
+.needs-sp{flex:1}
+
+/* Inline controls (WIDE: single row in header) */
+.needs-inline-ctrls{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+html[data-nx-page=purchases] .needs-sel{height:40px!important;min-height:40px!important;padding:0 12px!important;border-radius:10px!important;background:#0d1116!important;border:1px solid #2a3440!important;font-size:13px!important;font-weight:600!important;display:inline-flex!important;align-items:center;gap:6px;white-space:nowrap;color:#a8bfd4!important}
+html[data-nx-page=purchases] .needs-sel b{color:#e8edf2;font-weight:700}
+html[data-nx-page=purchases] .needs-sel:hover{border-color:#4aa3c8!important}
+html[data-nx-page=purchases] body #panelNeeds #coverageSelect{min-height:36px!important;height:36px!important;padding:0 4px!important;border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;color:#e8edf2!important;font-weight:700!important;font-size:13px!important;cursor:pointer;box-shadow:none!important}
+html[data-nx-page=purchases] body #panelNeeds #coverageSelect option{background:#161c24;color:#e8edf2}
+
+/* Phone subrow & sticky bottom CTA hidden on WIDE */
+.needs-phone-subrow,.needs-phone-cta-wrap,.nf-phone-only{display:none!important}
+
+/* Sticky Search / Barcode Box */
+.needs-sbox{position:relative;padding:0 14px 8px;flex:none;z-index:12;background:#0e1116}
+.needs-sfield{height:48px;border-radius:12px;background:#0d1116;border:2px solid #3d8fb3;display:flex;align-items:center;gap:8px;padding:0 12px;transition:border-color .15s,box-shadow .15s}
+.needs-sfield.is-focused,.needs-sfield:focus-within{border-color:#5fb4d6;box-shadow:0 0 0 3px rgba(95,180,214,.2)}
+.needs-sico{font-size:16px;flex:none}
+html[data-nx-page=purchases] body #panelNeeds #needsSearchInput{flex:1;min-width:0;height:42px!important;min-height:42px!important;border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;color:#e8edf2!important;font-size:15px!important;font-weight:600;padding:0!important;box-shadow:none!important;outline:none!important}
+#needsSearchInput::-webkit-search-cancel-button,#needsSearchInput::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+#needsSearchInput::placeholder{color:#8fa3b8;opacity:1}
+.needs-kb{flex:none;font-size:11px;font-family:monospace;color:#a8bfd4;border:1px solid #2a3440;border-radius:6px;padding:2px 7px;white-space:nowrap}
+html[data-nx-page=purchases] .needs-sclear{flex:none;min-width:34px!important;min-height:34px!important;width:34px;height:34px;padding:0!important;border-radius:8px!important;background:#1a212b!important;border:1px solid #2a3440!important;color:#e8edf2!important;font-size:18px;line-height:1}
+
+/* Autocomplete Dropdown */
+.needs-dd{position:absolute;top:52px;inset-inline:14px;background:#161c24;border:1px solid #3d8fb3;border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.7);z-index:20;overflow:hidden}
+.needs-dd-o{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #222b36;font-size:14px;cursor:pointer;color:#e8edf2}
+.needs-dd-o:hover,.needs-dd-o.on{background:#1d3443}
+.needs-dd-o b{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.needs-dd-stk{color:#a8bfd4;font-size:12px;white-space:nowrap;flex:none}
+.needs-dd-pr{font-weight:800;color:#e8edf2;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
+.needs-dd-enter{color:#a8bfd4;font-size:12px;white-space:nowrap;flex:none}
+.needs-dd-add{display:none!important}
+.needs-dd-hint{padding:8px 14px;font-size:12px;color:#a8bfd4;background:#12171e}
+
+/* Desktop Locked Empty Placeholder & Loading/Error States */
+.needs-empty-locked,.needs-state-box{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#a8bfd4;font-size:14px;text-align:center;padding:24px}
+.needs-empty-ico{font-size:48px;line-height:1}
+.needs-empty-locked b{font-size:17px;color:#e8edf2}
+.needs-error-card{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px;border-radius:14px;background:#161c24;border:1px solid #2a3440;max-width:380px}
+.needs-error-card .load-error{color:#f5c26b;font-weight:700}
+
+/* WIDE Table (>= 768px) */
+.needs-tw{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;margin:0 14px 10px;border:1px solid #222b36;border-radius:12px;background:#12171e}
+.needs-table{width:100%!important;min-width:0!important;border-collapse:collapse;table-layout:auto!important;font-size:13px;display:table!important}
+.needs-table thead{display:table-header-group!important}
+.needs-table tbody{display:table-row-group!important}
+.needs-table tr{display:table-row!important}
+.needs-table th,.needs-table td{display:table-cell!important;text-align:start;padding:7px 8px!important;border-bottom:1px solid #1d242d;vertical-align:middle}
+.needs-table th{color:#a8bfd4!important;font-weight:700;background:#151b22!important;border-bottom:1px solid #2a3440!important;position:sticky;top:0;z-index:2;white-space:nowrap;font-size:12px}
+.needs-table td::before{display:none!important;content:none!important}
+.needs-table .col-num{width:36px;color:#a8bfd4;font-variant-numeric:tabular-nums}
+.needs-table .col-name{min-width:180px}
+.needs-name-wrap{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.needs-name{font-weight:700;color:#e8edf2;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.needs-table .col-meta{display:none!important}
+.needs-offer-meta{display:block;font-size:11px;color:#a8bfd4;margin-top:2px}
+.needs-offer-warn{display:block;font-size:11px;color:#f5c26b;margin-top:2px}
+.needs-newtag{font-size:11px;font-weight:800;background:#296b88;color:#ffffff;border-radius:7px;padding:1px 7px;flex:none;white-space:nowrap}
+.needs-table tr.is-new td,.needs-table tr.is-hi td{background:#14323f!important;border-top:1px solid #5fb4d6;border-bottom:1px solid #5fb4d6}
+.needs-table .col-stk{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.needs-table .col-rate,.needs-table .col-price{white-space:nowrap;font-variant-numeric:tabular-nums;color:#d6e0ea}
+.needs-table .col-del{width:52px;text-align:center}
+.needs-empty-row{text-align:center!important;padding:36px 16px!important;color:#a8bfd4}
+
+.red{color:#ff8a80!important}.amber{color:#f5c26b!important}.green{color:#7fd3a0!important}
+
+/* Stepper (+ / qty / −) with >=44px tap targets */
+.needs-stepper{display:inline-flex;align-items:center;border:1px solid #2a3440;border-radius:10px;overflow:hidden;background:#0d1116}
+html[data-nx-page=purchases] .needs-step-btn{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;border:0!important;border-radius:0!important;background:#1a212b!important;color:#e8edf2!important;font-size:18px!important;font-weight:800!important;display:inline-flex!important;align-items:center;justify-content:center}
+html[data-nx-page=purchases] .needs-step-btn:hover{background:#243140!important;color:#ffffff!important}
+.needs-step-val{min-width:34px;padding:0 4px;text-align:center;font-style:normal;font-weight:800;font-size:14px;color:#e8edf2;font-variant-numeric:tabular-nums}
+
+/* Supplier button inside table cell (opens #offers modal) */
+html[data-nx-page=purchases] .needs-sup-btn{min-height:36px!important;height:auto!important;padding:4px 8px!important;border-radius:8px!important;background:transparent!important;border:1px solid transparent!important;color:#d6e0ea!important;font-size:13px!important;font-weight:600!important;white-space:nowrap;text-align:start}
+html[data-nx-page=purchases] .needs-sup-btn:hover{background:#1a212b!important;border-color:#2a3440!important;color:#ffffff!important}
+
+/* Trash button at end of every row (>=44px tap target) */
+html[data-nx-page=purchases] .needs-trash{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;border-radius:10px!important;display:inline-flex!important;align-items:center;justify-content:center;color:#ff8a80!important;background:#2a1a1a!important;border:1px solid #4a2626!important;flex:none}
+html[data-nx-page=purchases] .needs-trash:hover{background:#3d2222!important;border-color:#ff8a80!important;color:#ffb4ad!important}
+
+/* Bottom Undo Toast (5s) */
+.needs-toast{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:#232b35;border:1px solid #3a4654;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:10px;font-size:14px;color:#e8edf2;box-shadow:0 10px 30px rgba(0,0,0,.65);white-space:nowrap;z-index:25;max-width:calc(100% - 28px)}
+.needs-toast-text{overflow:hidden;text-overflow:ellipsis;max-width:420px}
+html[data-nx-page=purchases] .needs-toast-undo{min-height:36px!important;height:36px!important;padding:0 12px!important;border-radius:8px!important;background:#16303d!important;border:1px solid #4aa3c8!important;color:#79c9eb!important;font-size:14px!important;font-weight:800!important}
+html[data-nx-page=purchases] .needs-toast-undo:hover{background:#1d4254!important;color:#ffffff!important}
+
+/* Filter, Drafts, and Local Draft Dialogs */
+dialog.needs-dialog{width:min(520px,calc(100vw - 24px))!important;max-width:520px!important;border-radius:16px!important;background:#12171e!important;border:1px solid #2a3440!important;color:#e8edf2!important;box-shadow:0 24px 80px rgba(0,0,0,.75)}
+.needs-filter-body{display:flex;flex-direction:column;gap:16px}
+.nf-sec h3{font-size:14px;font-weight:800;color:#a8bfd4;margin:0 0 8px}
+.nf-chips{display:flex;flex-wrap:wrap;gap:8px}
+html[data-nx-page=purchases] .nf-chip{min-height:42px!important;padding:0 14px!important;border-radius:10px!important;background:#1a212b!important;border:1px solid #2a3440!important;color:#d6e0ea!important;font-size:13px!important;font-weight:700!important}
+html[data-nx-page=purchases] .nf-chip[aria-pressed=true]{background:#1d3443!important;border-color:#5fb4d6!important;color:#ffffff!important}
+.nf-sub-btn{margin-top:10px;width:100%}
+.nf-days-custom{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:#a8bfd4}
+.nf-days-custom input{width:84px;text-align:center}
+.nf-quick-actions{display:grid;grid-template-columns:1fr;gap:8px}
+.needs-local-badge{background:#15302a;border:1px solid #2f6f57;color:#7fd3a0;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:800;margin:0 0 12px}
+.needs-draft-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.needs-draft-kpis>div{background:#161c24;border:1px solid #2a3440;border-radius:10px;padding:8px 10px;text-align:center}
+.needs-draft-kpis span{display:block;font-size:12px;color:#a8bfd4}
+.needs-draft-kpis b{font-size:16px;color:#e8edf2}
+.needs-draft-lines{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto;border:1px solid #222b36;border-radius:10px;background:#0e1116}
+.needs-draft-lines li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #1d242d;font-size:13px}
+.needs-draft-lines li:last-child{border-bottom:0}
+.needs-draft-lines li span{flex:1;min-width:0;font-weight:700}
+.needs-draft-lines li b{color:#7fd1f0;white-space:nowrap}
+.needs-draft-lines li small{color:#a8bfd4;white-space:nowrap}
+.needs-drafts-list{display:flex;flex-direction:column;gap:8px}
+.needs-draft-card{background:#161c24;border:1px solid #2a3440;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.needs-draft-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.needs-draft-top small,.needs-draft-sub{font-size:12px;color:#a8bfd4}
+.needs-draft-acts{display:flex;gap:8px;justify-content:flex-end}
+.needs-draft-acts button{min-height:36px!important;height:36px!important;padding:0 12px!important;font-size:13px!important}
+html[data-nx-page=purchases] .needs-draft-del{color:#ff8a80!important;border-color:#4a2626!important;background:#2a1a1a!important}
+
+/* Override legacy 800px / 1100px breakpoints so WIDE (>=768px) is identical at 1180x820 and 1280x800 */
+@media (min-width:768px){
+  html[data-nx-page=purchases] .nova-topbar{position:static!important;flex-wrap:nowrap!important;height:48px!important}
+  html[data-nx-page=purchases] .nova-topbar nav{width:auto!important;mask-image:none!important;-webkit-mask-image:none!important}
+  html[data-nx-page=purchases] .needs-app-main{overflow:hidden!important}
+  html[data-nx-page=purchases] .needs-table{table-layout:auto!important}
+}
+
+/* ============================================================================
+   PHONE LAYOUT (<768px) — compact cards, sticky search, sticky bottom CTA
+   ============================================================================ */
+@media (max-width:767.98px){
+  html[data-nx-page=purchases] .app{height:100dvh!important;overflow:hidden!important}
+  html[data-nx-page=purchases] .nova-topbar{height:auto!important;min-height:46px;padding:4px 10px!important;flex-wrap:wrap!important;gap:2px!important;position:static!important}
+  html[data-nx-page=purchases] .nova-topbar nav{width:100%!important}
+  html[data-nx-page=purchases] .pur-tabs{margin:4px 10px 2px!important}
+  .needs-body{flex-direction:column!important;overflow:hidden!important}
+
+  /* Locked state on phone: Header on top, single lock card below, desktop placeholder hidden */
+  .needs-panel[data-state=locked] .needs-main{flex:none!important;overflow:visible!important}
+  .needs-panel[data-state=locked] .needs-col{width:100%!important;border-inline-end:0!important;background:transparent!important;padding:8px 14px 14px!important;flex:1!important;overflow-y:auto!important;order:2}
+  .needs-panel[data-state=locked] .needs-empty-locked{display:none!important}
+  .needs-panel[data-state=locked] .needs-lock-shortcuts{display:none!important}
+  .needs-panel[data-state=locked] .needs-lock-card{padding:20px 16px;border-radius:18px;gap:12px}
+  .needs-panel[data-state=locked] .needs-lock-ico{font-size:38px}
+  .needs-panel[data-state=locked] .needs-lock-card .unlock-title{font-size:20px}
+  .needs-panel[data-state=locked] .needs-lock-card .unlock-body{font-size:14px}
+  .needs-panel[data-state=locked] .needs-pin-input{height:54px!important;min-height:54px!important;font-size:24px!important}
+  .needs-panel[data-state=locked] .needs-tile.pri.wide{min-height:54px!important;height:54px!important;background:#296b88!important;border-color:#4aa3c8!important;color:#ffffff!important;font-size:17px!important}
+  .needs-panel[data-state=locked] .needs-tile.pri.wide .k{display:none}
+
+  /* Unlocked state on phone: hide right rail, show compact phone subrow + sticky search + cards + sticky bottom CTA */
+  .needs-panel:not([data-state=locked]) .needs-col{display:none!important}
+  .needs-inline-ctrls{display:none!important}
+  .needs-hd{padding:8px 14px 4px!important}
+  .needs-h1{font-size:22px!important}
+
+  .needs-phone-subrow{display:flex!important;align-items:center;gap:8px;padding:0 14px 8px;flex:none}
+  .needs-phone-subrow[hidden]{display:none!important}
+  .needs-sub{flex:1;font-size:13px;color:#a8bfd4}
+  html[data-nx-page=purchases] .needs-btn2{height:40px!important;min-height:40px!important;padding:0 12px!important;border-radius:10px!important;background:#1a212b!important;border:1px solid #2a3440!important;font-weight:700!important;font-size:14px!important;display:inline-flex!important;align-items:center;gap:6px;color:#e8edf2!important;white-space:nowrap}
+  .needs-pill{font-size:12px;border-radius:10px;padding:1px 8px;background:#16303d;color:#7fd1f0;font-weight:800}
+
+  .needs-sbox{padding:0 14px 8px!important}
+  .needs-kb{display:none!important}
+  .needs-dd{inset-inline:14px!important}
+  .needs-dd-o{gap:8px;padding:10px 10px}
+  .needs-dd-enter{display:none!important}
+  html[data-nx-page=purchases] .needs-dd-add{display:inline-flex!important;align-items:center;justify-content:center;min-height:36px!important;height:36px!important;padding:0 10px!important;border-radius:8px!important;background:#296b88!important;border:0!important;color:#ffffff!important;font-weight:800!important;font-size:13px!important;white-space:nowrap;flex:none}
+
+  /* Compact Cards on phone */
+  .needs-tw{margin:0!important;padding:0 12px 12px!important;border:0!important;border-radius:0!important;background:transparent!important;flex:1!important;min-height:0!important;overflow-y:auto!important}
+  .needs-table,.needs-table tbody{display:block!important;width:100%!important}
+  .needs-table thead{display:none!important}
+  .needs-table tr.needs-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;grid-template-rows:auto auto;align-items:center;gap:6px 8px;background:#161c24;border:1px solid #222b36;border-radius:14px;padding:10px 10px;margin-bottom:8px}
+  .needs-table tr.needs-row.is-new,.needs-table tr.needs-row.is-hi{border-color:#5fb4d6!important;background:#14323f!important}
+  .needs-table tr.needs-row td{display:block!important;border:0!important;padding:0!important;background:transparent!important}
+  .needs-table tr.needs-row .col-num,
+  .needs-table tr.needs-row .col-stk,
+  .needs-table tr.needs-row .col-rate,
+  .needs-table tr.needs-row .col-sup,
+  .needs-table tr.needs-row .col-price{display:none!important}
+  .needs-table tr.needs-row .col-name{grid-column:1;grid-row:1;min-width:0}
+  .needs-table tr.needs-row .col-qty{grid-column:2;grid-row:1;align-self:center}
+  .needs-table tr.needs-row .col-del{grid-column:3;grid-row:1;width:auto;align-self:center}
+  .needs-table tr.needs-row .col-meta{display:flex!important;grid-column:1 / -1;grid-row:2;flex-wrap:wrap;gap:4px;font-size:12px;color:#a8bfd4;line-height:1.4}
+  .needs-name{font-size:14px}
+  .needs-step-val{min-width:28px;font-size:14px}
+
+  /* Sticky bottom CTA on phone */
+  .needs-phone-cta-wrap{display:block!important;flex:none;padding:8px 14px max(10px,env(safe-area-inset-bottom));background:#0e1217;border-top:1px solid #1f2731;z-index:10}
+  .needs-phone-cta-wrap[hidden]{display:none!important}
+  html[data-nx-page=purchases] .needs-cta{width:100%;height:52px!important;min-height:52px!important;border-radius:14px!important;background:#296b88!important;border:1px solid #4aa3c8!important;color:#ffffff!important;font-weight:800!important;font-size:17px!important;display:flex!important;align-items:center;justify-content:center}
+  html[data-nx-page=purchases] .needs-cta:disabled{background:#26303b!important;border-color:#2a3440!important;color:#8fa3b8!important;opacity:1}
+
+  /* Undo toast sits cleanly ABOVE the sticky bottom CTA on phone */
+  .needs-toast{position:absolute;bottom:76px!important;left:14px!important;right:14px!important;transform:none!important;max-width:none!important;white-space:normal}
+  .needs-toast-text{flex:1;max-width:none}
+  .needs-toast-sep{display:none}
+
+  .nf-phone-only{display:block!important}
+}

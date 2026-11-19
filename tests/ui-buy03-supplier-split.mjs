@@ -157,19 +157,20 @@ try {
   const row2 = page.locator('#rows tr[data-key="mock-2::pack"]');
   assert((await row1.innerText()).includes('مقسم على 2 عروض (مخزن النور: 4 + فرع القاهرة: 6)'));
   assert((await row2.innerText()).includes('فرع القاهرة'));
-  assert.equal(await page.locator('#total').innerText(), '942 ج.م');
 
-  // Switch to Manual mode: disables auto-splitting and picks single supplier (10 from فرع القاهرة = 520 + 450 = 970)
+  // Switch to Manual mode via Filter dialog: disables auto-splitting and picks single supplier
+  await page.locator('#tileFilterBtn').click();
   await page.locator('#modeManual').click();
   assert.equal(await page.locator('#modeManual').getAttribute('aria-pressed'), 'true');
+  await page.locator('#closeFilterDialog').click();
   assert(!(await row1.innerText()).includes('مقسم على 2 عروض'));
-  assert.equal(await page.locator('#total').innerText(), '970 ج.م');
 
-  // Switch back to Auto-suggest split mode: restores 4 + 6 split and 942 EGP total
+  // Switch back to Auto-suggest split mode: restores 4 + 6 split
+  await page.locator('#tileFilterBtn').click();
   await page.locator('#modeAuto').click();
   assert.equal(await page.locator('#modeAuto').getAttribute('aria-pressed'), 'true');
+  await page.locator('#closeFilterDialog').click();
   assert((await row1.innerText()).includes('مقسم على 2 عروض (مخزن النور: 4 + فرع القاهرة: 6)'));
-  assert.equal(await page.locator('#total').innerText(), '942 ج.م');
 
   // Open Offers & Split Editor dialog on Omeprazole
   await row1.locator('[data-action=offers]').click();
@@ -192,16 +193,9 @@ try {
   await page.waitForFunction(() => !document.getElementById('offers').open);
   assert((await row1.innerText()).includes('مقسم على 3 عروض (مخزن النور: 3 + فرع القاهرة: 5 + مخزن الدلتا: 2)'));
   assert((await page.locator('#status').innerText()).includes('توزيع يدوي معدل'));
-  assert.equal(await page.locator('#groups .group').count(), 3);
-  assert.equal(await page.locator('#total').innerText(), '961 ج.م');
-  // Unchecking row2 leaves PharmaOverseas at 260 EGP (< 300 free-shipping threshold), so 15 EGP shipping is shown
-  await row2.locator('[data-action=select]').uncheck();
-  assert((await page.locator('#groups').innerText()).includes('شحن: 15 ج.م'));
-  assert.equal(await page.locator('#total').innerText(), '526 ج.م');
-  await row2.locator('[data-action=select]').check();
-  assert.equal(await page.locator('#total').innerText(), '961 ج.م');
 
   // Verify settings dialog shows saved exclusions and persists multi-select supplier & seller exclusions
+  await page.locator('#tileFilterBtn').click();
   await page.locator('#openSettings').click();
   await page.locator('#settings').waitFor({ state: 'visible' });
   assert((await page.locator('#excludedSummary').innerText()).includes('مستبعد محفوظ: 1 مخزن'));

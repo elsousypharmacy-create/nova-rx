@@ -11,7 +11,7 @@ try {
     page.on('dialog', dialog => dialog.accept());
     await page.goto(origin + '/purchases.html');
     if (linked) {
-      await page.locator('.tools-menu summary').click();
+      await page.evaluate(() => { const d = document.getElementById('draftsDialog'); if (d && !d.open) d.showModal(); });
       await page.locator('#openPo').click();
       await page.locator('#poSupplier').fill('Test supplier');
       await page.locator('#poLines').fill('6281001234567,4,25\n6281001234568,4,25');
@@ -21,8 +21,10 @@ try {
       await page.locator('#poList [data-state="accepted"]').waitFor();
       await page.locator('#closePo').click();
     } else {
+      await page.evaluate(() => { const d = document.getElementById('needsFilterDialog'); if (d && !d.open) d.showModal(); });
       await page.locator('#modeManual').click();
-      assert.ok(await page.locator('#search').evaluate(input => input === document.activeElement));
+      assert.equal(await page.locator('#modeManual').getAttribute('aria-pressed'), 'true');
+      await page.locator('#closeFilterDialog').click();
     }
     await page.goto(origin + '/index.html#sale');
     await page.locator('#novaSplash').waitFor({ state: 'hidden' });

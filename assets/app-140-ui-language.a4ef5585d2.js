@@ -144,7 +144,7 @@
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
  /* UX-P29..P38 labels (operations menu, stock page, settings sections, receiving page) */
- const enUx={'العمليات':'Operations','استلام الطلبيات':'Receiving','المخزون':'Stock','طلب النواقص من الموردين':'Order shortages from suppliers','استلام فاتورة ودخولها المخزون':'Receive an invoice into stock','الأرصدة والصلاحيات والجرد':'Balances, expiry and counts',
+ const enUx={'النواقص':'Shortages','العمليات':'Operations','استلام الطلبيات':'Receiving','المخزون':'Stock','طلب النواقص من الموردين':'Order shortages from suppliers','استلام فاتورة ودخولها المخزون':'Receive an invoice into stock','الأرصدة والصلاحيات والجرد':'Balances, expiry and counts',
   'ابحث بالاسم أو الباركود…':'Search by name or barcode…','بحث في المخزون':'Search stock','أدوات المخزون':'Stock tools','قراءة فاتورة مشتريات':'Read purchase invoice','صفحة استلام الطلبيات':'Receiving page','استلام بضاعة':'Receive goods',
   'تجهيز الصيدلية':'Pharmacy setup','عام':'General','الحسابات والصلاحيات':'Accounts and permissions','الطابعات والأجهزة':'Printers and devices','التشغيلات والصلاحية':'Lots and expiry','الموردين':'Suppliers','الربط والمفاتيح':'Connection and keys','عن النظام':'About','أقسام الإعدادات':'Settings sections',
   'استلم فاتورة المورد وأضفها للمخزون بالتشغيلة والصلاحية.':'Receive the supplier invoice into stock with lot and expiry.','قراءة فاتورة بالصورة':'Read invoice from photo','استلام فاتورة':'Receive invoice','استلامات النهارده':'Received today','طلبيات مستنية':'Pending orders','من صفحة المشتريات':'from the purchases page','استلامات الشهر':'This month','لسه مفيش':'None yet',
