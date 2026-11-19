@@ -6205,7 +6205,7 @@
    "after": [
     "PUR-04"
    ],
-   "status": "pr_open",
+   "status": "done",
    "attempts": 0,
    "fix_attempts": 1,
    "source": "owner-purchases-2026-11-19",
@@ -6216,15 +6216,11 @@
    "slot": "A",
    "dispatched_at": "2026-11-19T17:13:08+00:00",
    "pr": 570,
-   "ci_dispatched": {
-    "sha": "789cbbbf3de14ed63b7022e3dc5d049c55b6df46",
-    "wf": [],
-    "at": "2026-11-19T17:19:50+00:00",
-    "na": []
-   }
+   "merged_at": "2026-11-19T17:28:45+00:00",
+   "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/570"
   }
  ],
- "updated": "2026-11-19T17:19:50+00:00",
+ "updated": "2026-11-19T17:28:45+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
