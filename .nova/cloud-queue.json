@@ -3,6 +3,27 @@
  "note": "Claude cloud queue. Managed by .github/workflows/cloud-scheduler.yml. Statuses: pending, running, pr_open, fixing, done, failed, hold. 'hold' = deferred by owner; the scheduler only starts status=pending, so held tasks stay put until un-held.",
  "tasks": [
   {
+   "id": "PERF-02",
+   "phase": 23,
+   "title": "السرعة: فصل الكود والتنسيق من index.html لملفات منفصلة بتتخزن على الجهاز",
+   "brief": "Split index.html (1.19 MB single file: ~850 KB inline JS + ~257 KB inline CSS) into versioned, cacheable static files, e.g. app.<hash>.css and app-*.<hash>.js (keep script order/semantics; classic scripts are fine; do not convert to modules if it risks globals). index.html keeps only the shell markup + small critical inline boot code. Serve the new files from the preview Worker (extend tools/build-preview-refresh.mjs EXTRA_ROUTES / build-worker-artifact.mjs) with long Cache-Control (immutable, content-hashed names) and have sw.js precache them; bump the SW version. Add a build script (node tools/split-index.mjs or similar) so the split is reproducible and CI checks that index.html and the split files are in sync. Update existing tests/CI that grep index.html for markers (UX contrast ratchet, POS smoke, preview_auto_deploy REQUIRED_MARKERS, artifact checks) so they read the split files too. This also makes later agent edits cheaper: document in AGENTS.md where code now lives. Measure before/after (bytes of HTML, LCP on throttled 4G at 390x844) and put numbers in the PR body. No behaviour change.\n\nContext: NOVA Rx (elsousypharmacy-create/nova-rx) is being made sale-ready for other pharmacies (owner Ahmed, Egyptian pharmacist; plan in docs or PR history: sale-ready plan 19 Nov 2026). Live preview: https://nova-rx-preview.elsousypharmacy.workers.dev . Measured on preview at 390x844: main HTML 1.19 MB decoded (850 KB inline JS + 257 KB inline CSS), LCP 3.6 s on 4G+4x CPU, /emergency/stock.json 499 KB fetched on every open, WhatsApp link-names 7.8 s, conversations polled every ~4.6 s, purchases stock 6.2 s then 403, CLS 0.23 on purchases, sw.js?v=6 aborted on first load. Inspect origin/main first and cite real file:line in the PR body. Read AGENTS.md and CURRENT.md first.\n\nPREVIEW ARTIFACT: if you change index.html, sw.js, purchases.*, whatsapp SPA or any asset served by the preview Worker, then AFTER merging the latest origin/main build a NEW worker/live/nova-rx-preview.<task-id-lowercase>.js from the newest existing worker/live/nova-rx-preview.*.js (check tools/preview_auto_deploy.py for how 'newest' is chosen; if PERF-07 has landed follow its new build-stamp rule) with tools/build-worker-artifact.mjs / tools/build-preview-refresh.mjs the way recent pur-0x artifacts were built, and add tests/unit/artifact-<task-id-lowercase>.check.mjs. Never modify existing artifacts. If origin/main gains a newer artifact before merge, merge main again and rebuild yours so the preview never loses someone else's change. Update CURRENT.md only if project state changes. Capture 390x844 (and 1280x800 where relevant) Playwright screenshots of changed screens with FAKE data into qa/screens/<TASK-ID>/ and list them in the PR body. Keep ALL existing CI green.\n\nHARD RULES (owner Ahmed, non-negotiable): Do not print, log, or commit secret values, tokens or PINs (name them only). Do not roll or regenerate any token. Nothing that costs money; do not enable R2 or paid plans. Do not touch the pharmacy repo, GAS, WA_TOKEN, or WhatsApp Business settings. No WhatsApp sends of any kind (no test sends); the pharmacy bot must never auto-reply. Never call /register or /deregister and do not migrate the number. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). No production or staging deploy; do not run deploy workflows, wrangler deploy or the Cloudflare API. Do not change repo visibility, branch protection, or first-time-contributor approval settings. Do not edit .nova/cloud-queue.json or the DISABLE_SLOT_B variable. Do not touch PR #566 or the pharmacy repo. Supplier work is read-only; no real supplier cart/order writes. Tests use fake/local data only; Playwright must block non-GET / live writes. Customer data and real-chat screenshots must never be committed (use fake fixtures). Preserve Arabic RTL; mobile 390x844 first. Do not merge (the scheduler squash-merges on green CI; no admin bypass). Do not start held tasks.",
+   "acceptance": "index.html under ~150 KB; JS/CSS served as content-hashed cacheable files and precached by SW; second load fetches only HTML (304/cache) ; all existing CI green incl. POS smoke; marker checks updated; reproducible split script + sync check; new preview artifact; measured numbers in PR.",
+   "after": [
+    "SEC-01"
+   ],
+   "status": "running",
+   "attempts": 1,
+   "fix_attempts": 0,
+   "source": "sale-ready-plan-2026-11-19",
+   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
+   "model": "opus",
+   "max_turns": 80,
+   "pin_slot": "A",
+   "slot": "A",
+   "dispatched_at": "2026-11-19T18:31:42+00:00",
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/44586472666"
+  },
+  {
    "id": "SEC-01",
    "phase": 23,
    "title": "الأمان: تسجيل دخول الموظفين قبل التطبيق وواتساب (S1-07)",
@@ -6243,26 +6264,6 @@
    "pr_url": "https://github.com/elsousypharmacy-create/nova-rx/pull/570"
   },
   {
-   "id": "PERF-02",
-   "phase": 23,
-   "title": "السرعة: فصل الكود والتنسيق من index.html لملفات منفصلة بتتخزن على الجهاز",
-   "brief": "Split index.html (1.19 MB single file: ~850 KB inline JS + ~257 KB inline CSS) into versioned, cacheable static files, e.g. app.<hash>.css and app-*.<hash>.js (keep script order/semantics; classic scripts are fine; do not convert to modules if it risks globals). index.html keeps only the shell markup + small critical inline boot code. Serve the new files from the preview Worker (extend tools/build-preview-refresh.mjs EXTRA_ROUTES / build-worker-artifact.mjs) with long Cache-Control (immutable, content-hashed names) and have sw.js precache them; bump the SW version. Add a build script (node tools/split-index.mjs or similar) so the split is reproducible and CI checks that index.html and the split files are in sync. Update existing tests/CI that grep index.html for markers (UX contrast ratchet, POS smoke, preview_auto_deploy REQUIRED_MARKERS, artifact checks) so they read the split files too. This also makes later agent edits cheaper: document in AGENTS.md where code now lives. Measure before/after (bytes of HTML, LCP on throttled 4G at 390x844) and put numbers in the PR body. No behaviour change.\n\nContext: NOVA Rx (elsousypharmacy-create/nova-rx) is being made sale-ready for other pharmacies (owner Ahmed, Egyptian pharmacist; plan in docs or PR history: sale-ready plan 19 Nov 2026). Live preview: https://nova-rx-preview.elsousypharmacy.workers.dev . Measured on preview at 390x844: main HTML 1.19 MB decoded (850 KB inline JS + 257 KB inline CSS), LCP 3.6 s on 4G+4x CPU, /emergency/stock.json 499 KB fetched on every open, WhatsApp link-names 7.8 s, conversations polled every ~4.6 s, purchases stock 6.2 s then 403, CLS 0.23 on purchases, sw.js?v=6 aborted on first load. Inspect origin/main first and cite real file:line in the PR body. Read AGENTS.md and CURRENT.md first.\n\nPREVIEW ARTIFACT: if you change index.html, sw.js, purchases.*, whatsapp SPA or any asset served by the preview Worker, then AFTER merging the latest origin/main build a NEW worker/live/nova-rx-preview.<task-id-lowercase>.js from the newest existing worker/live/nova-rx-preview.*.js (check tools/preview_auto_deploy.py for how 'newest' is chosen; if PERF-07 has landed follow its new build-stamp rule) with tools/build-worker-artifact.mjs / tools/build-preview-refresh.mjs the way recent pur-0x artifacts were built, and add tests/unit/artifact-<task-id-lowercase>.check.mjs. Never modify existing artifacts. If origin/main gains a newer artifact before merge, merge main again and rebuild yours so the preview never loses someone else's change. Update CURRENT.md only if project state changes. Capture 390x844 (and 1280x800 where relevant) Playwright screenshots of changed screens with FAKE data into qa/screens/<TASK-ID>/ and list them in the PR body. Keep ALL existing CI green.\n\nHARD RULES (owner Ahmed, non-negotiable): Do not print, log, or commit secret values, tokens or PINs (name them only). Do not roll or regenerate any token. Nothing that costs money; do not enable R2 or paid plans. Do not touch the pharmacy repo, GAS, WA_TOKEN, or WhatsApp Business settings. No WhatsApp sends of any kind (no test sends); the pharmacy bot must never auto-reply. Never call /register or /deregister and do not migrate the number. No destructive DB operations (no DROP/TRUNCATE/DELETE FROM, no Time Travel restore, no in-place import into nova-rx-staging or nova-rx-production). No production or staging deploy; do not run deploy workflows, wrangler deploy or the Cloudflare API. Do not change repo visibility, branch protection, or first-time-contributor approval settings. Do not edit .nova/cloud-queue.json or the DISABLE_SLOT_B variable. Do not touch PR #566 or the pharmacy repo. Supplier work is read-only; no real supplier cart/order writes. Tests use fake/local data only; Playwright must block non-GET / live writes. Customer data and real-chat screenshots must never be committed (use fake fixtures). Preserve Arabic RTL; mobile 390x844 first. Do not merge (the scheduler squash-merges on green CI; no admin bypass). Do not start held tasks.",
-   "acceptance": "index.html under ~150 KB; JS/CSS served as content-hashed cacheable files and precached by SW; second load fetches only HTML (304/cache) ; all existing CI green incl. POS smoke; marker checks updated; reproducible split script + sync check; new preview artifact; measured numbers in PR.",
-   "after": [
-    "SEC-01"
-   ],
-   "status": "running",
-   "attempts": 0,
-   "fix_attempts": 0,
-   "source": "sale-ready-plan-2026-11-19",
-   "note": "Owner Ahmed 2026-11-19 19:51 Riyadh: keep working until the product is strong, fast and comfortable; report at the end. Sale-ready plan (36 tasks).",
-   "model": "opus",
-   "max_turns": 80,
-   "pin_slot": "A",
-   "slot": "A",
-   "dispatched_at": "2026-11-19T18:18:21+00:00"
-  },
-  {
    "id": "PERF-04",
    "phase": 23,
    "title": "السرعة: واتساب أسرع وبدون تحديث كل 4 ثواني",
@@ -6467,7 +6468,7 @@
    "slot": "A"
   }
  ],
- "updated": "2026-11-19T18:18:21+00:00",
+ "updated": "2026-11-19T18:31:42+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
