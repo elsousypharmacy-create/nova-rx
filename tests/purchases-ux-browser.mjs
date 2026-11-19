@@ -17,7 +17,12 @@ try {
   await context.route('**/api/**', async route => {
     const path = new URL(route.request().url()).pathname;
     let data, status = 200;
-    if (path === '/api/purchases/stock') data = { ok: true, schemaVersion: 1, sourceUpdatedAt: stamp, items: stock };
+    if (path === '/api/purchases/stock') {
+      let pin = '';
+      try { pin = String((route.request().postDataJSON() || {}).dashboardPin || ''); } catch {}
+      if (!pin) { await route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'source-auth-required' }) }); return; }
+      data = { ok: true, schemaVersion: 1, sourceUpdatedAt: stamp, items: stock };
+    }
     else if (path === '/api/suppliers/status') data = { suppliers: [{ id: 'aumet', state: 'ok' }, { id: 'pharmaoverseas', state: 'ok' }] };
     else if (path === '/api/suppliers/sellers') data = { sellers: [{ id: 'one', name: 'مخزن تجريبي أ' }, { id: 'two', name: 'مخزن تجريبي ب' }] };
     else if (path === '/api/purchases/aumet-cart/preview') { scopeBody = route.request().postDataJSON(); status = 409; data = { ok: false, error: 'cart-seller-not-selected' }; }
@@ -42,8 +47,8 @@ try {
   assert.equal(await chip.getAttribute('data-state'), 'ok');
 
   // Load stock (first load asks for the dashboard PIN, same flow as the main purchasing test).
-  await page.locator('#load').click(); await page.locator('#settings').waitFor({ state: 'visible' });
-  await page.locator('#dashboardPin').fill('synthetic-owner-pin'); await page.locator('#saveSettings').click();
+  await page.locator('#dashboard-style').waitFor({ state: 'visible' });
+  await page.locator('#dashboard-style').fill('synthetic-owner-pin'); await page.locator('[data-empty-act=unlock]').click();
   await page.locator('[data-action=qty]').first().waitFor();
   assert.equal(await page.locator('.offer-state').count(), 0, 'unsearched rows carry no offer state');
   assert((await page.locator('#rows').innerText()).includes('اختَر عرضًا أو وزّع تلقائيًا'));

@@ -18,7 +18,8 @@ const provider=()=>window.NOVA_SUPPLIER_PROVIDER;
 let offerCacheHits=0;
 const offerSearch=createOfferSearch({request:async(query,opts)=>{const r=await provider().search(query,opts);return {rows:(r.results||[]).flatMap(x=>x.offers||[]),suppliers:r.suppliers||[],complete:opts.supplierIds.length>0&&opts.supplierIds.every(id=>(r.suppliers||[]).some(s=>s.id===id&&s.state==='ok'))};}});
 
-function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('warning',error);if($('sessionBanner')&&typeof syncStatusDup==='function')syncStatusDup();else $('status').hidden=false;const tp=$('statusTip');if(tp){tp.setAttribute('data-tip',text);tp.classList.toggle('warn',!!error);}}
+let stockStatus=false,wrongPin=false;
+function status(text,error=false){stockStatus=false;$('status').textContent=text;$('status').classList.toggle('warning',error);if($('sessionBanner')&&typeof syncStatusDup==='function')syncStatusDup();else $('status').hidden=false;const tp=$('statusTip');if(tp){tp.setAttribute('data-tip',text);tp.classList.toggle('warn',!!error);}}
 function scopeView(){
  const chip=$('scopeChip');if(!chip)return;
  const a=prefs.suppliers.includes('aumet'),p=prefs.suppliers.includes('pharmaoverseas'),n=prefs.aumetSellers.length,parts=[];
@@ -73,7 +74,7 @@ function render(){
  $('total').textContent=groups.length?fmt(groups.reduce((sum,g)=>sum+g.total,0))+' ج.م':'— ج.م';
  $('review').disabled=!groups.length||busy;
 }
-function emptyHtml(){if(needPin&&!loadingStock&&!PINLESS)return 'اكتب رقم دخول الداشبورد لتحميل النواقص.<br><button type="button" class="primary" data-empty-act="retry">أدخل الرقم وحمّل النواقص</button>';if(loadingStock)return '<span class="spin" aria-hidden="true"></span> جارٍ تحميل النواقص من مخزون الصيدلية…';if(loadError)return '<span class="load-error">'+esc(loadError)+'</span><br><button type="button" class="primary" data-empty-act="retry">أعد المحاولة</button>';if(rawItems.length)return 'لا توجد نواقص مطابقة للاختيار الحالي.';return '<span class="empty-ico" aria-hidden="true"></span>لا توجد أصناف بعد<span class="empty-sub">'+(prefs.mode==='manual'?'اضغط «حدّث النواقص» بالأعلى، ثم عدّل الكميات والعروض يدويًا.':'اضغط «حدّث النواقص» بالأعلى لقراءة مخزون الصيدلية.')+'</span>';}
+function emptyHtml(){if(needPin&&!loadingStock)return '<div class="unlock-card" data-unlock><b class="unlock-title">النواقص محمية برقم الدخول</b><span class="unlock-body">اكتب رقم دخول الداشبورد لعرض نواقص المخزون.</span><input id="dashboard-style" type="password" autocomplete="off" inputmode="numeric" aria-label="رقم دخول الداشبورد" placeholder="رقم الدخول">'+(wrongPin?'<small class="unlock-hint" role="status">الرقم غير صحيح، جرّب مرة أخرى.</small>':'')+'<button type="button" class="primary" data-empty-act="unlock">عرض النواقص</button></div>';if(loadingStock)return '<span class="spin" aria-hidden="true"></span> جارٍ تحميل النواقص من مخزون الصيدلية…';if(loadError)return '<span class="load-note load-error">'+esc(loadError)+'</span><br><button type="button" class="primary" data-empty-act="retry">أعد المحاولة</button>';if(rawItems.length)return 'لا توجد نواقص مطابقة للاختيار الحالي.';return '<span class="empty-ico" aria-hidden="true"></span>لا توجد أصناف بعد<span class="empty-sub">'+(prefs.mode==='manual'?'اضغط «حدّث النواقص» بالأعلى، ثم عدّل الكميات والعروض يدويًا.':'اضغط «حدّث النواقص» بالأعلى لقراءة مخزون الصيدلية.')+'</span>';}
 function unallocatedHtml(){const u=items.filter(i=>i.selected&&!i.issue&&!(i.allocations&&i.allocations.length));return u.length?`<section class="group no-offer"><h3>بدون عرض (${fmt(u.length)})</h3><ul>${u.map(i=>`<li><span>${esc(i.name)}</span><b>${fmt(i.qty)} علبة</b><small class="warning">لا يوجد عرض في المخازن المختارة</small></li>`).join('')}</ul></section>`:'';}
 function supplierName(id){return id==='aumet'?'أوميت':id==='pharmaoverseas'?'فارما أوفرسيز':id;}
 function groupHtml(g){return `<section class="group"><div class="gh"><h3>${esc(supplierName(g.supplierId))}</h3><b class="gt">${fmt(g.total)} ج.م</b></div><small class="gm">${[g.sellerName?esc(g.sellerName):'',nItems(g.lines.length),fmt(g.lines.reduce((s,l)=>s+(Number(l.qty)||0),0))+' علبة'].filter(Boolean).join(' · ')}</small><ul>${g.lines.map(l=>`<li><span>${esc(l.name)}</span><b>${fmt(l.qty)} علبة</b><small>${l.cartState==='verified'?'✓ في سلة المورد':'تجهيز محلي'}</small></li>`).join('')}</ul>${g.shipping>0?`<small>شحن: ${fmt(g.shipping)} ج.م</small>`:''}${g.belowMinimumOrder?`<small class="warning">أقل من الحد الأدنى للطلب (${fmt(g.minimumOrderValue)} ج.م)</small>`:''}</section>`;}
@@ -81,19 +82,25 @@ function configValid(){if(!prefs.suppliers.length){status('اختَر موردً
 async function loadStock(auto=false){
  if(busy)return;
  if(auto!==true)auto=false;
- if(!dashboardPin&&!auto&&!PINLESS){pendingStockLoad=true;openSettings(false);$('dashboardPin').focus();$('sourceState').textContent='المخزون الحي · محتاج رقم الداشبورد';status('اكتب رقم دخول الداشبورد في الخانة المفتوحة ثم احفظ؛ هيبدأ تحميل النواقص تلقائيًا.',true);return;}
+ if(!dashboardPin&&!auto&&!PINLESS){needPin=true;loadError='';wrongPin=false;$('sourceState').textContent='المخزون الحي · محتاج رقم الداشبورد';status('');stockStatus=true;syncStatusDup();render();focusUnlock();return;}
  pendingStockLoad=false;mockScenario=null;
  try{prefs.days=readDays($('days').value);}catch(e){status(e.message,true);return;}
  needPin=false;loadError='';loadingStock=true;setBusy(true);render();status('جارٍ قراءة النواقص من STOCK LIVE…');
  try{
   const result=await provider().purchasingStock(dashboardPin);
-  if(!result.ok||!Array.isArray(result.items))throw new Error(result.error==='source-auth-required'?'اكتب رقم دخول الداشبورد في إعدادات الموردين لقراءة المخزون':result.error==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر؛ لم يتم تحميل بيانات قديمة بدلًا منه':'تعذر قراءة مخزون الصيدلية');
+  if(!result.ok||!Array.isArray(result.items))throw new Error(result.error||'source-unavailable');
   rawItems=result.items;rebuild();$('sourceState').textContent='المخزون الحي · متصل';$('sourceState').parentElement.classList.add('ready');
   const date=new Date(result.sourceUpdatedAt||result.generatedAt);$('sourceTime').textContent=Number.isNaN(date.getTime())?'وقت تحديث المصدر غير متاح':'آخر تحديث المصدر '+date.toLocaleString('en-GB',{timeZone:'Africa/Cairo'});
   status(`تمت قراءة ${fmt(rawItems.length)} صنف؛ ${fmt(items.length)} بحاجة للطلب. راجع الكميات قبل التوزيع.`);
- }catch(e){if(e.message==='source-auth-required'&&!PINLESS){dashboardPin='';pendingStockLoad=true;if(auto){needPin=true;loadError='';}else{openSettings(false);$('dashboardPin').focus();}}const message=e.message==='pin-required'?'اكتب رقم موردين نوفا عند طلبه للاتصال':e.message==='source-auth-required'?(PINLESS?'مصدر المخزون غير مهيأ على التجربة؛ أعد المحاولة':'اكتب رقم دخول الداشبورد في إعدادات الموردين'):e.message==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر':e.message==='source-unavailable'?'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة':e.message;loadError=message||'تعذر الاتصال بالمصدر';status(message||'تعذر الاتصال بالمصدر',true);$('sourceState').textContent=e.message==='source-auth-required'?(PINLESS?'المخزون الحي · المصدر غير مهيأ':'المخزون الحي · راجع رقم الداشبورد'):e.message==='pin-required'?'المخزون الحي · محتاج رقم موردين نوفا':'المخزون الحي · تعذر التحديث';$('sourceState').parentElement.classList.remove('ready');}
+ }catch(e){const code=e.message,hadPin=!!dashboardPin;let message='',src='المخزون الحي · تعذر التحديث';
+  if(code==='source-auth-required'){dashboardPin='';pendingStockLoad=false;needPin=true;wrongPin=hadPin;loadError='';src='المخزون الحي · محتاج رقم الداشبورد';}
+  else{message=code==='pin-required'?'اكتب رقم موردين نوفا عند طلبه للاتصال':code==='source-not-ready'?'مصدر المشتريات يحتاج تحديث السيرفر؛ لم يتم تحميل بيانات قديمة بدلًا منه':'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة';loadError=message;if(code==='pin-required')src='المخزون الحي · محتاج رقم موردين نوفا';}
+  /* one notice only: the empty state carries the message; the status line stays quiet */
+  status(message);stockStatus=true;syncStatusDup();$('sourceState').textContent=src;$('sourceState').parentElement.classList.remove('ready');}
  finally{loadingStock=false;setBusy(false);render();}
 }
+function focusUnlock(){const f=$('dashboard-style');if(f)try{f.focus({preventScroll:true});}catch{}}
+function unlockStock(){const f=$('dashboard-style'),v=f?f.value.trim():'';if(!v){wrongPin=true;render();focusUnlock();return;}dashboardPin=v;if(f)f.value='';needPin=false;wrongPin=false;loadStock(true);}
 async function searchOffers(item){
  if(mockScenario){
   const q=item.nameEn||item.name;
@@ -237,7 +244,7 @@ if($('modeManual'))$('modeManual').onclick=()=>{
 if($('loadMock'))$('loadMock').onclick=()=>{if($('settings').open)$('settings').close();loadMockData();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('distributionProgress').hidden){e.preventDefault();$('stopDistribute').click();}});
 $('stopDistribute').onclick=()=>{generation++;$('stopDistribute').disabled=true;$('progressProduct').textContent='جارٍ إيقاف المقارنة…';status('تم إيقاف المقارنة؛ النتائج المكتملة محفوظة. جارٍ إنهاء البحث الحالي إن وُجد.');};
-$('load').onclick=loadStock;$('chips')?.addEventListener('click',e=>{const c=e.target.closest('[data-filter]');if(!c)return;listFilter=c.dataset.filter;render();});$('rows').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-empty-act]');if(b&&b.dataset.emptyAct==='retry')loadStock();});$('distribute').onclick=allocateAll;$('search').oninput=render;
+$('load').onclick=loadStock;$('chips')?.addEventListener('click',e=>{const c=e.target.closest('[data-filter]');if(!c)return;listFilter=c.dataset.filter;render();});$('rows').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-empty-act]');if(!b)return;if(b.dataset.emptyAct==='retry')loadStock(true);else if(b.dataset.emptyAct==='unlock')unlockStock();});$('rows').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='dashboard-style'){e.preventDefault();unlockStock();}});$('distribute').onclick=allocateAll;$('search').oninput=render;
 $('openSettings').onclick=()=>openSettings();$('refreshSellers').onclick=refreshSellers;$('sellerSearch').oninput=renderSellers;$('dashboardPin').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('saveSettings').click();}});if($('sellersAll'))$('sellersAll').onclick=()=>{for(const s of sellers){if(s.locked)continue;pendingSellerIds.add(String(s.id));pendingExcludedSellers.delete(String(s.id));}renderSellers();};if($('sellersNone'))$('sellersNone').onclick=()=>{for(const s of sellers){if(s.locked)continue;pendingSellerIds.delete(String(s.id));pendingExcludedSellers.add(String(s.id));}renderSellers();};
 $('sellers').addEventListener('change',e=>{const id=e.target.dataset.seller;if(!id)return;if(e.target.checked){pendingSellerIds.add(id);pendingExcludedSellers.delete(id);}else{pendingSellerIds.delete(id);pendingExcludedSellers.add(id);}updateExcludedSummary();});
 $('saveSettings').onclick=()=>{
@@ -393,7 +400,7 @@ if($('openSettingsMenu'))$('openSettingsMenu').addEventListener('click',()=>{con
 /* Session banner: read-only. «جدّد الجلسة» opens the existing settings/reconnect panel (status + link to the supplier-sessions workflow); it never runs it. */
 let sessionBannerText='';
 function showSessionBanner(text){const b=$('sessionBanner');if(!b)return;sessionBannerText=text;$('sessionBannerText').textContent=text;b.hidden=false;syncStatusDup();}
-function syncStatusDup(){const st=$('status');if(!st)return;const dup=!$('sessionBanner').hidden&&st.classList.contains('warning');st.hidden=dup;}
+function syncStatusDup(){const st=$('status');if(!st)return;const dup=!$('sessionBanner').hidden&&st.classList.contains('warning');st.hidden=dup||stockStatus;}
 function hideSessionBanner(){const b=$('sessionBanner');if(b)b.hidden=true;sessionBannerText='';syncStatusDup();}
 if($('renewSession'))$('renewSession').onclick=()=>openSettings();
 async function checkSessions(){

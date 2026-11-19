@@ -43,6 +43,9 @@ try {
   await context.route('**/api/**', async route => {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === '/api/purchases/stock') {
+      let pin = '';
+      try { pin = String((route.request().postDataJSON() || {}).dashboardPin || ''); } catch {}
+      if (!pin) return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'source-auth-required' }) });
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, schemaVersion: 1, sourceUpdatedAt: stamp, items: stock }) });
     }
     if (pathname === '/api/suppliers/status') {
@@ -130,10 +133,9 @@ try {
 
   // 1. Test purchases.html supplier comparison modal & row specs + expired-session message
   await page.goto('http://127.0.0.1:8766/purchases.html');
-  await page.locator('#load').click();
-  await page.locator('#settings').waitFor({ state: 'visible' });
-  await page.locator('#dashboardPin').fill('synthetic-owner-pin');
-  await page.locator('#saveSettings').click();
+  await page.locator('#dashboard-style').waitFor({ state: 'visible' });
+  await page.locator('#dashboard-style').fill('synthetic-owner-pin');
+  await page.locator('[data-empty-act=unlock]').click();
   await page.locator('[data-action=offers]').first().waitFor();
 
   await page.locator('[data-action=offers]').first().click();
