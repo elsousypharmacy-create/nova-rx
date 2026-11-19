@@ -11,7 +11,9 @@ const DRAFTS_LIST = 'novaPurchaseDraftsV1';
 const WORKING_KEY = 'novaPurchaseNeedsWorkingV1';
 const LIMITS = 'novaPurchaseLimitsV1';
 const SESSION_PIN_KEY = 'novaNeedsSessionPin';
-const PINLESS_TIMEOUT_MS = 600;
+// Owner 20 Nov 02:4x: preview/staging read the stock source with a server-side PIN (no PIN card), and the
+// source takes ~6 s, so wait for the server (same 45 s limit as the Worker) instead of showing the PIN card at 600 ms.
+const PINLESS_TIMEOUT_MS = 45000;
 
 let prefs = { days: 21, level: 'ideal', mode: 'auto', suppliers: ['aumet', 'pharmaoverseas'], aumetSellers: [], excludedSuppliers: [], excludedSellers: [] };
 try { const p = JSON.parse(localStorage.getItem(PREF) || 'null'); if (p && typeof p === 'object') prefs = { ...prefs, ...p }; } catch {}

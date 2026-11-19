@@ -218,7 +218,7 @@ try {
     await s.ctx.close();
   }
 
-  // 3) Preview (PINLESS) with slow 6.2s server -> short client timeout aborts and shows unlock card < 1000ms, CLS < 0.1
+  // 3) Preview (PINLESS) with slow 6.2s server that answers 403 -> no PIN card while waiting (owner 20 Nov), then the card, CLS < 0.1
   {
     const s = await openScenario({ width: 390, height: 844 }, {
       env: 'preview',
@@ -227,11 +227,13 @@ try {
       sessions: { aumet: 'expired', pharmaoverseas: 'ok' },
       sessionDelayMs: 200,
     });
-    await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 1000 });
+    await s.page.waitForTimeout(1000);
+    assert.equal(await s.page.locator('#needsLockWrap .unlock-card:visible').count(), 0, 'preview: no PIN card while the server-side PIN read is in flight');
+    await s.page.locator('#needsLockWrap .unlock-card').waitFor({ state: 'visible', timeout: 9000 });
     const unlockMs = Date.now() - s.t0;
     await s.page.waitForTimeout(300);
     const cls = await s.page.evaluate(() => Number(window.__cls.toFixed(4)));
-    assert.ok(unlockMs < 1000, `preview slow unlockMs=${unlockMs}ms must be < 1000ms`);
+    assert.ok(unlockMs >= 6000, `preview slow: PIN card only after the 403 (${unlockMs}ms)`);
     assert.equal(s.stockBodies.length, 1, 'preview PINLESS still attempts once');
     assert.equal(s.stockBodies[0].dashboardPin, '');
     assert.ok(cls < 0.1, `preview slow CLS=${cls} must be < 0.1`);
@@ -258,7 +260,7 @@ try {
   }
 
   console.log('PERF-05 measurements:', JSON.stringify(results));
-  console.log('PASS: PERF-05 fast fail (<1s unlock), PINLESS short timeout, CLS < 0.1 at 390x844, production PIN-gated');
+  console.log('PASS: PERF-05 fast fail (<1s unlock), PINLESS waits for server PIN, CLS < 0.1 at 390x844, production PIN-gated');
 } finally {
   await browser.close();
   server.close();
