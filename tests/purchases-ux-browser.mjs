@@ -38,7 +38,7 @@ try {
 
   // Scope chip: two selected warehouses, English digits, display only.
   const chip = page.locator('#scopeChip');
-  assert.equal((await chip.innerText()).trim(), 'أوميت: 2 مخازن');
+  assert.equal((await chip.innerText()).trim(), 'موردين: 1 · مخازن أوميت: 2');
   assert.equal(await chip.getAttribute('data-state'), 'ok');
 
   // Load stock (first load asks for the dashboard PIN, same flow as the main purchasing test).
@@ -109,10 +109,10 @@ try {
   // Scope chip follows preference changes and never widens the search.
   const before = searchCalls;
   await page.locator('#openSettings').click(); await page.locator('#refreshSellers').click(); await page.locator('[data-seller=two]').waitFor(); await page.locator('[data-seller=two]').uncheck(); await page.locator('#saveSettings').click();
-  assert.equal((await chip.innerText()).trim(), 'أوميت: 1 مخزن');
+  assert.equal((await chip.innerText()).trim(), 'موردين: 1 · مخازن أوميت: 1');
   assert.equal(await page.locator('.offer-state').count(), 0, 'saving settings clears stale offer states');
   await page.locator('#openSettings').click(); await page.locator('#refreshSellers').click(); await page.locator('[data-seller=one]').waitFor(); await page.locator('[data-seller=one]').uncheck(); await page.locator('#saveSettings').click();
-  assert.equal((await chip.innerText()).trim(), 'أوميت: لا مخازن مختارة');
+  assert.equal((await chip.innerText()).trim(), 'موردين: 1 · مخازن أوميت: 0');
   assert.equal(await chip.getAttribute('data-state'), 'warn');
   await page.locator('[data-action=select]').first().check().catch(() => {});
   await page.locator('#distribute').click();

@@ -19,11 +19,9 @@ try {
   await page.evaluate(()=>{const m=document.querySelector('.tools-menu');if(m)m.open=true}); const link = page.locator('#receiveInvoice');
   assert.equal((await link.innerText()).trim(), 'استلام فاتورة');
   assert.ok((await link.boundingBox()).height >= 44, 'receive button >=44px');
-  let clicks = 0;
-  await link.click(); clicks++;
-  await page.waitForSelector('#novaAiPanel.open', { timeout: 10000 });
-  assert.ok(page.url().includes('index.html'));
-  assert.ok(clicks <= 2, 'clicks <= 2');
+  await link.click(); // PUR-02: opens the استلام tab in place, no page change
+  await page.waitForFunction(() => document.getElementById('tabReceive').getAttribute('aria-selected') === 'true');
+  assert.ok(page.url().includes('purchases.html'));
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl');
   // mobile select-all label >= 44px
   await page.setViewportSize({ width: 390, height: 800 });
@@ -33,5 +31,5 @@ try {
   const box = await page.locator('.select-all-label').boundingBox();
   assert.ok(box.width >= 44 && box.height >= 44, 'select-all label 44px');
   assert.deepEqual(errors, []);
-  console.log('purchases-receive-link passed: clicks=' + clicks);
+  console.log('purchases-receive-link passed');
 } finally { await browser.close(); }

@@ -36,7 +36,7 @@ try {
       await page.goto(new URL(t.page, BASE).href, { waitUntil: 'load' });
       assert.equal(await page.getAttribute('html', 'dir'), 'rtl', `${label}: RTL`);
       if (t.open) await page.click(t.open);
-      if (t.setup) { await page.evaluate(()=>{const m=document.querySelector('.tools-menu');if(m)m.open=true}); await page.click(t.setup); await page.waitForSelector(t.ready); } // local fake scenario
+      if (t.setup) { if (t.setup === '#loadMock') await page.evaluate(()=>document.getElementById('loadMock').click()); else await page.click(t.setup); await page.waitForSelector(t.ready); } // local fake scenario
       await page.locator(t.hit).scrollIntoViewIfNeeded();
       const m = await page.evaluate(({ ctl, hit }) => {
         const c = document.querySelector(ctl), h = document.querySelector(hit), r = h.getBoundingClientRect();

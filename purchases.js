@@ -394,13 +394,14 @@ function showSessionBanner(text){const b=$('sessionBanner');if(!b)return;$('sess
 function hideSessionBanner(){const b=$('sessionBanner');if(b)b.hidden=true;}
 if($('renewSession'))$('renewSession').onclick=()=>openSettings();
 async function checkSessions(){
- const M=window.NovaSupplierStatus;if(!M||mockScenario)return;
+ if(mockScenario)return;
  try{
+  /* provider.listSuppliers maps the worker state: ok -> ok, expired -> error («الجلسة انتهت»), anything else (off) -> off */
   const list=await provider().listSuppliers();
-  const bad=(list||[]).filter(s=>prefs.suppliers.includes(s.id)).map(s=>({s,st:M.classify(s)})).filter(x=>x.st==='auth_failed'||x.st==='missing_credential');
+  const bad=(list||[]).filter(s=>prefs.suppliers.includes(s.id)&&(s.state==='error'||s.state==='off'));
   if(!bad.length){hideSessionBanner();return;}
-  const names=bad.map(x=>supplierName(x.s.id)).join('، ');
-  showSessionBanner(bad.some(x=>x.st==='auth_failed')?`جلسة ${names} منتهية؛ جدّدها قبل البحث عن العروض.`:`بيانات دخول ${names} ناقصة؛ أضفها من تجديد الجلسة.`);
+  const exp=bad.filter(s=>s.state==='error').map(s=>supplierName(s.id)),miss=bad.filter(s=>s.state==='off').map(s=>supplierName(s.id));
+  showSessionBanner(exp.length?`جلسة ${exp.join('، ')} منتهية؛ جدّدها قبل البحث عن العروض.`:`بيانات دخول ${miss.join('، ')} ناقصة؛ أضفها من تجديد الجلسة.`);
  }catch{}
 }
 
