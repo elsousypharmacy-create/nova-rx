@@ -1,4 +1,4 @@
-// Preview artifact perf-02 = pur-08 Worker (newest on main: sec-01 + PUR-08) + PERF-02 split app: index.html is a shell, its big blocks are served from the
+// Preview artifact perf-02 = sec-01c Worker (newest on main: sec-01c + PUR-08) + PERF-02 split app: index.html is a shell, its big blocks are served from the
 // NOVA_APP_ASSETS table (/assets/app-*.<hash>.js|css, Cache-Control immutable) and sw.js precaches them.
 // Built by tools/build-preview-refresh.mjs. No deploy, no network. Run: node tests/unit/artifact-perf-02.check.mjs
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
@@ -10,7 +10,7 @@ import { splitTags, check as splitCheck, joinHtml } from '../../tools/split-inde
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const ART = join(ROOT, 'worker/live/nova-rx-preview.perf-02.js');
-const BASE = join(ROOT, 'worker/live/nova-rx-preview.pur-08.js');
+const BASE = join(ROOT, 'worker/live/nova-rx-preview.sec-01c.js');
 let fail = 0; const ck = (n, ok, d = '') => { console.log((ok ? 'PASS ' : 'FAIL ') + n + (ok ? '' : ' -> ' + d)); if (!ok) fail++; };
 const art = readFileSync(ART, 'utf8');
 const ix = readFileSync(join(ROOT, 'index.html'), 'utf8');

@@ -4,12 +4,12 @@
   "recordedAt": "2026-11-19",
   "maxGrowthPct": 5,
   "size": {
-    "indexHtmlBytes": 68009,
-    "totalJsCssBytes": 1272992,
+    "indexHtmlBytes": 68032,
+    "totalJsCssBytes": 1273237,
     "breakdown": {
-      "inlineJsBytes": 11091,
+      "inlineJsBytes": 11114,
       "inlineCssBytes": 10008,
-      "externalJsBytes": 987875,
+      "externalJsBytes": 988097,
       "externalCssBytes": 264018
     }
   },
