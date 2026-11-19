@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "description": "PERF-06 size & LCP performance budget ratchet for NOVA Rx",
+  "recordedAt": "2026-11-19",
+  "maxGrowthPct": 5,
+  "size": {
+    "indexHtmlBytes": 1200843,
+    "totalJsCssBytes": 1275358,
+    "breakdown": {
+      "inlineJsBytes": 894830,
+      "inlineCssBytes": 264400,
+      "externalJsBytes": 104136,
+      "externalCssBytes": 11992
+    }
+  },
+  "lcp": {
+    "budgetMs": 2500,
+    "baselineMs": 1000,
+    "domContentLoadedBaselineMs": 5228,
+    "loadBaselineMs": 5248,
+    "mode": "warn",
+    "maxRegressionPct": 15,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "network": {
+      "downloadBps": 200000,
+      "uploadBps": 93750,
+      "latencyMs": 150,
+      "label": "Fast 3G (1.6 Mbps down, 150 ms RTT)"
+    },
+    "cpuThrottleRate": 4,
+    "note": "Warning-only ratchet while DCL/Load on 1.2 MB index.html is ~5.2 s (and preview LCP is ~3.6 s); switch mode to 'enforce' once PERF-02 splits inline JS/CSS and brings LCP reliably under 2500 ms."
+  }
+}
