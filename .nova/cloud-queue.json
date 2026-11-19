@@ -11,7 +11,7 @@
    "after": [
     "SEC-01"
    ],
-   "status": "hold",
+   "status": "pr_open",
    "attempts": 1,
    "fix_attempts": 0,
    "source": "sale-ready-plan-2026-11-19",
@@ -21,7 +21,21 @@
    "pin_slot": "A",
    "slot": "A",
    "dispatched_at": "2026-11-19T18:31:42+00:00",
-   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/44586472666"
+   "last_failure": "run failure https://github.com/elsousypharmacy-create/nova-rx/actions/runs/44586472666",
+   "pr": 576,
+   "ci_dispatched": {
+    "sha": "6259a071f1775cb5fb77a9695f399088c5e8c86a",
+    "wf": [
+     "backend-unit.yml",
+     "playwright-smoke.yml",
+     "preview-artifact-unit.yml",
+     "purchasing-checks.yml",
+     "secret-scan.yml",
+     "ux-unit.yml"
+    ],
+    "at": "2026-11-19T19:02:09+00:00",
+    "na": []
+   }
   },
   {
    "id": "SEC-01",
@@ -6468,7 +6482,7 @@
    "slot": "A"
   }
  ],
- "updated": "2026-11-19T18:31:42+00:00",
+ "updated": "2026-11-19T19:02:09+00:00",
  "slot_cooldown": {},
  "ingested_inbox": [
   "fix-aumet-login.json",
