@@ -38,7 +38,7 @@
     function reversed(s, id) { return s.moves.some(function (m) { return m.type === 'reversal' && m.target === id; }); }
     function paidOn(s, invId) {
       var t = 0;
-      s.moves.forEach(function (m) { if (m.type === 'payment' && !reversed(s, m.id)) m.allocations.forEach(function (a) { if (a.invoiceId === invId) t += a.cents + a.discount; }); });
+      s.moves.forEach(function (m) { if ((m.type === 'payment' || m.type === 'credit') && !reversed(s, m.id)) m.allocations.forEach(function (a) { if (a.invoiceId === invId) t += a.cents + (a.discount || 0); }); });
       return t;
     }
 
@@ -84,6 +84,19 @@
       s.moves.push({ id: id, type: 'payment', supplierId: sp.id, cents: c, at: at, allocations: allocs, ref: p.ref || id });
       save(s); return id;
     }
+    /* SUP-RET: credit note for goods returned to the supplier. Settles open invoices oldest-due first WITHOUT
+       early-payment discount; any amount left over stays as supplier credit (reported by creditBalance, not auto-applied). */
+    function credit(p) {
+      var s = load(), sp = sup(s, p && p.supplierId), id = str(p.id, 'missing-key');
+      if (find(s.moves, id)) return find(s.moves, id).id;
+      var c = cents(p.amount), at = p.at || now(), left = c, allocs = [];
+      openInvoices(s, sp.id).forEach(function (d) {
+        if (left <= 0) return;
+        var take = Math.min(left, d.open); allocs.push({ invoiceId: d.id, cents: take, discount: 0 }); left -= take;
+      });
+      s.moves.push({ id: id, type: 'credit', supplierId: sp.id, cents: c, at: at, allocations: allocs, leftover: left, ref: p.ref || id, reason: String(p.reason || '').slice(0, 200) });
+      save(s); return id;
+    }
     function reverse(id, reason) {
       var s = load(), m = find(s.moves, str(id, 'missing-key'));
       if (!m || m.type === 'reversal') fail('unknown-move');
@@ -93,6 +106,11 @@
       save(s);
     }
     function balance(sid) { var s = load(); sup(s, sid); return pounds(openInvoices(s, sid).reduce(function (t, d) { return t + d.open; }, 0)); }
+    function creditBalance(sid) {
+      var s = load(), t = 0; sup(s, sid);
+      s.moves.forEach(function (m) { if (m.type === 'credit' && m.supplierId === sid && !reversed(s, m.id)) t += m.leftover || 0; });
+      return pounds(t);
+    }
     function aging(sid) {
       var s = load(), b = { current: 0, d1_30: 0, d31_60: 0, d61_plus: 0 }, t = now(); sup(s, sid);
       openInvoices(s, sid).forEach(function (d) {
@@ -173,7 +191,7 @@
       return { ok: diffs.length === 0, diffs: diffs };
     }
 
-    return { setSupplier: setSupplier, addInvoice: addInvoice, pay: pay, reverse: reverse, balance: balance, aging: aging,
+    return { setSupplier: setSupplier, addInvoice: addInvoice, pay: pay, credit: credit, creditBalance: creditBalance, reverse: reverse, balance: balance, aging: aging,
       discountsAvailable: discountsAvailable, addExpense: addExpense, approveExpense: approveExpense, rejectExpense: rejectExpense,
       payExpense: payExpense, expenses: expenses, addBankEntry: addBankEntry, reconcile: reconcile };
   }
