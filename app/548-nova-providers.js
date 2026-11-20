@@ -53,4 +53,46 @@
     },
     cashOut: function (amount, note) { var me = this.currentUser(); window.novaCashOut.add(amount, note, me ? me.name : ''); }
   };
+
+  /* RCV01 lazy screens: index.html lists the supplier accounts / supplier returns code as
+     <link rel="prefetch" as="script" data-nova-lazy href=...> — the browser downloads it in the background (and the service
+     worker keeps it for offline use) but nothing runs at startup, so the sale screen opens lighter. It runs, in order, when
+     the reports or receiving page opens, or once the app is idle a few seconds after loading. */
+  var lazyPromise = null;
+  function loadLazy() {
+    if (lazyPromise) return lazyPromise;
+    var links = [].slice.call(document.querySelectorAll('link[rel="prefetch"][as="script"][data-nova-lazy]'));
+    lazyPromise = Promise.all(links.map(function (l) {
+      return new Promise(function (ok) {
+        var s = document.createElement('script');
+        s.src = l.getAttribute('href');
+        s.async = false;               // dynamic scripts with async=false run in insertion order
+        s.onload = function () { ok(true); };
+        s.onerror = function () { ok(false); };
+        document.body.appendChild(s);
+      });
+    }));
+    return lazyPromise;
+  }
+  var LAZY_PAGES = { reports: 1, receiving: 1 };
+  function lazyPageOpen() {
+    var a = document.querySelector('.nova-tab.active[data-page]');
+    var p = (document.body && document.body.dataset.activePage) || (a && a.getAttribute('data-page')) || String(location.hash || '').replace(/^#/, '').split(/[&?]/)[0];
+    return !!LAZY_PAGES[p];
+  }
+  function checkLazy() { if (!lazyPromise && lazyPageOpen()) loadLazy(); }
+  window.novaLazy = { load: loadLazy };
+  window.addEventListener('hashchange', checkLazy);
+  document.addEventListener('click', function (e) { var t = e.target && e.target.closest && e.target.closest('.nova-tab[data-page]'); if (t && LAZY_PAGES[t.getAttribute('data-page')]) loadLazy(); }, true);
+  function boot() {
+    checkLazy();
+    if (document.body && window.MutationObserver) {
+      var mo = new MutationObserver(function () { if (lazyPromise) { mo.disconnect(); return; } checkLazy(); });
+      mo.observe(document.body, { attributes: true, attributeFilter: ['data-active-page'] });
+    }
+    var idle = function () { (window.requestIdleCallback || function (f) { setTimeout(f, 1); })(function () { loadLazy(); }, { timeout: 4000 }); };
+    if (document.readyState === 'complete') setTimeout(idle, 2500);
+    else window.addEventListener('load', function () { setTimeout(idle, 2500); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
