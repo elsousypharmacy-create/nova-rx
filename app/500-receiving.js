@@ -58,7 +58,11 @@
   }
   function pendingPOs() { return read(POK).filter(function (p) { return p && Array.isArray(p.lines) && ['sent', 'accepted', 'partial'].indexOf(p.state) >= 0; }); }
   function boxes(r) { return window.NovaReceiptOperations.effectiveLines(r).reduce(function (s, l) { return s + (Number(l.qty) || 0); }, 0); }
-  function total(r) { return window.NovaReceiptOperations.effectiveLines(r).reduce(function (s, l) { return s + (Number(l.qty) || 0) * (Number(l.cost) || 0); }, 0); }
+  // RCV-BONUS: a bonus line keeps qty = paid + bonus (stock); money uses paid x invoice price while the line is uncorrected
+  function hasBonus(l) { return l.bonus > 0 && l.paidQty != null && l.qty === l.paidQty + l.bonus; }
+  function lineMoney(l) { return hasBonus(l) && l.invoiceCost != null ? (Number(l.paidQty) || 0) * (Number(l.invoiceCost) || 0) : (Number(l.qty) || 0) * (Number(l.cost) || 0); }
+  function qtyLabel(l) { return hasBonus(l) ? l.paidQty + ' + ' + l.bonus + ' بونص' : l.qty + ' علبة'; }
+  function total(r) { return window.NovaReceiptOperations.effectiveLines(r).reduce(function (s, l) { return s + lineMoney(l); }, 0); }
   function nItems(n) { return n === 1 ? 'صنف واحد' : n === 2 ? 'صنفين' : n + (n >= 3 && n <= 10 ? ' أصناف' : ' صنف'); }
   function disp(name) { return window.novaDispName ? window.novaDispName(name) : String(name || ''); }
   var AR_M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -79,7 +83,7 @@
 
   const receiptOps = window.NovaReceiptOperations;
   function reviewTable(po, lines) {
-    const rows = receiptOps.review(po, lines);
+    const rows = receiptOps.review(po, lines.map(line => line.paidQty != null ? { ...line, qty: line.paidQty, cost: line.invoiceCost != null ? line.invoiceCost : line.cost } : line));
     if (!rows.length) return '';
     return '<h3>مراجعة الاستلام</h3><div class="rcv-review-scroll"><table><thead><tr>' +
       ['الصنف', 'المطلوب', 'سبق استلامه', 'الواصل الآن', 'الباقي', 'الزيادة', 'سعر الشراء'].map(label => '<th>' + label + '</th>').join('') +
@@ -178,7 +182,7 @@
   function openMovements(id) {
     const receipt = receipts().find(row => row.id === id);
     if (!receipt) return;
-    const original = receipt.lines.map(line => '<tr><td>' + esc(disp(line.name)) + '</td><td data-label="الكمية المضافة">' + line.qty + '</td><td data-label="الصلاحية">' + esc(line.expiry) + '</td><td data-label="سعر الشراء">' + money(line.cost) + '</td></tr>').join('');
+    const original = receipt.lines.map(line => '<tr><td>' + esc(disp(line.name)) + '</td><td data-label="الكمية المضافة">' + (hasBonus(line) ? line.paidQty + ' + ' + line.bonus + ' بونص' : line.qty) + '</td><td data-label="الصلاحية">' + esc(line.expiry) + '</td><td data-label="سعر الشراء">' + money(line.cost) + '</td></tr>').join('');
     modal('حركة المخزون · فاتورة ' + receipt.invoice,
       '<p>' + esc(receipt.supplier) + ' · ' + fmtDate(receipt.date) + (receipt.poId ? ' · ' + esc(receipt.poId) : '') + '</p>' +
       '<h3>الاستلام الأصلي</h3><div class="rcv-review-scroll"><table><thead><tr><th>الصنف</th><th>الكمية المضافة</th><th>الصلاحية</th><th>سعر الشراء</th></tr></thead><tbody>' + original + '</tbody></table></div>' +
@@ -279,7 +283,7 @@
       else h += '<div class="rcv-table"><div class="rcv-tr rcv-th"><span>التاريخ</span><span>المورد</span><span>رقم الفاتورة</span><span>الأصناف</span><span>الإجمالي</span></div>'
         + all.slice(0, 50).map(function (r) {
           return '<details class="rcv-row" id="rcv-' + esc(r.id) + '"><summary class="rcv-tr"><span>' + fmtDate(r.date || r.at) + '</span><span><b>' + esc(r.supplier) + '</b>' + (r.poId ? ' <small class="rcv-po-ref">' + esc(r.poId) + '</small>' : '') + (r.warnings && r.warnings.length ? ' <small class="rcv-warn" title="' + esc(r.warnings.join('، ')) + '">⚠ ' + r.warnings.length + '</small>' : '') + '</span><span dir="ltr">' + esc(r.invoice) + '</span><span>' + nItems(r.lines.length) + ' · ' + boxes(r) + ' علبة</span><span><b>' + money(total(r)) + '</b></span></summary>'
-            + '<div class="rcv-lines">' + window.NovaReceiptOperations.effectiveLines(r).map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + l.qty + ' علبة</span><span dir="ltr">' + esc(l.autoLot ? '—' : l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money((Number(l.cost) || 0) * l.qty) + '</span></div>'; }).join('') + '</div>' + receiptActions(r) + '</details>';
+            + '<div class="rcv-lines">' + window.NovaReceiptOperations.effectiveLines(r).map(function (l) { return '<div><span>' + esc(disp(l.name)) + '</span><span>' + qtyLabel(l) + '</span><span dir="ltr">' + esc(l.autoLot ? '—' : l.lot) + '</span><span dir="ltr">' + esc(String(l.expiry || '').slice(0, 7)) + '</span><span>' + money(lineMoney(l)) + '</span></div>'; }).join('') + '</div>' + receiptActions(r) + '</details>';
         }).join('') + '</div>';
       h += '</section></div>';
     }
@@ -298,7 +302,7 @@
     return y + '-' + String(mo).padStart(2, '0');
   }
   function expShow(e) { return /^\d{4}-\d{2}/.test(e || '') ? e.slice(5, 7) + '/' + e.slice(2, 4) : (e || ''); }
-  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && p.qty || '', lot: p && !p.autoLot && p.lot || '', exp: p && p.expiry ? p.expiry.slice(0, 7) : '', cost: p && p.cost != null ? p.cost : '' }; }
+  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && (p.paidQty != null ? p.paidQty : p.qty) || '', bonus: p && p.bonus || '', lot: p && !p.autoLot && p.lot || '', exp: p && p.expiry ? p.expiry.slice(0, 7) : '', cost: p && p.invoiceCost != null ? p.invoiceCost : (p && p.cost != null ? p.cost : '') }; }
   function openForm(pre) {
     if (document.getElementById('rcvForm')) return;
     var prevFocus = document.activeElement;
@@ -350,6 +354,7 @@
       return '<div class="rcv-line" data-i="' + i + '">'
         + '<div class="rcv-fld rcv-pick"><span class="rcv-lbl">الصنف <b class="rcv-req" aria-hidden="true">*</b></span><input data-f="q" autocomplete="off" placeholder="ابحث بالاسم أو امسح الباركود" value="' + esc(l.key ? disp(l.name) : (l.name || '')) + '" aria-label="الصنف" aria-required="true"' + (l.key ? ' data-ok="1"' : '') + '><div class="rcv-sug" hidden></div></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">الكمية</span><div class="rcv-unitbox"><input data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="' + esc(l.qty) + '" aria-label="الكمية بالعلب" placeholder="0"><span class="rcv-unit">علبة</span></div></div>'
+        + '<div class="rcv-fld rcv-bonus"><span class="rcv-lbl">بونص</span><input data-f="bonus" type="number" min="0" max="9999" step="1" inputmode="numeric" value="' + esc(l.bonus) + '" aria-label="بونص مجاني بالعلب" placeholder="0"></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">سعر العلبة</span><input data-f="cost" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.cost) + '" aria-label="سعر الشراء للعلبة" placeholder="0.00"></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">الصلاحية <b class="rcv-req" aria-hidden="true">*</b></span><input data-f="exp" type="text" dir="ltr" inputmode="numeric" maxlength="7" autocomplete="off" value="' + esc(expShow(l.exp)) + '" aria-label="تاريخ الصلاحية شهر/سنة" aria-required="true" placeholder="MM/YY"><small class="rcv-err" data-err role="alert"></small></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">التشغيلة (اختياري)</span><input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة (اختياري)" placeholder="اختياري"></div>'
@@ -360,17 +365,17 @@
     function sum() {
       var n = 0, b = 0, t = 0;
       st.lines.forEach(function (l, i) {
-        var q = Number(l.qty) || 0, c = Number(l.cost) || 0, row = box.children[i];
+        var q = Number(l.qty) || 0, bn = bonusOf(l), c = Number(l.cost) || 0, row = box.children[i];
         if (row) row.querySelector('[data-lt]').textContent = q && c ? money(q * c) : '—';
-        if (l.key || l.name) { n++; b += q; t += q * c; }
+        if (l.key || l.name) { n++; b += q + (Number.isInteger(bn) && bn > 0 ? bn : 0); t += q * c; }
       });
-      var miss = [], now0 = new Date(), tt = Date.UTC(now0.getFullYear(), now0.getMonth(), now0.getDate()), anyItem = false, expBad = false, qtyBad = false, pickBad = false;
+      var miss = [], now0 = new Date(), tt = Date.UTC(now0.getFullYear(), now0.getMonth(), now0.getDate()), anyItem = false, expBad = false, qtyBad = false, bonusBad = false, pickBad = false;
       if (!supValue()) miss.push('المورد');
       if (!ov.querySelector('#rcvInv').value.trim()) miss.push('رقم الفاتورة');
       var usedAny = false;
       st.lines.forEach(function (l, i) {
         var row = box.children[i], er = row && row.querySelector('[data-err]'), raw = String(l.exp || '').trim(), pe = parseExp(raw), msgE = '';
-        var used = !!(l.key || l.name || l.qty || l.lot || raw), q = Number(l.qty);
+        var bn = bonusOf(l), used = !!(l.key || l.name || l.qty || bonusRaw(l) || l.lot || raw), q = Number(l.qty);
         if (l.key) anyItem = true;
         if (raw) {
           if (!pe) { if (row && (row.dataset.touched || raw.length >= 5)) msgE = 'اكتب الشهر والسنة مثل 11/26'; }
@@ -380,10 +385,12 @@
         if (used) usedAny = true;
         if (used && !l.key) pickBad = true;
         if (used && (!Number.isInteger(q) || q <= 0)) qtyBad = true;
+        if (used && !bonusOk(bn, q)) bonusBad = true;
         if (used && (!pe || msgE || +pe.slice(5) < 1 || +pe.slice(5) > 12)) expBad = true;
       });
       if (!anyItem || pickBad) miss.push('صنف واحد على الأقل');
       if (qtyBad) miss.push('الكمية');
+      if (bonusBad) miss.push('البونص');
       if (expBad || !usedAny) miss.push('الصلاحية');
       var mEl = ov.querySelector('#rcvMissing'); mEl.textContent = miss.length && !st.pending ? 'ناقص: ' + miss.join('، ') : '';
       var okBtn = ov.querySelector('#rcvOk'); if (okBtn && !st.pending) { okBtn.disabled = miss.length > 0; okBtn.setAttribute('aria-disabled', String(miss.length > 0)); }
@@ -393,6 +400,9 @@
       ov.querySelector('#rcvReview').innerHTML = po ? reviewTable(po, lines) : '';
 
     }
+    function bonusRaw(l) { return String(l.bonus == null ? '' : l.bonus).trim(); }
+    function bonusOf(l) { var r = bonusRaw(l); return r === '' ? 0 : Number(r); }
+    function bonusOk(bn, q) { return Number.isInteger(bn) && bn >= 0 && bn <= 9999 && (!(Number.isInteger(q) && q > 0) || bn <= 10 * q); }
     function lineOf(el) { var r = el.closest('.rcv-line'); return r ? +r.getAttribute('data-i') : -1; }
     var found = {};
     function suggest(inp, i) {
@@ -429,13 +439,13 @@
       var f = e.target.getAttribute('data-f'), i = lineOf(e.target); if (i < 0) return;
       e.preventDefault(); e.stopPropagation();
       if (f === 'q') { if (found[i] && found[i].length) pick(i, 0); return; }
-      var nx = { qty: 'exp', lot: 'exp', exp: 'cost' }[f];
+      var nx = { qty: 'bonus', bonus: 'exp', lot: 'exp', exp: 'cost' }[f];
       if (nx) box.children[i].querySelector('[data-f=' + nx + ']').focus();
       else addLine();
     });
     function addLine() { st.lines.push(blankLine()); draw(); box.lastElementChild.querySelector('[data-f=q]').focus(); }
     function msg(m, warn) { var el = ov.querySelector('#rcvMsg'); el.textContent = m || ''; el.className = 'rcv-msg' + (warn ? ' warn' : ''); }
-    function dirty() { return ov.querySelector('#rcvInv').value.trim() || st.lines.some(function (l) { return l.key || l.qty || l.lot; }); }
+    function dirty() { return ov.querySelector('#rcvInv').value.trim() || st.lines.some(function (l) { return l.key || l.qty || bonusRaw(l) || l.lot; }); }
     function close(force) { if (!force && !st.pending && dirty() && !window.confirm('تقفل من غير ما تحفظ الاستلام؟')) return; ov.remove(); document.removeEventListener('keydown', key, true); form = null; if (prevFocus && prevFocus.isConnected && typeof prevFocus.focus === 'function') { try { prevFocus.focus(); } catch (_) {} } }
     function key(e) {
       if (e.key === 'Escape') { var s = ov.querySelector('.rcv-sug:not([hidden])'); e.preventDefault(); e.stopPropagation(); if (s) { s.hidden = true; return; } close(); }
@@ -463,7 +473,7 @@
         msg(previous.pending ? 'الفاتورة دي محتاجة استكمال. اقفل النافذة واضغط «كمّل الاستلام» من القائمة.' : 'الفاتورة دي (' + inv + ') اتسجلت قبل كده للمورد ده');
         return;
       }
-      var used = st.lines.filter(function (l) { return l.key || l.name || l.qty || l.lot; });
+      var used = st.lines.filter(function (l) { return l.key || l.name || l.qty || bonusRaw(l) || l.lot; });
       if (!used.length) { msg('ضيف صنف واحد على الأقل'); return; }
       var id = 'RCV-' + window.novaStock.newKey();
       var now = new Date(), t0 = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()), soon = t0 + 90 * 864e5, out = [], short = 0;
@@ -472,6 +482,7 @@
         var row = box.children[i], bad = function (f, m) { msg('سطر ' + (i + 1) + ': ' + m); row.querySelector('[data-f=' + f + ']').focus(); };
         if (!l.key) return bad('q', 'اختار الصنف من القائمة');
         var q = Number(l.qty); if (!Number.isInteger(q) || q <= 0) return bad('qty', 'اكتب كمية صحيحة بالعلب');
+        var bn = bonusOf(l); if (!bonusOk(bn, q)) return bad('bonus', 'اكتب بونص صحيح');
         var autoLot = !String(l.lot).trim(), lot = autoLot ? id + '/' + (i + 1) : String(l.lot).trim();
         var pe = parseExp(l.exp); if (!pe) return bad('exp', 'اكتب الصلاحية شهر/سنة مثل 11/26');
         var y = +pe.slice(0, 4), mo = +pe.slice(5), last = new Date(Date.UTC(y, mo, 0));
@@ -480,11 +491,16 @@
         if (last.getTime() < soon) short++;
         if (out.some(function (o) { return o.key === l.key && o.lot === lot; })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
         if (l.cost !== '' && (!Number.isFinite(Number(l.cost)) || Number(l.cost) < 0)) return bad('cost', 'اكتب سعر شراء صحيح');
-        out.push({ key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: pe + '-' + String(last.getUTCDate()).padStart(2, '0'), cost: l.cost === '' ? 0 : Number(l.cost) || 0 });
+        var invCost = l.cost === '' ? 0 : Number(l.cost) || 0, expStr = pe + '-' + String(last.getUTCDate()).padStart(2, '0');
+        // no bonus → exactly today's line shape (replay/idempotency compares it)
+        out.push(bn > 0
+          ? { key: l.key, code: l.code || l.key, name: l.name, qty: q + bn, paidQty: q, bonus: bn, lot: lot, autoLot: autoLot, expiry: expStr, invoiceCost: invCost, cost: Math.round(q * invCost / (q + bn) * 10000) / 10000 }
+          : { key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: expStr, cost: invCost });
       }
-      var b = out.reduce(function (s, o) { return s + o.qty; }, 0);
+      var b = out.reduce(function (s, o) { return s + o.qty; }, 0), bb = out.reduce(function (s, o) { return s + (o.bonus || 0); }, 0);
+      var bTxt = bb ? (b - bb) + ' + ' + bb + ' بونص = ' + b + ' علبة' : b + ' علبة';
       if (st.poId && read(POK).find(row => row.id === st.poId)?.supplier !== sup) { msg('مورد الفاتورة يختلف عن الطلبية'); return; }
-      if (!window.confirm('تأكيد استلام ' + nItems(out.length) + ' (' + b + ' علبة) من ' + sup + ' وإضافتهم للمخزون؟' + (short ? '\nتنبيه: ' + short + ' صنف صلاحيته أقل من 3 شهور.' : ''))) return;
+      if (!window.confirm('تأكيد استلام ' + nItems(out.length) + ' (' + bTxt + ') من ' + sup + ' وإضافتهم للمخزون؟' + (short ? '\nتنبيه: ' + short + ' صنف صلاحيته أقل من 3 شهور.' : ''))) return;
       if (st.poId) {
         const po = pendingPOs().find(entry => entry.id === st.poId);
         if (!po || po.grns?.some(entry => entry.ref === inv)) { msg('الفاتورة دي اتسجلت قبل كده للطلبية أو الطلبية اكتملت'); return; }

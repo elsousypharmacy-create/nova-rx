@@ -708,6 +708,9 @@
               typeLabel = t('سداد', 'Payment');
               const disc = (m.allocations || []).reduce((s, a) => s + (a.discount || 0), 0) / 100;
               delta = -(amt + disc);
+            } else if (m.type === 'credit') {
+              typeLabel = t('مرتجع للمورد', 'Supplier return');
+              delta = -amt;
             } else if (m.type === 'reversal') {
               typeLabel = t('عكس حركة', 'Reversal');
             }
@@ -718,7 +721,7 @@
                 <td>${esc(typeLabel)}</td>
                 <td>${esc(m.ref || m.id)}</td>
                 <td>${m.type === 'invoice' ? esc(fmtMoney(amt)) : '—'}</td>
-                <td>${m.type === 'payment' ? esc(fmtMoney(amt)) : '—'}</td>
+                <td>${m.type === 'payment' || m.type === 'credit' ? esc(fmtMoney(amt)) : '—'}</td>
                 <td>${esc(fmtMoney(Math.max(0, running)))}</td>
               </tr>
             `;
