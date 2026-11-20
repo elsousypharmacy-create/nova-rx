@@ -93,11 +93,12 @@ try {
   });
 
   await t('clear invoice (F4) resets lines and keeps focus on #mainSearchInput', async () => {
-    page.once('dialog', dialog => dialog.dismiss());
+    // AUDIT-02: F4 opens the in-app dialog (no window.confirm): «رجوع» keeps the invoice, «امسح الفاتورة» clears it
     await page.keyboard.press('F4');
+    await page.locator('#novaInvoiceActionDialog button[data-action="cancel"]').click();
     assert.equal(await page.locator('#invoiceTableBody tr').count(), 1, 'cancelling keeps the open invoice');
-    page.once('dialog', dialog => dialog.accept());
     await page.keyboard.press('F4');
+    await page.locator('#novaInvoiceActionDialog button[data-action="clear"]').click();
     assert.equal(await page.locator('#invoiceTableBody tr').count(), 0);
     assert.equal(await activeId(), 'mainSearchInput');
   });

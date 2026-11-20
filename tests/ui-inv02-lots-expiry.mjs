@@ -164,8 +164,8 @@ await t('configurable near-expiry warning threshold via Settings UI and API upda
   // Reset threshold back to 90 days
   await page.evaluate(() => window.novaStock.setNearExpiryDays(90));
   assert.equal(await page.locator('#invoiceTableBody [data-near-expiry]').count(), 0);
-  page.once('dialog', dialog => dialog.accept());
   await page.keyboard.press('F4');
+  await page.locator('#novaInvoiceActionDialog button[data-action="clear"]').click();   // AUDIT-02 in-app dialog
   await page.waitForTimeout(100);
 });
 
