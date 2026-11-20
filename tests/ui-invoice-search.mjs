@@ -62,7 +62,9 @@ try {
     const sale = window.novaSales.list().find(x => x.id === 'seed-1');
     window.novaSales.addReturn(sale, {0: 1}, 'اختبار');
   });
-  await page.locator('.nova-tab[data-page="invoices"]').click();
+  // NAV-01: on phones the page tabs live in the bottom bar
+  if (await page.locator('#novaBottomNav [data-bnav="invoices"]').isVisible()) await page.locator('#novaBottomNav [data-bnav="invoices"]').click();
+  else await page.locator('.nova-tab[data-page="invoices"]').click();
   const invoiceSearch = page.locator('#novaFilter');
   await expect(invoiceSearch).toBeFocused();
   await invoiceSearch.fill('٠١٠٠٠٠٠٠٠٠٢');
