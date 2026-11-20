@@ -1354,21 +1354,111 @@
         showUndoToast("تم حذف الصنف", () => restoreCart(snap));
       }
 
-      function clearInvoice(alreadySaved = false) {
-        if (state.invoiceLines.length === 0) {
-          elements.mainSearchInput.focus();
-          return;
+      // AUDIT-02 (Gemini Neon draft, reviewed): F2 / F4 on an invoice with lines open an in-app dialog instead of window.confirm.
+      // F2: «علّق وابدأ جديدة» (default) / «امسحها وابدأ جديدة» / «رجوع». F4: «امسح الفاتورة» / «رجوع». Clearing keeps the undo toast.
+      let activeInvoiceDialog = null;
+      function openInvoiceActionDialog({ title, message, actions }) {
+        if (activeInvoiceDialog) return;
+        const prevFocus = document.activeElement;
+        const en = novaEn();
+        const overlay = document.createElement("div");
+        overlay.id = "novaInvoiceActionDialog";
+        overlay.setAttribute("role", "dialog");
+        overlay.setAttribute("aria-modal", "true");
+        overlay.setAttribute("aria-labelledby", "novaInvoiceActionTitle");
+        overlay.setAttribute("aria-describedby", "novaInvoiceActionDesc");
+        overlay.dir = en ? "ltr" : "rtl";
+        overlay.style.cssText = "position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);padding:16px";
+        const card = document.createElement("div");
+        card.style.cssText = "width:100%;max-width:420px;background:#14181d;color:#f1f3f5;border:1px solid #343b44;border-radius:14px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px";
+        const heading = document.createElement("h3");
+        heading.id = "novaInvoiceActionTitle";
+        heading.textContent = title;
+        heading.style.cssText = "margin:0;font-size:17px;font-weight:800";
+        const body = document.createElement("p");
+        body.id = "novaInvoiceActionDesc";
+        body.textContent = message;
+        body.style.cssText = "margin:0;font-size:14px;line-height:1.6;color:#aab1bb";
+        const btnWrap = document.createElement("div");
+        btnWrap.style.cssText = "display:flex;flex-direction:column;gap:8px;margin-top:4px";
+        const buttons = [];
+        function closeDialog(restoreFocus = true) {
+          if (!activeInvoiceDialog) return;
+          document.removeEventListener("keydown", onKeyDown, true);
+          overlay.remove();
+          activeInvoiceDialog = null;
+          if (restoreFocus) {
+            if (prevFocus && typeof prevFocus.focus === "function" && document.contains(prevFocus)) prevFocus.focus();
+            else elements.mainSearchInput.focus();
+          }
         }
-        if (alreadySaved !== true && !window.confirm(novaEn() ? 'Clear all items from this open invoice? Saved invoices stay unchanged.' : 'مسح كل أصناف الفاتورة المفتوحة؟ الفواتير المحفوظة لن تتغير.')) return false;
-        const snap = snapshotCart();
+        actions.forEach(action => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.dataset.action = action.id;
+          btn.textContent = action.label;
+          btn.className = "btn " + (action.variant === "primary" ? "btn-primary" : action.variant === "danger" ? "btn-danger" : "btn-secondary");
+          btn.style.cssText = "min-height:44px;width:100%;font-weight:700;justify-content:center";
+          btn.addEventListener("click", () => {
+            closeDialog(action.id === "cancel");
+            if (typeof action.onSelect === "function") action.onSelect();
+          });
+          buttons.push(btn);
+          btnWrap.appendChild(btn);
+        });
+        function onKeyDown(e) {
+          if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeDialog(true); return; }
+          if (e.key === "Tab") {
+            e.preventDefault(); e.stopPropagation();
+            const i = buttons.indexOf(document.activeElement);
+            const n = e.shiftKey ? (i <= 0 ? buttons.length - 1 : i - 1) : (i === -1 || i >= buttons.length - 1 ? 0 : i + 1);
+            buttons[n].focus();
+            return;
+          }
+          if (e.key === "Enter") {
+            e.stopPropagation();   // the POS Enter shortcuts must not run behind the dialog
+            if (!buttons.includes(document.activeElement)) { e.preventDefault(); (buttons.find((b, i) => actions[i].variant !== "danger") || buttons[0]).click(); }
+            return;
+          }
+          if (/^F\d+$/.test(e.key)) { e.preventDefault(); e.stopPropagation(); }
+        }
+        overlay.addEventListener("click", e => { if (e.target === overlay) closeDialog(true); });
+        card.append(heading, body, btnWrap);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        document.addEventListener("keydown", onKeyDown, true);
+        activeInvoiceDialog = { overlay, close: closeDialog };
+        // a stray Enter (barcode scanner) must never run a destructive choice: focus the first non-danger button
+        (buttons.find((b, i) => actions[i].variant !== "danger") || buttons[0]).focus();
+      }
+      function executeClearInvoice(showUndo = true) {
+        const snap = showUndo ? snapshotCart() : null;
         state.invoiceLines = [];
         state.percentDiscount = 0;
         state.fixedDiscount = 0;
         elements.inputPercentDiscount.value = "";
         elements.inputFixedDiscount.value = "";
         renderInvoice();
-        showUndoToast("تم مسح الفاتورة", () => restoreCart(snap));
+        // a held / already-saved invoice is not «cleared»: no undo (undo would duplicate the held invoice)
+        if (showUndo) showUndoToast(novaEn() ? "Invoice cleared" : "تم مسح الفاتورة", () => restoreCart(snap));
         elements.mainSearchInput.focus();
+      }
+      function clearInvoice(alreadySaved = false) {
+        if (state.invoiceLines.length === 0) {
+          elements.mainSearchInput.focus();
+          return;
+        }
+        if (alreadySaved === true) { executeClearInvoice(false); return; }
+        const en = novaEn();
+        openInvoiceActionDialog({
+          title: en ? "Clear open invoice?" : "مسح الفاتورة المفتوحة؟",
+          message: en ? "Clear all items from this open invoice? Saved invoices stay unchanged." : "مسح كل أصناف الفاتورة المفتوحة؟ الفواتير المحفوظة لن تتغير.",
+          actions: [
+            { id: "clear", label: en ? "Clear invoice" : "امسح الفاتورة", variant: "danger", onSelect: () => executeClearInvoice() },
+            { id: "cancel", label: en ? "Back" : "رجوع", variant: "secondary" }
+          ]
+        });
+        return false;
       }
 
       function lineOverStock(line) {
@@ -1704,7 +1794,7 @@
             if (this.isCancelled(sale.id)) return { ok: false, error: 'already-cancelled' };
             const done = this.returnedQty(sale.id), rest = {};
             sale.lines.forEach((l, i) => { const left = l.qty - (done[i] || 0); if (left > 0) rest[i] = left; });
-            return this.addReturn(sale, rest, reason, { kind: 'cancel', by, role: o.role, approvedBy: approver });
+            return this.addReturn(sale, rest, reason, { kind: 'cancel', by, role: o.role, approvedBy: approver, ...(o.approverId ? { approverId: String(o.approverId) } : {}) });
           },
           // UX226: undo of a just-saved plain return (UI offers it for 10s). Removes only that record; nothing else is touched.
           removeReturn(id) { try { const all = this.returns(), n = all.filter(x => x.id !== id); if (n.length === all.length) return false; localStorage.setItem(RKEY, JSON.stringify(n)); return true; } catch (_) { return false; } },
@@ -2201,7 +2291,23 @@
       }
 
       function startNewSale(alreadySaved = false) {
-        if (clearInvoice(alreadySaved === true) === false) return;
+        if (alreadySaved === true || state.invoiceLines.length === 0) {
+          if (state.invoiceLines.length > 0) clearInvoice(true);
+          finalizeNewSale();
+          return;
+        }
+        const en = novaEn();
+        openInvoiceActionDialog({
+          title: en ? "This invoice has items" : "الفاتورة دي فيها أصناف",
+          message: en ? "Hold it or clear it before starting a new sale?" : "تعلّقها ولا تمسحها قبل ما تبدأ فاتورة جديدة؟",
+          actions: [
+            { id: "hold", label: en ? "Hold & start new" : "علّق وابدأ جديدة", variant: "primary", onSelect: () => holdCurrentInvoice() },
+            { id: "clear", label: en ? "Clear & start new" : "امسحها وابدأ جديدة", variant: "danger", onSelect: () => { executeClearInvoice(); finalizeNewSale(); } },
+            { id: "cancel", label: en ? "Back" : "رجوع", variant: "secondary" }
+          ]
+        });
+      }
+      function finalizeNewSale() {
         document.getElementById("novaLabelsPanel")?.classList.remove("open");
         elements.receiptModal.classList.remove("active");
         // AUDIT-01: take a new number only when the current one is used (saved, cancelled or held). Checkout already moved to the

@@ -393,7 +393,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
    +'<label for="novaRetReason" style="display:block;margin:10px 0 4px;font-size:13px">سبب المرتجع (مطلوب)</label><input type="text" id="novaRetReason" maxlength="200" style="width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1)">'
    +'<div id="novaRetChips">'+['عيب/تالف','خطأ في الصرف','رجوع العميل','انتهاء صلاحية'].map(r=>'<button type="button" class="nova-chip" data-ret-chip="'+r+'">'+r+'</button>').join('')+'</div>'
    +'<div id="novaRetAmount" style="margin:10px 0;font-weight:700;min-height:22px"></div>'
-   +'<style>#novaCancelBox{margin:6px 0;border:1px solid #303841;border-radius:var(--r-1);background:#0e1419}#novaCancelBox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:8px 10px;font-weight:700;font-size:13px;color:#ffb4a8}#novaCancelBox>summary::-webkit-details-marker{display:none}#novaCancelBox>summary::before{content:"";width:8px;height:8px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg);transition:transform .15s;flex:none}#novaCancelBox[open]>summary::before{transform:rotate(45deg)}@media (prefers-reduced-motion:reduce){#novaCancelBox>summary::before{transition:none}}#novaCancelBox .nova-cx-body{display:grid;gap:var(--sp-2);padding:0 10px 10px}#novaCancelBox label{font-size:13px;color:#9eacb9}#novaCancelBox input,#novaCancelBox select{width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font:inherit}#novaCancelBox #novaCxOk.nova-return-btn{background:#3a1512!important;color:#ffb4a8!important;border:1px solid #8f3a2e!important}#novaCancelBox #novaCxOk.nova-return-btn:hover{background:#4d1c17!important}</style><details id="novaCancelBox"><summary>'+tr('إلغاء الفاتورة بالكامل (يحتاج صلاحية واعتماد)','Cancel the whole invoice (needs permission and approval)')+'</summary><div class="nova-cx-body"><label for="novaCxBy">'+tr('اسم المنفذ','Your name')+'</label><input id="novaCxBy" placeholder="'+tr('اسم المنفذ','Your name')+'" maxlength="60"><label for="novaCxRole">'+tr('الدور','Role')+'</label><select id="novaCxRole"><option value="cashier">'+tr('كاشير','Cashier')+'</option><option value="pharmacist">'+tr('صيدلي','Pharmacist')+'</option><option value="manager">'+tr('مدير','Manager')+'</option><option value="owner">'+tr('المالك','Owner')+'</option></select><label for="novaCxApprover">'+tr('اسم المعتمد (شخص آخر)','Approver name (another person)')+'</label><input id="novaCxApprover" placeholder="'+tr('اسم المعتمد (شخص آخر)','Approver name (another person)')+'" maxlength="60"><button type="button" id="novaCxOk" class="btn btn-secondary nova-return-btn" style="font-weight:700">'+tr('تأكيد الإلغاء','Confirm cancellation')+'</button></div></details></div>'
+   +'<style>#novaCancelBox{margin:6px 0;border:1px solid #303841;border-radius:var(--r-1);background:#0e1419}#novaCancelBox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:8px 10px;font-weight:700;font-size:13px;color:#ffb4a8}#novaCancelBox>summary::-webkit-details-marker{display:none}#novaCancelBox>summary::before{content:"";width:8px;height:8px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg);transition:transform .15s;flex:none}#novaCancelBox[open]>summary::before{transform:rotate(45deg)}@media (prefers-reduced-motion:reduce){#novaCancelBox>summary::before{transition:none}}#novaCancelBox .nova-cx-body{display:grid;gap:var(--sp-2);padding:0 10px 10px}#novaCancelBox label{font-size:13px;color:#9eacb9}#novaCancelBox input,#novaCancelBox select{width:100%;padding:8px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-1);font:inherit}#novaCancelBox #novaCxOk.nova-return-btn{background:#3a1512!important;color:#ffb4a8!important;border:1px solid #8f3a2e!important}#novaCancelBox #novaCxOk.nova-return-btn:hover{background:#4d1c17!important}</style><details id="novaCancelBox"><summary>'+tr('إلغاء الفاتورة بالكامل (يحتاج صلاحية واعتماد)','Cancel the whole invoice (needs permission and approval)')+'</summary><div class="nova-cx-body">'+window.__novaCxBody()+'</div></details></div>'
    +'<div class="nova-ret-foot"><div id="novaRetMsg" role="alert" style="color:#ffb4a8;min-height:36px;font-size:13px"></div><div class="nova-ret-actions"><button type="button" id="novaRetCancel" class="btn btn-secondary nova-return-btn">إغلاق</button><button type="button" id="novaRetOk" class="btn btn-primary nova-return-btn" style="font-weight:700"'+(nothingLeft?' disabled aria-disabled="true"':'')+'>تأكيد المرتجع</button></div></div>';
 
 
@@ -422,7 +422,7 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
   document.addEventListener('keydown',retKey,true);
   box.querySelector('[data-dlg-close]').onclick=closeRet;ov.addEventListener('mousedown',e=>{if(e.target===ov)closeRet()});
   box.querySelector('#novaRetCancel').onclick=closeRet;
-  box.querySelector('#novaCxOk').onclick=()=>{if(mode==='return')return;if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>box.querySelector(id).value;const res=window.novaSales.cancelSale(sale,{reason:g('#novaRetReason'),by:g('#novaCxBy'),role:g('#novaCxRole'),approvedBy:g('#novaCxApprover')});
+  box.querySelector('#novaCxOk').onclick=async()=>{if(mode==='return')return;if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.cancel'))return;const g=id=>{const e=box.querySelector(id);return e?e.value:''};const cxErr=m=>{const e=box.querySelector('#novaCxErr');if(e)e.textContent=m||''};cxErr('');const payload=await window.__novaCxPayload(box,g('#novaRetReason'),cxErr);if(!payload)return;const res=window.novaSales.cancelSale(sale,payload);
    if(!res.ok){box.querySelector('#novaRetMsg').textContent={reason:'اكتب سبب الإلغاء',permission:'ليس لديك صلاحية إلغاء الفاتورة (مدير أو مالك فقط)',approval:'اكتب اسمك واسم المعتمد','self-approval':'المعتمد لازم يكون شخصًا آخر','already-cancelled':'الفاتورة ملغاة بالفعل',empty:'لا توجد كميات متاحة للإلغاء','too-many':'لا توجد كميات متاحة للإلغاء',storage:'تعذر حفظ الإلغاء على هذا الجهاز'}[res.error]||'تعذر تنفيذ الإلغاء';return}
    closeRet();render(page,filter)};
   box.querySelector('#novaRetOk').onclick=()=>{if(cancel)return;if(window.novaAuthUI&&!window.novaAuthUI.allow('sale.return'))return;const res=window.novaSales.addReturn(sale,qtys(),box.querySelector('#novaRetReason').value);
@@ -534,4 +534,54 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  switchPage(hashPage()||'sale');
  if(initReceive)openReceive();
  else if((hashPage()||'sale')==='sale'){const ms=document.getElementById('mainSearchInput');if(ms)try{ms.focus()}catch(e){}}
+})();
+
+/* AUDIT-02 (Gemini Neon draft, reviewed): cancelling a whole invoice is approved by a real account, not typed names.
+   Executor = the signed-in account. Approver = a DIFFERENT manager/owner account verified by password (novaAuth.verifyAccount,
+   the current session is not touched). With no accounts on the device the old free-text fields stay, with a note. */
+(function () {
+  'use strict';
+  var en = function () { try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; } };
+  var T = function (ar, e) { return en() ? e : ar; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); };
+  var auth = function () { var a = window.novaAuth; return a && typeof a.hasAccounts === 'function' && a.hasAccounts() ? a : null; };
+  var lbl = 'display:block;margin:6px 0 4px;font-size:13px';
+  var err = '<div id="novaCxErr" role="alert" style="color:#ff9b9b;font-size:13px;min-height:18px;margin:4px 0"></div>';
+  var ok = function () { return '<button type="button" id="novaCxOk" class="btn btn-secondary nova-return-btn" style="font-weight:700">' + T('تأكيد الإلغاء', 'Confirm cancellation') + '</button>'; };   // built per render: follows a language switch
+  var roleAr = { owner: 'المالك', manager: 'مدير', pharmacist: 'صيدلي', cashier: 'كاشير', store: 'مخزن', accountant: 'محاسب', delivery: 'توصيل' };
+  var roleName = function (r) { return en() ? r : (roleAr[r] || r); };
+  window.__novaCxBody = function () {
+    var A = auth();
+    if (!A) {
+      return '<p id="novaCxNoAccNote" style="font-size:12px;color:#f0d9a0;margin:0 0 6px">' + T('فعّل الحسابات من الإعدادات عشان الإلغاء يبقى باعتماد حقيقي', 'Enable accounts in Settings so cancellations need a real approval') + '</p>'
+        + '<label for="novaCxBy" style="' + lbl + '">' + T('اسم المنفذ', 'Your name') + '</label><input id="novaCxBy" maxlength="60">'
+        + '<label for="novaCxRole" style="' + lbl + '">' + T('الدور', 'Role') + '</label><select id="novaCxRole"><option value="cashier">' + T('كاشير', 'Cashier') + '</option><option value="pharmacist">' + T('صيدلي', 'Pharmacist') + '</option><option value="manager">' + T('مدير', 'Manager') + '</option><option value="owner">' + T('المالك', 'Owner') + '</option></select>'
+        + '<label for="novaCxApprover" style="' + lbl + '">' + T('اسم المعتمد (شخص آخر)', 'Approver name (another person)') + '</label><input id="novaCxApprover" maxlength="60">' + err + ok();
+    }
+    var me = A.current();
+    var list = A.accounts().filter(function (a) { return (a.role === 'manager' || a.role === 'owner') && (!me || a.id !== me.id); });
+    return '<div id="novaCxExec" style="font-size:13px;margin-bottom:6px"><strong>' + T('المنفّذ:', 'Executor:') + '</strong> <span class="cust-name">' + (me ? esc(me.name) + ' (' + esc(roleName(me.role)) + ')' : T('مش مسجّل دخول', 'Not signed in')) + '</span></div>'
+      + '<label for="novaCxApprover" style="' + lbl + '">' + T('المعتمد (مدير أو مالك تاني)', 'Approver (another manager or owner)') + '</label>'
+      + '<select id="novaCxApprover">' + (list.length ? list.map(function (a) { return '<option value="' + esc(a.name) + '">' + esc(a.name) + ' (' + esc(roleName(a.role)) + ')</option>'; }).join('') : '<option value="">' + T('مفيش حساب مدير أو مالك تاني', 'No other manager or owner account') + '</option>') + '</select>'
+      + '<label for="novaCxPw" style="' + lbl + '">' + T('كلمة سر المعتمد', 'Approver password') + '</label><input id="novaCxPw" type="password" autocomplete="off">' + err + ok();
+  };
+  window.__novaCxPayload = async function (box, reason, setErr) {
+    var g = function (id) { var e = box.querySelector(id); return e ? String(e.value || '') : ''; };
+    var A = auth();
+    if (!A) return { reason: reason, by: g('#novaCxBy'), role: g('#novaCxRole'), approvedBy: g('#novaCxApprover') };
+    var me = A.current();
+    if (!me) { setErr(T('لازم تسجّل دخول الأول', 'Sign in first')); return null; }
+    var name = g('#novaCxApprover').trim(), pwEl = box.querySelector('#novaCxPw'), pw = pwEl ? pwEl.value : '';
+    if (!name) { setErr(T('لازم يكون فيه حساب مدير أو مالك تاني', 'Another manager or owner account is needed')); return null; }
+    if (name.toLowerCase() === String(me.name).trim().toLowerCase()) { setErr(T('المعتمد لازم يكون شخص تاني', 'The approver must be another person')); return null; }
+    if (!pw) { setErr(T('اكتب كلمة سر المعتمد', 'Type the approver password')); return null; }
+    var btn = box.querySelector('#novaCxOk'); if (btn) btn.disabled = true;
+    var v = null;
+    try { v = typeof A.verifyAccount === 'function' ? await A.verifyAccount(name, pw) : null; } catch (e) { v = null; } finally { if (btn) btn.disabled = false; }
+    if (pwEl) pwEl.value = '';
+    if (!v) { setErr(T('كلمة سر المعتمد غلط', 'Wrong approver password')); return null; }
+    if (v.id === me.id) { setErr(T('المعتمد لازم يكون شخص تاني', 'The approver must be another person')); return null; }
+    if (v.role !== 'manager' && v.role !== 'owner') { setErr(T('المعتمد لازم يكون مدير أو مالك', 'The approver must be a manager or owner')); return null; }
+    return { reason: reason, by: me.name, role: me.role, approvedBy: v.name, approverId: v.id };
+  };
 })();

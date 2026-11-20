@@ -21,11 +21,12 @@
     + '<button type="button" id="novaCustCard" aria-haspopup="dialog"><span class="ncc-name">' + SVG.user + '<span class="nx-rail-name" data-ncc="name"></span></span>'
     + '<span class="ncc-row"><span class="ncc-phone nx-rail-name" data-ncc="phone"></span><span class="ncc-b ncc-pts nx-rail-name" data-ncc="pts"></span></span>'
     + '<span class="ncc-badges" data-ncc="badges"></span><span class="ncc-hist" data-ncc="hist"></span></button>'
+    + '<button type="button" id="novaCustCardRefill" class="ncc-refill nx-rail-name" hidden></button>'
     + '<button type="button" id="novaCustCardX">' + SVG.x + '</button></div></div>'
     + '<div class="nova-rail-tiles"></div><div class="nova-rail-held-head"></div><div class="nova-rail-held" aria-live="polite"></div><div class="nova-rail-foot"></div>';
   aside.appendChild(box);
   var custTop = box.querySelector('.nova-rail-cust'), tiles = box.querySelector('.nova-rail-tiles'), heldHead = box.querySelector('.nova-rail-held-head'), heldBox = box.querySelector('.nova-rail-held'), foot = box.querySelector('.nova-rail-foot');
-  var card = $('novaCustCard'), cardX = $('novaCustCardX');
+  var card = $('novaCustCard'), cardRefill = $('novaCustCardRefill'), cardX = $('novaCustCardX');
   var ncc = function (k) { return card.querySelector('[data-ncc="' + k + '"]'); };
   var modal = $('novaCustModal'), modalBody = $('novaCustModalBody');
   var TILE_IDS = ['btnNewSale', 'holdCurrentInvoice', 'btnClearInvoice'];
@@ -56,7 +57,8 @@
     ncc('pts').textContent = [tier, pts !== '' ? pts + (en ? ' pts' : ' نقطة') : ''].filter(Boolean).join(' · ');
     var badges = ncc('badges'), html = '', debt = debtOf(cust);
     if (debt) html += '<span class="ncc-b ncc-debt">' + (en ? 'Owes ' + money(debt) + ' EGP' : 'عليه ' + money(debt) + ' ج') + '</span>';
-    var chronic = shown('custRefillBox') ? txt('custChronicList') : '';
+    var canRefill = shown('custRefillBox');
+    var chronic = canRefill ? txt('custChronicList') : '';
     if (chronic && chronic !== 'لا يوجد' && chronic !== 'None') {
       var hint = shown('custDaysSince') ? txt('custRefillHint') : '';
       var full = (en ? 'Chronic: ' : 'مزمن: ') + chronic + (shown('custDaysSince') ? ' · ' + txt('custDaysText') : '') + (hint ? ' · ' + hint : '');
@@ -64,6 +66,10 @@
     }
     if (badges.innerHTML !== html) badges.innerHTML = html;
     ncc('hist').textContent = en ? 'History ›' : 'السجل ‹';
+    // AUDIT-02 (Gemini Neon draft, reviewed): one-tap «إعادة صرف» on the card when the app has a refill box for this customer
+    cardRefill.hidden = !canRefill;
+    if (canRefill) { var refillLbl = en ? 'Refill' : 'إعادة صرف'; if (cardRefill.textContent !== refillLbl) cardRefill.textContent = refillLbl; }
+    card.classList.toggle('has-refill', canRefill);
     card.removeAttribute('aria-label');   // the visible content (name, phone, points, debt, chronic, «السجل») is the accessible name
     cardX.setAttribute('aria-label', en ? 'Remove customer' : 'إزالة العميل'); cardX.title = cardX.getAttribute('aria-label');
   }
@@ -119,6 +125,7 @@
     if (refocus !== false && card.offsetParent) card.focus();
   }
   card.addEventListener('click', openModal);
+  cardRefill.addEventListener('click', function (e) { e.stopPropagation(); var b = $('btnRefillLast'); if (b) b.click(); });
   cardX.addEventListener('click', function () { var b = $('btnRemoveCust'); if (b) b.click(); });
   $('novaCustModalClose').addEventListener('click', function () { closeModal(); });
   modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
