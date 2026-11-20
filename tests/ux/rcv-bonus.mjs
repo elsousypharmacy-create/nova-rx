@@ -13,19 +13,21 @@ try {
   let confirmMsg = ''; page.on('dialog', d => { confirmMsg = d.message(); d.accept(); });
   await page.goto(BASE + (BASE.includes('127.0.0.1') ? 'index.html' : '') + '#sale');
   await page.locator('#novaSplash').waitFor({ state: 'hidden' });
+  const pickQuery = () => page.evaluate(() => { for (const q of ['6281001234567', 'panadol', 'بانادول', 'a', 'ا']) { const p = window.novaSearch.search(q, 1)[0]; if (p && p.barcode && window.novaSearch.search(p.barcode, 1)[0]) return p.barcode; } return null; });
+  const Q = await pickQuery(); assert.ok(Q, 'a searchable product with a barcode');
   await page.evaluate(() => { location.hash = '#receiving'; });
   await page.locator('[data-rcv=new]:visible').click();
   await page.locator('#rcvSup').selectOption({ index: 1 });
   await page.locator('#rcvInv').fill('BON-1');
   const pickItem = async row => {
-    await row.locator('[data-f=q]').fill('6281001234567');
+    await row.locator('[data-f=q]').fill(Q);
     const p = row.locator('[data-pick]').first(); await p.waitFor({ timeout: 5000 }); await p.click();
   };
   const row = page.locator('.rcv-line').nth(0);
   await pickItem(row);
-  const key = await page.evaluate(() => {
-    const p = window.novaSearch.search('6281001234567', 1)[0]; return window.novaStock.keyOf(p);
-  });
+  const key = await page.evaluate(Q => {
+    const p = window.novaSearch.search(Q, 1)[0]; return window.novaStock.keyOf(p);
+  }, Q);
   const onHand = () => page.evaluate(k => window.novaStock.lots(k).reduce((s, l) => s + l.onHand, 0), key);
   const before = await onHand();
   await row.locator('[data-f=qty]').fill('10');

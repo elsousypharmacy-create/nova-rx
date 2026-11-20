@@ -14,8 +14,10 @@ try {
   await page.addInitScript(() => { window.print = () => { window.__prints = (window.__prints || 0) + 1; window.__printClass = document.body.classList.contains('sret-printing'); setTimeout(() => window.dispatchEvent(new Event('afterprint')), 50); }; });
   await page.goto(BASE + (BASE.includes('127.0.0.1') ? 'index.html' : '') + '#sale');
   await page.locator('#novaSplash').waitFor({ state: 'hidden' });
-  const seed = await page.evaluate(() => {
-    const p = window.novaSearch.search('6281001234567', 1)[0];
+  const pickQuery = () => page.evaluate(() => { for (const q of ['6281001234567', 'panadol', 'بانادول', 'a', 'ا']) { const p = window.novaSearch.search(q, 1)[0]; if (p && p.barcode && window.novaSearch.search(p.barcode, 1)[0]) return p.barcode; } return null; });
+  const Q = await pickQuery(); assert.ok(Q, 'a searchable product with a barcode');
+  const seed = await page.evaluate(Q => {
+    const p = window.novaSearch.search(Q, 1)[0];
     const key = window.novaStock.keyOf(p);
     if (!window.novaStock.addLot({ key, lot: 'L1', expiry: '2027-01-31', qty: 10, cost: 5 }).ok) throw new Error('seed lot');
     const sup = window.__novaSupplierProvider.addSupplier({ name: 'مورد المرتجع' });
@@ -23,7 +25,7 @@ try {
     acct.setSupplier(String(sup.id), { name: sup.name, termDays: 45 });
     acct.addInvoice({ id: 'INV-100', supplierId: String(sup.id), amount: 100 });
     return { key, name: p.name, sid: String(sup.id), sname: sup.name };
-  });
+  }, Q);
   const onHand = () => page.evaluate(k => window.novaStock.lots(k).filter(l => l.lot === 'L1').reduce((s, l) => s + l.onHand, 0), seed.key);
   assert.equal(await onHand(), 10);
   await page.evaluate(() => { location.hash = '#receiving'; });
@@ -35,7 +37,7 @@ try {
   await dlg.waitFor();
   await page.locator('#sret-supplier').selectOption(seed.sname);
   await page.locator('#sret-reason').selectOption('تالف أو مكسور');
-  await page.locator('#sret-search').fill('6281001234567');
+  await page.locator('#sret-search').fill(Q);
   await page.locator('#sret-search-res [data-sret-pick="0"]').click();
   const row = page.locator('#sret-lots-box .sret-lot-row', { hasText: 'L1' });
   await row.locator('[data-sret-qty]').fill('3');
@@ -64,7 +66,7 @@ try {
   await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => document.body.classList.contains('sret-printing')), false);
   // over-return is refused, stock unchanged
-  await page.locator('#sret-search').fill('6281001234567');
+  await page.locator('#sret-search').fill(Q);
   await page.locator('#sret-search-res [data-sret-pick="0"]').click();
   await row.locator('[data-sret-qty]').fill('8');
   await row.locator('[data-sret-add]').click();
