@@ -57,7 +57,7 @@
   /* RCV01 lazy screens: index.html lists the supplier accounts / supplier returns code as
      <link rel="prefetch" as="script" data-nova-lazy href=...> — the browser downloads it in the background (and the service
      worker keeps it for offline use) but nothing runs at startup, so the sale screen opens lighter. It runs, in order, when
-     the reports or receiving page opens, or once the app is idle a few seconds after loading. */
+     the reports / receiving / products / customers page opens, or once the app is idle a few seconds after loading. */
   var lazyPromise = null;
   function loadLazy() {
     if (lazyPromise) return lazyPromise;
@@ -74,7 +74,7 @@
     }));
     return lazyPromise;
   }
-  var LAZY_PAGES = { reports: 1, receiving: 1 };
+  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1 };
   function lazyPageOpen() {
     var a = document.querySelector('.nova-tab.active[data-page]');
     var p = (document.body && document.body.dataset.activePage) || (a && a.getAttribute('data-page')) || String(location.hash || '').replace(/^#/, '').split(/[&?]/)[0];
