@@ -20,8 +20,9 @@ try {
   await page.locator('#invoiceTableBody [data-act="inc"]').first().click();
   assert.equal(await rows(), 2);
   const before = await qtys();
-  // F4 clear -> undo button
-  await search.press('F4');
+  // F4 clear -> in-app dialog (AUDIT-02) -> undo button
+  const clearDlg = () => page.locator('#novaInvoiceActionDialog button[data-action="clear"]').click();
+  await search.press('F4'); await clearDlg();
   assert.equal(await rows(), 0);
   await page.locator('#btnUndoToast').click();
   assert.equal(await rows(), 2);
@@ -33,7 +34,7 @@ try {
   assert.equal(await rows(), 2);
   assert.deepEqual(await qtys(), before);
   // expires after 7s
-  await search.press('F4');
+  await search.press('F4'); await clearDlg();
   assert.equal(await rows(), 0);
   await page.waitForTimeout(7000);
   assert.equal(await page.locator('#btnUndoToast').count(), 0, 'undo button gone');
@@ -48,8 +49,7 @@ try {
   assert.equal(await page.locator('[data-held-delete]').count(), 0);
   await page.locator('#btnUndoToast').click();
   assert.equal(await page.locator('[data-held-delete]').count(), 1, 'held invoice restored');
-  assert.equal(dialogs.length, 2, 'each F4 clear asks once; line/held deletions do not');
-  assert(dialogs.every(message => message.includes('مسح كل أصناف')), 'only invoice clear confirmation appears');
+  assert.equal(dialogs.length, 0, 'no native dialogs: F4 asks in-app (AUDIT-02); line/held deletions do not ask');
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl');
   assert.deepEqual(errors, []);
   console.log('undo-cart passed');

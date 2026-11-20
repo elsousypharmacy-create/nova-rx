@@ -48,6 +48,7 @@ try {
 
   // next sale of the same product starts as strip
   await page.keyboard.press('F2');
+  await page.locator('#novaInvoiceActionDialog button[data-action="clear"]').click();   // AUDIT-02: F2 with lines asks in-app
   assert.equal(await page.locator('#invoiceTableBody tr').count(), 0);
   await addByBarcode();
   assert.equal(await unit(), 'strip', 'unit remembered');
