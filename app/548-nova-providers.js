@@ -74,7 +74,7 @@
     }));
     return lazyPromise;
   }
-  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1 };
+  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1, settings: 1 };
   function lazyPageOpen() {
     var a = document.querySelector('.nova-tab.active[data-page]');
     var p = (document.body && document.body.dataset.activePage) || (a && a.getAttribute('data-page')) || String(location.hash || '').replace(/^#/, '').split(/[&?]/)[0];
