@@ -77,6 +77,14 @@
           write(K.ses, all); storage.setItem(K.cur, s.id); trust(); return s;
         });
       },
+      /* AUDIT-02: check another account's password WITHOUT touching the current session (approvals). Never stores the password. */
+      verifyAccount: function (name, password) {
+        var a = findByName(name);
+        return hash(a ? a.salt : 'x', String(password || '')).then(function (h) {
+          if (!a || h !== a.hash) return null;
+          return { id: a.id, name: a.name, role: a.role };
+        });
+      },
       /* SEC-01 (S1-07): after the SERVER verified name + password (staff-gate.js, POST /api/v1/auth/login 200), mirror that account
          on this device (same name, server role, salted hash of the same password) and sign in locally, so the pharmacist can keep
          working offline on this device later. Only staff-gate.js calls it, and only with a server-confirmed role. */
