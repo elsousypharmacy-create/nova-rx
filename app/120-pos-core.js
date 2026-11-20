@@ -2204,7 +2204,9 @@
         if (clearInvoice(alreadySaved === true) === false) return;
         document.getElementById("novaLabelsPanel")?.classList.remove("open");
         elements.receiptModal.classList.remove("active");
-        activeSaleNumber = nextSaleNumber();
+        // AUDIT-01: take a new number only when the current one is used (saved, cancelled or held). Checkout already moved to the
+        // next number, so advancing again here skipped one number per sale (S-000001, S-000003, S-000005 …).
+        if (!activeSaleNumber || window.novaPay.numberTaken(activeSaleNumber) || heldTaken(activeSaleNumber)) activeSaleNumber = nextSaleNumber();
         renderSaleNumber();
         detachCustomer();
         state.customerGateSkipped = true;
