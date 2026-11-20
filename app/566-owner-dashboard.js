@@ -667,7 +667,7 @@
 
     // 2. كاش الدرج المتوقع
     var cashSub = data.cashDrawer.available
-      ? ('كاش: ' + fmtMoney(data.cashDrawer.cashSales) + ' | مصروف: ' + fmtMoney(data.cashDrawer.cashOuts))
+      ? ('مبيعات كاش: ' + fmtMoney(data.cashDrawer.cashSales) + ' | مصروف: ' + fmtMoney(data.cashDrawer.cashOuts))
       : '—';
     grid.appendChild(createTile({
       id: 'cash-drawer',
@@ -712,7 +712,7 @@
     grid.appendChild(createTile({
       id: 'expiring-lots',
       label: 'أصناف قربت تخلص صلاحيتها',
-      value: data.expiring.available ? (fmtInt(data.expiring.count) + ' تشغيلة') : '—',
+      value: data.expiring.available ? (fmtInt(data.expiring.count) + ' تشغيلة قربت') : '—',
       sub: expSub,
       danger: !!(data.expiring.available && data.expiring.expiredCount > 0),
       onClick: function () {
@@ -727,7 +727,7 @@
     grid.appendChild(createTile({
       id: 'low-stock',
       label: 'نواقص',
-      value: data.lowStock.available ? (fmtInt(data.lowStock.count) + ' صنف') : '—',
+      value: data.lowStock.available ? (fmtInt(data.lowStock.count) + ' صنف ناقص') : '—',
       sub: lowSub,
       onClick: function () {
         scrollToSelector('#novaLowStockSection');
