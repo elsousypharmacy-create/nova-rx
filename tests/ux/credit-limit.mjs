@@ -9,6 +9,8 @@ async function run() {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
   const context = await browser.newContext({ serviceWorkers: 'block' });
   const page = await context.newPage();
+  // a known test customer (the preview has no demo customers): saved customers with a DEMO- id are added to the list
+  await page.addInitScript(() => { try { if (!localStorage.getItem('nova-rx-demo-customers-v1')) localStorage.setItem('nova-rx-demo-customers-v1', JSON.stringify([{ id: 'DEMO-TCL1', name: 'عميل اختبار الحد', phone: '01000000901', tier: 'regular', visits: 0, points: 0 }])); } catch (e) {} });
 
   const pageErrors = [];
   const nativeDialogs = [];
@@ -41,7 +43,7 @@ async function run() {
 
   // Pick first existing customer from DOM and seed a 90 EGP credit charge
   const custId = await page.evaluate(function () {
-    const row = document.querySelector('tr[data-cust-row]');
+    const row = document.querySelector('tr[data-cust-row="DEMO-TCL1"]') || document.querySelector('tr[data-cust-row]');
     if (!row) throw new Error('No customer row found');
     const id = row.getAttribute('data-cust-row');
     const ledger = window.NovaCredit.createCreditLedger(window.localStorage, 'nova.credit');
