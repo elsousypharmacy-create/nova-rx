@@ -21,10 +21,11 @@ check('05 settings describes real source truthfully',()=>{const s=ctx.renderPage
 check('04 static report example explicitly labelled and not hidden from accessibility',()=>{const s=ctx.renderPage('reports');assert.match(s,/تقارير هذا الجهاز فقط — الفترة:/);assert.match(s,/مثال ثابت لشكل التقرير/);assert.match(s,/80.00 EGP/);assert.doesNotMatch(s,/class="nova-skel-card"/)});
 check('English new source descriptions and reports',()=>{lang='en';assert.match(ctx.renderPage('settings'),/Pharmacy price list/);assert.match(ctx.renderPage('reports'),/Static report example/);assert.match(ctx.renderPage('products'),/<h1>Stock /)/* UX-P33: the page is «المخزون» / Stock */});
 // Exercise actual clear handler for both cancellation and undo safety, without persisting data.
-const clear=h.slice(h.indexOf('      function clearInvoice(alreadySaved = false) {'),h.indexOf('      function lineOverStock('));
+// AUDIT-02: clearInvoice asks through the in-app dialog (openInvoiceActionDialog), not window.confirm
+const clear=h.slice(h.indexOf('      function executeClearInvoice(showUndo = true) {'),h.indexOf('      function lineOverStock('));let dlg=null;
 let snapshots=0,renders=0;const state={invoiceLines:[{name:'FAKE',qty:1}],percentDiscount:2,fixedDiscount:1};
-const c={state,window:{confirm:()=>false},novaEn:()=>false,elements:{mainSearchInput:{focus(){}},inputPercentDiscount:{value:2},inputFixedDiscount:{value:1}},snapshotCart:()=>{snapshots++;return 'snapshot'},renderInvoice:()=>renders++,restoreCart(){},showUndoToast(){}};
+const c={state,window:{confirm:()=>{throw new Error('window.confirm must not be used')}},openInvoiceActionDialog:o=>{dlg=o},novaEn:()=>false,elements:{mainSearchInput:{focus(){}},inputPercentDiscount:{value:2},inputFixedDiscount:{value:1}},snapshotCart:()=>{snapshots++;return 'snapshot'},renderInvoice:()=>renders++,restoreCart(){},showUndoToast(){}};
 vm.createContext(c);vm.runInContext(clear+';this.clear=clearInvoice;',c);
-check('14 cancellation leaves all invoice fields unchanged',()=>{assert.equal(c.clear(),false);assert.equal(state.invoiceLines.length,1);assert.equal(state.percentDiscount,2);assert.equal(snapshots,0);assert.equal(renders,0)});
-check('14 confirmed clear uses existing undo snapshot',()=>{c.window.confirm=()=>true;c.clear();assert.equal(state.invoiceLines.length,0);assert.equal(snapshots,1);assert.equal(renders,1)});
+check('14 cancellation leaves all invoice fields unchanged',()=>{assert.equal(c.clear(),false);assert.ok(dlg&&dlg.actions.some(a=>a.id==='cancel'),'dialog offers «رجوع»');assert.equal(state.invoiceLines.length,1);assert.equal(state.percentDiscount,2);assert.equal(snapshots,0);assert.equal(renders,0)});
+check('14 confirmed clear uses existing undo snapshot',()=>{dlg.actions.find(a=>a.id==='clear').onSelect();assert.equal(state.invoiceLines.length,0);assert.equal(snapshots,1);assert.equal(renders,1)});
 console.log(`PASS ${n} renderer/action cases (no browser layout assertions)`);
