@@ -451,7 +451,7 @@
     w.innerHTML = (known
       ? '<span class="su-stock"><span class="su-dot"></span><small>' + tr('الرصيد') + '</small><b>' + prod.stock + '</b>' +
         (low ? '<small>· ' + tr('منخفض') + '</small>' : '') + '</span>'
-      : '<span class="su-stock"><span class="su-dot"></span><small>' + tr('غير متوفر') + '</small></span>') +
+      : '') +   // unknown stock: no green dot and no «غير متوفر» (it contradicted «الرصيد غير معروف» on the same row); the suppliers button stays
       (low ? '<button type="button" class="su-btn">' + SEARCH_SVG + tr('الموردين') + '</button>' : iconBtn);
     w.querySelector('.su-btn').addEventListener('click', function (e) {
       e.stopPropagation();
