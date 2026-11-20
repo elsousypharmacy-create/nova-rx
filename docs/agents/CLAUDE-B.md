@@ -23,16 +23,25 @@
    - حزمة الشغل لـ Gemini = المطلوب + الكود الحالي بالظبط + شروط القبول + اطلب: كود + حالات حدّية + اختبار Playwright.
    - مسودة Gemini مش نهائية: غالبًا بيحط ألوان فاتحة أو template literals — طابقها مع ثيم البرنامج الداكن (`#14181d`، `#343b44`، `#79c9eb`) وأزرار `btn btn-primary/secondary/danger`.
    - بعد ما تدمج: ابعت دمجك لحساب Gemini التاني بتاعك يراجعه مراجعة مستقلة.
-4. **الاختبارات المحلية:** سيرفر `python -m http.server 8765 --bind 127.0.0.1` من فولدرك، و `CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe`. اكتب اختبار `tests/ux/<task>.mjs` لكل شغلانة. أي اختبار بيقع: جرّبه على main من غير تعديلك الأول قبل ما تقول إنه مش منك. اختبارين بيقعوا محليًا دايمًا (`ahmed-checkout-layout` محتاج git، و `ux412-wa-path` 403).
-5. **نسخة البريفيو:** `node tools/build-preview-refresh.mjs worker/live/<أحدث نسخة>.js worker/live/nova-rx-preview.<task>.js` مع `NOVA_BUILD_MAIN_SHA=<sha main>` (مفيش git)، وانسخ آخر `tests/unit/artifact-<...>.check.mjs` وعدّله. لو فيه hook بيمنع الأمر، شغّله في ترمينال منفصل.
+4. **الاختبارات المحلية:** سيرفر `python -m http.server 8775 --bind 127.0.0.1` من فولدرك (**بورت 8775** — 8765 بتاع Claude A)، والاختبارات بـ `NOVA_URL=http://127.0.0.1:8775/`، و `CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe`. اكتب اختبار `tests/ux/<task>.mjs` لكل شغلانة. أي اختبار بيقع: جرّبه على main من غير تعديلك الأول قبل ما تقول إنه مش منك. اختبارين بيقعوا محليًا دايمًا (`ahmed-checkout-layout` محتاج git، و `ux412-wa-path` 403).
+5. **نسخة البريفيو:** Claude A هو اللي بيبنيها ويرفعها (شوف «التنسيق» تحت). انت ما ترفعش حاجة في `worker/live`.
 6. **الرفع:** من موقع GitHub في كروم (upload لكل فولدر لوحده، "Commit directly to main"). الملفات القديمة في `assets/` بتتمسح من `github.com/<repo>/delete/main/<path>`. ملفات `.github/workflows` ما بتترفعش من الموقع. ارفع نسخة البريفيو آخر حاجة. بعد الرفع: اتأكد إن Playwright POS smoke على GitHub أخضر، واتأكد من الشغل على البريفيو نفسه.
 7. **سجّل في `CURRENT.md`** سطر لكل شغلانة (اللي اتعمل + اللي ما اتجربش).
 
-## التنسيق مع Claude A
-- **ممنوع تلمس ملفات Claude A** إلا بتنسيق. مساره: `app/500-receiving.js`، `purchases*`، `supplier-*`، `app/548-nova-providers.js`، `app/550-supplier-accounts-ui.js`، `app/130-pages-nav.js` (صفحات التقارير/الفواتير/العملاء/المخزون).
-- **مسارك: شاشة البيع** — `app/120-pos-core.js`، `app/110-sale-rail-held.js`، `app/100-ux-p40-sale-rail.css`، وملف جديد لو احتجت (`app/56x-*.js`).
-- لو لازم تعدّل ملف مشترك (`index.html` بيتغيّر مع كل `split-index`): نزّل main قبل الرفع مباشرة، ولو حد غيّره من ساعتها، ادمج ما تكتبش فوقه.
-- **قبل رفع نسخة البريفيو** ابعت لـ Claude A (SendMessage لو الجلسة ظاهرة في ListAgents، أو اكتب في CURRENT.md) ملخص التغيير والاختبارات، واستنى «تمام» أو ملاحظات.
+## التنسيق مع Claude A (قرار المالك 2026-11-21: كل واحد على ملفات مختلفة)
+Claude B بيشتغل على حساب Claude تاني (إعدادات منفصلة `C:\claude-b`)، فمفيش SendMessage بينكم: **التواصل عن طريق ملف `docs/agents/B-TO-A.md`** (B يكتب فيه، A يرد تحته) + د. أحمد.
+
+| الملفات | مين |
+|---|---|
+| `app/120-pos-core.js`، `app/110-sale-rail-held.js`، `app/100-ux-p40-sale-rail.css`، ملفات جديدة `app/57x-*.js` و `app/57x-*.css`، اختبارات البيع `tests/ux/sale-*.mjs` و `tests/ui-pos0*.mjs` | **Claude B** |
+| `app/130-pages-nav.js` (التقارير/الفواتير/العملاء/المخزون/الإعدادات)، `app/500-receiving.js`، `app/480-*.css`، `app/140-ui-language.js` (الترجمة)، `app/548` → `app/566`، `supplier-accounts.js`، `credit-ledger.js`، `purchases*`، `tools/*`، `tests/perf/*`، `docs/product/*` | **Claude A** |
+| `index.html`، `sw.js`، `assets/app-*` (بيتولدوا من `split-index`)، `CURRENT.md`، `worker/live/*` | مشتركة — شوف تحت |
+
+- **الترجمة:** أي نص عربي جديد عندك محتاج إنجليزي. ما تعدلش `app/140`؛ اكتب النصوص وترجمتها في ملخصك وأنا أضيفها في `enUx` قبل الرفع.
+- **الملفات المشتركة:** نزّل main قبل الرفع مباشرة، شغّل `split-index`، وارفع `index.html` + `sw.js` + الـ assets بتاعتك بس. `CURRENT.md`: سطر جديد فوق، ما تعدلش سطور غيرك.
+- **نسخ البريفيو (`worker/live`) Claude A بس اللي بيبنيها ويرفعها**، عشان ما تبقاش فيه نسختين على أساسات مختلفة. انت ترفع كودك واختباراتك **بعد ما Claude A يقول «تمام»**، وهو يبني النسخة ويتأكد على البريفيو.
+- **قبل ما تطلب «تمام»:** شغّل كل خطوات `node tests/...` في `.github/workflows/playwright-smoke.yml` + `npx playwright test tests/nova-pos-smoke.spec.cjs` + اختباراتك، واكتب في `docs/agents/B-TO-A.md`: الملفات اللي اتغيرت، النصوص الجديدة وترجمتها، الاختبارات ونتيجتها، المسودة اتراجعت من أنهي حساب Gemini.
+- الشاشات الجديدة اللي مش جزء من شاشة البيع نفسها تبقى lazy (شوف سطر RCV02 في `CURRENT.md`)؛ اللي جوه شاشة البيع عادي.
 
 ## مهامك بالترتيب (من `docs/product/USER_TASKS.md`)
 1. **صفحة بيع الطوارئ بترجع 404 على البريفيو** (`emergency-sales.html` + `emergency-core.js`): ضيف مساراتها في `EXTRA_ROUTES` في `tools/build-preview-refresh.mjs` واتأكد إنها بتشتغل من غير نت. (نسّق مع Claude A لأن الأداة مشتركة.)
