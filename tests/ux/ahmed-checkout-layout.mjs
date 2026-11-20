@@ -34,9 +34,9 @@ for(const [w,h] of [[1280,800],[390,844]]){
  await page.locator('#novaInvStartSale').click();
  await page.locator('#mainSearchInput').waitFor({state:'visible'});
  await addProduct(page);
- page.once('dialog',d=>d.dismiss());await page.locator('#btnClearInvoice').click();
+  await page.locator('#btnClearInvoice').click();await page.locator('#novaInvoiceActionDialog button[data-action="cancel"]').click(); // AUDIT-02: in-app dialog, «رجوع»
  if(await page.locator('#invoiceTableBody tr').count()!==1)throw Error('Clear cancellation lost invoice');
- page.once('dialog',d=>d.accept());await page.locator('#btnClearInvoice').click();
+  await page.locator('#btnClearInvoice').click();await page.locator('#novaInvoiceActionDialog button[data-action="clear"]').click(); // «امسح الفاتورة»
  if(await page.locator('#invoiceTableBody tr').count()!==0)throw Error('Clear confirmation failed');
  for(const route of ['invoices','products','customers','reports','settings']){
   await page.goto('http://nova-audit.test/index.html#'+route);
