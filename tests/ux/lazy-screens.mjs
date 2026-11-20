@@ -18,7 +18,8 @@ try {
   await p1.goto(BASE + (BASE.includes('127.0.0.1') ? 'index.html' : '') + '#sale');
   await p1.locator('#novaSplash').waitFor({ state: 'hidden' });
   assert.equal(await p1.evaluate(() => typeof window.novaSupplierReturns + '/' + typeof window.NovaSupplierAccounts), 'undefined/undefined', 'lazy code not run on the sale screen');
-  assert.equal(await p1.locator('link[rel="prefetch"][data-nova-lazy]').count(), 3);
+  assert.equal(await p1.locator('link[rel="prefetch"][data-nova-lazy]').count(), 5);
+  assert.equal(await p1.evaluate(() => typeof window.novaItemCard + '/' + typeof window.novaCreditLimit), 'undefined/undefined', 'item card + credit limit not run at startup');
   // 2) opening the receiving page runs it, in order
   await p1.evaluate(() => { location.hash = '#receiving'; });
   await p1.locator('[data-sret-open]').waitFor({ timeout: 10000 });
