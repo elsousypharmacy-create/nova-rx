@@ -41,5 +41,6 @@
 4. **موافقة المدير على خصم كبير وحذف صنف من فاتورة** (#100): نفس طريقة موافقة إلغاء الفاتورة (`novaAuth.verifyAccount`).
 5. **جبر الكسر والفكة** (#94).
 6. **حد الائتمان وقت البيع الآجل** (#116): Claude A عمل `window.novaCreditLimit.check(customerId, amount)` (app/556-credit-limit.js، بيرجع `{ ok, limit, balance, available, after }`). المطلوب: في شاشة الدفع لما الطريقة آجل والعميل عنده حد، لو `ok=false` اعرض تنبيه «العميل هيعدّي حد الائتمان» ومتكملش إلا بموافقة مدير (نفس طريقة موافقة الإلغاء `novaAuth.verifyAccount`).
+7. **الأدوية المراقبة وقت البيع** (قرار المالك 2026-11-20): Claude A عمل `window.novaControlled` (app/560-controlled-drugs.js، بيتحمّل lazy — نادِ `await window.novaLazy.load()` الأول). المطلوب: قبل إتمام الدفع، لو أي سطر `novaControlled.isControlled(line)` نادِ `novaControlled.capture({ saleId, lines })`؛ لو رجعت `null` (إلغاء) متكملش البيع، ولو رجعت بيانات نادِ `novaControlled.record(entries)` بعد ما البيع يتسجل.
 
 لكل مهمة: حزمة Gemini ← دمج ومراجعة ← اختبار ← مراجعة مستقلة ← بناء ← تنسيق مع A ← رفع ← تأكيد على البريفيو ← سطر في CURRENT.md.
