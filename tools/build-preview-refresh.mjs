@@ -18,7 +18,8 @@ const EXTRA_ROUTES = {
   '/receipt-operations.js': ['receipt-operations.js', 'application/javascript; charset=utf-8'],
   '/purchases-history.js': ['purchases-history.js', 'application/javascript; charset=utf-8'],
   '/purchases-history.css': ['purchases-history.css', 'text/css; charset=utf-8'],
-  '/staff-gate.js': ['staff-gate.js', 'application/javascript; charset=utf-8'] // SEC-01 / S1-07 staff login gate
+  '/staff-gate.js': ['staff-gate.js', 'application/javascript; charset=utf-8'], // SEC-01 / S1-07 staff login gate
+  '/supplier-accounts.js': ['supplier-accounts.js', 'application/javascript; charset=utf-8'] // AUDIT-03 supplier accounts + expenses screen (FIN-04 logic)
 };
 const TABLES = ['NOVA_PURCHASING_ASSETS', 'NOVA_STATIC_ASSETS'];
 const [base, out] = process.argv.slice(2);
