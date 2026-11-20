@@ -16,7 +16,8 @@ try {
   await page.locator('#novaSplash').waitFor({ state: 'hidden' });
   const pickQuery = () => page.evaluate(() => { for (const q of ['6281001234567', 'panadol', 'بانادول', 'a', 'ا']) { const p = window.novaSearch.search(q, 1)[0]; if (p && p.barcode && window.novaSearch.search(p.barcode, 1)[0]) return p.barcode; } return null; });
   const Q = await pickQuery(); assert.ok(Q, 'a searchable product with a barcode');
-  const seed = await page.evaluate(Q => {
+  const seed = await page.evaluate(async Q => {
+    await window.novaLazy.load();   // supplier code runs lazily (RCV01); the sale screen does not load it at startup
     const p = window.novaSearch.search(Q, 1)[0];
     const key = window.novaStock.keyOf(p);
     if (!window.novaStock.addLot({ key, lot: 'L1', expiry: '2027-01-31', qty: 10, cost: 5 }).ok) throw new Error('seed lot');
