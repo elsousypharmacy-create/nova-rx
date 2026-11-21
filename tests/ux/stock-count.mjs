@@ -200,6 +200,85 @@ try {
   const ovf = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   assert.equal(ovf, false, 'no horizontal overflow on the review at 390px');
 
+  // ---- #41b: shortage bigger than the stock now is capped, not stuck forever ----
+  let dialogs = 0; page.on('dialog', (d) => { dialogs++; d.dismiss(); });
+  const cap = await page.evaluate(() => {
+    const S = window.novaStock, N = window.novaStockCount;
+    const D = (window.NOVA_DEMO.products || []).filter((p) => !S.hasLots(S.keyOf(p)))[0];
+    const key = S.keyOf(D);
+    S.addLot({ key, lot: 'D1', expiry: '2029-12-31', qty: 5, cost: 3 }, 'SEED-D1');
+    const sess = N.start(); N.addProduct(key); N.setCount(sess.id, key, 'D1', '2029-12-31', 0); N.lock(sess.id);
+    return { id: sess.id, key };
+  });
+  await sell(cap.key, 'D1', 3, 'T-SALE-D-DURING-REVIEW'); // stock is 2 now, the count says 5 are missing
+  await page.evaluate(() => { const o = document.getElementById('novaStockCountOverlay'); if (o) o.remove(); });
+  await page.click('#novaStockCount button.btn-primary');
+  await page.waitForSelector('#novaStockCountOverlay table.nsc-table');
+  assert.match(await page.textContent('#novaStockCountOverlay .nsc-capped'), /اتخصم المتاح بس \(2\/5\)/, 'review row shows the capped shortage');
+  const capClose = await page.evaluate(async (c) => {
+    const r = await window.novaStockCount.close(c.id, 'فقد / سرقة');
+    const lot = window.novaStock.lots(c.key).find((l) => l.lot === 'D1');
+    const sess = window.novaStockCount.sessions().find((x) => x.id === c.id);
+    return { closed: !!sess.closedAt, summary: sess.summary, onHand: lot ? lot.onHand : 0, capped: sess.plan.capped, ok: !!r.session };
+  }, cap);
+  assert.equal(capClose.closed, true, 'a shortage above the stock still closes');
+  assert.equal(capClose.onHand, 0, 'only the available 2 boxes were deducted (never negative)');
+  assert.deepEqual(capClose.summary, { shortageCost: 6, surplusCost: 0, netCost: -6 }, 'cost uses the capped quantity');
+  assert.deepEqual(capClose.capped, { 0: { wanted: 5, applied: 2 } });
+
+  // ---- #41b: cancel count ----
+  const can = await page.evaluate(() => {
+    const S = window.novaStock, N = window.novaStockCount;
+    const E = (window.NOVA_DEMO.products || []).filter((p) => !S.hasLots(S.keyOf(p)))[0];
+    const key = S.keyOf(E);
+    S.addLot({ key, lot: 'E1', expiry: '2029-12-31', qty: 4, cost: 2 }, 'SEED-E1');
+    const sess = N.start(); N.addProduct(key); N.setCount(sess.id, key, 'E1', '2029-12-31', 1); N.lock(sess.id);
+    return { id: sess.id, key };
+  });
+  const refuse = await page.evaluate((c) => {
+    const real = window.novaPerms, out = [];
+    for (const fake of [{ require: () => false }, { require: () => { throw new Error('x'); } }]) {
+      window.novaPerms = fake;
+      try { window.novaStockCount.cancel(c.id, 'سبب'); out.push('cancelled'); } catch (e) { out.push(e.code); }
+    }
+    window.novaPerms = real;
+    try { window.novaStockCount.cancel(c.id, '   '); out.push('cancelled'); } catch (e) { out.push(e.code); }
+    // a partly applied frozen plan can never be cancelled silently
+    const all = JSON.parse(localStorage.getItem('nova-rx-stock-count-v1')); const me = all.find((x) => x.id === c.id);
+    const variants = [{ outApplied: true, ins: [] }, { outStarted: true, ins: [] }, { ins: [{ done: true }] }, { ins: [{ started: true }] }];
+    for (const v of variants) {
+      me.plan = Object.assign({ out: [], note: '', reasons: {} }, v); localStorage.setItem('nova-rx-stock-count-v1', JSON.stringify(all));
+      try { window.novaStockCount.cancel(c.id, 'سبب'); out.push('cancelled'); } catch (e) { out.push(e.code); }
+    }
+    me.plan = null; localStorage.setItem('nova-rx-stock-count-v1', JSON.stringify(all));
+    return out;
+  }, can);
+  assert.deepEqual(refuse, ['errNoPermCancel', 'errNoPermCancel', 'errCancelReason', 'errPartial', 'errPartial', 'errPartial', 'errPartial'], 'cancel is fail-closed, needs a reason, refuses a partly applied plan');
+  assert.equal(await page.evaluate((c) => !!window.novaStockCount.sessions().find((x) => x.id === c.id).cancelledAt, can), false, 'refused attempts changed nothing');
+
+  // through the real UI: dialog with a required reason, no window.confirm
+  await page.evaluate(() => { const o = document.getElementById('novaStockCountOverlay'); if (o) o.remove(); });
+  await page.evaluate(() => window.novaStockCount.sessions()); // keep session
+  await page.waitForSelector('#novaStockCount .nsc-cancel-btn');
+  await page.click('#novaStockCount .nsc-cancel-btn');
+  await page.waitForSelector('#novaStockCountCancelDlg textarea');
+  await page.click('#novaStockCountCancelDlg .nsc-dlg-ok');
+  assert.match(await page.textContent('#novaStockCountCancelDlg .nsc-dlg-msg'), /اكتب سبب/, 'empty reason refused in the dialog');
+  await page.fill('#novaStockCountCancelDlg textarea', 'بدأته بالغلط');
+  await page.click('#novaStockCountCancelDlg .nsc-dlg-ok');
+  await page.waitForFunction(() => !document.getElementById('novaStockCountCancelDlg'));
+  const after = await page.evaluate((c) => {
+    const s = window.novaStockCount.sessions().find((x) => x.id === c.id);
+    const lot = window.novaStock.lots(c.key).find((l) => l.lot === 'E1');
+    return { at: !!s.cancelledAt, reason: s.cancelReason, by: typeof s.cancelledBy, closed: !!s.closedAt, onHand: lot.onHand };
+  }, can);
+  assert.deepEqual(after, { at: true, reason: 'بدأته بالغلط', by: 'string', closed: false, onHand: 4 }, 'cancelled with no stock move');
+  const reports = await page.evaluate(() => Array.from(document.querySelectorAll('#novaStockCount .nsc-report-item')).map((b) => b.textContent));
+  assert.ok(reports.some((t) => t.includes('ملغي') && t.includes('بدأته بالغلط')), 'cancelled count listed as «ملغي» in the reports');
+  assert.equal(await page.evaluate(() => /ابدأ جرد جديد/.test(document.getElementById('novaStockCount').textContent)), true, 'a new count can start after cancelling');
+  assert.equal(await page.evaluate((c) => { try { window.novaStockCount.setCount(c.id, c.key, 'E1', '2029-12-31', 2); return 'edited'; } catch (e) { return e.code; } }, can), 'errNoSession');
+  assert.equal(dialogs, 0, 'no window.confirm / alert used');
+
   assert.deepEqual(errors, [], 'no page errors');
   console.log('PASS stock-count');
 } finally {
