@@ -47,7 +47,7 @@ t('chat header of a number-only chat shows the number once (as the name), not tw
 });
 t('the page carries the link code and redraws when only a name changes', () => {
   // (the inline copy and unified-inbox.js are no longer byte-identical on main: other tasks edit the inline copy only, so this test checks the page's own markers)
-  assert.ok(/<script id="fix43-inbox-lib">[\s\S]*function dispName\(c\)[\s\S]*<\/script>/.test(page), 'the page carries dispName');
+  assert.ok(/<script id="fix43-inbox-lib"[^>]*>[\s\S]*function dispName\(c\)[\s\S]*<\/script>/.test(page), 'the page carries dispName');
   assert.ok(page.includes("[c.id,c.customer,c.count,c.updatedAt,l&&l.id,l&&l.status].join('|')"));
   assert.ok(page.includes("hGet('link-names')") && page.includes('hLink()'));
 });

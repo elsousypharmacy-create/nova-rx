@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 const html = readAppHtml('index.html', 'utf8');
 const grab = (re) => re.exec(html)[1];
-const lib = grab(/<script id="fix43-inbox-lib">([\s\S]*?)<\/script>/);
-const ux48 = grab(/<script>(\/\* UX48: hidden local inbox tab[\s\S]*?)<\/script>/);
+const lib = grab(/<script id="fix43-inbox-lib"[^>]*>([\s\S]*?)<\/script>/);
+const ux48 = grab(/<script(?: data-nova-lazy="1")?>(\/\* UX48: hidden local inbox tab[\s\S]*?)<\/script>/);
 const ux81 = grab(/<script id="ux81-wa-badge">([\s\S]*?)<\/script>/);
 
 function el(tag) {

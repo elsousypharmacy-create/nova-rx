@@ -44,6 +44,6 @@ r = run({}); r.btn.listeners.click(); assert.equal(r.href(), null, 'FIX43: never
 const page = readAppHtml('index.html', 'utf8');
 assert.ok(!/location\.href\s*=\s*'integrations\/whatsapp\/inbox\.html'/.test(page), 'no fallback to inbox.html');
 assert.ok(!/s\.src='unified-inbox\.js'/.test(page), 'inbox lib is inlined, not fetched');
-assert.match(page, /<script id="fix43-inbox-lib">/);
+assert.match(page, /<script id="fix43-inbox-lib"[^>]*>/);
 assert.match(page, /window\.NovaOpenInbox=/);
 console.log('ux81-wa-badge OK');

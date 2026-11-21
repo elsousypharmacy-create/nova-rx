@@ -10,7 +10,7 @@ const page = readAppHtml(new URL('../../index.html', import.meta.url), 'utf8');
 const file = readFileSync(new URL('../../unified-inbox.js', import.meta.url), 'utf8');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok', name); };
 
-t('unified-inbox.js == inline fix43-inbox-lib', () => assert.equal(page.match(/<script id="fix43-inbox-lib">([\s\S]*?)<\/script>/)[1], file));
+t('unified-inbox.js == inline fix43-inbox-lib', () => assert.equal(page.match(/<script id="fix43-inbox-lib"[^>]*>([\s\S]*?)<\/script>/)[1], file));
 
 const NOW = new Date(2026, 10, 15, 12, 0).getTime();
 const C = [

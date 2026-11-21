@@ -4,7 +4,8 @@ function boot(){var nav=document.querySelector('.nova-nav');if(!nav||document.ge
 /* FIX43: the WhatsApp header icon opens the in-app conversations view (SPA, no navigation) even when the flag is off */
 window.NovaOpenInbox=function(){boot();var t=document.getElementById('novaInboxTab');if(t){t.click();return true}return false};
 /* UX406: a click on a new-message notification opens /#wa => the conversations screen */
-window.addEventListener('load',function(){if(location.hash==='#wa')window.NovaOpenInbox()});
+if(document.readyState==='complete'){if(location.hash==='#wa')window.NovaOpenInbox()}
+else window.addEventListener('load',function(){if(location.hash==='#wa')window.NovaOpenInbox()});
 /* WA-APP: /whatsapp and /?app=whatsapp (the standalone WhatsApp link) = the conversations screen on its own: no POS and no other tabs, only the header
    and the conversations. Same code as the in-app «المحادثات» tab, so everything added there appears in both. */
 (function(){try{
@@ -25,6 +26,7 @@ var showing=false;
 function waKeepUrl(){var p=(location.pathname||'').replace(/\/+$/,'')||'/';var base=(p==='/whatsapp'||p==='/wa')?'/whatsapp':'';return base+'?app=whatsapp#wa'}
 function show(){if(showing)return;showing=true;try{if(window.NovaWaFitAppHeight)window.NovaWaFitAppHeight();var next=waKeepUrl();if(location.pathname+location.search+location.hash!==next){try{history.replaceState(null,'',next)}catch(e){}}if(window.NovaOpenInbox)window.NovaOpenInbox();var box=document.getElementById('novaInboxView'),pos=document.querySelector('.pos-root'),host=document.getElementById('novaPageView');if(box)box.hidden=false;if(pos){pos.hidden=true;pos.style.display='none'}if(host)host.hidden=true;try{document.body.dataset.activePage='inbox'}catch(e){}}finally{showing=false}}
 function arm(){setTimeout(show,0)}
+if(document.readyState!=='loading')arm();
 window.addEventListener('DOMContentLoaded',arm);
 window.addEventListener('load',arm);
 window.addEventListener('pageshow',arm);

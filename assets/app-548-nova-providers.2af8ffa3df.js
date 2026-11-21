@@ -74,11 +74,34 @@
     }));
     return lazyPromise;
   }
-  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1, settings: 1 };
+  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1, settings: 1, inbox: 1, wa: 1 };
+  var inboxOpenPending = false;
+  if (!window.NovaOpenInbox) {
+    window.NovaOpenInbox = function () {
+      if (inboxOpenPending) return true;
+      inboxOpenPending = true;
+      loadLazy().then(function () {
+        inboxOpenPending = false;
+        if (window.NovaOpenInbox && !window.NovaOpenInbox._stub) window.NovaOpenInbox();
+      }, function () { inboxOpenPending = false; });
+      return true;
+    };
+    window.NovaOpenInbox._stub = true;
+  }
+  /* /#wa (a click on a new-message notification, UX406): run the lazy WhatsApp code right away so the conversations button
+     answers at once. app/130 rewrites the hash to #sale while the page is still parsing, so read the launch URL from the
+     navigation entry. (A plain /#wa still lands on the full app, as before: tests/ux/wa-app-mode.mjs, wa-edges.mjs.) */
+  var bootWa = false;
+  try { var navE = performance.getEntriesByType && performance.getEntriesByType('navigation')[0]; bootWa = !!navE && /#wa(?:[&?]|$)/.test(String(navE.name || '')); } catch (e) {}
+  function isWaApp() {
+    var path = String(location.pathname || '').replace(/\/+$/, '') || '/';
+    return path === '/whatsapp' || path === '/wa' || /(?:^|[?&])app=whatsapp(?:&|$)/.test(String(location.search || ''));
+  }
   function lazyPageOpen() {
     var a = document.querySelector('.nova-tab.active[data-page]');
-    var p = (document.body && document.body.dataset.activePage) || (a && a.getAttribute('data-page')) || String(location.hash || '').replace(/^#/, '').split(/[&?]/)[0];
-    return !!LAZY_PAGES[p];
+    var p = (document.body && document.body.dataset.activePage) || (a && a.getAttribute('data-page')) || '';
+    var h = String(location.hash || '').replace(/^#/, '').split(/[&?]/)[0];
+    return !!(LAZY_PAGES[p] || LAZY_PAGES[h] || bootWa || isWaApp());
   }
   function checkLazy() { if (!lazyPromise && lazyPageOpen()) loadLazy(); }
   window.novaLazy = { load: loadLazy };
