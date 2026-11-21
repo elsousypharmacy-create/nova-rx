@@ -302,7 +302,7 @@
     return y + '-' + String(mo).padStart(2, '0');
   }
   function expShow(e) { return /^\d{4}-\d{2}/.test(e || '') ? e.slice(5, 7) + '/' + e.slice(2, 4) : (e || ''); }
-  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && (p.paidQty != null ? p.paidQty : p.qty) || '', bonus: p && p.bonus || '', lot: p && !p.autoLot && p.lot || '', exp: p && p.expiry ? p.expiry.slice(0, 7) : '', cost: p && p.invoiceCost != null ? p.invoiceCost : (p && p.cost != null ? p.cost : '') }; }
+  function blankLine(p) { return { key: p && p.key || '', name: p && p.name || '', code: p && p.code || '', qty: p && (p.paidQty != null ? p.paidQty : p.qty) || '', bonus: p && p.bonus || '', lot: p && !p.autoLot && p.lot || '', exp: p && p.expiry ? p.expiry.slice(0, 7) : '', cost: p && p.invoiceCost != null ? p.invoiceCost : (p && p.cost != null ? p.cost : ''), price: p && p.expiry && p.price != null ? p.price : '' }; } // a new price is pre-filled only when resuming a saved receipt line (never the catalog price)
   function openForm(pre) {
     if (document.getElementById('rcvForm')) return;
     var prevFocus = document.activeElement;
@@ -356,6 +356,7 @@
         + '<div class="rcv-fld"><span class="rcv-lbl">الكمية</span><div class="rcv-unitbox"><input data-f="qty" type="number" min="1" step="1" inputmode="numeric" value="' + esc(l.qty) + '" aria-label="الكمية بالعلب" placeholder="0"><span class="rcv-unit">علبة</span></div></div>'
         + '<div class="rcv-fld rcv-bonus"><span class="rcv-lbl">بونص</span><input data-f="bonus" type="number" min="0" max="9999" step="1" inputmode="numeric" value="' + esc(l.bonus) + '" aria-label="بونص مجاني بالعلب" placeholder="0"></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">سعر العلبة</span><input data-f="cost" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.cost) + '" aria-label="سعر الشراء للعلبة" placeholder="0.00"></div>'
+        + '<div class="rcv-fld rcv-price"><span class="rcv-lbl">سعر البيع الجديد</span><input data-f="price" type="number" min="0" step="0.01" inputmode="decimal" value="' + esc(l.price == null ? '' : l.price) + '" aria-label="سعر البيع الجديد للعلبة (اختياري، لو السعر اتغير)" placeholder="اختياري"></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">الصلاحية <b class="rcv-req" aria-hidden="true">*</b></span><input data-f="exp" type="text" dir="ltr" inputmode="numeric" maxlength="7" autocomplete="off" value="' + esc(expShow(l.exp)) + '" aria-label="تاريخ الصلاحية شهر/سنة" aria-required="true" placeholder="MM/YY"><small class="rcv-err" data-err role="alert"></small></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">التشغيلة (اختياري)</span><input data-f="lot" dir="ltr" maxlength="40" value="' + esc(l.lot) + '" aria-label="رقم التشغيلة (اختياري)" placeholder="اختياري"></div>'
         + '<div class="rcv-fld"><span class="rcv-lbl">الإجمالي</span><output class="rcv-lt" data-lt>—</output></div>'
@@ -439,7 +440,7 @@
       var f = e.target.getAttribute('data-f'), i = lineOf(e.target); if (i < 0) return;
       e.preventDefault(); e.stopPropagation();
       if (f === 'q') { if (found[i] && found[i].length) pick(i, 0); return; }
-      var nx = { qty: 'bonus', bonus: 'exp', lot: 'exp', exp: 'cost' }[f];
+      var nx = { qty: 'bonus', bonus: 'exp', lot: 'exp', exp: 'cost', cost: 'price' }[f];
       if (nx) box.children[i].querySelector('[data-f=' + nx + ']').focus();
       else addLine();
     });
@@ -491,11 +492,14 @@
         if (last.getTime() < soon) short++;
         if (out.some(function (o) { return o.key === l.key && o.lot === lot; })) return bad('lot', 'نفس الصنف ونفس التشغيلة متكررين');
         if (l.cost !== '' && (!Number.isFinite(Number(l.cost)) || Number(l.cost) < 0)) return bad('cost', 'اكتب سعر شراء صحيح');
+        var priceRaw = String(l.price == null ? '' : l.price).trim(), newPrice = priceRaw === '' ? null : Math.round(Number(priceRaw) * 100) / 100;
+        if (newPrice !== null && (!Number.isFinite(newPrice) || newPrice <= 0)) return bad('price', 'اكتب سعر بيع صحيح أو سيبه فاضي');
         var invCost = l.cost === '' ? 0 : Number(l.cost) || 0, expStr = pe + '-' + String(last.getUTCDate()).padStart(2, '0');
         // no bonus → exactly today's line shape (replay/idempotency compares it)
         out.push(bn > 0
           ? { key: l.key, code: l.code || l.key, name: l.name, qty: q + bn, paidQty: q, bonus: bn, lot: lot, autoLot: autoLot, expiry: expStr, invoiceCost: invCost, cost: Math.round(q * invCost / (q + bn) * 10000) / 10000 }
           : { key: l.key, code: l.code || l.key, name: l.name, qty: q, lot: lot, autoLot: autoLot, expiry: expStr, cost: invCost });
+        if (newPrice !== null) out[out.length - 1].price = newPrice;
       }
       var b = out.reduce(function (s, o) { return s + o.qty; }, 0), bb = out.reduce(function (s, o) { return s + (o.bonus || 0); }, 0);
       var bTxt = bb ? (b - bb) + ' + ' + bb + ' بونص = ' + b + ' علبة' : b + ' علبة';

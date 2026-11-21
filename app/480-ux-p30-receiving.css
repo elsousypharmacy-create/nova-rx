@@ -84,7 +84,7 @@
 .rcv-meta label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#a9b5c2}
 .rcv-ov input{min-height:40px;padding:0 10px;background:#0b0e11;color:#e8eef3;border:1px solid #2a3139;border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box;width:100%;min-width:0}
 .rcv-ov input:focus{outline:none;border-color:#4a8aa6;box-shadow:0 0 0 3px rgba(74,138,166,.25)}
-.rcv-line{display:grid;grid-template-columns:minmax(0,2.4fr) 110px 72px 100px 110px minmax(0,1fr) 90px 36px;gap:8px;align-items:center;padding:0 18px}
+.rcv-line{display:grid;grid-template-columns:minmax(0,2.4fr) 110px 72px 100px 100px 110px minmax(0,1fr) 90px 36px;gap:8px;align-items:center;padding:0 18px}
 .rcv-line[hidden]{display:none}
 .rcv-supbox>label{display:block!important}
 .rcv-supbox{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#a9b5c2;position:relative}
