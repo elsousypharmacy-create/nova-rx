@@ -4824,3 +4824,2814 @@
     initObserver();
   }
 })();
+;
+// app/606-family-accounts.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-family-accounts-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaFamilyAccounts';
+  var STYLE_ID = 'novaFamilyAccountsStyle';
+  var MAX_RECORDS = 500;
+  var MAX_MEMBERS = 12;
+  var RELATIONS = ['head', 'spouse', 'child', 'parent', 'sibling', 'other'];
+
+  var observer = null;
+  var selectedFamilyId = '';
+  var selectedMemberId = '';
+  var pendingRemove = null;
+  var searchQuery = '';
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function notify(msg, type) {
+    if (window.showToast && typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+  }
+
+  function currentUser() {
+    try {
+      if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+        var u = window.novaAuth.current();
+        if (u && u.name) return String(u.name);
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function canRemoveMember() {
+    if (!window.novaPerms || typeof window.novaPerms.require !== 'function') {
+      return false;
+    }
+    try {
+      return !!window.novaPerms.require('customers.edit');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        out += idx !== -1 ? String(idx) : ch;
+      }
+    }
+    return out;
+  }
+
+  function trimStr(val) {
+    return String(val == null ? '' : val).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizePhone(val) {
+    var digits = normalizeDigits(val).replace(/[\s\-()]/g, '');
+    if (!/^01[0125]\d{8}$/.test(digits)) return '';
+    return digits;
+  }
+
+  function parseBirthYear(val) {
+    var s = trimStr(normalizeDigits(val));
+    if (!s) return null;
+    if (!/^\d{4}$/.test(s)) return NaN;
+    var y = parseInt(s, 10);
+    var cur = new Date().getFullYear();
+    if (y < 1900 || y > cur) return NaN;
+    return y;
+  }
+
+  function makeId(prefix) {
+    return prefix + '_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 1000000).toString(36);
+  }
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeStore(list) {
+    try {
+      var arr = Array.isArray(list) ? list : [];
+      if (arr.length > MAX_RECORDS) {
+        arr = arr.slice(arr.length - MAX_RECORDS);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isValidRelation(rel) {
+    var i;
+    for (i = 0; i < RELATIONS.length; i++) {
+      if (RELATIONS[i] === rel) return true;
+    }
+    return false;
+  }
+
+  function relationLabel(rel) {
+    var mapAr = {
+      head: 'رب الأسرة',
+      spouse: 'الزوج/الزوجة',
+      child: 'ابن/ابنة',
+      parent: 'أب/أم',
+      sibling: 'أخ/أخت',
+      other: 'آخر'
+    };
+    var mapEn = {
+      head: 'Head',
+      spouse: 'Spouse',
+      child: 'Child',
+      parent: 'Parent',
+      sibling: 'Sibling',
+      other: 'Other'
+    };
+    return isEn() ? (mapEn[rel] || rel) : (mapAr[rel] || rel);
+  }
+
+  function activeMembers(family) {
+    var list = (family && Array.isArray(family.members)) ? family.members : [];
+    var out = [];
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && !list[i].removedAt) out.push(list[i]);
+    }
+    return out;
+  }
+
+  function createFamily(opts) {
+    var o = opts || {};
+    var name = trimStr(o.name);
+    var phone = normalizePhone(o.phone);
+    var headName = trimStr(o.headName) || name;
+    if (!name || !phone) return false;
+
+    var list = readStore();
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].phone === phone) return false;
+    }
+
+    var now = new Date().toISOString();
+    var user = currentUser();
+    var fam = {
+      id: makeId('fam'),
+      name: name,
+      phone: phone,
+      createdAt: now,
+      createdBy: user,
+      members: [
+        {
+          id: makeId('mem'),
+          name: headName,
+          relation: 'head',
+          birthYear: null,
+          allergies: '',
+          notes: [],
+          addedAt: now,
+          addedBy: user
+        }
+      ]
+    };
+
+    list.push(fam);
+    writeStore(list);
+    refreshUI();
+    return fam;
+  }
+
+  function addMember(familyId, opts) {
+    var o = opts || {};
+    var name = trimStr(o.name);
+    var relation = trimStr(o.relation || 'other');
+    if (!familyId || !name || !isValidRelation(relation)) return false;
+
+    var birthYear = parseBirthYear(o.birthYear);
+    if (birthYear !== null && isNaN(birthYear)) return false;
+
+    var allergies = trimStr(o.allergies);
+    if (allergies.length > 200) allergies = allergies.slice(0, 200);
+
+    var initNote = trimStr(o.note);
+    if (initNote.length > 300) initNote = initNote.slice(0, 300);
+
+    var list = readStore();
+    var i, fam = null;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === familyId) {
+        fam = list[i];
+        break;
+      }
+    }
+    if (!fam) return false;
+    if (activeMembers(fam).length >= MAX_MEMBERS) return false;
+
+    var now = new Date().toISOString();
+    var user = currentUser();
+    var notesArr = [];
+    if (initNote) {
+      notesArr.push({ at: now, by: user, text: initNote });
+    }
+
+    var member = {
+      id: makeId('mem'),
+      name: name,
+      relation: relation,
+      birthYear: birthYear,
+      allergies: allergies,
+      notes: notesArr,
+      addedAt: now,
+      addedBy: user
+    };
+
+    if (!Array.isArray(fam.members)) fam.members = [];
+    fam.members.push(member);
+    writeStore(list);
+    refreshUI();
+    return member;
+  }
+
+  function removeMember(familyId, memberId, reason) {
+    if (!canRemoveMember()) return false;
+    var cleanReason = trimStr(reason);
+    if (!familyId || !memberId || !cleanReason) return false;
+
+    var list = readStore();
+    var i, j, fam = null, mem = null;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === familyId) {
+        fam = list[i];
+        break;
+      }
+    }
+    if (!fam || !Array.isArray(fam.members)) return false;
+
+    for (j = 0; j < fam.members.length; j++) {
+      if (fam.members[j] && fam.members[j].id === memberId) {
+        mem = fam.members[j];
+        break;
+      }
+    }
+    if (!mem || mem.removedAt) return false;
+    if (mem.relation === 'head') return false;
+
+    mem.removedAt = new Date().toISOString();
+    mem.removedBy = currentUser();
+    mem.removeReason = cleanReason;
+    writeStore(list);
+    refreshUI();
+    return true;
+  }
+
+  function listFamilies(query) {
+    var list = readStore();
+    var q = trimStr(query);
+    if (!q) return list;
+    var qLower = q.toLowerCase();
+    var qNorm = normalizeDigits(q).replace(/[\s\-()]/g, '');
+    var out = [];
+    var i, j, fam, matched;
+    for (i = 0; i < list.length; i++) {
+      fam = list[i];
+      if (!fam) continue;
+      matched = false;
+      if (fam.name && fam.name.toLowerCase().indexOf(qLower) !== -1) matched = true;
+      if (!matched && fam.phone && qNorm && fam.phone.indexOf(qNorm) !== -1) matched = true;
+      if (!matched && Array.isArray(fam.members)) {
+        for (j = 0; j < fam.members.length; j++) {
+          if (fam.members[j] && !fam.members[j].removedAt && fam.members[j].name &&
+              fam.members[j].name.toLowerCase().indexOf(qLower) !== -1) {
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (matched) out.push(fam);
+    }
+    return out;
+  }
+
+  function getFamily(familyId) {
+    if (!familyId) return null;
+    var list = readStore();
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === familyId) return list[i];
+    }
+    return null;
+  }
+
+  function getNotes(familyId, memberId) {
+    var fam = getFamily(familyId);
+    if (!fam || !Array.isArray(fam.members)) return [];
+    var i;
+    for (i = 0; i < fam.members.length; i++) {
+      if (fam.members[i] && fam.members[i].id === memberId) {
+        return Array.isArray(fam.members[i].notes) ? fam.members[i].notes.slice() : [];
+      }
+    }
+    return [];
+  }
+
+  function addNote(familyId, memberId, text) {
+    var clean = trimStr(text);
+    if (!familyId || !memberId || !clean) return false;
+    if (clean.length > 300) clean = clean.slice(0, 300);
+
+    var list = readStore();
+    var i, j, fam = null, mem = null;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === familyId) {
+        fam = list[i];
+        break;
+      }
+    }
+    if (!fam || !Array.isArray(fam.members)) return false;
+    for (j = 0; j < fam.members.length; j++) {
+      if (fam.members[j] && fam.members[j].id === memberId) {
+        mem = fam.members[j];
+        break;
+      }
+    }
+    if (!mem || mem.removedAt) return false;
+
+    if (!Array.isArray(mem.notes)) mem.notes = [];
+    var entry = {
+      at: new Date().toISOString(),
+      by: currentUser(),
+      text: clean
+    };
+    mem.notes.push(entry);
+    writeStore(list);
+    refreshUI();
+    return entry;
+  }
+
+  function findByPhone(phone) {
+    var norm = normalizePhone(phone);
+    if (!norm) return null;
+    var list = readStore();
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].phone === norm) return list[i];
+    }
+    return null;
+  }
+
+  window.novaFamilyAccounts = {
+    createFamily: createFamily,
+    addMember: addMember,
+    removeMember: removeMember,
+    list: listFamilies,
+    get: getFamily,
+    notes: getNotes,
+    addNote: addNote,
+    findByPhone: findByPhone
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaFamilyAccounts{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}',
+      '#novaFamilyAccounts *{box-sizing:border-box;}',
+      '#novaFamilyAccounts h3,#novaFamilyAccounts h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaFamilyAccounts h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaFamilyAccounts h4{font-size:0.95rem;margin-top:14px;color:#79c9eb;}',
+      '.nfa-input,.nfa-select{width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.nfa-input:focus,.nfa-select:focus{outline:none;border-color:#79c9eb;}',
+      '.nfa-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0;}',
+      '.nfa-field label{display:block;font-size:0.85rem;margin-bottom:4px;color:#9fb0c2;}',
+      '.nfa-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}',
+      '.nfa-actions button,.nfa-row-btn{min-height:44px;}',
+      '.nfa-list{display:flex;flex-direction:column;gap:6px;margin:10px 0;max-height:220px;overflow-y:auto;}',
+      '.nfa-fam-btn{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;cursor:pointer;text-align:inherit;}',
+      '.nfa-fam-btn.active{border-color:#79c9eb;background:#1b2430;}',
+      '.nfa-fam-sub{font-size:0.82rem;color:#9fb0c2;}',
+      '.nfa-panel{border-top:1px solid #343b44;margin-top:14px;padding-top:12px;}',
+      '.nfa-table-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;margin:10px 0;}',
+      '.nfa-table{width:100%;border-collapse:collapse;font-size:0.9rem;min-width:300px;}',
+      '.nfa-table th,.nfa-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;vertical-align:middle;}',
+      '.nfa-table th{background:#1b2129;color:#79c9eb;font-weight:600;white-space:nowrap;}',
+      '.nfa-table tr:last-child td{border-bottom:0;}',
+      '.nfa-allergy{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(245,158,11,0.18);border:1px solid #f59e0b;color:#fbbf24;font-size:0.82rem;}',
+      '.nfa-cell-actions{display:flex;flex-wrap:wrap;gap:6px;}',
+      '.nfa-notes-box{border:1px solid #343b44;border-radius:8px;padding:12px;background:#0d1117;margin-top:12px;}',
+      '.nfa-note-item{padding:8px 0;border-bottom:1px solid #343b44;font-size:0.88rem;}',
+      '.nfa-note-item:last-child{border-bottom:0;}',
+      '.nfa-note-meta{font-size:0.78rem;color:#9fb0c2;margin-bottom:2px;}',
+      '.nfa-dialog{border:1px solid #f59e0b;border-radius:8px;padding:12px;background:#1b2129;margin-top:12px;}',
+      '.nfa-empty{padding:10px;color:#9fb0c2;font-size:0.9rem;}',
+      '.nfa-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-top:6px;}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function makeField(parent, labelText, id, placeholder, maxLen) {
+    var wrap = el('div', 'nfa-field');
+    var lbl = el('label', '', labelText);
+    lbl.setAttribute('for', id);
+    var inp = el('input', 'nfa-input');
+    inp.id = id;
+    inp.type = 'text';
+    if (placeholder) inp.placeholder = placeholder;
+    if (maxLen) inp.maxLength = maxLen;
+    wrap.appendChild(lbl);
+    wrap.appendChild(inp);
+    parent.appendChild(wrap);
+    return inp;
+  }
+
+  function refreshUI() {
+    var listBox = document.getElementById('nfaFamilyList');
+    var panelBox = document.getElementById('nfaSelectedPanel');
+    if (!listBox || !panelBox) return;
+
+    while (listBox.firstChild) listBox.removeChild(listBox.firstChild);
+    var fams = listFamilies(searchQuery);
+    if (!fams.length) {
+      listBox.appendChild(el('div', 'nfa-empty', t('لا توجد حسابات عائلية مطابقة.', 'No matching family accounts.')));
+    } else {
+      var i;
+      for (i = 0; i < fams.length; i++) {
+        (function (fam) {
+          var btn = el('button', 'nfa-fam-btn' + (fam.id === selectedFamilyId ? ' active' : ''));
+          btn.type = 'button';
+          var left = el('span', '', fam.name);
+          var right = el('span', 'nfa-fam-sub', fam.phone + ' (' + activeMembers(fam).length + ')');
+          btn.appendChild(left);
+          btn.appendChild(right);
+          btn.addEventListener('click', function () {
+            selectedFamilyId = fam.id;
+            selectedMemberId = '';
+            pendingRemove = null;
+            refreshUI();
+          });
+          listBox.appendChild(btn);
+        })(fams[i]);
+      }
+    }
+
+    renderSelectedPanel(panelBox);
+  }
+
+  function renderSelectedPanel(panelBox) {
+    while (panelBox.firstChild) panelBox.removeChild(panelBox.firstChild);
+    if (!selectedFamilyId) return;
+    var fam = getFamily(selectedFamilyId);
+    if (!fam) {
+      selectedFamilyId = '';
+      return;
+    }
+
+    panelBox.appendChild(el('h4', '', fam.name + ' — ' + fam.phone));
+
+    var members = activeMembers(fam);
+    var curYear = new Date().getFullYear();
+
+    var wrap = el('div', 'nfa-table-wrap');
+    var table = el('table', 'nfa-table');
+    var thead = document.createElement('thead');
+    var trH = document.createElement('tr');
+    var headers = [
+      t('الاسم', 'Name'),
+      t('الصفة', 'Relation'),
+      t('العمر', 'Age'),
+      t('الحساسية', 'Allergies'),
+      t('إجراءات', 'Actions')
+    ];
+    var i;
+    for (i = 0; i < headers.length; i++) {
+      trH.appendChild(el('th', '', headers[i]));
+    }
+    thead.appendChild(trH);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (i = 0; i < members.length; i++) {
+      (function (m) {
+        var tr = document.createElement('tr');
+        tr.appendChild(el('td', '', m.name));
+        tr.appendChild(el('td', '', relationLabel(m.relation)));
+        var ageText = m.birthYear ? String(curYear - m.birthYear) : '—';
+        tr.appendChild(el('td', '', ageText));
+
+        var tdAllergy = document.createElement('td');
+        if (m.allergies) {
+          tdAllergy.appendChild(el('span', 'nfa-allergy', m.allergies));
+        } else {
+          tdAllergy.textContent = '—';
+        }
+        tr.appendChild(tdAllergy);
+
+        var tdAct = document.createElement('td');
+        var actWrap = el('div', 'nfa-cell-actions');
+        var notesBtn = el('button', 'btn btn-secondary nfa-row-btn', t('ملاحظات', 'Notes') + ' (' + (m.notes ? m.notes.length : 0) + ')');
+        notesBtn.type = 'button';
+        notesBtn.addEventListener('click', function () {
+          selectedMemberId = m.id;
+          pendingRemove = null;
+          refreshUI();
+        });
+        actWrap.appendChild(notesBtn);
+
+        if (m.relation !== 'head') {
+          var remBtn = el('button', 'btn btn-secondary nfa-row-btn', t('إزالة', 'Remove'));
+          remBtn.type = 'button';
+          remBtn.addEventListener('click', function () {
+            pendingRemove = { familyId: fam.id, memberId: m.id, memberName: m.name };
+            refreshUI();
+          });
+          actWrap.appendChild(remBtn);
+        }
+
+        tdAct.appendChild(actWrap);
+        tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+      })(members[i]);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    panelBox.appendChild(wrap);
+
+    if (pendingRemove && pendingRemove.familyId === fam.id) {
+      var dlg = el('div', 'nfa-dialog');
+      dlg.id = 'nfaRemoveDialog';
+      dlg.appendChild(el('h4', '', t('إزالة الفرد: ', 'Remove member: ') + pendingRemove.memberName));
+      var reasonInp = makeField(dlg, t('سبب الإزالة (مطلوب)', 'Removal reason (required)'), 'nfaRemoveReasonInput', t('اكتب السبب...', 'Enter reason...'), 200);
+      var dlgStatus = el('div', 'nfa-status', '');
+      var dlgAct = el('div', 'nfa-actions');
+      var confirmBtn = el('button', 'btn btn-primary', t('تأكيد الإزالة', 'Confirm Remove'));
+      confirmBtn.type = 'button';
+      confirmBtn.addEventListener('click', function () {
+        var ok = removeMember(pendingRemove.familyId, pendingRemove.memberId, reasonInp.value);
+        if (!ok) {
+          dlgStatus.textContent = t('تعذرت الإزالة: تحقق من السبب أو الصلاحية.', 'Removal failed: check reason or permission.');
+          notify(dlgStatus.textContent, 'error');
+        } else {
+          pendingRemove = null;
+          notify(t('تمت إزالة الفرد.', 'Member removed.'), 'success');
+          refreshUI();
+        }
+      });
+      var cancelBtn = el('button', 'btn btn-secondary', t('إلغاء', 'Cancel'));
+      cancelBtn.type = 'button';
+      cancelBtn.addEventListener('click', function () {
+        pendingRemove = null;
+        refreshUI();
+      });
+      dlgAct.appendChild(confirmBtn);
+      dlgAct.appendChild(cancelBtn);
+      dlg.appendChild(dlgAct);
+      dlg.appendChild(dlgStatus);
+      panelBox.appendChild(dlg);
+    }
+
+    if (selectedMemberId) {
+      var targetMem = null;
+      for (i = 0; i < members.length; i++) {
+        if (members[i].id === selectedMemberId) {
+          targetMem = members[i];
+          break;
+        }
+      }
+      if (targetMem) {
+        var notesBox = el('div', 'nfa-notes-box');
+        notesBox.id = 'nfaNotesBox';
+        notesBox.appendChild(el('h4', '', t('ملاحظات: ', 'Notes: ') + targetMem.name));
+        var mNotes = getNotes(fam.id, targetMem.id);
+        if (!mNotes.length) {
+          notesBox.appendChild(el('div', 'nfa-empty', t('لا توجد ملاحظات بعد.', 'No notes yet.')));
+        } else {
+          for (i = 0; i < mNotes.length; i++) {
+            var item = el('div', 'nfa-note-item');
+            var meta = (mNotes[i].by ? mNotes[i].by + ' — ' : '') + (mNotes[i].at ? mNotes[i].at.slice(0, 16).replace('T', ' ') : '');
+            item.appendChild(el('div', 'nfa-note-meta', meta));
+            item.appendChild(el('div', '', mNotes[i].text));
+            notesBox.appendChild(item);
+          }
+        }
+        var noteInp = makeField(notesBox, t('إضافة ملاحظة', 'Add Note'), 'nfaNewNoteInput', t('ملاحظة جديدة...', 'New note...'), 300);
+        var noteAct = el('div', 'nfa-actions');
+        var addNoteBtn = el('button', 'btn btn-primary', t('حفظ الملاحظة', 'Add Note'));
+        addNoteBtn.type = 'button';
+        addNoteBtn.addEventListener('click', function () {
+          var res = addNote(fam.id, targetMem.id, noteInp.value);
+          if (!res) {
+            notify(t('أدخل نص الملاحظة.', 'Enter note text.'), 'error');
+          } else {
+            notify(t('تمت إضافة الملاحظة.', 'Note added.'), 'success');
+          }
+        });
+        noteAct.appendChild(addNoteBtn);
+        notesBox.appendChild(noteAct);
+        panelBox.appendChild(notesBox);
+      }
+    }
+
+    panelBox.appendChild(el('h4', '', t('أضف فرد', 'Add Member')));
+    var addGrid = el('div', 'nfa-grid');
+    var memNameInp = makeField(addGrid, t('اسم الفرد', 'Member Name'), 'nfaMemNameInput', '', 80);
+
+    var relWrap = el('div', 'nfa-field');
+    var relLbl = el('label', '', t('الصفة', 'Relation'));
+    relLbl.setAttribute('for', 'nfaMemRelSelect');
+    var relSel = el('select', 'nfa-select');
+    relSel.id = 'nfaMemRelSelect';
+    for (i = 0; i < RELATIONS.length; i++) {
+      var opt = document.createElement('option');
+      opt.value = RELATIONS[i];
+      opt.textContent = relationLabel(RELATIONS[i]);
+      if (RELATIONS[i] === 'child') opt.selected = true;
+      relSel.appendChild(opt);
+    }
+    relWrap.appendChild(relLbl);
+    relWrap.appendChild(relSel);
+    addGrid.appendChild(relWrap);
+
+    var birthInp = makeField(addGrid, t('سنة الميلاد', 'Birth Year'), 'nfaMemBirthInput', '1995', 4);
+    birthInp.setAttribute('inputmode', 'numeric');
+    var allergyInp = makeField(addGrid, t('الحساسية', 'Allergies'), 'nfaMemAllergyInput', t('اختياري', 'Optional'), 200);
+    var memNoteInp = makeField(addGrid, t('ملاحظة أولية', 'Initial Note'), 'nfaMemNoteInput', t('اختياري', 'Optional'), 300);
+    panelBox.appendChild(addGrid);
+
+    var addMemStatus = el('div', 'nfa-status', '');
+    var addMemAct = el('div', 'nfa-actions');
+    var addMemBtn = el('button', 'btn btn-primary', t('أضف فرد', 'Add Member'));
+    addMemBtn.type = 'button';
+    addMemBtn.addEventListener('click', function () {
+      var added = addMember(fam.id, {
+        name: memNameInp.value,
+        relation: relSel.value,
+        birthYear: birthInp.value,
+        allergies: allergyInp.value,
+        note: memNoteInp.value
+      });
+      if (!added) {
+        addMemStatus.textContent = t('تعذرت الإضافة: تحقق من البيانات أو الحد الأقصى للأفراد.', 'Could not add member: check inputs or member limit.');
+        notify(addMemStatus.textContent, 'error');
+      } else {
+        notify(t('تمت إضافة الفرد بنجاح.', 'Member added.'), 'success');
+      }
+    });
+    addMemAct.appendChild(addMemBtn);
+    panelBox.appendChild(addMemAct);
+    panelBox.appendChild(addMemStatus);
+  }
+
+  function buildCard() {
+    injectStyles();
+    selectedFamilyId = '';
+    selectedMemberId = '';
+    pendingRemove = null;
+    searchQuery = '';
+
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('حساب العائلة', 'Family Accounts')));
+
+    var searchInp = el('input', 'nfa-input');
+    searchInp.id = 'nfaSearchInput';
+    searchInp.type = 'search';
+    searchInp.placeholder = t('ابحث بالاسم أو رقم الموبايل...', 'Search by name or mobile...');
+    searchInp.addEventListener('input', function () {
+      searchQuery = searchInp.value;
+      refreshUI();
+    });
+    card.appendChild(searchInp);
+
+    var famList = el('div', 'nfa-list');
+    famList.id = 'nfaFamilyList';
+    card.appendChild(famList);
+
+    card.appendChild(el('h4', '', t('إنشاء حساب عائلة جديد', 'Create Family Account')));
+    var createGrid = el('div', 'nfa-grid');
+    var famNameInp = makeField(createGrid, t('اسم العائلة', 'Family Name'), 'nfaFamNameInput', t('عائلة أحمد', 'Ahmed Family'), 80);
+    var famPhoneInp = makeField(createGrid, t('رقم الموبايل', 'Mobile Phone'), 'nfaFamPhoneInput', '01012345678', 15);
+    famPhoneInp.setAttribute('inputmode', 'tel');
+    var famHeadInp = makeField(createGrid, t('اسم رب الأسرة', 'Head Name'), 'nfaFamHeadInput', t('اختياري', 'Optional'), 80);
+    card.appendChild(createGrid);
+
+    var createStatus = el('div', 'nfa-status', '');
+    var createAct = el('div', 'nfa-actions');
+    var createBtn = el('button', 'btn btn-primary', t('إنشاء الحساب', 'Create Family'));
+    createBtn.type = 'button';
+    createBtn.addEventListener('click', function () {
+      var created = createFamily({
+        name: famNameInp.value,
+        phone: famPhoneInp.value,
+        headName: famHeadInp.value
+      });
+      if (!created) {
+        createStatus.textContent = t('تعذر الإنشاء: تحقق من الاسم أو رقم الموبايل غير المكرر.', 'Could not create: check name and unique Egyptian mobile.');
+        notify(createStatus.textContent, 'error');
+      } else {
+        famNameInp.value = '';
+        famPhoneInp.value = '';
+        famHeadInp.value = '';
+        selectedFamilyId = created.id;
+        createStatus.textContent = t('تم إنشاء حساب العائلة.', 'Family account created.');
+        notify(createStatus.textContent, 'success');
+        refreshUI();
+      }
+    });
+    createAct.appendChild(createBtn);
+    card.appendChild(createAct);
+    card.appendChild(createStatus);
+
+    var selectedPanel = el('div', 'nfa-panel');
+    selectedPanel.id = 'nfaSelectedPanel';
+    card.appendChild(selectedPanel);
+
+    return card;
+  }
+
+  function isProductsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isProductsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshUI();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isProductsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
+;
+// app/608-payroll-commissions.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-payroll-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaPayroll';
+  var STYLE_ID = 'novaPayrollStyle';
+  var PRINT_ID = 'novaPayrollPrintArea';
+  var MAX_ADJUSTMENTS = 500;
+  var UNASSIGNED_AR = 'غير محدد';
+  var observer = null;
+  var ensuring = false;
+  var selectedMonth = currentMonthKey();
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    if (window.showToast && typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {
+        // ignore toast errors
+      }
+    }
+  }
+
+  function pad2(n) {
+    return n < 10 ? ('0' + n) : String(n);
+  }
+
+  function currentMonthKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+  }
+
+  function isValidMonthKey(mk) {
+    return typeof mk === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(mk);
+  }
+
+  function trimStr(v) {
+    return String(v == null ? '' : v).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        if (idx !== -1) {
+          out += String(idx);
+        } else if (ch === '\u066b' || ch === ',') {
+          out += '.';
+        } else {
+          out += ch;
+        }
+      }
+    }
+    return out;
+  }
+
+  function parseEgpToPiasters(val, allowEmpty) {
+    var s = trimStr(normalizeDigits(val));
+    if (!s) return allowEmpty ? 0 : NaN;
+    if (!/^\d+(\.\d{1,2})?$/.test(s)) return NaN;
+    var parts = s.split('.');
+    var whole = parseInt(parts[0], 10);
+    var fracStr = parts.length > 1 ? parts[1] : '';
+    if (fracStr.length === 1) fracStr += '0';
+    var frac = fracStr ? parseInt(fracStr, 10) : 0;
+    return whole * 100 + frac;
+  }
+
+  function parsePercent(val, allowEmpty) {
+    var s = trimStr(normalizeDigits(val));
+    if (!s) return allowEmpty ? 0 : NaN;
+    if (!/^\d+(\.\d{1,2})?$/.test(s)) return NaN;
+    var n = Number(s);
+    if (isNaN(n) || n < 0 || n > 100) return NaN;
+    return n;
+  }
+
+  function parsePiastersInt(val, defaultZero) {
+    if (val === undefined || val === null || val === '') {
+      return defaultZero ? 0 : NaN;
+    }
+    if (typeof val === 'string') {
+      var s = trimStr(normalizeDigits(val));
+      if (!/^\d+$/.test(s)) return NaN;
+      return parseInt(s, 10);
+    }
+    if (typeof val !== 'number' || !isFinite(val) || Math.floor(val) !== val || val < 0) {
+      return NaN;
+    }
+    return val;
+  }
+
+  function fmtPiasters(p) {
+    var n = Number(p) || 0;
+    var sign = n < 0 ? '-' : '';
+    var abs = Math.abs(Math.round(n));
+    var whole = Math.floor(abs / 100);
+    var frac = abs % 100;
+    var val = sign + whole + '.' + (frac < 10 ? ('0' + frac) : String(frac));
+    return isEn() ? (val + ' EGP') : (val + ' ج.م');
+  }
+
+  function piastersToInput(p) {
+    var abs = Math.max(0, Math.round(Number(p) || 0));
+    var whole = Math.floor(abs / 100);
+    var frac = abs % 100;
+    return whole + '.' + (frac < 10 ? ('0' + frac) : String(frac));
+  }
+
+  function currentUserName() {
+    if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+      try {
+        var u = window.novaAuth.current();
+        if (u && typeof u.name === 'string') return trimStr(u.name);
+      } catch (e) {
+        return '';
+      }
+    }
+    return '';
+  }
+
+  function denyMsg() {
+    return t('محتاج صلاحية المالك', 'Owner permission required');
+  }
+
+  function hasPerm() {
+    if (!window.novaPerms || typeof window.novaPerms.require !== 'function') {
+      return false;
+    }
+    try {
+      return !!window.novaPerms.require('payroll.manage');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function requirePerm() {
+    if (hasPerm()) return true;
+    toast(denyMsg(), 'error');
+    return false;
+  }
+
+  function emptyStore() {
+    return { employees: [], adjustments: [], closedMonths: {} };
+  }
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return emptyStore();
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return emptyStore();
+      }
+      return {
+        employees: Array.isArray(parsed.employees) ? parsed.employees : [],
+        adjustments: Array.isArray(parsed.adjustments) ? parsed.adjustments : [],
+        closedMonths: (parsed.closedMonths && typeof parsed.closedMonths === 'object' && !Array.isArray(parsed.closedMonths))
+          ? parsed.closedMonths
+          : {}
+      };
+    } catch (e) {
+      return emptyStore();
+    }
+  }
+
+  function writeStore(store) {
+    try {
+      if (store.adjustments.length > MAX_ADJUSTMENTS) {
+        store.adjustments = store.adjustments.slice(store.adjustments.length - MAX_ADJUSTMENTS);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function cloneObj(o) {
+    try {
+      return JSON.parse(JSON.stringify(o));
+    } catch (e) {
+      return o;
+    }
+  }
+
+  function getSalesList() {
+    if (!window.novaSales || typeof window.novaSales.list !== 'function') return [];
+    try {
+      var list = window.novaSales.list();
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function isSaleCancelled(id) {
+    if (!window.novaSales || typeof window.novaSales.isCancelled !== 'function') return false;
+    try {
+      return !!window.novaSales.isCancelled(id);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getReturnedMap(saleId) {
+    if (!window.novaSales || typeof window.novaSales.returnedQty !== 'function') return {};
+    try {
+      var m = window.novaSales.returnedQty(saleId);
+      return (m && typeof m === 'object') ? m : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function getSaleEmployee(sale) {
+    if (!sale || typeof sale !== 'object') return UNASSIGNED_AR;
+    var fields = ['cashier', 'employee', 'user', 'by'];
+    var i, raw, s;
+    for (i = 0; i < fields.length; i++) {
+      raw = sale[fields[i]];
+      if (raw && typeof raw === 'object') raw = raw.name;
+      s = trimStr(raw);
+      if (s) return s;
+    }
+    return UNASSIGNED_AR;
+  }
+
+  function getSaleMonthKey(sale) {
+    if (!sale || !sale.at) return '';
+    var raw = trimStr(sale.at);
+    if (/^\d{4}-(0[1-9]|1[0-2])(?:-\d{2})?$/.test(raw)) {
+      return raw.slice(0, 7);
+    }
+    var ms = Date.parse(raw);
+    if (isNaN(ms)) return '';
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+  }
+
+  function computeSaleNetPiasters(sale) {
+    if (!sale || typeof sale !== 'object') return 0;
+    var lines = Array.isArray(sale.lines) ? sale.lines : [];
+    if (!lines.length) {
+      return Math.round(Math.max(0, Number(sale.total) || 0) * 100);
+    }
+    var rawRevs = [];
+    var saleRawRev = 0;
+    var i, line, rawRev;
+    for (i = 0; i < lines.length; i++) {
+      line = lines[i] || {};
+      rawRev = Math.max(0, (Number(line.qty) || 0) * (Number(line.price) || 0) - (Number(line.discount) || 0));
+      rawRevs.push(rawRev);
+      saleRawRev += rawRev;
+    }
+    var invDisc = Math.max(0, Number(sale.discount) || 0);
+    var retMap = getReturnedMap(sale.id);
+    var totalEgp = 0;
+    var origQty, discShare, netRev, retQty, effQty, ratio;
+    for (i = 0; i < lines.length; i++) {
+      line = lines[i] || {};
+      origQty = Number(line.qty) || 0;
+      rawRev = rawRevs[i];
+      discShare = (invDisc > 0 && saleRawRev > 0) ? (rawRev / saleRawRev) * invDisc : 0;
+      netRev = Math.max(0, rawRev - discShare);
+      retQty = Number(retMap[i]) || 0;
+      effQty = Math.max(0, origQty - retQty);
+      if (effQty <= 0) continue;
+      ratio = origQty > 0 ? Math.max(0, effQty / origQty) : 0;
+      totalEgp += netRev * ratio;
+    }
+    return Math.round(totalEgp * 100);
+  }
+
+  function calcSalesInternal(employeeName, monthKey) {
+    var targetEmp = trimStr(employeeName) || UNASSIGNED_AR;
+    var list = getSalesList();
+    var totalPiasters = 0;
+    var count = 0;
+    var i, sale;
+    for (i = 0; i < list.length; i++) {
+      sale = list[i];
+      if (!sale || isSaleCancelled(sale.id)) continue;
+      if (getSaleMonthKey(sale) !== monthKey) continue;
+      if (getSaleEmployee(sale) !== targetEmp) continue;
+      totalPiasters += computeSaleNetPiasters(sale);
+      count += 1;
+    }
+    return {
+      employee: targetEmp,
+      monthKey: monthKey,
+      totalPiasters: totalPiasters,
+      count: count
+    };
+  }
+
+  function findEmployeeConfig(store, empName) {
+    var i;
+    for (i = 0; i < store.employees.length; i++) {
+      if (store.employees[i] && store.employees[i].name === empName) {
+        return store.employees[i];
+      }
+    }
+    return null;
+  }
+
+  function computeLive(store, empName, monthKey) {
+    var cfg = findEmployeeConfig(store, empName);
+    var baseSalaryPiasters = cfg ? (Number(cfg.baseSalaryPiasters) || 0) : 0;
+    var commissionPercent = cfg ? (Number(cfg.commissionPercent) || 0) : 0;
+    var targetPiasters = cfg ? (Number(cfg.targetPiasters) || 0) : 0;
+    var bonusPercent = cfg ? (Number(cfg.bonusPercent) || 0) : 0;
+
+    var salesInfo = calcSalesInternal(empName, monthKey);
+    var salesTotalPiasters = salesInfo.totalPiasters;
+    var commissionPiasters = Math.round(salesTotalPiasters * commissionPercent / 100);
+    var targetReached = targetPiasters > 0 && salesTotalPiasters >= targetPiasters;
+    var bonusPiasters = targetReached ? Math.round(salesTotalPiasters * bonusPercent / 100) : 0;
+
+    var rewardsPiasters = 0;
+    var advancesPiasters = 0;
+    var deductionsPiasters = 0;
+    var adjs = [];
+    var i, a;
+    for (i = 0; i < store.adjustments.length; i++) {
+      a = store.adjustments[i];
+      if (!a || a.employee !== empName || a.monthKey !== monthKey) continue;
+      adjs.push(cloneObj(a));
+      if (a.type === 'reward') {
+        rewardsPiasters += Number(a.amountPiasters) || 0;
+      } else if (a.type === 'advance') {
+        advancesPiasters += Number(a.amountPiasters) || 0;
+      } else if (a.type === 'deduction') {
+        deductionsPiasters += Number(a.amountPiasters) || 0;
+      }
+    }
+
+    var netPiasters = baseSalaryPiasters + commissionPiasters + bonusPiasters + rewardsPiasters - advancesPiasters - deductionsPiasters;
+
+    return {
+      employee: empName,
+      monthKey: monthKey,
+      baseSalaryPiasters: baseSalaryPiasters,
+      commissionPercent: commissionPercent,
+      targetPiasters: targetPiasters,
+      bonusPercent: bonusPercent,
+      salesTotalPiasters: salesTotalPiasters,
+      salesCount: salesInfo.count,
+      commissionPiasters: commissionPiasters,
+      targetReached: targetReached,
+      bonusPiasters: bonusPiasters,
+      rewardsPiasters: rewardsPiasters,
+      advancesPiasters: advancesPiasters,
+      deductionsPiasters: deductionsPiasters,
+      adjustments: adjs,
+      netPiasters: netPiasters,
+      closed: false,
+      closedAt: null
+    };
+  }
+
+  function computeFromStore(store, employeeName, monthKey) {
+    var empName = trimStr(employeeName) || UNASSIGNED_AR;
+    var closedRec = store.closedMonths[monthKey];
+    if (closedRec && closedRec.snapshots) {
+      if (closedRec.snapshots[empName]) {
+        return cloneObj(closedRec.snapshots[empName]);
+      }
+      return {
+        employee: empName,
+        monthKey: monthKey,
+        baseSalaryPiasters: 0,
+        commissionPercent: 0,
+        targetPiasters: 0,
+        bonusPercent: 0,
+        salesTotalPiasters: 0,
+        salesCount: 0,
+        commissionPiasters: 0,
+        targetReached: false,
+        bonusPiasters: 0,
+        rewardsPiasters: 0,
+        advancesPiasters: 0,
+        deductionsPiasters: 0,
+        adjustments: [],
+        netPiasters: 0,
+        closed: true,
+        closedAt: closedRec.closedAt || null
+      };
+    }
+    return computeLive(store, empName, monthKey);
+  }
+
+  function collectMonthEmployees(store, monthKey) {
+    var seen = {};
+    var names = [];
+    var i, nm;
+
+    function addName(n) {
+      var s = trimStr(n);
+      if (!s || seen[s]) return;
+      seen[s] = true;
+      names.push(s);
+    }
+
+    if (store.closedMonths[monthKey] && store.closedMonths[monthKey].snapshots) {
+      var snapKeys = Object.keys(store.closedMonths[monthKey].snapshots);
+      for (i = 0; i < snapKeys.length; i++) addName(snapKeys[i]);
+      return names;
+    }
+
+    for (i = 0; i < store.employees.length; i++) {
+      if (store.employees[i]) addName(store.employees[i].name);
+    }
+    var list = getSalesList();
+    for (i = 0; i < list.length; i++) {
+      if (!list[i] || isSaleCancelled(list[i].id)) continue;
+      if (getSaleMonthKey(list[i]) !== monthKey) continue;
+      nm = getSaleEmployee(list[i]);
+      addName(nm);
+    }
+    for (i = 0; i < store.adjustments.length; i++) {
+      if (store.adjustments[i] && store.adjustments[i].monthKey === monthKey) {
+        addName(store.adjustments[i].employee);
+      }
+    }
+    return names;
+  }
+
+  function apiSetEmployee(opts) {
+    if (!requirePerm()) return false;
+    var o = opts || {};
+    var name = trimStr(o.name);
+    if (!name) return false;
+    var baseSalaryPiasters = parsePiastersInt(o.baseSalaryPiasters, true);
+    var targetPiasters = parsePiastersInt(o.targetPiasters, true);
+    var commissionPercent = o.commissionPercent === undefined || o.commissionPercent === null || o.commissionPercent === ''
+      ? 0
+      : parsePercent(o.commissionPercent, true);
+    var bonusPercent = o.bonusPercent === undefined || o.bonusPercent === null || o.bonusPercent === ''
+      ? 0
+      : parsePercent(o.bonusPercent, true);
+
+    if (isNaN(baseSalaryPiasters) || isNaN(targetPiasters) || isNaN(commissionPercent) || isNaN(bonusPercent)) {
+      return false;
+    }
+
+    var store = readStore();
+    var rec = {
+      name: name,
+      baseSalaryPiasters: baseSalaryPiasters,
+      commissionPercent: commissionPercent,
+      targetPiasters: targetPiasters,
+      bonusPercent: bonusPercent,
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUserName()
+    };
+
+    var found = false;
+    var i;
+    for (i = 0; i < store.employees.length; i++) {
+      if (store.employees[i] && store.employees[i].name === name) {
+        store.employees[i] = rec;
+        found = true;
+        break;
+      }
+    }
+    if (!found) store.employees.push(rec);
+    if (!writeStore(store)) return false;
+    refreshCard();
+    return cloneObj(rec);
+  }
+
+  function apiEmployees() {
+    if (!requirePerm()) return false;
+    var store = readStore();
+    return cloneObj(store.employees);
+  }
+
+  function apiSales(employeeName, monthKey) {
+    if (!requirePerm()) return false;
+    if (!isValidMonthKey(monthKey)) return false;
+    return calcSalesInternal(employeeName, monthKey);
+  }
+
+  function apiCompute(employeeName, monthKey) {
+    if (!requirePerm()) return false;
+    if (!isValidMonthKey(monthKey)) return false;
+    var store = readStore();
+    return computeFromStore(store, employeeName, monthKey);
+  }
+
+  function apiAddAdjustment(opts) {
+    if (!requirePerm()) return false;
+    var o = opts || {};
+    var empName = trimStr(o.employee);
+    var mk = trimStr(o.monthKey);
+    var adjType = trimStr(o.type);
+    var amountPiasters = parsePiastersInt(o.amountPiasters, false);
+    var reason = trimStr(o.reason);
+
+    if (!empName || !isValidMonthKey(mk)) return false;
+    if (adjType !== 'advance' && adjType !== 'deduction' && adjType !== 'reward') return false;
+    if (isNaN(amountPiasters) || amountPiasters <= 0) return false;
+    if (!reason) return false;
+
+    var store = readStore();
+    if (store.closedMonths[mk]) return false;
+
+    var rec = {
+      id: 'adj-' + Date.now() + '-' + Math.floor(Math.random() * 100000),
+      employee: empName,
+      monthKey: mk,
+      type: adjType,
+      amountPiasters: amountPiasters,
+      reason: reason,
+      at: new Date().toISOString(),
+      by: currentUserName()
+    };
+
+    store.adjustments.push(rec);
+    if (!writeStore(store)) return false;
+    refreshCard();
+    return cloneObj(rec);
+  }
+
+  function apiCloseMonth(monthKey) {
+    if (!requirePerm()) return false;
+    if (!isValidMonthKey(monthKey)) return false;
+    var store = readStore();
+    if (store.closedMonths[monthKey]) return false;
+
+    var nowIso = new Date().toISOString();
+    var names = collectMonthEmployees(store, monthKey);
+    var snapshots = {};
+    var i, snap;
+    for (i = 0; i < names.length; i++) {
+      snap = computeLive(store, names[i], monthKey);
+      snap.closed = true;
+      snap.closedAt = nowIso;
+      snapshots[names[i]] = snap;
+    }
+
+    var closedEntry = {
+      monthKey: monthKey,
+      closedAt: nowIso,
+      closedBy: currentUserName(),
+      snapshots: snapshots
+    };
+    store.closedMonths[monthKey] = closedEntry;
+    if (!writeStore(store)) return false;
+    refreshCard();
+    return cloneObj(closedEntry);
+  }
+
+  function apiIsClosed(monthKey) {
+    if (!requirePerm()) return false;
+    if (!isValidMonthKey(monthKey)) return false;
+    var store = readStore();
+    return !!store.closedMonths[monthKey];
+  }
+
+  window.novaPayroll = {
+    setEmployee: apiSetEmployee,
+    employees: apiEmployees,
+    sales: apiSales,
+    compute: apiCompute,
+    addAdjustment: apiAddAdjustment,
+    closeMonth: apiCloseMonth,
+    isClosed: apiIsClosed
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaPayroll{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;overflow:hidden;}',
+      '#novaPayroll *{box-sizing:border-box;}',
+      '#novaPayroll .npr-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #343b44;padding-bottom:10px;margin-bottom:14px;}',
+      '#novaPayroll .npr-title{margin:0;font-size:1.05rem;color:#e6edf3;}',
+      '#novaPayroll .npr-month-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:100%;}',
+      '#novaPayroll .npr-sub{margin:16px 0 8px;font-size:0.95rem;color:#79c9eb;font-weight:600;}',
+      '#novaPayroll .npr-denied{padding:14px;border:1px solid #343b44;border-radius:8px;background:#0d1117;color:#e6edf3;text-align:center;font-weight:600;}',
+      '#novaPayroll .npr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-bottom:10px;}',
+      '#novaPayroll .npr-field{min-width:0;}',
+      '#novaPayroll .npr-field label{display:block;font-size:0.82rem;color:#9fb0c2;margin-bottom:4px;}',
+      '#novaPayroll .npr-input,#novaPayroll .npr-select{width:100%;max-width:100%;min-height:44px;padding:8px 10px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.9rem;}',
+      '#novaPayroll .npr-input:focus,#novaPayroll .npr-select:focus{outline:none;border-color:#79c9eb;}',
+      '#novaPayroll button{min-height:44px;}',
+      '#novaPayroll .npr-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}',
+      '#novaPayroll .npr-badge{display:inline-block;padding:4px 10px;border-radius:6px;border:1px solid #79c9eb;color:#79c9eb;font-size:0.82rem;font-weight:600;}',
+      '#novaPayroll .npr-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-bottom:8px;}',
+      '#novaPayroll .npr-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #343b44;border-radius:8px;margin-bottom:12px;}',
+      '#novaPayroll table{width:100%;border-collapse:collapse;font-size:0.85rem;min-width:480px;}',
+      '#novaPayroll th,#novaPayroll td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:start;white-space:nowrap;}',
+      '#novaPayroll th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '#novaPayroll tr:last-child td{border-bottom:0;}',
+      '#novaPayroll .npr-empty{padding:12px;color:#9fb0c2;text-align:center;}',
+      '#novaPayrollPrintArea{display:none;}',
+      '@media print{body *{visibility:hidden!important;}#novaPayrollPrintArea,#novaPayrollPrintArea *{visibility:visible!important;}#novaPayrollPrintArea{display:block!important;position:fixed;inset:0;background:#fff;color:#000;padding:20px;z-index:99999;}}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function displayEmpName(name) {
+    if (name === UNASSIGNED_AR) return t('غير محدد', 'Unspecified');
+    return name;
+  }
+
+  function adjTypeLabel(type) {
+    if (type === 'advance') return t('سلفة', 'Advance');
+    if (type === 'deduction') return t('خصم', 'Deduction');
+    if (type === 'reward') return t('مكافأة', 'Reward');
+    return type;
+  }
+
+  function printPayslip(snap) {
+    if (!hasPerm()) {
+      toast(denyMsg(), 'error');
+      refreshCard();
+      return;
+    }
+    var existing = document.getElementById(PRINT_ID);
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var box = el('div');
+    box.id = PRINT_ID;
+    box.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    box.appendChild(el('h2', '', t('كشف المرتب الشهري', 'Monthly Payslip')));
+    box.appendChild(el('p', '', t('الموظف: ', 'Employee: ') + displayEmpName(snap.employee)));
+    box.appendChild(el('p', '', t('الشهر: ', 'Month: ') + snap.monthKey));
+
+    var rows = [
+      [t('المرتب الأساسي', 'Base Salary'), fmtPiasters(snap.baseSalaryPiasters)],
+      [t('إجمالي المبيعات', 'Total Sales'), fmtPiasters(snap.salesTotalPiasters)],
+      [t('العمولة', 'Commission') + ' (' + snap.commissionPercent + '%)', fmtPiasters(snap.commissionPiasters)],
+      [t('بونص التارجت', 'Target Bonus') + (snap.targetReached ? ' (' + snap.bonusPercent + '%)' : ''), fmtPiasters(snap.bonusPiasters)],
+      [t('المكافآت', 'Rewards'), fmtPiasters(snap.rewardsPiasters)],
+      [t('السلف', 'Advances'), fmtPiasters(snap.advancesPiasters)],
+      [t('الخصومات', 'Deductions'), fmtPiasters(snap.deductionsPiasters)],
+      [t('صافي المرتب', 'Net Salary'), fmtPiasters(snap.netPiasters)]
+    ];
+
+    var tbl = document.createElement('table');
+    tbl.style.width = '100%';
+    tbl.style.borderCollapse = 'collapse';
+    var i, tr, td1, td2;
+    for (i = 0; i < rows.length; i++) {
+      tr = document.createElement('tr');
+      td1 = el('td', '', rows[i][0]);
+      td2 = el('td', '', rows[i][1]);
+      td1.style.border = '1px solid #333';
+      td1.style.padding = '6px';
+      td2.style.border = '1px solid #333';
+      td2.style.padding = '6px';
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      tbl.appendChild(tr);
+    }
+    box.appendChild(tbl);
+    document.body.appendChild(box);
+
+    if (typeof window.print === 'function') {
+      try {
+        window.print();
+      } catch (e) {
+        // ignore print errors in headless environments
+      }
+    }
+  }
+
+  function renderCardContent(card) {
+    while (card.firstChild) card.removeChild(card.firstChild);
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var head = el('div', 'npr-head');
+    head.appendChild(el('h3', 'npr-title', t('المرتبات والعمولات والتارجت', 'Payroll, Commissions & Targets')));
+
+    if (!hasPerm()) {
+      card.appendChild(head);
+      var denied = el('div', 'npr-denied', denyMsg());
+      denied.id = 'nprDeniedMsg';
+      card.appendChild(denied);
+      return;
+    }
+
+    var store = readStore();
+    var closed = !!store.closedMonths[selectedMonth];
+
+    var monthBar = el('div', 'npr-month-bar');
+    var monthInput = el('input', 'npr-input');
+    monthInput.id = 'nprMonthInput';
+    monthInput.type = 'month';
+    monthInput.value = selectedMonth;
+    monthInput.style.width = 'auto';
+    monthInput.addEventListener('change', function () {
+      if (isValidMonthKey(monthInput.value)) {
+        selectedMonth = monthInput.value;
+        refreshCard();
+      }
+    });
+    monthBar.appendChild(monthInput);
+
+    if (closed) {
+      monthBar.appendChild(el('span', 'npr-badge', t('الشهر مقفول', 'Month Closed')));
+    } else {
+      var closeBtn = el('button', 'btn btn-primary', t('قفل الشهر', 'Close Month'));
+      closeBtn.id = 'nprCloseMonthBtn';
+      closeBtn.type = 'button';
+      closeBtn.addEventListener('click', function () {
+        if (!hasPerm()) {
+          toast(denyMsg(), 'error');
+          refreshCard();
+          return;
+        }
+        var res = apiCloseMonth(selectedMonth);
+        if (res) {
+          toast(t('تم قفل الشهر بنجاح', 'Month closed successfully'), 'success');
+        } else {
+          toast(t('تعذر قفل الشهر', 'Could not close month'), 'error');
+        }
+      });
+      monthBar.appendChild(closeBtn);
+    }
+    head.appendChild(monthBar);
+    card.appendChild(head);
+
+    var statusEl = el('div', 'npr-status', '');
+    statusEl.id = 'nprStatusMsg';
+    card.appendChild(statusEl);
+
+    // 1. Employee Settings Form
+    card.appendChild(el('div', 'npr-sub', t('إعدادات الموظفين', 'Employee Settings')));
+    var empGrid = el('div', 'npr-grid');
+
+    function makeField(parent, id, labelText, placeholder, inputMode) {
+      var wrap = el('div', 'npr-field');
+      var lbl = el('label', '', labelText);
+      lbl.setAttribute('for', id);
+      var inp = el('input', 'npr-input');
+      inp.id = id;
+      inp.type = 'text';
+      if (placeholder) inp.placeholder = placeholder;
+      if (inputMode) inp.setAttribute('inputmode', inputMode);
+      wrap.appendChild(lbl);
+      wrap.appendChild(inp);
+      parent.appendChild(wrap);
+      return inp;
+    }
+
+    var empNameIn = makeField(empGrid, 'nprEmpName', t('اسم الموظف', 'Employee Name'), t('مثال: أحمد علي', 'e.g. Ahmed Ali'));
+    var empBaseIn = makeField(empGrid, 'nprEmpBase', t('المرتب الأساسي (ج.م)', 'Base Salary (EGP)'), '0.00', 'decimal');
+    var empCommIn = makeField(empGrid, 'nprEmpComm', t('نسبة العمولة %', 'Commission %'), '0', 'decimal');
+    var empTargetIn = makeField(empGrid, 'nprEmpTarget', t('التارجت الشهري (ج.م)', 'Monthly Target (EGP)'), '0.00', 'decimal');
+    var empBonusIn = makeField(empGrid, 'nprEmpBonus', t('نسبة بونص التارجت %', 'Target Bonus %'), '0', 'decimal');
+    card.appendChild(empGrid);
+
+    var empActions = el('div', 'npr-actions');
+    var saveEmpBtn = el('button', 'btn btn-primary', t('حفظ الموظف', 'Save Employee'));
+    saveEmpBtn.id = 'nprSaveEmpBtn';
+    saveEmpBtn.type = 'button';
+    saveEmpBtn.addEventListener('click', function () {
+      if (!hasPerm()) {
+        toast(denyMsg(), 'error');
+        refreshCard();
+        return;
+      }
+      var nm = trimStr(empNameIn.value);
+      var baseP = parseEgpToPiasters(empBaseIn.value, true);
+      var commP = parsePercent(empCommIn.value, true);
+      var targetP = parseEgpToPiasters(empTargetIn.value, true);
+      var bonusP = parsePercent(empBonusIn.value, true);
+      if (!nm || isNaN(baseP) || isNaN(commP) || isNaN(targetP) || isNaN(bonusP)) {
+        var err = t('تحقق من بيانات الموظف', 'Check employee fields');
+        statusEl.textContent = err;
+        toast(err, 'error');
+        return;
+      }
+      var saved = apiSetEmployee({
+        name: nm,
+        baseSalaryPiasters: baseP,
+        commissionPercent: commP,
+        targetPiasters: targetP,
+        bonusPercent: bonusP
+      });
+      if (!saved) {
+        statusEl.textContent = t('تعذر حفظ بيانات الموظف', 'Could not save employee');
+        toast(statusEl.textContent, 'error');
+        return;
+      }
+      toast(t('تم حفظ بيانات الموظف', 'Employee saved'), 'success');
+    });
+    empActions.appendChild(saveEmpBtn);
+    card.appendChild(empActions);
+
+    // Employee Settings Table
+    var empWrap = el('div', 'npr-table-wrap');
+    empWrap.id = 'nprEmpTableWrap';
+    if (!store.employees.length) {
+      empWrap.appendChild(el('div', 'npr-empty', t('لا يوجد موظفون مسجلون بعد', 'No employees configured yet')));
+    } else {
+      var empTbl = document.createElement('table');
+      var empThead = document.createElement('thead');
+      var empHr = document.createElement('tr');
+      var empHeaders = [
+        t('الموظف', 'Employee'),
+        t('الأساسي', 'Base'),
+        t('العمولة %', 'Comm %'),
+        t('التارجت', 'Target'),
+        t('البونص %', 'Bonus %'),
+        t('إجراء', 'Action')
+      ];
+      var i;
+      for (i = 0; i < empHeaders.length; i++) empHr.appendChild(el('th', '', empHeaders[i]));
+      empThead.appendChild(empHr);
+      empTbl.appendChild(empThead);
+
+      var empTbody = document.createElement('tbody');
+      for (i = 0; i < store.employees.length; i++) {
+        (function (emp) {
+          var tr = document.createElement('tr');
+          tr.appendChild(el('td', '', emp.name));
+          tr.appendChild(el('td', '', fmtPiasters(emp.baseSalaryPiasters)));
+          tr.appendChild(el('td', '', String(emp.commissionPercent) + '%'));
+          tr.appendChild(el('td', '', emp.targetPiasters > 0 ? fmtPiasters(emp.targetPiasters) : '—'));
+          tr.appendChild(el('td', '', String(emp.bonusPercent) + '%'));
+          var actTd = document.createElement('td');
+          var editBtn = el('button', 'btn btn-secondary', t('تعديل', 'Edit'));
+          editBtn.type = 'button';
+          editBtn.addEventListener('click', function () {
+            empNameIn.value = emp.name;
+            empBaseIn.value = piastersToInput(emp.baseSalaryPiasters);
+            empCommIn.value = String(emp.commissionPercent);
+            empTargetIn.value = piastersToInput(emp.targetPiasters);
+            empBonusIn.value = String(emp.bonusPercent);
+          });
+          actTd.appendChild(editBtn);
+          tr.appendChild(actTd);
+          empTbody.appendChild(tr);
+        })(store.employees[i]);
+      }
+      empTbl.appendChild(empTbody);
+      empWrap.appendChild(empTbl);
+    }
+    card.appendChild(empWrap);
+
+    // 2. Adjustments Form
+    card.appendChild(el('div', 'npr-sub', t('السلف والخصومات والمكافآت', 'Advances, Deductions & Rewards')));
+    var adjGrid = el('div', 'npr-grid');
+    var adjEmpIn = makeField(adjGrid, 'nprAdjEmp', t('اسم الموظف', 'Employee Name'), t('اسم الموظف', 'Employee name'));
+    if (closed) adjEmpIn.disabled = true;
+
+    var typeWrap = el('div', 'npr-field');
+    var typeLbl = el('label', '', t('النوع', 'Type'));
+    typeLbl.setAttribute('for', 'nprAdjType');
+    var adjTypeSel = el('select', 'npr-select');
+    adjTypeSel.id = 'nprAdjType';
+    var typeOpts = [
+      { v: 'advance', l: t('سلفة', 'Advance') },
+      { v: 'deduction', l: t('خصم', 'Deduction') },
+      { v: 'reward', l: t('مكافأة', 'Reward') }
+    ];
+    var ti, opt;
+    for (ti = 0; ti < typeOpts.length; ti++) {
+      opt = el('option', '', typeOpts[ti].l);
+      opt.value = typeOpts[ti].v;
+      adjTypeSel.appendChild(opt);
+    }
+    if (closed) adjTypeSel.disabled = true;
+    typeWrap.appendChild(typeLbl);
+    typeWrap.appendChild(adjTypeSel);
+    adjGrid.appendChild(typeWrap);
+
+    var adjAmtIn = makeField(adjGrid, 'nprAdjAmt', t('المبلغ (ج.م)', 'Amount (EGP)'), '0.00', 'decimal');
+    var adjReasonIn = makeField(adjGrid, 'nprAdjReason', t('السبب', 'Reason'), t('سبب البند مطلوب', 'Reason is required'));
+    if (closed) {
+      adjAmtIn.disabled = true;
+      adjReasonIn.disabled = true;
+    }
+    card.appendChild(adjGrid);
+
+    var adjActions = el('div', 'npr-actions');
+    var addAdjBtn = el('button', 'btn btn-secondary', t('إضافة بند', 'Add Adjustment'));
+    addAdjBtn.id = 'nprAddAdjBtn';
+    addAdjBtn.type = 'button';
+    if (closed) addAdjBtn.disabled = true;
+    addAdjBtn.addEventListener('click', function () {
+      if (!hasPerm()) {
+        toast(denyMsg(), 'error');
+        refreshCard();
+        return;
+      }
+      var emp = trimStr(adjEmpIn.value);
+      var amt = parseEgpToPiasters(adjAmtIn.value, false);
+      var rsn = trimStr(adjReasonIn.value);
+      if (!emp || isNaN(amt) || amt <= 0 || !rsn) {
+        var msg = t('أدخل الموظف والمبلغ والسبب', 'Enter employee, amount and reason');
+        statusEl.textContent = msg;
+        toast(msg, 'error');
+        return;
+      }
+      var added = apiAddAdjustment({
+        employee: emp,
+        monthKey: selectedMonth,
+        type: adjTypeSel.value,
+        amountPiasters: amt,
+        reason: rsn
+      });
+      if (!added) {
+        var failMsg = t('تعذر إضافة البند', 'Could not add adjustment');
+        statusEl.textContent = failMsg;
+        toast(failMsg, 'error');
+        return;
+      }
+      toast(t('تمت إضافة البند', 'Adjustment added'), 'success');
+    });
+    adjActions.appendChild(addAdjBtn);
+    card.appendChild(adjActions);
+
+    // 3. Per-employee Statements Table
+    card.appendChild(el('div', 'npr-sub', t('كشف المرتبات الشهري', 'Monthly Payroll Statements')));
+    var stmtWrap = el('div', 'npr-table-wrap');
+    stmtWrap.id = 'nprStatementsWrap';
+    var monthEmps = collectMonthEmployees(store, selectedMonth);
+
+    if (!monthEmps.length) {
+      stmtWrap.appendChild(el('div', 'npr-empty', t('لا توجد بيانات مرتبات لهذا الشهر', 'No payroll data for this month')));
+    } else {
+      var stTbl = document.createElement('table');
+      var stThead = document.createElement('thead');
+      var stHr = document.createElement('tr');
+      var stHeaders = [
+        t('الموظف', 'Employee'),
+        t('المبيعات', 'Sales'),
+        t('الأساسي', 'Base'),
+        t('العمولة', 'Commission'),
+        t('البونص', 'Bonus'),
+        t('المكافآت', 'Rewards'),
+        t('السلف', 'Advances'),
+        t('الخصومات', 'Deductions'),
+        t('الصافي', 'Net'),
+        t('طباعة', 'Print')
+      ];
+      var si;
+      for (si = 0; si < stHeaders.length; si++) stHr.appendChild(el('th', '', stHeaders[si]));
+      stThead.appendChild(stHr);
+      stTbl.appendChild(stThead);
+
+      var stTbody = document.createElement('tbody');
+      for (si = 0; si < monthEmps.length; si++) {
+        (function (empName) {
+          var snap = computeFromStore(store, empName, selectedMonth);
+          if (!snap) return;
+          var tr = document.createElement('tr');
+          tr.appendChild(el('td', '', displayEmpName(snap.employee)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.salesTotalPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.baseSalaryPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.commissionPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.bonusPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.rewardsPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.advancesPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.deductionsPiasters)));
+          tr.appendChild(el('td', '', fmtPiasters(snap.netPiasters)));
+
+          var pTd = document.createElement('td');
+          var pBtn = el('button', 'btn btn-secondary', t('اطبع كشف المرتب', 'Print Payslip'));
+          pBtn.type = 'button';
+          pBtn.addEventListener('click', function () {
+            printPayslip(snap);
+          });
+          pTd.appendChild(pBtn);
+          tr.appendChild(pTd);
+          stTbody.appendChild(tr);
+        })(monthEmps[si]);
+      }
+      stTbl.appendChild(stTbody);
+      stmtWrap.appendChild(stTbl);
+    }
+    card.appendChild(stmtWrap);
+
+    // Month Adjustments Log
+    var monthAdjs = [];
+    var ai;
+    for (ai = 0; ai < store.adjustments.length; ai++) {
+      if (store.adjustments[ai] && store.adjustments[ai].monthKey === selectedMonth) {
+        monthAdjs.push(store.adjustments[ai]);
+      }
+    }
+    if (monthAdjs.length) {
+      card.appendChild(el('div', 'npr-sub', t('سجل البنود للشهر', 'Month Adjustments Log')));
+      var logWrap = el('div', 'npr-table-wrap');
+      var logTbl = document.createElement('table');
+      var logThead = document.createElement('thead');
+      var logHr = document.createElement('tr');
+      var logHeaders = [
+        t('الموظف', 'Employee'),
+        t('النوع', 'Type'),
+        t('المبلغ', 'Amount'),
+        t('السبب', 'Reason')
+      ];
+      for (ai = 0; ai < logHeaders.length; ai++) logHr.appendChild(el('th', '', logHeaders[ai]));
+      logThead.appendChild(logHr);
+      logTbl.appendChild(logThead);
+
+      var logTbody = document.createElement('tbody');
+      for (ai = monthAdjs.length - 1; ai >= 0; ai--) {
+        var row = document.createElement('tr');
+        row.appendChild(el('td', '', displayEmpName(monthAdjs[ai].employee)));
+        row.appendChild(el('td', '', adjTypeLabel(monthAdjs[ai].type)));
+        row.appendChild(el('td', '', fmtPiasters(monthAdjs[ai].amountPiasters)));
+        row.appendChild(el('td', '', monthAdjs[ai].reason));
+        logTbody.appendChild(row);
+      }
+      logTbl.appendChild(logTbody);
+      logWrap.appendChild(logTbl);
+      card.appendChild(logWrap);
+    }
+  }
+
+  function refreshCard() {
+    var card = document.getElementById(CARD_ID);
+    if (!card) return;
+    renderCardContent(card);
+  }
+
+  function buildCard() {
+    injectStyles();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    renderCardContent(card);
+    return card;
+  }
+
+  function isReportsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  function ensureMounted() {
+    if (ensuring) return;
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isReportsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    ensuring = true;
+    try {
+      pageView.appendChild(buildCard());
+    } finally {
+      ensuring = false;
+    }
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isReportsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
+;
+// app/610-supplier-notes.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-supplier-notes-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaSupplierNotes';
+  var STYLE_ID = 'novaSupplierNotesStyle';
+  var MAX_RECORDS = 500;
+  var observer = null;
+  var selectedSupplierFilter = '';
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function trimStr(val) {
+    return String(val == null ? '' : val).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        if (idx !== -1) {
+          out += String(idx);
+        } else if (ch === '\u066b' || ch === ',') {
+          out += '.';
+        } else {
+          out += ch;
+        }
+      }
+    }
+    return out;
+  }
+
+  function parseEgpToPiasters(val) {
+    var s = trimStr(normalizeDigits(val));
+    if (!s || !/^\d+(\.\d{1,2})?$/.test(s)) return NaN;
+    var parts = s.split('.');
+    var egp = parseInt(parts[0], 10);
+    var dec = parts.length > 1 ? (parts[1] + '00').slice(0, 2) : '00';
+    var piasters = egp * 100 + parseInt(dec, 10);
+    return piasters > 0 ? piasters : NaN;
+  }
+
+  function formatPiasters(piasters) {
+    var n = Number(piasters) || 0;
+    var neg = n < 0;
+    var abs = Math.abs(Math.round(n));
+    var egp = Math.floor(abs / 100);
+    var rem = abs % 100;
+    var remStr = rem < 10 ? '0' + String(rem) : String(rem);
+    return (neg ? '-' : '') + String(egp) + '.' + remStr;
+  }
+
+  function formatMoney(piasters) {
+    return formatPiasters(piasters) + ' ' + t('ج.م', 'EGP');
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso).slice(0, 10);
+    var y = d.getFullYear();
+    var m = d.getMonth() + 1;
+    var day = d.getDate();
+    return String(y) + '-' + (m < 10 ? '0' : '') + String(m) + '-' + (day < 10 ? '0' : '') + String(day);
+  }
+
+  function canWrite() {
+    try {
+      return !!(window.novaPerms && typeof window.novaPerms.require === 'function' && window.novaPerms.require('suppliers.pay'));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function currentUser() {
+    try {
+      if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+        var u = window.novaAuth.current();
+        if (u && typeof u.name === 'string') return u.name;
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function notify(msg, type) {
+    try {
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, type || 'success');
+      }
+    } catch (e) {}
+  }
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeStore(list) {
+    try {
+      var arr = Array.isArray(list) ? list : [];
+      if (arr.length > MAX_RECORDS) {
+        arr = arr.slice(arr.length - MAX_RECORDS);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function cloneRecord(rec) {
+    return {
+      id: rec.id,
+      supplier: rec.supplier,
+      kind: rec.kind,
+      amountPiasters: rec.amountPiasters,
+      reference: rec.reference,
+      reason: rec.reason,
+      itemRef: rec.itemRef || '',
+      at: rec.at,
+      createdBy: rec.createdBy || '',
+      status: rec.status || 'open',
+      appliedInvoiceRef: rec.appliedInvoiceRef || '',
+      appliedAt: rec.appliedAt || '',
+      appliedBy: rec.appliedBy || '',
+      voidedAt: rec.voidedAt || '',
+      voidedBy: rec.voidedBy || '',
+      voidReason: rec.voidReason || ''
+    };
+  }
+
+  function isVoided(rec) {
+    return !!(rec && (rec.voidedAt || rec.status === 'voided'));
+  }
+
+  function addNote(opts) {
+    if (!canWrite()) return false;
+    if (!opts || typeof opts !== 'object') return false;
+
+    var supplier = trimStr(opts.supplier);
+    var kind = opts.kind === 'credit' || opts.kind === 'debit' ? opts.kind : '';
+    var amt = opts.amountPiasters;
+    var reference = trimStr(opts.reference);
+    var reason = trimStr(opts.reason);
+    var itemRef = trimStr(opts.itemRef);
+
+    if (!supplier || !kind || !reference || !reason) return false;
+    if (typeof amt !== 'number' || !isFinite(amt) || amt <= 0 || Math.floor(amt) !== amt) {
+      return false;
+    }
+
+    var at = trimStr(opts.at);
+    if (!at || isNaN(Date.parse(at))) {
+      at = new Date().toISOString();
+    }
+
+    var store = readStore();
+    var supLow = supplier.toLowerCase();
+    var refLow = reference.toLowerCase();
+    var i, existing;
+    for (i = 0; i < store.length; i++) {
+      existing = store[i];
+      if (!existing) continue;
+      if (
+        trimStr(existing.supplier).toLowerCase() === supLow &&
+        trimStr(existing.reference).toLowerCase() === refLow
+      ) {
+        return false;
+      }
+    }
+
+    var rec = {
+      id: 'sn-' + String(Date.now()) + '-' + String(Math.floor(Math.random() * 100000)),
+      supplier: supplier,
+      kind: kind,
+      amountPiasters: amt,
+      reference: reference,
+      reason: reason,
+      itemRef: itemRef,
+      at: at,
+      createdBy: currentUser(),
+      status: 'open',
+      appliedInvoiceRef: '',
+      appliedAt: '',
+      appliedBy: '',
+      voidedAt: '',
+      voidedBy: '',
+      voidReason: ''
+    };
+
+    store.push(rec);
+    if (!writeStore(store)) return false;
+    refreshCard();
+    return cloneRecord(rec);
+  }
+
+  function listNotes(filter) {
+    var store = readStore();
+    var f = filter && typeof filter === 'object' ? filter : null;
+    var fSupplier = f && f.supplier ? trimStr(f.supplier).toLowerCase() : '';
+    var fKind = f && f.kind ? String(f.kind) : '';
+    var fStatus = f && f.status ? String(f.status) : '';
+    var out = [];
+    var i, rec;
+
+    for (i = 0; i < store.length; i++) {
+      rec = store[i];
+      if (!rec || typeof rec !== 'object') continue;
+      if (fSupplier && trimStr(rec.supplier).toLowerCase() !== fSupplier) continue;
+      if (fKind && rec.kind !== fKind) continue;
+      if (fStatus) {
+        var effStatus = isVoided(rec) ? 'voided' : (rec.status || 'open');
+        if (effStatus !== fStatus) continue;
+      }
+      if (f && f.includeVoided === false && isVoided(rec)) continue;
+      out.push(cloneRecord(rec));
+    }
+    return out;
+  }
+
+  function supplierBalance(supplier) {
+    var target = trimStr(supplier).toLowerCase();
+    if (!target) return 0;
+    var store = readStore();
+    var sum = 0;
+    var i, rec, amt;
+    for (i = 0; i < store.length; i++) {
+      rec = store[i];
+      if (!rec || isVoided(rec)) continue;
+      if (trimStr(rec.supplier).toLowerCase() !== target) continue;
+      amt = Number(rec.amountPiasters) || 0;
+      if (rec.kind === 'debit') {
+        sum += amt;
+      } else if (rec.kind === 'credit') {
+        sum -= amt;
+      }
+    }
+    return sum;
+  }
+
+  function computeTotals() {
+    var store = readStore();
+    var creditTotal = 0;
+    var debitTotal = 0;
+    var pendingCount = 0;
+    var i, rec, amt;
+    for (i = 0; i < store.length; i++) {
+      rec = store[i];
+      if (!rec || isVoided(rec)) continue;
+      amt = Number(rec.amountPiasters) || 0;
+      if (rec.kind === 'credit') {
+        creditTotal += amt;
+      } else if (rec.kind === 'debit') {
+        debitTotal += amt;
+      }
+      if ((rec.status || 'open') === 'open') {
+        pendingCount += 1;
+      }
+    }
+    return {
+      creditTotal: creditTotal,
+      debitTotal: debitTotal,
+      net: debitTotal - creditTotal,
+      pendingCount: pendingCount
+    };
+  }
+
+  function applyNote(id, invoiceRef) {
+    if (!canWrite()) return false;
+    var noteId = trimStr(id);
+    var inv = trimStr(invoiceRef);
+    if (!noteId || !inv) return false;
+
+    var store = readStore();
+    var i, rec;
+    for (i = 0; i < store.length; i++) {
+      rec = store[i];
+      if (rec && rec.id === noteId) {
+        if (isVoided(rec) || rec.status === 'applied') return false;
+        rec.status = 'applied';
+        rec.appliedInvoiceRef = inv;
+        rec.appliedAt = new Date().toISOString();
+        rec.appliedBy = currentUser();
+        if (!writeStore(store)) return false;
+        refreshCard();
+        return cloneRecord(rec);
+      }
+    }
+    return false;
+  }
+
+  function voidNote(id, reason) {
+    if (!canWrite()) return false;
+    var noteId = trimStr(id);
+    var why = trimStr(reason);
+    if (!noteId || !why) return false;
+
+    var store = readStore();
+    var i, rec;
+    for (i = 0; i < store.length; i++) {
+      rec = store[i];
+      if (rec && rec.id === noteId) {
+        if (isVoided(rec)) return false;
+        rec.voidedAt = new Date().toISOString();
+        rec.voidedBy = currentUser();
+        rec.voidReason = why;
+        rec.status = 'voided';
+        if (!writeStore(store)) return false;
+        refreshCard();
+        return cloneRecord(rec);
+      }
+    }
+    return false;
+  }
+
+  window.novaSupplierNotes = {
+    add: addNote,
+    list: listNotes,
+    balance: supplierBalance,
+    totals: computeTotals,
+    apply: applyNote,
+    'void': voidNote
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaSupplierNotes{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;overflow-x:hidden;}',
+      '#novaSupplierNotes *{box-sizing:border-box;}',
+      '#novaSupplierNotes h3,#novaSupplierNotes h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaSupplierNotes h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaSupplierNotes h4{font-size:0.95rem;margin-top:16px;color:#79c9eb;}',
+      '.nsn-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;}',
+      '.nsn-stat{background:#0d1117;border:1px solid #343b44;border-radius:8px;padding:10px;}',
+      '.nsn-stat-label{font-size:0.8rem;color:#9fb0c2;margin-bottom:4px;}',
+      '.nsn-stat-val{font-size:1rem;font-weight:700;color:#e6edf3;}',
+      '.nsn-stat-val.nsn-credit{color:#4ade80;}',
+      '.nsn-stat-val.nsn-debit{color:#f87171;}',
+      '.nsn-stat-val.nsn-accent{color:#79c9eb;}',
+      '.nsn-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0 12px 0;}',
+      '.nsn-field{min-width:0;}',
+      '.nsn-field label{display:block;font-size:0.85rem;margin-bottom:4px;color:#9fb0c2;}',
+      '.nsn-input,.nsn-select{width:100%;min-width:0;max-width:100%;min-height:44px;padding:8px 10px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.nsn-input:focus,.nsn-select:focus{outline:none;border-color:#79c9eb;}',
+      '.nsn-actions,.nsn-filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;}',
+      '.nsn-filter-row .nsn-select{flex:1 1 160px;}',
+      '#novaSupplierNotes button{min-height:44px;}',
+      '.nsn-status-msg{font-size:0.85rem;color:#79c9eb;min-height:20px;margin:6px 0;}',
+      '.nsn-table-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;margin-top:8px;}',
+      '.nsn-table{width:100%;border-collapse:collapse;font-size:0.88rem;min-width:620px;}',
+      '.nsn-table th,.nsn-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.nsn-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.nsn-table tr:last-child td{border-bottom:0;}',
+      '.nsn-row-void td{opacity:0.55;text-decoration:line-through;}',
+      '.nsn-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.78rem;font-weight:600;border:1px solid #343b44;}',
+      '.nsn-badge-credit{background:#132a1d;color:#4ade80;border-color:#23533a;}',
+      '.nsn-badge-debit{background:#2c1619;color:#f87171;border-color:#5b272d;}',
+      '.nsn-badge-open{background:#152430;color:#79c9eb;border-color:#26465c;}',
+      '.nsn-badge-applied{background:#132a1d;color:#4ade80;border-color:#23533a;}',
+      '.nsn-badge-void{background:#22272e;color:#9fb0c2;border-color:#343b44;}',
+      '.nsn-row-actions{display:flex;gap:6px;flex-wrap:nowrap;}',
+      '.nsn-row-actions button{min-height:44px;padding:6px 10px;font-size:0.82rem;}',
+      '.nsn-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}',
+      '.nsn-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999;}',
+      '.nsn-modal{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;width:100%;max-width:440px;color:#e6edf3;max-height:90vh;overflow-y:auto;}',
+      '.nsn-modal h4{margin:0 0 10px 0;color:#79c9eb;font-size:1rem;}',
+      '.nsn-modal p{margin:0 0 10px 0;font-size:0.9rem;color:#c9d1d9;}',
+      '.nsn-modal-err{color:#f87171;font-size:0.85rem;min-height:18px;margin-top:6px;}',
+      '@media print{body *{visibility:hidden;}#nsnPrintArea,#nsnPrintArea *{visibility:visible;}#nsnPrintArea{position:fixed;left:0;top:0;width:100%;background:#ffffff;color:#000000;padding:16px;}}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function getUniqueSuppliers() {
+    var store = readStore();
+    var seen = {};
+    var out = [];
+    var i, sup, key;
+    for (i = 0; i < store.length; i++) {
+      sup = store[i] && trimStr(store[i].supplier);
+      if (!sup) continue;
+      key = sup.toLowerCase();
+      if (!seen[key]) {
+        seen[key] = true;
+        out.push(sup);
+      }
+    }
+    out.sort();
+    return out;
+  }
+
+  function closeModal() {
+    var existing = document.getElementById('nsnModalOverlay');
+    if (existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+  }
+
+  function openInputDialog(opts) {
+    closeModal();
+    var card = document.getElementById(CARD_ID);
+    if (!card) return;
+
+    var overlay = el('div', 'nsn-overlay');
+    overlay.id = 'nsnModalOverlay';
+    overlay.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var modal = el('div', 'nsn-modal');
+    modal.setAttribute('role', 'dialog');
+    modal.appendChild(el('h4', '', opts.title));
+    if (opts.message) {
+      modal.appendChild(el('p', '', opts.message));
+    }
+
+    var inp = el('input', 'nsn-input');
+    inp.id = 'nsnDialogInput';
+    inp.type = 'text';
+    inp.placeholder = opts.placeholder || '';
+    modal.appendChild(inp);
+
+    var errBox = el('div', 'nsn-modal-err', '');
+    modal.appendChild(errBox);
+
+    var btns = el('div', 'nsn-actions');
+    var okBtn = el('button', 'btn btn-primary', opts.confirmLabel || t('تأكيد', 'Confirm'));
+    okBtn.id = 'nsnDialogConfirm';
+    okBtn.type = 'button';
+
+    var cancelBtn = el('button', 'btn btn-secondary', t('رجوع', 'Cancel'));
+    cancelBtn.id = 'nsnDialogCancel';
+    cancelBtn.type = 'button';
+
+    okBtn.addEventListener('click', function () {
+      var val = trimStr(inp.value);
+      if (!val) {
+        errBox.textContent = opts.emptyError || t('هذا الحقل مطلوب.', 'This field is required.');
+        return;
+      }
+      var ok = opts.onConfirm(val);
+      if (ok) {
+        closeModal();
+      } else {
+        errBox.textContent = opts.failError || t('تعذر تنفيذ العملية.', 'Operation failed.');
+      }
+    });
+
+    cancelBtn.addEventListener('click', closeModal);
+    btns.appendChild(okBtn);
+    btns.appendChild(cancelBtn);
+    modal.appendChild(btns);
+    overlay.appendChild(modal);
+    card.appendChild(overlay);
+    inp.focus();
+  }
+
+  function openSupplierStatement(supplier) {
+    closeModal();
+    var card = document.getElementById(CARD_ID);
+    if (!card) return;
+
+    var notes = listNotes({ supplier: supplier, includeVoided: false });
+    var bal = supplierBalance(supplier);
+    var creditSum = 0;
+    var debitSum = 0;
+    var i;
+    for (i = 0; i < notes.length; i++) {
+      if (notes[i].kind === 'credit') creditSum += notes[i].amountPiasters;
+      else if (notes[i].kind === 'debit') debitSum += notes[i].amountPiasters;
+    }
+
+    var overlay = el('div', 'nsn-overlay');
+    overlay.id = 'nsnModalOverlay';
+    overlay.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var modal = el('div', 'nsn-modal');
+    modal.id = 'nsnPrintArea';
+    modal.appendChild(el('h4', '', t('كشف إشعارات المورد: ', 'Supplier Statement: ') + supplier));
+    modal.appendChild(el('p', '', t('إجمالي الخصم: ', 'Credit Total: ') + formatMoney(creditSum) + ' | ' + t('إجمالي الإضافة: ', 'Debit Total: ') + formatMoney(debitSum)));
+    modal.appendChild(el('p', '', t('صافي الرصيد: ', 'Net Balance: ') + formatMoney(bal)));
+
+    var wrap = el('div', 'nsn-table-wrap');
+    if (!notes.length) {
+      wrap.appendChild(el('div', 'nsn-empty', t('لا توجد إشعارات فعالة لهذا المورد.', 'No active notes for this supplier.')));
+    } else {
+      var tbl = el('table', 'nsn-table');
+      var thead = document.createElement('thead');
+      var hr = document.createElement('tr');
+      var headers = [t('التاريخ', 'Date'), t('النوع', 'Type'), t('المبلغ', 'Amount'), t('المرجع', 'Ref'), t('الحالة', 'Status')];
+      for (i = 0; i < headers.length; i++) hr.appendChild(el('th', '', headers[i]));
+      thead.appendChild(hr);
+      tbl.appendChild(thead);
+      var tbody = document.createElement('tbody');
+      for (i = 0; i < notes.length; i++) {
+        var r = notes[i];
+        var tr = document.createElement('tr');
+        tr.appendChild(el('td', '', formatDate(r.at)));
+        tr.appendChild(el('td', '', r.kind === 'credit' ? t('إشعار خصم', 'Credit') : t('إشعار إضافة', 'Debit')));
+        tr.appendChild(el('td', '', formatMoney(r.amountPiasters)));
+        tr.appendChild(el('td', '', r.reference));
+        tr.appendChild(el('td', '', r.status === 'applied' ? t('مطبّق', 'Applied') : t('مفتوح', 'Open')));
+        tbody.appendChild(tr);
+      }
+      tbl.appendChild(tbody);
+      wrap.appendChild(tbl);
+    }
+    modal.appendChild(wrap);
+
+    var btns = el('div', 'nsn-actions');
+    var printBtn = el('button', 'btn btn-primary', t('طباعة', 'Print'));
+    printBtn.type = 'button';
+    printBtn.addEventListener('click', function () {
+      try {
+        if (typeof window.print === 'function') window.print();
+      } catch (e) {}
+    });
+    var closeBtn = el('button', 'btn btn-secondary', t('إغلاق', 'Close'));
+    closeBtn.type = 'button';
+    closeBtn.addEventListener('click', closeModal);
+    btns.appendChild(printBtn);
+    btns.appendChild(closeBtn);
+    modal.appendChild(btns);
+    overlay.appendChild(modal);
+    card.appendChild(overlay);
+  }
+
+  function refreshCard() {
+    var summaryBox = document.getElementById('nsnSummary');
+    var filterSel = document.getElementById('nsnSupplierFilter');
+    var tableBox = document.getElementById('nsnTableWrap');
+    if (!summaryBox || !filterSel || !tableBox) return;
+
+    var totals = computeTotals();
+    while (summaryBox.firstChild) summaryBox.removeChild(summaryBox.firstChild);
+
+    function addStat(label, valText, extraCls) {
+      var box = el('div', 'nsn-stat');
+      box.appendChild(el('div', 'nsn-stat-label', label));
+      box.appendChild(el('div', 'nsn-stat-val' + (extraCls ? ' ' + extraCls : ''), valText));
+      summaryBox.appendChild(box);
+    }
+
+    addStat(t('إجمالي الخصم', 'Credit Total'), formatMoney(totals.creditTotal), 'nsn-credit');
+    addStat(t('إجمالي الإضافة', 'Debit Total'), formatMoney(totals.debitTotal), 'nsn-debit');
+    addStat(t('الصافي', 'Net Balance'), formatMoney(totals.net), 'nsn-accent');
+    addStat(t('إشعارات مفتوحة', 'Open Notes'), String(totals.pendingCount), '');
+
+    var suppliers = getUniqueSuppliers();
+    while (filterSel.firstChild) filterSel.removeChild(filterSel.firstChild);
+    var allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = t('كل الموردين', 'All Suppliers');
+    filterSel.appendChild(allOpt);
+    var i, opt;
+    for (i = 0; i < suppliers.length; i++) {
+      opt = document.createElement('option');
+      opt.value = suppliers[i];
+      opt.textContent = suppliers[i];
+      filterSel.appendChild(opt);
+    }
+    filterSel.value = selectedSupplierFilter;
+    if (filterSel.value !== selectedSupplierFilter) {
+      selectedSupplierFilter = '';
+      filterSel.value = '';
+    }
+
+    while (tableBox.firstChild) tableBox.removeChild(tableBox.firstChild);
+    var rows = listNotes(selectedSupplierFilter ? { supplier: selectedSupplierFilter } : null);
+    if (!rows.length) {
+      tableBox.appendChild(el('div', 'nsn-empty', t('لا توجد إشعارات مسجلة.', 'No supplier notes recorded.')));
+      return;
+    }
+
+    var writable = canWrite();
+    var table = el('table', 'nsn-table');
+    var thead = document.createElement('thead');
+    var trHead = document.createElement('tr');
+    var headers = [
+      t('التاريخ', 'Date'),
+      t('المورد', 'Supplier'),
+      t('النوع', 'Type'),
+      t('المبلغ', 'Amount'),
+      t('المرجع', 'Reference'),
+      t('السبب', 'Reason'),
+      t('الحالة', 'Status'),
+      t('إجراءات', 'Actions')
+    ];
+    for (i = 0; i < headers.length; i++) {
+      trHead.appendChild(el('th', '', headers[i]));
+    }
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var j, rec, tr, tdKind, tdStatus, tdActions, actWrap;
+    for (j = rows.length - 1; j >= 0; j--) {
+      rec = rows[j];
+      tr = document.createElement('tr');
+      if (isVoided(rec)) tr.className = 'nsn-row-void';
+
+      tr.appendChild(el('td', '', formatDate(rec.at)));
+      tr.appendChild(el('td', '', rec.supplier));
+
+      tdKind = document.createElement('td');
+      tdKind.appendChild(el(
+        'span',
+        'nsn-badge ' + (rec.kind === 'credit' ? 'nsn-badge-credit' : 'nsn-badge-debit'),
+        rec.kind === 'credit' ? t('إشعار خصم', 'Credit') : t('إشعار إضافة', 'Debit')
+      ));
+      tr.appendChild(tdKind);
+
+      tr.appendChild(el('td', '', formatMoney(rec.amountPiasters)));
+      tr.appendChild(el('td', '', rec.reference));
+
+      var reasonText = rec.reason;
+      if (rec.itemRef) reasonText += ' (' + rec.itemRef + ')';
+      if (isVoided(rec) && rec.voidReason) {
+        reasonText += ' — ' + t('سبب الإلغاء: ', 'Void: ') + rec.voidReason;
+      }
+      tr.appendChild(el('td', '', reasonText));
+
+      tdStatus = document.createElement('td');
+      if (isVoided(rec)) {
+        tdStatus.appendChild(el('span', 'nsn-badge nsn-badge-void', t('ملغى', 'Voided')));
+      } else if (rec.status === 'applied') {
+        tdStatus.appendChild(el(
+          'span',
+          'nsn-badge nsn-badge-applied',
+          t('مطبّق', 'Applied') + (rec.appliedInvoiceRef ? ' #' + rec.appliedInvoiceRef : '')
+        ));
+      } else {
+        tdStatus.appendChild(el('span', 'nsn-badge nsn-badge-open', t('مفتوح', 'Open')));
+      }
+      tr.appendChild(tdStatus);
+
+      tdActions = document.createElement('td');
+      actWrap = el('div', 'nsn-row-actions');
+      if (!isVoided(rec) && writable) {
+        if (rec.status === 'open') {
+          (function (note) {
+            var applyBtn = el('button', 'btn btn-secondary', t('طبّق على فاتورة', 'Apply to Invoice'));
+            applyBtn.type = 'button';
+            applyBtn.setAttribute('data-action', 'apply');
+            applyBtn.setAttribute('data-id', note.id);
+            applyBtn.addEventListener('click', function () {
+              openInputDialog({
+                title: t('تطبيق الإشعار على فاتورة', 'Apply Note to Invoice'),
+                message: note.supplier + ' — ' + note.reference,
+                placeholder: t('رقم الفاتورة', 'Invoice reference'),
+                confirmLabel: t('تطبيق', 'Apply'),
+                emptyError: t('أدخل رقم الفاتورة.', 'Enter invoice reference.'),
+                failError: t('تعذر تطبيق الإشعار.', 'Failed to apply note.'),
+                onConfirm: function (invRef) {
+                  var res = applyNote(note.id, invRef);
+                  if (res) {
+                    notify(t('تم تطبيق الإشعار على الفاتورة.', 'Note applied to invoice.'), 'success');
+                    return true;
+                  }
+                  notify(t('تعذر تطبيق الإشعار.', 'Failed to apply note.'), 'error');
+                  return false;
+                }
+              });
+            });
+            actWrap.appendChild(applyBtn);
+          })(rec);
+        }
+        (function (note) {
+          var voidBtn = el('button', 'btn btn-secondary', t('إلغاء', 'Void'));
+          voidBtn.type = 'button';
+          voidBtn.setAttribute('data-action', 'void');
+          voidBtn.setAttribute('data-id', note.id);
+          voidBtn.addEventListener('click', function () {
+            openInputDialog({
+              title: t('إلغاء الإشعار', 'Void Note'),
+              message: note.supplier + ' — ' + note.reference,
+              placeholder: t('سبب الإلغاء', 'Reason for voiding'),
+              confirmLabel: t('تأكيد الإلغاء', 'Confirm Void'),
+              emptyError: t('سبب الإلغاء مطلوب.', 'Void reason is required.'),
+              failError: t('تعذر إلغاء الإشعار.', 'Failed to void note.'),
+              onConfirm: function (why) {
+                var res = voidNote(note.id, why);
+                if (res) {
+                  notify(t('تم إلغاء الإشعار.', 'Note voided.'), 'success');
+                  return true;
+                }
+                notify(t('تعذر إلغاء الإشعار.', 'Failed to void note.'), 'error');
+                return false;
+              }
+            });
+          });
+          actWrap.appendChild(voidBtn);
+        })(rec);
+      } else {
+        actWrap.appendChild(el('span', '', '—'));
+      }
+      tdActions.appendChild(actWrap);
+      tr.appendChild(tdActions);
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    tableBox.appendChild(table);
+  }
+
+  function buildCard() {
+    injectStyles();
+    selectedSupplierFilter = '';
+    var writable = canWrite();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('إشعارات الخصم والإضافة للموردين', 'Supplier Debit & Credit Notes')));
+
+    var summaryBox = el('div', 'nsn-summary');
+    summaryBox.id = 'nsnSummary';
+    card.appendChild(summaryBox);
+
+    card.appendChild(el('h4', '', t('إضافة إشعار جديد', 'Add New Note')));
+
+    var form = el('div', 'nsn-form');
+
+    function makeField(labelText, id, placeholder) {
+      var wrap = el('div', 'nsn-field');
+      var lbl = el('label', '', labelText);
+      lbl.setAttribute('for', id);
+      var inp = el('input', 'nsn-input');
+      inp.id = id;
+      inp.type = 'text';
+      if (placeholder) inp.placeholder = placeholder;
+      if (!writable) inp.disabled = true;
+      wrap.appendChild(lbl);
+      wrap.appendChild(inp);
+      form.appendChild(wrap);
+      return inp;
+    }
+
+    var supInput = makeField(t('المورد', 'Supplier'), 'nsnSupplierInput', t('اسم المورد', 'Supplier name'));
+
+    var kindWrap = el('div', 'nsn-field');
+    var kindLbl = el('label', '', t('النوع', 'Type'));
+    kindLbl.setAttribute('for', 'nsnKindSelect');
+    var kindSel = el('select', 'nsn-select');
+    kindSel.id = 'nsnKindSelect';
+    if (!writable) kindSel.disabled = true;
+    var optCredit = document.createElement('option');
+    optCredit.value = 'credit';
+    optCredit.textContent = t('إشعار خصم', 'Credit Note');
+    var optDebit = document.createElement('option');
+    optDebit.value = 'debit';
+    optDebit.textContent = t('إشعار إضافة', 'Debit Note');
+    kindSel.appendChild(optCredit);
+    kindSel.appendChild(optDebit);
+    kindWrap.appendChild(kindLbl);
+    kindWrap.appendChild(kindSel);
+    form.appendChild(kindWrap);
+
+    var amtInput = makeField(t('المبلغ', 'Amount'), 'nsnAmountInput', t('١٥٠٫٠٠', '150.00'));
+    amtInput.setAttribute('inputmode', 'decimal');
+
+    var refInput = makeField(t('رقم المرجع', 'Reference'), 'nsnRefInput', t('رقم إشعار المورد', 'Supplier note number'));
+    var reasonInput = makeField(t('السبب', 'Reason'), 'nsnReasonInput', t('مرتجع أو فرق سعر أو مسحوبات', 'Returns, price difference, withdrawn stock'));
+    var itemInput = makeField(t('مرجع الصنف', 'Item Ref'), 'nsnItemRefInput', t('اختياري', 'Optional'));
+
+    card.appendChild(form);
+
+    var formActions = el('div', 'nsn-actions');
+    var addBtn = el('button', 'btn btn-primary', t('إضافة إشعار', 'Add Note'));
+    addBtn.id = 'nsnAddBtn';
+    addBtn.type = 'button';
+    if (!writable) addBtn.disabled = true;
+    formActions.appendChild(addBtn);
+    card.appendChild(formActions);
+
+    var statusMsg = el('div', 'nsn-status-msg', writable ? '' : t('وضع العرض فقط.', 'Read-only mode.'));
+    statusMsg.id = 'nsnStatusMsg';
+    card.appendChild(statusMsg);
+
+    addBtn.addEventListener('click', function () {
+      var piasters = parseEgpToPiasters(amtInput.value);
+      if (isNaN(piasters) || piasters <= 0) {
+        statusMsg.textContent = t('أدخل مبلغًا صحيحًا أكبر من صفر.', 'Enter a valid amount greater than zero.');
+        notify(statusMsg.textContent, 'error');
+        return;
+      }
+      var res = addNote({
+        supplier: supInput.value,
+        kind: kindSel.value,
+        amountPiasters: piasters,
+        reference: refInput.value,
+        reason: reasonInput.value,
+        itemRef: itemInput.value
+      });
+      if (!res) {
+        statusMsg.textContent = t('تعذر الإضافة: تحقق من البيانات أو تكرار المرجع أو الصلاحية.', 'Failed to add: check fields, duplicate reference, or permission.');
+        notify(statusMsg.textContent, 'error');
+        return;
+      }
+      amtInput.value = '';
+      refInput.value = '';
+      reasonInput.value = '';
+      itemInput.value = '';
+      statusMsg.textContent = t('تم تسجيل الإشعار بنجاح.', 'Note recorded successfully.');
+      notify(statusMsg.textContent, 'success');
+    });
+
+    card.appendChild(el('h4', '', t('سجل الإشعارات', 'Notes Ledger')));
+
+    var filterRow = el('div', 'nsn-filter-row');
+    var filterSel = el('select', 'nsn-select');
+    filterSel.id = 'nsnSupplierFilter';
+    filterSel.setAttribute('aria-label', t('تصفية حسب المورد', 'Filter by supplier'));
+    filterSel.addEventListener('change', function () {
+      selectedSupplierFilter = filterSel.value;
+      refreshCard();
+    });
+
+    var printBtn = el('button', 'btn btn-secondary', t('طباعة كشف المورد', 'Print Supplier Statement'));
+    printBtn.id = 'nsnPrintBtn';
+    printBtn.type = 'button';
+    printBtn.addEventListener('click', function () {
+      var sup = filterSel.value;
+      if (!sup) {
+        statusMsg.textContent = t('اختر موردًا من التصفية أولًا.', 'Select a supplier from the filter first.');
+        notify(statusMsg.textContent, 'error');
+        return;
+      }
+      openSupplierStatement(sup);
+    });
+
+    filterRow.appendChild(filterSel);
+    filterRow.appendChild(printBtn);
+    card.appendChild(filterRow);
+
+    var tableWrap = el('div', 'nsn-table-wrap');
+    tableWrap.id = 'nsnTableWrap';
+    card.appendChild(tableWrap);
+
+    return card;
+  }
+
+  function isReportsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isReportsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshCard();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isReportsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
