@@ -16,6 +16,7 @@
   var CARD_ID = 'novaStockCount';
   var OVERLAY_ID = 'novaStockCountOverlay';
   var STYLE_ID = 'novaStockCountStyle';
+  var CANCEL_DLG_ID = 'novaStockCountCancelDlg';
   var ADJUST_REASON = 'فقد / سرقة';
   var OTHER_REASON = 'تانية';
 
@@ -73,7 +74,20 @@
       errStock: 'المخزون ما اتحفظش — جرّب تاني.',
       errAdjust: 'تسوية النقص مش متاحة دلوقتي — جرّب تاني.',
       errSave: 'الجرد ما اتحفظش على الجهاز.',
-      okSaved: 'التسوية اتسجلت والجرد اتقفل.'
+      okSaved: 'التسوية اتسجلت والجرد اتقفل.',
+      cancelCount: 'إلغاء الجرد',
+      cancelTitle: 'إلغاء الجرد',
+      cancelHint: 'مفيش أي حركة مخزون هتتعمل. اكتب سبب الإلغاء.',
+      cancelReasonPh: 'سبب الإلغاء (مطلوب)',
+      cancelConfirm: 'تأكيد الإلغاء',
+      cancelBack: 'رجوع',
+      cancelledBadge: 'ملغي',
+      cancelledInfo: 'الجرد ده اتلغى — السبب: {reason}',
+      cappedNote: 'اتخصم المتاح بس',
+      errCancelReason: 'اكتب سبب إلغاء الجرد.',
+      errNoPermCancel: 'محتاج صلاحية تعديل المخزون عشان تلغي الجرد.',
+      errPartial: 'الجرد اتطبق جزء منه — كمّل الإغلاق',
+      okCancelled: 'الجرد اتلغى.'
     },
     en: {
       title: 'Stock count',
@@ -121,7 +135,20 @@
       errStock: 'The stock was not saved — try again.',
       errAdjust: 'The shortage adjustment is not available right now — try again.',
       errSave: 'The count was not saved on this device.',
-      okSaved: 'Adjustment recorded and the count is closed.'
+      okSaved: 'Adjustment recorded and the count is closed.',
+      cancelCount: 'Cancel count',
+      cancelTitle: 'Cancel the count',
+      cancelHint: 'No stock movement will be made. Type the reason for cancelling.',
+      cancelReasonPh: 'Cancellation reason (required)',
+      cancelConfirm: 'Confirm cancel',
+      cancelBack: 'Back',
+      cancelledBadge: 'Cancelled',
+      cancelledInfo: 'This count was cancelled - reason: {reason}',
+      cappedNote: 'Only the available stock was deducted',
+      errCancelReason: 'Type the reason for cancelling the count.',
+      errNoPermCancel: 'You need the stock adjustment permission to cancel the count.',
+      errPartial: 'Part of this count was already applied - finish closing it.',
+      okCancelled: 'The count was cancelled.'
     }
   };
 
@@ -169,10 +196,10 @@
   }
   function mustSave(list) { if (!saveSessions(list)) throw fail('errSave'); }
   function findSession(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
-  function findOpenSession(list) { for (var i = 0; i < list.length; i++) if (!list[i].closedAt) return list[i]; return null; }
+  function findOpenSession(list) { for (var i = 0; i < list.length; i++) if (!list[i].closedAt && !list[i].cancelledAt) return list[i]; return null; }
   function editable(list, id) {
     var s = findSession(list, id);
-    if (!s || s.closedAt) throw fail('errNoSession');
+    if (!s || s.closedAt || s.cancelledAt) throw fail('errNoSession');
     if (s.lockedAt || s.plan) throw fail('errLocked');
     return s;
   }
@@ -342,7 +369,7 @@
   function lock(sessionId) {
     var list = loadSessions();
     var sess = findSession(list, sessionId);
-    if (!sess || sess.closedAt) throw fail('errNoSession');
+    if (!sess || sess.closedAt || sess.cancelledAt) throw fail('errNoSession');
     if (!sess.lockedAt) { validateCounted(sess); sess.lockedAt = nowIso(); mustSave(list); }
     return true;
   }
@@ -374,13 +401,65 @@
       if (!r || !r.reason || (r.reason === OTHER_REASON && !r.note)) throw fail('errReason');
       byLine[d.index] = r;
       if (whole < 0) {
-        out.push({ key: d.key, code: d.code, name: d.name, lot: d.lot, expiry: d.expiry, qty: -whole, cost: d.cost });
+        out.push({ index: d.index, key: d.key, code: d.code, name: d.name, lot: d.lot, expiry: d.expiry, qty: -whole, cost: d.cost });
         notes.push(d.lot + ': ' + r.reason + (r.note ? ' - ' + r.note : ''));
       } else if (whole > 0) {
         ins.push({ index: d.index, key: d.key, lot: d.lot, expiry: d.expiry, qty: whole, cost: d.cost, unknown: d.unknown });
       }
     }
     return { at: nowIso(), out: out, ins: ins, note: ('جرد ' + sess.id + ': ' + notes.join('؛ ')).slice(0, 200), reasons: byLine };
+  }
+
+  function savePlan(sessionId, plan) {
+    var fresh = loadSessions(), fs = findSession(fresh, sessionId);
+    if (!fs) throw fail('errSave');
+    fs.plan = plan;
+    mustSave(fresh);
+  }
+  // Caps every shortage line at what the lot holds right now (whole boxes). Only before the shortage was sent to the item card.
+  function capPlan(sessionId, plan) {
+    if (plan.outStarted || plan.outApplied) return;
+    var capped = {}, any = false;
+    for (var i = 0; i < plan.out.length; i++) {
+      var o = plan.out[i], want = o.wanted != null ? o.wanted : o.qty;
+      var sl = systemLot(o.key, o.lot, o.expiry);
+      var avail = Math.max(0, Math.floor((sl ? Number(sl.onHand) || 0 : 0) + 1e-7));
+      var q = Math.min(want, avail);
+      if (q < want) { capped[o.index] = { wanted: want, applied: q }; any = true; }
+      o.wanted = want; o.qty = q;
+    }
+    plan.capped = capped;
+    if (any || plan.out.length) savePlan(sessionId, plan);
+  }
+  function partiallyApplied(sess) {
+    var p = sess.plan;
+    if (!p) return false;
+    if (p.outApplied || p.outStarted) return true;
+    for (var i = 0; i < (p.ins || []).length; i++) if (p.ins[i].done || p.ins[i].started) return true;
+    return false;
+  }
+  // Cancels an open / locked count that did not move any stock. Manager only, reason required.
+  function cancel(sessionId, reason) {
+    var list = loadSessions(), sess = findSession(list, sessionId);
+    if (!sess || sess.closedAt || sess.cancelledAt) throw fail('errNoSession');
+    if (!canAdjust()) throw fail('errNoPermCancel');
+    var why = String(reason == null ? '' : reason).trim();
+    if (!why) throw fail('errCancelReason');
+    if (inFlight[sessionId] || partiallyApplied(sess)) throw fail('errPartial');
+    sess.cancelledAt = nowIso(); sess.cancelReason = why; sess.cancelledBy = currentUserName();
+    mustSave(list);
+    refreshCard();
+    return { session: sess };
+  }
+
+  // review-row info: how much of a shortage can really be deducted (frozen in the plan once closing started)
+  function capInfoFor(sess, d) {
+    if (sess.plan && sess.plan.capped && sess.plan.capped[d.index]) return sess.plan.capped[d.index];
+    if (sess.closedAt || sess.cancelledAt || sess.plan || d.delta === null || d.delta >= 0) return null;
+    var want = -Math.ceil(d.delta - 1e-7);
+    var sl = systemLot(d.key, d.lot, d.expiry);
+    var avail = Math.max(0, Math.floor((sl ? Number(sl.onHand) || 0 : 0) + 1e-7));
+    return want > avail ? { wanted: want, applied: avail } : null;
   }
 
   var inFlight = {};
@@ -396,7 +475,7 @@
   function closeOnce(sessionId, reasons) {
     var list = loadSessions();
     var sess = findSession(list, sessionId);
-    if (!sess) return Promise.reject(fail('errNoSession'));
+    if (!sess || sess.cancelledAt) return Promise.reject(fail('errNoSession'));
     if (sess.closedAt) return Promise.resolve({ session: sess, summary: sess.summary, alreadyClosed: true });
     if (!canAdjust()) { toast(t('errNoPerm'), 'error'); return Promise.reject(fail('errNoPerm')); }
     try {
@@ -412,15 +491,27 @@
     var plan = sess.plan;
     var ready = (plan.out.length && window.novaLazy && typeof window.novaLazy.load === 'function') ? Promise.resolve(window.novaLazy.load()) : Promise.resolve();
     return ready.then(function () {
-      if (!plan.out.length) return null;
+      capPlan(sess.id, plan); // sales during the review: never ask for more than the lot holds now
+      var active = plan.out.filter(function (o) { return o.qty > 0; });
+      if (!active.length || plan.outApplied) return null;
       if (!window.novaItemCard || typeof window.novaItemCard.adjust !== 'function') throw fail('errAdjust');
-      return window.novaItemCard.adjust({ id: sess.id + '-out', reason: ADJUST_REASON, note: plan.note, lines: plan.out });
+      var lines = active.map(function (o) { return { key: o.key, code: o.code, name: o.name, lot: o.lot, expiry: o.expiry, qty: o.qty, cost: o.cost }; });
+      plan.outStarted = true; savePlan(sess.id, plan); // crash window: cancel is refused while this is set
+      return Promise.resolve(window.novaItemCard.adjust({ id: sess.id + '-out', reason: ADJUST_REASON, note: plan.note, lines: lines })).then(function () {
+        plan.outStarted = false; plan.outApplied = true; savePlan(sess.id, plan);
+      }, function (err) {
+        plan.outStarted = false; try { savePlan(sess.id, plan); } catch (e) { /* keep the original error */ }
+        throw err;
+      });
     }).then(function () {
       for (var i = 0; i < plan.ins.length; i++) {
         var pl = plan.ins[i], entry = { key: pl.key, lot: pl.lot, expiry: pl.expiry, qty: pl.qty };
+        if (pl.done) continue;
         if (pl.unknown) entry.cost = pl.cost; // a known lot keeps its own cost
+        pl.started = true; savePlan(sess.id, plan);
         var res = window.novaStock.addLot(entry, 'COUNT-' + sess.id + '/' + pl.index);
-        if (!res || !res.ok) throw fail('errStock');
+        if (!res || !res.ok) { pl.started = false; try { savePlan(sess.id, plan); } catch (e) { /* keep the original error */ } throw fail('errStock'); }
+        pl.done = true; savePlan(sess.id, plan);
       }
       var fresh = loadSessions();
       var fs = findSession(fresh, sessionId);
@@ -497,6 +588,9 @@
       '.nsc-table th,.nsc-table td{border:1px solid #343b44;padding:8px 6px;text-align:inherit;vertical-align:top}' +
       '.nsc-table th{color:#79c9eb}' +
       '.nsc-summary{padding:12px;border:1px solid #79c9eb;border-radius:8px;font-weight:700;color:#79c9eb}' +
+      '#novaStockCountCancelDlg{position:fixed;inset:0;z-index:9900;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:14px;color:#e6edf3}' +
+      '.nsc-dlg{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box}' +
+      '.nsc-capped{color:#fbbf24}' +
       '.nsc-diff-neg{color:#f87171;font-weight:700}.nsc-diff-pos{color:#4ade80;font-weight:700}';
     document.head.appendChild(s);
   }
@@ -654,6 +748,32 @@
     render();
   }
 
+  // In-app dialog (no window.confirm): asks for the cancel reason, then cancels.
+  function askCancel(sessionId) {
+    var old = document.getElementById(CANCEL_DLG_ID); if (old && old.parentNode) old.parentNode.removeChild(old);
+    injectStyles();
+    var back = el('div'); back.id = CANCEL_DLG_ID;
+    back.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+    var box = el('div', 'nsc-dlg'); box.setAttribute('role', 'alertdialog');
+    box.appendChild(el('h3', 'nsc-title', t('cancelTitle')));
+    box.appendChild(el('div', 'nsc-lot-meta', t('cancelHint')));
+    var inp = el('textarea', 'nsc-input nsc-cancel-reason'); inp.rows = 3; inp.placeholder = t('cancelReasonPh'); inp.setAttribute('aria-label', t('cancelReasonPh'));
+    box.appendChild(inp);
+    var msg = el('div', 'nsc-diff-neg nsc-dlg-msg');
+    box.appendChild(msg);
+    var row = el('div', 'nsc-footer');
+    function shut() { if (back.parentNode) back.parentNode.removeChild(back); }
+    row.appendChild(button('btn btn-secondary nsc-btn nsc-dlg-back', t('cancelBack'), shut));
+    row.appendChild(button('btn btn-danger nsc-btn nsc-dlg-ok', t('cancelConfirm'), function () {
+      try { cancel(sessionId, inp.value); } catch (err) { msg.textContent = err.message; toast(err.message, 'error'); return; }
+      shut(); closeOverlay(); refreshCard(); toast(t('okCancelled'), 'success');
+    }));
+    box.appendChild(row);
+    back.appendChild(box);
+    document.body.appendChild(back);
+    inp.focus();
+  }
+
   function openReviewOverlay(sessionId, readOnly) {
     var sess = findSession(loadSessions(), sessionId);
     if (!sess) { closeOverlay(); return; }
@@ -678,9 +798,9 @@
       var lotTd = el('td', null, d.lot + ' · ' + shortExpiry(d.expiry)); lotTd.setAttribute('dir', 'ltr');
       tr.appendChild(lotTd);
       tr.appendChild(el('td', null, String(d.expected)));
-      tr.appendChild(el('td', null, String(d.counted)));
-      var zero = Math.abs(d.delta) < 1e-7;
-      var dTd = el('td', zero ? null : (d.delta < 0 ? 'nsc-diff-neg' : 'nsc-diff-pos'), (d.delta > 0 ? '+' : '') + String(d.delta));
+      tr.appendChild(el('td', null, d.counted === null ? '—' : String(d.counted)));
+      var zero = d.delta === null || Math.abs(d.delta) < 1e-7;
+      var dTd = el('td', zero ? null : (d.delta < 0 ? 'nsc-diff-neg' : 'nsc-diff-pos'), d.delta === null ? '—' : (d.delta > 0 ? '+' : '') + String(d.delta));
       dTd.setAttribute('dir', 'ltr');
       tr.appendChild(dTd);
       var rTd = el('td');
@@ -695,6 +815,8 @@
         rTd.appendChild(sel); rTd.appendChild(note);
         inputs[lineId(d.key, d.lot, d.expiry)] = { sel: sel, note: note };
       }
+      var ci = zero ? null : capInfoFor(sess, d);
+      if (ci) { var cn = el('div', 'nsc-lot-meta nsc-capped', t('cappedNote') + ' (' + ci.applied + '/' + ci.wanted + ')'); cn.style.marginTop = '6px'; rTd.appendChild(cn); }
       tr.appendChild(rTd);
       tbody.appendChild(tr);
     })(diffs[i]);
@@ -705,10 +827,12 @@
     if (readOnly && sess.summary) {
       ov.appendChild(el('div', 'nsc-summary', t('summaryFmt', { net: r2(sess.summary.netCost), short: r2(sess.summary.shortageCost), surp: r2(sess.summary.surplusCost) })));
     }
+    if (sess.cancelledAt) ov.appendChild(el('div', 'nsc-summary nsc-cancelled', t('cancelledInfo', { reason: sess.cancelReason || '' })));
     var footer = el('div', 'nsc-footer');
     if (readOnly) footer.appendChild(button('btn btn-secondary nsc-btn', t('close'), closeOverlay));
     else {
       footer.appendChild(button('btn btn-secondary nsc-btn', t('later'), function () { closeOverlay(); refreshCard(); }));
+      footer.appendChild(button('btn btn-danger nsc-btn nsc-cancel-btn', t('cancelCount'), function () { askCancel(sess.id); }));
       var confirmBtn = button('btn btn-primary nsc-btn', t('confirm'), function () {
         var map = {};
         for (var k in inputs) if (Object.prototype.hasOwnProperty.call(inputs, k)) map[k] = { reason: inputs[k].sel.value, note: inputs[k].note.value.trim() };
@@ -732,16 +856,18 @@
     else actions.appendChild(button('btn btn-primary nsc-btn', t('startNew'), function () {
       try { openCountingOverlay(start().id); } catch (err) { toast(err.message, 'error'); }
     }));
+    if (open) actions.appendChild(button('btn btn-danger nsc-btn nsc-cancel-btn', t('cancelCount'), function () { askCancel(open.id); }));
     head.appendChild(actions);
     card.appendChild(head);
 
     var rep = el('div', 'nsc-reports');
     rep.appendChild(el('strong', null, t('reports')));
-    var closed = list.filter(function (s) { return !!s.closedAt; });
+    var closed = list.filter(function (s) { return !!s.closedAt || !!s.cancelledAt; });
     if (!closed.length) { var e = el('div', 'nsc-lot-meta', t('noReports')); e.style.marginTop = '6px'; rep.appendChild(e); }
     closed.forEach(function (cs) {
       var b = button('nsc-report-item', null, function () { openReviewOverlay(cs.id, true); });
-      b.appendChild(el('span', null, fmtDate(cs.closedAt) + (cs.by ? ' · ' + cs.by : '')));
+      b.appendChild(el('span', null, fmtDate(cs.closedAt || cs.cancelledAt) + (cs.by ? ' · ' + cs.by : '') + (cs.cancelledAt ? ' · ' + t('cancelledBadge') : '')));
+      if (cs.cancelledAt) { b.appendChild(el('span', 'nsc-lot-meta', cs.cancelReason || '')); rep.appendChild(b); return; }
       b.appendChild(el('span', null, t('itemsCount') + ': ' + countProgress(cs).items + ' · ' + t('costDiff') + ': ' + r2(cs.summary ? cs.summary.netCost : 0)));
       rep.appendChild(b);
     });
@@ -774,6 +900,6 @@
 
   window.novaStockCount = {
     start: start, addProduct: addProduct, setCount: setCount, addUnknownLot: addUnknownLot,
-    differences: differences, lock: lock, close: close, sessions: sessions
+    differences: differences, lock: lock, close: close, cancel: cancel, sessions: sessions
   };
 })();
