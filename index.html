@@ -89,7 +89,7 @@ html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-color
 #novaPageView .nova-theme-btn{transition:background-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
 </style>
 
-  <link rel="stylesheet" href="/assets/app-040-base-theme.94291f235e.css">
+  <link rel="stylesheet" href="/assets/app-040-base-theme.db2042f74a.css">
 <link rel="stylesheet" id="NOVA_SALE_POLISH" href="/assets/app-050-nova-sale-polish.3b6fbcc346.css">
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script><style id="ux214-boot">/* UX214: app content stays hidden (splash covers it) until first-load i18n/layout settles, so load-time text swaps cause no layout shift. */html.nova-boot body>*:not(#novaSplash){opacity:0}</style><script>document.documentElement.classList.add('nova-boot');setTimeout(function(){document.documentElement.classList.remove('nova-boot')},4000)</script>
 <script>/* UX29: single VAT-rate source (percent, tax-included). SALE-02: default 14 = Egypt VAT (ضريبة القيمة المضافة 14%); owner/accountant can change it in Settings. */
@@ -391,6 +391,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
           <div class="label">Total Amount Payable</div>
           <div id="modalAmountDue" class="val">0.00 EGP</div>
           <div id="modalCustomerInfo" style="font-size:12px; color:#94a3b8; margin-top:4px;">Walk-in Customer</div><button type="button" id="checkoutAddCustomer" class="nova-checkout-customer">إضافة رقم العميل (اختياري)</button>
+          <div id="checkoutRoundingNote" style="font-size:12px; color:#79c9eb; margin-top:4px;" hidden></div>
           <div id="checkoutCreditHint" role="alert" hidden>اختر عميلاً لإتمام البيع الآجل</div>
         </div>
       <div class="modal-body">
@@ -412,7 +413,22 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             <button class="pay-method-btn" data-method="split">
               <span>Split / مختلط</span>
             </button>
+            <button class="pay-method-btn" data-method="wallet">
+              <span>محفظة / إنستاباي / فوري</span>
+            </button>
           </div>
+        </div>
+
+        <div id="walletDetailsBox" style="display:none; margin-bottom:8px;">
+          <label for="inputWalletKind" style="font-size:12px; font-weight:600; color:#94a3b8;">طريقة الدفع الإلكتروني</label>
+          <select id="inputWalletKind" class="history-search-input" style="height:38px;">
+            <option value="wallet">محفظة موبايل</option>
+            <option value="instapay">إنستاباي</option>
+            <option value="fawry">فوري</option>
+          </select>
+          <label for="inputWalletRef" style="font-size:12px; font-weight:600; color:#94a3b8; display:block; margin-top:6px;">رقم العملية (من رسالة التحويل)</label>
+          <input type="text" id="inputWalletRef" class="history-search-input" style="height:38px; text-align:right;" dir="ltr" maxlength="40" autocomplete="off" inputmode="text" placeholder="مثال: 123456789">
+          <div id="walletRefHint" role="alert" style="color:#ff6b6b; font-size:12px; font-weight:600; margin-top:6px;" hidden></div>
         </div>
 
         <div id="splitDetailsBox" style="display:none; margin-bottom:8px;">
@@ -539,7 +555,7 @@ window.NovaFmt=(function(){
   return {formatDateTime:formatDateTime,formatDate:formatDate,pluralItems:pluralItems,payLabel:payLabel,PAY:PAY};
 })();
 </script>
-  <script src="/assets/app-120-pos-core.b3587efa6c.js"></script>
+  <script src="/assets/app-120-pos-core.1575938acd.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=7'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
 <script>
 (function(){
@@ -561,9 +577,10 @@ window.NovaFmt=(function(){
 })();
 </script>
 
-<script src="/assets/app-130-pages-nav.188efbc0fa.js"></script>
+<script src="/assets/app-130-pages-nav.1817161aa4.js"></script>
+<script src="/assets/app-570-sale-approval.f801360a9e.js"></script>
 
-<script src="/assets/app-140-ui-language.b19d6c0764.js"></script>
+<script src="/assets/app-140-ui-language.681dcf62c0.js"></script>
 <script>
 (function(){
  const toggle=document.getElementById('btnSaleMore');const menu=document.getElementById('novaSaleMoreMenu');
@@ -686,6 +703,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <link rel="stylesheet" id="ux206-mobile-cart-row" href="/assets/app-510-ux206-mobile-cart-row.3eeb883d92.css">
 <link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.4b597b7814.css">
 <script id="NOVA_INFO_TIPS" src="/assets/app-530-nova-info-tips.7e85f17416.js"></script>
-<script src="/assets/app-548-nova-providers.63cceacd1f.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.da0e87d589.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.b257e53edb.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.5f97d1eb4d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.bf456491a6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.7e48dbcb0b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.61072010e6.js"><script src="/assets/app-562-mobile-bottom-nav.471b204e6c.js"></script>
+<script src="/assets/app-548-nova-providers.63cceacd1f.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.da0e87d589.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.b257e53edb.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.5f97d1eb4d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.bf456491a6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.7e48dbcb0b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.61072010e6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-572-sale-settings.673c2fbad0.js"><script src="/assets/app-562-mobile-bottom-nav.471b204e6c.js"></script>
 </html>
 
