@@ -3720,3 +3720,1107 @@
     initObserver();
   }
 })();
+;
+// app/604-pharmacy-swaps.js
+// TASK #114: Borrowing and swapping items with neighbouring pharmacies.
+//
+// Balance formula (in integer piasters, per pharmacy):
+//   positive (+) = they owe us
+//   negative (-) = we owe them
+//   balance = sum(record 'out' valuePiasters)
+//           - sum(record 'in'  valuePiasters)
+//           - sum(settle 'received' amountPiasters)
+//           + sum(settle 'paid'     amountPiasters)
+//           + sum(reverse deltaPiasters)
+// where each 'reverse' entry has deltaPiasters = -deltaOf(targetEntry).
+//
+// Append-only ledger stored at localStorage['nova-rx-pharmacy-swaps-v1']:
+// entries are never edited, deleted, or trimmed. Mistakes are corrected by
+// appending a 'reverse' entry with a required non-empty reason.
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-pharmacy-swaps-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaPharmacySwaps';
+  var STYLE_ID = 'novaPharmacySwapsStyle';
+  var observer = null;
+  var selectedDirection = 'in';
+  var activeStatementPharmacy = '';
+  var idCounter = 0;
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    if (typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+  }
+
+  function currentUser() {
+    try {
+      if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+        var u = window.novaAuth.current();
+        return u && u.name ? String(u.name) : '';
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function canWrite() {
+    if (!window.novaPerms || typeof window.novaPerms.require !== 'function') {
+      return false;
+    }
+    try {
+      return !!window.novaPerms.require('suppliers.pay');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function trimStr(val) {
+    return String(val == null ? '' : val).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        out += idx !== -1 ? String(idx) : ch;
+      }
+    }
+    return out;
+  }
+
+  function parsePositiveInt(val) {
+    if (typeof val === 'number') {
+      if (!isFinite(val) || Math.floor(val) !== val || val < 1) return NaN;
+      return val;
+    }
+    var s = normalizeDigits(trimStr(val));
+    if (!/^\d+$/.test(s)) return NaN;
+    var n = parseInt(s, 10);
+    return n >= 1 ? n : NaN;
+  }
+
+  function parseNonNegInt(val) {
+    if (typeof val === 'number') {
+      if (!isFinite(val) || Math.floor(val) !== val || val < 0) return NaN;
+      return val;
+    }
+    var s = normalizeDigits(trimStr(val));
+    if (!/^\d+$/.test(s)) return NaN;
+    var n = parseInt(s, 10);
+    return n >= 0 ? n : NaN;
+  }
+
+  function parseEgpToPiasters(val) {
+    var s = normalizeDigits(trimStr(val)).replace(/\u066b|,/g, '.');
+    if (!s) return NaN;
+    var m = /^(\d+)(?:\.(\d{1,2}))?$/.exec(s);
+    if (!m) return NaN;
+    var whole = parseInt(m[1], 10);
+    var frac = 0;
+    if (m[2]) {
+      frac = m[2].length === 1 ? parseInt(m[2], 10) * 10 : parseInt(m[2], 10);
+    }
+    return whole * 100 + frac;
+  }
+
+  function formatPiasters(p) {
+    var n = Number(p) || 0;
+    var sign = n < 0 ? '-' : '';
+    var abs = Math.abs(Math.round(n));
+    var whole = Math.floor(abs / 100);
+    var frac = abs % 100;
+    var fracStr = frac < 10 ? '0' + String(frac) : String(frac);
+    return sign + String(whole) + '.' + fracStr + ' ' + t('ج.م', 'EGP');
+  }
+
+  function formatDateTime(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    var y = d.getFullYear();
+    var mo = d.getMonth() + 1;
+    var da = d.getDate();
+    var h = d.getHours();
+    var mi = d.getMinutes();
+    function pad(x) { return x < 10 ? '0' + String(x) : String(x); }
+    return String(y) + '-' + pad(mo) + '-' + pad(da) + ' ' + pad(h) + ':' + pad(mi);
+  }
+
+  function nextId(prefix) {
+    idCounter += 1;
+    return (prefix || 'sw') + '-' + String(Date.now()) + '-' + String(idCounter);
+  }
+
+  function readLedger() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function appendEntry(entry) {
+    var list = readLedger();
+    list.push(entry);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function entryDelta(e) {
+    if (!e || typeof e !== 'object') return 0;
+    if (e.type === 'record') {
+      var v = Number(e.valuePiasters) || 0;
+      if (e.direction === 'out') return v;
+      if (e.direction === 'in') return -v;
+      return 0;
+    }
+    if (e.type === 'settle') {
+      var a = Number(e.amountPiasters) || 0;
+      if (e.direction === 'received') return -a;
+      if (e.direction === 'paid') return a;
+      return 0;
+    }
+    if (e.type === 'reverse') {
+      return Number(e.deltaPiasters) || 0;
+    }
+    return 0;
+  }
+
+  function resolvePharmacyKey(ledger, ref) {
+    var key = trimStr(ref);
+    if (!key) return '';
+    var i, e;
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (e && e.type === 'pharmacy') {
+        if (e.pharmacyId === key || e.id === key || e.name === key) {
+          return e.name;
+        }
+      }
+    }
+    return key;
+  }
+
+  function getPharmacyMap(ledger) {
+    var map = {};
+    var order = [];
+    var i, e, name;
+
+    function ensure(n, info) {
+      if (!n) return;
+      if (!map[n]) {
+        map[n] = {
+          id: info && info.pharmacyId ? info.pharmacyId : n,
+          name: n,
+          phone: info && info.phone ? info.phone : '',
+          note: info && info.note ? info.note : '',
+          balance: 0
+        };
+        order.push(n);
+      } else if (info) {
+        if (!map[n].phone && info.phone) map[n].phone = info.phone;
+        if (!map[n].note && info.note) map[n].note = info.note;
+      }
+    }
+
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (!e || typeof e !== 'object') continue;
+      if (e.type === 'pharmacy') {
+        name = trimStr(e.name);
+        if (name) ensure(name, e);
+      } else if (e.type === 'record' || e.type === 'settle' || e.type === 'reverse') {
+        name = resolvePharmacyKey(ledger, e.pharmacy);
+        if (name) {
+          ensure(name, null);
+          map[name].balance += entryDelta(e);
+        }
+      }
+    }
+
+    return { map: map, order: order };
+  }
+
+  function addPharmacy(opts) {
+    if (!canWrite()) return false;
+    var o = opts || {};
+    var name = trimStr(o.name).slice(0, 80);
+    if (!name) return false;
+    var phone = trimStr(o.phone).slice(0, 30);
+    var note = trimStr(o.note).slice(0, 160);
+
+    var ledger = readLedger();
+    var i, e;
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (e && e.type === 'pharmacy' && trimStr(e.name) === name) {
+        return false;
+      }
+    }
+
+    var entry = {
+      id: nextId('ph'),
+      at: new Date().toISOString(),
+      by: currentUser(),
+      type: 'pharmacy',
+      pharmacyId: nextId('phid'),
+      name: name,
+      phone: phone,
+      note: note
+    };
+    if (!appendEntry(entry)) return false;
+    refreshUI();
+    return {
+      id: entry.pharmacyId,
+      name: entry.name,
+      phone: entry.phone,
+      note: entry.note,
+      balance: 0
+    };
+  }
+
+  function pharmacies() {
+    var ledger = readLedger();
+    var info = getPharmacyMap(ledger);
+    var out = [];
+    var i, p;
+    for (i = 0; i < info.order.length; i++) {
+      p = info.map[info.order[i]];
+      out.push({
+        id: p.id,
+        name: p.name,
+        phone: p.phone,
+        note: p.note,
+        balance: p.balance
+      });
+    }
+    return out;
+  }
+
+  function record(opts) {
+    if (!canWrite()) return false;
+    var o = opts || {};
+    var ledger = readLedger();
+    var pharm = resolvePharmacyKey(ledger, o.pharmacy);
+    if (!pharm) return false;
+    if (o.direction !== 'in' && o.direction !== 'out') return false;
+    var item = trimStr(o.item).slice(0, 120);
+    if (!item) return false;
+    var qty = parsePositiveInt(o.qty);
+    if (isNaN(qty)) return false;
+    var valuePiasters = parseNonNegInt(o.valuePiasters);
+    if (isNaN(valuePiasters)) return false;
+    var note = trimStr(o.note).slice(0, 200);
+
+    var entry = {
+      id: nextId('rec'),
+      at: new Date().toISOString(),
+      by: currentUser(),
+      type: 'record',
+      pharmacy: pharm,
+      direction: o.direction,
+      item: item,
+      qty: qty,
+      valuePiasters: valuePiasters,
+      note: note
+    };
+    if (!appendEntry(entry)) return false;
+    refreshUI();
+    return entry;
+  }
+
+  function settle(opts) {
+    if (!canWrite()) return false;
+    var o = opts || {};
+    var ledger = readLedger();
+    var pharm = resolvePharmacyKey(ledger, o.pharmacy);
+    if (!pharm) return false;
+    if (o.direction !== 'paid' && o.direction !== 'received') return false;
+    var amountPiasters = parsePositiveInt(o.amountPiasters);
+    if (isNaN(amountPiasters)) return false;
+    var note = trimStr(o.note).slice(0, 200);
+
+    var entry = {
+      id: nextId('set'),
+      at: new Date().toISOString(),
+      by: currentUser(),
+      type: 'settle',
+      pharmacy: pharm,
+      direction: o.direction,
+      amountPiasters: amountPiasters,
+      note: note
+    };
+    if (!appendEntry(entry)) return false;
+    refreshUI();
+    return entry;
+  }
+
+  function reverse(idOrOpts, maybeReason) {
+    if (!canWrite()) return false;
+    var targetId = '';
+    var reason = '';
+    if (idOrOpts && typeof idOrOpts === 'object') {
+      targetId = trimStr(idOrOpts.id || idOrOpts.targetId);
+      reason = trimStr(idOrOpts.reason).slice(0, 200);
+    } else {
+      targetId = trimStr(idOrOpts);
+      reason = trimStr(maybeReason).slice(0, 200);
+    }
+    if (!targetId || !reason) return false;
+
+    var ledger = readLedger();
+    var target = null;
+    var i, e;
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (!e) continue;
+      if (e.id === targetId && (e.type === 'record' || e.type === 'settle')) {
+        target = e;
+      }
+      if (e.type === 'reverse' && e.targetId === targetId) {
+        return false;
+      }
+    }
+    if (!target) return false;
+
+    var delta = -entryDelta(target);
+    var entry = {
+      id: nextId('rev'),
+      at: new Date().toISOString(),
+      by: currentUser(),
+      type: 'reverse',
+      targetId: target.id,
+      originalType: target.type,
+      pharmacy: resolvePharmacyKey(ledger, target.pharmacy),
+      deltaPiasters: delta,
+      reason: reason
+    };
+    if (!appendEntry(entry)) return false;
+    refreshUI();
+    return entry;
+  }
+
+  function balance(pharmacyRef) {
+    var ledger = readLedger();
+    var pharm = resolvePharmacyKey(ledger, pharmacyRef);
+    if (!pharm) return 0;
+    var sum = 0;
+    var i, e;
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (!e || e.type === 'pharmacy') continue;
+      if (resolvePharmacyKey(ledger, e.pharmacy) === pharm) {
+        sum += entryDelta(e);
+      }
+    }
+    return sum;
+  }
+
+  function statement(pharmacyRef) {
+    var ledger = readLedger();
+    var pharm = resolvePharmacyKey(ledger, pharmacyRef);
+    if (!pharm) return [];
+
+    var reversedMap = {};
+    var i, e;
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (e && e.type === 'reverse' && e.targetId) {
+        reversedMap[e.targetId] = true;
+      }
+    }
+
+    var out = [];
+    var running = 0;
+    var d, copy, k;
+    for (i = 0; i < ledger.length; i++) {
+      e = ledger[i];
+      if (!e || e.type === 'pharmacy') continue;
+      if (resolvePharmacyKey(ledger, e.pharmacy) !== pharm) continue;
+      d = entryDelta(e);
+      running += d;
+      copy = {};
+      for (k in e) {
+        if (Object.prototype.hasOwnProperty.call(e, k)) {
+          copy[k] = e[k];
+        }
+      }
+      copy.deltaPiasters = d;
+      copy.runningBalance = running;
+      copy.reversed = !!reversedMap[e.id];
+      out.push(copy);
+    }
+    return out;
+  }
+
+  function totals() {
+    var list = pharmacies();
+    var theyOweUs = 0;
+    var weOweThem = 0;
+    var i, b;
+    for (i = 0; i < list.length; i++) {
+      b = list[i].balance;
+      if (b > 0) {
+        theyOweUs += b;
+      } else if (b < 0) {
+        weOweThem += Math.abs(b);
+      }
+    }
+    return {
+      theyOweUs: theyOweUs,
+      weOweThem: weOweThem,
+      net: theyOweUs - weOweThem
+    };
+  }
+
+  window.novaPharmacySwaps = {
+    addPharmacy: addPharmacy,
+    pharmacies: pharmacies,
+    record: record,
+    settle: settle,
+    reverse: reverse,
+    balance: balance,
+    statement: statement,
+    totals: totals
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaPharmacySwaps{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}',
+      '#novaPharmacySwaps *{box-sizing:border-box;}',
+      '#novaPharmacySwaps h3,#novaPharmacySwaps h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaPharmacySwaps h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaPharmacySwaps h4{font-size:0.95rem;margin-top:16px;color:#79c9eb;}',
+      '.nps-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px;}',
+      '.nps-kpi{background:#0d1117;border:1px solid #343b44;border-radius:8px;padding:10px;}',
+      '.nps-kpi-lbl{font-size:0.8rem;color:#9fb0c2;margin-bottom:4px;}',
+      '.nps-kpi-val{font-size:1rem;font-weight:700;}',
+      '.nps-pos{color:#4ade80;}',
+      '.nps-neg{color:#f87171;}',
+      '.nps-zero{color:#e6edf3;}',
+      '.nps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0;}',
+      '.nps-field label{display:block;font-size:0.85rem;margin-bottom:4px;color:#9fb0c2;}',
+      '.nps-input,.nps-select{width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.nps-input:focus,.nps-select:focus{outline:none;border-color:#79c9eb;}',
+      '.nps-toggle-row{display:flex;gap:8px;flex-wrap:wrap;}',
+      '.nps-toggle-btn{flex:1 1 110px;min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid #343b44;background:#0d1117;color:#e6edf3;cursor:pointer;font-size:0.95rem;}',
+      '.nps-toggle-btn.active{border-color:#79c9eb;background:#1c2b36;color:#79c9eb;font-weight:600;}',
+      '.nps-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}',
+      '#novaPharmacySwaps button{min-height:44px;}',
+      '.nps-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-top:6px;}',
+      '.nps-list{display:flex;flex-direction:column;gap:8px;margin:10px 0;}',
+      '.nps-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;}',
+      '.nps-row-info{min-width:140px;flex:1 1 auto;}',
+      '.nps-row-name{font-weight:600;font-size:0.95rem;}',
+      '.nps-row-meta{font-size:0.8rem;color:#9fb0c2;margin-top:2px;}',
+      '.nps-row-bal{font-weight:700;font-size:0.95rem;}',
+      '.nps-row-btns{display:flex;flex-wrap:wrap;gap:6px;}',
+      '.nps-table-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;margin-top:8px;}',
+      '.nps-table{width:100%;border-collapse:collapse;font-size:0.85rem;min-width:340px;}',
+      '.nps-table th,.nps-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.nps-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.nps-table tr:last-child td{border-bottom:0;}',
+      '.nps-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}',
+      '.nps-stmt-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-top:14px;}',
+      '.nps-stmt-head h4{margin:0;}',
+      '.nps-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999;}',
+      '.nps-modal{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;width:100%;max-width:420px;color:#e6edf3;max-height:90vh;overflow-y:auto;}',
+      '.nps-modal h4{margin:0 0 10px 0;color:#79c9eb;}',
+      '@media print{body *{visibility:hidden;}#npsStatementArea,#npsStatementArea *{visibility:visible;}#npsStatementArea{position:absolute;left:0;top:0;width:100%;background:#ffffff;color:#000000;}}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function balClass(p) {
+    if (p > 0) return 'nps-pos';
+    if (p < 0) return 'nps-neg';
+    return 'nps-zero';
+  }
+
+  function openSettleDialog(pharmacyName) {
+    var card = document.getElementById(CARD_ID);
+    if (!card) return;
+    var existing = document.getElementById('npsModalBackdrop');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var curBal = balance(pharmacyName);
+    var settleDir = curBal >= 0 ? 'received' : 'paid';
+
+    var backdrop = el('div', 'nps-modal-backdrop');
+    backdrop.id = 'npsModalBackdrop';
+    var modal = el('div', 'nps-modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    modal.appendChild(el('h4', '', t('تسوية حساب: ', 'Settle Account: ') + pharmacyName));
+    var balLine = el('div', 'nps-row-meta', t('الرصيد الحالي: ', 'Current Balance: ') + formatPiasters(curBal));
+    modal.appendChild(balLine);
+
+    var dirWrap = el('div', 'nps-field');
+    dirWrap.style.marginTop = '10px';
+    dirWrap.appendChild(el('label', '', t('نوع التسوية', 'Settlement Type')));
+    var toggleRow = el('div', 'nps-toggle-row');
+    var btnRecv = el('button', 'nps-toggle-btn' + (settleDir === 'received' ? ' active' : ''), t('قبضنا منهم', 'Received'));
+    btnRecv.type = 'button';
+    var btnPaid = el('button', 'nps-toggle-btn' + (settleDir === 'paid' ? ' active' : ''), t('دفعنا لهم', 'Paid'));
+    btnPaid.type = 'button';
+
+    function syncDir() {
+      btnRecv.className = 'nps-toggle-btn' + (settleDir === 'received' ? ' active' : '');
+      btnPaid.className = 'nps-toggle-btn' + (settleDir === 'paid' ? ' active' : '');
+    }
+    btnRecv.addEventListener('click', function () { settleDir = 'received'; syncDir(); });
+    btnPaid.addEventListener('click', function () { settleDir = 'paid'; syncDir(); });
+    toggleRow.appendChild(btnRecv);
+    toggleRow.appendChild(btnPaid);
+    dirWrap.appendChild(toggleRow);
+    modal.appendChild(dirWrap);
+
+    var amtWrap = el('div', 'nps-field');
+    amtWrap.style.marginTop = '10px';
+    var amtLbl = el('label', '', t('المبلغ (ج.م)', 'Amount (EGP)'));
+    amtLbl.setAttribute('for', 'npsSettleAmt');
+    var amtInp = el('input', 'nps-input');
+    amtInp.id = 'npsSettleAmt';
+    amtInp.type = 'text';
+    amtInp.setAttribute('inputmode', 'decimal');
+    amtInp.placeholder = t('مثال: ٥٠٫٠٠', 'e.g. 50.00');
+    amtWrap.appendChild(amtLbl);
+    amtWrap.appendChild(amtInp);
+    modal.appendChild(amtWrap);
+
+    var noteWrap = el('div', 'nps-field');
+    noteWrap.style.marginTop = '10px';
+    var noteLbl = el('label', '', t('ملاحظة', 'Note'));
+    noteLbl.setAttribute('for', 'npsSettleNote');
+    var noteInp = el('input', 'nps-input');
+    noteInp.id = 'npsSettleNote';
+    noteInp.type = 'text';
+    noteInp.maxLength = 200;
+    noteWrap.appendChild(noteLbl);
+    noteWrap.appendChild(noteInp);
+    modal.appendChild(noteWrap);
+
+    var errLine = el('div', 'nps-status', '');
+    modal.appendChild(errLine);
+
+    var actions = el('div', 'nps-actions');
+    var saveBtn = el('button', 'btn btn-primary', t('تأكيد التسوية', 'Confirm Settlement'));
+    saveBtn.type = 'button';
+    var cancelBtn = el('button', 'btn btn-secondary', t('إلغاء', 'Cancel'));
+    cancelBtn.type = 'button';
+
+    function close() {
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    }
+
+    cancelBtn.addEventListener('click', close);
+    saveBtn.addEventListener('click', function () {
+      var piasters = parseEgpToPiasters(amtInp.value);
+      if (isNaN(piasters) || piasters <= 0) {
+        errLine.textContent = t('أدخل مبلغًا صحيحًا أكبر من صفر.', 'Enter a valid amount greater than zero.');
+        toast(errLine.textContent, 'error');
+        return;
+      }
+      var res = settle({
+        pharmacy: pharmacyName,
+        amountPiasters: piasters,
+        direction: settleDir,
+        note: noteInp.value
+      });
+      if (!res) {
+        errLine.textContent = t('تعذرت التسوية: تحقق من الصلاحية أو البيانات.', 'Settlement failed: check permission or values.');
+        toast(errLine.textContent, 'error');
+        return;
+      }
+      toast(t('تم تسجيل التسوية بنجاح.', 'Settlement recorded.'), 'success');
+      close();
+    });
+
+    actions.appendChild(saveBtn);
+    actions.appendChild(cancelBtn);
+    modal.appendChild(actions);
+    backdrop.appendChild(modal);
+    card.appendChild(backdrop);
+  }
+
+  function openReverseDialog(entryId) {
+    var card = document.getElementById(CARD_ID);
+    if (!card) return;
+    var existing = document.getElementById('npsModalBackdrop');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var backdrop = el('div', 'nps-modal-backdrop');
+    backdrop.id = 'npsModalBackdrop';
+    var modal = el('div', 'nps-modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    modal.appendChild(el('h4', '', t('عكس القيد', 'Reverse Entry')));
+
+    var reasonWrap = el('div', 'nps-field');
+    var reasonLbl = el('label', '', t('سبب العكس (إلزامي)', 'Reversal Reason (required)'));
+    reasonLbl.setAttribute('for', 'npsReverseReason');
+    var reasonInp = el('input', 'nps-input');
+    reasonInp.id = 'npsReverseReason';
+    reasonInp.type = 'text';
+    reasonInp.maxLength = 200;
+    reasonInp.placeholder = t('مثال: خطأ في الكمية أو القيمة', 'e.g. Wrong quantity or value');
+    reasonWrap.appendChild(reasonLbl);
+    reasonWrap.appendChild(reasonInp);
+    modal.appendChild(reasonWrap);
+
+    var errLine = el('div', 'nps-status', '');
+    modal.appendChild(errLine);
+
+    var actions = el('div', 'nps-actions');
+    var confirmBtn = el('button', 'btn btn-primary', t('تأكيد العكس', 'Confirm Reversal'));
+    confirmBtn.type = 'button';
+    var cancelBtn = el('button', 'btn btn-secondary', t('إلغاء', 'Cancel'));
+    cancelBtn.type = 'button';
+
+    function close() {
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    }
+
+    cancelBtn.addEventListener('click', close);
+    confirmBtn.addEventListener('click', function () {
+      var res = reverse({ id: entryId, reason: reasonInp.value });
+      if (!res) {
+        errLine.textContent = t('أدخل سببًا واضحًا وتأكد من الصلاحية.', 'Enter a valid reason and check permission.');
+        toast(errLine.textContent, 'error');
+        return;
+      }
+      toast(t('تم تسجيل قيد عكسي.', 'Reversing entry recorded.'), 'success');
+      close();
+    });
+
+    actions.appendChild(confirmBtn);
+    actions.appendChild(cancelBtn);
+    modal.appendChild(actions);
+    backdrop.appendChild(modal);
+    card.appendChild(backdrop);
+  }
+
+  function renderStatement(pharmacyName) {
+    var box = document.getElementById('npsStatementArea');
+    if (!box) return;
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!pharmacyName) return;
+
+    var editable = canWrite();
+    var head = el('div', 'nps-stmt-head');
+    head.appendChild(el('h4', '', t('كشف الحساب: ', 'Statement: ') + pharmacyName));
+
+    var headBtns = el('div', 'nps-row-btns');
+    var printBtn = el('button', 'btn btn-secondary', t('طباعة', 'Print'));
+    printBtn.type = 'button';
+    printBtn.addEventListener('click', function () {
+      if (typeof window.print === 'function') window.print();
+    });
+    var closeBtn = el('button', 'btn btn-secondary', t('إغلاق', 'Close'));
+    closeBtn.type = 'button';
+    closeBtn.addEventListener('click', function () {
+      activeStatementPharmacy = '';
+      renderStatement('');
+    });
+    headBtns.appendChild(printBtn);
+    headBtns.appendChild(closeBtn);
+    head.appendChild(headBtns);
+    box.appendChild(head);
+
+    var rows = statement(pharmacyName);
+    var wrap = el('div', 'nps-table-wrap');
+    if (!rows.length) {
+      wrap.appendChild(el('div', 'nps-empty', t('لا توجد حركات مسجلة لهذه الصيدلية.', 'No entries recorded for this pharmacy.')));
+      box.appendChild(wrap);
+      return;
+    }
+
+    var table = el('table', 'nps-table');
+    var thead = document.createElement('thead');
+    var trH = document.createElement('tr');
+    var headers = [
+      t('التاريخ', 'Date'),
+      t('النوع', 'Type'),
+      t('التفاصيل', 'Details'),
+      t('القيمة', 'Amount'),
+      t('الرصيد', 'Balance'),
+      t('إجراء', 'Action')
+    ];
+    var i, r, tr, typeLabel, details, tdAmt, tdBal, tdAct, revBtn;
+    for (i = 0; i < headers.length; i++) {
+      trH.appendChild(el('th', '', headers[i]));
+    }
+    thead.appendChild(trH);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (i = 0; i < rows.length; i++) {
+      r = rows[i];
+      tr = document.createElement('tr');
+      tr.appendChild(el('td', '', formatDateTime(r.at)));
+
+      if (r.type === 'record') {
+        typeLabel = r.direction === 'out' ? t('سلّفنا', 'Lent Out') : t('استلفنا', 'Borrowed In');
+        details = r.item + ' × ' + String(r.qty) + (r.note ? ' — ' + r.note : '');
+      } else if (r.type === 'settle') {
+        typeLabel = r.direction === 'received' ? t('تسوية (قبضنا)', 'Settle (Received)') : t('تسوية (دفعنا)', 'Settle (Paid)');
+        details = r.note || '—';
+      } else {
+        typeLabel = t('قيد عكسي', 'Reversal');
+        details = r.reason || '—';
+      }
+
+      tr.appendChild(el('td', '', typeLabel));
+      tr.appendChild(el('td', '', details));
+
+      tdAmt = el('td', balClass(r.deltaPiasters), formatPiasters(r.deltaPiasters));
+      tr.appendChild(tdAmt);
+
+      tdBal = el('td', balClass(r.runningBalance), formatPiasters(r.runningBalance));
+      tr.appendChild(tdBal);
+
+      tdAct = document.createElement('td');
+      if ((r.type === 'record' || r.type === 'settle') && !r.reversed && editable) {
+        (function (entryId) {
+          revBtn = el('button', 'btn btn-secondary', t('عكس قيد', 'Reverse'));
+          revBtn.type = 'button';
+          revBtn.addEventListener('click', function () {
+            openReverseDialog(entryId);
+          });
+          tdAct.appendChild(revBtn);
+        })(r.id);
+      } else if (r.reversed) {
+        tdAct.textContent = t('تم عكسه', 'Reversed');
+      } else {
+        tdAct.textContent = '—';
+      }
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    box.appendChild(wrap);
+  }
+
+  function refreshUI() {
+    var summaryBox = document.getElementById('npsSummary');
+    var listBox = document.getElementById('npsPharmList');
+    var selectEl = document.getElementById('npsRecordPharm');
+    if (!summaryBox || !listBox || !selectEl) return;
+
+    var tot = totals();
+    while (summaryBox.firstChild) summaryBox.removeChild(summaryBox.firstChild);
+
+    function addKpi(label, val, cls) {
+      var k = el('div', 'nps-kpi');
+      k.appendChild(el('div', 'nps-kpi-lbl', label));
+      k.appendChild(el('div', 'nps-kpi-val ' + cls, formatPiasters(val)));
+      summaryBox.appendChild(k);
+    }
+
+    addKpi(t('لنا عندهم', 'They Owe Us'), tot.theyOweUs, tot.theyOweUs > 0 ? 'nps-pos' : 'nps-zero');
+    addKpi(t('علينا لهم', 'We Owe Them'), tot.weOweThem, tot.weOweThem > 0 ? 'nps-neg' : 'nps-zero');
+    addKpi(t('الصافي', 'Net'), tot.net, balClass(tot.net));
+
+    var list = pharmacies();
+    var prevVal = selectEl.value;
+    while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+    var defOpt = el('option', '', t('اختر صيدلية...', 'Select pharmacy...'));
+    defOpt.value = '';
+    selectEl.appendChild(defOpt);
+
+    while (listBox.firstChild) listBox.removeChild(listBox.firstChild);
+    var editable = canWrite();
+    var i, p, opt, row, info, balEl, btns, settleBtn, stmtBtn;
+
+    if (!list.length) {
+      listBox.appendChild(el('div', 'nps-empty', t('لا توجد صيدليات مضافة بعد.', 'No pharmacies added yet.')));
+    } else {
+      for (i = 0; i < list.length; i++) {
+        p = list[i];
+        opt = el('option', '', p.name);
+        opt.value = p.name;
+        selectEl.appendChild(opt);
+
+        row = el('div', 'nps-row');
+        info = el('div', 'nps-row-info');
+        info.appendChild(el('div', 'nps-row-name', p.name));
+        if (p.phone || p.note) {
+          info.appendChild(el('div', 'nps-row-meta', (p.phone || '') + (p.phone && p.note ? ' — ' : '') + (p.note || '')));
+        }
+        balEl = el('div', 'nps-row-bal ' + balClass(p.balance), formatPiasters(p.balance));
+        info.appendChild(balEl);
+        row.appendChild(info);
+
+        btns = el('div', 'nps-row-btns');
+        (function (pharmName) {
+          settleBtn = el('button', 'btn btn-secondary', t('تسوية', 'Settle'));
+          settleBtn.type = 'button';
+          if (!editable) settleBtn.disabled = true;
+          settleBtn.addEventListener('click', function () {
+            openSettleDialog(pharmName);
+          });
+
+          stmtBtn = el('button', 'btn btn-secondary', t('كشف الحساب', 'Statement'));
+          stmtBtn.type = 'button';
+          stmtBtn.addEventListener('click', function () {
+            activeStatementPharmacy = pharmName;
+            renderStatement(pharmName);
+          });
+          btns.appendChild(settleBtn);
+          btns.appendChild(stmtBtn);
+        })(p.name);
+
+        row.appendChild(btns);
+        listBox.appendChild(row);
+      }
+    }
+
+    if (prevVal) selectEl.value = prevVal;
+    if (activeStatementPharmacy) {
+      renderStatement(activeStatementPharmacy);
+    }
+  }
+
+  function buildCard() {
+    injectStyles();
+    selectedDirection = 'in';
+    activeStatementPharmacy = '';
+
+    var editable = canWrite();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('الاستلاف والتبديل مع الصيدليات المجاورة', 'Neighbouring Pharmacy Swaps')));
+
+    var summaryBox = el('div', 'nps-summary');
+    summaryBox.id = 'npsSummary';
+    card.appendChild(summaryBox);
+
+    card.appendChild(el('h4', '', t('الصيدليات والأرصدة', 'Pharmacies & Balances')));
+    var listBox = el('div', 'nps-list');
+    listBox.id = 'npsPharmList';
+    card.appendChild(listBox);
+
+    var stmtArea = el('div', '');
+    stmtArea.id = 'npsStatementArea';
+    card.appendChild(stmtArea);
+
+    card.appendChild(el('h4', '', t('إضافة صيدلية مجاورة', 'Add Neighbouring Pharmacy')));
+    var addGrid = el('div', 'nps-grid');
+
+    function makeField(parent, labelText, id, placeholder, maxLen) {
+      var w = el('div', 'nps-field');
+      var l = el('label', '', labelText);
+      l.setAttribute('for', id);
+      var inp = el('input', 'nps-input');
+      inp.id = id;
+      inp.type = 'text';
+      if (placeholder) inp.placeholder = placeholder;
+      if (maxLen) inp.maxLength = maxLen;
+      if (!editable) inp.disabled = true;
+      w.appendChild(l);
+      w.appendChild(inp);
+      parent.appendChild(w);
+      return inp;
+    }
+
+    var phNameInp = makeField(addGrid, t('اسم الصيدلية', 'Pharmacy Name'), 'npsPharmName', t('صيدلية النور', 'Al-Nour Pharmacy'), 80);
+    var phPhoneInp = makeField(addGrid, t('الهاتف', 'Phone'), 'npsPharmPhone', t('اختياري', 'Optional'), 30);
+    var phNoteInp = makeField(addGrid, t('ملاحظة', 'Note'), 'npsPharmNote', t('اختياري', 'Optional'), 160);
+    card.appendChild(addGrid);
+
+    var addActions = el('div', 'nps-actions');
+    var addPharmBtn = el('button', 'btn btn-secondary', t('إضافة صيدلية', 'Add Pharmacy'));
+    addPharmBtn.type = 'button';
+    if (!editable) addPharmBtn.disabled = true;
+    addActions.appendChild(addPharmBtn);
+    card.appendChild(addActions);
+
+    card.appendChild(el('h4', '', t('تسجيل استلاف أو تسليف', 'Record Swap / Loan')));
+
+    var recGrid = el('div', 'nps-grid');
+    var selWrap = el('div', 'nps-field');
+    var selLbl = el('label', '', t('الصيدلية', 'Pharmacy'));
+    selLbl.setAttribute('for', 'npsRecordPharm');
+    var selEl = el('select', 'nps-select');
+    selEl.id = 'npsRecordPharm';
+    if (!editable) selEl.disabled = true;
+    selWrap.appendChild(selLbl);
+    selWrap.appendChild(selEl);
+    recGrid.appendChild(selWrap);
+
+    var dirWrap = el('div', 'nps-field');
+    dirWrap.appendChild(el('label', '', t('الاتجاه', 'Direction')));
+    var dirRow = el('div', 'nps-toggle-row');
+    var btnIn = el('button', 'nps-toggle-btn active', t('استلفنا', 'Borrowed In'));
+    btnIn.type = 'button';
+    btnIn.id = 'npsDirIn';
+    var btnOut = el('button', 'nps-toggle-btn', t('سلّفنا', 'Lent Out'));
+    btnOut.type = 'button';
+    btnOut.id = 'npsDirOut';
+    if (!editable) {
+      btnIn.disabled = true;
+      btnOut.disabled = true;
+    }
+    function syncRecDir() {
+      btnIn.className = 'nps-toggle-btn' + (selectedDirection === 'in' ? ' active' : '');
+      btnOut.className = 'nps-toggle-btn' + (selectedDirection === 'out' ? ' active' : '');
+    }
+    btnIn.addEventListener('click', function () { selectedDirection = 'in'; syncRecDir(); });
+    btnOut.addEventListener('click', function () { selectedDirection = 'out'; syncRecDir(); });
+    dirRow.appendChild(btnIn);
+    dirRow.appendChild(btnOut);
+    dirWrap.appendChild(dirRow);
+    recGrid.appendChild(dirWrap);
+
+    var itemInp = makeField(recGrid, t('الصنف', 'Item'), 'npsRecordItem', t('اسم الصنف', 'Item name'), 120);
+    var qtyInp = makeField(recGrid, t('الكمية', 'Quantity'), 'npsRecordQty', '1', 10);
+    qtyInp.setAttribute('inputmode', 'numeric');
+    var valInp = makeField(recGrid, t('القيمة (ج.م)', 'Value (EGP)'), 'npsRecordVal', t('مثال: ١٢٫٥٠', 'e.g. 12.50'), 16);
+    valInp.setAttribute('inputmode', 'decimal');
+    var recNoteInp = makeField(recGrid, t('ملاحظة', 'Note'), 'npsRecordNote', t('اختياري', 'Optional'), 200);
+    card.appendChild(recGrid);
+
+    var recActions = el('div', 'nps-actions');
+    var saveRecBtn = el('button', 'btn btn-primary', t('تسجيل الحركة', 'Record Entry'));
+    saveRecBtn.type = 'button';
+    saveRecBtn.id = 'npsSaveRecordBtn';
+    if (!editable) saveRecBtn.disabled = true;
+    recActions.appendChild(saveRecBtn);
+    card.appendChild(recActions);
+
+    var statusMsg = el('div', 'nps-status', editable ? '' : t('وضع العرض فقط.', 'Read-only mode.'));
+    statusMsg.id = 'npsStatusMsg';
+    card.appendChild(statusMsg);
+
+    addPharmBtn.addEventListener('click', function () {
+      var res = addPharmacy({
+        name: phNameInp.value,
+        phone: phPhoneInp.value,
+        note: phNoteInp.value
+      });
+      if (!res) {
+        statusMsg.textContent = t('تعذرت الإضافة: أدخل اسمًا جديدًا وتأكد من الصلاحية.', 'Add failed: enter a unique name and check permission.');
+        toast(statusMsg.textContent, 'error');
+        return;
+      }
+      phNameInp.value = '';
+      phPhoneInp.value = '';
+      phNoteInp.value = '';
+      selEl.value = res.name;
+      statusMsg.textContent = t('تمت إضافة الصيدلية بنجاح.', 'Pharmacy added.');
+      toast(statusMsg.textContent, 'success');
+    });
+
+    saveRecBtn.addEventListener('click', function () {
+      var piasters = parseEgpToPiasters(valInp.value);
+      if (isNaN(piasters) || piasters < 0) {
+        statusMsg.textContent = t('أدخل قيمة صحيحة بحد أقصى رقمين عشريين.', 'Enter a valid value with up to 2 decimals.');
+        toast(statusMsg.textContent, 'error');
+        return;
+      }
+      var res = record({
+        pharmacy: selEl.value,
+        direction: selectedDirection,
+        item: itemInp.value,
+        qty: qtyInp.value,
+        valuePiasters: piasters,
+        note: recNoteInp.value
+      });
+      if (!res) {
+        statusMsg.textContent = t('تعذر التسجيل: تحقق من البيانات أو الصلاحية.', 'Record failed: check inputs or permission.');
+        toast(statusMsg.textContent, 'error');
+        return;
+      }
+      itemInp.value = '';
+      qtyInp.value = '';
+      valInp.value = '';
+      recNoteInp.value = '';
+      statusMsg.textContent = t('تم تسجيل الحركة بنجاح.', 'Entry recorded.');
+      toast(statusMsg.textContent, 'success');
+    });
+
+    return card;
+  }
+
+  function isReportsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isReportsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshUI();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isReportsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
