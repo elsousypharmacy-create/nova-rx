@@ -1264,6 +1264,7 @@
             form: product.form,
             unit: conv.unit,
             unitFactor: conv.perBox,
+            category: product.category || '',
             boxPrice: product.price,
             price: conv.unitPrice, // Unit price for the selected sale unit
             qty: 1,
@@ -1462,6 +1463,7 @@
       function executeClearInvoice(showUndo = true) {
         const snap = showUndo ? snapshotCart() : null;
         state.invoiceLines = [];
+        state.coupon = '';
         state.percentDiscount = 0;
         state.fixedDiscount = 0;
         elements.inputPercentDiscount.value = "";
@@ -1522,6 +1524,7 @@
           elements.emptyInvoiceState.style.display = "none";
           elements.btnCheckout.disabled = false;
 
+          const offCalc = offersCalc();
           elements.invoiceTableBody.innerHTML = state.invoiceLines.map((line, idx) => {
             const segs = lineSegments(line);
             const lineGross = segs.reduce((s, g) => s + (g.qty * g.price), 0);
@@ -1547,6 +1550,8 @@
             const prod = DEMO_PRODUCTS.find(p => p.id === line.productId || p.barcode === line.barcode) || line;
             const units = window.novaUnits.availableUnits(prod);
             const curUnit = line.unit || "box";
+            const offNote = offCalc.lines[idx];
+            if (offNote) lotHtml += `<div class="item-offer" data-offer-discount="${offNote.discount.toFixed(2)}" style="font-size:12px;color:#86efac;margin-top:2px">${novaEn() ? 'Offer: ' : 'عرض: '}${escH(offNote.name)} (−${offNote.discount.toFixed(2)})</div>`;
             const over = lineOverStock(line);
             if (over) lotHtml += `<div class="item-oversell" role="alert" data-oversell="${over.available}" style="font-size:13px;color:#fecaca;background:#450a0a;border:1px solid #dc2626;padding:2px 8px;border-radius:4px;display:inline-flex;gap:8px;align-items:center;margin-top:2px">المتاح ${over.available} <button type="button" class="btn-oversell-fix" data-act="fixstock" data-id="${line.productId}" style="min-height:32px;background:#7f1d1d;color:#fff;border:1px solid #dc2626;border-radius:4px;padding:0 8px;cursor:pointer">اضبط على المتاح</button></div>`;
             return `
@@ -1635,6 +1640,60 @@
         return segs.length ? segs : [{ qty: lineQty, price: linePrice }];
       }
 
+      // #99: automatic offers + coupon (lazy app/578). Their discount is NOT a manual discount: it never asks for manager approval.
+      const OFFERS_KEY = 'nova-rx-offers-v1';
+      let offersLoading = false;
+      function offersStored() { try { return !!localStorage.getItem(OFFERS_KEY); } catch (_) { return false; } }
+      function offersCalc() {
+        const none = { total: 0, offerTotal: 0, couponDiscount: 0, lines: [], coupon: null, couponError: null };
+        if (!state.invoiceLines.length) return none;
+        if (!window.novaOffers) {
+          if (offersStored() && !offersLoading && window.novaLazy && window.novaLazy.load) { offersLoading = true; window.novaLazy.load().then(() => { if (window.novaOffers) renderInvoice(); }, () => { offersLoading = false; }); }
+          return none;
+        }
+        try {
+          return window.novaOffers.evaluate(state.invoiceLines.map(l => ({ barcode: l.barcode, productId: l.productId, category: l.category, qty: l.qty, gross: lineSegments(l).reduce((s, g) => s + g.qty * g.price, 0), discount: l.discount })), { coupon: state.coupon, saleId: state.invoiceKey });
+        } catch (_) { return none; }
+      }
+      async function ensureOffersReady() {
+        if (window.novaOffers || !offersStored()) return true;
+        const prevTotal = recalculateFinancials().grandTotal;
+        try { if (window.novaLazy && window.novaLazy.load) await window.novaLazy.load(); } catch (_) { /* checked below */ }
+        if (window.novaOffers) {
+          renderInvoice();
+          offersChanged();
+          const nextTotal = recalculateFinancials().grandTotal;
+          if (Math.abs(nextTotal - prevTotal) > 1e-6) { // the total shown in the checkout was without offers: show the new one, cashier confirms again
+            showToast(novaEn() ? 'Automatic offers were applied. Check the updated total and confirm again.' : 'اتطبّقت العروض التلقائية. راجع الإجمالي الجديد وأكد البيع تاني.', 'info');
+            return false;
+          }
+          return true;
+        }
+        showToast(novaEn() ? 'Offers are not available. Reload the page and try again.' : 'تعذر تحميل العروض. أعد تحميل الصفحة وحاول تاني.', 'error');
+        return false;
+      }
+      function offersChanged() {
+        const { grandTotal, offers } = recalculateFinancials();
+        if (elements.checkoutModal.classList.contains('active')) {
+          if (state.checkoutPaymentMethod === 'cash') { const R0 = cashRound(grandTotal); elements.inputCashReceived.value = R0.due.toFixed(2); state.cashReceived = R0.due; updateChangeDue(R0.due, R0.due); }
+          refreshChange();
+        }
+        return offers;
+      }
+      window.novaSaleCoupon = {
+        get: () => state.coupon || '',
+        set(code) {
+          const c = String(code || '').trim().toUpperCase();
+          if (!c) { state.coupon = ''; offersChanged(); return { ok: true, cleared: true }; }
+          if (!window.novaOffers) return { ok: false, error: 'not-ready' };
+          state.coupon = c;
+          const r = offersChanged();
+          if (r.coupon) return { ok: true, discount: r.coupon.discount };
+          state.coupon = ''; offersChanged();
+          return { ok: false, error: r.couponError || 'unknown' };
+        }
+      };
+
       function recalculateFinancials() {
         let subtotal = 0;
         let totalQty = 0;
@@ -1651,11 +1710,15 @@
         const percentVal = parseFloat(elements.inputPercentDiscount.value) || 0;
         const fixedVal = parseFloat(elements.inputFixedDiscount.value) || 0;
 
-        const percentDiscAmount = (subtotal * Math.min(100, Math.max(0, percentVal))) / 100;
+        const offers = offersCalc();
+        const offerDiscount = Math.min(subtotal, offers.total || 0);
+        const offerBase = subtotal - offerDiscount;
+        const percentDiscAmount = (offerBase * Math.min(100, Math.max(0, percentVal))) / 100;
         const totalDiscountPotential = percentDiscAmount + Math.max(0, fixedVal);
 
         // Cap discount so total NEVER drops below 0.00
-        const actualDiscount = Math.min(subtotal, totalDiscountPotential);
+        const manualDiscount = Math.min(offerBase, totalDiscountPotential);
+        const actualDiscount = offerDiscount + manualDiscount;
 
         // Tell the cashier when a discount value was ignored or capped (it used to change silently).
         {
@@ -1663,7 +1726,7 @@
           if (percentVal < 0) { msg = 'Discount cannot be negative. The value is ignored.'; badP = true; }
           else if (fixedVal < 0) { msg = 'Discount cannot be negative. The value is ignored.'; badF = true; }
           else if (percentVal > 100) { msg = 'Percent discount cannot exceed 100%. Using 100%.'; badP = true; }
-          else if (subtotal > 0 && totalDiscountPotential > subtotal) { msg = 'Discount is larger than the invoice total. The total is set to zero.'; badP = percentVal > 0; badF = fixedVal > 0; }
+          else if (offerBase > 0 && totalDiscountPotential > offerBase) { msg = 'Discount is larger than the invoice total. The total is set to zero.'; badP = percentVal > 0; badF = fixedVal > 0; }
           const hint = document.getElementById('discountHint');
           if (hint) { if (hint.textContent !== msg) hint.textContent = msg; hint.hidden = !msg; }
           elements.inputPercentDiscount.setAttribute('aria-invalid', String(badP));
@@ -1689,7 +1752,7 @@
           if (vl) vl.dataset.vatCustom = vr !== window.novaVat.DEFAULT ? '1' : ''; }
         elements.displayGrandTotal.textContent = formatMoney(grandTotal);
 
-        return { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty };
+        return { subtotal, actualDiscount, manualDiscount, offerDiscount, offers, vatIncluded, grandTotal, totalQty };
       }
       window.novaRecalc = () => { try { recalculateFinancials(); } catch (_) {} };
 
@@ -2370,8 +2433,8 @@
         if (!salePolicy.needsManager() || !(state.invoiceLines || []).length) return true;
         const saleId = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
         if (window.novaSales.list().some(x => x.id === saleId)) return true;
-        const { actualDiscount } = recalculateFinancials();
-        const gross = Math.round(state.invoiceLines.reduce((s, l) => s + lineSegments(l).reduce((a, g) => a + (g.qty * g.price), 0), 0) * 100);
+        const { manualDiscount: actualDiscount } = recalculateFinancials(); // offers/coupons are not manual: only manual discounts need approval
+        const gross =Math.round(state.invoiceLines.reduce((s, l) => s + lineSegments(l).reduce((a, g) => a + (g.qty * g.price), 0), 0) * 100);
         const disc = Math.round((state.invoiceLines.reduce((s, l) => s + (Number(l.discount) || 0), 0) + (Number(actualDiscount) || 0)) * 100);
         const limit = salePolicy.discountLimitPct();
         if (gross <= 0 || disc <= 0 || disc * 100 <= gross * limit) { state.discountApproval = null; return true; }
@@ -2395,7 +2458,7 @@
         button.disabled = true;
         button.setAttribute('aria-busy', 'true');
         button.textContent = 'جاري حفظ الفاتورة…';
-        return Promise.resolve().then(ensureControlledCapture).then(ok => ok ? ensureCreditApproval() : false).then(ok => ok ? ensureDiscountApproval() : false).then(ok => ok ? window.novaStock.withLock(confirmPaymentCore) : undefined).catch(() => {
+        return Promise.resolve().then(ensureOffersReady).then(ok => ok ? ensureControlledCapture() : false).then(ok => ok ? ensureCreditApproval() : false).then(ok => ok ? ensureDiscountApproval() : false).then(ok => ok ? window.novaStock.withLock(confirmPaymentCore) : undefined).catch(() => {
           showToast(novaEn() ? 'Unable to confirm sale. Check saved invoices before retrying.' : 'تعذر تأكيد البيع. راجع الفواتير المحفوظة قبل المحاولة مرة أخرى.', 'error');
         }).finally(() => {
           state.paymentSubmitting = false;
@@ -2408,7 +2471,13 @@
       function confirmPaymentCore() {
         if (!elements.checkoutModal.classList.contains('active')) return;
         if (!state.attachedCustomer && !state.customerGateSkipped) { closeCheckout(); openCheckout(); return; }
-        const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
+        const { subtotal, actualDiscount, offerDiscount, offers, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
+        const usedCoupon = offers.coupon ? offers.coupon.code : '';
+        if (state.coupon && !usedCoupon) { // coupon went invalid after Apply: never complete the sale at a silently higher total
+          state.coupon = ''; offersChanged();
+          showToast(novaEn() ? 'The coupon is no longer valid. Check the updated total and confirm again.' : 'الكوبون لم يعد صالحًا. راجع الإجمالي الجديد وأكد البيع مرة تانية.', 'error');
+          return;
+        }
         const tp = currentTenderPlan(grandTotal);
         if (!tp.ok) {
           showToast(tp.error === "ref-needed" ? (novaEn() ? "Type the transaction number." : "اكتب رقم العملية.") : tp.error === "ref-duplicate" ? (novaEn() ? "This transaction number was already used on another sale." : "رقم العملية ده مستخدم في فاتورة تانية.") : tp.error === "credit-needs-customer" ? "البيع الآجل يحتاج عميلاً مسجلاً." : tp.error === "over-allocated" ? "مبلغ البطاقة والآجل أكبر من الإجمالي." : "Enter a valid cash amount covering the total due.", "error");
@@ -2440,6 +2509,7 @@
           payment: tp.payment, status: 'final', tenders: tp.tenders, credit: tp.credit, collected: tp.collected, customerId: state.attachedCustomer ? state.attachedCustomer.id : undefined,
           ...(tp.credit > 0 && state.creditApproval ? { creditApproval: { approvedBy: state.creditApproval.approvedBy, approverId: state.creditApproval.approverId, unverified: state.creditApproval.unverified, at: state.creditApproval.at } } : {}),
           ...(tp.rounding ? { rounding: tp.rounding } : {}),
+          ...(offerDiscount > 0 ? { offers: { discount: offerDiscount, items: offers.lines.map((o, i) => o ? { name: state.invoiceLines[i].name, offer: o.name, discount: o.discount } : null).filter(Boolean), ...(usedCoupon ? { coupon: { code: usedCoupon, discount: offers.coupon.discount } } : {}) } } : {}),
           ...(state.discountApproval ? { discountApproval: { approvedBy: state.discountApproval.approvedBy, approverId: state.discountApproval.approverId, unverified: state.discountApproval.unverified, at: state.discountApproval.at, pct: state.discountApproval.pct } } : {}),
           ...(tp.cardAmount > 0 ? { cardAuth: window.novaPay.cardAuth(saleKey).id } : {}),
           lines: state.invoiceLines.flatMap(l => {
@@ -2475,6 +2545,8 @@
           return;
         }
         try { if (state.ctrlCapture && window.novaControlled) window.novaControlled.record(state.ctrlCapture.entries); } catch (e) { console.warn('controlled record', e); }
+        try { if (usedCoupon && window.novaOffers) window.novaOffers.commit(saleKey, usedCoupon); } catch (e) { console.warn('coupon commit', e); }
+        state.coupon = '';
         if (state.discountApproval) salePolicy.log('discount', state.discountApproval, { sale: saleKey, pct: state.discountApproval.pct });
         if (saleRecord.creditApproval) salePolicy.log('credit-limit', saleRecord.creditApproval, { sale: saleKey, credit: tp.credit });
         state.ctrlCapture = null; state.creditApproval = null; state.discountApproval = null;
