@@ -1374,7 +1374,7 @@
         if (!line) return;
         renderInvoice(); // resets a typed quantity of 0 while the dialog is open
         const en = novaEn();
-        if (!window.novaSaleApproval) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return; }
+        if (!(await saleApprovalReady())) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return; }
         const ap = await window.novaSaleApproval.request({ title: en ? 'Delete item' : 'حذف صنف من الفاتورة', message: (en ? 'A manager must approve deleting: ' : 'حذف الصنف ده محتاج موافقة مدير: ') + (line.name || '') });
         if (!ap) return;
         if (!state.invoiceLines.some(l => l.productId === productId)) return;
@@ -1523,7 +1523,9 @@
           elements.btnCheckout.disabled = false;
 
           elements.invoiceTableBody.innerHTML = state.invoiceLines.map((line, idx) => {
-            const lineTotal = Math.max(0, (line.price * line.qty) - line.discount);
+            const segs = lineSegments(line);
+            const lineGross = segs.reduce((s, g) => s + (g.qty * g.price), 0);
+            const lineTotal = Math.max(0, lineGross - line.discount);
             let lotHtml = "";
             if (window.novaStock && window.novaStock.hasLots(window.novaStock.keyOf(line))) {
               const pick = window.novaStock.fefoPick(window.novaStock.keyOf(line), window.novaStock.boxQty(line));
@@ -1556,7 +1558,7 @@
                   ${lotHtml}
                 </td>
                 <td class="col-barcode">${line.barcode}</td>
-                <td class="col-price">${line.price.toFixed(2)}</td>
+                <td class="col-price">${segs.length > 1 ? segs.map(g => g.price.toFixed(2)).join(' / ') : (segs[0] ? segs[0].price : line.price).toFixed(2)}</td>
                 <td class="col-qty">
                   <div class="qty-control">
                     <button class="qty-btn" data-act="dec" data-id="${line.productId}">−</button>
@@ -1585,12 +1587,61 @@
         recalculateFinancials();
       }
 
+      // One FEFO pass per line per tick: render + totals call this several times for the same line.
+      let segCache = null;
+      function lineSegments(line) {
+        if (!segCache) { segCache = new Map(); Promise.resolve().then(() => { segCache = null; }); }
+        const sig = [line.qty, line.unitFactor, line.price, line.unit, line.barcode, line.productId].join('|');
+        const hit = segCache.get(line);
+        if (hit && hit.sig === sig) return hit.segs;
+        const segs = lineSegmentsRaw(line);
+        segCache.set(line, { sig, segs });
+        return segs;
+      }
+      function lineSegmentsRaw(line) {
+        const lineQty = Number(line.qty) || 0;
+        const linePrice = Number(line.price) || 0;
+        const stock = window.novaStock;
+        if (!stock) return [{ qty: lineQty, price: linePrice }];
+        const k = stock.keyOf(line);
+        if (!stock.hasLots(k)) return [{ qty: lineQty, price: linePrice }];
+        const pick = stock.fefoPick(k, stock.boxQty(line));
+        if (!pick || !pick.ok || !pick.picks || !pick.picks.length) {
+          return [{ qty: lineQty, price: linePrice }];
+        }
+        const f = (Number(line.unitFactor) || 1) > 1 ? Number(line.unitFactor) : 1;
+        const segs = [];
+        for (const p of pick.picks) {
+          const rawQty = p.qty * f;
+          const segQty = Math.round(rawQty);
+          if (Math.abs(rawQty - segQty) > 1e-6 || segQty <= 0) {
+            return [{
+              qty: lineQty,
+              price: linePrice,
+              lots: pick.picks.map(x => ({ lot: x.lot, expiry: x.expiry, qty: x.qty, cost: Number(x.cost) || 0 }))
+            }];
+          }
+          const hasLotPrice = p.price != null && p.price !== '' && Number.isFinite(Number(p.price)) && Number(p.price) > 0;
+          const segPrice = hasLotPrice ? Math.round((Number(p.price) / f) * 100) / 100 : linePrice;
+          const lotEntry = { lot: p.lot, expiry: p.expiry, qty: p.qty, cost: Number(p.cost) || 0 };
+          const prev = segs[segs.length - 1];
+          if (prev && prev.price === segPrice) {
+            prev.qty += segQty;
+            prev.lots.push(lotEntry);
+          } else {
+            segs.push({ qty: segQty, price: segPrice, lots: [lotEntry] });
+          }
+        }
+        return segs.length ? segs : [{ qty: lineQty, price: linePrice }];
+      }
+
       function recalculateFinancials() {
         let subtotal = 0;
         let totalQty = 0;
 
         state.invoiceLines.forEach(line => {
-          subtotal += (line.price * line.qty) - line.discount;
+          const lineGross = lineSegments(line).reduce((s, g) => s + (g.qty * g.price), 0);
+          subtotal += lineGross - line.discount;
           totalQty += line.qty;
         });
 
@@ -1956,7 +2007,7 @@
           for (const l of sellable) {
             if (rem <= 0) break;
             const take = clean(Math.min(l.onHand, rem)); rem = clean(rem - take);
-            picks.push({ lot: l.lot, expiry: l.expiry, qty: take, daysLeft: l.daysLeft, nearExpiry: l.nearExpiry, expired: l.expired, cost: l.cost, location: l.location });
+            picks.push({ lot: l.lot, expiry: l.expiry, qty: take, daysLeft: l.daysLeft, nearExpiry: l.nearExpiry, expired: l.expired, cost: l.cost, location: l.location, price: l.price });
           }
           const nearExpiry = picks.filter(p => p.nearExpiry);
           return { ok: true, picks, lot: picks[0].lot, expiry: picks[0].expiry, available, expiredQty, nearExpiry, hasNearExpiry: nearExpiry.length > 0 };
@@ -2304,12 +2355,15 @@
         const msg = en
           ? 'This customer will exceed the credit limit.\nLimit: ' + fm(r.limit) + ' — current balance: ' + fm(r.balance) + ' — this sale on credit: ' + fm(tp.credit) + ' — balance after: ' + fm(r.after) + '.\nA manager must approve to continue.'
           : 'العميل هيعدّي حد الائتمان.\nالحد: ' + fm(r.limit) + ' — الرصيد الحالي: ' + fm(r.balance) + ' — الآجل في الفاتورة دي: ' + fm(tp.credit) + ' — الرصيد بعدها: ' + fm(r.after) + '.\nلازم موافقة مدير عشان تكمّل.';
-        if (!window.novaSaleApproval) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
+        if (!(await saleApprovalReady())) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
         const ap = await window.novaSaleApproval.request({ title: en ? 'Credit limit exceeded' : 'تعدّي حد الائتمان', message: msg, reason: 'credit-limit' });
         if (!ap) { showToast(en ? 'Sale not completed: credit limit exceeded.' : 'البيع ما اتمّش: العميل عدّى حد الائتمان.', 'error'); return false; }
         state.creditApproval = { sig, approvedBy: ap.approvedBy, approverId: ap.approverId, unverified: !!ap.unverified, at: ap.at };
         return true;
       }
+
+      // The approval dialog (app/570) is a lazy screen: load it on demand before asking.
+      async function saleApprovalReady() { if (!window.novaSaleApproval) { try { if (window.novaLazy && window.novaLazy.load) await window.novaLazy.load(); } catch (_) { /* checked below */ } } return !!window.novaSaleApproval; }
 
       // #100: a total discount above the limit (default 10% of the gross, setting nova-rx-discount-limit-pct) needs a manager unless a manager/owner is signed in.
       async function ensureDiscountApproval() {
@@ -2317,14 +2371,14 @@
         const saleId = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
         if (window.novaSales.list().some(x => x.id === saleId)) return true;
         const { actualDiscount } = recalculateFinancials();
-        const gross = Math.round(state.invoiceLines.reduce((s, l) => s + (Number(l.price) || 0) * (Number(l.qty) || 0), 0) * 100);
+        const gross = Math.round(state.invoiceLines.reduce((s, l) => s + lineSegments(l).reduce((a, g) => a + (g.qty * g.price), 0), 0) * 100);
         const disc = Math.round((state.invoiceLines.reduce((s, l) => s + (Number(l.discount) || 0), 0) + (Number(actualDiscount) || 0)) * 100);
         const limit = salePolicy.discountLimitPct();
         if (gross <= 0 || disc <= 0 || disc * 100 <= gross * limit) { state.discountApproval = null; return true; }
         const sig = saleId + '|' + disc;
         if (state.discountApproval && state.discountApproval.sig === sig) return true;
         const en = novaEn(), pct = Math.round(disc * 1000 / gross) / 10;
-        if (!window.novaSaleApproval) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
+        if (!(await saleApprovalReady())) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
         const ap = await window.novaSaleApproval.request({ title: en ? 'Large discount' : 'خصم كبير', message: en ? 'The discount is ' + pct + '% (limit ' + limit + '%). A manager must approve to continue.' : 'الخصم ' + pct + '% (الحد ' + limit + '%). لازم موافقة مدير عشان تكمّل.' });
         if (!ap) { showToast(en ? 'Sale not completed: the discount needs approval.' : 'البيع ما اتمّش: الخصم محتاج موافقة.', 'error'); return false; }
         state.discountApproval = { sig, approvedBy: ap.approvedBy, approverId: ap.approverId, unverified: !!ap.unverified, at: ap.at, pct };
@@ -2388,14 +2442,27 @@
           ...(tp.rounding ? { rounding: tp.rounding } : {}),
           ...(state.discountApproval ? { discountApproval: { approvedBy: state.discountApproval.approvedBy, approverId: state.discountApproval.approverId, unverified: state.discountApproval.unverified, at: state.discountApproval.at, pct: state.discountApproval.pct } } : {}),
           ...(tp.cardAmount > 0 ? { cardAuth: window.novaPay.cardAuth(saleKey).id } : {}),
-          lines: state.invoiceLines.map(l => {
-            const k = window.novaStock.keyOf(l);
-            const pick = window.novaStock.hasLots(k) ? window.novaStock.fefoPick(k, window.novaStock.boxQty(l)) : null;
-            const lots = pick && pick.ok ? pick.picks.map(p => ({ lot: p.lot, expiry: p.expiry, qty: p.qty, cost: Number(p.cost) || 0 })) : undefined;
-            return {
-              name: l.name, barcode: l.barcode || '', unit: l.unit || 'box', unitFactor: Number(l.unitFactor) || 1, price: Number(l.price) || 0, qty: Number(l.qty) || 0, discount: Number(l.discount) || 0,
-              ...(lots && lots.length ? { lot: lots[0].lot, expiry: lots[0].expiry, lots } : {})
-            };
+          lines: state.invoiceLines.flatMap(l => {
+            const segs = lineSegments(l);
+            const totalDiscCents = Math.round((Number(l.discount) || 0) * 100);
+            const totalVal = segs.reduce((s, g) => s + (g.qty * g.price), 0);
+            let remCents = totalDiscCents;
+            return segs.map((seg, i) => {
+              let segDiscCents;
+              if (segs.length === 1) {
+                segDiscCents = totalDiscCents;
+              } else if (i === segs.length - 1) {
+                segDiscCents = remCents;
+              } else {
+                segDiscCents = Math.max(0, Math.min(remCents, totalVal > 0 ? Math.round(totalDiscCents * ((seg.qty * seg.price) / totalVal)) : 0));
+                remCents -= segDiscCents;
+              }
+              const lots = seg.lots;
+              return {
+                name: l.name, barcode: l.barcode || '', unit: l.unit || 'box', unitFactor: Number(l.unitFactor) || 1, price: seg.price, qty: seg.qty, discount: segs.length === 1 ? (Number(l.discount) || 0) : segDiscCents / 100,
+                ...(lots && lots.length ? { lot: lots[0].lot, expiry: lots[0].expiry, lots } : {})
+              };
+            });
           }),
           subtotal, discount: actualDiscount, vat: vatIncluded, vatRate: window.novaVat.get(), total: grandTotal, received: cashRec, change: tp.change,
           source: window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' ? 'STOCK LIVE' : 'DEMO'
