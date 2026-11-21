@@ -1347,11 +1347,39 @@
         }
       }
 
-      function removeLine(productId) {
+      function removeLineNow(productId) {
         const snap = snapshotCart();
         state.invoiceLines = state.invoiceLines.filter(l => l.productId !== productId);
         renderInvoice();
         showUndoToast("تم حذف الصنف", () => restoreCart(snap));
+      }
+
+      // #100: with accounts on the device, only a manager/owner may delete an item or give a big discount freely; anyone else needs a manager's approval.
+      // No accounts (single-user device) = no gate. System-driven removals (stock clamp) call removeLineNow and are never gated.
+      const salePolicy = {
+        needsManager() {
+          const A = window.novaAuth;
+          try { if (!A || typeof A.hasAccounts !== 'function' || !A.hasAccounts()) return false; } catch (_) { return false; }
+          const me = A.current && A.current();
+          return !(me && (me.role === 'manager' || me.role === 'owner'));
+        },
+        discountLimitPct() { let v = NaN; try { v = parseFloat(localStorage.getItem('nova-rx-discount-limit-pct')); } catch (_) {} return Number.isFinite(v) && v >= 0 && v <= 100 ? v : 10; },
+        log(type, ap, detail) {
+          try { const K = 'nova-rx-sale-approvals-v1', a = JSON.parse(localStorage.getItem(K) || '[]'); const arr = Array.isArray(a) ? a : []; arr.unshift({ type, approvedBy: ap.approvedBy, approverId: ap.approverId, unverified: !!ap.unverified, at: ap.at, detail }); localStorage.setItem(K, JSON.stringify(arr.slice(0, 500))); } catch (_) { /* audit trail is best effort */ }
+        }
+      };
+      async function removeLine(productId) {
+        if (!salePolicy.needsManager()) { removeLineNow(productId); return; }
+        const line = state.invoiceLines.find(l => l.productId === productId);
+        if (!line) return;
+        renderInvoice(); // resets a typed quantity of 0 while the dialog is open
+        const en = novaEn();
+        if (!window.novaSaleApproval) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return; }
+        const ap = await window.novaSaleApproval.request({ title: en ? 'Delete item' : 'حذف صنف من الفاتورة', message: (en ? 'A manager must approve deleting: ' : 'حذف الصنف ده محتاج موافقة مدير: ') + (line.name || '') });
+        if (!ap) return;
+        if (!state.invoiceLines.some(l => l.productId === productId)) return;
+        salePolicy.log('line-delete', ap, { name: line.name, qty: line.qty, price: line.price });
+        removeLineNow(productId);
       }
 
       // AUDIT-02 (Gemini Neon draft, reviewed): F2 / F4 on an invoice with lines open an in-app dialog instead of window.confirm.
@@ -1481,7 +1509,7 @@
         const line = state.invoiceLines.find(l => l.productId === productId);
         const o = line && lineOverStock(line);
         if (!o) return;
-        if (o.available <= 0) removeLine(productId); else updateLineQty(productId, String(o.available));
+        if (o.available <= 0) removeLineNow(productId); else updateLineQty(productId, String(o.available));
       }
 
       function renderInvoice() {
@@ -1652,10 +1680,9 @@
         state.checkoutPaymentMethod = "cash";
         document.querySelectorAll(".pay-method-btn").forEach(b => b.classList.toggle("active", b.getAttribute("data-method") === "cash"));
         document.getElementById("cashDetailsBox").style.display = "block"; document.getElementById("splitDetailsBox").style.display = "none";
+        document.getElementById("walletDetailsBox").style.display = "none"; document.getElementById("inputWalletRef").value = ""; document.getElementById("inputWalletKind").value = "wallet";
         document.getElementById("inputCardAmount").value = ""; document.getElementById("inputCreditAmount").value = "";
-        elements.inputCashReceived.value = grandTotal.toFixed(2);
-        state.cashReceived = grandTotal;
-        updateChangeDue(grandTotal, grandTotal);
+        { const R0 = cashRound(grandTotal); elements.inputCashReceived.value = R0.due.toFixed(2); state.cashReceived = R0.due; updateChangeDue(R0.due, R0.due); }
         refreshChange();
 
         elements.checkoutModal.classList.add("active");
@@ -1673,6 +1700,9 @@
       function refreshChange() {
         const { grandTotal } = recalculateFinancials(), tp = currentTenderPlan(grandTotal);
         elements.displayChangeDue.textContent = formatMoney(tp.ok ? tp.change : 0);
+        { const R1 = dueForMethod(grandTotal, state.checkoutPaymentMethod), rn = document.getElementById('checkoutRoundingNote');
+          elements.modalAmountDue.textContent = formatMoney(R1.due);
+          if (rn) { rn.hidden = !R1.rounding; rn.textContent = R1.rounding ? (novaEn() ? 'Rounded from ' : 'بعد التقريب من ') + formatMoney(grandTotal) + ' (' + (R1.rounding > 0 ? '+' : '−') + formatMoney(Math.abs(R1.rounding)) + ')' : ''; } }
         const needCust = !tp.ok && tp.error === "credit-needs-customer";
         const hint = document.getElementById("checkoutCreditHint");
         const split = state.checkoutPaymentMethod === 'split';
@@ -1690,6 +1720,11 @@
           const remaining = Math.round((grandTotal - assigned) * 100) / 100;
           allocation.textContent = ((localStorage.getItem("nova-rx-language") === "en") ? 'Allocated: ' : 'الموزّع: ') + formatMoney(assigned) + ' · ' +
             (remaining < 0 ? ((localStorage.getItem("nova-rx-language") === "en") ? 'Excess: ' : 'الزيادة: ') : ((localStorage.getItem("nova-rx-language") === "en") ? 'Remaining: ' : 'المتبقي: ')) + formatMoney(Math.abs(remaining));
+        }
+        const wh = document.getElementById('walletRefHint');
+        if (wh) {
+          const wmsg = state.checkoutPaymentMethod === 'wallet' && !tp.ok ? (tp.error === 'ref-duplicate' ? novaEn() ? 'This transaction number was already used on another sale.' : 'رقم العملية ده مستخدم في فاتورة تانية.' : tp.error === 'ref-needed' ? novaEn() ? 'Type the transaction number to continue.' : 'اكتب رقم العملية عشان تكمّل.' : '') : '';
+          wh.textContent = wmsg; wh.hidden = !wmsg;
         }
         elements.btnConfirmPayment.disabled = !!state.paymentSubmitting || !tp.ok;
       }
@@ -1875,7 +1910,7 @@
           rawLots().filter(x => x.key === k).forEach(x => {
             const id = x.lot + '\u0000' + x.expiry;
             if (!map.has(id)) map.set(id, { key: k, lot: x.lot, expiry: x.expiry, receivedQty: 0, onHand: 0, cost: Number(x.cost) || 0, location: String(x.location || '') });
-            const e = map.get(id); e.receivedQty += x.qty; e.onHand += x.qty;
+            const e = map.get(id); e.receivedQty += x.qty; e.onHand += x.qty; { const p = Number(x.price); if (Number.isFinite(p) && p > 0) e.price = p; }
           });
           const list = [...map.values()].sort((a, b) => a.expiry.localeCompare(b.expiry) || a.lot.localeCompare(b.lot));
           if (!list.length) return [];
@@ -1935,8 +1970,9 @@
           const expiry = String(entry && (entry.expiry || entry.expiryDate || entry.exp) || '').trim(), qty = Number(entry && entry.qty);
           if (!key || !lot || !validDate(expiry) || !Number.isInteger(qty) || qty <= 0) return { ok: false, error: 'invalid' };
           const all = rawLots(), rec = { key, lot, expiry, qty, cost: Number(entry.cost) || 0, location: String(entry.location || '') };
+          const lotPrice = Math.round(Number(entry && entry.price) * 100) / 100; if (Number.isFinite(lotPrice) && lotPrice > 0) rec.price = lotPrice;
           const ex = all.find(x => x.key === key && x.lot === lot && x.expiry === expiry);
-          if (ex) { ex.qty += qty; if (entry.cost !== undefined) ex.cost = rec.cost; if (entry.location !== undefined) ex.location = rec.location; }
+          if (ex) { ex.qty += qty; if (entry.cost !== undefined) ex.cost = rec.cost; if (entry.location !== undefined) ex.location = rec.location; if (entry.price !== undefined) { if (rec.price) ex.price = rec.price; else delete ex.price; } }
           else all.push(rec);
           if (!saveLots(all, receiptRef)) return { ok: false, error: 'storage' };
           if (typeof renderInvoice === 'function' && state && state.invoiceLines) renderInvoice();
@@ -1952,7 +1988,7 @@
             const k = (targetKey || keyOf(it)).trim(), lot = String(it && (it.lot || it.lotNo || it.batch) || '').trim();
             const expiry = String(it && (it.expiry || it.expiryDate || it.exp) || '').trim(), qty = Number(it && it.qty);
             if (!k || !lot || !validDate(expiry) || !Number.isInteger(qty) || qty <= 0) return { ok: false, error: 'invalid' };
-            normalized.push({ key: k, lot, expiry, qty, cost: Number(it.cost) || 0, location: String(it.location || '') });
+            const np = Math.round(Number(it && it.price) * 100) / 100; normalized.push(Object.assign({ key: k, lot, expiry, qty, cost: Number(it.cost) || 0, location: String(it.location || '') }, Number.isFinite(np) && np > 0 ? { price: np } : {}));
           }
           const next = isAll ? normalized : rawLots().filter(x => x.key !== targetKey).concat(normalized);
           if (!saveLots(next)) return { ok: false, error: 'storage' };
@@ -2143,6 +2179,8 @@
       // POS-02 (this device only, no real gateway): tender maths, mock card authorisation keyed by the invoice key (a retry reuses the same authorisation, so no double charge),
       // unique invoice numbers across the ledger/held/cancelled lists, and a cancelled-invoice log. A final sale is never edited.
       window.novaPay = (function () {
+        const WALLET_METHODS = ['wallet', 'instapay', 'fawry'];
+        try { Object.assign(window.NovaFmt.PAY, { wallet: 'محفظة موبايل', instapay: 'إنستاباي', fawry: 'فوري' }); } catch (_) { /* labels only */ } // separate payment methods in receipts/reports
         const AK = 'nova-rx-card-auth-v1', CK = 'nova-rx-cancelled-v1', cents = n => Math.round((Number(n) + Number.EPSILON) * 100), fromC = c => c / 100;
         const readJ = k => { try { const a = JSON.parse(localStorage.getItem(k) || 'null'); return a; } catch (_) { return null; } };
         const auths = () => { const a = readJ(AK); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; };
@@ -2153,14 +2191,19 @@
           // t = { cash: cash handed over, card, credit }; card and credit are exact portions, cash covers the rest and any excess is change.
           plan(total, t, hasCustomer) {
             const T = cents(total), c = cents(amt(t && t.cash)), k = cents(amt(t && t.card)), r = cents(amt(t && t.credit));
-            if (![T, c, k, r].every(Number.isFinite) || T < 0) return { ok: false, error: 'invalid' };
+            // e-payment (wallet / InstaPay / Fawry): one exact portion with a transaction reference; no real wallet integration, the reference is only recorded.
+            const alt = t && t.alt && WALLET_METHODS.indexOf(t.alt.method) >= 0 ? t.alt : null, w = alt ? cents(amt(alt.amount)) : 0;
+            if (![T, c, k, r, w].every(Number.isFinite) || T < 0) return { ok: false, error: 'invalid' };
             if (r > 0 && !hasCustomer) return { ok: false, error: 'credit-needs-customer' };
-            if (k + r > T) return { ok: false, error: 'over-allocated' };
-            const due = T - k - r;
+            if (k + r + w > T) return { ok: false, error: 'over-allocated' };
+            const ref = alt ? String(alt.ref == null ? '' : alt.ref).trim().slice(0, 40) : '';
+            if (w > 0 && !ref) return { ok: false, error: 'ref-needed' };
+            const due = T - k - r - w;
             if (c < due) return { ok: false, error: 'short', short: fromC(due - c) };
             const tenders = [];
             if (due > 0) tenders.push({ method: 'cash', amount: fromC(due) });
             if (k > 0) tenders.push({ method: 'card', amount: fromC(k) });
+            if (w > 0) tenders.push({ method: alt.method, amount: fromC(w), ref });
             if (r > 0) tenders.push({ method: 'credit', amount: fromC(r) });
             return { ok: true, tenders, payment: tenders.length > 1 ? 'mixed' : (tenders[0] ? tenders[0].method : 'cash'), received: fromC(c), change: fromC(c - due), credit: fromC(r), collected: fromC(T - r), cardAmount: fromC(k) };
           },
@@ -2187,12 +2230,105 @@
         };
       })();
 
+      // #94: optional rounding of a pure CASH payment to a step (setting nova-rx-round-step in EGP: 0.25 / 0.5 / 1; default off). The invoice total stays exact;
+      // the cash due is rounded half up and the difference is recorded as sale.rounding so the books and the drawer both reconcile. Never applied to card/credit/wallet/split.
+      function cashRound(total) {
+        let step = 0; try { step = parseFloat(localStorage.getItem('nova-rx-round-step')); } catch (_) {}
+        const c = Math.round(total * 100), s = Math.round(step * 100);
+        if (!(s > 0) || s > 500 || c <= 0) return { due: total, rounding: 0 };
+        const d = Math.floor((c + s / 2) / s) * s;
+        return d <= 0 ? { due: total, rounding: 0 } : { due: d / 100, rounding: (d - c) / 100 };
+      }
+      function dueForMethod(total, m) { return (m === "card" || m === "credit" || m === "split" || m === "wallet") ? { due: total, rounding: 0 } : cashRound(total); }
+      window.novaRounding = { step() { try { return parseFloat(localStorage.getItem('nova-rx-round-step')) || 0; } catch (_) { return 0; } }, set(v) { try { const n = Number(v); if (!(n > 0)) localStorage.removeItem('nova-rx-round-step'); else if (n <= 5) localStorage.setItem('nova-rx-round-step', String(n)); else return false; return true; } catch (_) { return false; } }, cashRound };
+
       function currentTenderPlan(total) {
         const m = state.checkoutPaymentMethod, v = el => elements[el] ? elements[el].value : '';
         const inputs = m === "card" ? { card: total } : m === "credit" ? { credit: total }
+          : m === "wallet" ? { alt: { method: (document.getElementById("inputWalletKind") || {}).value, amount: total, ref: (document.getElementById("inputWalletRef") || {}).value } }
           : m === "split" ? { cash: v("inputCashReceived"), card: document.getElementById("inputCardAmount").value, credit: document.getElementById("inputCreditAmount").value }
           : { cash: v("inputCashReceived") === "" ? NaN : v("inputCashReceived") };
-        return window.novaPay.plan(total, inputs, !!state.attachedCustomer);
+        const R = dueForMethod(total, m);
+        const tp = window.novaPay.plan(R.due, inputs, !!state.attachedCustomer);
+        if (tp.ok) tp.rounding = R.rounding;
+        if (tp.ok && m === "wallet") { // the same transaction number on another saved sale is almost always a double entry or reuse
+          const w = tp.tenders.find(x => x.ref), k = state.invoiceKey;
+          if (w && window.novaSales.list().some(s => s.id !== k && Array.isArray(s.tenders) && s.tenders.some(x => x.method === w.method && x.ref && x.ref.toLowerCase() === w.ref.toLowerCase()))) return { ok: false, error: 'ref-duplicate' };
+        }
+        return tp;
+      }
+
+      // CTRL-01 wiring: controlled drugs need patient/ID/doctor data BEFORE the sale is saved. The dialog is async, so it runs here,
+      // outside the stock lock; the answer is kept per invoice key + lines so a retry after a failed save does not ask again.
+      async function ensureControlledCapture() {
+        const lines = state.invoiceLines || [];
+        if (!lines.length) return true;
+        try { if (window.novaLazy && window.novaLazy.load) await window.novaLazy.load(); } catch (_) { /* checked below */ }
+        const NC = window.novaControlled;
+        if (!NC || typeof NC.isControlled !== 'function') { // cannot tell which items are controlled: fail closed
+          showToast(novaEn() ? 'Controlled-drug check is not available. Reload the page and try again.' : 'تعذر فحص الأدوية المراقبة. أعد تحميل الصفحة وحاول تاني.', 'error');
+          return false;
+        }
+        const ctrl = lines.filter(l => NC.isControlled(l));
+        if (!ctrl.length) { state.ctrlCapture = null; return true; }
+        const saleId = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
+        const sig = saleId + '|' + ctrl.map(l => [window.novaStock.keyOf(l), l.qty, l.unit || ''].join(':')).join(',');
+        if (state.ctrlCapture && state.ctrlCapture.sig === sig) return true;
+        const entries = await NC.capture({ saleId, lines: ctrl });
+        if (!entries || !entries.length) {
+          showToast(novaEn() ? 'Sale not completed: controlled-drug details are required.' : 'البيع ما اتمّش: لازم بيانات الدواء المراقب.', 'error');
+          return false;
+        }
+        state.ctrlCapture = { sig, entries };
+        return true;
+      }
+
+      // #116 wiring: a credit (آجل) portion that would push the customer past the limit needs a manager. Runs outside the stock lock (async dialog);
+      // the approval is kept per invoice key + customer + amount so a retry after a failed save does not ask again.
+      async function ensureCreditApproval() {
+        const cust = state.attachedCustomer;
+        if (!cust || !cust.id || !(state.invoiceLines || []).length) return true;
+        const saleId = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
+        if (window.novaSales.list().some(x => x.id === saleId)) return true; // already saved: nothing new is charged
+        const { grandTotal } = recalculateFinancials();
+        const tp = currentTenderPlan(grandTotal);
+        if (!tp.ok || !(tp.credit > 0)) { state.creditApproval = null; return true; }
+        try { if (window.novaLazy && window.novaLazy.load) await window.novaLazy.load(); } catch (_) { /* checked below */ }
+        const CL = window.novaCreditLimit;
+        if (!CL || typeof CL.check !== 'function') { if (!window.NovaCredit) return true; showToast(novaEn() ? 'Could not check the credit limit. Reload the page and try again.' : 'تعذر فحص حد الائتمان. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
+        const r = CL.check(cust.id, tp.credit);
+        if (r.ok) { state.creditApproval = null; return true; }
+        const sig = saleId + '|' + cust.id + '|' + tp.credit;
+        if (state.creditApproval && state.creditApproval.sig === sig) return true;
+        const en = novaEn(), fm = n => (Math.round((Number(n) || 0) * 100) / 100).toFixed(2) + (en ? ' EGP' : ' ج.م');
+        const msg = en
+          ? 'This customer will exceed the credit limit.\nLimit: ' + fm(r.limit) + ' — current balance: ' + fm(r.balance) + ' — this sale on credit: ' + fm(tp.credit) + ' — balance after: ' + fm(r.after) + '.\nA manager must approve to continue.'
+          : 'العميل هيعدّي حد الائتمان.\nالحد: ' + fm(r.limit) + ' — الرصيد الحالي: ' + fm(r.balance) + ' — الآجل في الفاتورة دي: ' + fm(tp.credit) + ' — الرصيد بعدها: ' + fm(r.after) + '.\nلازم موافقة مدير عشان تكمّل.';
+        if (!window.novaSaleApproval) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
+        const ap = await window.novaSaleApproval.request({ title: en ? 'Credit limit exceeded' : 'تعدّي حد الائتمان', message: msg, reason: 'credit-limit' });
+        if (!ap) { showToast(en ? 'Sale not completed: credit limit exceeded.' : 'البيع ما اتمّش: العميل عدّى حد الائتمان.', 'error'); return false; }
+        state.creditApproval = { sig, approvedBy: ap.approvedBy, approverId: ap.approverId, unverified: !!ap.unverified, at: ap.at };
+        return true;
+      }
+
+      // #100: a total discount above the limit (default 10% of the gross, setting nova-rx-discount-limit-pct) needs a manager unless a manager/owner is signed in.
+      async function ensureDiscountApproval() {
+        if (!salePolicy.needsManager() || !(state.invoiceLines || []).length) return true;
+        const saleId = state.invoiceKey || (state.invoiceKey = window.novaStock.newKey());
+        if (window.novaSales.list().some(x => x.id === saleId)) return true;
+        const { actualDiscount } = recalculateFinancials();
+        const gross = Math.round(state.invoiceLines.reduce((s, l) => s + (Number(l.price) || 0) * (Number(l.qty) || 0), 0) * 100);
+        const disc = Math.round((state.invoiceLines.reduce((s, l) => s + (Number(l.discount) || 0), 0) + (Number(actualDiscount) || 0)) * 100);
+        const limit = salePolicy.discountLimitPct();
+        if (gross <= 0 || disc <= 0 || disc * 100 <= gross * limit) { state.discountApproval = null; return true; }
+        const sig = saleId + '|' + disc;
+        if (state.discountApproval && state.discountApproval.sig === sig) return true;
+        const en = novaEn(), pct = Math.round(disc * 1000 / gross) / 10;
+        if (!window.novaSaleApproval) { showToast(en ? 'Approval is not available. Reload the page and try again.' : 'الموافقة مش متاحة. أعد تحميل الصفحة وحاول تاني.', 'error'); return false; }
+        const ap = await window.novaSaleApproval.request({ title: en ? 'Large discount' : 'خصم كبير', message: en ? 'The discount is ' + pct + '% (limit ' + limit + '%). A manager must approve to continue.' : 'الخصم ' + pct + '% (الحد ' + limit + '%). لازم موافقة مدير عشان تكمّل.' });
+        if (!ap) { showToast(en ? 'Sale not completed: the discount needs approval.' : 'البيع ما اتمّش: الخصم محتاج موافقة.', 'error'); return false; }
+        state.discountApproval = { sig, approvedBy: ap.approvedBy, approverId: ap.approverId, unverified: !!ap.unverified, at: ap.at, pct };
+        return true;
       }
 
       function confirmPayment() {
@@ -2205,7 +2341,7 @@
         button.disabled = true;
         button.setAttribute('aria-busy', 'true');
         button.textContent = 'جاري حفظ الفاتورة…';
-        return Promise.resolve().then(() => window.novaStock.withLock(confirmPaymentCore)).catch(() => {
+        return Promise.resolve().then(ensureControlledCapture).then(ok => ok ? ensureCreditApproval() : false).then(ok => ok ? ensureDiscountApproval() : false).then(ok => ok ? window.novaStock.withLock(confirmPaymentCore) : undefined).catch(() => {
           showToast(novaEn() ? 'Unable to confirm sale. Check saved invoices before retrying.' : 'تعذر تأكيد البيع. راجع الفواتير المحفوظة قبل المحاولة مرة أخرى.', 'error');
         }).finally(() => {
           state.paymentSubmitting = false;
@@ -2221,8 +2357,8 @@
         const { subtotal, actualDiscount, vatIncluded, grandTotal, totalQty } = recalculateFinancials();
         const tp = currentTenderPlan(grandTotal);
         if (!tp.ok) {
-          showToast(tp.error === "credit-needs-customer" ? "البيع الآجل يحتاج عميلاً مسجلاً." : tp.error === "over-allocated" ? "مبلغ البطاقة والآجل أكبر من الإجمالي." : "Enter a valid cash amount covering the total due.", "error");
-          elements.inputCashReceived.focus();
+          showToast(tp.error === "ref-needed" ? (novaEn() ? "Type the transaction number." : "اكتب رقم العملية.") : tp.error === "ref-duplicate" ? (novaEn() ? "This transaction number was already used on another sale." : "رقم العملية ده مستخدم في فاتورة تانية.") : tp.error === "credit-needs-customer" ? "البيع الآجل يحتاج عميلاً مسجلاً." : tp.error === "over-allocated" ? "مبلغ البطاقة والآجل أكبر من الإجمالي." : "Enter a valid cash amount covering the total due.", "error");
+          { const wr = document.getElementById('inputWalletRef'); if ((tp.error === 'ref-needed' || tp.error === 'ref-duplicate') && wr) wr.focus(); else elements.inputCashReceived.focus(); }
           return;
         }
         const cashRec = tp.received;
@@ -2248,6 +2384,9 @@
           customer: state.attachedCustomer ? state.attachedCustomer.name : '',
           phone: state.attachedCustomer ? state.attachedCustomer.phone : '',
           payment: tp.payment, status: 'final', tenders: tp.tenders, credit: tp.credit, collected: tp.collected, customerId: state.attachedCustomer ? state.attachedCustomer.id : undefined,
+          ...(tp.credit > 0 && state.creditApproval ? { creditApproval: { approvedBy: state.creditApproval.approvedBy, approverId: state.creditApproval.approverId, unverified: state.creditApproval.unverified, at: state.creditApproval.at } } : {}),
+          ...(tp.rounding ? { rounding: tp.rounding } : {}),
+          ...(state.discountApproval ? { discountApproval: { approvedBy: state.discountApproval.approvedBy, approverId: state.discountApproval.approverId, unverified: state.discountApproval.unverified, at: state.discountApproval.at, pct: state.discountApproval.pct } } : {}),
           ...(tp.cardAmount > 0 ? { cardAuth: window.novaPay.cardAuth(saleKey).id } : {}),
           lines: state.invoiceLines.map(l => {
             const k = window.novaStock.keyOf(l);
@@ -2268,6 +2407,10 @@
           showToast("تعذر حفظ الفاتورة على هذا الجهاز — أعد المحاولة، لن يتم خصم البطاقة مرة أخرى.", "error");
           return;
         }
+        try { if (state.ctrlCapture && window.novaControlled) window.novaControlled.record(state.ctrlCapture.entries); } catch (e) { console.warn('controlled record', e); }
+        if (state.discountApproval) salePolicy.log('discount', state.discountApproval, { sale: saleKey, pct: state.discountApproval.pct });
+        if (saleRecord.creditApproval) salePolicy.log('credit-limit', saleRecord.creditApproval, { sale: saleKey, credit: tp.credit });
+        state.ctrlCapture = null; state.creditApproval = null; state.discountApproval = null;
         try { if (tp.credit > 0 && saleRecord.customerId && window.NovaCredit) window.NovaCredit.createCreditLedger(localStorage, 'nova.credit').charge({ id: saleKey, customerId: String(saleRecord.customerId), amount: Math.round(tp.credit * 100) / 100, override: true }); } catch (e) { console.warn('credit ledger', e && e.code); }
         window.novaPay.captureCard(saleKey); window.novaStock.release(saleKey); state.invoiceKey = null;
         try{window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:String(invNumber),customer:state.attachedCustomer?.name||'عميل نقدي',items:state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}}))}catch(e){}
@@ -2390,7 +2533,7 @@
             const tot = ((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0);
             return `<tr><td>${escH(dispName(l.name))}</td><td dir="ltr">${Number(l.qty) || 0}</td><td dir="ltr">${(Number(l.price) || 0).toFixed(2)}</td><td dir="ltr">${tot.toFixed(2)}</td></tr>`;
           }).join('');
-          const tendersTxt = Array.isArray(s.tenders) && s.tenders.length ? s.tenders.map(t => `${window.NovaFmt.payLabel(t.method)} ${(Number(t.amount) || 0).toFixed(2)}`).join(' + ') : '';
+          const tendersTxt = Array.isArray(s.tenders) && s.tenders.length ? s.tenders.map(t => `${window.NovaFmt.payLabel(t.method)} ${(Number(t.amount) || 0).toFixed(2)}${t.ref ? ' #' + t.ref : ''}`).join(' + ') : '';
           const html = `<div dir="rtl" lang="ar" class="nova-receipt-doc" data-receipt-number="${escH(s.number)}" data-is-copy="${currentCopy ? 'true' : 'false'}" style="color:#000">
             ${copyBanner}
             <div style="text-align:center;border-bottom:1px dashed #94a3b8;padding-bottom:6px;margin-bottom:6px">
@@ -2409,10 +2552,11 @@
             </table>
             <div style="font-size:12px;border-top:1px dashed #94a3b8;padding-top:6px">
               <div style="display:flex;justify-content:space-between"><span>المجموع الفرعي (${window.NovaFmt.pluralItems((s.lines || []).length)}):</span><span dir="ltr">${(Number(s.subtotal) || 0).toFixed(2)} ج.م</span></div>
+              ${(Number(s.rounding) || 0) !== 0 ? `<div style="display:flex;justify-content:space-between"><span>تقريب:</span><span dir="ltr">${(Number(s.rounding) || 0) > 0 ? '+' : ''}${(Number(s.rounding) || 0).toFixed(2)} ج.م</span></div>` : ''}
               ${(Number(s.discount) || 0) > 0 ? `<div style="display:flex;justify-content:space-between"><span>الخصم:</span><span dir="ltr">-${(Number(s.discount) || 0).toFixed(2)} ج.م</span></div>` : ''}
               <div style="display:flex;justify-content:space-between"><span>ضريبة القيمة المضافة (${window.novaVat.label(Number(s.vatRate) >= 0 && s.vatRate != null ? Number(s.vatRate) : undefined)}%):</span><span dir="ltr">${(Number(s.vat) || 0).toFixed(2)} ج.م</span></div>
               <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13px;margin-top:2px"><span>الإجمالي المستحق:</span><span dir="ltr">${(Number(s.total) || 0).toFixed(2)} ج.م</span></div>
-              <div style="display:flex;justify-content:space-between"><span>طريقة الدفع:</span><span>${escH(payLabel(s.payment))}${tendersTxt && s.tenders.length > 1 ? ' (' + escH(tendersTxt) + ')' : ''}</span></div>
+              <div style="display:flex;justify-content:space-between"><span>طريقة الدفع:</span><span>${escH(payLabel(s.payment))}${tendersTxt && (s.tenders.length > 1 || s.tenders.some(t => t.ref)) ?' (' + escH(tendersTxt) + ')' : ''}</span></div>
               <div style="display:flex;justify-content:space-between"><span>المدفوع نقدًا:</span><span dir="ltr">${(Number(s.received) || 0).toFixed(2)} ج.م</span></div>
               <div style="display:flex;justify-content:space-between"><span>الباقي:</span><span dir="ltr">${(Number(s.change) || 0).toFixed(2)} ج.م</span></div>
             </div>
@@ -2908,6 +3052,8 @@
           const { grandTotal } = recalculateFinancials();
           refreshChange();
         });
+        ["inputWalletRef", "inputWalletKind"].forEach(id => { const el = document.getElementById(id); el.addEventListener("input", refreshChange); el.addEventListener("change", refreshChange); });
+        document.getElementById("inputWalletRef").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (!elements.btnConfirmPayment.disabled) confirmPayment(); } });
         // UX60: in split mode the cash field auto-fills with the remainder (total - card - credit); still editable.
         ["inputCardAmount", "inputCreditAmount"].forEach(id => document.getElementById(id).addEventListener("input", () => {
           if (state.checkoutPaymentMethod === "split") {
@@ -2934,8 +3080,10 @@
             state.checkoutPaymentMethod = btn.getAttribute("data-method");
             document.getElementById("cashDetailsBox").style.display = state.checkoutPaymentMethod === "cash" || state.checkoutPaymentMethod === "split" ? "block" : "none";
             document.getElementById("splitDetailsBox").style.display = state.checkoutPaymentMethod === "split" ? "block" : "none";
+            document.getElementById("walletDetailsBox").style.display = state.checkoutPaymentMethod === "wallet" ? "block" : "none";
             refreshChange();
-            if (state.checkoutPaymentMethod === "cash") elements.inputCashReceived.focus();
+            if (state.checkoutPaymentMethod === "wallet") document.getElementById("inputWalletRef").focus();
+            else if (state.checkoutPaymentMethod === "cash") elements.inputCashReceived.focus();
             else if (state.checkoutPaymentMethod === "split") document.getElementById("inputCardAmount").focus();
             else if (elements.btnConfirmPayment.disabled) { const ac = document.getElementById("checkoutAddCustomer"); (ac.hidden ? elements.btnCancelCheckout : ac).focus(); }
             else elements.btnConfirmPayment.focus();
@@ -2946,13 +3094,13 @@
           btn.addEventListener("mousedown", e => e.preventDefault());
           btn.addEventListener("click", () => {
             const val = btn.getAttribute("data-val");
-            const { grandTotal } = recalculateFinancials();
-            let amount = grandTotal;
+            const { grandTotal } = recalculateFinancials(), dueNow = dueForMethod(grandTotal, state.checkoutPaymentMethod).due;
+            let amount = dueNow;
             if (val !== "exact") {
               amount = parseFloat(val);
             }
             elements.inputCashReceived.value = amount.toFixed(2);
-            updateChangeDue(amount, grandTotal);
+            updateChangeDue(amount, dueNow);
             elements.inputCashReceived.focus();
           });
         });

@@ -1090,7 +1090,7 @@
 
     .pay-methods-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
       gap: var(--sp-2);
     }
     @media (max-width: 600px) { .pay-methods-grid { grid-template-columns: repeat(2, 1fr); } }
