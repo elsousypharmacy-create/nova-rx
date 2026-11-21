@@ -2181,3 +2181,1542 @@
     initObserver();
   }
 })();
+;
+// app/600-expiry-clearance.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-expiry-plans-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaExpiryClearance';
+  var STYLE_ID = 'novaExpiryClearanceStyle';
+  var DIALOG_ID = 'necConfirmDialog';
+  var MAX_RECORDS = 500;
+  var DAY_MS = 86400000;
+  var observer = null;
+  var currentDays = 90;
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    if (window.showToast && typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        out += idx !== -1 ? String(idx) : ch;
+      }
+    }
+    return out;
+  }
+
+  function parsePercent(val) {
+    var s = normalizeDigits(val).replace(/^\s+|\s+$/g, '');
+    if (!s || !/^\d+$/.test(s)) return NaN;
+    return parseInt(s, 10);
+  }
+
+  function canDiscount() {
+    if (!window.novaPerms || typeof window.novaPerms.require !== 'function') {
+      return false;
+    }
+    try {
+      return !!window.novaPerms.require('sale.discount');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function canDiscountHint() {
+    if (!window.novaPerms) return false;
+    if (typeof window.novaPerms.can === 'function') {
+      try {
+        return !!window.novaPerms.can('sale.discount');
+      } catch (e) {
+        return false;
+      }
+    }
+    return typeof window.novaPerms.require === 'function';
+  }
+
+  function currentUserName() {
+    if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+      try {
+        var u = window.novaAuth.current();
+        return u && u.name ? String(u.name) : '';
+      } catch (e) {
+        return '';
+      }
+    }
+    return '';
+  }
+
+  function readPlans() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writePlans(list) {
+    try {
+      var arr = Array.isArray(list) ? list : [];
+      if (arr.length > MAX_RECORDS) {
+        arr = arr.slice(arr.length - MAX_RECORDS);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getProducts() {
+    if (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) {
+      return window.NOVA_DEMO.products;
+    }
+    return [];
+  }
+
+  function keyOf(product) {
+    if (!product) return '';
+    if (window.novaStock && typeof window.novaStock.keyOf === 'function') {
+      return String(window.novaStock.keyOf(product) || '');
+    }
+    return String(product.barcode || product.id || product.name || '');
+  }
+
+  function parseExpiryDayMs(expiryStr) {
+    if (!expiryStr) return NaN;
+    var s = normalizeDigits(expiryStr).replace(/^\s+|\s+$/g, '');
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+    if (m) {
+      var y = parseInt(m[1], 10);
+      var mo = parseInt(m[2], 10);
+      var day = parseInt(m[3], 10);
+      var dt = new Date(Date.UTC(y, mo - 1, day));
+      if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== day) {
+        return NaN;
+      }
+      return dt.getTime();
+    }
+    var mYm = /^(\d{4})-(\d{1,2})$/.exec(s);
+    if (mYm) {
+      var yy = parseInt(mYm[1], 10);
+      var mm = parseInt(mYm[2], 10);
+      if (mm < 1 || mm > 12) return NaN;
+      return Date.UTC(yy, mm - 1, 1);
+    }
+    var ts = Date.parse(s);
+    if (isNaN(ts)) return NaN;
+    var d = new Date(ts);
+    return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+
+  function computeDaysLeft(expiryStr, nowMs) {
+    var expMs = parseExpiryDayMs(expiryStr);
+    if (isNaN(expMs)) return null;
+    var ref = typeof nowMs === 'number' && !isNaN(nowMs) ? nowMs : Date.now();
+    var d = new Date(ref);
+    var todayMs = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.round((expMs - todayMs) / DAY_MS);
+  }
+
+  function planFor(itemKey, lotKey) {
+    var ik = String(itemKey || '');
+    var lk = String(lotKey || '');
+    if (!ik || !lk) return null;
+    var list = readPlans();
+    var i;
+    for (i = list.length - 1; i >= 0; i--) {
+      if (list[i] && list[i].itemKey === ik && list[i].lotKey === lk) {
+        return list[i];
+      }
+    }
+    return null;
+  }
+
+  function plans() {
+    return readPlans();
+  }
+
+  function findLotExpiry(itemKey, lotKey) {
+    if (!window.novaStock || typeof window.novaStock.lots !== 'function') return '';
+    var lots = window.novaStock.lots(itemKey) || [];
+    var i, l, lk;
+    for (i = 0; i < lots.length; i++) {
+      l = lots[i];
+      if (!l) continue;
+      lk = String(l.lot || l.id || '');
+      if (lk === lotKey) return String(l.expiry || '');
+    }
+    return '';
+  }
+
+  function nearExpiry(days, nowMs) {
+    var win = (days === undefined || days === null || days === '') ? 90 : Number(days);
+    if (isNaN(win) || win < 0) win = 90;
+    if (!window.novaStock || typeof window.novaStock.lots !== 'function') return [];
+
+    var prods = getProducts();
+    var seen = {};
+    var out = [];
+    var i, j, p, ik, lots, l, onHand, dl, lk, cost, price, costVal, pl;
+
+    for (i = 0; i < prods.length; i++) {
+      p = prods[i];
+      ik = keyOf(p);
+      if (!ik || seen[ik]) continue;
+      seen[ik] = true;
+      if (typeof window.novaStock.hasLots === 'function' && !window.novaStock.hasLots(ik)) {
+        continue;
+      }
+      lots = window.novaStock.lots(ik) || [];
+      for (j = 0; j < lots.length; j++) {
+        l = lots[j];
+        if (!l) continue;
+        onHand = Number(l.onHand !== undefined ? l.onHand : l.qty) || 0;
+        if (onHand <= 0) continue;
+        dl = computeDaysLeft(l.expiry, nowMs);
+        if (dl === null || dl > win) continue;
+        lk = String(l.lot || l.id || '');
+        cost = Number(l.cost !== undefined && l.cost !== null && l.cost !== '' ? l.cost : p.cost);
+        if (isNaN(cost) || cost < 0) cost = 0;
+        price = Number(p.price);
+        if (isNaN(price) || price < 0) price = 0;
+        costVal = Math.round(onHand * cost * 100) / 100;
+        pl = planFor(ik, lk);
+        out.push({
+          itemKey: ik,
+          lotKey: lk,
+          name: p.name || ik,
+          lot: lk,
+          expiry: String(l.expiry || ''),
+          onHand: onHand,
+          cost: cost,
+          price: price,
+          costValue: costVal,
+          daysLeft: dl,
+          planPercent: pl ? pl.percent : 0,
+          plan: pl
+        });
+      }
+    }
+
+    out.sort(function (a, b) {
+      return a.daysLeft - b.daysLeft;
+    });
+    return out;
+  }
+
+  function suggest(lot) {
+    var l = lot || {};
+    var dl = typeof l.daysLeft === 'number' ? l.daysLeft : computeDaysLeft(l.expiry);
+    if (dl === null || isNaN(dl)) {
+      return { percent: 0, capped: false, expired: false, hint: '' };
+    }
+    if (dl <= 0) {
+      return {
+        percent: 0,
+        capped: false,
+        expired: true,
+        hint: t('محضر إعدام', 'Destruction record')
+      };
+    }
+    var pct = 0;
+    if (dl <= 30) {
+      pct = 30;
+    } else if (dl <= 60) {
+      pct = 20;
+    } else if (dl <= 90) {
+      pct = 10;
+    }
+
+    var capped = false;
+    var cost = Number(l.cost);
+    var price = Number(l.price);
+    if (!isNaN(cost) && cost > 0 && !isNaN(price) && price > 0 && pct > 0) {
+      if (price * (100 - pct) + 1e-9 < cost * 100) {
+        var maxPct = Math.floor(((price - cost) * 100) / price + 1e-9);
+        if (maxPct < 0) maxPct = 0;
+        while (maxPct > 0 && price * (100 - maxPct) + 1e-9 < cost * 100) {
+          maxPct--;
+        }
+        pct = maxPct;
+        capped = true;
+      }
+    }
+
+    return {
+      percent: pct,
+      capped: capped,
+      expired: false,
+      hint: ''
+    };
+  }
+
+  function setPlan(opts) {
+    if (!canDiscount()) return false;
+    var o = opts || {};
+    var ik = String(o.itemKey || '').replace(/^\s+|\s+$/g, '');
+    var lk = String(o.lotKey || '').replace(/^\s+|\s+$/g, '');
+    if (!ik || !lk) return false;
+
+    var pct = parsePercent(o.percent);
+    if (isNaN(pct) || pct < 1 || pct > 90) return false;
+
+    var rawUntil = o.until !== undefined && o.until !== null ? normalizeDigits(o.until).replace(/^\s+|\s+$/g, '') : '';
+    var until = rawUntil || findLotExpiry(ik, lk);
+    if (rawUntil && isNaN(parseExpiryDayMs(rawUntil))) return false;
+
+    var by = o.by !== undefined && o.by !== null ? String(o.by) : currentUserName();
+
+    var list = readPlans();
+    var next = [];
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && !(list[i].itemKey === ik && list[i].lotKey === lk)) {
+        next.push(list[i]);
+      }
+    }
+    var rec = {
+      itemKey: ik,
+      lotKey: lk,
+      percent: pct,
+      until: until,
+      by: by,
+      at: new Date().toISOString()
+    };
+    next.push(rec);
+    writePlans(next);
+    refreshView();
+    return rec;
+  }
+
+  function clear(itemKey, lotKey) {
+    if (!canDiscount()) return false;
+    var ik = String(itemKey || '');
+    var lk = String(lotKey || '');
+    if (!ik || !lk) return false;
+    var list = readPlans();
+    var next = [];
+    var removed = false;
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].itemKey === ik && list[i].lotKey === lk) {
+        removed = true;
+      } else if (list[i]) {
+        next.push(list[i]);
+      }
+    }
+    if (removed) {
+      writePlans(next);
+      refreshView();
+    }
+    return removed;
+  }
+
+  window.novaExpiryClearance = {
+    nearExpiry: nearExpiry,
+    suggest: suggest,
+    setPlan: setPlan,
+    plans: plans,
+    planFor: planFor,
+    clear: clear
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function formatMoney(n) {
+    var v = Number(n) || 0;
+    return v.toFixed(2);
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaExpiryClearance{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow:hidden;}',
+      '#novaExpiryClearance *{box-sizing:border-box;}',
+      '#novaExpiryClearance h3{margin:0 0 12px 0;font-size:1.1rem;color:#e6edf3;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '.nec-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}',
+      '.nec-days{display:flex;flex-wrap:wrap;gap:6px;}',
+      '.nec-days button,.nec-toolbar button,.nec-save-btn,.nec-dialog-actions button{min-height:44px;}',
+      '.nec-days button.nec-active{border-color:#79c9eb;color:#79c9eb;}',
+      '.nec-summary{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;margin-bottom:12px;}',
+      '.nec-summary-val{font-size:1.05rem;font-weight:700;color:#79c9eb;}',
+      '.nec-advisory{font-size:0.85rem;color:#9fb0c2;margin-bottom:10px;}',
+      '.nec-table-wrap{width:100%;max-width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;}',
+      '.nec-table{width:100%;border-collapse:collapse;font-size:0.9rem;min-width:320px;}',
+      '.nec-table th,.nec-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.nec-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.nec-table tr:last-child td{border-bottom:0;}',
+      '.nec-row-expired{background:rgba(220,53,69,0.18);}',
+      '.nec-row-soon{background:rgba(245,158,11,0.18);}',
+      '.nec-hint-expired{color:#ff7b89;font-weight:600;}',
+      '.nec-pct-wrap{display:flex;gap:6px;align-items:center;}',
+      '.nec-pct-input{width:76px;min-height:44px;padding:6px 8px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.nec-pct-input:focus{outline:none;border-color:#79c9eb;}',
+      '.nec-print-only{display:none;}',
+      '.nec-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}',
+      '.nec-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-top:8px;}',
+      '.nec-dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999;}',
+      '.nec-dialog{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;max-width:360px;width:100%;color:#e6edf3;}',
+      '.nec-dialog p{margin:0 0 14px 0;line-height:1.5;}',
+      '.nec-dialog-actions{display:flex;gap:8px;justify-content:flex-end;}',
+      '@media print{body *{visibility:hidden !important;}#novaExpiryClearance,#novaExpiryClearance *{visibility:visible !important;}#novaExpiryClearance{position:absolute;left:0;top:0;width:100%;border:0;background:#fff;color:#000;overflow:visible;}#novaExpiryClearance h3{color:#000;border-bottom:1px solid #999;}#novaExpiryClearance .nec-summary{background:#fff;color:#000;border:1px solid #999;}#novaExpiryClearance .nec-summary-val{color:#000;}#novaExpiryClearance .nec-table-wrap{overflow:visible;border:1px solid #999;}#novaExpiryClearance .nec-table th{background:#eee;color:#000;border-bottom:1px solid #999;}#novaExpiryClearance .nec-table td{color:#000;border-bottom:1px solid #ccc;}#novaExpiryClearance .nec-hint-expired{color:#b00020;}#novaExpiryClearance .nec-no-print{display:none !important;}#novaExpiryClearance .nec-print-only{display:inline !important;}}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function showConfirmDialog(message, onConfirm) {
+    var existing = document.getElementById(DIALOG_ID);
+    if (existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+
+    var backdrop = el('div', 'nec-dialog-backdrop');
+    backdrop.id = DIALOG_ID;
+    backdrop.setAttribute('role', 'dialog');
+    backdrop.setAttribute('aria-modal', 'true');
+    backdrop.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var box = el('div', 'nec-dialog');
+    box.appendChild(el('p', '', message));
+
+    var actions = el('div', 'nec-dialog-actions');
+    var cancelBtn = el('button', 'btn btn-secondary', t('إلغاء', 'Cancel'));
+    cancelBtn.type = 'button';
+    var okBtn = el('button', 'btn btn-primary', t('تأكيد', 'Confirm'));
+    okBtn.type = 'button';
+
+    function close() {
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    }
+
+    cancelBtn.addEventListener('click', close);
+    okBtn.addEventListener('click', function () {
+      close();
+      if (onConfirm) onConfirm();
+    });
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(okBtn);
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
+
+  function refreshView() {
+    var tableHost = document.getElementById('necTableHost');
+    var lossVal = document.getElementById('necLossValue');
+    var statusEl = document.getElementById('necStatusMsg');
+    if (!tableHost || !lossVal) return;
+
+    while (tableHost.firstChild) tableHost.removeChild(tableHost.firstChild);
+
+    var rows = nearExpiry(currentDays);
+    var totalLoss = 0;
+    var i;
+    for (i = 0; i < rows.length; i++) {
+      totalLoss += rows[i].costValue;
+    }
+    lossVal.textContent = formatMoney(totalLoss) + ' ' + t('ج.م', 'EGP');
+
+    if (!rows.length) {
+      tableHost.appendChild(el('div', 'nec-empty', t('لا توجد تشغيلات قريبة الانتهاء في هذه الفترة.', 'No near-expiry lots in this window.')));
+      return;
+    }
+
+    var editable = canDiscountHint();
+    var wrap = el('div', 'nec-table-wrap');
+    var table = el('table', 'nec-table');
+    var thead = document.createElement('thead');
+    var trHead = document.createElement('tr');
+    var headers = [
+      t('الصنف', 'Item'),
+      t('التشغيلة', 'Lot'),
+      t('الصلاحية', 'Expiry'),
+      t('الرصيد', 'On Hand'),
+      t('قيمة التكلفة', 'Cost Value'),
+      t('الأيام المتبقية', 'Days Left'),
+      t('خطة الخصم', 'Discount Plan')
+    ];
+    for (i = 0; i < headers.length; i++) {
+      trHead.appendChild(el('th', '', headers[i]));
+    }
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (i = 0; i < rows.length; i++) {
+      (function (row) {
+        var tr = document.createElement('tr');
+        if (row.daysLeft <= 0) {
+          tr.className = 'nec-row-expired';
+        } else if (row.daysLeft <= 30) {
+          tr.className = 'nec-row-soon';
+        }
+
+        tr.appendChild(el('td', '', row.name));
+        tr.appendChild(el('td', '', row.lot));
+        tr.appendChild(el('td', '', row.expiry));
+        tr.appendChild(el('td', '', String(row.onHand)));
+        tr.appendChild(el('td', '', formatMoney(row.costValue)));
+        tr.appendChild(el('td', '', String(row.daysLeft)));
+
+        var planTd = document.createElement('td');
+        if (row.daysLeft <= 0) {
+          planTd.appendChild(el('span', 'nec-hint-expired', t('محضر إعدام', 'Destruction record')));
+        } else {
+          var box = el('div', 'nec-pct-wrap nec-no-print');
+          var inp = el('input', 'nec-pct-input');
+          inp.type = 'text';
+          inp.setAttribute('inputmode', 'numeric');
+          inp.setAttribute('aria-label', t('نسبة الخصم', 'Discount percent'));
+          inp.placeholder = '%';
+          inp.value = row.planPercent ? String(row.planPercent) : '';
+          if (!editable) inp.disabled = true;
+
+          var saveBtn = el('button', 'btn btn-primary nec-save-btn', t('احفظ الخطة', 'Save Plan'));
+          saveBtn.type = 'button';
+          if (!editable) saveBtn.disabled = true;
+
+          saveBtn.addEventListener('click', function () {
+            var res = setPlan({
+              itemKey: row.itemKey,
+              lotKey: row.lotKey,
+              percent: inp.value,
+              until: row.expiry
+            });
+            if (!res) {
+              var errMsg = t('تعذر الحفظ: النسبة من ١ إلى ٩٠ أو لا توجد صلاحية.', 'Save failed: percent must be 1-90 or permission denied.');
+              if (statusEl) statusEl.textContent = errMsg;
+              toast(errMsg, 'error');
+            } else {
+              var okMsg = t('تم حفظ خطة الخصم.', 'Discount plan saved.');
+              if (statusEl) statusEl.textContent = okMsg;
+              toast(okMsg, 'success');
+            }
+          });
+
+          box.appendChild(inp);
+          box.appendChild(saveBtn);
+          planTd.appendChild(box);
+          planTd.appendChild(el('span', 'nec-print-only', row.planPercent ? (String(row.planPercent) + '%') : '-'));
+        }
+        tr.appendChild(planTd);
+        tbody.appendChild(tr);
+      })(rows[i]);
+    }
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    tableHost.appendChild(wrap);
+  }
+
+  function buildCard() {
+    injectStyles();
+    var editable = canDiscountHint();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('بيع الأصناف قريبة الانتهاء بخصم مخطط', 'Near-Expiry Clearance Plans')));
+    card.appendChild(el('div', 'nec-advisory', t('خطة استرشادية فقط ولا تغيّر سعر البيع تلقائيًا.', 'Advisory plan only; does not change sale prices automatically.')));
+
+    var toolbar = el('div', 'nec-toolbar nec-no-print');
+    var daysWrap = el('div', 'nec-days');
+    var options = [30, 60, 90, 180];
+    var dayBtns = [];
+    var i;
+
+    function updateDayButtons() {
+      var k;
+      for (k = 0; k < dayBtns.length; k++) {
+        if (dayBtns[k].val === currentDays) {
+          dayBtns[k].btn.className = 'btn btn-secondary nec-active';
+        } else {
+          dayBtns[k].btn.className = 'btn btn-secondary';
+        }
+      }
+    }
+
+    for (i = 0; i < options.length; i++) {
+      (function (dVal) {
+        var b = el('button', 'btn btn-secondary', String(dVal) + ' ' + t('يوم', 'd'));
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          currentDays = dVal;
+          updateDayButtons();
+          refreshView();
+        });
+        daysWrap.appendChild(b);
+        dayBtns.push({ val: dVal, btn: b });
+      })(options[i]);
+    }
+    updateDayButtons();
+    toolbar.appendChild(daysWrap);
+
+    var suggestAllBtn = el('button', 'btn btn-primary', t('اقترح كل الخصومات', 'Suggest All Discounts'));
+    suggestAllBtn.type = 'button';
+    if (!editable) suggestAllBtn.disabled = true;
+    suggestAllBtn.addEventListener('click', function () {
+      var statusEl = document.getElementById('necStatusMsg');
+      if (!canDiscount()) {
+        var denyMsg = t('تعذر التطبيق: تحقق من الصلاحية.', 'Failed to apply: check permission.');
+        if (statusEl) statusEl.textContent = denyMsg;
+        toast(denyMsg, 'error');
+        return;
+      }
+      var rows = nearExpiry(currentDays);
+      var targets = [];
+      var idx, r, s;
+      for (idx = 0; idx < rows.length; idx++) {
+        r = rows[idx];
+        if (r.daysLeft <= 0 || r.plan) continue;
+        s = suggest(r);
+        if (s.percent >= 1) {
+          targets.push({ row: r, sug: s });
+        }
+      }
+      if (!targets.length) {
+        var noMsg = t('لا توجد تشغيلات جديدة لاقتراح خصم لها.', 'No unplanned eligible lots to suggest.');
+        if (statusEl) statusEl.textContent = noMsg;
+        return;
+      }
+      showConfirmDialog(
+        t('هل تريد تطبيق الخصم المقترح على التشغيلات التي ليس لها خطة؟', 'Apply suggested discounts to all unplanned eligible lots?'),
+        function () {
+          var k, applied = 0;
+          for (k = 0; k < targets.length; k++) {
+            if (setPlan({
+              itemKey: targets[k].row.itemKey,
+              lotKey: targets[k].row.lotKey,
+              percent: targets[k].sug.percent,
+              until: targets[k].row.expiry
+            })) {
+              applied++;
+            }
+          }
+          var msg = applied > 0
+            ? t('تم تطبيق الخصومات المقترحة.', 'Suggested discounts applied.')
+            : t('تعذر التطبيق: تحقق من الصلاحية.', 'Failed to apply: check permission.');
+          if (statusEl) statusEl.textContent = msg;
+          toast(msg, applied > 0 ? 'success' : 'error');
+        }
+      );
+    });
+    toolbar.appendChild(suggestAllBtn);
+
+    var printBtn = el('button', 'btn btn-secondary', t('طباعة قايمة التصفية', 'Print Clearance List'));
+    printBtn.type = 'button';
+    printBtn.addEventListener('click', function () {
+      if (typeof window.print === 'function') {
+        window.print();
+      }
+    });
+    toolbar.appendChild(printBtn);
+    card.appendChild(toolbar);
+
+    var summary = el('div', 'nec-summary');
+    summary.appendChild(el('span', '', t('قيمة المعرّض للخسارة', 'At-Risk Cost Value')));
+    var lossVal = el('span', 'nec-summary-val', '0.00');
+    lossVal.id = 'necLossValue';
+    summary.appendChild(lossVal);
+    card.appendChild(summary);
+
+    var tableHost = el('div', '');
+    tableHost.id = 'necTableHost';
+    card.appendChild(tableHost);
+
+    var statusMsg = el('div', 'nec-status', editable ? '' : t('وضع العرض فقط.', 'Read-only mode.'));
+    statusMsg.id = 'necStatusMsg';
+    card.appendChild(statusMsg);
+
+    return card;
+  }
+
+  function isReportsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isReportsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshView();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isReportsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
+;
+// app/602-doctor-rx.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-doctor-rx-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaDoctorRx';
+  var STYLE_ID = 'novaDoctorRxStyle';
+  var MAX_RECORDS = 2000;
+  var observer = null;
+  var selectedDays = 30;
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    if (window.showToast && typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+  }
+
+  function currentUser() {
+    if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+      try {
+        var u = window.novaAuth.current();
+        return u && u.name ? String(u.name) : '';
+      } catch (e) {
+        return '';
+      }
+    }
+    return '';
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        out += idx !== -1 ? String(idx) : ch;
+      }
+    }
+    return out;
+  }
+
+  function trimStr(val) {
+    return String(val == null ? '' : val).replace(/^\s+|\s+$/g, '');
+  }
+
+  function parsePositiveInt(val) {
+    var s = trimStr(normalizeDigits(val));
+    if (!s || !/^\d+$/.test(s)) return NaN;
+    var n = parseInt(s, 10);
+    return n >= 1 ? n : NaN;
+  }
+
+  function normalizePhone(val) {
+    var raw = trimStr(normalizeDigits(val));
+    if (!raw) return '';
+    var digits = raw.replace(/[\s\-()]+/g, '');
+    if (digits.indexOf('+20') === 0) {
+      digits = '0' + digits.slice(3);
+    } else if (digits.indexOf('0020') === 0) {
+      digits = '0' + digits.slice(4);
+    } else if (digits.indexOf('20') === 0 && digits.length === 12) {
+      digits = '0' + digits.slice(2);
+    }
+    if (!/^01[0125]\d{8}$/.test(digits)) return null;
+    return digits;
+  }
+
+  function toMs(val) {
+    if (val === null || val === undefined || val === '') return NaN;
+    if (typeof val === 'number') return isFinite(val) ? val : NaN;
+    if (val instanceof Date) return val.getTime();
+    var parsed = Date.parse(String(val));
+    return isNaN(parsed) ? NaN : parsed;
+  }
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeStore(list) {
+    var arr = Array.isArray(list) ? list : [];
+    if (arr.length > MAX_RECORDS) {
+      arr = arr.slice(arr.length - MAX_RECORDS);
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function makeId() {
+    return 'drx-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+  }
+
+  function normKey(str) {
+    return trimStr(str).toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function getProducts() {
+    if (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) {
+      return window.NOVA_DEMO.products;
+    }
+    return [];
+  }
+
+  function keyOf(product) {
+    if (!product) return '';
+    if (window.novaStock && typeof window.novaStock.keyOf === 'function') {
+      return String(window.novaStock.keyOf(product) || '');
+    }
+    return String(product.barcode || product.id || product.name || '');
+  }
+
+  function getOnHand(key) {
+    if (!window.novaStock || typeof window.novaStock.hasLots !== 'function' || typeof window.novaStock.lots !== 'function') {
+      return 0;
+    }
+    if (!window.novaStock.hasLots(key)) return 0;
+    var lots = window.novaStock.lots(key) || [];
+    var sum = 0;
+    var i;
+    for (i = 0; i < lots.length; i++) {
+      sum += Number(lots[i] && lots[i].onHand) || 0;
+    }
+    return sum;
+  }
+
+  function searchProducts(q) {
+    if (window.novaSearch && typeof window.novaSearch.search === 'function') {
+      try {
+        return window.novaSearch.search(q, 10) || [];
+      } catch (e) {}
+    } else if (typeof window.novaSearch === 'function') {
+      try {
+        return window.novaSearch(q, 10) || [];
+      } catch (e) {}
+    }
+    var query = normKey(q);
+    var list = getProducts();
+    var out = [];
+    var i, p;
+    for (i = 0; i < list.length && out.length < 10; i++) {
+      p = list[i];
+      if (!query || (p.name && normKey(p.name).indexOf(query) !== -1) || (p.barcode && String(p.barcode).indexOf(query) !== -1)) {
+        out.push(p);
+      }
+    }
+    return out;
+  }
+
+  function activeRecords(fromMs, untilMs) {
+    var all = readStore();
+    var out = [];
+    var f = toMs(fromMs);
+    var to = toMs(untilMs);
+    var i, rec, ms;
+    for (i = 0; i < all.length; i++) {
+      rec = all[i];
+      if (!rec || rec.removedAt) continue;
+      ms = toMs(rec.at);
+      if (!isNaN(f) && (isNaN(ms) || ms < f)) continue;
+      if (!isNaN(to) && (isNaN(ms) || ms > to)) continue;
+      out.push(rec);
+    }
+    return out;
+  }
+
+  function addRx(opts) {
+    var o = opts || {};
+    var doctor = trimStr(o.doctor);
+    if (!doctor) return false;
+
+    var rawItems = Array.isArray(o.items) ? o.items : [];
+    if (rawItems.length < 1 || rawItems.length > 20) return false;
+
+    var items = [];
+    var i, row, name, qty;
+    for (i = 0; i < rawItems.length; i++) {
+      row = rawItems[i];
+      if (!row || typeof row !== 'object') return false;
+      name = trimStr(row.name);
+      qty = parsePositiveInt(row.qty);
+      if (!name || isNaN(qty)) return false;
+      items.push({ name: name, qty: qty });
+    }
+
+    var phone = normalizePhone(o.customerPhone);
+    if (phone === null) return false;
+
+    var atMs = o.at !== undefined && o.at !== null && o.at !== '' ? toMs(o.at) : Date.now();
+    if (isNaN(atMs)) return false;
+
+    var rec = {
+      id: makeId(),
+      doctor: doctor,
+      clinic: trimStr(o.clinic),
+      items: items,
+      customerPhone: phone,
+      note: trimStr(o.note),
+      at: new Date(atMs).toISOString(),
+      createdBy: currentUser()
+    };
+
+    var store = readStore();
+    store.push(rec);
+    if (!writeStore(store)) return false;
+    refreshCard();
+    return rec;
+  }
+
+  function removeRx(id, reason) {
+    var rid = trimStr(id);
+    var why = trimStr(reason);
+    if (!rid || !why) return false;
+
+    var store = readStore();
+    var i, found = false;
+    for (i = 0; i < store.length; i++) {
+      if (store[i] && store[i].id === rid && !store[i].removedAt) {
+        store[i].removedAt = new Date().toISOString();
+        store[i].removedBy = currentUser();
+        store[i].reason = why;
+        found = true;
+        break;
+      }
+    }
+    if (!found) return false;
+    if (!writeStore(store)) return false;
+    refreshCard();
+    return true;
+  }
+
+  function listRx(filter) {
+    var f = filter && typeof filter === 'object' ? filter : {};
+    var all = readStore();
+    var out = [];
+    var from = toMs(f.fromMs);
+    var to = toMs(f.toMs);
+    var docFilter = f.doctor ? normKey(f.doctor) : '';
+    var i, rec, ms;
+    for (i = 0; i < all.length; i++) {
+      rec = all[i];
+      if (!rec) continue;
+      if (!f.includeRemoved && rec.removedAt) continue;
+      ms = toMs(rec.at);
+      if (!isNaN(from) && (isNaN(ms) || ms < from)) continue;
+      if (!isNaN(to) && (isNaN(ms) || ms > to)) continue;
+      if (docFilter && normKey(rec.doctor).indexOf(docFilter) === -1) continue;
+      out.push(rec);
+    }
+    out.sort(function (a, b) {
+      return (toMs(b.at) || 0) - (toMs(a.at) || 0);
+    });
+    return out;
+  }
+
+  function doctorsSummary() {
+    var recs = activeRecords();
+    var map = {};
+    var i, rec, k, ms;
+    for (i = 0; i < recs.length; i++) {
+      rec = recs[i];
+      k = normKey(rec.doctor);
+      ms = toMs(rec.at) || 0;
+      if (!map[k]) {
+        map[k] = { doctor: rec.doctor, count: 0, lastAt: rec.at, lastMs: ms };
+      }
+      map[k].count += 1;
+      if (ms >= map[k].lastMs) {
+        map[k].lastMs = ms;
+        map[k].lastAt = rec.at;
+        map[k].doctor = rec.doctor;
+      }
+    }
+    var keys = Object.keys(map);
+    var out = [];
+    for (i = 0; i < keys.length; i++) {
+      out.push({
+        doctor: map[keys[i]].doctor,
+        count: map[keys[i]].count,
+        lastAt: map[keys[i]].lastAt
+      });
+    }
+    out.sort(function (a, b) {
+      if (b.count !== a.count) return b.count - a.count;
+      return (toMs(b.lastAt) || 0) - (toMs(a.lastAt) || 0);
+    });
+    return out;
+  }
+
+  function topItemsSummary(fromMs, untilMs, limit) {
+    var recs = activeRecords(fromMs, untilMs);
+    var map = {};
+    var i, j, items, it, k;
+    for (i = 0; i < recs.length; i++) {
+      items = Array.isArray(recs[i].items) ? recs[i].items : [];
+      for (j = 0; j < items.length; j++) {
+        it = items[j];
+        if (!it || !it.name) continue;
+        k = normKey(it.name);
+        if (!map[k]) {
+          map[k] = { name: it.name, qty: 0, count: 0 };
+        }
+        map[k].qty += Number(it.qty) || 0;
+        map[k].count += 1;
+      }
+    }
+    var keys = Object.keys(map);
+    var out = [];
+    for (i = 0; i < keys.length; i++) {
+      out.push(map[keys[i]]);
+    }
+    out.sort(function (a, b) {
+      if (b.qty !== a.qty) return b.qty - a.qty;
+      return b.count - a.count;
+    });
+    if (typeof limit === 'number' && limit > 0) {
+      return out.slice(0, limit);
+    }
+    return out;
+  }
+
+  function byDoctorSummary(doctor, fromMs, untilMs) {
+    var target = normKey(doctor);
+    if (!target) return [];
+    var recs = activeRecords(fromMs, untilMs);
+    var out = [];
+    var i;
+    for (i = 0; i < recs.length; i++) {
+      if (normKey(recs[i].doctor) === target) {
+        out.push(recs[i]);
+      }
+    }
+    out.sort(function (a, b) {
+      return (toMs(b.at) || 0) - (toMs(a.at) || 0);
+    });
+    return out;
+  }
+
+  function missingItemsSummary(fromMs, untilMs) {
+    var top = topItemsSummary(fromMs, untilMs);
+    var out = [];
+    var i, j, item, hits, hasInStock;
+    for (i = 0; i < top.length; i++) {
+      item = top[i];
+      hits = searchProducts(item.name);
+      if (!hits || !hits.length) {
+        out.push({
+          name: item.name,
+          qty: item.qty,
+          count: item.count,
+          reason: 'not_found'
+        });
+      } else {
+        hasInStock = false;
+        for (j = 0; j < hits.length; j++) {
+          if (getOnHand(keyOf(hits[j])) > 0) {
+            hasInStock = true;
+            break;
+          }
+        }
+        if (!hasInStock) {
+          out.push({
+            name: item.name,
+            qty: item.qty,
+            count: item.count,
+            reason: 'out_of_stock'
+          });
+        }
+      }
+    }
+    return out;
+  }
+
+  window.novaDoctorRx = {
+    add: addRx,
+    remove: removeRx,
+    list: listRx,
+    doctors: doctorsSummary,
+    topItems: topItemsSummary,
+    byDoctor: byDoctorSummary,
+    missingItems: missingItemsSummary
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaDoctorRx{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}',
+      '#novaDoctorRx *{box-sizing:border-box;}',
+      '#novaDoctorRx h3,#novaDoctorRx h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaDoctorRx h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaDoctorRx h4{font-size:0.95rem;margin-top:16px;color:#79c9eb;}',
+      '.ndr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;}',
+      '.ndr-field label{display:block;font-size:0.85rem;margin-bottom:4px;color:#9fb0c2;}',
+      '.ndr-input{width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.ndr-input:focus{outline:none;border-color:#79c9eb;}',
+      '.ndr-items-box{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}',
+      '.ndr-item-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}',
+      '.ndr-item-name{flex:1 1 160px;min-width:0;}',
+      '.ndr-item-qty{flex:0 0 84px;}',
+      '.ndr-item-del{flex:0 0 44px;min-height:44px;padding:0;}',
+      '.ndr-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;align-items:center;}',
+      '.ndr-actions button,.ndr-head-row button,.ndr-period button{min-height:44px;}',
+      '.ndr-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-top:6px;}',
+      '.ndr-period{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 8px 0;align-items:center;}',
+      '.ndr-head-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;margin-bottom:8px;}',
+      '.ndr-head-row h4{margin:0;}',
+      '.ndr-table-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;}',
+      '.ndr-table{width:100%;border-collapse:collapse;font-size:0.9rem;min-width:280px;}',
+      '.ndr-table th,.ndr-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.ndr-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.ndr-table tr:last-child td{border-bottom:0;}',
+      '.ndr-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function copyText(text, onDone) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(text).then(function () {
+        if (onDone) onDone(true);
+      }, function () {
+        fallbackCopy(text, onDone);
+      });
+    } else {
+      fallbackCopy(text, onDone);
+    }
+  }
+
+  function fallbackCopy(text, onDone) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', 'readonly');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch (e) {
+      ok = false;
+    }
+    document.body.removeChild(ta);
+    if (onDone) onDone(ok);
+  }
+
+  function formatDateShort(iso) {
+    var ms = toMs(iso);
+    if (isNaN(ms)) return '—';
+    var d = new Date(ms);
+    var m = String(d.getMonth() + 1);
+    var day = String(d.getDate());
+    return d.getFullYear() + '-' + (m.length < 2 ? '0' + m : m) + '-' + (day.length < 2 ? '0' + day : day);
+  }
+
+  function buildTable(headers, rows, emptyMsg) {
+    var wrap = el('div', 'ndr-table-wrap');
+    if (!rows.length) {
+      wrap.appendChild(el('div', 'ndr-empty', emptyMsg));
+      return wrap;
+    }
+    var table = el('table', 'ndr-table');
+    var thead = document.createElement('thead');
+    var trHead = document.createElement('tr');
+    var i, j, tr;
+    for (i = 0; i < headers.length; i++) {
+      trHead.appendChild(el('th', '', headers[i]));
+    }
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (i = 0; i < rows.length; i++) {
+      tr = document.createElement('tr');
+      for (j = 0; j < rows[i].length; j++) {
+        tr.appendChild(el('td', '', rows[i][j]));
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  function refreshDatalist() {
+    var dl = document.getElementById('ndrDoctorsList');
+    if (!dl) return;
+    while (dl.firstChild) dl.removeChild(dl.firstChild);
+    var docs = doctorsSummary();
+    var i, opt;
+    for (i = 0; i < docs.length; i++) {
+      opt = document.createElement('option');
+      opt.value = docs[i].doctor;
+      dl.appendChild(opt);
+    }
+  }
+
+  function refreshCard() {
+    var docsBox = document.getElementById('ndrDoctorsWrap');
+    var topBox = document.getElementById('ndrTopItemsWrap');
+    var missBox = document.getElementById('ndrMissingWrap');
+    if (!docsBox || !topBox || !missBox) return;
+
+    refreshDatalist();
+
+    while (docsBox.firstChild) docsBox.removeChild(docsBox.firstChild);
+    while (topBox.firstChild) topBox.removeChild(topBox.firstChild);
+    while (missBox.firstChild) missBox.removeChild(missBox.firstChild);
+
+    var to = Date.now();
+    var from = to - selectedDays * 86400000;
+
+    var docs = doctorsSummary();
+    var docRows = [];
+    var i, d, it;
+    for (i = 0; i < docs.length; i++) {
+      d = docs[i];
+      docRows.push([d.doctor, d.count, formatDateShort(d.lastAt)]);
+    }
+    docsBox.appendChild(buildTable(
+      [t('الطبيب', 'Doctor'), t('عدد الروشتات', 'Prescriptions'), t('آخر تاريخ', 'Last Date')],
+      docRows,
+      t('لا توجد روشتات مسجلة.', 'No prescriptions recorded.')
+    ));
+
+    var top = topItemsSummary(from, to, 20);
+    var topRows = [];
+    for (i = 0; i < top.length; i++) {
+      it = top[i];
+      topRows.push([it.name, it.qty, it.count]);
+    }
+    topBox.appendChild(buildTable(
+      [t('الصنف', 'Item'), t('الكمية', 'Qty'), t('التكرار', 'Count')],
+      topRows,
+      t('لا توجد أصناف في هذه الفترة.', 'No items in this period.')
+    ));
+
+    var missing = missingItemsSummary(from, to);
+    var missRows = [];
+    for (i = 0; i < missing.length; i++) {
+      it = missing[i];
+      missRows.push([
+        it.name,
+        it.qty,
+        it.reason === 'out_of_stock' ? t('رصيده صفر', 'Out of stock') : t('غير مسجل', 'Not in catalog')
+      ]);
+    }
+    missBox.appendChild(buildTable(
+      [t('الصنف', 'Item'), t('الكمية المطلوبة', 'Requested Qty'), t('الحالة', 'Status')],
+      missRows,
+      t('كل الأصناف المكتوبة متوفرة حاليًا.', 'All prescribed items are in stock.')
+    ));
+  }
+
+  function buildCard() {
+    injectStyles();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('روشتات الأطباء', 'Doctor Prescriptions')));
+
+    var dl = document.createElement('datalist');
+    dl.id = 'ndrDoctorsList';
+    card.appendChild(dl);
+
+    var formGrid = el('div', 'ndr-grid');
+    function makeField(labelText, id, placeholder, listId) {
+      var wrap = el('div', 'ndr-field');
+      var lbl = el('label', '', labelText);
+      lbl.setAttribute('for', id);
+      var inp = el('input', 'ndr-input');
+      inp.id = id;
+      inp.type = 'text';
+      if (placeholder) inp.placeholder = placeholder;
+      if (listId) inp.setAttribute('list', listId);
+      wrap.appendChild(lbl);
+      wrap.appendChild(inp);
+      formGrid.appendChild(wrap);
+      return inp;
+    }
+
+    var doctorInput = makeField(t('اسم الطبيب', 'Doctor Name'), 'ndrDoctorInput', t('د. أحمد...', 'Dr. Ahmed...'), 'ndrDoctorsList');
+    var clinicInput = makeField(t('العيادة (اختياري)', 'Clinic (optional)'), 'ndrClinicInput', t('اسم العيادة', 'Clinic name'));
+    var phoneInput = makeField(t('هاتف العميل (اختياري)', 'Customer Phone (optional)'), 'ndrPhoneInput', t('٠١٠١٢٣٤٥٦٧٨', '01xxxxxxxxx'));
+    phoneInput.setAttribute('inputmode', 'tel');
+    var noteInput = makeField(t('ملاحظة (اختياري)', 'Note (optional)'), 'ndrNoteInput', t('ملاحظات', 'Notes'));
+    card.appendChild(formGrid);
+
+    var itemsBox = el('div', 'ndr-items-box');
+    itemsBox.id = 'ndrItemsBox';
+    card.appendChild(itemsBox);
+
+    function addItemRow() {
+      if (itemsBox.children.length >= 20) return;
+      var row = el('div', 'ndr-item-row');
+      var nameInp = el('input', 'ndr-input ndr-item-name');
+      nameInp.type = 'text';
+      nameInp.placeholder = t('اسم الصنف', 'Item name');
+
+      var qtyInp = el('input', 'ndr-input ndr-item-qty');
+      qtyInp.type = 'text';
+      qtyInp.setAttribute('inputmode', 'numeric');
+      qtyInp.value = '1';
+      qtyInp.placeholder = t('الكمية', 'Qty');
+
+      var delBtn = el('button', 'btn btn-secondary ndr-item-del', '−');
+      delBtn.type = 'button';
+      delBtn.setAttribute('aria-label', t('حذف الصنف', 'Remove item'));
+      delBtn.addEventListener('click', function () {
+        if (itemsBox.children.length > 1) {
+          itemsBox.removeChild(row);
+        }
+      });
+
+      row.appendChild(nameInp);
+      row.appendChild(qtyInp);
+      row.appendChild(delBtn);
+      itemsBox.appendChild(row);
+    }
+
+    addItemRow();
+
+    var actions = el('div', 'ndr-actions');
+    var addRowBtn = el('button', 'btn btn-secondary', t('+ إضافة صنف', '+ Add Item'));
+    addRowBtn.type = 'button';
+    addRowBtn.addEventListener('click', addItemRow);
+
+    var saveBtn = el('button', 'btn btn-primary', t('حفظ الروشتة', 'Save Prescription'));
+    saveBtn.type = 'button';
+
+    actions.appendChild(addRowBtn);
+    actions.appendChild(saveBtn);
+    card.appendChild(actions);
+
+    var statusMsg = el('div', 'ndr-status', '');
+    card.appendChild(statusMsg);
+
+    saveBtn.addEventListener('click', function () {
+      var rows = itemsBox.querySelectorAll('.ndr-item-row');
+      var items = [];
+      var i, nInp, qInp;
+      for (i = 0; i < rows.length; i++) {
+        nInp = rows[i].querySelector('.ndr-item-name');
+        qInp = rows[i].querySelector('.ndr-item-qty');
+        items.push({ name: nInp ? nInp.value : '', qty: qInp ? qInp.value : '' });
+      }
+      var res = addRx({
+        doctor: doctorInput.value,
+        clinic: clinicInput.value,
+        customerPhone: phoneInput.value,
+        note: noteInput.value,
+        items: items
+      });
+      if (!res) {
+        var err = t('تعذر الحفظ: تأكد من اسم الطبيب والأصناف والهاتف.', 'Save failed: check doctor, items, and phone.');
+        statusMsg.textContent = err;
+        toast(err, 'error');
+        return;
+      }
+      doctorInput.value = '';
+      clinicInput.value = '';
+      phoneInput.value = '';
+      noteInput.value = '';
+      while (itemsBox.firstChild) itemsBox.removeChild(itemsBox.firstChild);
+      addItemRow();
+      var ok = t('تم تسجيل الروشتة بنجاح.', 'Prescription saved.');
+      statusMsg.textContent = ok;
+      toast(ok, 'success');
+    });
+
+    var periodWrap = el('div', 'ndr-period');
+    var periods = [7, 30, 90];
+    var periodBtns = [];
+    function updatePeriodBtns() {
+      var j;
+      for (j = 0; j < periodBtns.length; j++) {
+        periodBtns[j].btn.className = periodBtns[j].days === selectedDays ? 'btn btn-primary' : 'btn btn-secondary';
+      }
+    }
+    for (var pIdx = 0; pIdx < periods.length; pIdx++) {
+      (function (days) {
+        var b = el('button', days === selectedDays ? 'btn btn-primary' : 'btn btn-secondary', t('آخر ' + days + ' يوم', 'Last ' + days + ' days'));
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          selectedDays = days;
+          updatePeriodBtns();
+          refreshCard();
+        });
+        periodBtns.push({ days: days, btn: b });
+        periodWrap.appendChild(b);
+      })(periods[pIdx]);
+    }
+    card.appendChild(periodWrap);
+
+    card.appendChild(el('h4', '', t('أكتر الدكاترة', 'Top Doctors')));
+    var docsWrap = el('div', '');
+    docsWrap.id = 'ndrDoctorsWrap';
+    card.appendChild(docsWrap);
+
+    card.appendChild(el('h4', '', t('أكتر الأصناف المكتوبة', 'Most Prescribed Items')));
+    var topWrap = el('div', '');
+    topWrap.id = 'ndrTopItemsWrap';
+    card.appendChild(topWrap);
+
+    var missHead = el('div', 'ndr-head-row');
+    missHead.appendChild(el('h4', '', t('ناقص عندنا — اللي بيكتبه الدكاترة وإحنا ما عندناش', 'Missing Stock — Prescribed by Doctors')));
+    var copyBtn = el('button', 'btn btn-secondary', t('انسخ القايمة', 'Copy List'));
+    copyBtn.type = 'button';
+    copyBtn.addEventListener('click', function () {
+      var to = Date.now();
+      var from = to - selectedDays * 86400000;
+      var list = missingItemsSummary(from, to);
+      if (!list.length) {
+        statusMsg.textContent = t('لا توجد نواقص للنسخ.', 'No missing items to copy.');
+        return;
+      }
+      var lines = [];
+      var i;
+      for (i = 0; i < list.length; i++) {
+        lines.push(list[i].name + ' — ' + list[i].qty);
+      }
+      copyText(lines.join('\n'), function (ok) {
+        var msg = ok ? t('تم نسخ القائمة.', 'List copied.') : t('تعذر النسخ.', 'Copy failed.');
+        statusMsg.textContent = msg;
+        toast(msg, ok ? 'success' : 'error');
+      });
+    });
+    missHead.appendChild(copyBtn);
+    card.appendChild(missHead);
+
+    var missWrap = el('div', '');
+    missWrap.id = 'ndrMissingWrap';
+    card.appendChild(missWrap);
+
+    return card;
+  }
+
+  function isReportsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isReportsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshCard();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isReportsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
