@@ -1,4 +1,4 @@
-﻿// RCV01 lazy screens: supplier accounts + supplier returns code does not run at startup (perf size ratchet), runs when the
+// RCV01 lazy screens: supplier accounts + supplier returns code does not run at startup (perf size ratchet), runs when the
 // reports / receiving page opens, or on idle after load; sw.js precaches it for offline use. Local/fake data only.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
@@ -18,7 +18,7 @@ try {
   await p1.goto(BASE + (BASE.includes('127.0.0.1') ? 'index.html' : '') + '#sale');
   await p1.locator('#novaSplash').waitFor({ state: 'hidden' });
   assert.equal(await p1.evaluate(() => typeof window.novaSupplierReturns + '/' + typeof window.NovaSupplierAccounts), 'undefined/undefined', 'lazy code not run on the sale screen');
-  assert.equal(await p1.locator('link[rel="prefetch"][data-nova-lazy]').count(), 15);
+  assert.equal(await p1.locator('link[rel="prefetch"][data-nova-lazy]').count(), 16);
   assert.equal(await p1.evaluate(() => typeof window.novaFullBackup + '/' + typeof window.novaControlled + '/' + typeof window.novaSensitiveLog + '/' + typeof window.novaOwnerDash), 'undefined/undefined/undefined/undefined', 'owner-decision screens not run at startup');
   assert.equal(await p1.evaluate(() => typeof window.novaItemCard + '/' + typeof window.novaCreditLimit), 'undefined/undefined', 'item card + credit limit not run at startup');
   // 2) opening the receiving page runs it, in order
