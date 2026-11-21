@@ -19,7 +19,10 @@ const EXTRA_ROUTES = {
   '/purchases-history.js': ['purchases-history.js', 'application/javascript; charset=utf-8'],
   '/purchases-history.css': ['purchases-history.css', 'text/css; charset=utf-8'],
   '/staff-gate.js': ['staff-gate.js', 'application/javascript; charset=utf-8'], // SEC-01 / S1-07 staff login gate
-  '/supplier-accounts.js': ['supplier-accounts.js', 'application/javascript; charset=utf-8'] // AUDIT-03 supplier accounts + expenses screen (FIN-04 logic)
+  '/supplier-accounts.js': ['supplier-accounts.js', 'application/javascript; charset=utf-8'], // AUDIT-03 supplier accounts + expenses screen (FIN-04 logic)
+  '/emergency-sales.html': ['emergency-sales.html', 'text/html; charset=utf-8'], // offline emergency sales page (was 404 on the preview); loads /emergency-core.js and /emergency/stock.json
+  '/emergency-sales': ['emergency-sales.html', 'text/html; charset=utf-8'],
+  '/emergency-core.js': ['emergency-core.js', 'application/javascript; charset=utf-8']
 };
 const TABLES = ['NOVA_PURCHASING_ASSETS', 'NOVA_STATIC_ASSETS'];
 const [base, out] = process.argv.slice(2);
