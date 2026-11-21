@@ -7635,3 +7635,2915 @@
     initObserver();
   }
 })();
+
+;
+// app/612-internal-barcodes.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-internal-barcodes-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaInternalBarcodes';
+  var STYLE_ID = 'novaInternalBarcodesStyle';
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var observer = null;
+  var mounting = false;
+  var selectedKey = '';
+  var currentCode = '';
+
+  var L_CODES = [
+    '0001101', '0011001', '0010011', '0111101', '0100011',
+    '0110001', '0101111', '0111011', '0110111', '0001011'
+  ];
+  var G_CODES = [
+    '0100111', '0110011', '0011011', '0100001', '0011101',
+    '0111001', '0000101', '0010001', '0001001', '0010111'
+  ];
+  var R_CODES = [
+    '1110010', '1100110', '1101100', '1000010', '1011100',
+    '1001110', '1010000', '1000100', '1001000', '1110100'
+  ];
+  var PARITY_PATTERNS = [
+    'LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG',
+    'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'
+  ];
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    if (window.showToast && typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+  }
+
+  function trimStr(val) {
+    return String(val == null ? '' : val).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        out += idx !== -1 ? String(idx) : ch;
+      }
+    }
+    return out;
+  }
+
+  function toArabicDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var out = '';
+    var i, code;
+    for (i = 0; i < s.length; i++) {
+      code = s.charCodeAt(i);
+      if (code >= 48 && code <= 57) {
+        out += ar.charAt(code - 48);
+      } else {
+        out += s.charAt(i);
+      }
+    }
+    return out;
+  }
+
+  function currentUserName() {
+    try {
+      if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+        var u = window.novaAuth.current();
+        if (u && u.name) return String(u.name);
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function canEdit() {
+    if (!window.novaPerms || typeof window.novaPerms.require !== 'function') {
+      return false;
+    }
+    try {
+      return !!window.novaPerms.require('products.edit');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function readStore() {
+    var empty = { counter: 0, items: [] };
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return empty;
+      var parsed = JSON.parse(raw);
+      var items = [];
+      var counter = 0;
+      var i, rec;
+      if (Array.isArray(parsed)) {
+        items = parsed;
+      } else if (parsed && typeof parsed === 'object') {
+        items = Array.isArray(parsed.items) ? parsed.items : [];
+        if (typeof parsed.counter === 'number' && parsed.counter > 0 && isFinite(parsed.counter)) {
+          counter = Math.floor(parsed.counter);
+        }
+      } else {
+        return empty;
+      }
+      for (i = 0; i < items.length; i++) {
+        rec = items[i];
+        if (rec && typeof rec.seq === 'number' && rec.seq > counter && isFinite(rec.seq)) {
+          counter = Math.floor(rec.seq);
+        }
+      }
+      return { counter: counter, items: items };
+    } catch (e) {
+      return empty;
+    }
+  }
+
+  function writeStore(store) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        counter: store.counter,
+        items: store.items
+      }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getProducts() {
+    if (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) {
+      return window.NOVA_DEMO.products;
+    }
+    return [];
+  }
+
+  function keyOf(product) {
+    if (!product) return '';
+    if (window.novaStock && typeof window.novaStock.keyOf === 'function') {
+      return trimStr(window.novaStock.keyOf(product));
+    }
+    return trimStr(product.barcode || product.id || product.name || '');
+  }
+
+  function findProductByKey(key) {
+    var list = getProducts();
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (keyOf(list[i]) === key) return list[i];
+    }
+    return null;
+  }
+
+  function searchProducts(q) {
+    if (window.novaSearch && typeof window.novaSearch.search === 'function') {
+      return window.novaSearch.search(q, 10) || [];
+    }
+    var query = normalizeDigits(q).toLowerCase();
+    var list = getProducts();
+    var out = [];
+    var i, p;
+    for (i = 0; i < list.length && out.length < 10; i++) {
+      p = list[i];
+      if (!query || (p.name && p.name.toLowerCase().indexOf(query) !== -1) || (p.barcode && String(p.barcode).indexOf(query) !== -1)) {
+        out.push(p);
+      }
+    }
+    return out;
+  }
+
+  function computeCheckDigit(code12) {
+    var sum = 0;
+    var i, d;
+    for (i = 0; i < 12; i++) {
+      d = code12.charCodeAt(i) - 48;
+      sum += (i % 2 === 0) ? d : d * 3;
+    }
+    return (10 - (sum % 10)) % 10;
+  }
+
+  function checkCode(code) {
+    var s = trimStr(normalizeDigits(code));
+    if (!/^\d{13}$/.test(s)) return false;
+    var expected = computeCheckDigit(s.slice(0, 12));
+    return (s.charCodeAt(12) - 48) === expected;
+  }
+
+  function pad9(num) {
+    var s = String(num);
+    while (s.length < 9) s = '0' + s;
+    return s;
+  }
+
+  function buildInternalCode(seq) {
+    var base12 = '299' + pad9(seq);
+    return base12 + String(computeCheckDigit(base12));
+  }
+
+  function encodeEan13Bits(code) {
+    var s = trimStr(normalizeDigits(code));
+    if (!/^\d{13}$/.test(s)) return '';
+    var first = s.charCodeAt(0) - 48;
+    var pattern = PARITY_PATTERNS[first];
+    var bits = '101';
+    var i, d;
+    for (i = 1; i <= 6; i++) {
+      d = s.charCodeAt(i) - 48;
+      bits += pattern.charAt(i - 1) === 'G' ? G_CODES[d] : L_CODES[d];
+    }
+    bits += '01010';
+    for (i = 7; i <= 12; i++) {
+      d = s.charCodeAt(i) - 48;
+      bits += R_CODES[d];
+    }
+    bits += '101';
+    return bits;
+  }
+
+  function createBarcodeSvg(code) {
+    var bits = encodeEan13Bits(code);
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('xmlns', SVG_NS);
+    svg.setAttribute('viewBox', '0 0 95 40');
+    svg.setAttribute('width', '190');
+    svg.setAttribute('height', '64');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', code);
+    svg.setAttribute('data-modules', '95');
+
+    var bg = document.createElementNS(SVG_NS, 'rect');
+    bg.setAttribute('x', '0');
+    bg.setAttribute('y', '0');
+    bg.setAttribute('width', '95');
+    bg.setAttribute('height', '40');
+    bg.setAttribute('fill', '#ffffff');
+    svg.appendChild(bg);
+
+    var i = 0;
+    var start, len, rect, isGuard;
+    while (i < bits.length) {
+      if (bits.charAt(i) === '1') {
+        start = i;
+        while (i < bits.length && bits.charAt(i) === '1') i++;
+        len = i - start;
+        isGuard = (start < 3) || (start >= 45 && start < 50) || (start >= 92);
+        rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', String(start));
+        rect.setAttribute('y', '2');
+        rect.setAttribute('width', String(len));
+        rect.setAttribute('height', isGuard ? '36' : '32');
+        rect.setAttribute('fill', '#000000');
+        svg.appendChild(rect);
+      } else {
+        i++;
+      }
+    }
+    return svg;
+  }
+
+  function getCode(itemKey) {
+    var k = trimStr(itemKey);
+    if (!k) return null;
+    var items = readStore().items;
+    var i;
+    for (i = 0; i < items.length; i++) {
+      if (items[i] && items[i].itemKey === k) return items[i].code;
+    }
+    return null;
+  }
+
+  function findByCode(code) {
+    var s = trimStr(normalizeDigits(code));
+    if (!s) return null;
+    var items = readStore().items;
+    var i;
+    for (i = 0; i < items.length; i++) {
+      if (items[i] && items[i].code === s) return items[i].itemKey;
+    }
+    return null;
+  }
+
+  function listAssigned() {
+    var items = readStore().items;
+    var out = [];
+    var i, rec, prod;
+    for (i = 0; i < items.length; i++) {
+      rec = items[i];
+      if (!rec || !rec.itemKey || !rec.code) continue;
+      prod = findProductByKey(rec.itemKey);
+      out.push({
+        itemKey: rec.itemKey,
+        code: rec.code,
+        seq: rec.seq,
+        name: prod && prod.name ? prod.name : (rec.name || rec.itemKey),
+        price: prod && prod.price !== undefined ? prod.price : null,
+        at: rec.at || '',
+        by: rec.by || ''
+      });
+    }
+    return out;
+  }
+
+  function codeInUse(items, code) {
+    var i;
+    for (i = 0; i < items.length; i++) {
+      if (items[i] && items[i].code === code) return true;
+    }
+    return false;
+  }
+
+  function assignCode(itemKey) {
+    if (!canEdit()) {
+      toast(t('لا تملك صلاحية تعديل الأصناف.', 'No permission to edit products.'), 'error');
+      return false;
+    }
+    var k = trimStr(itemKey);
+    if (!k) return false;
+
+    var prod = findProductByKey(k);
+    if (prod && prod.barcode && trimStr(prod.barcode) !== '') {
+      toast(t('الصنف ليه باركود', 'Item already has a barcode'), 'error');
+      return false;
+    }
+
+    var store = readStore();
+    var i;
+    for (i = 0; i < store.items.length; i++) {
+      if (store.items[i] && store.items[i].itemKey === k) {
+        return store.items[i].code;
+      }
+    }
+
+    var nextSeq = store.counter + 1;
+    var code = buildInternalCode(nextSeq);
+    while (codeInUse(store.items, code)) {
+      nextSeq += 1;
+      code = buildInternalCode(nextSeq);
+    }
+
+    store.counter = nextSeq;
+    store.items.push({
+      itemKey: k,
+      code: code,
+      seq: nextSeq,
+      name: prod && prod.name ? String(prod.name) : k,
+      at: new Date().toISOString(),
+      by: currentUserName()
+    });
+    if (!writeStore(store)) {
+      toast(t('تعذر حفظ الباركود الداخلي.', 'Failed to save internal barcode.'), 'error');
+      return false;
+    }
+    refreshList();
+    return code;
+  }
+
+  function buildLabelsFragment(itemKeys, size) {
+    var keys = Array.isArray(itemKeys) ? itemKeys : (itemKeys ? [itemKeys] : []);
+    var isSmall = size === 'small';
+    var wMm = isSmall ? '38mm' : '50mm';
+    var hMm = isSmall ? '25mm' : '30mm';
+    var wrap = document.createElement('div');
+    wrap.className = 'nib-print-sheet';
+    wrap.setAttribute('data-size', isSmall ? 'small' : 'medium');
+
+    var i, k, code, prod, card, nameEl, priceEl, priceStr, svgWrap, digitsEl;
+    for (i = 0; i < keys.length; i++) {
+      k = trimStr(keys[i]);
+      code = getCode(k);
+      if (!code) continue;
+      prod = findProductByKey(k);
+
+      card = document.createElement('div');
+      card.className = 'nib-label';
+      card.style.width = wMm;
+      card.style.height = hMm;
+      card.style.boxSizing = 'border-box';
+      card.style.padding = '2mm';
+      card.style.border = '1px solid #cccccc';
+      card.style.display = 'inline-flex';
+      card.style.flexDirection = 'column';
+      card.style.justifyContent = 'space-between';
+      card.style.alignItems = 'center';
+      card.style.background = '#ffffff';
+      card.style.color = '#000000';
+      card.style.margin = '1mm';
+      card.style.pageBreakInside = 'avoid';
+
+      nameEl = document.createElement('div');
+      nameEl.className = 'nib-label-name';
+      nameEl.style.fontSize = isSmall ? '8pt' : '9pt';
+      nameEl.style.fontWeight = '700';
+      nameEl.style.textAlign = 'center';
+      nameEl.style.maxWidth = '100%';
+      nameEl.style.overflow = 'hidden';
+      nameEl.style.whiteSpace = 'nowrap';
+      nameEl.textContent = prod && prod.name ? String(prod.name) : k;
+      card.appendChild(nameEl);
+
+      if (prod && prod.price !== undefined && prod.price !== null && prod.price !== '') {
+        priceEl = document.createElement('div');
+        priceEl.className = 'nib-label-price';
+        priceEl.style.fontSize = isSmall ? '7.5pt' : '8.5pt';
+        priceStr = isEn() ? String(prod.price) : toArabicDigits(String(prod.price));
+        priceEl.textContent = priceStr + ' ' + t('ج.م', 'EGP');
+        card.appendChild(priceEl);
+      }
+
+      svgWrap = document.createElement('div');
+      svgWrap.className = 'nib-label-svg';
+      svgWrap.style.width = '100%';
+      svgWrap.style.display = 'flex';
+      svgWrap.style.justifyContent = 'center';
+      svgWrap.appendChild(createBarcodeSvg(code));
+      card.appendChild(svgWrap);
+
+      digitsEl = document.createElement('div');
+      digitsEl.className = 'nib-label-digits';
+      digitsEl.style.fontSize = isSmall ? '7.5pt' : '8.5pt';
+      digitsEl.style.letterSpacing = '1px';
+      digitsEl.style.fontFamily = 'monospace';
+      digitsEl.textContent = code;
+      card.appendChild(digitsEl);
+
+      wrap.appendChild(card);
+    }
+    return wrap;
+  }
+
+  function renderHtml(itemKeys, size) {
+    var wrap = buildLabelsFragment(itemKeys, size);
+    return wrap.innerHTML;
+  }
+
+  function printLabels(itemKeys, size) {
+    var frag = buildLabelsFragment(itemKeys, size);
+    if (!frag.childNodes.length) {
+      toast(t('لا يوجد باركود للطباعة.', 'No barcode to print.'), 'error');
+      return false;
+    }
+    var iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.opacity = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(iframe);
+
+    var doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+    if (!doc) {
+      document.body.removeChild(iframe);
+      return false;
+    }
+    doc.open();
+    doc.close();
+    var style = doc.createElement('style');
+    style.textContent = 'body{margin:0;padding:4mm;font-family:sans-serif;background:#fff;color:#000;}svg{max-width:100%;height:auto;}';
+    if (doc.head) doc.head.appendChild(style);
+    if (doc.body) doc.body.appendChild(doc.importNode(frag, true));
+
+    var cleaned = false;
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }
+
+    try {
+      if (iframe.contentWindow) {
+        iframe.contentWindow.onafterprint = cleanup;
+        if (typeof iframe.contentWindow.print === 'function') {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        }
+      }
+    } catch (e) {}
+
+    setTimeout(cleanup, 1500);
+    return true;
+  }
+
+  window.novaInternalBarcodes = {
+    assign: assignCode,
+    get: getCode,
+    findByCode: findByCode,
+    list: listAssigned,
+    html: renderHtml,
+    check: checkCode
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaInternalBarcodes{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;overflow:hidden;}',
+      '#novaInternalBarcodes *{box-sizing:border-box;}',
+      '#novaInternalBarcodes h3,#novaInternalBarcodes h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaInternalBarcodes h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaInternalBarcodes h4{font-size:0.95rem;margin-top:16px;color:#79c9eb;}',
+      '.nib-search-wrap{position:relative;margin-bottom:10px;}',
+      '.nib-input,.nib-select{width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.nib-input:focus,.nib-select:focus{outline:none;border-color:#79c9eb;}',
+      '.nib-results{margin-top:6px;border:1px solid #343b44;border-radius:8px;background:#0d1117;max-height:220px;overflow-y:auto;}',
+      '.nib-result-btn{display:block;width:100%;min-height:44px;text-align:inherit;padding:8px 12px;background:transparent;border:0;border-bottom:1px solid #343b44;color:#e6edf3;cursor:pointer;overflow-wrap:anywhere;}',
+      '.nib-result-btn:last-child{border-bottom:0;}',
+      '.nib-result-btn:hover{background:#1c232b;}',
+      '.nib-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;}',
+      '.nib-controls button{min-height:44px;}',
+      '.nib-size-wrap{min-width:150px;flex:1 1 150px;}',
+      '.nib-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-top:8px;overflow-wrap:anywhere;}',
+      '.nib-preview{margin-top:12px;padding:12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px;}',
+      '.nib-preview svg{max-width:100%;height:auto;}',
+      '.nib-preview-code{font-family:monospace;font-size:1rem;letter-spacing:2px;color:#e6edf3;}',
+      '.nib-table-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;margin-top:8px;}',
+      '.nib-table{width:100%;border-collapse:collapse;font-size:0.9rem;min-width:300px;}',
+      '.nib-table th,.nib-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.nib-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.nib-table tr:last-child td{border-bottom:0;}',
+      '.nib-row-btn{min-height:44px;padding:6px 12px;}',
+      '.nib-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function renderPreview(code) {
+    var box = document.getElementById('nibPreviewBox');
+    if (!box) return;
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!code) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'flex';
+    box.appendChild(createBarcodeSvg(code));
+    box.appendChild(el('div', 'nib-preview-code', code));
+  }
+
+  function refreshList() {
+    var wrap = document.getElementById('nibListWrap');
+    if (!wrap) return;
+    while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+
+    var items = listAssigned();
+    var box = el('div', 'nib-table-wrap');
+    if (!items.length) {
+      box.appendChild(el('div', 'nib-empty', t('لا توجد أصناف بباركود داخلي بعد.', 'No items with internal barcodes yet.')));
+      wrap.appendChild(box);
+      return;
+    }
+
+    var table = el('table', 'nib-table');
+    var thead = document.createElement('thead');
+    var trH = document.createElement('tr');
+    trH.appendChild(el('th', '', t('الصنف', 'Item')));
+    trH.appendChild(el('th', '', t('الباركود الداخلي', 'Internal Barcode')));
+    trH.appendChild(el('th', '', t('إجراء', 'Action')));
+    thead.appendChild(trH);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var i;
+    for (i = items.length - 1; i >= 0; i--) {
+      (function (item) {
+        var tr = document.createElement('tr');
+        tr.appendChild(el('td', '', item.name));
+        tr.appendChild(el('td', '', item.code));
+        var tdAct = document.createElement('td');
+        var btn = el('button', 'btn btn-secondary nib-row-btn', t('اطبع', 'Print'));
+        btn.type = 'button';
+        btn.addEventListener('click', function () {
+          var sel = document.getElementById('nibSizeSelect');
+          printLabels([item.itemKey], sel ? sel.value : 'medium');
+        });
+        tdAct.appendChild(btn);
+        tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+      })(items[i]);
+    }
+    table.appendChild(tbody);
+    box.appendChild(table);
+    wrap.appendChild(box);
+  }
+
+  function buildCard() {
+    injectStyles();
+    selectedKey = '';
+    currentCode = '';
+    var editable = canEdit();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('طباعة باركود لصنف من غير باركود', 'Internal Item Barcodes')));
+
+    var searchWrap = el('div', 'nib-search-wrap');
+    var searchInput = el('input', 'nib-input');
+    searchInput.type = 'search';
+    searchInput.placeholder = t('ابحث عن صنف بالاسم...', 'Search item by name...');
+    var resultsBox = el('div', 'nib-results');
+    resultsBox.style.display = 'none';
+    searchWrap.appendChild(searchInput);
+    searchWrap.appendChild(resultsBox);
+    card.appendChild(searchWrap);
+
+    var selectedTitle = el('div', 'nib-status', '');
+    card.appendChild(selectedTitle);
+
+    var controls = el('div', 'nib-controls');
+    var sizeWrap = el('div', 'nib-size-wrap');
+    var sizeSelect = el('select', 'nib-select');
+    sizeSelect.id = 'nibSizeSelect';
+    var optSmall = el('option', '', t('صغير ٣٨×٢٥', 'Small 38x25'));
+    optSmall.value = 'small';
+    var optMed = el('option', '', t('متوسط ٥٠×٣٠', 'Medium 50x30'));
+    optMed.value = 'medium';
+    optMed.selected = true;
+    sizeSelect.appendChild(optSmall);
+    sizeSelect.appendChild(optMed);
+    sizeWrap.appendChild(sizeSelect);
+
+    var genBtn = el('button', 'btn btn-primary', t('ولّد باركود', 'Generate Barcode'));
+    genBtn.type = 'button';
+    if (!editable) genBtn.disabled = true;
+
+    var printBtn = el('button', 'btn btn-secondary', t('اطبع', 'Print'));
+    printBtn.type = 'button';
+
+    controls.appendChild(sizeWrap);
+    controls.appendChild(genBtn);
+    controls.appendChild(printBtn);
+    card.appendChild(controls);
+
+    var statusMsg = el('div', 'nib-status', editable ? '' : t('وضع العرض فقط.', 'Read-only mode.'));
+    card.appendChild(statusMsg);
+
+    var previewBox = el('div', 'nib-preview');
+    previewBox.id = 'nibPreviewBox';
+    previewBox.style.display = 'none';
+    card.appendChild(previewBox);
+
+    card.appendChild(el('h4', '', t('الأصناف المخصّص لها باركود', 'Assigned Barcodes')));
+    var listWrap = el('div', '');
+    listWrap.id = 'nibListWrap';
+    card.appendChild(listWrap);
+
+    function selectProduct(prod) {
+      selectedKey = keyOf(prod);
+      selectedTitle.textContent = prod.name || selectedKey;
+      resultsBox.style.display = 'none';
+      currentCode = getCode(selectedKey) || '';
+      renderPreview(currentCode);
+      statusMsg.textContent = currentCode ? t('الباركود الداخلي جاهز.', 'Internal barcode ready.') : '';
+    }
+
+    searchInput.addEventListener('input', function () {
+      var q = trimStr(searchInput.value);
+      while (resultsBox.firstChild) resultsBox.removeChild(resultsBox.firstChild);
+      if (!q) {
+        resultsBox.style.display = 'none';
+        return;
+      }
+      var hits = searchProducts(q);
+      if (!hits.length) {
+        resultsBox.style.display = 'none';
+        return;
+      }
+      var i, btn;
+      for (i = 0; i < hits.length; i++) {
+        (function (p) {
+          btn = el('button', 'nib-result-btn', p.name);
+          btn.type = 'button';
+          btn.addEventListener('click', function () {
+            selectProduct(p);
+          });
+          resultsBox.appendChild(btn);
+        })(hits[i]);
+      }
+      resultsBox.style.display = 'block';
+    });
+
+    genBtn.addEventListener('click', function () {
+      if (!selectedKey) {
+        statusMsg.textContent = t('اختر صنفًا أولًا.', 'Select an item first.');
+        return;
+      }
+      var prod = findProductByKey(selectedKey);
+      if (prod && prod.barcode && trimStr(prod.barcode) !== '') {
+        statusMsg.textContent = t('الصنف ليه باركود', 'Item already has a barcode');
+        toast(statusMsg.textContent, 'error');
+        return;
+      }
+      var code = assignCode(selectedKey);
+      if (!code) {
+        statusMsg.textContent = t('تعذر توليد الباركود.', 'Failed to generate barcode.');
+        return;
+      }
+      currentCode = code;
+      renderPreview(code);
+      statusMsg.textContent = t('تم توليد الباركود الداخلي.', 'Internal barcode generated.');
+    });
+
+    printBtn.addEventListener('click', function () {
+      if (!selectedKey || !getCode(selectedKey)) {
+        statusMsg.textContent = t('ولّد باركود للصنف أولًا.', 'Generate a barcode for the item first.');
+        return;
+      }
+      printLabels([selectedKey], sizeSelect.value);
+    });
+
+    return card;
+  }
+
+  function isProductsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+  }
+
+  function ensureMounted() {
+    if (mounting) return;
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isProductsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    mounting = true;
+    try {
+      pageView.appendChild(buildCard());
+      refreshList();
+    } finally {
+      mounting = false;
+    }
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!mounting && !document.getElementById(CARD_ID) && isProductsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
+
+;
+// app/614-official-prices.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-official-prices-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaOfficialPrices';
+  var STYLE_ID = 'novaOfficialPricesStyle';
+  var observer = null;
+  var lastParsedRows = [];
+  var lastCompare = null;
+  var lastErrors = [];
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    if (window.showToast && typeof window.showToast === 'function') {
+      try {
+        window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+  }
+
+  function trim(s) {
+    return String(s == null ? '' : s).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        if (idx !== -1) {
+          out += String(idx);
+        } else if (ch === '\u066b') {
+          out += '.';
+        } else {
+          out += ch;
+        }
+      }
+    }
+    return out;
+  }
+
+  function toDisplayDigits(val) {
+    var s = String(val == null ? '' : val);
+    if (isEn()) return s;
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var out = '';
+    var i, ch, code;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      code = ch.charCodeAt(0);
+      if (code >= 48 && code <= 57) {
+        out += ar.charAt(code - 48);
+      } else if (ch === '.') {
+        out += '\u066b';
+      } else {
+        out += ch;
+      }
+    }
+    return out;
+  }
+
+  function normalizeName(str) {
+    return trim(str)
+      .toLowerCase()
+      .replace(/[\u064b-\u065f\u0670\u0640]/g, '')
+      .replace(/[\u0622\u0623\u0625]/g, '\u0627')
+      .replace(/\u0649/g, '\u064a')
+      .replace(/\u0629/g, '\u0647')
+      .replace(/\s+/g, ' ');
+  }
+
+  function currentUserName() {
+    try {
+      if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+        var u = window.novaAuth.current();
+        if (u && u.name) return String(u.name);
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function canEditPrice() {
+    if (!window.novaPerms || typeof window.novaPerms.require !== 'function') {
+      return false;
+    }
+    try {
+      return !!window.novaPerms.require('products.price');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getPriceSetter() {
+    if (window.novaItemCard && typeof window.novaItemCard.setPrice === 'function') {
+      return window.novaItemCard.setPrice;
+    }
+    return null;
+  }
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { lastImport: null, history: [] };
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return { lastImport: null, history: [] };
+      return {
+        lastImport: parsed.lastImport && typeof parsed.lastImport === 'object' ? parsed.lastImport : null,
+        history: Array.isArray(parsed.history) ? parsed.history : []
+      };
+    } catch (e) {
+      return { lastImport: null, history: [] };
+    }
+  }
+
+  function writeStore(data) {
+    try {
+      var hist = Array.isArray(data.history) ? data.history : [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        lastImport: data.lastImport || null,
+        history: hist
+      }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getProducts() {
+    if (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) {
+      return window.NOVA_DEMO.products;
+    }
+    return [];
+  }
+
+  function keyOf(product) {
+    if (!product) return '';
+    if (window.novaStock && typeof window.novaStock.keyOf === 'function') {
+      return String(window.novaStock.keyOf(product) || '');
+    }
+    return String(product.barcode || product.id || product.name || '');
+  }
+
+  function findProductByKey(key) {
+    var list = getProducts();
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (keyOf(list[i]) === key) return list[i];
+    }
+    return null;
+  }
+
+  function fmtMoney(baisa) {
+    var n = Number(baisa) || 0;
+    return toDisplayDigits((n / 100).toFixed(2));
+  }
+
+  function pad2(n) {
+    return n < 10 ? '0' + n : String(n);
+  }
+
+  function fmtLocalTime(iso) {
+    if (!iso) return '\u2014';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '\u2014';
+    var s = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+      ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    return toDisplayDigits(s);
+  }
+
+  function splitLine(line, delim) {
+    var out = [];
+    var cur = '';
+    var inQuotes = false;
+    var i, ch;
+    for (i = 0; i < line.length; i++) {
+      ch = line.charAt(i);
+      if (ch === '"') {
+        if (inQuotes && line.charAt(i + 1) === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === delim && !inQuotes) {
+        out.push(trim(cur));
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    out.push(trim(cur));
+    return out;
+  }
+
+  function detectDelimiter(headerLine) {
+    if (headerLine.indexOf('\t') !== -1) return '\t';
+    if (headerLine.indexOf(';') !== -1 && headerLine.indexOf(',') === -1) return ';';
+    return ',';
+  }
+
+  function matchHeaderCol(rawHeader) {
+    var h = normalizeName(String(rawHeader == null ? '' : rawHeader).replace(/^\ufeff/, ''));
+    if (h === 'barcode' || h === 'باركود' || h === 'الباركود' || h === 'كود') return 'barcode';
+    if (h === 'name' || h === 'الاسم' || h === 'الصنف' || h === 'اسم الصنف') return 'name';
+    if (h === 'price' || h === 'السعر' || h === 'السعر الجديد' || h === 'السعر الرسمي' || h === 'new price') return 'price';
+    return '';
+  }
+
+  function parsePriceBaisa(raw) {
+    var s = normalizeDigits(raw);
+    s = trim(s).replace(/\s+/g, '');
+    if (!s) return NaN;
+    if (!/^\d+(\.\d+)?$/.test(s)) return NaN;
+    var num = Number(s);
+    if (!isFinite(num) || num <= 0) return NaN;
+    var baisa = Math.round((num + 1e-9) * 100);
+    return baisa > 0 ? baisa : NaN;
+  }
+
+  function parse(text) {
+    var raw = String(text == null ? '' : text);
+    var lines = raw.split(/\r?\n/);
+    var rows = [];
+    var errors = [];
+    var headerIdx = -1;
+    var i;
+
+    for (i = 0; i < lines.length; i++) {
+      if (trim(lines[i])) {
+        headerIdx = i;
+        break;
+      }
+    }
+    if (headerIdx === -1) {
+      return { rows: [], errors: [{ line: 1, message: t('القائمة فارغة.', 'List is empty.') }] };
+    }
+
+    var delim = detectDelimiter(lines[headerIdx]);
+    var headers = splitLine(lines[headerIdx], delim);
+    var colMap = { barcode: -1, name: -1, price: -1 };
+    var c, role;
+    for (c = 0; c < headers.length; c++) {
+      role = matchHeaderCol(headers[c]);
+      if (role && colMap[role] === -1) colMap[role] = c;
+    }
+
+    if (colMap.price === -1 || (colMap.barcode === -1 && colMap.name === -1)) {
+      return {
+        rows: [],
+        errors: [{
+          line: headerIdx + 1,
+          message: t('تأكد من وجود أعمدة الباركود أو الاسم والسعر في السطر الأول.', 'Header must include barcode or name and price.')
+        }]
+      };
+    }
+
+    for (i = headerIdx + 1; i < lines.length; i++) {
+      if (!trim(lines[i])) continue;
+      var cells = splitLine(lines[i], delim);
+      var barcode = colMap.barcode !== -1 ? trim(normalizeDigits(cells[colMap.barcode] || '')) : '';
+      var name = colMap.name !== -1 ? trim(cells[colMap.name] || '') : '';
+      var priceRaw = colMap.price !== -1 ? (cells[colMap.price] || '') : '';
+      var priceBaisa = parsePriceBaisa(priceRaw);
+
+      if (!barcode && !name) {
+        errors.push({ line: i + 1, message: t('سطر بدون باركود أو اسم.', 'Row missing barcode and name.') });
+        continue;
+      }
+      if (isNaN(priceBaisa) || priceBaisa <= 0) {
+        errors.push({ line: i + 1, message: t('سعر غير صالح.', 'Invalid price.') });
+        continue;
+      }
+      rows.push({
+        barcode: barcode,
+        name: name,
+        priceBaisa: priceBaisa
+      });
+    }
+
+    return { rows: rows, errors: errors };
+  }
+
+  function compare(rows) {
+    var list = Array.isArray(rows) ? rows : [];
+    var products = getProducts();
+    var byBarcode = {};
+    var byName = {};
+    var i, p, bc, nm;
+
+    for (i = 0; i < products.length; i++) {
+      p = products[i];
+      if (!p) continue;
+      bc = trim(normalizeDigits(p.barcode || ''));
+      if (bc && !byBarcode[bc]) byBarcode[bc] = p;
+      nm = normalizeName(p.name || '');
+      if (nm && !byName[nm]) byName[nm] = p;
+    }
+
+    var changed = [];
+    var same = [];
+    var notFound = [];
+    var row, matched, curBaisa, offBaisa, diffBaisa, pct, isLower;
+
+    for (i = 0; i < list.length; i++) {
+      row = list[i];
+      if (!row || typeof row.priceBaisa !== 'number' || !isFinite(row.priceBaisa) || row.priceBaisa <= 0) {
+        continue;
+      }
+      matched = null;
+      bc = trim(normalizeDigits(row.barcode || ''));
+      if (bc && byBarcode[bc]) {
+        matched = byBarcode[bc];
+      }
+      if (!matched && row.name) {
+        nm = normalizeName(row.name);
+        if (nm && byName[nm]) matched = byName[nm];
+      }
+
+      if (!matched) {
+        notFound.push({
+          barcode: row.barcode || '',
+          name: row.name || '',
+          officialBaisa: row.priceBaisa
+        });
+        continue;
+      }
+
+      curBaisa = Math.round(((Number(matched.price) || 0) + 1e-9) * 100);
+      offBaisa = Math.round(row.priceBaisa);
+      if (curBaisa === offBaisa) {
+        same.push({
+          itemKey: keyOf(matched),
+          barcode: matched.barcode || row.barcode || '',
+          name: matched.name || row.name || '',
+          currentBaisa: curBaisa,
+          officialBaisa: offBaisa
+        });
+      } else {
+        diffBaisa = offBaisa - curBaisa;
+        pct = curBaisa > 0 ? Math.round((diffBaisa / curBaisa) * 1000) / 10 : 0;
+        isLower = offBaisa < curBaisa;
+        changed.push({
+          itemKey: keyOf(matched),
+          barcode: matched.barcode || row.barcode || '',
+          name: matched.name || row.name || '',
+          currentBaisa: curBaisa,
+          officialBaisa: offBaisa,
+          diffBaisa: diffBaisa,
+          pct: pct,
+          direction: isLower ? 'down' : 'up',
+          severity: isLower ? 'red' : 'amber',
+          flag: isLower ? t('لازم تنزّل', 'Must lower') : t('يتحدّث', 'Update')
+        });
+      }
+    }
+
+    var store = readStore();
+    store.lastImport = {
+      at: new Date().toISOString(),
+      changed: changed.length,
+      same: same.length,
+      notFound: notFound.length
+    };
+    writeStore(store);
+
+    return { changed: changed, same: same, notFound: notFound };
+  }
+
+  function apply(changes, reason) {
+    if (!canEditPrice()) {
+      return { ok: false, error: t('ليس لديك صلاحية تعديل الأسعار.', 'Permission denied for price updates.'), applied: [] };
+    }
+    var cleanReason = trim(reason);
+    if (!cleanReason) {
+      return { ok: false, error: t('السبب مطلوب قبل تطبيق التعديل.', 'Reason is required.'), applied: [] };
+    }
+    var setter = getPriceSetter();
+    if (!setter) {
+      return { ok: false, error: t('التسعير مش متاح من هنا', 'Pricing is not available from here.'), applied: [] };
+    }
+    var list = Array.isArray(changes) ? changes : [];
+    if (!list.length) {
+      return { ok: false, error: t('لا توجد أصناف مختارة.', 'No items selected.'), applied: [] };
+    }
+
+    var store = readStore();
+    var applied = [];
+    var skipped = 0;
+    var by = currentUserName();
+    var at = new Date().toISOString();
+    var i, ch, key, newBaisa, targetBaisa, prod, oldBaisa, res, entry;
+
+    for (i = 0; i < list.length; i++) {
+      ch = list[i];
+      if (!ch) continue;
+      key = String(ch.itemKey || ch.key || '');
+      newBaisa = Number(ch.officialBaisa != null ? ch.officialBaisa : ch['new']);
+      if (!key || !isFinite(newBaisa) || newBaisa <= 0) continue;
+      targetBaisa = Math.round(newBaisa);
+      if (targetBaisa <= 0) continue;
+      prod = findProductByKey(key);
+      if (!prod) continue;
+      oldBaisa = Math.round(((Number(prod.price) || 0) + 1e-9) * 100);
+      if (oldBaisa === targetBaisa) {
+        skipped++;
+        continue;
+      }
+      try {
+        res = setter(key, targetBaisa / 100, cleanReason);
+      } catch (e) {
+        if (applied.length) {
+          writeStore(store);
+          refreshHistoryTable();
+        }
+        return { ok: false, error: t('تعذر تحديث السعر.', 'Failed to update price.'), applied: applied };
+      }
+      if (res === false) {
+        if (applied.length) {
+          writeStore(store);
+          refreshHistoryTable();
+        }
+        return { ok: false, error: t('تم رفض تحديث السعر.', 'Price update rejected.'), applied: applied };
+      }
+      entry = {
+        at: at,
+        by: by,
+        itemKey: key,
+        old: oldBaisa,
+        'new': targetBaisa,
+        reason: cleanReason
+      };
+      store.history.push(entry);
+      applied.push({
+        at: entry.at,
+        by: entry.by,
+        itemKey: entry.itemKey,
+        old: entry.old,
+        'new': entry['new'],
+        reason: entry.reason
+      });
+    }
+
+    if (!applied.length) {
+      if (skipped > 0) {
+        return { ok: true, applied: [], skipped: skipped };
+      }
+      return { ok: false, error: t('لم يتم تطبيق أي تعديل.', 'No changes applied.'), applied: [] };
+    }
+
+    writeStore(store);
+    refreshHistoryTable();
+    return { ok: true, applied: applied, skipped: skipped };
+  }
+
+  function history() {
+    var store = readStore();
+    var out = [];
+    var i, h;
+    for (i = 0; i < store.history.length; i++) {
+      h = store.history[i];
+      if (!h || typeof h !== 'object') continue;
+      out.push({
+        at: String(h.at || ''),
+        by: String(h.by || ''),
+        itemKey: String(h.itemKey || ''),
+        old: Number(h.old) || 0,
+        'new': Number(h['new']) || 0,
+        reason: String(h.reason || '')
+      });
+    }
+    return out;
+  }
+
+  window.novaOfficialPrices = {
+    parse: parse,
+    compare: compare,
+    apply: apply,
+    history: history
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaOfficialPrices{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;min-width:0;overflow-x:hidden;}',
+      '#novaOfficialPrices *{box-sizing:border-box;}',
+      '#novaOfficialPrices h3,#novaOfficialPrices h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaOfficialPrices h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaOfficialPrices h4{font-size:0.95rem;margin-top:16px;color:#79c9eb;}',
+      '.nop-textarea{width:100%;min-height:110px;padding:10px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;resize:vertical;}',
+      '.nop-textarea:focus,.nop-input:focus{outline:none;border-color:#79c9eb;}',
+      '.nop-input{width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.nop-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}',
+      '.nop-actions button{min-height:44px;}',
+      '.nop-notice{margin-top:10px;padding:10px 12px;border-radius:8px;background:#3a1d1d;border:1px solid #b91c1c;color:#fecaca;font-size:0.9rem;word-break:break-word;}',
+      '.nop-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
+      '.nop-pill{padding:6px 10px;border-radius:8px;background:#1b2129;border:1px solid #343b44;font-size:0.88rem;color:#e6edf3;}',
+      '.nop-status{font-size:0.88rem;color:#79c9eb;min-height:20px;margin-top:8px;word-break:break-word;}',
+      '.nop-errors{margin-top:8px;padding:8px 12px;border-radius:8px;background:#2b1b1b;border:1px solid #7f1d1d;color:#fecaca;font-size:0.85rem;}',
+      '.nop-errors ul{margin:0;padding:0 16px;}',
+      '.nop-table-wrap{width:100%;max-width:100%;min-width:0;overflow-x:auto;border:1px solid #343b44;border-radius:8px;margin-top:10px;}',
+      '.nop-table{width:100%;border-collapse:collapse;font-size:0.88rem;min-width:320px;}',
+      '.nop-table th,.nop-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.nop-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.nop-table tr:last-child td{border-bottom:0;}',
+      '.nop-badge-red{display:inline-block;padding:2px 8px;border-radius:999px;background:#5c1d1d;color:#fecaca;border:1px solid #ef4444;font-size:0.78rem;font-weight:600;}',
+      '.nop-badge-amber{display:inline-block;padding:2px 8px;border-radius:999px;background:#523b12;color:#fde68a;border:1px solid #f59e0b;font-size:0.78rem;font-weight:600;}',
+      '.nop-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}',
+      '.nop-check{width:20px;height:20px;cursor:pointer;}',
+      '.nop-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9950;display:flex;align-items:center;justify-content:center;padding:16px;}',
+      '.nop-modal{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;width:100%;max-width:420px;color:#e6edf3;}',
+      '.nop-modal h4{margin:0 0 10px 0;color:#79c9eb;}',
+      '.nop-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:flex-end;}',
+      '.nop-modal-actions button{min-height:44px;}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function refreshHistoryTable() {
+    var host = document.getElementById('nopHistoryWrap');
+    if (!host) return;
+    while (host.firstChild) host.removeChild(host.firstChild);
+
+    var items = history().reverse();
+    var wrap = el('div', 'nop-table-wrap');
+    if (!items.length) {
+      wrap.appendChild(el('div', 'nop-empty', t('لا يوجد سجل تعديلات بعد.', 'No price change history yet.')));
+      host.appendChild(wrap);
+      return;
+    }
+
+    var table = el('table', 'nop-table');
+    var thead = document.createElement('thead');
+    var trh = document.createElement('tr');
+    var cols = [
+      t('الوقت', 'Time'),
+      t('بواسطة', 'By'),
+      t('الصنف', 'Item'),
+      t('القديم', 'Old'),
+      t('الجديد', 'New'),
+      t('السبب', 'Reason')
+    ];
+    var i, tr, h;
+    for (i = 0; i < cols.length; i++) {
+      trh.appendChild(el('th', '', cols[i]));
+    }
+    thead.appendChild(trh);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (i = 0; i < items.length; i++) {
+      h = items[i];
+      tr = document.createElement('tr');
+      tr.appendChild(el('td', '', fmtLocalTime(h.at)));
+      tr.appendChild(el('td', '', h.by || '\u2014'));
+      tr.appendChild(el('td', '', toDisplayDigits(h.itemKey)));
+      tr.appendChild(el('td', '', fmtMoney(h.old)));
+      tr.appendChild(el('td', '', fmtMoney(h['new'])));
+      tr.appendChild(el('td', '', h.reason));
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    host.appendChild(wrap);
+  }
+
+  function openReasonDialog(onConfirm) {
+    var backdrop = el('div', 'nop-modal-backdrop');
+    backdrop.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var modal = el('div', 'nop-modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.appendChild(el('h4', '', t('سبب تحديث الأسعار', 'Reason for Price Update')));
+
+    var input = el('input', 'nop-input');
+    input.type = 'text';
+    input.placeholder = t('مثال: قائمة هيئة الدواء الشهرية', 'Example: Monthly official price list');
+    modal.appendChild(input);
+
+    var errMsg = el('div', 'nop-status', '');
+    modal.appendChild(errMsg);
+
+    var btns = el('div', 'nop-modal-actions');
+    var cancelBtn = el('button', 'btn btn-secondary', t('إلغاء', 'Cancel'));
+    cancelBtn.type = 'button';
+    var okBtn = el('button', 'btn btn-primary', t('تأكيد التطبيق', 'Confirm Apply'));
+    okBtn.type = 'button';
+
+    function onKey(ev) {
+      if (ev.key === 'Escape') close();
+    }
+
+    function close() {
+      document.removeEventListener('keydown', onKey);
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    }
+
+    function submit() {
+      var val = trim(input.value);
+      if (!val) {
+        errMsg.textContent = t('السبب مطلوب.', 'Reason is required.');
+        return;
+      }
+      close();
+      onConfirm(val);
+    }
+
+    document.addEventListener('keydown', onKey);
+    cancelBtn.addEventListener('click', close);
+    okBtn.addEventListener('click', submit);
+    input.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') submit();
+    });
+
+    btns.appendChild(cancelBtn);
+    btns.appendChild(okBtn);
+    modal.appendChild(btns);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    input.focus();
+  }
+
+  function buildCard() {
+    injectStyles();
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('تحديث الأسعار الرسمية من قائمة هيئة الدواء', 'Official Price List Update')));
+
+    if (!getPriceSetter()) {
+      card.appendChild(el('div', 'nop-notice', t('التسعير مش متاح من هنا', 'Pricing is not available from here')));
+    }
+
+    var ta = el('textarea', 'nop-textarea');
+    ta.id = 'nopInput';
+    ta.placeholder = t('الصق القائمة هنا (باركود، الاسم، السعر)...', 'Paste CSV/TSV list here (barcode, name, price)...');
+    card.appendChild(ta);
+
+    var actions = el('div', 'nop-actions');
+    var analyzeBtn = el('button', 'btn btn-primary', t('حلّل', 'Analyze'));
+    analyzeBtn.type = 'button';
+    analyzeBtn.id = 'nopAnalyzeBtn';
+
+    var applyBtn = el('button', 'btn btn-secondary', t('طبّق على المختار', 'Apply Selected'));
+    applyBtn.type = 'button';
+    applyBtn.id = 'nopApplyBtn';
+    applyBtn.disabled = true;
+
+    actions.appendChild(analyzeBtn);
+    actions.appendChild(applyBtn);
+    card.appendChild(actions);
+
+    var statusMsg = el('div', 'nop-status', '');
+    statusMsg.id = 'nopStatus';
+    card.appendChild(statusMsg);
+
+    var summaryBox = el('div', 'nop-summary');
+    summaryBox.id = 'nopSummary';
+    card.appendChild(summaryBox);
+
+    var errorsBox = el('div', '');
+    errorsBox.id = 'nopErrors';
+    card.appendChild(errorsBox);
+
+    var diffWrap = el('div', '');
+    diffWrap.id = 'nopDiffWrap';
+    card.appendChild(diffWrap);
+
+    card.appendChild(el('h4', '', t('سجل التعديلات', 'Update History')));
+    var histWrap = el('div', '');
+    histWrap.id = 'nopHistoryWrap';
+    card.appendChild(histWrap);
+
+    function renderComparison() {
+      while (summaryBox.firstChild) summaryBox.removeChild(summaryBox.firstChild);
+      while (errorsBox.firstChild) errorsBox.removeChild(errorsBox.firstChild);
+      while (diffWrap.firstChild) diffWrap.removeChild(diffWrap.firstChild);
+      if (!lastCompare) return;
+
+      summaryBox.appendChild(el('div', 'nop-pill', t('مختلف: ', 'Changed: ') + toDisplayDigits(lastCompare.changed.length)));
+      summaryBox.appendChild(el('div', 'nop-pill', t('مطابق: ', 'Same: ') + toDisplayDigits(lastCompare.same.length)));
+      summaryBox.appendChild(el('div', 'nop-pill', t('غير موجود: ', 'Not found: ') + toDisplayDigits(lastCompare.notFound.length)));
+      summaryBox.appendChild(el('div', 'nop-pill', t('أخطاء: ', 'Errors: ') + toDisplayDigits(lastErrors.length)));
+
+      var i;
+      if (lastErrors.length) {
+        var errWrap = el('div', 'nop-errors');
+        var ul = document.createElement('ul');
+        for (i = 0; i < lastErrors.length; i++) {
+          ul.appendChild(el('li', '', t('سطر ', 'Line ') + toDisplayDigits(lastErrors[i].line) + ': ' + lastErrors[i].message));
+        }
+        errWrap.appendChild(ul);
+        errorsBox.appendChild(errWrap);
+      }
+
+      var wrap = el('div', 'nop-table-wrap');
+      if (!lastCompare.changed.length) {
+        wrap.appendChild(el('div', 'nop-empty', t('لا توجد فروق أسعار.', 'No price differences found.')));
+        diffWrap.appendChild(wrap);
+        applyBtn.disabled = true;
+        return;
+      }
+
+      var table = el('table', 'nop-table');
+      var thead = document.createElement('thead');
+      var trh = document.createElement('tr');
+      var headers = [
+        t('اختيار', 'Pick'),
+        t('الصنف', 'Item'),
+        t('الحالي', 'Current'),
+        t('الرسمي', 'Official'),
+        t('الفرق', 'Diff'),
+        t('الحالة', 'Flag')
+      ];
+      var row, tr, cb, tdFlag, badge;
+      for (i = 0; i < headers.length; i++) {
+        trh.appendChild(el('th', '', headers[i]));
+      }
+      thead.appendChild(trh);
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+      for (i = 0; i < lastCompare.changed.length; i++) {
+        row = lastCompare.changed[i];
+        tr = document.createElement('tr');
+
+        var tdCb = document.createElement('td');
+        cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'nop-check';
+        cb.setAttribute('data-idx', String(i));
+        cb.checked = row.direction === 'down';
+        tdCb.appendChild(cb);
+        tr.appendChild(tdCb);
+
+        tr.appendChild(el('td', '', row.name));
+        tr.appendChild(el('td', '', fmtMoney(row.currentBaisa)));
+        tr.appendChild(el('td', '', fmtMoney(row.officialBaisa)));
+        tr.appendChild(el('td', '', (row.diffBaisa > 0 ? '+' : '') + fmtMoney(row.diffBaisa) + ' (' + toDisplayDigits(row.pct) + '%)'));
+
+        tdFlag = document.createElement('td');
+        badge = el('span', row.severity === 'red' ? 'nop-badge-red' : 'nop-badge-amber', row.flag);
+        tdFlag.appendChild(badge);
+        tr.appendChild(tdFlag);
+
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      diffWrap.appendChild(wrap);
+      applyBtn.disabled = false;
+    }
+
+    analyzeBtn.addEventListener('click', function () {
+      var parsed = parse(ta.value);
+      lastParsedRows = parsed.rows;
+      lastErrors = parsed.errors;
+      lastCompare = compare(parsed.rows);
+      renderComparison();
+      statusMsg.textContent = lastErrors.length
+        ? t('تم التحليل مع وجود أخطاء في بعض السطور.', 'Analyzed with some row errors.')
+        : t('تم التحليل بنجاح.', 'Analysis complete.');
+    });
+
+    applyBtn.addEventListener('click', function () {
+      if (!lastCompare || !lastCompare.changed.length) return;
+      var checks = diffWrap.querySelectorAll('input.nop-check:checked');
+      var picked = [];
+      var i, idx;
+      for (i = 0; i < checks.length; i++) {
+        idx = parseInt(checks[i].getAttribute('data-idx'), 10);
+        if (!isNaN(idx) && lastCompare.changed[idx]) {
+          picked.push(lastCompare.changed[idx]);
+        }
+      }
+      if (!picked.length) {
+        statusMsg.textContent = t('اختر صنفًا واحدًا على الأقل.', 'Select at least one item.');
+        return;
+      }
+      openReasonDialog(function (reason) {
+        var res = apply(picked, reason);
+        if (!res.ok) {
+          statusMsg.textContent = res.error;
+          toast(res.error, 'error');
+        } else {
+          lastCompare = compare(lastParsedRows);
+          renderComparison();
+          statusMsg.textContent = t('تم تحديث الأسعار بنجاح.', 'Prices updated successfully.');
+          toast(statusMsg.textContent, 'success');
+        }
+      });
+    });
+
+    return card;
+  }
+
+  function isProductsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isProductsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshHistoryTable();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isProductsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true, attributes: true, attributeFilter: ['hidden'] });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
+
+;
+// app/616-corporate-accounts.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-corporate-v1';
+  var LANG_KEY = 'nova-rx-language';
+  var CARD_ID = 'novaCorporate';
+  var STYLE_ID = 'novaCorporateStyle';
+  var observer = null;
+  var selectedCompany = '';
+  var selectedMonth = '';
+
+  function isEn() {
+    try {
+      return localStorage.getItem(LANG_KEY) === 'en';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function t(ar, en) {
+    return isEn() ? en : ar;
+  }
+
+  function toast(msg, type) {
+    try {
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, type || 'success');
+      }
+    } catch (e) {}
+  }
+
+  function currentUser() {
+    try {
+      if (window.novaAuth && typeof window.novaAuth.current === 'function') {
+        var u = window.novaAuth.current();
+        return u && u.name ? String(u.name) : '';
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function canWrite() {
+    if (window.novaPerms && typeof window.novaPerms.require === 'function') {
+      try {
+        return !!window.novaPerms.require('customers.credit');
+      } catch (e) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function normalizeDigits(str) {
+    var s = String(str == null ? '' : str);
+    var ar = '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669';
+    var fa = '\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9';
+    var out = '';
+    var i, ch, idx;
+    for (i = 0; i < s.length; i++) {
+      ch = s.charAt(i);
+      idx = ar.indexOf(ch);
+      if (idx !== -1) {
+        out += String(idx);
+      } else {
+        idx = fa.indexOf(ch);
+        if (idx !== -1) {
+          out += String(idx);
+        } else if (ch === '\u066b') {
+          out += '.';
+        } else if (ch === '\u2212') {
+          out += '-';
+        } else {
+          out += ch;
+        }
+      }
+    }
+    return out;
+  }
+
+  function trimStr(val) {
+    return String(val == null ? '' : val).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normKey(name) {
+    return trimStr(name).toLowerCase();
+  }
+
+  function parseEgpToPiasters(val) {
+    var s = normalizeDigits(val).replace(/,/g, '.').replace(/^\s+|\s+$/g, '');
+    if (!s) return NaN;
+    if (!/^-?\d+(?:\.\d{1,2})?$/.test(s)) return NaN;
+    var num = parseFloat(s);
+    if (!isFinite(num)) return NaN;
+    return Math.round(num * 100);
+  }
+
+  function parsePiastersArg(val) {
+    if (typeof val === 'number') {
+      if (!isFinite(val)) return NaN;
+      return Math.round(val);
+    }
+    var s = normalizeDigits(val).replace(/^\s+|\s+$/g, '');
+    if (!s || !/^-?\d+$/.test(s)) return NaN;
+    return parseInt(s, 10);
+  }
+
+  function parseIntArg(val, fallback) {
+    if (val === undefined || val === null || val === '') return fallback;
+    if (typeof val === 'number') {
+      if (!isFinite(val)) return NaN;
+      return Math.round(val);
+    }
+    var s = normalizeDigits(val).replace(/^\s+|\s+$/g, '');
+    if (!s) return fallback;
+    if (!/^-?\d+$/.test(s)) return NaN;
+    return parseInt(s, 10);
+  }
+
+  function formatEgp(piasters) {
+    var n = Number(piasters) || 0;
+    return (n / 100).toFixed(2);
+  }
+
+  function pad2(n) {
+    return n < 10 ? '0' + n : String(n);
+  }
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function currentMonthKey() {
+    return todayStr().slice(0, 7);
+  }
+
+  function normalizeDateStr(val) {
+    var s = normalizeDigits(val).replace(/^\s+|\s+$/g, '');
+    if (!s) return todayStr();
+    if (!/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(s)) return '';
+    var parts = s.split('-');
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10);
+    var d = parseInt(parts[2], 10);
+    var check = new Date(Date.UTC(y, m - 1, d));
+    if (check.getUTCFullYear() !== y || (check.getUTCMonth() + 1) !== m || check.getUTCDate() !== d) {
+      return '';
+    }
+    return s;
+  }
+
+  function normalizeMonthKey(val) {
+    var s = normalizeDigits(val).replace(/^\s+|\s+$/g, '');
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(s)) return '';
+    return s;
+  }
+
+  function computeDueDate(monthKey, payDays) {
+    var parts = monthKey.split('-');
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10);
+    var endUtc = Date.UTC(y, m, 0);
+    var days = Number(payDays) || 0;
+    var due = new Date(endUtc + days * 86400000);
+    return due.getUTCFullYear() + '-' + pad2(due.getUTCMonth() + 1) + '-' + pad2(due.getUTCDate());
+  }
+
+  function makeId(prefix) {
+    return prefix + '-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+  }
+
+  function readStore() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeStore(records) {
+    var list = Array.isArray(records) ? records : [];
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function findCompanyRecord(records, companyName) {
+    var key = normKey(companyName);
+    if (!key) return null;
+    var i, rec;
+    for (i = 0; i < records.length; i++) {
+      rec = records[i];
+      if (rec && rec.type === 'company' && normKey(rec.name) === key) {
+        return rec;
+      }
+    }
+    return null;
+  }
+
+  function findCloseRecord(records, companyName, monthKey) {
+    var key = normKey(companyName);
+    var mk = normalizeMonthKey(monthKey);
+    if (!key || !mk) return null;
+    var i, rec;
+    for (i = 0; i < records.length; i++) {
+      rec = records[i];
+      if (rec && rec.type === 'close' && normKey(rec.company) === key && rec.monthKey === mk) {
+        return rec;
+      }
+    }
+    return null;
+  }
+
+  function computeBalanceFromRecords(records, companyName) {
+    var key = normKey(companyName);
+    if (!key) return 0;
+    var bal = 0;
+    var i, rec;
+    for (i = 0; i < records.length; i++) {
+      rec = records[i];
+      if (!rec || normKey(rec.company) !== key) continue;
+      if (rec.type === 'charge') {
+        bal += Number(rec.netPiasters) || 0;
+      } else if (rec.type === 'payment') {
+        bal -= Number(rec.amountPiasters) || 0;
+      }
+    }
+    return bal;
+  }
+
+  function apiBalance(company) {
+    return computeBalanceFromRecords(readStore(), company);
+  }
+
+  function apiIsClosed(company, monthKey) {
+    return !!findCloseRecord(readStore(), company, monthKey);
+  }
+
+  function apiCompanies() {
+    var records = readStore();
+    var out = [];
+    var i, rec, bal;
+    for (i = 0; i < records.length; i++) {
+      rec = records[i];
+      if (!rec || rec.type !== 'company') continue;
+      bal = computeBalanceFromRecords(records, rec.name);
+      out.push({
+        id: rec.id,
+        name: rec.name,
+        taxNo: rec.taxNo || '',
+        contact: rec.contact || '',
+        phone: rec.phone || '',
+        creditLimitPiasters: Number(rec.creditLimitPiasters) || 0,
+        discountPercent: Number(rec.discountPercent) || 0,
+        payDays: Number(rec.payDays) || 0,
+        balancePiasters: bal,
+        overLimit: (Number(rec.creditLimitPiasters) || 0) > 0 && bal > (Number(rec.creditLimitPiasters) || 0),
+        createdAt: rec.at || '',
+        createdBy: rec.by || ''
+      });
+    }
+    return out;
+  }
+
+  function apiAddCompany(opts) {
+    if (!canWrite()) {
+      return { ok: false, error: t('لا توجد صلاحية للتعديل', 'Permission denied') };
+    }
+    var o = opts || {};
+    var name = trimStr(o.name);
+    if (!name) {
+      return { ok: false, error: t('اسم الشركة مطلوب', 'Company name is required') };
+    }
+    var records = readStore();
+    if (findCompanyRecord(records, name)) {
+      return { ok: false, error: t('الشركة مسجلة بالفعل', 'Company already exists') };
+    }
+    var creditLimitPiasters = o.creditLimitPiasters === undefined || o.creditLimitPiasters === null || o.creditLimitPiasters === ''
+      ? 0
+      : parsePiastersArg(o.creditLimitPiasters);
+    if (isNaN(creditLimitPiasters) || creditLimitPiasters < 0) {
+      return { ok: false, error: t('حد الائتمان غير صالح', 'Invalid credit limit') };
+    }
+    var discountPercent = parseIntArg(o.discountPercent, 0);
+    if (isNaN(discountPercent) || discountPercent < 0 || discountPercent > 50) {
+      return { ok: false, error: t('نسبة الخصم يجب أن تكون بين ٠ و ٥٠', 'Discount must be between 0 and 50') };
+    }
+    var payDays = parseIntArg(o.payDays, 30);
+    if (isNaN(payDays) || payDays < 0 || payDays > 365) {
+      return { ok: false, error: t('أيام السداد غير صالحة', 'Invalid payment days') };
+    }
+
+    var rec = {
+      type: 'company',
+      id: makeId('cmp'),
+      name: name,
+      taxNo: trimStr(o.taxNo),
+      contact: trimStr(o.contact),
+      phone: trimStr(o.phone),
+      creditLimitPiasters: creditLimitPiasters,
+      discountPercent: discountPercent,
+      payDays: payDays,
+      at: new Date().toISOString(),
+      by: currentUser()
+    };
+    records.push(rec);
+    writeStore(records);
+    if (!selectedCompany) selectedCompany = rec.name;
+    refreshAll();
+    return {
+      ok: true,
+      company: {
+        id: rec.id,
+        name: rec.name,
+        taxNo: rec.taxNo,
+        contact: rec.contact,
+        phone: rec.phone,
+        creditLimitPiasters: rec.creditLimitPiasters,
+        discountPercent: rec.discountPercent,
+        payDays: rec.payDays,
+        balancePiasters: 0,
+        overLimit: false
+      }
+    };
+  }
+
+  function apiCharges(company, monthKey) {
+    var records = readStore();
+    var key = normKey(company);
+    var mk = monthKey ? normalizeMonthKey(monthKey) : '';
+    if (!key) return [];
+    if (monthKey && !mk) return [];
+    var out = [];
+    var i, rec;
+    for (i = 0; i < records.length; i++) {
+      rec = records[i];
+      if (!rec || rec.type !== 'charge' || normKey(rec.company) !== key) continue;
+      if (mk && String(rec.date || '').slice(0, 7) !== mk) continue;
+      out.push({
+        id: rec.id,
+        company: rec.company,
+        date: rec.date,
+        ref: rec.ref || '',
+        description: rec.description || '',
+        grossPiasters: rec.grossPiasters,
+        discountPercent: rec.discountPercent,
+        discountPiasters: rec.discountPiasters,
+        netPiasters: rec.netPiasters,
+        amountPiasters: rec.netPiasters,
+        at: rec.at || '',
+        by: rec.by || ''
+      });
+    }
+    out.sort(function (a, b) {
+      if (a.date < b.date) return -1;
+      if (a.date > b.date) return 1;
+      return a.at < b.at ? -1 : (a.at > b.at ? 1 : 0);
+    });
+    return out;
+  }
+
+  function apiAddCharge(opts) {
+    if (!canWrite()) {
+      return { ok: false, error: t('لا توجد صلاحية للتعديل', 'Permission denied') };
+    }
+    var o = opts || {};
+    var records = readStore();
+    var comp = findCompanyRecord(records, o.company);
+    if (!comp) {
+      return { ok: false, error: t('الشركة غير موجودة', 'Company not found') };
+    }
+    var date = normalizeDateStr(o.date);
+    if (!date) {
+      return { ok: false, error: t('تاريخ غير صالح', 'Invalid date') };
+    }
+    var monthKey = date.slice(0, 7);
+    if (findCloseRecord(records, comp.name, monthKey)) {
+      return { ok: false, error: t('الشهر مقفول ولا يمكن إضافة حركات', 'Month is closed') };
+    }
+    var grossPiasters = parsePiastersArg(o.amountPiasters);
+    if (isNaN(grossPiasters) || grossPiasters === 0) {
+      return { ok: false, error: t('المبلغ غير صالح', 'Invalid amount') };
+    }
+    var desc = trimStr(o.description);
+    if (grossPiasters < 0 && !desc) {
+      return { ok: false, error: t('سبب التصحيح مطلوب للحركة السالبة', 'Correction reason is required for negative charge') };
+    }
+
+    var pct = Number(comp.discountPercent) || 0;
+    var discountPiasters = Math.round(grossPiasters * pct / 100);
+    var netPiasters = grossPiasters - discountPiasters;
+
+    var limit = Number(comp.creditLimitPiasters) || 0;
+    var currentBal = computeBalanceFromRecords(records, comp.name);
+    if (limit > 0 && netPiasters > 0 && (currentBal + netPiasters) > limit) {
+      return { ok: false, error: t('تعدّى حد الائتمان', 'Credit limit exceeded') };
+    }
+
+    var rec = {
+      type: 'charge',
+      id: makeId('chg'),
+      company: comp.name,
+      date: date,
+      ref: trimStr(o.ref),
+      description: desc,
+      grossPiasters: grossPiasters,
+      discountPercent: pct,
+      discountPiasters: discountPiasters,
+      netPiasters: netPiasters,
+      at: new Date().toISOString(),
+      by: currentUser()
+    };
+    records.push(rec);
+    writeStore(records);
+    refreshAll();
+    return {
+      ok: true,
+      charge: {
+        id: rec.id,
+        company: rec.company,
+        date: rec.date,
+        ref: rec.ref,
+        description: rec.description,
+        grossPiasters: rec.grossPiasters,
+        discountPercent: rec.discountPercent,
+        discountPiasters: rec.discountPiasters,
+        netPiasters: rec.netPiasters,
+        amountPiasters: rec.netPiasters
+      }
+    };
+  }
+
+  function apiAddPayment(opts) {
+    if (!canWrite()) {
+      return { ok: false, error: t('لا توجد صلاحية للتعديل', 'Permission denied') };
+    }
+    var o = opts || {};
+    var records = readStore();
+    var comp = findCompanyRecord(records, o.company);
+    if (!comp) {
+      return { ok: false, error: t('الشركة غير موجودة', 'Company not found') };
+    }
+    var date = normalizeDateStr(o.date);
+    if (!date) {
+      return { ok: false, error: t('تاريخ غير صالح', 'Invalid date') };
+    }
+    var monthKey = date.slice(0, 7);
+    if (findCloseRecord(records, comp.name, monthKey)) {
+      return { ok: false, error: t('الشهر مقفول ولا يمكن إضافة سداد', 'Month is closed') };
+    }
+    var amountPiasters = parsePiastersArg(o.amountPiasters);
+    if (isNaN(amountPiasters) || amountPiasters <= 0) {
+      return { ok: false, error: t('مبلغ السداد غير صالح', 'Invalid payment amount') };
+    }
+
+    var rec = {
+      type: 'payment',
+      id: makeId('pay'),
+      company: comp.name,
+      date: date,
+      amountPiasters: amountPiasters,
+      method: trimStr(o.method) || t('نقدي', 'Cash'),
+      ref: trimStr(o.ref),
+      at: new Date().toISOString(),
+      by: currentUser()
+    };
+    records.push(rec);
+    writeStore(records);
+    refreshAll();
+    return {
+      ok: true,
+      payment: {
+        id: rec.id,
+        company: rec.company,
+        date: rec.date,
+        amountPiasters: rec.amountPiasters,
+        method: rec.method,
+        ref: rec.ref
+      }
+    };
+  }
+
+  function cloneSnapshot(snap) {
+    try {
+      return JSON.parse(JSON.stringify(snap));
+    } catch (e) {
+      return snap;
+    }
+  }
+
+  function apiStatement(company, monthKey) {
+    var records = readStore();
+    var comp = findCompanyRecord(records, company);
+    var mk = normalizeMonthKey(monthKey);
+    if (!comp || !mk) return null;
+
+    var closedRec = findCloseRecord(records, comp.name, mk);
+    if (closedRec && closedRec.snapshot) {
+      return cloneSnapshot(closedRec.snapshot);
+    }
+
+    var key = normKey(comp.name);
+    var opening = 0;
+    var monthCharges = [];
+    var monthPayments = [];
+    var grossTotal = 0;
+    var discountTotal = 0;
+    var chargesTotal = 0;
+    var paymentsTotal = 0;
+    var i, rec, recMonth;
+
+    for (i = 0; i < records.length; i++) {
+      rec = records[i];
+      if (!rec || normKey(rec.company) !== key) continue;
+      if (rec.type !== 'charge' && rec.type !== 'payment') continue;
+      recMonth = String(rec.date || '').slice(0, 7);
+      if (recMonth < mk) {
+        if (rec.type === 'charge') opening += Number(rec.netPiasters) || 0;
+        else opening -= Number(rec.amountPiasters) || 0;
+      } else if (recMonth === mk) {
+        if (rec.type === 'charge') {
+          monthCharges.push({
+            id: rec.id,
+            date: rec.date,
+            ref: rec.ref || '',
+            description: rec.description || '',
+            grossPiasters: rec.grossPiasters,
+            discountPercent: rec.discountPercent,
+            discountPiasters: rec.discountPiasters,
+            netPiasters: rec.netPiasters
+          });
+          grossTotal += Number(rec.grossPiasters) || 0;
+          discountTotal += Number(rec.discountPiasters) || 0;
+          chargesTotal += Number(rec.netPiasters) || 0;
+        } else {
+          monthPayments.push({
+            id: rec.id,
+            date: rec.date,
+            amountPiasters: rec.amountPiasters,
+            method: rec.method || '',
+            ref: rec.ref || ''
+          });
+          paymentsTotal += Number(rec.amountPiasters) || 0;
+        }
+      }
+    }
+
+    monthCharges.sort(function (a, b) {
+      return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0);
+    });
+    monthPayments.sort(function (a, b) {
+      return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0);
+    });
+
+    var closing = opening + chargesTotal - paymentsTotal;
+
+    return {
+      company: comp.name,
+      taxNo: comp.taxNo || '',
+      contact: comp.contact || '',
+      phone: comp.phone || '',
+      discountPercent: Number(comp.discountPercent) || 0,
+      payDays: Number(comp.payDays) || 0,
+      monthKey: mk,
+      openingBalancePiasters: opening,
+      grossChargesPiasters: grossTotal,
+      discountTotalPiasters: discountTotal,
+      chargesTotalPiasters: chargesTotal,
+      paymentsTotalPiasters: paymentsTotal,
+      closingBalancePiasters: closing,
+      dueDate: computeDueDate(mk, comp.payDays),
+      charges: monthCharges,
+      payments: monthPayments,
+      closed: false
+    };
+  }
+
+  function apiCloseMonth(company, monthKey) {
+    if (!canWrite()) {
+      return { ok: false, error: t('لا توجد صلاحية للتعديل', 'Permission denied') };
+    }
+    var records = readStore();
+    var comp = findCompanyRecord(records, company);
+    var mk = normalizeMonthKey(monthKey);
+    if (!comp || !mk) {
+      return { ok: false, error: t('بيانات الشركة أو الشهر غير صالحة', 'Invalid company or month') };
+    }
+    if (findCloseRecord(records, comp.name, mk)) {
+      return { ok: false, error: t('الشهر مقفول بالفعل', 'Month already closed') };
+    }
+
+    var stmt = apiStatement(comp.name, mk);
+    stmt.closed = true;
+    stmt.closedAt = new Date().toISOString();
+    stmt.closedBy = currentUser();
+
+    var rec = {
+      type: 'close',
+      id: makeId('cls'),
+      company: comp.name,
+      monthKey: mk,
+      snapshot: stmt,
+      at: stmt.closedAt,
+      by: stmt.closedBy
+    };
+    records.push(rec);
+    writeStore(records);
+    refreshAll();
+    return { ok: true, statement: cloneSnapshot(stmt) };
+  }
+
+  window.novaCorporate = {
+    addCompany: apiAddCompany,
+    companies: apiCompanies,
+    addCharge: apiAddCharge,
+    charges: apiCharges,
+    addPayment: apiAddPayment,
+    statement: apiStatement,
+    balance: apiBalance,
+    closeMonth: apiCloseMonth,
+    isClosed: apiIsClosed
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function escHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function buildPrintableHtml(stmt) {
+    var en = isEn();
+    var dir = en ? 'ltr' : 'rtl';
+    var cur = en ? 'EGP' : 'ج.م';
+    var rows = '';
+    var i, c;
+    for (i = 0; i < stmt.charges.length; i++) {
+      c = stmt.charges[i];
+      rows += '<tr>' +
+        '<td>' + escHtml(c.date) + '</td>' +
+        '<td>' + escHtml(c.ref || '—') + '</td>' +
+        '<td>' + escHtml(c.description || '—') + '</td>' +
+        '<td>' + escHtml(formatEgp(c.grossPiasters)) + '</td>' +
+        '<td>' + escHtml(formatEgp(c.discountPiasters)) + '</td>' +
+        '<td>' + escHtml(formatEgp(c.netPiasters)) + '</td>' +
+        '</tr>';
+    }
+    if (!rows) {
+      rows = '<tr><td colspan="6">' + escHtml(t('لا توجد حركات في هذا الشهر', 'No charges this month')) + '</td></tr>';
+    }
+    return '<!doctype html><html dir="' + dir + '"><head><meta charset="utf-8"><title>' +
+      escHtml(t('فاتورة شهرية - ', 'Monthly Invoice - ') + stmt.company + ' ' + stmt.monthKey) +
+      '</title><style>body{font-family:sans-serif;padding:24px;color:#111;}h2{margin:0 0 8px;}table{width:100%;border-collapse:collapse;margin:16px 0;}th,td{border:1px solid #ccc;padding:8px;text-align:inherit;}th{background:#f2f2f2;}.meta{margin-bottom:12px;line-height:1.6;}.tot{margin-top:12px;font-weight:bold;line-height:1.8;}</style></head><body>' +
+      '<h2>' + escHtml(t('الفاتورة الشهرية للشركة', 'Corporate Monthly Invoice')) + '</h2>' +
+      '<div class="meta">' +
+      '<div>' + escHtml(t('الشركة: ', 'Company: ') + stmt.company) + '</div>' +
+      '<div>' + escHtml(t('الرقم الضريبي: ', 'Tax No: ') + (stmt.taxNo || '—')) + '</div>' +
+      '<div>' + escHtml(t('الشهر: ', 'Month: ') + stmt.monthKey) + '</div>' +
+      '<div>' + escHtml(t('تاريخ الاستحقاق: ', 'Due Date: ') + stmt.dueDate) + '</div>' +
+      '</div>' +
+      '<table><thead><tr>' +
+      '<th>' + escHtml(t('التاريخ', 'Date')) + '</th>' +
+      '<th>' + escHtml(t('المرجع', 'Ref')) + '</th>' +
+      '<th>' + escHtml(t('البيان', 'Description')) + '</th>' +
+      '<th>' + escHtml(t('الإجمالي', 'Gross')) + '</th>' +
+      '<th>' + escHtml(t('الخصم', 'Discount')) + '</th>' +
+      '<th>' + escHtml(t('الصافي', 'Net')) + '</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="tot">' +
+      '<div>' + escHtml(t('الرصيد الافتتاحي: ', 'Opening Balance: ') + formatEgp(stmt.openingBalancePiasters) + ' ' + cur) + '</div>' +
+      '<div>' + escHtml(t('إجمالي الخصم: ', 'Total Discount: ') + formatEgp(stmt.discountTotalPiasters) + ' ' + cur) + '</div>' +
+      '<div>' + escHtml(t('صافي المسحوبات: ', 'Net Charges: ') + formatEgp(stmt.chargesTotalPiasters) + ' ' + cur) + '</div>' +
+      '<div>' + escHtml(t('إجمالي السداد: ', 'Total Payments: ') + formatEgp(stmt.paymentsTotalPiasters) + ' ' + cur) + '</div>' +
+      '<div>' + escHtml(t('الرصيد الختامي المستحق: ', 'Closing Balance Due: ') + formatEgp(stmt.closingBalancePiasters) + ' ' + cur) + '</div>' +
+      '</div></body></html>';
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#novaCorporate{background:#14181d;border:1px solid #343b44;border-radius:10px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}',
+      '#novaCorporate *{box-sizing:border-box;}',
+      '#novaCorporate h3,#novaCorporate h4{margin:0 0 12px 0;color:#e6edf3;}',
+      '#novaCorporate h3{font-size:1.1rem;border-bottom:1px solid #343b44;padding-bottom:8px;}',
+      '#novaCorporate h4{font-size:0.95rem;margin-top:16px;color:#79c9eb;}',
+      '.ncorp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:10px 0;}',
+      '.ncorp-field label{display:block;font-size:0.85rem;margin-bottom:4px;color:#9fb0c2;}',
+      '.ncorp-input,.ncorp-select{width:100%;min-height:44px;padding:8px 12px;background:#0d1117;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:0.95rem;}',
+      '.ncorp-input:focus,.ncorp-select:focus{outline:none;border-color:#79c9eb;}',
+      '.ncorp-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}',
+      '.ncorp-actions button{min-height:44px;}',
+      '.ncorp-status{font-size:0.85rem;color:#79c9eb;min-height:20px;margin-top:6px;}',
+      '.ncorp-status.err{color:#f87171;}',
+      '.ncorp-table-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;margin-top:8px;}',
+      '.ncorp-table{width:100%;border-collapse:collapse;font-size:0.9rem;min-width:300px;}',
+      '.ncorp-table th,.ncorp-table td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:inherit;white-space:nowrap;}',
+      '.ncorp-table th{background:#1b2129;color:#79c9eb;font-weight:600;}',
+      '.ncorp-table tr:last-child td{border-bottom:0;}',
+      '.ncorp-empty{padding:12px;color:#9fb0c2;font-size:0.9rem;}',
+      '.ncorp-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.78rem;background:#1b2129;border:1px solid #343b44;color:#79c9eb;}',
+      '.ncorp-badge.over{background:#3b1518;border-color:#f87171;color:#fca5a5;}',
+      '.ncorp-badge.closed{background:#163022;border-color:#3fb950;color:#7ee787;}',
+      '.ncorp-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin:10px 0;}',
+      '.ncorp-kpi{background:#0d1117;border:1px solid #343b44;border-radius:8px;padding:10px;}',
+      '.ncorp-kpi-lbl{font-size:0.78rem;color:#9fb0c2;margin-bottom:4px;}',
+      '.ncorp-kpi-val{font-size:1rem;font-weight:600;color:#e6edf3;}',
+      '.ncorp-section{border-top:1px solid #343b44;margin-top:16px;padding-top:12px;}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function populateSelect(sel, list, currentVal) {
+    if (!sel) return;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    if (!list.length) {
+      var opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = t('لا توجد شركات', 'No companies');
+      sel.appendChild(opt0);
+      return;
+    }
+    var i, opt;
+    var found = false;
+    for (i = 0; i < list.length; i++) {
+      opt = document.createElement('option');
+      opt.value = list[i].name;
+      opt.textContent = list[i].name;
+      if (list[i].name === currentVal) found = true;
+      sel.appendChild(opt);
+    }
+    sel.value = found ? currentVal : list[0].name;
+  }
+
+  function buildTable(headers, rows, emptyMsg) {
+    var wrap = el('div', 'ncorp-table-wrap');
+    if (!rows.length) {
+      wrap.appendChild(el('div', 'ncorp-empty', emptyMsg));
+      return wrap;
+    }
+    var table = el('table', 'ncorp-table');
+    var thead = document.createElement('thead');
+    var trHead = document.createElement('tr');
+    var i, j, tr, cell;
+    for (i = 0; i < headers.length; i++) {
+      trHead.appendChild(el('th', '', headers[i]));
+    }
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    for (i = 0; i < rows.length; i++) {
+      tr = document.createElement('tr');
+      for (j = 0; j < rows[i].length; j++) {
+        cell = rows[i][j];
+        if (cell && cell.nodeType === 1) {
+          var td = document.createElement('td');
+          td.appendChild(cell);
+          tr.appendChild(td);
+        } else {
+          tr.appendChild(el('td', '', cell));
+        }
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  function refreshAll() {
+    var card = document.getElementById(CARD_ID);
+    if (!card) return;
+    var list = apiCompanies();
+    if (!selectedCompany && list.length) {
+      selectedCompany = list[0].name;
+    }
+    if (!selectedMonth) {
+      selectedMonth = currentMonthKey();
+    }
+
+    var compWrap = document.getElementById('ncorpCompaniesWrap');
+    if (compWrap) {
+      while (compWrap.firstChild) compWrap.removeChild(compWrap.firstChild);
+      var rows = [];
+      var i, c, badge;
+      var cur = t('ج.م', 'EGP');
+      for (i = 0; i < list.length; i++) {
+        c = list[i];
+        badge = c.overLimit
+          ? el('span', 'ncorp-badge over', t('تعدّى الحد', 'Over Limit'))
+          : el('span', 'ncorp-badge', c.creditLimitPiasters > 0 ? formatEgp(c.creditLimitPiasters) + ' ' + cur : t('بلا حد', 'No limit'));
+        rows.push([
+          c.name,
+          formatEgp(c.balancePiasters) + ' ' + cur,
+          String(c.discountPercent) + '%',
+          badge
+        ]);
+      }
+      compWrap.appendChild(buildTable(
+        [
+          t('الشركة', 'Company'),
+          t('الرصيد', 'Balance'),
+          t('الخصم', 'Discount'),
+          t('حد الائتمان', 'Credit Limit')
+        ],
+        rows,
+        t('لا توجد شركات مسجلة بعد.', 'No companies registered yet.')
+      ));
+    }
+
+    var chargeSel = document.getElementById('ncorpChargeCompany');
+    var paySel = document.getElementById('ncorpPayCompany');
+    var stmtSel = document.getElementById('ncorpStmtCompany');
+    populateSelect(chargeSel, list, chargeSel && chargeSel.value ? chargeSel.value : selectedCompany);
+    populateSelect(paySel, list, paySel && paySel.value ? paySel.value : selectedCompany);
+    populateSelect(stmtSel, list, selectedCompany);
+    if (stmtSel && stmtSel.value) selectedCompany = stmtSel.value;
+
+    refreshStatement();
+  }
+
+  function refreshStatement() {
+    var box = document.getElementById('ncorpStatementWrap');
+    if (!box) return;
+    while (box.firstChild) box.removeChild(box.firstChild);
+
+    var stmtSel = document.getElementById('ncorpStmtCompany');
+    var monthInp = document.getElementById('ncorpStmtMonth');
+    var compName = stmtSel ? stmtSel.value : selectedCompany;
+    var mk = normalizeMonthKey(monthInp ? monthInp.value : selectedMonth);
+    if (!compName || !mk) {
+      box.appendChild(el('div', 'ncorp-empty', t('اختر شركة وشهرًا لعرض كشف الحساب.', 'Select a company and month to view statement.')));
+      return;
+    }
+
+    var stmt = apiStatement(compName, mk);
+    if (!stmt) {
+      box.appendChild(el('div', 'ncorp-empty', t('تعذر تحميل كشف الحساب.', 'Unable to load statement.')));
+      return;
+    }
+
+    var cur = t('ج.م', 'EGP');
+    var headInfo = el('div', 'ncorp-actions');
+    headInfo.appendChild(el('span', 'ncorp-badge', t('تاريخ الاستحقاق: ', 'Due: ') + stmt.dueDate));
+    if (stmt.taxNo) {
+      headInfo.appendChild(el('span', 'ncorp-badge', t('ضريبي: ', 'Tax: ') + stmt.taxNo));
+    }
+    if (stmt.closed) {
+      headInfo.appendChild(el('span', 'ncorp-badge closed', t('الشهر مقفول', 'Closed')));
+    }
+    box.appendChild(headInfo);
+
+    var kpis = el('div', 'ncorp-summary');
+    function addKpi(label, val) {
+      var k = el('div', 'ncorp-kpi');
+      k.appendChild(el('div', 'ncorp-kpi-lbl', label));
+      k.appendChild(el('div', 'ncorp-kpi-val', val));
+      kpis.appendChild(k);
+    }
+    addKpi(t('الرصيد الافتتاحي', 'Opening'), formatEgp(stmt.openingBalancePiasters) + ' ' + cur);
+    addKpi(t('صافي المسحوبات', 'Net Charges'), formatEgp(stmt.chargesTotalPiasters) + ' ' + cur);
+    addKpi(t('الخصم', 'Discount'), formatEgp(stmt.discountTotalPiasters) + ' ' + cur);
+    addKpi(t('السداد', 'Payments'), formatEgp(stmt.paymentsTotalPiasters) + ' ' + cur);
+    addKpi(t('الرصيد الختامي', 'Closing'), formatEgp(stmt.closingBalancePiasters) + ' ' + cur);
+    box.appendChild(kpis);
+
+    var cRows = [];
+    var i, c, p;
+    for (i = 0; i < stmt.charges.length; i++) {
+      c = stmt.charges[i];
+      cRows.push([
+        c.date,
+        c.ref || '—',
+        c.description || '—',
+        formatEgp(c.grossPiasters),
+        formatEgp(c.discountPiasters),
+        formatEgp(c.netPiasters)
+      ]);
+    }
+    box.appendChild(buildTable(
+      [
+        t('التاريخ', 'Date'),
+        t('المرجع', 'Ref'),
+        t('البيان', 'Description'),
+        t('قبل الخصم', 'Gross'),
+        t('الخصم', 'Discount'),
+        t('الصافي', 'Net')
+      ],
+      cRows,
+      t('لا توجد مسحوبات في هذا الشهر.', 'No charges in this month.')
+    ));
+
+    var pRows = [];
+    for (i = 0; i < stmt.payments.length; i++) {
+      p = stmt.payments[i];
+      pRows.push([
+        p.date,
+        p.method || '—',
+        p.ref || '—',
+        formatEgp(p.amountPiasters) + ' ' + cur
+      ]);
+    }
+    box.appendChild(buildTable(
+      [
+        t('تاريخ السداد', 'Payment Date'),
+        t('الطريقة', 'Method'),
+        t('المرجع', 'Ref'),
+        t('المبلغ', 'Amount')
+      ],
+      pRows,
+      t('لا توجد مدفوعات في هذا الشهر.', 'No payments in this month.')
+    ));
+
+    var closeBtn = document.getElementById('ncorpCloseMonthBtn');
+    if (closeBtn) {
+      closeBtn.disabled = stmt.closed || !canWrite();
+    }
+  }
+
+  function buildCard() {
+    injectStyles();
+    selectedMonth = currentMonthKey();
+    var editable = canWrite();
+
+    var card = el('section', 'nova-card');
+    card.id = CARD_ID;
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    card.appendChild(el('h3', '', t('عقود الشركات والفاتورة الشهرية', 'Corporate Accounts & Monthly Invoice')));
+
+    var statusMsg = el('div', 'ncorp-status', editable ? '' : t('وضع العرض فقط.', 'Read-only mode.'));
+    function setStatus(msg, isErr) {
+      statusMsg.textContent = msg;
+      statusMsg.className = isErr ? 'ncorp-status err' : 'ncorp-status';
+      if (msg) toast(msg, isErr ? 'error' : 'success');
+    }
+
+    // 1. Companies list
+    card.appendChild(el('h4', '', t('الشركات المتعاقدة', 'Contracted Companies')));
+    var compWrap = el('div', '');
+    compWrap.id = 'ncorpCompaniesWrap';
+    card.appendChild(compWrap);
+
+    function makeField(parent, labelText, id, placeholder, inputmode) {
+      var wrap = el('div', 'ncorp-field');
+      var lbl = el('label', '', labelText);
+      lbl.setAttribute('for', id);
+      var inp = el('input', 'ncorp-input');
+      inp.id = id;
+      inp.type = 'text';
+      if (placeholder) inp.placeholder = placeholder;
+      if (inputmode) inp.setAttribute('inputmode', inputmode);
+      if (!editable) inp.disabled = true;
+      wrap.appendChild(lbl);
+      wrap.appendChild(inp);
+      parent.appendChild(wrap);
+      return inp;
+    }
+
+    function makeSelectField(parent, labelText, id, readOnlyAllowed) {
+      var wrap = el('div', 'ncorp-field');
+      var lbl = el('label', '', labelText);
+      lbl.setAttribute('for', id);
+      var sel = el('select', 'ncorp-select');
+      sel.id = id;
+      if (!readOnlyAllowed && !editable) sel.disabled = true;
+      wrap.appendChild(lbl);
+      wrap.appendChild(sel);
+      parent.appendChild(wrap);
+      return sel;
+    }
+
+    // 2. Add Company Form
+    var addSec = el('div', 'ncorp-section');
+    addSec.appendChild(el('h4', '', t('إضافة شركة جديدة', 'Add New Company')));
+    var compGrid = el('div', 'ncorp-grid');
+    var cName = makeField(compGrid, t('اسم الشركة', 'Company Name'), 'ncorpCompName', t('شركة النيل', 'Nile Co.'));
+    var cTax = makeField(compGrid, t('الرقم الضريبي', 'Tax No'), 'ncorpCompTax', t('اختياري', 'Optional'));
+    var cContact = makeField(compGrid, t('المسؤول', 'Contact'), 'ncorpCompContact', t('اختياري', 'Optional'));
+    var cPhone = makeField(compGrid, t('الهاتف', 'Phone'), 'ncorpCompPhone', t('اختياري', 'Optional'), 'tel');
+    var cLimit = makeField(compGrid, t('حد الائتمان (ج.م)', 'Credit Limit (EGP)'), 'ncorpCompLimit', '0', 'decimal');
+    var cDisc = makeField(compGrid, t('نسبة الخصم %', 'Discount %'), 'ncorpCompDiscount', '0', 'numeric');
+    var cDays = makeField(compGrid, t('أيام السداد', 'Pay Days'), 'ncorpCompDays', '30', 'numeric');
+    addSec.appendChild(compGrid);
+
+    var compAct = el('div', 'ncorp-actions');
+    var addCompBtn = el('button', 'btn btn-primary', t('حفظ الشركة', 'Add Company'));
+    addCompBtn.type = 'button';
+    addCompBtn.id = 'ncorpAddCompBtn';
+    if (!editable) addCompBtn.disabled = true;
+    addCompBtn.addEventListener('click', function () {
+      var limitVal = trimStr(cLimit.value);
+      var limitPiasters = limitVal ? parseEgpToPiasters(limitVal) : 0;
+      if (isNaN(limitPiasters) || limitPiasters < 0) {
+        setStatus(t('حد الائتمان غير صالح', 'Invalid credit limit'), true);
+        return;
+      }
+      var res = apiAddCompany({
+        name: cName.value,
+        taxNo: cTax.value,
+        contact: cContact.value,
+        phone: cPhone.value,
+        creditLimitPiasters: limitPiasters,
+        discountPercent: cDisc.value === '' ? 0 : cDisc.value,
+        payDays: cDays.value === '' ? 30 : cDays.value
+      });
+      if (!res.ok) {
+        setStatus(res.error, true);
+      } else {
+        cName.value = '';
+        cTax.value = '';
+        cContact.value = '';
+        cPhone.value = '';
+        cLimit.value = '';
+        cDisc.value = '';
+        cDays.value = '';
+        setStatus(t('تمت إضافة الشركة بنجاح.', 'Company added successfully.'), false);
+      }
+    });
+    compAct.appendChild(addCompBtn);
+    addSec.appendChild(compAct);
+    card.appendChild(addSec);
+
+    // 3. Charge Form
+    var chgSec = el('div', 'ncorp-section');
+    chgSec.appendChild(el('h4', '', t('تسجيل مسحوبات / تصحيح', 'Add Charge / Correction')));
+    var chgGrid = el('div', 'ncorp-grid');
+    var chgComp = makeSelectField(chgGrid, t('الشركة', 'Company'), 'ncorpChargeCompany', false);
+    var chgDate = makeField(chgGrid, t('التاريخ', 'Date'), 'ncorpChargeDate', t('٢٠٢٦-١١-٢١', '2026-11-21'));
+    chgDate.value = todayStr();
+    var chgRef = makeField(chgGrid, t('رقم الفاتورة / الإيصال', 'Invoice / Receipt Ref'), 'ncorpChargeRef', t('اختياري', 'Optional'));
+    var chgDesc = makeField(chgGrid, t('البيان / سبب التصحيح', 'Description / Reason'), 'ncorpChargeDesc', t('أدوية شهرية', 'Monthly meds'));
+    var chgAmt = makeField(chgGrid, t('المبلغ قبل الخصم (ج.م)', 'Gross Amount (EGP)'), 'ncorpChargeAmount', '0.00', 'decimal');
+    chgSec.appendChild(chgGrid);
+
+    var chgAct = el('div', 'ncorp-actions');
+    var addChgBtn = el('button', 'btn btn-primary', t('تسجيل المسحوبات', 'Add Charge'));
+    addChgBtn.type = 'button';
+    addChgBtn.id = 'ncorpAddChargeBtn';
+    if (!editable) addChgBtn.disabled = true;
+    addChgBtn.addEventListener('click', function () {
+      var amtPiasters = parseEgpToPiasters(chgAmt.value);
+      if (isNaN(amtPiasters) || amtPiasters === 0) {
+        setStatus(t('المبلغ غير صالح', 'Invalid amount'), true);
+        return;
+      }
+      var res = apiAddCharge({
+        company: chgComp.value,
+        date: chgDate.value,
+        ref: chgRef.value,
+        description: chgDesc.value,
+        amountPiasters: amtPiasters
+      });
+      if (!res.ok) {
+        setStatus(res.error, true);
+      } else {
+        chgRef.value = '';
+        chgDesc.value = '';
+        chgAmt.value = '';
+        setStatus(t('تم تسجيل الحركة بنجاح.', 'Charge recorded.'), false);
+      }
+    });
+    chgAct.appendChild(addChgBtn);
+    chgSec.appendChild(chgAct);
+    card.appendChild(chgSec);
+
+    // 4. Payment Form
+    var paySec = el('div', 'ncorp-section');
+    paySec.appendChild(el('h4', '', t('تسجيل سداد شركة', 'Record Payment')));
+    var payGrid = el('div', 'ncorp-grid');
+    var payComp = makeSelectField(payGrid, t('الشركة', 'Company'), 'ncorpPayCompany', false);
+    var payDate = makeField(payGrid, t('التاريخ', 'Date'), 'ncorpPayDate', t('٢٠٢٦-١١-٢١', '2026-11-21'));
+    payDate.value = todayStr();
+    var payAmt = makeField(payGrid, t('المبلغ (ج.م)', 'Amount (EGP)'), 'ncorpPayAmount', '0.00', 'decimal');
+    var payMethod = makeSelectField(payGrid, t('طريقة السداد', 'Method'), 'ncorpPayMethod', false);
+    var methods = [
+      t('نقدي', 'Cash'),
+      t('تحويل بنكي', 'Bank Transfer'),
+      t('شيك', 'Cheque')
+    ];
+    var mi, mOpt;
+    for (mi = 0; mi < methods.length; mi++) {
+      mOpt = document.createElement('option');
+      mOpt.value = methods[mi];
+      mOpt.textContent = methods[mi];
+      payMethod.appendChild(mOpt);
+    }
+    var payRef = makeField(payGrid, t('المرجع', 'Ref'), 'ncorpPayRef', t('اختياري', 'Optional'));
+    paySec.appendChild(payGrid);
+
+    var payAct = el('div', 'ncorp-actions');
+    var addPayBtn = el('button', 'btn btn-secondary', t('تسجيل السداد', 'Add Payment'));
+    addPayBtn.type = 'button';
+    addPayBtn.id = 'ncorpAddPayBtn';
+    if (!editable) addPayBtn.disabled = true;
+    addPayBtn.addEventListener('click', function () {
+      var amtPiasters = parseEgpToPiasters(payAmt.value);
+      if (isNaN(amtPiasters) || amtPiasters <= 0) {
+        setStatus(t('مبلغ السداد غير صالح', 'Invalid payment amount'), true);
+        return;
+      }
+      var res = apiAddPayment({
+        company: payComp.value,
+        date: payDate.value,
+        amountPiasters: amtPiasters,
+        method: payMethod.value,
+        ref: payRef.value
+      });
+      if (!res.ok) {
+        setStatus(res.error, true);
+      } else {
+        payAmt.value = '';
+        payRef.value = '';
+        setStatus(t('تم تسجيل السداد بنجاح.', 'Payment recorded.'), false);
+      }
+    });
+    payAct.appendChild(addPayBtn);
+    paySec.appendChild(payAct);
+    card.appendChild(paySec);
+
+    // 5. Statement View + Month Picker + Print & Close Month
+    var stmtSec = el('div', 'ncorp-section');
+    stmtSec.appendChild(el('h4', '', t('كشف الحساب والفاتورة الشهرية', 'Monthly Statement & Invoice')));
+    var stmtGrid = el('div', 'ncorp-grid');
+    var stmtComp = makeSelectField(stmtGrid, t('الشركة', 'Company'), 'ncorpStmtCompany', true);
+    var stmtMonthWrap = el('div', 'ncorp-field');
+    var stmtMonthLbl = el('label', '', t('الشهر (سنة-شهر)', 'Month (YYYY-MM)'));
+    stmtMonthLbl.setAttribute('for', 'ncorpStmtMonth');
+    var stmtMonth = el('input', 'ncorp-input');
+    stmtMonth.id = 'ncorpStmtMonth';
+    stmtMonth.type = 'text';
+    stmtMonth.value = selectedMonth;
+    stmtMonth.placeholder = t('٢٠٢٦-١١', '2026-11');
+    stmtMonthWrap.appendChild(stmtMonthLbl);
+    stmtMonthWrap.appendChild(stmtMonth);
+    stmtGrid.appendChild(stmtMonthWrap);
+    stmtSec.appendChild(stmtGrid);
+
+    stmtComp.addEventListener('change', function () {
+      selectedCompany = stmtComp.value;
+      refreshStatement();
+    });
+    stmtMonth.addEventListener('input', function () {
+      var mk = normalizeMonthKey(stmtMonth.value);
+      if (mk) {
+        selectedMonth = mk;
+        refreshStatement();
+      }
+    });
+
+    var stmtAct = el('div', 'ncorp-actions');
+    var printBtn = el('button', 'btn btn-secondary', t('اطبع الفاتورة الشهرية', 'Print Monthly Invoice'));
+    printBtn.type = 'button';
+    printBtn.id = 'ncorpPrintBtn';
+    printBtn.addEventListener('click', function () {
+      var mk = normalizeMonthKey(stmtMonth.value);
+      var stmt = apiStatement(stmtComp.value, mk);
+      if (!stmt) {
+        setStatus(t('اختر شركة وشهرًا صالحًا أولًا.', 'Select a valid company and month first.'), true);
+        return;
+      }
+      var html = buildPrintableHtml(stmt);
+      var win = null;
+      try {
+        win = window.open('', '_blank');
+      } catch (e) {
+        win = null;
+      }
+      if (!win) {
+        setStatus(t('تعذر فتح نافذة الطباعة.', 'Could not open print window.'), true);
+        return;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      try {
+        win.focus();
+        win.print();
+      } catch (e) {}
+    });
+
+    var closeBtn = el('button', 'btn btn-primary', t('قفل الشهر', 'Close Month'));
+    closeBtn.type = 'button';
+    closeBtn.id = 'ncorpCloseMonthBtn';
+    if (!editable) closeBtn.disabled = true;
+    closeBtn.addEventListener('click', function () {
+      var mk = normalizeMonthKey(stmtMonth.value);
+      var res = apiCloseMonth(stmtComp.value, mk);
+      if (!res.ok) {
+        setStatus(res.error, true);
+      } else {
+        setStatus(t('تم قفل الشهر وحفظ الفاتورة.', 'Month closed and snapshot frozen.'), false);
+      }
+    });
+
+    stmtAct.appendChild(printBtn);
+    stmtAct.appendChild(closeBtn);
+    stmtSec.appendChild(stmtAct);
+
+    var stmtWrap = el('div', '');
+    stmtWrap.id = 'ncorpStatementWrap';
+    stmtSec.appendChild(stmtWrap);
+    card.appendChild(stmtSec);
+
+    card.appendChild(statusMsg);
+    return card;
+  }
+
+  function isReportsPage() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
+      return true;
+    }
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  function ensureMounted() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || pageView.hidden || !isReportsPage()) return;
+    if (document.getElementById(CARD_ID)) return;
+    pageView.appendChild(buildCard());
+    refreshAll();
+  }
+
+  function initObserver() {
+    var pageView = document.getElementById('novaPageView');
+    if (!pageView || observer) return;
+    observer = new MutationObserver(function () {
+      if (!document.getElementById(CARD_ID) && isReportsPage()) {
+        ensureMounted();
+      }
+    });
+    observer.observe(pageView, { childList: true });
+    ensureMounted();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initObserver);
+  } else {
+    initObserver();
+  }
+})();
