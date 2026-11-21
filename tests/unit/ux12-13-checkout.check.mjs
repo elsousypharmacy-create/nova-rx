@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from
 const h=readAppHtml(process.env.NOVA_UX_HTML||'index.html','utf8');const source=h.slice(h.indexOf('      function refreshChange()'),h.indexOf('      function updateChangeDue('));
 const fields={checkoutCreditHint:{hidden:true},inputCreditAmount:{value:'',setAttribute(){}},checkoutAddCustomer:{},checkoutAllocation:{},inputCashReceived:{value:'40'},inputCardAmount:{value:'60'}};
 let plan={ok:true,change:0};const state={checkoutPaymentMethod:'split',attachedCustomer:null};
-const ctx={state,recalculateFinancials:()=>({grandTotal:100}),currentTenderPlan:()=>plan,elements:{displayChangeDue:{},btnConfirmPayment:{}},document:{getElementById:id=>fields[id]},localStorage:{getItem:()=> 'ar'},formatMoney:x=>x.toFixed(2)};
+const ctx={state,recalculateFinancials:()=>({grandTotal:100}),currentTenderPlan:()=>plan,elements:{displayChangeDue:{},btnConfirmPayment:{},modalAmountDue:{}},dueForMethod:t=>({due:t,rounding:0}),novaEn:()=>false,document:{getElementById:id=>fields[id]},localStorage:{getItem:()=> 'ar'},formatMoney:x=>x.toFixed(2)};
 vm.createContext(ctx);vm.runInContext(source+';this.refresh=refreshChange;',ctx);ctx.refresh();
 assert.equal(fields.inputCreditAmount.disabled,true);assert.equal(fields.checkoutCreditHint.hidden,false);assert.match(fields.checkoutAddCustomer.textContent,/ربط عميل/);assert.match(fields.checkoutAllocation.textContent,/100.00.*0.00/);
 state.attachedCustomer={id:'fake'};ctx.refresh();assert.equal(fields.inputCreditAmount.disabled,false);assert.equal(fields.checkoutCreditHint.hidden,true);
@@ -14,9 +14,9 @@ state.paymentSubmitting=true;plan={ok:true,change:0};ctx.refresh();assert.equal(
 const wrapper=h.slice(h.indexOf('      function confirmPayment()'),h.indexOf('      function confirmPaymentCore()'));
 const attrs=o=>Object.assign(o,{_a:{},setAttribute(k,v){this._a[k]=v},removeAttribute(k){delete this._a[k]}});
 let resolveLock,calls=0,confirmed=0;const modal={classList:{contains:()=>true}};
-const c={state:{},elements:{btnConfirmPayment:attrs({disabled:false,textContent:'تأكيد البيع (Enter)'}),checkoutModal:modal},window:{novaStock:{withLock:fn=>{calls++;return new Promise(resolve=>{resolveLock=()=>{fn();resolve()}})}}},confirmPaymentCore:()=>confirmed++,refreshChange(){},showToast(){},novaEn:()=>false};
+const c={state:{},elements:{btnConfirmPayment:attrs({disabled:false,textContent:'تأكيد البيع (Enter)'}),checkoutModal:modal},window:{novaStock:{withLock:fn=>{calls++;return new Promise(resolve=>{resolveLock=()=>{fn();resolve()}})}}},confirmPaymentCore:()=>confirmed++,ensureControlledCapture:async()=>true,ensureCreditApproval:async()=>true,ensureDiscountApproval:async()=>true,refreshChange(){},showToast(){},novaEn:()=>false};
 vm.createContext(c);vm.runInContext(wrapper+';this.submit=confirmPayment;',c);
-const first=c.submit();c.submit();await Promise.resolve();assert.equal(calls,1);assert.equal(c.elements.btnConfirmPayment.textContent,'جاري حفظ الفاتورة…','saving label while the guard is active');assert.equal(c.elements.btnConfirmPayment._a['aria-busy'],'true');resolveLock();await first;assert.equal(confirmed,1);assert.equal(c.state.paymentSubmitting,false);
+const first=c.submit();c.submit();await new Promise(r=>setTimeout(r,0));assert.equal(calls,1);assert.equal(c.elements.btnConfirmPayment.textContent,'جاري حفظ الفاتورة…','saving label while the guard is active');assert.equal(c.elements.btnConfirmPayment._a['aria-busy'],'true');resolveLock();await first;assert.equal(confirmed,1);assert.equal(c.state.paymentSubmitting,false);
 assert.equal(c.elements.btnConfirmPayment.textContent,'تأكيد البيع (Enter)','label restored after saving');assert.equal(c.elements.btnConfirmPayment._a['aria-busy'],undefined,'busy flag cleared');
 // Shape checks are intentionally NOT claimed as viewport tests.
 const modalHtml=h.slice(h.indexOf('<!-- CHECKOUT MODAL -->'),h.indexOf('<!-- RECEIPT SLIP MODAL -->'));
