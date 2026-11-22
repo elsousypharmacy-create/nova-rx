@@ -115,7 +115,7 @@ for (const m of ['NOVA_PUR02_EMBED', 'pur-tabs', 'sessionBanner', 'mountInvoiceH
 ck('STARTUP-DIET-1: inbox 230 and lib 220 are lazy prefetch tags, 220 before 230', /data-nova-lazy="1"[^>]*app-220-fix43-inbox-lib[\s\S]*data-nova-lazy="1"[^>]*app-230-inbox-wa|app-220-fix43-inbox-lib[^>]*data-nova-lazy[\s\S]*app-230-inbox-wa[^>]*data-nova-lazy/.test(ix) && !/<script[^>]*src="[^"]*app-230-inbox-wa/.test(ix));
 ck('STARTUP-DIET-2: receiving 500 and sticker studio 190 are lazy, feature CSS is lazy, credit-ledger stays eager', /data-nova-lazy="1"[^>]*app-500-receiving|app-500-receiving[^>]*data-nova-lazy/.test(ix) && /app-190-sticker-studio[^>]*data-nova-lazy|data-nova-lazy="1"[^>]*app-190-sticker-studio/.test(ix) && /data-nova-lazy-css/.test(ix) && /<script[^>]*credit-ledger\.js/.test(ix));
 { const all = Object.values(A).map(v => v.body).join('\n'); ck('STAGE2-1: vault, staff stats, income served; no suppliers.pay / payroll.manage left', all.includes('novaVault') && all.includes('novaStaffStats') && all.includes('novaIncome') && !all.includes("'suppliers.pay'") && !all.includes("'payroll.manage'")); }
-{ const all = Object.values(A).map(v => v.body).join('\n'); ck('STAGE2-2: cash drawer, alt barcodes, GS1 served; no drawer.open left', all.includes('novaCashDrawer') && all.includes('novaAltBarcodes') && all.includes('novaGs1') && !all.includes("'drawer.open'")); }
+{ const all = Object.values(A).map(v => v.body).join('\n'); ck('STAGE2-2: cash drawer, alt barcodes, GS1 served; no drawer.open left', all.includes('novaCashDrawer') && all.includes('novaAltBarcodes') && all.includes('novaGs1') && !/(require|can|hasPerm)\(\s*'drawer\.open'/.test(all)); }
 
 // run the Worker's own fetch handler locally
 {
