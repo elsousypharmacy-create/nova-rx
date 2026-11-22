@@ -12221,3 +12221,762 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initObserver);
   else initObserver();
 })();
+
+// app/618-cash-drawer.js
+(function () {
+    'use strict';
+    var LOG_KEY = 'nova-rx-cash-drawer-log';
+    var AUTO_KEY = 'nova-rx-drawer-auto';
+    var CARD_ID = 'novaCashDrawerCard';
+    var MAX_RECORDS = 500;
+    var PULSE_BYTES = [27, 112, 0, 25, 250];
+    var PULSE_STR = String.fromCharCode(27, 112, 0, 25, 250);
+    function isEn() {
+      try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; }
+    }
+    function t(ar, en) {
+      return isEn() ? en : ar;
+    }
+    function toast(msg, type) {
+      try {
+        if (typeof window.showToast === 'function') window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+    function currentUserName() {
+      try {
+        if (!window.novaAuth) return '';
+        var u = null;
+        if (typeof window.novaAuth.current === 'function') u = window.novaAuth.current();
+        else if (typeof window.novaAuth.currentUser === 'function') u = window.novaAuth.currentUser();
+        else if (typeof window.novaAuth.user === 'function') u = window.novaAuth.user();
+        return (u && u.name) ? String(u.name) : '';
+      } catch (e) {
+        return '';
+      }
+    }
+    function hasDrawerPerm() {
+      try {
+        if (!window.novaPerms || typeof window.novaPerms.require !== 'function') return false;
+        // 'drawer.open' is not in auth-permissions ACTIONS (unknown actions are refused for everyone); whoever may sell may open the drawer, with a reason.
+        return window.novaPerms.require('sale.create') === true;
+      } catch (e) {
+        return false;
+      }
+    }
+    function readLog() {
+      try {
+        var raw = localStorage.getItem(LOG_KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function appendLog(entry) {
+      var list = readLog();
+      list.push(entry);
+      if (list.length > MAX_RECORDS) {
+        list = list.slice(list.length - MAX_RECORDS);
+      }
+      try { localStorage.setItem(LOG_KEY, JSON.stringify(list)); } catch (e) {}
+      return list;
+    }
+    function isAutoEnabled() {
+      try { return localStorage.getItem(AUTO_KEY) === '1'; } catch (e) { return false; }
+    }
+    function setAutoEnabled(flag) {
+      try { localStorage.setItem(AUTO_KEY, flag ? '1' : '0'); } catch (e) {}
+      return isAutoEnabled();
+    }
+    function sendDrawerPulse() {
+      var printerId = '';
+      try {
+        if (window.novaDevicePrint && typeof window.novaDevicePrint.selectedPrinter === 'function') {
+          var sp = window.novaDevicePrint.selectedPrinter();
+          printerId = (sp && sp.id) ? sp.id : (typeof sp === 'string' ? sp : '');
+        }
+      } catch (e) {}
+      // 1. Direct raw ESC/POS channel via device gateway
+      try {
+        if (window.novaDeviceGateway && typeof window.novaDeviceGateway.send === 'function') {
+          var gwRes = window.novaDeviceGateway.send({
+              type: 'raw',
+              action: 'cash-drawer',
+              deviceId: printerId || 'receipt-printer',
+              bytes: PULSE_BYTES.slice(),
+              command: PULSE_STR
+          });
+          if (gwRes !== false && (!gwRes || gwRes.ok !== false)) {
+            return { sent: true, method: 'gateway-raw' };
+          }
+        }
+      } catch (e) {}
+      // 2. Fallback: tiny receipt carrying the pulse via device print
+      try {
+        // printInvoice() without a gateway+printer only returns {via:'browser'} and prints nothing, so it is used only when hasGateway() is true.
+        if (window.novaDevicePrint && typeof window.novaDevicePrint.printInvoice === 'function' && typeof window.novaDevicePrint.hasGateway === 'function' && window.novaDevicePrint.hasGateway()) {
+          var prRes = window.novaDevicePrint.printInvoice({
+              id: 'DRAWER-' + Date.now(),
+              lines: [{ name: PULSE_STR, qty: 1, price: 0 }],
+              total: 0,
+              note: PULSE_STR
+            }, 1);
+          if (prRes !== false && (!prRes || prRes.ok !== false)) {
+            return { sent: true, method: 'fallback-receipt' };
+          }
+        }
+      } catch (e) {}
+      return { sent: false, method: 'no-printer' };
+    }
+    function open(reason, opts) {
+      var isAuto = Boolean(opts && opts.auto === true);
+      var cleanReason = String(reason == null ? '' : reason).trim();
+      if (!isAuto) {
+        if (!hasDrawerPerm()) {
+          toast(t('غير مصرح بفتح الدرج', 'Not authorized to open cash drawer'), 'error');
+          return { ok: false, error: 'forbidden' };
+        }
+        if (!cleanReason) {
+          toast(t('يرجى كتابة سبب فتح الدرج', 'Please enter a reason to open the drawer'), 'error');
+          return { ok: false, error: 'reason-required' };
+        }
+      } else {
+        if (!isAutoEnabled()) {
+          return { ok: false, error: 'auto-disabled' };
+        }
+        if (!cleanReason) cleanReason = t('دفع نقدي تلقائي', 'Auto cash payment');
+      }
+      var dispatch = sendDrawerPulse();
+      var entry = {
+        id: 'DRW-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        at: new Date().toISOString(),
+        user: currentUserName(),
+        reason: cleanReason,
+        mode: isAuto ? 'auto' : 'manual',
+        method: dispatch.method,
+        sent: dispatch.sent,
+        sale: (opts && opts.sale) ? String(opts.sale) : ''
+      };
+      appendLog(entry);
+      if (dispatch.method === 'fallback-receipt') {
+        toast(t('تم فتح الدرج عبر إيصال قصير للطابعة', 'Drawer opened via tiny receipt fallback'), 'success');
+      } else if (dispatch.sent) {
+        toast(t('تم إرسال أمر فتح الدرج', 'Cash drawer pulse sent'), 'success');
+      } else {
+        toast(t('تم تسجيل الفتح بدون طابعة متصلة', 'Drawer open logged (no printer connected)'), 'success');
+      }
+      renderLogList();
+      return { ok: true, entry: entry, method: dispatch.method };
+    }
+    function log() {
+      return readLog().slice();
+    }
+    function isSalePageActive() {
+      // #novaPageView is hidden on the sale screen (.pos-root), so this card lives on the reports page.
+      if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
+      return Boolean(document.querySelector('.nova-tab.active[data-page="reports"]'));
+    }
+    function renderLogList() {
+      var ul = document.getElementById('novaCashDrawerLogList');
+      if (!ul) return;
+      while (ul.firstChild) ul.removeChild(ul.firstChild);
+      var items = readLog().slice(-5).reverse();
+      if (!items.length) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'color:#9aa4b2;font-size:13px;';
+        empty.textContent = t('لا توجد عمليات فتح مسجلة بعد', 'No drawer opens logged yet');
+        ul.appendChild(empty);
+        return;
+      }
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        var row = document.createElement('div');
+        row.style.cssText = 'padding:8px 10px;border:1px solid #343b44;border-radius:6px;margin-top:6px;font-size:13px;word-break:break-word;';
+        var who = it.user ? (it.user + ' — ') : '';
+        var timeStr = String(it.at || '').replace('T', ' ').slice(0, 16);
+        row.textContent = who + it.reason + ' (' + timeStr + ')';
+        ul.appendChild(row);
+      }
+    }
+    function buildCard() {
+      var card = document.createElement('section');
+      card.id = CARD_ID;
+      card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+      card.style.cssText = 'background:#14181d;border:1px solid #343b44;border-radius:10px;padding:14px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;overflow-x:hidden;';
+      var title = document.createElement('h3');
+      title.style.cssText = 'margin:0 0 10px 0;font-size:16px;color:#79c9eb;';
+      title.textContent = t('درج الكاش', 'Cash Drawer');
+      card.appendChild(title);
+      var controls = document.createElement('div');
+      controls.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
+      var reasonInput = document.createElement('input');
+      reasonInput.id = 'novaCashDrawerReason';
+      reasonInput.type = 'text';
+      reasonInput.placeholder = t('سبب فتح الدرج (إلزامي)', 'Reason to open drawer (required)');
+      reasonInput.style.cssText = 'flex:1 1 180px;min-width:0;min-height:44px;padding:0 12px;background:#0d1117;color:#e6edf3;border:1px solid #343b44;border-radius:8px;box-sizing:border-box;';
+      controls.appendChild(reasonInput);
+      var openBtn = document.createElement('button');
+      openBtn.id = 'novaCashDrawerOpenBtn';
+      openBtn.type = 'button';
+      openBtn.className = 'btn btn-primary';
+      openBtn.style.cssText = 'min-height:44px;padding:0 16px;cursor:pointer;';
+      openBtn.textContent = t('افتح الدرج', 'Open Drawer');
+      openBtn.addEventListener('click', function () {
+          var res = open(reasonInput.value);
+          if (res && res.ok) reasonInput.value = '';
+      });
+      controls.appendChild(openBtn);
+      card.appendChild(controls);
+      var autoRow = document.createElement('label');
+      autoRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:12px;min-height:44px;cursor:pointer;font-size:14px;';
+      var autoChk = document.createElement('input');
+      autoChk.id = 'novaCashDrawerAutoChk';
+      autoChk.type = 'checkbox';
+      autoChk.checked = isAutoEnabled();
+      autoChk.style.cssText = 'width:20px;height:20px;accent-color:#79c9eb;';
+      autoChk.addEventListener('change', function () {
+          setAutoEnabled(autoChk.checked);
+      });
+      var autoTxt = document.createElement('span');
+      autoTxt.textContent = t('فتح الدرج تلقائيا بعد الدفع النقدي', 'Auto-open drawer after cash payment');
+      autoRow.appendChild(autoChk);
+      autoRow.appendChild(autoTxt);
+      card.appendChild(autoRow);
+      var logWrap = document.createElement('div');
+      logWrap.id = 'novaCashDrawerLogList';
+      logWrap.style.cssText = 'margin-top:8px;';
+      card.appendChild(logWrap);
+      return card;
+    }
+    function mountIfNeeded() {
+      var root = document.getElementById('novaPageView');
+      if (!root || !isSalePageActive()) return;
+      if (document.getElementById(CARD_ID)) return;
+      root.appendChild(buildCard());
+      renderLogList();
+    }
+    // The POS fires 'nova:invoice-completed' after the sale is saved; open only when cash was taken, once per invoice.
+    function onInvoiceCompleted(ev) {
+      try {
+        if (!isAutoEnabled()) return;
+        var num = ev && ev.detail && ev.detail.id != null ? String(ev.detail.id) : '';
+        if (!num || !window.novaSales || typeof window.novaSales.list !== 'function') return;
+        var sale = null, all = window.novaSales.list();
+        for (var i = 0; i < all.length; i++) { if (String(all[i].number) === num) { sale = all[i]; break; } }
+        if (!sale) return;
+        var cash = sale.payment === 'cash';
+        var tn = Array.isArray(sale.tenders) ? sale.tenders : [];
+        for (var k = 0; k < tn.length; k++) { if (tn[k] && tn[k].method === 'cash' && Number(tn[k].amount) > 0) cash = true; }
+        if (!cash) return;
+        var lg = readLog();
+        for (var j = 0; j < lg.length; j++) { if (lg[j] && lg[j].sale === num) return; }
+        open(t('دفع نقدي تلقائي', 'Auto cash payment'), { auto: true, sale: num });
+      } catch (e) {}
+    }
+    window.addEventListener('nova:invoice-completed', onInvoiceCompleted);
+    window.novaCashDrawer = {
+      open: open,
+      log: log,
+      isAutoEnabled: isAutoEnabled,
+      setAutoEnabled: setAutoEnabled
+    };
+    var observer = null;
+    function initObserver() {
+      var root = document.getElementById('novaPageView');
+      if (!root || observer) return;
+      observer = new MutationObserver(function () {
+          mountIfNeeded();
+      });
+      observer.observe(root, { childList: true });
+      mountIfNeeded();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initObserver);
+    } else {
+      initObserver();
+    }
+})();
+
+// app/620-alt-barcodes.js
+(function () {
+    'use strict';
+    var STORAGE_KEY = 'nova-rx-alt-barcodes';
+    var CARD_ID = 'novaAltBarcodesCard';
+    var MAX_RECORDS = 500;
+    function isEn() {
+      try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; }
+    }
+    function t(ar, en) {
+      return isEn() ? en : ar;
+    }
+    function toast(msg, type) {
+      try {
+        if (typeof window.showToast === 'function') window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+    function currentUserName() {
+      try {
+        if (!window.novaAuth) return '';
+        var u = null;
+        if (typeof window.novaAuth.current === 'function') u = window.novaAuth.current();
+        else if (typeof window.novaAuth.currentUser === 'function') u = window.novaAuth.currentUser();
+        else if (typeof window.novaAuth.user === 'function') u = window.novaAuth.user();
+        return (u && u.name) ? String(u.name) : '';
+      } catch (e) {
+        return '';
+      }
+    }
+    function normalizeDigits(str) {
+      var s = String(str == null ? '' : str);
+      var out = '';
+      for (var i = 0; i < s.length; i++) {
+        var ch = s.charAt(i);
+        if (/\s/.test(ch)) continue;
+        var c = s.charCodeAt(i);
+        if (c >= 0x0660 && c <= 0x0669) out += String(c - 0x0660);
+        else if (c >= 0x06F0 && c <= 0x06F9) out += String(c - 0x06F0);
+        else out += ch;
+      }
+      return out;
+    }
+    function readAll() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function writeAll(arr) {
+      var trimmed = arr.length > MAX_RECORDS ? arr.slice(arr.length - MAX_RECORDS) : arr;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed)); } catch (e) {}
+      return trimmed;
+    }
+    function canEdit() {
+      try {
+        if (!window.novaPerms || typeof window.novaPerms.require !== 'function') return false;
+        return window.novaPerms.require('prices.edit') === true; // same gate as internal barcodes (612)
+      } catch (e) { return false; }
+    }
+    function catalog() {
+      try { return (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) ? window.NOVA_DEMO.products : []; } catch (e) { return []; }
+    }
+    function add(itemKey, code) {
+      var key = String(itemKey == null ? '' : itemKey).trim();
+      var cleanCode = normalizeDigits(code);
+      if (!canEdit()) {
+        toast(t('غير مصرح بتعديل الأصناف', 'Not allowed to edit items'), 'error');
+        return { ok: false, error: 'forbidden' };
+      }
+      if (!key) {
+        toast(t('يرجى تحديد الصنف أولا', 'Please select an item first'), 'error');
+        return { ok: false, error: 'item-required' };
+      }
+      if (!/^\d{8,14}$/.test(cleanCode)) {
+        toast(t('الباركود يجب أن يكون من 8 إلى 14 رقما فقط', 'Barcode must be 8 to 14 digits only'), 'error');
+        return { ok: false, error: 'invalid-code' };
+      }
+      // The item must exist, and the code must not already be any item's own barcode/GTIN (the normal lookup would win and the extra code would never work).
+      var cat = catalog(), found = false;
+      for (var p = 0; p < cat.length; p++) {
+        var pr = cat[p] || {};
+        if (String(pr.id) === key || String(pr.barcode) === key) found = true;
+        var own = [pr.barcode, pr.gtin].concat(Array.isArray(pr.barcodes) ? pr.barcodes : []);
+        for (var q = 0; q < own.length; q++) {
+          if (own[q] != null && normalizeDigits(own[q]) === cleanCode) {
+            toast(t('هذا الباركود مستخدم بالفعل لصنف آخر', 'This barcode is already assigned'), 'error');
+            return { ok: false, error: 'duplicate', existingItemKey: String(pr.id) };
+          }
+        }
+      }
+      if (cat.length && !found) {
+        toast(t('الصنف غير موجود', 'Item not found'), 'error');
+        return { ok: false, error: 'item-not-found' };
+      }
+      var all = readAll();
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].code === cleanCode) {
+          toast(t('هذا الباركود مستخدم بالفعل لصنف آخر', 'This barcode is already assigned'), 'error');
+          return { ok: false, error: 'duplicate', existingItemKey: all[i].itemKey };
+        }
+      }
+      // A mapping table, not a log: never drop old codes silently.
+      if (all.length >= MAX_RECORDS) {
+        toast(t('تم الوصول للحد الأقصى من الباركودات الإضافية', 'Extra barcode limit reached'), 'error');
+        return { ok: false, error: 'limit' };
+      }
+      var rec = {
+        itemKey: key,
+        code: cleanCode,
+        addedAt: new Date().toISOString(),
+        addedBy: currentUserName()
+      };
+      all.push(rec);
+      writeAll(all);
+      toast(t('تمت إضافة الباركود الإضافي بنجاح', 'Alternate barcode added'), 'success');
+      renderList();
+      return { ok: true, record: rec };
+    }
+    function remove(itemKey, code) {
+      var key = String(itemKey == null ? '' : itemKey).trim();
+      var cleanCode = normalizeDigits(code);
+      if (!canEdit()) {
+        toast(t('غير مصرح بتعديل الأصناف', 'Not allowed to edit items'), 'error');
+        return { ok: false, error: 'forbidden' };
+      }
+      var all = readAll();
+      var next = [];
+      var removed = false;
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].itemKey === key && all[i].code === cleanCode && !removed) {
+          removed = true;
+          continue;
+        }
+        next.push(all[i]);
+      }
+      if (!removed) return { ok: false, error: 'not-found' };
+      writeAll(next);
+      toast(t('تم حذف الباركود الإضافي', 'Alternate barcode removed'), 'success');
+      renderList();
+      return { ok: true };
+    }
+    function list(itemKey) {
+      var all = readAll();
+      if (itemKey == null || String(itemKey).trim() === '') return all.slice();
+      var key = String(itemKey).trim();
+      var out = [];
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].itemKey === key) out.push(all[i].code);
+      }
+      return out;
+    }
+    function lookup(code) {
+      var cleanCode = normalizeDigits(code);
+      if (!cleanCode) return null;
+      var all = readAll();
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].code === cleanCode) return all[i].itemKey;
+      }
+      return null;
+    }
+    function isProductsPageActive() {
+      if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') return true;
+      return Boolean(document.querySelector('.nova-tab.active[data-page="products"]'));
+    }
+    function renderList() {
+      var box = document.getElementById('novaAltBarcodesList');
+      if (!box) return;
+      while (box.firstChild) box.removeChild(box.firstChild);
+      var all = readAll().slice(-10).reverse();
+      if (!all.length) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'color:#9aa4b2;font-size:13px;';
+        empty.textContent = t('لا توجد باركودات إضافية مسجلة', 'No alternate barcodes saved');
+        box.appendChild(empty);
+        return;
+      }
+      for (var i = 0; i < all.length; i++) {
+        (function (rec) {
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid #343b44;border-radius:6px;margin-top:6px;font-size:13px;';
+            var lbl = document.createElement('span');
+            lbl.textContent = rec.itemKey + ' — ' + rec.code;
+            var delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn btn-secondary';
+            delBtn.style.cssText = 'min-height:44px;padding:0 12px;cursor:pointer;';
+            delBtn.textContent = t('حذف', 'Remove');
+            delBtn.addEventListener('click', function () {
+                remove(rec.itemKey, rec.code);
+            });
+            row.appendChild(lbl);
+            row.appendChild(delBtn);
+            box.appendChild(row);
+        })(all[i]);
+      }
+    }
+    function buildCard() {
+      var card = document.createElement('section');
+      card.id = CARD_ID;
+      card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+      card.style.cssText = 'background:#14181d;border:1px solid #343b44;border-radius:10px;padding:14px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;overflow-x:hidden;';
+      var title = document.createElement('h3');
+      title.style.cssText = 'margin:0 0 10px 0;font-size:16px;color:#79c9eb;';
+      title.textContent = t('باركودات إضافية للصنف', 'Alternate Item Barcodes');
+      card.appendChild(title);
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
+      var itemInput = document.createElement('input');
+      itemInput.id = 'novaAltBarcodeItem';
+      itemInput.type = 'text';
+      itemInput.placeholder = t('معرف الصنف', 'Item ID');
+      itemInput.style.cssText = 'flex:1 1 130px;min-width:0;min-height:44px;padding:0 12px;background:#0d1117;color:#e6edf3;border:1px solid #343b44;border-radius:8px;box-sizing:border-box;';
+      row.appendChild(itemInput);
+      var codeInput = document.createElement('input');
+      codeInput.id = 'novaAltBarcodeCode';
+      codeInput.type = 'text';
+      codeInput.setAttribute('inputmode', 'numeric');
+      codeInput.placeholder = t('الباركود الإضافي (8 إلى 14 رقم)', 'Extra barcode (8-14 digits)');
+      codeInput.style.cssText = 'flex:1 1 160px;min-width:0;min-height:44px;padding:0 12px;background:#0d1117;color:#e6edf3;border:1px solid #343b44;border-radius:8px;box-sizing:border-box;';
+      row.appendChild(codeInput);
+      var addBtn = document.createElement('button');
+      addBtn.id = 'novaAltBarcodeAddBtn';
+      addBtn.type = 'button';
+      addBtn.className = 'btn btn-primary';
+      addBtn.style.cssText = 'min-height:44px;padding:0 16px;cursor:pointer;';
+      addBtn.textContent = t('إضافة', 'Add');
+      addBtn.addEventListener('click', function () {
+          var res = add(itemInput.value, codeInput.value);
+          if (res && res.ok) codeInput.value = '';
+      });
+      row.appendChild(addBtn);
+      card.appendChild(row);
+      var listBox = document.createElement('div');
+      listBox.id = 'novaAltBarcodesList';
+      listBox.style.cssText = 'margin-top:10px;';
+      card.appendChild(listBox);
+      return card;
+    }
+    function mountIfNeeded() {
+      var root = document.getElementById('novaPageView');
+      if (!root || !isProductsPageActive()) return;
+      if (document.getElementById(CARD_ID)) return;
+      root.appendChild(buildCard());
+      renderList();
+    }
+    window.novaAltBarcodes = {
+      add: add,
+      remove: remove,
+      list: list,
+      lookup: lookup
+    };
+    var observer = null;
+    function initObserver() {
+      var root = document.getElementById('novaPageView');
+      if (!root || observer) return;
+      observer = new MutationObserver(function () {
+          mountIfNeeded();
+      });
+      observer.observe(root, { childList: true });
+      mountIfNeeded();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initObserver);
+    } else {
+      initObserver();
+    }
+})();
+
+// app/622-gs1-datamatrix.js
+(function () {
+    'use strict';
+    var CARD_ID = 'novaGs1Card';
+    var FNC1 = String.fromCharCode(29);
+    function isEn() {
+      try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; }
+    }
+    function t(ar, en) {
+      return isEn() ? en : ar;
+    }
+    function toast(msg, type) {
+      try {
+        if (typeof window.showToast === 'function') window.showToast(msg, type || 'success');
+      } catch (e) {}
+    }
+    function cairoTodayIso() {
+      try {
+        var parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Africa/Cairo',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).formatToParts(new Date());
+        var y = '', m = '', d = '';
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i].type === 'year') y = parts[i].value;
+          else if (parts[i].type === 'month') m = parts[i].value;
+          else if (parts[i].type === 'day') d = parts[i].value;
+        }
+        if (y && m && d) return y + '-' + m + '-' + d;
+      } catch (e) {}
+      return new Date().toISOString().slice(0, 10);
+    }
+    function pad2(n) {
+      return n < 10 ? ('0' + n) : String(n);
+    }
+    function parseYyMmDd(six) {
+      if (!/^\d{6}$/.test(six)) return '';
+      var yy = parseInt(six.slice(0, 2), 10);
+      var mm = parseInt(six.slice(2, 4), 10);
+      var dd = parseInt(six.slice(4, 6), 10);
+      if (mm < 1 || mm > 12) return '';
+      var year = 2000 + yy;
+      var lastDay = new Date(Date.UTC(year, mm, 0)).getUTCDate();
+      if (dd === 0) dd = lastDay;
+      if (dd < 1 || dd > lastDay) return '';
+      return String(year) + '-' + pad2(mm) + '-' + pad2(dd);
+    }
+    function isExpired(isoDate, refIso) {
+      if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return false;
+      var today = refIso || cairoTodayIso();
+      return isoDate < today;
+    }
+    function findVarEndNoFnc1(str, start, curAi, seen) {
+      var maxEnd = Math.min(str.length, start + 20);
+      for (var j = start + 1; j <= maxEnd; j++) {
+        var two = str.slice(j, j + 2);
+        if (two === '17' && !seen['17'] && j + 8 <= str.length && parseYyMmDd(str.slice(j + 2, j + 8))) {
+          return j;
+        }
+        if (two === '01' && !seen['01'] && j + 16 <= str.length && /^\d{14}$/.test(str.slice(j + 2, j + 16))) {
+          return j;
+        }
+        if (curAi === '10' && two === '21' && !seen['21'] && (str.length - (j + 2)) >= 4) {
+          return j;
+        }
+        if (curAi === '21' && two === '10' && !seen['10'] && (str.length - (j + 2)) >= 2) {
+          return j;
+        }
+      }
+      return str.length;
+    }
+    function parse(raw) {
+      if (typeof raw !== 'string') return null;
+      var s = raw.trim();
+      if (!s) return null;
+      if (/^\][A-Za-z][0-9]/.test(s)) {
+        s = s.slice(3);
+      }
+      while (s.charAt(0) === FNC1) s = s.slice(1);
+      var gtin = '';
+      var expiry = '';
+      var batch = '';
+      var serial = '';
+      var seen = {};
+      var idx = 0;
+      while (idx < s.length) {
+        if (s.charAt(idx) === FNC1) {
+          idx += 1;
+          continue;
+        }
+        var ai = s.slice(idx, idx + 2);
+        if (ai === '01' && !seen['01'] && idx + 16 <= s.length && /^\d{14}$/.test(s.slice(idx + 2, idx + 16))) {
+          gtin = s.slice(idx + 2, idx + 16);
+          seen['01'] = true;
+          idx += 16;
+        } else if (ai === '17' && !seen['17'] && idx + 8 <= s.length) {
+          var iso = parseYyMmDd(s.slice(idx + 2, idx + 8));
+          if (!iso) break;
+          expiry = iso;
+          seen['17'] = true;
+          idx += 8;
+        } else if ((ai === '10' && !seen['10']) || (ai === '21' && !seen['21'])) {
+          var valStart = idx + 2;
+          var fncPos = s.indexOf(FNC1, valStart);
+          var valEnd = fncPos !== -1 ? fncPos : findVarEndNoFnc1(s, valStart, ai, seen);
+          var val = s.slice(valStart, valEnd);
+          if (ai === '10') batch = val;
+          else serial = val;
+          seen[ai] = true;
+          idx = fncPos !== -1 ? (fncPos + 1) : valEnd;
+        } else {
+          break;
+        }
+      }
+      if (!gtin) return null;
+      var ean13 = gtin.charAt(0) === '0' ? gtin.slice(1) : gtin;
+      return {
+        gtin: gtin,
+        ean13: ean13,
+        expiry: expiry,
+        batch: batch,
+        serial: serial,
+        expired: isExpired(expiry)
+      };
+    }
+    function isSalePageActive() {
+      // #novaPageView is hidden on the sale screen (.pos-root), so this card lives on the products page.
+      if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') return true;
+      return Boolean(document.querySelector('.nova-tab.active[data-page="products"]'));
+    }
+    function buildCard() {
+      var card = document.createElement('section');
+      card.id = CARD_ID;
+      card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+      card.style.cssText = 'background:#14181d;border:1px solid #343b44;border-radius:10px;padding:14px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;overflow-x:hidden;';
+      var title = document.createElement('h3');
+      title.style.cssText = 'margin:0 0 10px 0;font-size:16px;color:#79c9eb;';
+      title.textContent = t('قراءة الباركود الثنائي للتتبع الدوائي', '2D Track-and-Trace Barcode');
+      card.appendChild(title);
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
+      var input = document.createElement('input');
+      input.id = 'novaGs1Input';
+      input.type = 'text';
+      input.placeholder = t('امسح الباركود الثنائي هنا', 'Scan 2D barcode here');
+      input.style.cssText = 'flex:1 1 180px;min-width:0;min-height:44px;padding:0 12px;background:#0d1117;color:#e6edf3;border:1px solid #343b44;border-radius:8px;box-sizing:border-box;';
+      row.appendChild(input);
+      var btn = document.createElement('button');
+      btn.id = 'novaGs1ParseBtn';
+      btn.type = 'button';
+      btn.className = 'btn btn-primary';
+      btn.style.cssText = 'min-height:44px;padding:0 16px;cursor:pointer;';
+      btn.textContent = t('قراءة الرمز', 'Read Code');
+      row.appendChild(btn);
+      card.appendChild(row);
+      var out = document.createElement('div');
+      out.id = 'novaGs1Result';
+      out.style.cssText = 'margin-top:10px;font-size:13px;color:#9aa4b2;word-break:break-word;';
+      card.appendChild(out);
+      btn.addEventListener('click', function () {
+          var res = parse(input.value);
+          if (!res) {
+            out.style.color = '#f85149';
+            out.textContent = t('رمز غير صالح', 'Invalid 2D barcode');
+            toast(t('رمز غير صالح', 'Invalid 2D barcode'), 'error');
+            return;
+          }
+          if (res.expired) {
+            out.style.color = '#f85149';
+            out.textContent = t('تم رفض العبوة: منتهية الصلاحية', 'Pack refused: expired') + ' (' + res.expiry + ')';
+            toast(t('تم رفض العبوة: منتهية الصلاحية', 'Pack refused: expired'), 'error');
+            return;
+          }
+          out.style.color = '#79c9eb';
+          out.textContent = t('الرقم العالمي: ', 'GTIN: ') + res.gtin +
+          (res.expiry ? (' | ' + t('الصلاحية: ', 'Expiry: ') + res.expiry) : '') +
+          (res.batch ? (' | ' + t('التشغيلة: ', 'Batch: ') + res.batch) : '') +
+          (res.serial ? (' | ' + t('التسلسلي: ', 'Serial: ') + res.serial) : '');
+          toast(t('تمت قراءة الباركود الثنائي بنجاح', '2D barcode parsed'), 'success');
+      });
+      return card;
+    }
+    function mountIfNeeded() {
+      var root = document.getElementById('novaPageView');
+      if (!root || !isSalePageActive()) return;
+      if (document.getElementById(CARD_ID)) return;
+      root.appendChild(buildCard());
+    }
+    window.novaGs1 = {
+      parse: parse,
+      isExpired: isExpired
+    };
+    var observer = null;
+    function initObserver() {
+      var root = document.getElementById('novaPageView');
+      if (!root || observer) return;
+      observer = new MutationObserver(function () {
+          mountIfNeeded();
+      });
+      observer.observe(root, { childList: true });
+      mountIfNeeded();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initObserver);
+    } else {
+      initObserver();
+    }
+})();

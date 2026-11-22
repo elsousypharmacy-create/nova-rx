@@ -326,7 +326,12 @@
         const raw = String(q ?? "").trim(), nq = normCode(raw);
         if (!raw) return null;
         const list = (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.products)) ? window.NOVA_DEMO.products : DEMO_PRODUCTS;
-        return list.find(p => p.barcode === raw || (nq && (normCode(p.barcode) === nq || (p.gtin && normCode(p.gtin) === nq) || (Array.isArray(p.barcodes) && p.barcodes.some(b => normCode(b) === nq))))) || null;
+        const hit = list.find(p => p.barcode === raw || (nq && (normCode(p.barcode) === nq || (p.gtin && normCode(p.gtin) === nq) || (Array.isArray(p.barcodes) && p.barcodes.some(b => normCode(b) === nq))))) || null;
+        if (hit) return hit; // #109 GS1 DataMatrix / #108 extra barcodes run only after a miss; work before 594 (lazy) loads and offline; the refusal toast is queued so the caller's «not found» toast cannot replace it
+        const gm = /^(?:\][A-Za-z]\d)?\x1d?01(\d{14})(?:17(\d{6}))?/.exec(raw);
+        if (gm) { const g = window.novaGs1 && window.novaGs1.parse ? window.novaGs1.parse(raw) : { gtin: gm[1], ean13: gm[1][0] === '0' ? gm[1].slice(1) : gm[1], expired: gm[2] ? ('20' + gm[2].slice(0, 2) + '-' + gm[2].slice(2, 4) + '-' + (gm[2].slice(4, 6) === '00' ? '31' : gm[2].slice(4, 6))) < new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10) : false }; if (g && g.expired) { setTimeout(() => showToast('تم رفض العبوة: منتهية الصلاحية', 'error'), 0); return null; } if (g && g.gtin) return list.find(p => normCode(p.barcode) === g.gtin || (g.ean13 && normCode(p.barcode) === g.ean13) || (p.gtin && normCode(p.gtin) === g.gtin)) || null; }
+        const ak = nq && (window.novaAltBarcodes ? window.novaAltBarcodes.lookup(nq) : (() => { try { const al = JSON.parse(localStorage.getItem('nova-rx-alt-barcodes') || '[]'); for (const a of al) if (a && a.code === nq) return a.itemKey; } catch (_) {} return null; })());
+        return ak ? (list.find(p => p.id === ak || p.barcode === ak) || null) : null;
       };
       const UNIT_ALIAS = { mg: "مجم", مجم: "mg", مج: "mg", ملجم: "mg", g: "جم", جم: "g", جرام: "g", ml: "مل", مل: "ml", tab: "قرص", tabs: "قرص", قرص: "tabs", اقراص: "tabs", حبه: "tabs" };
       const highlightText = (text, query) => {
