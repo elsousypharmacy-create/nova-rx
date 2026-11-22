@@ -112,6 +112,7 @@ async function main() {
   }
 
   // 3. Open reports page and verify masked ID
+  await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'shift'); } catch {} }); // UI-BATCH1: reports tabs
   const reportsTab = page.locator('.nova-tab[data-page="reports"]');
   await reportsTab.click();
 

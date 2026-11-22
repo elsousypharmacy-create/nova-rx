@@ -37,7 +37,7 @@ for (const vp of [{ width: 1366, height: 768, n: 'desktop' }, { width: 390, heig
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.addInitScript(() => {
+  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => {
     window.NOVA_STOCK_PROBE = true;
     try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } } catch {}
   });

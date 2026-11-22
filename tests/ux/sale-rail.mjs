@@ -44,7 +44,7 @@ try {
   assert.ok(!lay.cardShown, 'no customer card for a walk-in invoice');
   console.log('  ok rail layout', JSON.stringify(lay.sizes));
 
-  // held invoices: five held -> three rows + «كمان 2»; resume restores one
+  // held invoices (UI-BATCH1: the rail is the ONE held list on desktop): five held -> five rows, each «رجّعها» + «حذف»; resume restores one; delete removes one; the held button opens no popup
   const search = page.locator('#mainSearchInput');
   await search.press('Enter'); // skip customer search
   const addAndHold = async () => {
@@ -53,17 +53,18 @@ try {
     await page.locator('#holdCurrentInvoice').click(); await page.waitForTimeout(150);
   };
   for (let i = 0; i < 5; i++) await addAndHold();
-  assert.equal(await page.locator('.nova-rail-row').count(), 3, 'three held rows');
-  assert.match(await page.locator('[data-rail-more]').textContent(), /2/, 'more shows the rest');
+  assert.equal(await page.locator('.nova-rail-row').count(), 5, 'every held invoice in the rail');
+  assert.equal(await page.locator('[data-rail-delete]').count(), 5, 'each row has a delete');
   assert.equal(await page.locator('#heldInvoiceCount').textContent(), '5');
   await page.locator('[data-rail-resume]').first().click(); await page.waitForTimeout(250);
   assert.equal(await page.locator('#heldInvoiceCount').textContent(), '4', 'resume took one off the list');
   assert.equal(await page.locator('#invoiceTableBody tr').count(), 1, 'resumed invoice has its line');
-  assert.equal(await page.locator('[data-rail-more]').textContent().then(t => /1/.test(t)), true);
-  await page.locator('[data-rail-more]').click(); await page.waitForTimeout(200);
-  assert.equal(await page.locator('#heldInvoicePanel').isHidden(), false, '«more» opens the full held list');
-  await page.locator('#closeHeldInvoices').click();
-  console.log('  ok held rows, resume, more');
+  assert.equal(await page.locator('.nova-rail-row').count(), 4);
+  await page.locator('[data-rail-delete]').first().click(); await page.waitForTimeout(250);
+  assert.equal(await page.locator('#heldInvoiceCount').textContent(), '3', 'delete took one off the list');
+  await page.locator('#btnHeldInvoices').click(); await page.waitForTimeout(200);
+  assert.equal(await page.locator('#heldInvoicePanel').isHidden(), true, 'no duplicate held popup on desktop');
+  console.log('  ok held rows, resume, delete, one held UI');
 
   // customer: link -> card on top with name/phone/points; card opens the history window; Escape closes; × removes
   await page.locator('#btnAddLoyalty').click();

@@ -646,6 +646,34 @@
         }, window.matchMedia && matchMedia('(max-width:600px)').matches ? 2500 : (type === 'error' ? 4500 : 2200));
       }
 
+      // UI-BATCH1 q16: while a dialog is open a toast never covers its title, amounts or buttons. Every writer of
+      // #toastContainer (showToast, 130, 556...) is covered by one observer; the toast goes to the first free slot:
+      // under the dialog header, above its footer, below / above the card, else the bottom of the screen.
+      function placeToastForDialog() {
+        const c = elements.toastContainer; if (!c) return;
+        const st = c.style, clear = () => { ['top', 'bottom', 'left', 'right', 'transform', 'max-width', 'width'].forEach(p => st.removeProperty(p)); };
+        const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; };
+        const dlgs = [...document.querySelectorAll('.modal-backdrop.active [role=dialog], [role=dialog][aria-modal=true], [role=alertdialog]')].filter(shown);
+        const card = dlgs[dlgs.length - 1];
+        if (!card || !c.firstElementChild) { clear(); return; }
+        const cr = card.getBoundingClientRect(), id = card.getAttribute('aria-labelledby');
+        const head = card.querySelector('.modal-header') || (id && document.getElementById(id)) || card.querySelector('h1,h2,h3,header');
+        const foot = card.querySelector('.modal-footer');
+        const rects = l => l.filter(e => e && shown(e)).map(e => e.getBoundingClientRect()), ae = document.activeElement;
+        const core = rects([head, foot, card.contains(ae) && ae !== card ? ae : null, ...card.querySelectorAll('.checkout-amount-display,.amount,.val')]);
+        const all = core.concat(rects([...card.querySelectorAll('input:not([type=hidden]),select,textarea,button')]));
+        const x = cr.left + cr.width / 2, imp = (p, v) => st.setProperty(p, v, 'important');
+        imp('left', x + 'px'); imp('right', 'auto'); imp('transform', 'translateX(-50%)'); imp('width', 'max-content'); imp('max-width', Math.min(cr.width - 16, innerWidth - 16) + 'px');
+        const m = c.getBoundingClientRect(), w = m.width || cr.width - 16, h = m.height || 44;
+        const hb = head ? head.getBoundingClientRect().bottom : cr.top, ft = foot ? foot.getBoundingClientRect().top : cr.bottom;
+        const slots = [hb + 6]; for (let y = ft - h - 6; y > hb + 6; y -= 4) slots.push(y); slots.push(cr.bottom + 6, cr.top - h - 6);
+        const free = keep => top => top >= 4 && top + h <= innerHeight - 4 && !keep.some(r => !(r.right <= x - w / 2 || x + w / 2 <= r.left || r.bottom <= top || top + h <= r.top));
+        let top = slots.find(free(all)); if (top === undefined) top = slots.find(free(core));
+        if (top === undefined) { imp('top', 'auto'); imp('bottom', 'calc(8px + env(safe-area-inset-bottom,0px))'); }
+        else { imp('top', top + 'px'); imp('bottom', 'auto'); }
+      }
+      if (elements.toastContainer && window.MutationObserver) new MutationObserver(placeToastForDialog).observe(elements.toastContainer, { childList: true });
+
       // UX66: undo toast (6s) + Ctrl+Z for destructive cart actions.
       let pendingUndo = null;
       function expireUndo() {
@@ -1316,6 +1344,29 @@
         return conv;
       }
       window.novaUnits.setLineUnit = updateLineUnit;
+      // q17 E: U cycles the unit (علبة → شريط → قرص) of the focused cart line, else of the last line; Alt+U also works while
+      // typing in the search box. Ignored in other text fields, on other pages and while a dialog is open.
+      function cycleLineUnit(productId) {
+        const line = productId ? state.invoiceLines.find(l => l.productId === productId) : state.invoiceLines[state.invoiceLines.length - 1];
+        if (!line) return { ok: false, error: "line-not-found" };
+        const prod = DEMO_PRODUCTS.find(p => p.id === line.productId || p.barcode === line.barcode) || line;
+        const us = window.novaUnits.availableUnits(prod);
+        if (us.length < 2) return { ok: false, error: "single-unit" };
+        return updateLineUnit(line.productId, us[(us.indexOf(line.unit || "box") + 1) % us.length]);
+      }
+      window.novaUnits.cycleLineUnit = cycleLineUnit;
+      document.addEventListener("keydown", e => {
+        if (e.code !== "KeyU" || e.ctrlKey || e.metaKey || e.shiftKey || e.repeat) return;
+        if (document.body.dataset.activePage && document.body.dataset.activePage !== "sale") return;
+        if (document.querySelector(".modal-backdrop.active, dialog[open]")) return;
+        const t = e.target, tag = (t && t.tagName || "").toLowerCase();
+        const typing = tag === "textarea" || tag === "select" || (tag === "input" && !/^(button|checkbox|radio)$/i.test(t.type || "")) || !!(t && t.isContentEditable);
+        if (typing && !(e.altKey && t === elements.mainSearchInput)) return;
+        const row = t && t.closest ? t.closest("#invoiceTableBody tr[data-id]") : null, id = row ? row.getAttribute("data-id") : null;
+        const r = cycleLineUnit(id);
+        if (r.ok || r.error === "single-unit") e.preventDefault();
+        if (r.ok && id) { const b = elements.invoiceTableBody.querySelector('tr[data-id="' + CSS.escape(id) + '"] .unit-seg-btn[aria-checked="true"]'); if (b) b.focus(); }
+      });
 
       function updateLineQty(productId, newQty) {
         const line = state.invoiceLines.find(l => l.productId === productId);
@@ -1574,9 +1625,7 @@
                     <button class="qty-btn" data-act="dec" data-id="${line.productId}">−</button>
                     <input type="text" class="qty-input" data-id="${line.productId}" value="${line.qty}">
                     <button class="qty-btn" data-act="inc" data-id="${line.productId}">+</button>
-                    <select class="unit-select" data-id="${line.productId}" style="min-height:44px;background:#0f172a;color:#f8fafc;border:1px solid #334155;border-radius:var(--r-1);padding:0 6px;font-size:12px;">
-                      ${units.map(u => `<option value="${u}" ${curUnit === u ? "selected" : ""}>${window.novaUnits.label(u)}</option>`).join("")}
-                    </select>
+                    <div class="unit-seg" role="radiogroup" aria-label="${novaEn() ? 'Unit' : 'الوحدة'}" data-id="${line.productId}" title="${novaEn() ? 'Unit (U / Alt+U)' : 'الوحدة (U / Alt+U)'}">${units.map(u => { const c = window.novaUnits.convert(prod, 1, u), on = curUnit === u, pr = c.ok ? c.unitPrice.toFixed(2) : ''; return `<button type="button" class="unit-seg-btn" role="radio" aria-checked="${on}" tabindex="${on ? 0 : -1}" data-act="unit" data-unit="${u}" data-id="${line.productId}" aria-label="${window.novaUnits.label(u)} ${pr}"${units.length < 2 ? ' disabled' : ''}><span>${window.novaUnits.label(u)}</span><small dir="ltr">${pr}</small></button>`; }).join('')}</div>
                   </div>
                 </td>
                 <td class="col-disc${line.discount > 0 ? "" : " no-disc"}" style="color:var(--text-dim);">${line.discount.toFixed(2)}</td>
@@ -1740,7 +1789,7 @@
         const grandTotal = Math.max(0, subtotal - actualDiscount);
         const vatIncluded = window.novaVat.calc(grandTotal); // configurable tax-included VAT (Settings), default 14%
 
-        elements.totalItemsCount.textContent = totalQty;
+        { const n = state.invoiceLines.length; elements.totalItemsCount.textContent = novaEn() ? n + (n === 1 ? ' item' : ' items') : n ? window.NovaFmt.pluralItems(n) : '0 أصناف'; } // UI-BATCH1: lines, not units (= receipt)
         elements.displaySubtotal.textContent = formatMoney(subtotal);
 
         if (actualDiscount > 0) {
@@ -2560,7 +2609,8 @@
         window.novaPay.captureCard(saleKey); window.novaStock.release(saleKey); state.invoiceKey = null;
         try{window.dispatchEvent(new CustomEvent('nova:invoice-completed',{detail:{id:String(invNumber),customer:state.attachedCustomer?.name||'عميل نقدي',items:state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}}))}catch(e){}
         closeCheckout();
-        window.novaReceipt.open(saleRecord, { copy: false, fromCheckout: true });
+        const previewReceipt = window.novaReceipt.previewOn();
+        if (previewReceipt) window.novaReceipt.open(saleRecord, { copy: false, fromCheckout: true });
 
         // Clear invoice and reset for next transaction
         state.invoiceLines = [];
@@ -2574,8 +2624,8 @@
         state.customerGateSkipped = true;
         state.customerGatePending = false;
         renderInvoice();
-        elements.btnReceiptNewSale.focus();
-        showToast("Payment confirmed & Invoice completed!");
+        if (previewReceipt) { elements.btnReceiptNewSale.focus(); showToast("Payment confirmed & Invoice completed!"); }
+        else { finalizeNewSale(); window.novaReceipt.autoPrint(saleRecord); } // q17 B: print now, clean new sale (a failed print leaves its retry toast)
       }
 
       function startNewSale(alreadySaved = false) {
@@ -2792,13 +2842,43 @@
             pendingJob = { sale: currentSale, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
             const en = localStorage.getItem('nova-rx-language') === 'en';
             applyPrinterState();
-            showToast(en ? 'Printer disconnected. Receipt saved for retry.' : 'انقطع اتصال الطابعة — الإيصال محفوظ لإعادة الطباعة.', 'error');
+            if (!opts.auto) showToast(en ? 'Printer disconnected. Receipt saved for retry.' : 'انقطع اتصال الطابعة — الإيصال محفوظ لإعادة الطباعة.', 'error');
             return { ok: false, error: 'printer-disconnected', queued: pendingJob };
           }
           applyPrinterState();
           pendingJob = null;
-          if (window.novaDevicePrint && window.novaDevicePrint.hasGateway() && currentSale) { window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0).then(function (r) { if (!r.ok) showToast(r.message_ar, 'error'); }); } else { try { window.print(); } catch (_) {} } // S3-01: device gateway when configured, else the browser print
+          if (window.novaDevicePrint && window.novaDevicePrint.hasGateway() && currentSale) { window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0).then(function (r) { if (!r.ok) { if (opts.auto || !elements.receiptModal.classList.contains('active')) printFailed(r.message_ar); else showToast(r.message_ar, 'error'); } }); } else { try { window.print(); } catch (_) {} } // S3-01: device gateway when configured, else the browser print
           return { ok: true, saleNumber: currentSale && currentSale.number, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
+        }
+        // q17 B: after «تأكيد البيع» the receipt prints right away (same print path), no preview. Setting
+        // 'nova-rx-receipt-preview' = '1' («عرض معاينة الإيصال قبل الطباعة») brings the preview back. A failed print
+        // shows a toast with «إعادة الطباعة»; re-print from the invoices page is unchanged.
+        function previewOn() { try { return localStorage.getItem('nova-rx-receipt-preview') === '1'; } catch (_) { return false; } }
+        function printFailed(msg) {
+          const en = localStorage.getItem('nova-rx-language') === 'en', c = elements.toastContainer;
+          c.replaceChildren();
+          const t = document.createElement('div'); t.className = 'toast'; t.id = 'novaPrintFailToast'; t.setAttribute('role', 'alert'); t.setAttribute('aria-live', 'assertive');
+          t.innerHTML = '<span style="color:var(--accent-red)">●</span><span dir="auto"></span>';
+          t.lastChild.textContent = msg || (en ? 'The receipt did not print.' : 'الإيصال ما اتطبعش.');
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'toast-undo'; b.id = 'btnRetryPrint';
+          b.textContent = en ? 'Print again' : 'إعادة الطباعة';
+          b.style.cssText = 'margin-inline-start:8px;background:transparent;border:1px solid currentColor;color:inherit;border-radius:4px;padding:2px 10px;cursor:pointer;font:inherit;min-height:32px';
+          b.addEventListener('click', () => { t.remove(); retryAuto(); });
+          t.appendChild(b); c.appendChild(t);
+          setTimeout(() => t.remove(), 12000);
+        }
+        function retryAuto() {
+          const r = pendingJob ? reconnectAndRetry() : printNow({ copy: false });
+          if (!r.ok) printFailed();
+          return r;
+        }
+        function autoPrint(sale) {
+          currentSale = sale; fromCheckout = true; currentCopy = false; currentCopyNo = 0;
+          setWidth(getWidth()); applyPrinterState(); render();
+          let r;
+          try { r = printNow({ copy: false, auto: true }); } catch (e) { r = { ok: false, error: 'print-error' }; }
+          if (!r.ok) printFailed(localStorage.getItem('nova-rx-language') === 'en' ? 'Printer disconnected — the receipt did not print.' : 'الطابعة مش متصلة — الإيصال ما اتطبعش.');
+          return r;
         }
         function reconnectAndRetry() {
           setPrinterConnected(true);
@@ -2810,7 +2890,7 @@
           return { ok: true, ...open(s, { copy: opts.copy !== false, fromCheckout: false }) };
         }
         return {
-          open, reopenSale, render, getWidth, setWidth,
+          open, reopenSale, render, getWidth, setWidth, autoPrint, previewOn, retryAuto,
           isPrinterConnected, setPrinterConnected,
           print: () => printNow({ copy: false }),
           reprint: () => printNow({ copy: true }),
@@ -2875,6 +2955,11 @@
         el.addEventListener('click', copy);
         el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(); } });
       })();
+      (() => { // UI-BATCH1: payment dialog order = method -> amount received -> change -> (customer number / coupon)
+        const cash = document.getElementById('cashDetailsBox'), btn = document.getElementById('checkoutAddCustomer');
+        if (!cash || !cash.parentNode || document.getElementById('checkoutExtras')) return;
+        const box = document.createElement('div'); box.id = 'checkoutExtras'; cash.parentNode.insertBefore(box, cash.nextSibling); if (btn) box.appendChild(btn);
+      })();
       let heldInvoices = [];
       try { const saved = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(saved)) heldInvoices = saved.filter(x => x && Array.isArray(x.lines)).slice(0, 50); } catch (_) {}
       const heldPanel = document.getElementById('heldInvoicePanel');
@@ -2887,7 +2972,7 @@
       }
       function renderHeldInvoices() {
         heldCount.textContent = heldInvoices.length;
-        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || 'عميل نقدي')}</strong><small>${heldEscape(new Date(x.created).toLocaleString())} · ${x.lines.length} items</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">Resume</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">Delete</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">' + (novaEn() ? 'No held invoices' : 'لا توجد فواتير معلقة') + '</div>';
+        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || (novaEn() ? 'Walk-in' : 'عميل نقدي'))}</strong><small>${heldEscape(window.NovaFmt.formatDateTime(x.created))} · ${novaEn() ? x.lines.length + (x.lines.length === 1 ? ' item' : ' items') : window.NovaFmt.pluralItems(x.lines.length)}</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">${novaEn() ? 'Resume' : 'رجّعها'}</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">${novaEn() ? 'Delete' : 'حذف'}</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">' + (novaEn() ? 'No held invoices' : 'لا توجد فواتير معلقة') + '</div>';
       }
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }
@@ -2896,7 +2981,13 @@
         if (!saveHeldInvoices([record, ...heldInvoices])) return;
         startNewSale(true); heldPanel.hidden = true; showToast('Invoice held on this device.');
       }
-      document.getElementById('btnHeldInvoices').addEventListener('click', () => { heldPanel.hidden = !heldPanel.hidden; renderHeldInvoices(); });
+      document.getElementById('btnHeldInvoices').addEventListener('click', () => {
+        if (document.body.classList.contains('nova-rail')) { // UI-BATCH1: desktop has ONE held UI, the rail list (110); no second popup
+          heldPanel.hidden = true; const f = document.querySelector('.nova-rail-held [data-rail-resume]');
+          if (f) f.focus(); else showToast(novaEn() ? 'No held invoices' : 'لا توجد فواتير معلقة'); return;
+        }
+        heldPanel.hidden = !heldPanel.hidden; renderHeldInvoices();
+      });
       document.getElementById('closeHeldInvoices').addEventListener('click', () => { heldPanel.hidden = true; elements.mainSearchInput.focus(); });
       document.getElementById('holdCurrentInvoice').addEventListener('click', holdCurrentInvoice);
       heldList.addEventListener('click', e => {
@@ -2912,7 +3003,7 @@
             () => { window.novaPay.cancel(record, 'parked-deleted'); });
           return;
         }
-        if (state.invoiceLines.length && !confirm('Replace the current invoice? Unsaved items will be lost.')) return;
+        if (state.invoiceLines.length && !confirm(novaEn() ? 'Replace the current invoice? Unsaved items will be lost.' : 'استبدال الفاتورة المفتوحة؟ الأصناف اللي فيها هتضيع.')) return;
         // Keep held record until the active invoice is restored successfully.
         activeSaleNumber = record.saleNumber || record.id;
         renderSaleNumber();
@@ -3019,6 +3110,8 @@
             clampLineToStock(prodId);
           } else if (act === "del") {
             removeLine(prodId);
+          } else if (act === "unit") { // q17 E: one tap on the segmented unit toggle
+            if (btn.getAttribute("aria-checked") !== "true") updateLineUnit(prodId, btn.getAttribute("data-unit"));
           }
           elements.mainSearchInput.focus();
         });
@@ -3038,7 +3131,7 @@
               renderInvoice();
               elements.mainSearchInput.focus();
             }
-          } else if (e.target.classList.contains("unit-select") && e.key === "Escape") {
+          } else if (e.target.classList.contains("unit-seg-btn") && e.key === "Escape") {
             e.preventDefault();
             elements.mainSearchInput.focus();
           }
@@ -3048,10 +3141,6 @@
           if (e.target.classList.contains("qty-input")) {
             const prodId = e.target.getAttribute("data-id");
             updateLineQty(prodId, e.target.value);
-            if (!document.activeElement || document.activeElement === document.body) elements.mainSearchInput.focus();
-          } else if (e.target.classList.contains("unit-select")) {
-            const prodId = e.target.getAttribute("data-id");
-            updateLineUnit(prodId, e.target.value);
             if (!document.activeElement || document.activeElement === document.body) elements.mainSearchInput.focus();
           }
         });

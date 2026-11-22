@@ -38,7 +38,7 @@ async function open() {
   page.on('console', (m) => logs.push(m.text()));
   page.on('dialog', (d) => d.accept());
   await page.route('**/emergency/stock.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
-  await page.addInitScript(() => {
+  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => {
     try {
       if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); }
       localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage');

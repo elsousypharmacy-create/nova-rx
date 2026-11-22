@@ -96,6 +96,7 @@ try {
   assert(row1.returnRatePct === 10 && row1.discountRatePct === 5, 'return and discount rates');
   assert(row2.salesPerHour === null && row2.returnRatePct === null && row2.discountRatePct === null, 'zero denominators return null');
 
+  await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'staff'); } catch {} }); // UI-BATCH1: reports tabs
   await page.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click()); // at 390px the top tabs are hidden behind the bottom bar (app/562)
   await page.waitForSelector('#novaStaffStatsCard', { timeout: 5000 });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > 390);

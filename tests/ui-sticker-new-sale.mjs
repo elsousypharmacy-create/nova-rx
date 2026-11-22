@@ -8,7 +8,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH 
 const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, locale: 'ar-EG' });
 await ctx.route('**/*', r => { const u = r.request().url(); if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:')) return r.continue(); return r.abort(); });
 const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
-await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
+await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); } catch {} });
 await page.goto(BASE, { waitUntil: 'load' });
 await page.waitForFunction(() => !!document.getElementById('mainSearchInput') && !!window.NOVA_DEMO, null, { timeout: 10000 });
 await page.waitForTimeout(300);

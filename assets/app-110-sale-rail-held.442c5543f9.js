@@ -88,23 +88,28 @@
   }
   function itemsText(n) {
     if (isEn()) return n + (n === 1 ? ' item' : ' items');
-    if (n === 1) return 'صنف واحد'; if (n === 2) return 'صنفين'; if (n >= 3 && n <= 10) return n + ' أصناف'; return n + ' صنف';
+    if (window.NovaFmt && window.NovaFmt.pluralItems) return window.NovaFmt.pluralItems(n); // same wording as the receipt
+    if (n === 1) return 'صنف واحد'; if (n === 2) return 'صنفان'; if (n >= 3 && n <= 10) return n + ' أصناف'; return n + ' صنفًا';
   }
   function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
   function renderHeld() {
     if (!on) { heldBox.innerHTML = ''; return; }
     var list = [];
     try { var s = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(s)) list = s.filter(function (x) { return x && Array.isArray(x.lines); }); } catch (e) {}
-    var first = list.slice(0, 3), back = isEn() ? 'Resume' : 'رجّعها';
+    var first = list, back = isEn() ? 'Resume' : 'رجّعها', del = isEn() ? 'Delete' : 'حذف'; // UI-BATCH1: the rail is the one held list on desktop
     var html = first.map(function (x) {
       var who = x.customerName ? ' · <span class="nx-rail-name">' + esc(x.customerName) + '</span>' : '';
-      return '<div class="nova-rail-row">' + SVG.clock + '<span class="nx-meta">' + esc(x.saleNumber || x.id) + ' · ' + esc(itemsText(x.lines.length)) + who + '</span><button type="button" data-rail-resume="' + esc(x.id) + '" aria-label="' + back + ' ' + esc(x.saleNumber || x.id) + '">' + back + '</button></div>';
+      return '<div class="nova-rail-row">' + SVG.clock + '<span class="nx-meta">' + esc(x.saleNumber || x.id) + ' · ' + esc(itemsText(x.lines.length)) + who + '</span><button type="button" data-rail-resume="' + esc(x.id) + '" aria-label="' + back + ' ' + esc(x.saleNumber || x.id) + '">' + back + '</button><button type="button" class="nx-del" data-rail-delete="' + esc(x.id) + '" aria-label="' + del + ' ' + esc(x.saleNumber || x.id) + '">' + del + '</button></div>';
     }).join('');
-    if (list.length > 3) html += '<button type="button" class="nova-rail-more" data-rail-more>' + (isEn() ? (list.length - 3) + ' more ›' : 'كمان ' + (list.length - 3) + ' ‹') + '</button>';
     heldBox.innerHTML = html;
   }
   heldBox.addEventListener('click', function (e) {
-    var r = e.target.closest('[data-rail-resume]'), m = e.target.closest('[data-rail-more]');
+    var r = e.target.closest('[data-rail-resume]'), m = e.target.closest('[data-rail-more]'), dl = e.target.closest('[data-rail-delete]');
+    if (dl) { // delegate to the app's own delete (keeps its undo toast and the cancel record)
+      e.stopPropagation(); var did = dl.getAttribute('data-rail-delete'), hl = $('heldInvoiceList');
+      var db = hl && Array.prototype.find.call(hl.querySelectorAll('[data-held-delete]'), function (b) { return b.getAttribute('data-held-delete') === did; });
+      if (db) db.click(); return;
+    }
     if (!r && !m) return;
     e.stopPropagation();   // the app closes the held panel on any outside click
     if (m) { var hb = $('btnHeldInvoices'); if (hb) hb.click(); return; }

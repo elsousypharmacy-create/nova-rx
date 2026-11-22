@@ -18,5 +18,4 @@
  .totals-breakdown .discount-inputs .input-grp{flex:1 1 0;min-width:0}
  .checkout-action-box{flex:0 0 auto!important;width:100%!important;min-width:0!important;align-self:stretch}
  .btn-checkout{min-height:48px!important;height:48px;width:100%}
- .toast-container{bottom:calc(210px + env(safe-area-inset-bottom,0px))!important}
 }

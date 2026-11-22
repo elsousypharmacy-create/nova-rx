@@ -12,7 +12,7 @@ const PHOTO = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400">
 const msgs = [{ id: 'm1', dir: 'in', kind: 'in', text: 'عندكم بانادول؟', at: NOW - 3600e3 }, { id: 'm2', dir: 'in', kind: 'in', text: '[صورة]', at: NOW - 3000e3, media: { type: 'image', cached: true } }];
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox'] });
 let n = 0; const ok = (m) => { n++; console.log('ok -', m); };
-async function open({ pref, scheme = 'dark', lang = 'ar', vp = { width: 1280, height: 800 }, hash = '', path = 'index.html', touch = false }) {
+async function open({ pref, scheme = 'dark', lang = 'ar', vp = { width: 1280, height: 800 }, hash = '', path = 'index.html', touch = false, at = NOW, live = false }) {
   const ctx = await browser.newContext({ viewport: vp, colorScheme: scheme, locale: lang === 'en' ? 'en-US' : 'ar-EG', serviceWorkers: 'block', hasTouch: touch, isMobile: touch, deviceScaleFactor: 1 });
   await ctx.addInitScript(([p, l]) => { try { if (p) localStorage.setItem('nova-theme', p); localStorage.setItem('nova-rx-language', l); } catch (e) {} }, [pref, lang]);
   await ctx.route('**/*', (r) => {
@@ -30,7 +30,7 @@ async function open({ pref, scheme = 'dark', lang = 'ar', vp = { width: 1280, he
     return u.startsWith(origin) || u.startsWith('data:') ? r.continue() : r.abort();
   });
   const page = await ctx.newPage(); const errors = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.clock.setFixedTime(new Date(NOW));
+  if (live) await page.clock.install({ time: new Date(at) }); else await page.clock.setFixedTime(new Date(at));
   await page.goto(BASE + path + (hash ? '#' + hash : ''), { waitUntil: 'load' }); await page.waitForTimeout(700);
   return { ctx, page, errors };
 }
@@ -39,20 +39,35 @@ const root = (page) => page.evaluate(() => ({ t: document.documentElement.getAtt
 const bright = async (page, clip) => { const buf = await page.screenshot(clip ? { clip } : {}); return page.evaluate(async (b64) => { const img = new Image(); img.src = 'data:image/png;base64,' + b64; await img.decode(); const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += (d[i] + d[i + 1] + d[i + 2]) / 3; return s / (d.length / 4); }, buf.toString('base64')); };
 const pix = async (page, x, y) => { const buf = await page.screenshot({ clip: { x, y, width: 1, height: 1 } }); return page.evaluate(async (b64) => { const img = new Image(); img.src = 'data:image/png;base64,' + b64; await img.decode(); const c = document.createElement('canvas'); c.width = 1; c.height = 1; const x = c.getContext('2d'); x.drawImage(img, 0, 0); return Array.from(x.getImageData(0, 0, 1, 1).data.slice(0, 3)); }, buf.toString('base64')); };
 
-{ // default = dark, nothing changes
+{ // q17: default = «تلقائي حسب الوقت» — 21:17 is night, so dark
   const { ctx, page, errors } = await open({});
-  const r = await root(page); assert.equal(r.t, 'dark'); assert.equal(r.p, 'dark'); assert.equal(r.f, 'none'); assert.equal(r.ls, null, 'nothing stored by default');
-  assert.ok(await bright(page) < 60, 'dark page is dark: ' + await bright(page)); assert.deepEqual(errors, []); await ctx.close(); ok('default is dark: no filter, nothing stored, page is dark');
+  const r = await root(page); assert.equal(r.t, 'dark'); assert.equal(r.p, 'time'); assert.equal(r.f, 'none'); assert.equal(r.ls, null, 'nothing stored by default');
+  assert.ok(await bright(page) < 60, 'dark page is dark: ' + await bright(page)); assert.deepEqual(errors, []); await ctx.close(); ok('default is by time: 21:17 -> dark, no filter, nothing stored');
+}
+{ // q17: by time of day — light 07:00-18:59, else dark; decided before first paint; re-checked every 15 min; a manual choice wins
+  for (const [hm, want] of [['06:59', 'dark'], ['07:00', 'light'], ['12:30', 'light'], ['18:59', 'light'], ['19:00', 'dark']]) {
+    const { ctx, page } = await open({ at: Date.parse('2026-11-18T' + hm + ':00+03:00') });
+    assert.equal((await root(page)).t, want, hm + ' -> ' + want);
+    await page.reload({ waitUntil: 'domcontentloaded' }); assert.equal(await page.evaluate(() => document.documentElement.getAttribute('data-nova-theme')), want, hm + ': set at DOMContentLoaded');
+    await ctx.close();
+  }
+  const { ctx, page } = await open({ at: Date.parse('2026-11-18T18:50:00+03:00'), live: true });
+  assert.equal((await root(page)).t, 'light', '18:50 light');
+  await page.clock.runFor(15 * 60 * 1000); await page.waitForTimeout(100);
+  assert.equal((await root(page)).t, 'dark', 'after 15 min (19:05) the theme turns dark by itself');
+  await ctx.close();
+  const m = await open({ pref: 'dark', at: Date.parse('2026-11-18T12:00:00+03:00') }); assert.equal((await root(m.page)).t, 'dark', 'manual dark at noon stays dark'); await m.ctx.close();
+  ok('by time: 06:59 dark, 07:00-18:59 light, 19:00 dark, live 15-min re-check, manual choice respected');
 }
 { // settings: the card, choose Light, saved, page turns light
   const { ctx, page, errors } = await open({ hash: 'settings' });
   const card = page.locator('#novaThemeCard'); await card.waitFor();
   const btns = await card.locator('[data-nova-theme-btn]').evaluateAll((bs) => bs.map((b) => [b.dataset.novaThemeBtn, b.textContent.trim(), b.getAttribute('aria-pressed'), b.classList.contains('active')]));
-  assert.deepEqual(btns, [['dark', 'داكن', 'true', true], ['light', 'فاتح', 'false', false], ['auto', 'تلقائي', 'false', false]], 'three choices, dark pressed: ' + JSON.stringify(btns));
+  assert.deepEqual(btns, [['time', 'تلقائي حسب الوقت', 'true', true], ['dark', 'داكن', 'false', false], ['light', 'فاتح', 'false', false], ['auto', 'حسب الجهاز', 'false', false]], 'four choices, by-time pressed: ' + JSON.stringify(btns));
   for (const b of await card.locator('[data-nova-theme-btn]').all()) { const bb = await b.boundingBox(); assert.ok(bb.width >= 44 && bb.height >= 40, 'touch size ' + JSON.stringify(bb)); }
   await card.locator('[data-nova-theme-btn=light]').click(); await page.waitForTimeout(300);
   let r = await root(page); assert.equal(r.t, 'light'); assert.equal(r.p, 'light'); assert.ok(/invert/.test(r.f), r.f); assert.equal(r.ls, 'light'); assert.equal(r.tc, '#f2f3f5', 'browser bar colour follows');
-  assert.equal(await card.locator('[data-nova-theme-btn=light]').getAttribute('aria-pressed'), 'true'); assert.ok(await card.locator('[data-nova-theme-btn=light]').evaluate((b) => b.classList.contains('active')) && !(await card.locator('[data-nova-theme-btn=dark]').evaluate((b) => b.classList.contains('active'))), 'highlight follows the choice'); assert.equal(await card.locator('[data-nova-theme-btn=dark]').getAttribute('aria-pressed'), 'false');
+  assert.equal(await card.locator('[data-nova-theme-btn=light]').getAttribute('aria-pressed'), 'true'); assert.ok(await card.locator('[data-nova-theme-btn=light]').evaluate((b) => b.classList.contains('active')) && !(await card.locator('[data-nova-theme-btn=time]').evaluate((b) => b.classList.contains('active'))), 'highlight follows the choice'); assert.equal(await card.locator('[data-nova-theme-btn=dark]').getAttribute('aria-pressed'), 'false');
   assert.ok(await bright(page) > 200, 'light page is light: ' + await bright(page));
   if (SHOTS) await page.screenshot({ path: SHOTS + '/ux416-settings-light.png' });
   await card.locator('[data-nova-theme-btn=dark]').click(); await page.waitForTimeout(200); r = await root(page); assert.equal(r.t, 'dark'); assert.equal(r.f, 'none'); assert.ok(await bright(page) < 60); assert.equal(r.tc, '#0A0B0E', 'bar colour restored');
@@ -75,8 +90,8 @@ const pix = async (page, x, y) => { const buf = await page.screenshot({ clip: { 
   const { ctx: c3, page: p3 } = await open({ pref: 'light', scheme: 'dark' }); assert.equal((await root(p3)).t, 'light', 'light means light even on a dark device'); await c3.close();
   ok('auto follows the device live; explicit dark/light ignore the device');
 }
-{ // junk in storage falls back to dark
-  const { ctx, page } = await open({ pref: '<script>' }); const r = await root(page); assert.equal(r.t, 'dark'); assert.equal(r.p, 'dark'); await ctx.close(); ok('an unknown stored value falls back to dark');
+{ // junk in storage falls back to the default (by time; 21:17 -> dark)
+  const { ctx, page } = await open({ pref: '<script>' }); const r = await root(page); assert.equal(r.t, 'dark'); assert.equal(r.p, 'time'); await ctx.close(); ok('an unknown stored value falls back to by-time');
 }
 { // photos keep their real colours, UI inverts, fixed layout intact, print is not inverted
   const { ctx, page, errors } = await open({ pref: 'light', hash: 'sale', vp: { width: 390, height: 844 }, touch: true });

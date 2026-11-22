@@ -19,7 +19,7 @@ try {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(String(e))); page.on('console', m => { if (m.type() === 'error' && !/emergency\/stock\.json/.test(m.location().url || '')) errs.push(m.text() + ' @ ' + (m.location().url || '')); });
   await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
-  await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
+  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' && window.novaSales, null, { timeout: 8000 });
 
@@ -42,6 +42,7 @@ try {
   assert.ok(r.ok, 'return saved ' + JSON.stringify(r));
   let clicks = 0;
   await page.locator('.nova-tab[data-page="reports"]').click(); clicks++; await sleep(300);
+  await page.locator('#novaRepTabs [data-rtab="shift"]').click(); clicks++; await sleep(200); // UI-BATCH1: reports tabs
   assert.ok(clicks <= 2, 'clicks ' + clicks);
   assert.ok(await page.locator('#novaShiftClose').isVisible(), 'panel visible');
   await page.locator('#novaShiftFloat').fill('100'); await page.locator('#novaShiftFloat').dispatchEvent('change'); await sleep(300);

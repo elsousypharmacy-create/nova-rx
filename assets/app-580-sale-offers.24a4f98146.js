@@ -174,7 +174,7 @@
     'not-ready': ['الكوبونات لسه بتتحمّل. حاول تاني.', 'Coupons are still loading. Try again.']
   };
   function couponBox() {
-    var host = document.querySelector('#checkoutModal .checkout-amount-display');
+    var host = document.getElementById('checkoutExtras') || document.querySelector('#checkoutModal .checkout-amount-display'); // UI-BATCH1: after «الباقي»
     if (!host) return null;
     var box = document.getElementById('novaCouponBox');
     if (!box) {

@@ -87,10 +87,30 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 }
 /* UX-P7 one button system, one empty state, one warning (ChatGPT decisions, brand colours kept; CSS drafted by Gemini, reviewed + measured): colour/radius/type only, no layout change */
 :is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action:not(.secondary),.nova-page-btn,.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice){border-radius:10px!important;font-size:14px;font-weight:700;border:1px solid transparent!important}
-:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.btn-checkout,.nova-inventory-action:not(.secondary),.nova-page-btn){background:#387e9e!important;border-color:#76b8d5!important;color:#fff!important}
-:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.btn-checkout,.nova-inventory-action:not(.secondary),.nova-page-btn):hover:not(:disabled){background:#438ead!important}
-:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale){background:#20262d!important;border-color:#343b44!important;color:#e6eaee!important}
-:is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale):hover:not(:disabled){background:#29313a!important}
+/* q18 DESIGN SYSTEM phase 1 (tokens + ONE button system). Plan: D:/claude-tmp/ui-review/design-system-plan.md.
+   Dark values only (the light theme is the page colour-inverted). Variants: primary / secondary / danger (040) / ghost (040).
+   Aliases sit in the same selector list; specials (pay button, #btnClearInvoice, qty, icons, tabs) keep their own rules. */
+:root{--ds-bg:#14181d;--ds-surface-1:#1b2026;--ds-surface-2:#20262d;--ds-surface-3:#29313a;--ds-border:#343b44;--ds-text:#e6eaee;--ds-text-muted:#a4adb7;--ds-accent:#387e9e;--ds-accent-hover:#438ead;--ds-accent-border:#76b8d5;--ds-accent-text:#fff;--ds-focus:#79c9eb;--ds-success:#1e9a60;--ds-success-hover:#23ad6c;--ds-success-border:#55d497;--ds-danger-bg:#29191e;--ds-danger-hover:#3a1f25;--ds-danger-text:#efa2a8;--ds-danger-border:#56323a;--ds-warning:#c5aa79;--ds-r-1:6px;--ds-r-2:10px;--ds-r-3:14px;--ds-r-pill:999px;--ds-shadow-1:0 2px 8px #0005;--ds-shadow-2:0 8px 24px #0007;--ds-shadow-3:0 18px 48px #0009;--ds-fs-1:12px;--ds-fs-2:13px;--ds-fs-3:14px;--ds-fs-4:16px;--ds-fs-5:20px;--ds-fs-6:30px;--ds-sp-1:4px;--ds-sp-2:8px;--ds-sp-3:12px;--ds-sp-4:16px;--ds-sp-5:24px;--ds-h:44px;--ds-h-sm:36px}
+:is(html,#ds) :is(.btn-primary,.nova-page-btn,.nova-inventory-action:not(.secondary)){background:var(--ds-accent)!important;border:1px solid var(--ds-accent-border)!important;color:var(--ds-accent-text)!important;border-radius:var(--ds-r-2)!important}
+:is(html,#ds) :is(.btn-primary,.nova-page-btn,.nova-inventory-action:not(.secondary)):hover:not(:disabled){background:var(--ds-accent-hover)!important}
+:is(html,#ds) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale){background:var(--ds-surface-2)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text)!important;border-radius:var(--ds-r-2)!important}
+:is(html,#ds) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale):hover:not(:disabled){background:var(--ds-surface-3)!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary,.nova-inv-primary),html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.secondary,a.secondary,.rcv-btn:not(.primary)):not(.close):not(.row-action):not(.chip){border-radius:var(--ds-r-2)!important;font-size:var(--ds-fs-3)!important;font-weight:700!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary,.nova-inv-primary):not(:disabled){background:var(--ds-accent)!important;border:1px solid var(--ds-accent)!important;color:#fff!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary,.nova-inv-primary):not(:disabled):hover{background:var(--ds-accent-hover)!important;border-color:var(--ds-accent-hover)!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-primary,button.primary,.rcv-btn.primary):disabled{background:var(--ds-surface-2)!important;border:1px solid var(--ds-border)!important;color:#6b7785!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.secondary,a.secondary,.rcv-btn:not(.primary)):not(.close):not(.row-action):not(.chip){background:var(--ds-surface-2)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text)!important}
+html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.secondary,a.secondary,.rcv-btn:not(.primary)):not(.close):not(.row-action):not(.chip):not(:disabled):hover{background:var(--ds-surface-3)!important;border-color:#4a8aa6!important;color:#fff!important}
+.btn-sm{min-height:var(--ds-h-sm)}@media(max-width:640px){.btn-sm{min-height:var(--ds-h)}}
+/* UI-BATCH1: «إتمام الدفع (F9)» and its confirm «تأكيد البيع» are the one dominant action (bigger + brighter than everything else on the sale screen); empty cart keeps the dashed disabled look (040) */
+:is(#novaPageView,.nova-page-view,.pos-root) .btn-checkout:not(:disabled),#checkoutModal #btnConfirmPayment:not(:disabled){background:#1e9a60!important;border-color:#55d497!important;color:#fff!important;font-size:20px!important;font-weight:800!important;box-shadow:0 4px 16px rgba(30,154,96,.38)!important}
+:is(#novaPageView,.nova-page-view,.pos-root) .btn-checkout:hover:not(:disabled),#checkoutModal #btnConfirmPayment:hover:not(:disabled){background:#23ad6c!important}
+#checkoutModal #btnConfirmPayment{min-height:52px}
+/* UI-BATCH1 z-index scale - use these values only, never add a new one:
+   20 sticky sale totals, 25 sale header, 60 dropdowns/suggestions, 110-120 header popovers, 900 phone bottom nav (#novaBottomNav),
+   950 more-sheet, 960 handover-notes panel, 1000 dialogs (.modal-backdrop, customer gate), 1200-1300 sale sub-dialogs,
+   9000 toasts (above dialogs so an error raised inside a dialog is seen; on phones they sit at the TOP, so they never cover a dialog footer, the pay bar or the nav),
+   9999+ full-screen overlays (receipt, labels). The handover-notes pill no longer floats: it is docked in the sale header (590). */
 :is(#novaPageView,.nova-page-view,.pos-root) .nova-clear-invoice{background:transparent!important;border-color:#7a2d33!important;color:#ffb4b8!important}
 :is(#novaPageView,.nova-page-view,.pos-root) .nova-clear-invoice:hover:not(:disabled){background:#3a1519!important}
 :is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action,.nova-page-btn,.btn-secondary,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale,.nova-clear-invoice):focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
@@ -101,12 +121,6 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-notice,.nova-page-view .nova-notice,.pos-root .nova-notice{background:#2a2412!important;border:1px solid #6b5a2a!important;color:#e6d9a6!important;border-radius:10px!important;padding:10px 14px;font-size:13px}
 :is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-sale-labels,.btn:not([class*="btn-"]):not([class*="nova-"])){background:#20262d!important;border:1px solid #343b44!important;border-radius:10px!important;color:#e6eaee!important;font-size:14px;font-weight:700}
 :is(#novaPageView,.nova-page-view,.pos-root) :is(.nova-sale-labels,.btn:not([class*="btn-"]):not([class*="nova-"])):hover:not(:disabled){background:#29313a!important}
-body .btn-primary{background:#387e9e!important;border:1px solid #76b8d5!important;color:#fff!important;border-radius:10px!important}
-body .btn-primary:hover:not(:disabled){background:#438ead!important}
-body .modal-footer .btn-primary,body [class*="modal"] .btn-primary{background:#387e9e!important;border:1px solid #76b8d5!important;color:#fff!important;border-radius:10px!important}
-body .modal-footer .btn-secondary,body [class*="modal"] .btn-secondary{background:#20262d!important;border:1px solid #343b44!important;color:#e6eaee!important;border-radius:10px!important}
-body .btn-secondary{background:#20262d!important;border:1px solid #343b44!important;color:#e6eaee!important;border-radius:10px!important}
-body .btn-secondary:hover:not(:disabled){background:#29313a!important}
 /* sale toolbar: every button the same height (was 34px next to 44px) */
 .nova-sale-actions .btn,.nova-sale-actions .nova-more-wrap>.btn,.nova-sale-actions>.btn{height:44px!important;min-height:44px!important}
 /* minimum 13px for operational text (products "same name and pack" alert was 11.7px) */
@@ -117,8 +131,8 @@ body .btn-secondary:hover:not(:disabled){background:#29313a!important}
 html body :is(th,small,kbd,.kbd-hint,.nova-sale-number,.nova-held-count,#totalItemsCount,#displaySubtotal,#displayVatLabel,#displayVat,.sidebar-title,.customer-empty-sub,#btnAttachLoyalty,.checkout-mock-note,#modalCustomerInfo,.nova-checkout-customer,.quick-cash-btn,.nova-receipt-width-btn,.nova-printer-toggle,.nova-stock-notice,.nova-product-en-name,.nova-sale-labels,.tot-row span:not(#displayGrandTotal),#novaStockNotice,#btnDismissHelp kbd,.nova-demo-label,.pharmacy-banner-copy span,.nova-held-action span,.discount-title,.discount-title+*,.input-grp label,.input-grp span,.checkout-amount-display .label,.change-due-box .title,.nova-setting-card p,[id*="heckout"] label,[class*="checkout"] label){font-size:13px!important}
 html body :is(#btnCancelCheckout,#btnPrintReceiptBtn,#btnReprintReceipt,#btnExportReceiptPdf,#btnReceiptNewSale,#btnDismissHelp,#btnAttachLoyalty,.quick-cash-btn,.nova-checkout-customer){font-size:14px!important}
 html body :is(.tot-row.grand-total span:first-child,.checkout-mock-note strong){font-size:15px!important;font-weight:700}
-html body #displayGrandTotal{font-size:20px!important;font-weight:700}
-html body #displayChangeDue{font-size:14px!important;font-weight:700}
+html body #displayGrandTotal{font-size:30px!important;font-weight:800;line-height:1.15}
+html body #displayChangeDue{font-size:36px!important;font-weight:800;line-height:1.15}html body #cashDetailsBox .change-due-box span.title{font-size:18px!important}
 /* UX-P18 invoices: kebab menu in the header row, table takes the full page */
 .nova-kebab{position:relative;flex:0 0 auto}
 .nova-kebab>summary{list-style:none;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid #2a313a;border-radius:10px;color:#a9b5c2;font-size:20px;line-height:1}
@@ -213,3 +227,14 @@ h1:has(+.nx-i),h2:has(+.nx-i),h3:has(+.nx-i),h4:has(+.nx-i){display:inline-block
 .nx-i:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
 .nx-i::after{content:attr(data-tip);position:absolute;z-index:60;top:calc(100% + 8px);inset-inline-start:-8px;width:max-content;max-width:min(320px,80vw);padding:10px 12px;background:#0e1216;border:1px solid #3a444e;border-radius:10px;color:#e8ecef;font:400 13px/1.7 Cairo,Tahoma,sans-serif;font-style:normal;text-align:start;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.5);display:none;pointer-events:none}
 .nx-i:hover::after,.nx-i:focus::after,.nx-i:focus-visible::after{display:block}
+/* UI-BATCH1 #7: reports page tabs (130). Same cards, grouped; the header and the tab strip stay on top of the owner board. */
+#novaPageView.nova-rtabs-on{display:flex;flex-direction:column}
+#novaPageView.nova-rtabs-on>*{flex-shrink:0}
+#novaPageView.nova-rtabs-on>.nova-page-header{order:-2}
+#novaPageView.nova-rtabs-on>#novaRepTabs{order:-1}
+#novaPageView.nova-rtabs-on>[data-rtab-off]{display:none!important}/* a lazy card may carry an inline display */
+.nova-rtabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 14px;padding:2px}
+.nova-rtabs::-webkit-scrollbar{display:none}
+.nova-rtabs button{flex:none;min-height:44px;padding:0 16px;border-radius:999px;background:#1b2026;border:1px solid #343b44;color:#c9d3dc;font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.nova-rtabs button[aria-selected=true]{background:#1d3a48;border-color:#79c9eb;color:#e6f6fd}
+.nova-rtabs button:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}

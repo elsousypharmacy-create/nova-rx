@@ -200,6 +200,7 @@ try {
 
   // Switch to reports page and verify card mounts once
   await page.evaluate(() => {
+    try { sessionStorage.setItem('nova.reportsTab', 'suppliers'); } catch (e) {} // UI-BATCH1: reports tabs
     const tab = document.querySelector('.nova-tab[data-page="reports"]');
     if (tab) tab.click();
   });

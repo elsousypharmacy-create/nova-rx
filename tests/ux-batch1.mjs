@@ -96,6 +96,10 @@ try {
     const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] } }); const page = await ctx.newPage();
     await page.goto(URL_, { waitUntil: 'domcontentloaded' }); await sleep(900);
     await page.click('#btnHeldInvoices'); await sleep(300);
+    if (await page.evaluate(() => document.body.classList.contains('nova-rail'))) { // UI-BATCH1: desktop rail = the one held list, no popup
+      check(`${vp[0]}x${vp[1]}: rail mode keeps one held list (no popup)`, await page.evaluate(() => document.getElementById('heldInvoicePanel').hidden && !!document.querySelector('.nova-rail-held-head #btnHeldInvoices')));
+      await ctx.close(); continue;
+    }
     const r = await page.evaluate(() => {
       const el = document.getElementById('heldInvoicePanel'), pr = el.getBoundingClientRect();
       const x = pr.left + pr.width / 2, y = Math.min(pr.top + 24, innerHeight - 2);

@@ -19,7 +19,7 @@ await ctx.route('**/*', r => {
   return r.abort();
 });
 await ctx.route('**/emergency/stock.json', r => r.fulfill({ status: 404, body: '' }));
-await ctx.addInitScript(() => {
+await (await ctx.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), ctx).addInitScript(() => {
   try {
     if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); }
     localStorage.setItem('nova-rx-language', 'ar');
@@ -69,9 +69,10 @@ const checkoutAndConfirm = async () => {
 
 await t('selling 1 strip deducts 1/3 box from stock and prices the strip accurately', async () => {
   await addByBarcode(CONCOR);
-  const sel = page.locator('#invoiceTableBody select.unit-select').first();
-  assert.deepEqual(await sel.locator('option').evaluateAll(opts => opts.map(o => o.value)), ['box', 'strip', 'tablet']);
-  await sel.selectOption('strip');
+  // q17 E: segmented toggle (one tap) instead of the dropdown
+  const seg = page.locator('#invoiceTableBody .unit-seg').first();
+  assert.deepEqual(await seg.locator('[data-unit]').evaluateAll(b => b.map(x => x.dataset.unit)), ['box', 'strip', 'tablet']);
+  await seg.locator('[data-unit=strip]').click();
   assert.equal((await page.locator('#invoiceTableBody .col-price').first().innerText()).trim(), '10.00');
   assert.equal((await page.locator('#invoiceTableBody .col-total').first().innerText()).trim(), '10.00');
   await checkoutAndConfirm();
@@ -86,7 +87,7 @@ await t('selling 1 strip deducts 1/3 box from stock and prices the strip accurat
 
 await t('selling 5 tablets deducts 5/30 (1/6) box from stock, combining with earlier strip sale to 1.5 boxes left', async () => {
   await addByBarcode(CONCOR);
-  await page.locator('#invoiceTableBody select.unit-select').first().selectOption('tablet');
+  await page.locator('#invoiceTableBody .unit-seg').first().locator('[data-unit=tablet]').click();
   await page.locator('#invoiceTableBody input.qty-input').first().fill('5');
   await page.locator('#invoiceTableBody input.qty-input').first().dispatchEvent('change');
   assert.equal((await page.locator('#invoiceTableBody .col-price').first().innerText()).trim(), '1.00');
@@ -99,7 +100,7 @@ await t('selling 5 tablets deducts 5/30 (1/6) box from stock, combining with ear
 
 await t('fractional stock boundary: after selling 1 strip of a 1-box item, selling 1 full box is refused but selling the remaining 1 strip succeeds', async () => {
   await addByBarcode(PANADOL);
-  await page.locator('#invoiceTableBody select.unit-select').first().selectOption('strip');
+  await page.locator('#invoiceTableBody .unit-seg').first().locator('[data-unit=strip]').click();
   await checkoutAndConfirm();
   assert.equal(await page.evaluate(b => window.novaStock.available(b), PANADOL), 0.5);
 
@@ -113,7 +114,7 @@ await t('fractional stock boundary: after selling 1 strip of a 1-box item, selli
   assert.ok((await page.locator('body').innerText()).includes('المخزون لا يكفي'));
 
   // Switch the same line to 12 tablets (= 0.5 box) -> succeeds and brings stock to 0
-  await page.locator('#invoiceTableBody select.unit-select').first().selectOption('tablet');
+  await page.locator('#invoiceTableBody .unit-seg').first().locator('[data-unit=tablet]').click();
   await page.locator('#invoiceTableBody input.qty-input').first().fill('12');
   await page.locator('#invoiceTableBody input.qty-input').first().dispatchEvent('change');
   await checkoutAndConfirm();
@@ -122,7 +123,7 @@ await t('fractional stock boundary: after selling 1 strip of a 1-box item, selli
 
 await t('unknown units and unavailable conversions are refused across UI, novaUnits, and novaStock', async () => {
   await addByBarcode(OTRIVIN);
-  const opts = await page.locator('#invoiceTableBody select.unit-select option').evaluateAll(o => o.map(x => x.value));
+  const opts = await page.locator('#invoiceTableBody .unit-seg [data-unit]').evaluateAll(o => o.map(x => x.dataset.unit));
   assert.deepEqual(opts, ['box'], 'spray product without strip/tablet packaging only exposes box');
 
   const res = await page.evaluate(b => {

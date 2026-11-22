@@ -19,16 +19,19 @@ try {
   await page.locator('#suggestionsBox .suggestion-item').first().click();
   // long Latin-ish name to stress clipping
   await page.evaluate(() => { document.querySelector('#invoiceTableBody .item-title').textContent = 'Augmentin 1 gm 14 tablets (UK) extra long product name for wrapping test 1234567890'; });
-  const sel = ['.item-title', '.qty-btn[data-act="dec"]', '.qty-input', '.qty-btn[data-act="inc"]', '.unit-select', '.col-price', '.col-total', '.btn-icon-del'];
+  const sel = ['.item-title', '.qty-btn[data-act="dec"]', '.qty-input', '.qty-btn[data-act="inc"]', '.unit-seg', '.col-price', '.col-total', '.btn-icon-del'];
   const check = async (label) => {
     const rects = await page.evaluate(sels => { const tr = document.querySelector('#invoiceTableBody tr'); const o = { vw: innerWidth, sw: document.documentElement.scrollWidth, tr: tr.getBoundingClientRect().toJSON() };
-      o.items = sels.map(s => { const e = tr.querySelector(s); const r = e.getBoundingClientRect(); return { s, l: r.left, r: r.right, w: r.width, h: r.height, sc: e.scrollWidth > e.clientWidth + 1 && !/item-title/.test(s) && e.tagName !== 'INPUT' }; }); return o; }, sel);
+      o.items = sels.map(s => { const e = tr.querySelector(s); const r = e.getBoundingClientRect(); return { s, l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, h: r.height, sc: e.scrollWidth > e.clientWidth + 1 && !/item-title/.test(s) && e.tagName !== 'INPUT' }; }); return o; }, sel);
     assert.ok(rects.sw <= rects.vw, label + ' horizontal overflow');
     for (const it of rects.items) { assert.ok(it.w > 0, label + ' hidden ' + it.s); assert.ok(it.l >= 0 && it.r <= rects.vw, `${label} ${it.s} outside viewport ${it.l}-${it.r}`); }
     const by = Object.fromEntries(rects.items.map(i => [i.s, i]));
     assert.ok(by['.btn-icon-del'].w >= 44 && by['.btn-icon-del'].h >= 44, 'delete 44px');
     for (const s of ['.qty-btn[data-act="dec"]', '.qty-btn[data-act="inc"]']) assert.ok(by[s].w >= 44 && by[s].h >= 44, s + ' tappable');
-    assert.ok(by['.col-price'].r <= by['.col-total'].l + 1 || by['.col-total'].r <= by['.col-price'].l + 1, 'price/total do not overlap');
+    // q17: price and total may sit on different lines (unit toggle on line 2), so check real 2-D overlap
+    const P = by['.col-price'], T = by['.col-total'], ov = (a, b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
+    assert.ok(!ov(P, T), 'price/total do not overlap');
+    for (const s of sel.filter(x => x !== '.unit-seg')) assert.ok(!ov(by['.unit-seg'], by[s]) || s === '.col-qty', 'unit toggle does not overlap ' + s);
   };
   await check('qty1');
   const txt = await page.evaluate(() => { const tr = document.querySelector('#invoiceTableBody tr'); return { p: getComputedStyle(tr.querySelector('.col-price'), '::before').content, t: getComputedStyle(tr.querySelector('.col-total'), '::before').content }; });

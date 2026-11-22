@@ -43,12 +43,15 @@ try {
   // held invoice delete: no native dialog, undo restores
   await add(prods[0]);
   await page.locator('#holdCurrentInvoice').click();
-  await page.locator('#btnHeldInvoices').click();
-  assert.equal(await page.locator('[data-held-delete]').count(), 1);
-  await page.locator('[data-held-delete]').click();
+  // UI-BATCH1: on desktop (1280) the sale rail is the one held list; its «حذف» delegates to the app's delete (same undo)
+  const railDel = page.locator('.nova-rail-held [data-rail-delete]');
+  assert.equal(await railDel.count(), 1);
+  await railDel.click();
   assert.equal(await page.locator('[data-held-delete]').count(), 0);
+  assert.equal(await railDel.count(), 0);
   await page.locator('#btnUndoToast').click();
   assert.equal(await page.locator('[data-held-delete]').count(), 1, 'held invoice restored');
+  assert.equal(await railDel.count(), 1, 'held invoice restored in the rail');
   assert.equal(dialogs.length, 0, 'no native dialogs: F4 asks in-app (AUDIT-02); line/held deletions do not ask');
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl');
   assert.deepEqual(errors, []);

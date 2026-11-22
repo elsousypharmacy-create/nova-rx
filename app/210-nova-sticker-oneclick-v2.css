@@ -305,7 +305,7 @@ input,select,textarea{min-height:44px}
 .invoice-table .qty-control{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:var(--sp-1);width:auto;max-width:100%;background:transparent!important;border:0!important}
 .invoice-table .qty-control .qty-btn,.invoice-table .qty-control .qty-input{height:44px;min-height:44px!important}
 .invoice-table .qty-control .qty-input{width:44px;min-width:44px;text-align:center}
-.invoice-table .qty-control .unit-select{flex:1 1 auto;min-width:64px;max-width:120px;height:44px}
+.invoice-table .qty-control .unit-seg{flex:0 1 auto}
 }
 /* UX33: nav strip edge hint is the UX2 mask; active tab is scrolled into view by script */
 

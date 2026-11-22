@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="ar" dir="rtl" data-theme="dark" data-nx-page="purchases"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>النواقص والمشتريات | NOVA Rx</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"><link rel="icon" href="/icon.svg?v=3" type="image/svg+xml"><link rel="stylesheet" href="/ux-tokens.css"><link rel="stylesheet" href="/purchases.css"><link rel="stylesheet" href="/purchases-history.css"><link rel="stylesheet" href="/ux-standalone.css"><link rel="stylesheet" href="/nova-icons.css"><script src="/nova-icons.js" defer></script><style id="NOVA_FIX50">@media (hover:none),(pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=color]):not([type=button]):not([type=submit]):not([type=image]),textarea,select{font-size:16px!important}}</style><script id="NOVA_THEME_JS">
-/* UX416 theme (own attribute data-nova-theme: ux-tokens.css already reacts to data-theme=light with its --nx-* palette, which must not stack on this inversion): dark is the default; «light» is the same page colour-inverted (filter on <html>) with photos and video kept as they are. Preference in localStorage 'nova-theme': dark | light | auto (follow the device). Runs in <head> so the page never flashes the wrong theme. */
+/* UX416+q17 theme (own attribute data-nova-theme; «light» = page colour-inverted, photos kept). localStorage nova-theme: time (default: light 07:00-18:59, else dark, re-checked every 15 min) | dark | light | auto (device). In <head>: no flash. */
 (function(){var K='nova-theme',d=document.documentElement,mq=window.matchMedia&&matchMedia('(prefers-color-scheme: light)');
-function pref(){var p='dark';try{p=localStorage.getItem(K)||'dark'}catch(e){}return p==='light'||p==='auto'?p:'dark'}
-function resolved(p){return p==='light'||(p==='auto'&&mq&&mq.matches)?'light':'dark'}
+function pref(){var p='';try{p=localStorage.getItem(K)}catch(e){}return /^(dark|light|auto)$/.test(p)?p:'time'}
+function resolved(p){var h=new Date().getHours();return p==='light'||(p==='auto'&&mq&&mq.matches)||(p==='time'&&h>6&&h<19)?'light':'dark'}
 function apply(){var p=pref(),r=resolved(p);d.setAttribute('data-nova-theme',r);d.setAttribute('data-nova-theme-pref',p);var m=document.querySelector('meta[name=theme-color]');if(m){if(!m.__nd)m.__nd=m.getAttribute('content');m.setAttribute('content',r==='light'?'#f2f3f5':m.__nd)}
 try{var bs=document.querySelectorAll('[data-nova-theme-btn]');for(var i=0;i<bs.length;i++){var on=bs[i].getAttribute('data-nova-theme-btn')===p;bs[i].classList.toggle('active',on);bs[i].setAttribute('aria-pressed',on?'true':'false')}}catch(e){}}
-window.NovaTheme={pref:pref,resolved:function(){return resolved(pref())},set:function(p){try{localStorage.setItem(K,p==='light'||p==='auto'?p:'dark')}catch(e){}apply()},apply:apply};
-apply();if(mq){var f=function(){if(pref()==='auto')apply()};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f)}
+window.NovaTheme={pref:pref,resolved:function(){return resolved(pref())},set:function(p){try{localStorage.setItem(K,/^(dark|light|auto)$/.test(p)?p:'time')}catch(e){}apply()},apply:apply};
+apply();setInterval(function(){if(pref()=='time')apply()},9e5);if(mq){var f=function(){if(pref()==='auto')apply()};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f)}
 window.addEventListener('storage',function(e){if(e.key===K)apply()});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-nova-theme-btn]');if(b){e.preventDefault();window.NovaTheme.set(b.getAttribute('data-nova-theme-btn'))}});
 })();
@@ -43,14 +43,14 @@ html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-color
         <div class="needs-lock-wrap" id="needsLockWrap" hidden>
           <div class="unlock-card needs-lock-card" data-unlock>
             <div class="needs-lock-ico" aria-hidden="true">🔒</div>
-            <h2 class="unlock-title">النواقص محتاجة رقم الدخول</h2>
-            <p class="unlock-body">اكتب رقم الداشبورد مرة واحدة، وهيفضل مفتوح لحد ما تقفل الصفحة.</p>
+            <h2 class="unlock-title">تحديث النواقص من المخزون</h2>
+            <p class="unlock-body">القائمة شغالة من غير رقم. اكتب رقم الداشبورد لتحميل آخر أرقام المخزون أو لإرسال طلب للمورد، وهيفضل محفوظ لحد ما تقفل الصفحة.</p>
             <input id="dashboard-style" class="needs-pin-input" type="password" inputmode="numeric" autocomplete="off" aria-label="رقم دخول الداشبورد" placeholder="• • • •">
             <small id="unlockHint" class="unlock-hint" role="status" hidden>الرقم غير صحيح، جرّب مرة أخرى.</small>
             <button type="button" id="unlockNeedsBtn" class="needs-tile pri wide" data-empty-act="unlock">
               <span class="k" aria-hidden="true">Enter</span>
               <span class="i" aria-hidden="true">🔓</span>
-              <span>افتح النواقص</span>
+              <span>حمّل من المخزون</span>
             </button>
             <p class="needs-lock-note">الاستلام وسجل الفواتير شغالين من غير رقم</p>
           </div>

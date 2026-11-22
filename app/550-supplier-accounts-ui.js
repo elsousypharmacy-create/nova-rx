@@ -7,6 +7,7 @@
   'use strict';
 
   const SECTION_ID = 'novaSupplierAccountsSection';
+  const EXP_ID = 'novaExpensesSection'; // q17: expenses live in the «الوردية» reports tab (everyone who sells); approval flow unchanged (#76)
   const STYLE_ID = 'novaSupplierAccountsStyles';
   const DIALOG_HOST_ID = 'novaSupplierAccountsDialogHost';
   const PRINT_HOST_ID = 'novaSupplierAccountsPrintHost';
@@ -170,7 +171,7 @@
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = `
+    style.textContent = (`
       #${SECTION_ID} {
         background: #14181d;
         border: 1px solid #2a313a;
@@ -464,7 +465,7 @@
           text-align: start;
         }
       }
-    `;
+    `).split('#' + SECTION_ID).join(':is(#' + SECTION_ID + ',#' + EXP_ID + ')');
     document.head.appendChild(style);
   }
 
@@ -1216,6 +1217,7 @@
   }
 
   function renderSection() {
+    renderExpenses();
     const section = document.getElementById(SECTION_ID);
     if (!section) return;
     section.setAttribute('dir', en() ? 'ltr' : 'rtl');
@@ -1235,24 +1237,40 @@
          </div>`
       : '';
 
-    const bodyHtml = state.tab === 'suppliers' ? renderSuppliersTab(acct, suppliers) : renderExpensesTab(acct);
+    const bodyHtml = renderSuppliersTab(acct, suppliers);
 
     section.innerHTML = `
       <div class="nsa-header">
-        <h2 class="nsa-title">${esc(t('حسابات الموردين والمصروفات', 'Supplier Accounts & Expenses'))}</h2>
-        <div class="nsa-tabs" role="tablist">
-          <button type="button" class="nsa-tab" role="tab" data-nsa-tab="suppliers" aria-selected="${state.tab === 'suppliers' ? 'true' : 'false'}">${esc(t('الموردين', 'Suppliers'))}</button>
-          <button type="button" class="nsa-tab" role="tab" data-nsa-tab="expenses" aria-selected="${state.tab === 'expenses' ? 'true' : 'false'}">${esc(t('المصروفات', 'Expenses'))}</button>
-        </div>
+        <h2 class="nsa-title">${esc(t('حسابات الموردين', 'Supplier Accounts'))}</h2>
       </div>
-      ${flashHtml}
+      ${state.flashIn === 'exp' ? '' : flashHtml}
       ${bodyHtml}
+    `;
+  }
+
+  function renderExpenses() {
+    const section = document.getElementById(EXP_ID);
+    if (!section) return;
+    section.setAttribute('dir', en() ? 'ltr' : 'rtl');
+    const acct = getAcct();
+    if (!acct) { section.innerHTML = `<div class="nsa-empty">${esc(t('موديول المصروفات مش متحمّل.', 'Expenses module is not loaded.'))}</div>`; return; }
+    const flashHtml = state.flash && state.flashIn === 'exp'
+      ? `<div class="nsa-flash nsa-flash-${state.flash.kind === 'err' ? 'err' : 'ok'}" role="status">
+           <span>${esc(state.flash.text)}</span>
+           <button type="button" class="btn btn-secondary" data-nsa-dismiss-flash aria-label="${esc(t('إخفاء', 'Dismiss'))}">✕</button>
+         </div>`
+      : '';
+    section.innerHTML = `
+      <div class="nsa-header"><h2 class="nsa-title">${esc(t('المصروفات', 'Expenses'))}</h2></div>
+      ${flashHtml}
+      ${renderExpensesTab(acct)}
     `;
   }
 
   /* ---- Event Delegation on Section ---- */
   function attachSectionEvents(section) {
     section.addEventListener('click', (e) => {
+      state.flashIn = section.id === EXP_ID ? 'exp' : 'sup';
       const dismissBtn = e.target.closest('[data-nsa-dismiss-flash]');
       if (dismissBtn) {
         state.flash = null;
@@ -1316,6 +1334,7 @@
 
   /* ---- Mount & MutationObserver ---- */
   function tryMount() {
+    tryMountExpenses();
     if (document.getElementById(SECTION_ID)) return;
     // AUDIT-03 integration: #novaRetReasons exists only when there are sales; otherwise mount at the end of the open reports page
     const anchor = document.getElementById(ANCHOR_ID);
@@ -1328,7 +1347,7 @@
     const section = document.createElement('section');
     section.id = SECTION_ID;
     section.className = 'nova-panel';
-    section.setAttribute('aria-label', t('حسابات الموردين والمصروفات', 'Supplier Accounts & Expenses'));
+    section.setAttribute('aria-label', t('حسابات الموردين', 'Supplier Accounts'));
 
     if (target && target.parentNode) target.parentNode.insertBefore(section, target.nextSibling);
     else view.appendChild(section);
@@ -1336,11 +1355,27 @@
     renderSection();
   }
 
+  function tryMountExpenses() {
+    if (document.getElementById(EXP_ID)) return;
+    const view = document.getElementById('novaPageView');
+    const onReports = !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    if (!(onReports && view) && !document.getElementById(ANCHOR_ID)) return;
+    if (!view) return;
+    ensureStyles();
+    const section = document.createElement('section');
+    section.id = EXP_ID;
+    section.className = 'nova-panel';
+    section.setAttribute('aria-label', t('المصروفات', 'Expenses'));
+    view.appendChild(section);
+    attachSectionEvents(section);
+    renderExpenses();
+  }
+
   function startObserver() {
     tryMount();
     if (!document.body) return;
     const observer = new MutationObserver(() => {
-      if (!document.getElementById(SECTION_ID) && (document.getElementById(ANCHOR_ID) || document.querySelector('.nova-tab.active[data-page="reports"]'))) {
+      if ((!document.getElementById(SECTION_ID) || !document.getElementById(EXP_ID)) && (document.getElementById(ANCHOR_ID) || document.querySelector('.nova-tab.active[data-page="reports"]'))) {
         tryMount();
       }
     });

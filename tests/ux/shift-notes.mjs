@@ -159,6 +159,8 @@ async function run() {
     if (await saleTab.count()) {
       await page.evaluate(() => document.querySelector('.nova-tab[data-page="sale"]').click());
       const badge = page.locator('#novaShiftNotesBadge');
+      await badge.waitFor({ state: 'attached', timeout: 5000 });
+      if (await page.evaluate(() => !!document.querySelector('#novaSaleMoreMenu #novaShiftNotesBadge'))) await page.locator('#btnSaleMore').click(); // UI-BATCH1: phones keep it in «…»
       await badge.waitFor({ state: 'visible', timeout: 5000 });
       assert.equal(await badge.isVisible(), true, 'Sale badge #novaShiftNotesBadge must be visible');
     }
@@ -166,6 +168,7 @@ async function run() {
     // 5. Test reports card visible on reports page and no overflow at 390px
     const reportsTab = page.locator('.nova-tab[data-page="reports"]').first();
     await page.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click());
+    await page.locator('#novaRepTabs [data-rtab="shift"]').click(); // UI-BATCH1: reports tabs
     const card = page.locator('#novaPageView #novaShiftNotes');
     await card.waitFor({ state: 'visible', timeout: 5000 });
     assert.equal(await card.isVisible(), true, 'Reports card #novaShiftNotes must be visible');

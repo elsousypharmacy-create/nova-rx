@@ -112,6 +112,7 @@ try {
   assert(apiCheck.finalBal.vault === 600 && apiCheck.finalBal.bank === 300, 'exact piastre balances');
   assert(apiCheck.count === 4, 'append-only 4 valid moves');
 
+  await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'vault'); } catch {} }); // UI-BATCH1: reports tabs
   await page.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click()); // at 390px the top tabs are hidden behind the bottom bar (app/562)
   await page.waitForSelector('#novaVaultCard', { timeout: 5000 });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > 390);

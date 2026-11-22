@@ -63,14 +63,14 @@ if (navigator.locks?.request) navigator.locks.request('nova-rx-stock', () => Nov
   <link rel="apple-touch-icon" href="/icon.svg">
   <script src="/assets/app-020-wa-home-screen-name.72f7f62119.js"></script>
 <script id="NOVA_THEME_JS">
-/* UX416 theme (own attribute data-nova-theme: ux-tokens.css already reacts to data-theme=light with its --nx-* palette, which must not stack on this inversion): dark is the default; «light» is the same page colour-inverted (filter on <html>) with photos and video kept as they are. Preference in localStorage 'nova-theme': dark | light | auto (follow the device). Runs in <head> so the page never flashes the wrong theme. */
+/* UX416+q17 theme (own attribute data-nova-theme; «light» = page colour-inverted, photos kept). localStorage nova-theme: time (default: light 07:00-18:59, else dark, re-checked every 15 min) | dark | light | auto (device). In <head>: no flash. */
 (function(){var K='nova-theme',d=document.documentElement,mq=window.matchMedia&&matchMedia('(prefers-color-scheme: light)');
-function pref(){var p='dark';try{p=localStorage.getItem(K)||'dark'}catch(e){}return p==='light'||p==='auto'?p:'dark'}
-function resolved(p){return p==='light'||(p==='auto'&&mq&&mq.matches)?'light':'dark'}
+function pref(){var p='';try{p=localStorage.getItem(K)}catch(e){}return /^(dark|light|auto)$/.test(p)?p:'time'}
+function resolved(p){var h=new Date().getHours();return p==='light'||(p==='auto'&&mq&&mq.matches)||(p==='time'&&h>6&&h<19)?'light':'dark'}
 function apply(){var p=pref(),r=resolved(p);d.setAttribute('data-nova-theme',r);d.setAttribute('data-nova-theme-pref',p);var m=document.querySelector('meta[name=theme-color]');if(m){if(!m.__nd)m.__nd=m.getAttribute('content');m.setAttribute('content',r==='light'?'#f2f3f5':m.__nd)}
 try{var bs=document.querySelectorAll('[data-nova-theme-btn]');for(var i=0;i<bs.length;i++){var on=bs[i].getAttribute('data-nova-theme-btn')===p;bs[i].classList.toggle('active',on);bs[i].setAttribute('aria-pressed',on?'true':'false')}}catch(e){}}
-window.NovaTheme={pref:pref,resolved:function(){return resolved(pref())},set:function(p){try{localStorage.setItem(K,p==='light'||p==='auto'?p:'dark')}catch(e){}apply()},apply:apply};
-apply();if(mq){var f=function(){if(pref()==='auto')apply()};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f)}
+window.NovaTheme={pref:pref,resolved:function(){return resolved(pref())},set:function(p){try{localStorage.setItem(K,/^(dark|light|auto)$/.test(p)?p:'time')}catch(e){}apply()},apply:apply};
+apply();setInterval(function(){if(pref()=='time')apply()},9e5);if(mq){var f=function(){if(pref()==='auto')apply()};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f)}
 window.addEventListener('storage',function(e){if(e.key===K)apply()});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-nova-theme-btn]');if(b){e.preventDefault();window.NovaTheme.set(b.getAttribute('data-nova-theme-btn'))}});
 })();
@@ -89,7 +89,7 @@ html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-color
 #novaPageView .nova-theme-btn{transition:background-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
 </style>
 
-  <link rel="stylesheet" href="/assets/app-040-base-theme.db2042f74a.css">
+  <link rel="stylesheet" href="/assets/app-040-base-theme.219858d8da.css">
 <link rel="stylesheet" id="NOVA_SALE_POLISH" href="/assets/app-050-nova-sale-polish.3b6fbcc346.css">
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script><style id="ux214-boot">/* UX214: app content stays hidden (splash covers it) until first-load i18n/layout settles, so load-time text swaps cause no layout shift. */html.nova-boot body>*:not(#novaSplash){opacity:0}</style><script>document.documentElement.classList.add('nova-boot');setTimeout(function(){document.documentElement.classList.remove('nova-boot')},4000)</script>
 <script>/* UX29: single VAT-rate source (percent, tax-included). SALE-02: default 14 = Egypt VAT (ضريبة القيمة المضافة 14%); owner/accountant can change it in Settings. */
@@ -99,7 +99,7 @@ function calc(total,rate){var r=rate===undefined?get():Number(rate);return Math.
 function label(rate){var r=rate===undefined?get():rate;return String(Math.round(r*100)/100)}
 return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
   <link rel="prefetch" as="style" data-nova-lazy-css="1" href="supplier-lookup.css">
-<link rel="stylesheet" id="ux10-mobile-sale" href="/assets/app-060-ux10-mobile-sale.74bec81baf.css">
+<link rel="stylesheet" id="ux10-mobile-sale" href="/assets/app-060-ux10-mobile-sale.d57ddc3d5e.css">
 <style id="ux34-tap-targets">
 /* UX34: >=44px hit areas on sale toolbar (tablet 768-1366 and mobile); toolbar stays one row via gap/padding trims */
 .nova-sale-actions #btnNewSale,.nova-sale-actions #holdCurrentInvoice,.nova-sale-actions #btnHeldInvoices,.nova-sale-actions #btnAddLoyalty,.nova-sale-actions #btnSaleMore,#btnRefreshApp{min-height:44px!important;min-width:44px!important;box-sizing:border-box}
@@ -266,7 +266,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             <span>خصم الفاتورة</span><span class="discount-toggle-caret" aria-hidden="true">▾</span>
           </button>
           <div class="tot-row">
-            <span>Subtotal (<span id="totalItemsCount">0</span> items)</span>
+            <span>Subtotal (<span id="totalItemsCount">0</span>)</span>
             <span id="displaySubtotal">0.00 EGP</span>
           </div>
           <div id="discountRow" class="tot-row discount-applied" style="display:none;">
@@ -361,9 +361,9 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
     </aside>
   </div>
 <!-- UX-P40:BEGIN sale side rail (owner-approved mockup 2026-11-19: four invoice tiles on top, held invoices under them, stickers at the bottom; customer card opens as a window from a header chip). Wide landscape screens only; narrow screens keep the header buttons. Existing buttons are moved (same ids and listeners), never cloned. -->
-<link rel="stylesheet" id="ux-p40-sale-rail" href="/assets/app-100-ux-p40-sale-rail.ee214caa75.css">
+<link rel="stylesheet" id="ux-p40-sale-rail" href="/assets/app-100-ux-p40-sale-rail.a14c31c2b6.css">
 <div id="novaCustModal" hidden role="dialog" aria-modal="true" aria-labelledby="novaCustModalTitle"><div class="ncm-card"><div class="ncm-head"><h3 id="novaCustModalTitle">سجل العميل</h3><button type="button" class="ncm-close" id="novaCustModalClose"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>إغلاق</span></button></div><div class="ncm-body customer-sidebar" id="novaCustModalBody"></div></div></div>
-<script src="/assets/app-110-sale-rail-held.028b77fc58.js"></script>
+<script src="/assets/app-110-sale-rail-held.442c5543f9.js"></script>
 <!-- UX-P40:END -->
 
   <div id="customerCheckoutGate" class="nova-customer-gate" hidden role="dialog" aria-modal="true" aria-labelledby="customerGateTitle">
@@ -447,7 +447,7 @@ return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
             type="number" 
             id="inputCashReceived" 
             class="history-search-input" 
-            style="height:38px; font-size:16px; font-weight:700; font-family:var(--font-mono); text-align:right;"
+            style="height:48px; font-size:22px; font-weight:700; font-family:var(--font-mono); text-align:right;"
             placeholder="0.00"
           >
           <div class="quick-cash-row">
@@ -555,7 +555,7 @@ window.NovaFmt=(function(){
   return {formatDateTime:formatDateTime,formatDate:formatDate,pluralItems:pluralItems,payLabel:payLabel,PAY:PAY};
 })();
 </script>
-  <script src="/assets/app-120-pos-core.d38fe220a1.js"></script>
+  <script src="/assets/app-120-pos-core.b5b2d5f989.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=7'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
 <script>
 (function(){
@@ -577,10 +577,10 @@ window.NovaFmt=(function(){
 })();
 </script>
 
-<script src="/assets/app-130-pages-nav.231340f28b.js"></script>
+<script src="/assets/app-130-pages-nav.a3732cf294.js"></script>
 <link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-570-sale-approval.f801360a9e.js">
 
-<script src="/assets/app-140-ui-language.2505556cb3.js"></script>
+<script src="/assets/app-140-ui-language.907e76ac5c.js"></script>
 <script>
 (function(){
  const toggle=document.getElementById('btnSaleMore');const menu=document.getElementById('novaSaleMoreMenu');
@@ -663,10 +663,10 @@ window.NovaFmt=(function(){
 </section>
 <link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-190-sticker-studio.90c2b5a7f5.js">
 <link rel="prefetch" as="style" id="NOVA_STICKER_ONECLICK" data-nova-lazy-css="1" href="/assets/app-200-nova-sticker-oneclick.69fbacadfc.css">
-<link rel="stylesheet" id="NOVA_STICKER_ONECLICK_V2" href="/assets/app-210-nova-sticker-oneclick-v2.459fc609be.css">
+<link rel="stylesheet" id="NOVA_STICKER_ONECLICK_V2" href="/assets/app-210-nova-sticker-oneclick-v2.b838162767.css">
 
 <script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><link rel="prefetch" as="script" href="bi-dictionary.js" data-nova-lazy="1"><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="/staff-gate.js"></script><link rel="prefetch" as="script" href="supplier-provider.js" data-nova-lazy="1"><link rel="prefetch" as="script" href="supplier-lookup.js" data-nova-lazy="1"><link rel="prefetch" as="script" id="fix43-inbox-lib" data-nova-lazy="1" href="/assets/app-220-fix43-inbox-lib.183c7a34ba.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-230-inbox-wa.5fcebe3979.js"><link rel="stylesheet" id="ux209-wa-target" href="/assets/app-240-ux209-wa-target.7cb40295c1.css"><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="sale01-backend-flag" src="/assets/app-250-sale01-backend-flag.eba3d63ec7.js"></script><link rel="stylesheet" id="sale06-onboarding-css" href="/assets/app-255-sale06-onboarding-css.bdd8c3bcab.css"><link rel="prefetch" as="script" id="sale06-onboarding" data-nova-lazy="1" href="/assets/app-260-sale06-onboarding.b7bfcb6d88.js">
-<script id="ux81-wa-badge" defer="" src="/assets/app-270-ux81-wa-badge.6a689d762e.js"></script><link rel="stylesheet" id="ux44-mobile-totals" href="/assets/app-280-ux44-mobile-totals.22ae2004d6.css">
+<script id="ux81-wa-badge" defer="" src="/assets/app-270-ux81-wa-badge.6a689d762e.js"></script><link rel="stylesheet" id="ux44-mobile-totals" href="/assets/app-280-ux44-mobile-totals.816ef64695.css">
 <script src="/assets/app-290-mobile-discount.38e3aed93a.js"></script>
 <script id="NOVA_FIX50_VV" src="/assets/app-300-nova-fix50-vv.fb5a7598b8.js"></script><script src="/assets/app-310-nav-chevrons.2164eb1f48.js"></script>
 <!-- UX430:BEGIN WhatsApp KPIs -->
@@ -694,15 +694,15 @@ window.NovaFmt=(function(){
 <script id="ux-p37-inv-per">document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-inv-per]');if(!b)return;window.__novaInvPer=b.getAttribute('data-inv-per');var t=document.querySelector('.nova-tab[data-page=invoices]');if(t)t.click();var nb=document.querySelector('[data-inv-per="'+window.__novaInvPer+'"]');if(nb)nb.focus();});</script>
 <link rel="prefetch" as="script" id="ux-p38-settings-sections" data-nova-lazy="1" href="/assets/app-470-ux-p38-settings-sections.764222a9a7.js">
 <link rel="prefetch" as="style" id="ux-p30-receiving" data-nova-lazy-css="1" href="/assets/app-480-ux-p30-receiving.c2dd2cfd32.css">
-<link rel="stylesheet" id="nova-ui-system" href="/assets/app-490-nova-ui-system.df5f00b027.css">
+<link rel="stylesheet" id="nova-ui-system" href="/assets/app-490-nova-ui-system.f5e5afb7fa.css">
 <link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-500-receiving.4d39a544ea.js">
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
-<link rel="stylesheet" id="ux206-mobile-cart-row" href="/assets/app-510-ux206-mobile-cart-row.3eeb883d92.css">
-<link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.4b597b7814.css">
+<link rel="stylesheet" id="ux206-mobile-cart-row" href="/assets/app-510-ux206-mobile-cart-row.350acac56a.css">
+<link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.71e3ea71fe.css">
 <link rel="prefetch" as="script" id="NOVA_INFO_TIPS" data-nova-lazy="1" href="/assets/app-530-nova-info-tips.7e85f17416.js">
-<script src="/assets/app-548-nova-providers.842cf22d2b.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.da0e87d589.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.b257e53edb.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.5f97d1eb4d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.bf456491a6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.7e48dbcb0b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.61072010e6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-572-sale-settings.673c2fbad0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-574-excel-export.c1c71e823b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-576-shift-open.048a78672b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-578-profit-slow.6ae8fe4fee.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-580-sale-offers.308341a794.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-582-stock-count.6f380f73e7.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-584-item-limits.4d32363c1d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-586-fridge-log.0524f9bf35.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-588-destruction-record.131ac97e4e.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-590-shift-notes.9c1421db36.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-592-customer-requests.4feb663c61.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-594-ops-screens.24e9991bbb.js"><script src="/assets/app-562-mobile-bottom-nav.471b204e6c.js"></script>
+<script src="/assets/app-548-nova-providers.842cf22d2b.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.ceb8188e2c.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.4fcfcadd83.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.5f97d1eb4d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.bf456491a6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.7e48dbcb0b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.61072010e6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-572-sale-settings.f8437c6744.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-574-excel-export.c1c71e823b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-576-shift-open.048a78672b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-578-profit-slow.6ae8fe4fee.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-580-sale-offers.24a4f98146.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-582-stock-count.6f380f73e7.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-584-item-limits.4d32363c1d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-586-fridge-log.0524f9bf35.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-588-destruction-record.131ac97e4e.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-590-shift-notes.2cc170d745.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-592-customer-requests.4feb663c61.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-594-ops-screens.24e9991bbb.js"><script src="/assets/app-562-mobile-bottom-nav.7b42338f44.js"></script>
 </html>
 

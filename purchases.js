@@ -14,6 +14,32 @@ const SESSION_PIN_KEY = 'novaNeedsSessionPin';
 // Owner 20 Nov 02:4x: preview/staging read the stock source with a server-side PIN (no PIN card), and the
 // source takes ~6 s, so wait for the server (same 45 s limit as the Worker) instead of showing the PIN card at 600 ms.
 const PINLESS_TIMEOUT_MS = 45000;
+// q17 C (owner 22 Nov): opening / viewing / adding / removing items needs no PIN. Without a session PIN the list opens
+// from this device's last loaded copy (+ manual items); only loading fresh stock (the source is PIN-protected on the
+// server) and SENDING a real order to a supplier ask for the dashboard PIN (sessionStorage, PERF-05 behaviour kept).
+const LAST_STOCK_KEY = 'novaNeedsLastStockV1';
+let localMode = false;
+let pinAsk = false;
+function saveLastStock(list, at) {
+  try {
+    const keep = buildNeeds(list, { ...prefs, limits }).map(i => i.key), set = new Set(keep);
+    const rows = list.filter(r => set.has(String(r.id || r.code || '').trim() + '::' + (r.unit || 'pack'))).slice(0, 1500);
+    localStorage.setItem(LAST_STOCK_KEY, JSON.stringify({ at: at || Date.now(), items: rows }));
+  } catch {}
+}
+function readLastStock() {
+  try { const o = JSON.parse(localStorage.getItem(LAST_STOCK_KEY) || 'null'); return o && Array.isArray(o.items) ? o : null; } catch { return null; }
+}
+function openLocal(ask) {
+  const last = readLastStock();
+  rawItems = last ? last.items : [];
+  lastUpdatedDate = last ? new Date(last.at) : null;
+  needPin = false; loadError = ''; loadingStock = false; localMode = true; pinAsk = !!ask;
+  if ($('sourceState')) $('sourceState').textContent = last ? '📋 آخر نسخة محفوظة على الجهاز' : '📋 قائمة يدوية · حدّث من المخزون برقم الداشبورد';
+  status('');
+  rebuild();
+  if (pinAsk) focusUnlock();
+}
 
 let prefs = { days: 21, level: 'ideal', mode: 'auto', suppliers: ['aumet', 'pharmaoverseas'], aumetSellers: [], excludedSuppliers: [], excludedSellers: [] };
 try { const p = JSON.parse(localStorage.getItem(PREF) || 'null'); if (p && typeof p === 'object') prefs = { ...prefs, ...p }; } catch {}
@@ -374,7 +400,11 @@ function updatePanelVisibility() {
     stagePill.textContent = showOpenChrome ? 'مرحلة 2 من 5 · راجع الكميات' : 'مرحلة 1 من 5 · افتح النواقص';
   }
 
-  if (lockWrap) lockWrap.hidden = !isLocked;
+  if (lockWrap) lockWrap.hidden = !(isLocked || (pinAsk && isReady));
+  if (panel) panel.dataset.local = localMode ? '1' : '0';
+  if ($('lockNeedsBtn')) $('lockNeedsBtn').hidden = !dashboardPin; // q17 C: nothing to lock without a PIN
+  if ($('phoneLockBtn')) $('phoneLockBtn').hidden = !dashboardPin;
+  if (localMode && !lastUpdatedDate && $('sourceTime')) $('sourceTime').textContent = '—';
   if (railOpen) railOpen.hidden = !showOpenChrome;
   if (inlineCtrls) inlineCtrls.hidden = !showOpenChrome;
   if (phoneSubrow) phoneSubrow.hidden = !showOpenChrome;
@@ -519,15 +549,9 @@ async function loadStock(auto = false) {
   if (busy) return;
   if (auto !== true) auto = false;
   /* PERF-05: fail fast when no PIN is stored in this tab session and the env is not PINLESS-auto */
-  if (!dashboardPin && !PINLESS) {
-    needPin = true;
-    loadError = '';
+  if (!dashboardPin && !PINLESS) { // q17 C: no PIN -> the list opens anyway; a manual refresh shows the PIN card next to it
     wrongPin = false;
-    loadingStock = false;
-    if ($('sourceState')) $('sourceState').textContent = '🔒 النواقص مقفولة · محتاج رقم الداشبورد';
-    status('');
-    render();
-    focusUnlock();
+    openLocal(!auto);
     return;
   }
   mockScenario = null;
@@ -544,6 +568,8 @@ async function loadStock(auto = false) {
     // Save PIN to sessionStorage ONLY after a 200 OK stock response!
     if (dashboardPin) setSessionPin(dashboardPin);
     rawItems = result.items;
+    localMode = false; pinAsk = false;
+    saveLastStock(rawItems, result.sourceUpdatedAt || result.generatedAt);
     const d = new Date(result.sourceUpdatedAt || result.generatedAt || Date.now());
     lastUpdatedDate = Number.isNaN(d.getTime()) ? new Date() : d;
     if ($('sourceState')) $('sourceState').textContent = '🔓 النواقص مفتوحة';
@@ -557,11 +583,9 @@ async function loadStock(auto = false) {
     if (code === 'source-auth-required' || code === 'pinless-timeout') {
       dashboardPin = '';
       setSessionPin('');
-      needPin = true;
       wrongPin = code === 'source-auth-required' && hadPin;
-      loadError = '';
-      if ($('sourceState')) $('sourceState').textContent = '🔒 النواقص مقفولة · محتاج رقم الداشبورد';
-      status('');
+      loadingStock = false;
+      openLocal(true); // q17 C: the list stays usable; the PIN card asks again for a fresh load
     } else {
       loadError = code === 'pin-required'
         ? 'اكتب رقم موردين نوفا عند طلبه للاتصال'
@@ -597,18 +621,13 @@ function unlockStock() {
 function lockNeeds() {
   dashboardPin = '';
   setSessionPin('');
-  rawItems = [];
-  items = [];
   offersByItem.clear();
   mockScenario = null;
-  needPin = true;
   wrongPin = false;
-  loadError = '';
   closeDropdown();
   hideUndoToast();
   if ($('needsFilterDialog')?.open) $('needsFilterDialog').close();
-  render();
-  focusUnlock();
+  openLocal(false); // q17 C: locking forgets the PIN (sending asks again); the list itself stays open
 }
 
 /* ---- Local Catalog Search & Autocomplete ---- */
@@ -1716,6 +1735,11 @@ if ($('orderTerms')) $('orderTerms').onchange = orderControls;
 if ($('submitSupplierOrder')) {
   $('submitSupplierOrder').onclick = async () => {
     if ($('submitSupplierOrder').disabled || !orderPlan || orderPending) return;
+    if (!dashboardPin && !PINLESS) { // q17 C: sending a real order is the only step that still needs the dashboard PIN
+      orderInFlight = true; orderControls();
+      let ok = false; try { ok = await sendPinOk(); } finally { orderInFlight = false; orderControls(); }
+      if (!ok) return;
+    }
     orderInFlight = true; orderControls();
     try {
       localStorage.setItem(orderKey(orderSupplier), JSON.stringify({ plan: orderPlan, cart: orderPlan.cart }));
@@ -1730,6 +1754,31 @@ if ($('submitSupplierOrder')) {
       $('checkSupplierOrder').hidden = !orderPending;
     } finally { orderInFlight = false; orderControls(); }
   };
+}
+// q17 C: PIN step inside the order dialog (only for sending). Verified against the stock source (200 = right PIN),
+// then kept in sessionStorage like PERF-05.
+async function sendPinOk() {
+  if (dashboardPin || PINLESS) return true;
+  let row = $('orderPinRow');
+  const input = () => $('orderPin');
+  if (!row) {
+    row = document.createElement('div'); row.id = 'orderPinRow'; row.className = 'order-pin-row';
+    row.innerHTML = '<label for="orderPin">اكتب رقم الداشبورد علشان ترسل الطلب</label><input id="orderPin" class="needs-pin-input" type="password" inputmode="numeric" autocomplete="off" placeholder="• • • •"><small id="orderPinHint" role="status"></small>';
+    const btn = $('submitSupplierOrder'); btn.parentNode.insertBefore(row, btn);
+    input().addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('submitSupplierOrder').click(); } });
+  }
+  const v = (input().value || '').trim();
+  if (!v) { $('orderPinHint').textContent = 'محتاج رقم الداشبورد قبل الإرسال.'; input().focus(); return false; }
+  $('orderPinHint').textContent = 'جارٍ التأكد من الرقم…';
+  try {
+    const r = await fetchStock(v, false);
+    if (!r || !r.ok) throw new Error((r && r.error) || 'source-auth-required');
+    dashboardPin = v; setSessionPin(v); input().value = ''; row.remove();
+    return true;
+  } catch (e) {
+    $('orderPinHint').textContent = e.message === 'source-auth-required' ? 'الرقم غير صحيح، جرّب مرة أخرى.' : 'تعذر التأكد من الرقم؛ أعد المحاولة.';
+    input().select(); return false;
+  }
 }
 if ($('checkSupplierOrder')) {
   $('checkSupplierOrder').onclick = async () => {

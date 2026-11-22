@@ -18,7 +18,7 @@ const AR = /[؀-ۿ]/, LAT = /[A-Za-z]{3,}/;
 async function open(browser, lang, opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 1194, height: 834 }, ...opts }); const page = await ctx.newPage(); const errs = [];
   page.on('pageerror', e => errs.push(String(e)));
-  await page.addInitScript(l => { try { localStorage.setItem('nova-rx-language', l); } catch (e) {} }, lang);
+  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(l => { try { localStorage.setItem('nova-rx-language', l); } catch (e) {} }, lang);
   await page.goto(URL_, { waitUntil: 'domcontentloaded' }); await sleep(900);
   return { ctx, page, errs };
 }

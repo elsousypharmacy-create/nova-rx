@@ -38,6 +38,16 @@
     var d = document.createElement('input'); d.id = 'nssDisc'; d.type = 'number'; d.min = '0'; d.max = '100'; d.step = '1'; d.className = 'form-control'; d.value = String(discLimit());
     card.appendChild(d);
 
+    // q17 B: receipt prints right away after «تأكيد البيع»; this device setting (default OFF) brings the old preview back
+    var pv = document.createElement('label'); pv.className = 'nova-check-row'; pv.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer';
+    var pc = document.createElement('input'); pc.type = 'checkbox'; pc.id = 'nssReceiptPreview'; pc.checked = get('nova-rx-receipt-preview') === '1';
+    pv.appendChild(pc); pv.appendChild(document.createTextNode(tr('عرض معاينة الإيصال قبل الطباعة', 'Show the receipt preview before printing')));
+    pc.addEventListener('change', function () {
+      try { if (pc.checked) localStorage.setItem('nova-rx-receipt-preview', '1'); else localStorage.removeItem('nova-rx-receipt-preview'); } catch (_) { toast(tr('تعذر الحفظ على الجهاز.', 'Could not save on this device.'), 'error'); return; }
+      toast(pc.checked ? tr('هتظهر معاينة الإيصال قبل الطباعة.', 'The receipt preview will show before printing.') : tr('الإيصال هيتطبع على طول بعد البيع.', 'The receipt will print right after the sale.'));
+    });
+    card.appendChild(pv);
+
     var note = document.createElement('p'); note.id = 'nssNote';
     note.textContent = canEdit() ? tr('التقريب للنقدي بس، والإجمالي في الفاتورة بيفضل مظبوط.', 'Rounding applies to cash only. The invoice total stays exact.') : tr('التغيير للمدير أو المالك بس.', 'Only a manager or the owner can change this.');
     card.appendChild(note);

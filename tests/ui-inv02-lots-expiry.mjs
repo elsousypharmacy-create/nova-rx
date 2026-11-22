@@ -23,7 +23,7 @@ await ctx.route('**/*', r => {
   return r.abort();
 });
 await ctx.route('**/emergency/stock.json', r => r.fulfill({ status: 404, body: '' }));
-await ctx.addInitScript(() => {
+await (await ctx.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), ctx).addInitScript(() => {
   try {
     if (!sessionStorage.getItem('seeded')) {
       localStorage.clear();

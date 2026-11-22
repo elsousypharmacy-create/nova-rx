@@ -232,6 +232,7 @@ try {
 
   // 2. Card visible on reports + 390px no horizontal overflow + 44px controls + dark theme
   await page.evaluate(() => {
+    try { sessionStorage.setItem('nova.reportsTab', 'staff'); } catch (e) {} // UI-BATCH1: reports tabs
     const tab = document.querySelector('.nova-tab[data-page="reports"]');
     if (tab) tab.click();
   });

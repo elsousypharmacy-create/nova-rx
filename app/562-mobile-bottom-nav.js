@@ -31,7 +31,7 @@
     + '#novaBottomNav button:focus-visible{outline:2px solid #79c9eb;outline-offset:-4px;border-radius:10px}'
     + '#novaBottomNav svg{width:22px;height:22px}'
     + 'body.nova-bbar .pos-root,body.nova-bbar #novaPageView{min-height:0!important}'
-    + 'body.nova-bbar .toast-container,body.nova-bbar #toastContainer{bottom:calc(var(--nova-bbar-h) + 8px)!important}'
+    + 'body.nova-bbar .toast-container,body.nova-bbar #toastContainer{top:calc(8px + env(safe-area-inset-top,0px))!important;bottom:auto!important}'
     + '}'
     + '#novaMoreSheet{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;direction:rtl}'
     + '#novaMoreSheet .nms-panel{width:100%;background:#14181d;border-top:1px solid #343b44;border-radius:16px 16px 0 0;'

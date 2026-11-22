@@ -10,7 +10,7 @@ try {
   const p = await ctx.newPage();
   const errors = []; p.on('pageerror', e => errors.push(e.message));
   let nativeDialogs = 0; p.on('dialog', d => { nativeDialogs++; d.dismiss(); });
-  await p.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} window.print = () => {}; });
+  await (await p.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), p).addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} window.print = () => {}; });
   await p.goto(BASE + 'index.html#sale', { waitUntil: 'load' }); await p.waitForTimeout(900);
   const S = p.locator('#mainSearchInput');
   const lines = () => p.locator('#invoiceTableBody tr').count();

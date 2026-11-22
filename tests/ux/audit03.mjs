@@ -12,10 +12,11 @@ try {
   let native = 0; p.on('dialog', d => { native++; d.dismiss(); });
   await p.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); } catch {} window.print = () => { window.__prints = (window.__prints || 0) + 1; }; });
   await p.goto(BASE + (BASE.includes('127.0.0.1') ? 'index.html' : '') + '#reports', { waitUntil: 'load' }); await p.waitForTimeout(900);
+  await p.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'suppliers'); } catch {} }); // UI-BATCH1: reports tabs
   await p.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click()); await p.waitForTimeout(800);
   const sec = p.locator('#novaSupplierAccountsSection');
   await sec.waitFor();
-  assert.match(await sec.innerText(), /حسابات الموردين والمصروفات/);
+  assert.match(await sec.innerText(), /حسابات الموردين/);
   assert.match(await sec.innerText(), /مفيش موردين لسه/);
   const dlg = p.locator('#novaSupplierAccountsDialogHost');
   // add supplier (+ duplicate blocked)
@@ -34,16 +35,20 @@ try {
   await p.waitForTimeout(800); await p.locator('#novaSupplierAccountsSection').waitFor();
   const after = await p.evaluate(() => window.__novaRepData.expected);
   assert.equal(Math.round((before - after) * 100) / 100, 200, 'expected drawer dropped by the cash payment (' + before + ' → ' + after + ')');
+  await p.locator('#novaRepTabs [data-rtab="shift"]').click(); await p.waitForTimeout(200); // UI-BATCH1: shift close lives in «الوردية»
   if (await p.locator('#novaShiftClose').count()) { await p.locator('#novaShiftClose').click(); await p.waitForTimeout(300); }
   if (await p.locator('[data-shift-row]').count()) assert.equal(await p.locator('[data-shift-row="out"]').count(), 1, 'paid-out row shown in the shift close');
+  await p.locator('#novaRepTabs [data-rtab="suppliers"]').click(); await p.waitForTimeout(200);
   // statement + print
   await p.locator('#novaSupplierAccountsSection [data-nsa-act="stmt"]').click(); await dlg.waitFor();
   assert.match(await dlg.innerText(), /INV-1/); await dlg.locator('[data-nsa-print]').click(); await p.keyboard.press('Escape');
   console.log('  ok suppliers: add, invoice, cash payment → drawer, statement');
   // expenses: needs a signed-in user; approval by another manager/owner with password
   await p.evaluate(async () => { const A = window.novaAuth; await A.createAccount({ name: 'مالك تجربة', role: 'owner', password: 'owner-pass-1' }); await A.signIn('مالك تجربة', 'owner-pass-1'); await A.createAccount({ name: 'كاشير تجربة', role: 'cashier', password: 'cash-pass-1' }); await A.signIn('كاشير تجربة', 'cash-pass-1'); });
-  const S = p.locator('#novaSupplierAccountsSection');
-  await S.locator('[data-nsa-tab="expenses"]').click();
+  // q17: expenses live in the «الوردية» tab, visible to the cashier
+  await p.locator('#novaRepTabs [data-rtab="shift"]').click(); await p.waitForTimeout(300);
+  const S = p.locator('#novaExpensesSection');
+  assert.ok(await S.isVisible(), 'expenses section visible in the shift tab');
   await S.locator('[data-nsa-act="addexp"]').click(); await dlg.waitFor();
   await p.locator('#nsaExpAmt').fill('75'); await p.locator('#nsaExpCat').selectOption('cleaning'); await p.locator('#nsaExpDoc').fill('إيصال 9'); await dlg.locator('button[type="submit"]').click(); await dlg.waitFor({ state: 'detached' });
   await S.locator('[data-nsa-act="approve"]').click(); await dlg.waitFor();

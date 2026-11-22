@@ -241,7 +241,7 @@
     return [];
   }
 
-  function buildTimeline(key, lots) {
+  function buildTimeline(key, lots, catalogStock) {
     var events = [];
     var receiptQtySum = 0;
     var transfersInSum = 0;
@@ -318,7 +318,7 @@
       if (sale.id != null) salesById[String(sale.id)] = sale;
       var sTs = parseTimestamp(sale.at);
       var sLines = Array.isArray(sale.lines) ? sale.lines : [];
-      var sRef = sale.no || sale.id || '—';
+      var sRef = sale.number || sale.no || sale.id || '—'; // UI-BATCH1: the invoice number the cashier knows, not the internal key
       for (var slIdx = 0; slIdx < sLines.length; slIdx++) {
         var sLine = sLines[slIdx];
         if (!sLine || keyOf(sLine) !== key) continue;
@@ -351,7 +351,7 @@
       if (!origSale || !Array.isArray(origSale.lines)) continue;
       var crTs = parseTimestamp(ret.at) || parseTimestamp(origSale.at);
       var crLabel = ret.kind === 'cancel' ? 'إلغاء فاتورة' : 'مرتجع عميل';
-      var crRef = ret.reason || origSale.no || ret.saleId || ret.id || '—';
+      var crRef = ret.reason || origSale.number || origSale.no || ret.saleId || ret.id || '—';
       for (var crl = 0; crl < ret.lines.length; crl++) {
         var rItem = ret.lines[crl];
         if (!rItem) continue;
@@ -474,6 +474,8 @@
     }
 
     var openingQty = totalLotReceived - receiptQtySum - transfersInSum + supplierRetSum + adjustSum + transfersOutSum;
+    var openingLabel = 'رصيد افتتاحي/يدوي';
+    if (!lots.length && Number.isFinite(catalogStock) && catalogStock > 0) { openingQty = catalogStock; openingLabel = 'رصيد قائمة الأصناف'; } // UI-BATCH1
 
     // Sort oldest -> newest
     for (var idx = 0; idx < events.length; idx++) {
@@ -487,7 +489,7 @@
     if (openingQty > 0.001) {
       events.unshift({
         ts: 0,
-        type: 'رصيد افتتاحي/يدوي',
+        type: openingLabel,
         ref: '—',
         qty: openingQty,
         isOpening: true
@@ -762,8 +764,12 @@
       totalOnHand += toNumber(lots[i].onHand, 0);
     }
     totalOnHand = Math.round(totalOnHand * 10000) / 10000;
+    var catalogStock = product && product.stock != null && Number.isFinite(Number(product.stock)) ? Number(product.stock) : NaN;
+    if (!lots.length && Number.isFinite(catalogStock)) { // UI-BATCH1: same number as the products list (novaStockNow) and the sale check
+      try { var avNow = window.novaStock && window.novaStock.available(key); totalOnHand = Number.isFinite(avNow) ? Math.round(avNow * 100) / 100 : catalogStock; } catch (e) { totalOnHand = catalogStock; }
+    }
 
-    var timeline = buildTimeline(key, lots);
+    var timeline = buildTimeline(key, lots, catalogStock);
     var diff = Math.abs(timeline.finalBalance - totalOnHand);
     var hasDiff = lots.length > 0 && diff > 0.01;
 
@@ -826,7 +832,7 @@
       + '<span>الرصيد حسب الحركة: <strong dir="ltr">' + esc(fmtQty(timeline.finalBalance)) + '</strong></span>'
       + '<span>الرصيد الحالي: <strong dir="ltr">' + esc(fmtQty(totalOnHand)) + '</strong></span>'
       + (hasDiff ? '<span class="nova-ic-warn">فيه فرق — راجع الجرد</span>' : '')
-      + (!lots.length ? '<span class="nova-ic-note">رصيد الصنف ده مش متسجل بالتشغيلات، فالحركة للعلم بس.</span>' : '')
+      + (!lots.length ? '<span class="nova-ic-note">' + (Number.isFinite(catalogStock) ? 'الرصيد من قائمة الأصناف ناقص المبيعات (الصنف ده مالوش تشغيلات مسجلة).' : 'رصيد الصنف ده مش متسجل بالتشغيلات، فالحركة للعلم بس.') + '</span>' : '')
       + '</div>';
 
     var bannerHtml = '';

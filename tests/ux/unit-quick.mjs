@@ -27,7 +27,7 @@ try {
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' && window.novaPay, null, { timeout: 8000 });
 
-  const unit = () => page.locator('#invoiceTableBody .unit-select').first().inputValue();
+  const unit = () => page.locator('#invoiceTableBody .unit-seg').first().locator('[aria-checked=true]').getAttribute('data-unit');
   const stripProd = await page.evaluate(() => window.NOVA_DEMO.products.find(p => window.novaUnits.availableUnits(p).includes('strip')));
   assert.ok(stripProd, 'a product with strip unit exists');
   const addByBarcode = async () => {

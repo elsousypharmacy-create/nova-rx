@@ -7,6 +7,7 @@
   var MAX_TEXT_LEN = 300;
   var CARD_ID = 'novaShiftNotes';
   var BADGE_ID = 'novaShiftNotesBadge';
+  var PHONE_MQ = '(max-width: 600px)';
   var PANEL_ID = 'novaShiftNotesPanel';
   var STYLE_ID = 'novaShiftNotesStyle';
 
@@ -410,10 +411,8 @@
       '  font-size: 0.9rem;',
       '}',
       '#' + BADGE_ID + ' {',
-      '  position: fixed;',
-      '  right: 10px;',
-      '  bottom: 160px;',
-      '  z-index: 950;',
+      '  position: static;',
+      '  flex: none;',
       '  min-height: 44px;',
       '  max-width: 190px;',
       '  padding: 6px 12px;',
@@ -430,7 +429,10 @@
       '  overflow: hidden;',
       '  text-overflow: ellipsis;',
       '}',
-      '@media (max-width: 700px) { #' + BADGE_ID + ' { bottom: 250px; } }',
+      '#novaSaleMoreMenu #' + BADGE_ID + ' { width: 100%; max-width: none; border-radius: 8px; text-align: start; }',
+      '#btnSaleMore { position: relative; }',
+      '#btnSaleMore[data-notes]::after { content: attr(data-notes); position: absolute; top: 2px; inset-inline-end: 2px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #79c9eb; color: #0b1217; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; }',
+      '#btnSaleMore.nsn-more-imp[data-notes]::after { background: #f59e0b; }',
       '#' + BADGE_ID + '.nsn-sale-important {',
       '  border-color: #f59e0b;',
       '  color: #fbbf24;',
@@ -439,7 +441,7 @@
       '  position: fixed;',
       '  left: 10px;',
       '  right: 10px;',
-      '  bottom: 124px;',
+      '  top: 112px;',
       '  max-width: 368px;',
       '  max-height: 65vh;',
       '  overflow-y: auto;',
@@ -717,10 +719,18 @@
       }
     }
 
-    var pageView = document.getElementById('novaPageView');
-    var targetParent = (pageView && pageView.childNodes.length > 0) ? pageView : document.body;
+    // UI-BATCH1: docked in the sale header next to «…» (phones: inside the «…» menu, its count shown on «…»),
+    // never floating over the cart, the cash input or the pay bar
+    var phone = !!(window.matchMedia && window.matchMedia(PHONE_MQ).matches);
+    var menu = document.getElementById('novaSaleMoreMenu'), more = document.getElementById('btnSaleMore');
+    var targetParent = phone && menu ? menu : (document.querySelector('.pos-root .nova-sale-actions') || document.querySelector('.nova-sale-actions'));
     if (!targetParent) {
       return;
+    }
+    var anchor = phone && menu ? menu.firstChild : targetParent.querySelector('.nova-more-wrap');
+    if (more) {
+      if (phone && menu && openNotes.length) more.setAttribute('data-notes', String(openNotes.length)); else more.removeAttribute('data-notes');
+      more.classList.toggle('nsn-more-imp', phone && hasImp);
     }
 
     var badge = document.getElementById(BADGE_ID);
@@ -730,14 +740,16 @@
       badge.type = 'button';
       badge.addEventListener('click', function () {
         panelOpen = !panelOpen;
+        var mm = document.getElementById('novaSaleMoreMenu'), mb = document.getElementById('btnSaleMore');
+        if (mm && mm.contains(badge) && !mm.hidden) { mm.hidden = true; if (mb) mb.setAttribute('aria-expanded', 'false'); }
         renderSalePanel();
       });
-      targetParent.appendChild(badge);
-    } else if (badge.parentNode !== targetParent) {
-      targetParent.appendChild(badge);
+    }
+    if (badge.parentNode !== targetParent || (anchor && anchor !== badge && badge.nextSibling !== anchor)) {
+      targetParent.insertBefore(badge, anchor && anchor !== badge && anchor.parentNode === targetParent ? anchor : null);
     }
 
-    badge.className = hasImp ? 'nsn-sale-important' : '';
+    badge.className = (hasImp ? 'nsn-sale-important' : '') + (phone && menu ? ' nova-more-item' : '');
     badge.textContent = t('ملاحظات التسليم', 'Shift Notes') + ' (' + String(openNotes.length) + ')';
 
     if (panelOpen) {
@@ -801,6 +813,11 @@
         syncMount();
       });
       bodyObs.observe(document.body, { attributes: true, attributeFilter: ['data-active-page'] });
+    }
+
+    if (window.matchMedia) { // phone <-> desktop: header pill vs «…» menu item
+      var mq = window.matchMedia(PHONE_MQ);
+      if (mq.addEventListener) mq.addEventListener('change', syncMount); else if (mq.addListener) mq.addListener(syncMount);
     }
 
     document.addEventListener('click', function (ev) {

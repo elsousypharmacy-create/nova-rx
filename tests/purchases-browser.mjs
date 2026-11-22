@@ -52,8 +52,11 @@ try {
   page.on('pageerror', e => errors.push(String(e)));
 
   await page.goto('http://127.0.0.1:8766/purchases.html');
+  // q17 C: the list opens without a PIN; «حدّث النواقص» shows the PIN card for a fresh stock load
+  await page.waitForFunction(() => document.getElementById('panelNeeds')?.dataset.local === '1' || document.getElementById('dashboard-style')?.offsetParent, null, { timeout: 5000 }).catch(() => {});
+  if (!(await page.locator('#dashboard-style').isVisible())) await page.evaluate(() => { const b = document.getElementById('load'); (b && b.offsetParent ? b : document.getElementById('phoneRefreshBtn')).click(); });
   await page.locator('#dashboard-style').waitFor({ state: 'visible' });
-  assert((await page.locator('#needsStagePill').innerText()).includes('مرحلة 1 من 5'));
+  assert((await page.locator('#needsStagePill').innerText()).includes('مرحلة 2 من 5'), 'q17 C: list open without a PIN');
   await page.locator('#dashboard-style').fill('synthetic-owner-pin');
   await page.locator('[data-empty-act=unlock]').click();
   await page.waitForFunction(() => document.querySelectorAll('#rows tr.needs-row').length === 4);

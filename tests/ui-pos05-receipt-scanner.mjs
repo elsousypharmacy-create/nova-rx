@@ -24,7 +24,7 @@ try {
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: false, serviceWorkers: 'block' });
     const page = await ctx.newPage();
-    await page.addInitScript(() => {window.NOVA_STOCK_PROBE=true});
+    await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => {window.NOVA_STOCK_PROBE=true});
     await page.route('**/emergency/stock.json', route => route.fulfill({json:stockFixture}));
     const errors = [];
     page.on('pageerror', e => errors.push(String(e)));
@@ -221,7 +221,7 @@ try {
       isMobile: true
     });
     const page = await ctx.newPage();
-    await page.addInitScript(() => {window.NOVA_STOCK_PROBE=true});
+    await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => {window.NOVA_STOCK_PROBE=true});
     await page.route('**/emergency/stock.json', route => route.fulfill({json:stockFixture}));
     await page.goto(BASE, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => window.novaCatalog?.source === 'STOCK LIVE');

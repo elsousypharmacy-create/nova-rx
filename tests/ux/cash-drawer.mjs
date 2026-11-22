@@ -31,13 +31,14 @@ try {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('dialog', d => d.dismiss().catch(() => {}));
-  await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
+  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForSelector('#btnAddLoyalty');
   await page.evaluate(() => window.novaLazy.load());
   await page.waitForFunction(() => !!window.novaCashDrawer);
 
   // card on the reports page (#novaPageView is hidden on the sale screen), visible, no overflow at 390px
+  await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'shift'); } catch {} }); // UI-BATCH1: reports tabs
   await page.evaluate(() => { const b = document.querySelector('.nova-tab[data-page="reports"]'); if (b) b.click(); }); // the top bar is hidden at 390px
   await page.waitForSelector('#novaCashDrawerCard', { timeout: 5000 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'no overflow at 390px');

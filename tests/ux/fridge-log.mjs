@@ -157,6 +157,7 @@ async function run() {
     assert.equal(apiResult.morningOnly.length, 2, 'list(fromMs, toMs) should filter by time window');
     assert.deepEqual(apiResult.apiKeys, ['add', 'list', 'outOfRange', 'todayDone'], 'API must be append-only');
 
+    await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'shift'); } catch {} }); // UI-BATCH1: reports tabs
     await page.click('.nova-tab[data-page="reports"]');
     await page.waitForSelector('#novaFridgeLog', { state: 'visible', timeout: 5000 });
 
