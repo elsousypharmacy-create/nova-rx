@@ -47,6 +47,7 @@ const origin = new URL(BASE).origin;
   assert.equal(await page.locator('#novaWaKpiCard').count(), 0, 'no Home KPIs card when flag is off');
   assert.equal(await page.locator('#novaWaKpiView').count(), 0, 'no KPIs page when flag is off');
   assert.equal(metricsOff.length, 0, 'no metrics request when flag is off');
+  await page.evaluate(() => window.novaLazy && window.novaLazy.load()); // startup diet P5: 330 is lazy now
   assert.equal(await page.evaluate(() => window.novaWaKpis && window.novaWaKpis.enabled), false, 'API reports disabled');
   await ctx.close();
 }

@@ -46,4 +46,6 @@
     };
   }
   root.novaSetup = { mount: function (el) { if (!el) return; try { render(el); } catch (e) { el.innerHTML = ''; } } };
+  /* startup diet (batch A): this file is lazy now, so Settings may already be on screen: fill its setup card */
+  if (typeof document !== 'undefined' && document.getElementById) root.novaSetup.mount(document.getElementById('novaSetupCard'));
 })(typeof window !== 'undefined' ? window : globalThis);

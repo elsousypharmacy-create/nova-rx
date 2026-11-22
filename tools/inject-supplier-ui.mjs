@@ -49,6 +49,7 @@ let html = fs.readFileSync(inFile, 'utf8');
 html = html
   .replace(/<link[^>]*supplier-lookup\.css[^>]*>\s*/g, '')
   .replace(/<script[^>]*src="supplier-(?:lookup|provider)\.js"[^>]*><\/script>\s*/g, '')
+  .replace(/<link[^>]*href="supplier-(?:lookup|provider)\.js"[^>]*>\s*/g, '') // startup diet P6: lazy prefetch links
   .replace(/<style id="nova-supplier-css">[\s\S]*?<\/style>\s*/g, '')
   .replace(/<script id="nova-supplier-(?:model|provider|lookup)">[\s\S]*?<\/script>\s*/g, '');
 const at = html.lastIndexOf('</body>');

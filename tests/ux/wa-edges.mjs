@@ -31,7 +31,8 @@ async function open(vp, url, short = 0) {
   const page = await ctx.newPage(); const errors = []; page.on('pageerror', (e) => errors.push(e.message));
   await page.route('**/emergency/stock.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
   await page.goto(url, { waitUntil: 'load' }); await page.waitForTimeout(400);
-  if (!url.includes('app=whatsapp')) await page.locator('#novaWaBtn').click();
+  // /#wa opens the inbox by itself (UX406); click the WhatsApp button only if it is not open yet
+  if (!url.includes('app=whatsapp') && !(await page.evaluate(() => { const v = document.getElementById('novaInboxView'); return !!v && !v.hidden; }))) await page.locator('#novaWaBtn').click();
   await page.locator('#novaInboxView [data-conv]').first().waitFor(); await page.waitForTimeout(300);
   return { ctx, page, other, errors };
 }

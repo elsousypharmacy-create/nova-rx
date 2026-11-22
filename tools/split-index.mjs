@@ -28,7 +28,9 @@ const KEEP_INLINE = new Set(['NOVA_STAFF_PRELOCK', 'NOVA_STAFF_GATE_CSS', 'NOVA_
 // <script ATTRS src="/assets/app-NAME.HASH.js"></script>  |  <link rel="stylesheet" ATTRS href="/assets/app-NAME.HASH.css">
 // | <link rel="prefetch" as="script" ATTRS href="/assets/app-NAME.HASH.js">  (RCV01 lazy block: downloaded in the background and
 //   precached, but run only by the lazy loader in app/548-nova-providers.js when its page opens or the app is idle)
-export const TAG_RE = /<script((?: [a-z-]+="[^"]*")*) src="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.js"><\/script>|<link rel="stylesheet"((?: [a-z-]+="[^"]*")*) href="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.css">|<link rel="prefetch" as="script"((?: [a-z-]+="[^"]*")*) href="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.js">/g;
+// | <link rel="prefetch" as="style" ATTRS href="/assets/app-NAME.HASH.css">  (startup diet CSS: same, attached as a stylesheet by
+//   app/548 just before the lazy scripts run)
+export const TAG_RE = /<script((?: [a-z-]+="[^"]*")*) src="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.js"><\/script>|<link rel="stylesheet"((?: [a-z-]+="[^"]*")*) href="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.css">|<link rel="prefetch" as="script"((?: [a-z-]+="[^"]*")*) href="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.js">|<link rel="prefetch" as="style"((?: [a-z-]+="[^"]*")*) href="\/assets\/app-([0-9]{3}-[a-z0-9-]+)\.([0-9a-f]+)\.css">/g;
 
 export const hashOf = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10);
 const rd = (root, f) => fs.readFileSync(path.join(root, f), 'utf8');
@@ -37,18 +39,21 @@ const rd = (root, f) => fs.readFileSync(path.join(root, f), 'utf8');
 export function splitTags(shell) {
   const out = [];
   for (const m of shell.matchAll(TAG_RE)) {
-    const lazy = m[8] !== undefined;
-    const js = m[2] !== undefined || lazy;
-    const name = lazy ? m[8] : js ? m[2] : m[5];
-    const hash = lazy ? m[9] : js ? m[3] : m[6];
+    const lazyCss = m[11] !== undefined;
+    const lazy = m[8] !== undefined || lazyCss;
+    const js = m[2] !== undefined || m[8] !== undefined;
+    const name = lazyCss ? m[11] : m[8] !== undefined ? m[8] : js ? m[2] : m[5];
+    const hash = lazyCss ? m[12] : m[8] !== undefined ? m[9] : js ? m[3] : m[6];
     const ext = js ? 'js' : 'css';
-    out.push({ kind: ext, lazy, attrs: lazy ? m[7] : js ? m[1] : m[4], name, hash, src: `${SRC_DIR}/${name}.${ext}`, file: `${OUT_DIR}/app-${name}.${hash}.${ext}`, at: m.index, len: m[0].length });
+    out.push({ kind: ext, lazy, attrs: lazyCss ? m[10] : m[8] !== undefined ? m[7] : js ? m[1] : m[4], name, hash, src: `${SRC_DIR}/${name}.${ext}`, file: `${OUT_DIR}/app-${name}.${hash}.${ext}`, at: m.index, len: m[0].length });
   }
   return out;
 }
 
 const tagFor = (kind, attrs, name, hash, lazy) => lazy
-  ? `<link rel="prefetch" as="script"${attrs} href="/assets/app-${name}.${hash}.js">`
+  ? kind === 'js'
+    ? `<link rel="prefetch" as="script"${attrs} href="/assets/app-${name}.${hash}.js">`
+    : `<link rel="prefetch" as="style"${attrs} href="/assets/app-${name}.${hash}.css">`
   : kind === 'js'
     ? `<script${attrs} src="/assets/app-${name}.${hash}.js"></script>`
     : `<link rel="stylesheet"${attrs} href="/assets/app-${name}.${hash}.css">`;
@@ -57,9 +62,10 @@ const tagFor = (kind, attrs, name, hash, lazy) => lazy
 export function joinHtml(shell, root = ROOT) {
   let s = String(shell);
   if (!s.includes('/assets/app-')) return s;
-  return s.replace(TAG_RE, (all, ja, jn, jh, ca, cn, ch, la, ln) => {
-    // a lazy block joins as an ordinary inline script (the single-file page simply runs it eagerly)
+  return s.replace(TAG_RE, (all, ja, jn, jh, ca, cn, ch, la, ln, lh, sa, sn) => {
+    // a lazy block joins as an ordinary inline script/style (the single-file page simply runs it eagerly)
     if (ln !== undefined) return `<script${la}>${rd(root, `${SRC_DIR}/${ln}.js`)}</script>`;
+    if (sn !== undefined) return `<style${sa}>${rd(root, `${SRC_DIR}/${sn}.css`)}</style>`;
     const js = jn !== undefined;
     const body = rd(root, `${SRC_DIR}/${js ? jn : cn}.${js ? 'js' : 'css'}`);
     return js ? `<script${ja}>${body}</script>` : `<style${ca}>${body}</style>`;

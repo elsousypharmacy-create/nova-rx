@@ -7,7 +7,7 @@ import vm from 'node:vm';
 
 const PROD = 'https://nova-rx-api.elsousypharmacy.workers.dev';
 const html = readAppHtml('index.html', 'utf8');
-const src = /<script id="sale06-onboarding">([\s\S]*?)<\/script>/.exec(html)[1];
+const src = /<script id="sale06-onboarding"(?: data-nova-lazy="1")?>([\s\S]*?)<\/script>/.exec(html)[1];
 const flagSrc = /<script id="sale01-backend-flag">([\s\S]*?)<\/script>/.exec(html)[1];
 const mem = (init = {}) => { const m = new Map(Object.entries(init)); return { m, getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) }; };
 function mkFetch(reply) {
@@ -16,7 +16,7 @@ function mkFetch(reply) {
 }
 function load(local = {}, session = {}, fetch) {
   const ls = mem(local), ss = mem(session);
-  const ctx = { localStorage: ls, sessionStorage: ss, String, JSON, Math, Date, Promise, encodeURIComponent, window: {} };
+  const ctx = { localStorage: ls, sessionStorage: ss, String, JSON, Math, Date, Promise, encodeURIComponent, window: {}, document: { getElementById: () => null } }; // startup diet P8: 260 is lazy and mounts its own card
   if (fetch) ctx.fetch = fetch;
   vm.runInNewContext(flagSrc, ctx);
   vm.runInNewContext(src, ctx);

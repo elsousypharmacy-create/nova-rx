@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const html = readAppHtml('index.html', 'utf8');
 assert.match(html, /id="novaWaBtn"/);
 assert.ok(html.indexOf('id="novaWaBtn"') < html.indexOf('id="novaPageView"'), 'icon is in the all-pages nav bar');
-const src = /<script id="ux81-wa-badge">([\s\S]*?)<\/script>/.exec(html)[1];
+const src = /<script id="ux81-wa-badge"(?: defer="")?>([\s\S]*?)<\/script>/.exec(html)[1];
 function run({ store = {}, session = {}, fetchImpl }) {
   const badge = { hidden: true, textContent: '' }, attrs = {};
   const btn = { listeners: {}, addEventListener(e, f) { this.listeners[e] = f; }, setAttribute(k, v) { attrs[k] = v; } };

@@ -73,7 +73,7 @@ assert.doesNotMatch(helperSrc, /console\./, 'helper never logs');
 assert.doesNotMatch(helperSrc, /localStorage[^;]*setItem\([^)]*KT/, 'token key never written to localStorage');
 
 // Existing inline callers: flag ON with no url now default to production; flag OFF unchanged (zero calls)
-const badgeSrc = /<script id="ux81-wa-badge">([\s\S]*?)<\/script>/.exec(html)[1];
+const badgeSrc = /<script id="ux81-wa-badge"(?: defer="")?>([\s\S]*?)<\/script>/.exec(html)[1];
 async function runBadge(store, session) {
   const f = mkFetch();
   const badge = { hidden: true, textContent: '' };

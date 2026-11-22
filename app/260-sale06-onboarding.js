@@ -98,4 +98,5 @@ run(function(){return createTenant(input)},'تم إنشاء الصيدلية و�
 el.querySelector('#novaOnbSandbox').onclick=function(){run(function(){return createSandbox()},'تم إنشاء صيدلية تجريبية ببيانات تجريبية.')};
 show(get(KLAST))}
 window.novaOnboarding={KEY:KE,enabled:enabled,setEnabled:setEnabled,mode:mode,validate:validate,createTenant:createTenant,createSandbox:createSandbox,status:status,disable:disable,enable:enable,skipImport:skipImport,mount:mount};
+var _el=document.getElementById('novaOnboardingCard');if(_el)mount(_el);
 })();

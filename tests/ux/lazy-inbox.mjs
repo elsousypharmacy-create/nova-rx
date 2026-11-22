@@ -91,8 +91,8 @@ try {
     await ctx.close();
   }
 
-  // 3) Direct /#wa navigation (notification click) loads 230 right away — not after the 2.5 s idle timer — and the
-  //    WhatsApp button then opens the inbox. A plain /#wa still lands on the full app, as on main (wa-app-mode.mjs).
+  // 3) Direct /#wa navigation (notification click, UX406) loads 230 right away — not after the 2.5 s idle timer — and
+  //    opens the inbox by itself (app/130), inside the full app (wa-app-mode.mjs).
   {
     const ctx = await browser.newContext({ serviceWorkers: 'block' });
     const page = await ctx.newPage();
@@ -102,8 +102,7 @@ try {
 
     await page.goto(baseUrl + '/#wa', { waitUntil: 'load' });
     await page.waitForFunction(() => window.NovaOpenInbox && !window.NovaOpenInbox._stub, null, { timeout: 2000 });
-    await page.locator('#novaWaBtn').click();
-    await page.waitForSelector('#novaInboxView:not([hidden])', { timeout: 5000 });
+    await page.waitForSelector('#novaInboxView:not([hidden])', { timeout: 5000 });   // no click: /#wa opens it
     assert.deepEqual(errors, [], `Unexpected page errors on /#wa: ${errors.join('; ')}`);
     await ctx.close();
   }

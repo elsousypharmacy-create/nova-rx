@@ -316,7 +316,10 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
 el.innerHTML=hdr+'<h1>'+tr('تقرير نهاية اليوم','End-of-day report')+'</h1><p>'+esc(pn)+'</p><table>'+r(tr('المبيعات','Sales'),money(d.sales))+r(tr('المرتجعات','Returns'),money(d.returns))+r('<b>'+tr('الصافي','Net')+'</b>','<b>'+money(d.net)+'</b>')+r(tr('نقدي','Cash'),money(d.split.cash))+r(tr('بطاقة','Card'),money(d.split.card))+r(tr('آجل','Credit'),money(d.split.credit))+r(tr('مرتجعات','Returns'),money(-d.returns))+r(tr('رصيد الافتتاح','Opening float'),money(d.float))+r(tr('مرتجعات نقدية','Cash returns'),money(-d.cashReturns))+r(tr('تحصيل مديونيات نقدًا','Cash debt collections'),money(d.cashDebt))+r('<b>'+tr('المتوقع في الدرج','Expected in drawer')+'</b>','<b>'+money(d.expected)+'</b>')+(d.counted!=null?r(tr('النقدي المعدود','Counted cash'),money(d.counted))+r('<b>'+tr('الفرق','Difference')+'</b>','<b>'+(d.counted-d.expected).toFixed(2)+'</b>'):'')+r(tr('عدد الفواتير','Invoices'),d.count)+r(tr('ضريبة متضمنة','VAT included')+' ('+window.novaVat.label()+'%)',money(d.vat))+'</table>'+sig;document.body.appendChild(el);document.body.classList.add('nova-printing-report');let tm=null;const done=()=>{if(tm){clearTimeout(tm);tm=null}document.body.classList.remove('nova-printing-report');el.remove();window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);try{window.print()}finally{tm=setTimeout(done,window.__novaPrintFallbackMs||60000)}};
  if(window.novaBackendFlag)window.novaBackendFlag.mount(document.getElementById('novaBackendCard'));
  const dvc=document.getElementById('novaDevicesCard');if(dvc&&window.novaDevicePrint){dvc.innerHTML=window.novaDevicePrint.devicesHtml(localStorage.getItem('nova-rx-language')==='en'?'en':'ar');const sel=document.getElementById('novaInvoicePrinter');if(sel)sel.onchange=()=>window.novaDevicePrint.setPrinter(sel.value)}
- if(window.novaOnboarding)window.novaOnboarding.mount(document.getElementById('novaOnboardingCard'));if(window.novaSetup)window.novaSetup.mount(document.getElementById('novaSetupCard'));
+ var _onbEl=document.getElementById('novaOnboardingCard');
+if(window.novaOnboarding)window.novaOnboarding.mount(_onbEl);
+else if(_onbEl)_onbEl.hidden=true;
+if(window.novaSetup)window.novaSetup.mount(document.getElementById('novaSetupCard'));
  const vr=document.getElementById('novaVatRate');if(vr)vr.onchange=()=>{if(!window.novaVat.set(vr.value))vr.value=window.novaVat.get();else if(window.novaRecalc)window.novaRecalc()};
  const ne=document.getElementById('novaNearExpiryDays');if(ne)ne.oninput=ne.onchange=()=>{if(window.novaStock)window.novaStock.setNearExpiryDays(Number(ne.value))};
 
@@ -533,6 +536,8 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  const openReceive=(n=0)=>{const b=document.getElementById('novaInventoryPurchase'),pn=document.getElementById('novaAiPanel');if(b&&pn)pn.classList.add('open');else if(n<50)setTimeout(()=>openReceive(n+1),100)};
  window.addEventListener('hashchange',()=>{const r=wantReceive();switchPage(hashPage()||'sale');if(r)openReceive()});
  const initReceive=wantReceive();
+ /* UX406: /#wa (notification click) opens the WhatsApp inbox; switchPage below still maps the hash to #sale first */
+ if(hashPage()==='wa'){const ow=()=>window.NovaOpenInbox&&window.NovaOpenInbox();document.readyState==='complete'?ow():addEventListener('load',ow,{once:true})}
  switchPage(hashPage()||'sale');
  if(initReceive)openReceive();
  else if((hashPage()||'sale')==='sale'){const ms=document.getElementById('mainSearchInput');if(ms)try{ms.focus()}catch(e){}}

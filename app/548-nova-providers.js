@@ -59,19 +59,40 @@
      worker keeps it for offline use) but nothing runs at startup, so the sale screen opens lighter. It runs, in order, when
      the reports / receiving / products / customers page opens, or once the app is idle a few seconds after loading. */
   var lazyPromise = null;
-  function loadLazy() {
-    if (lazyPromise) return lazyPromise;
-    var links = [].slice.call(document.querySelectorAll('link[rel="prefetch"][as="script"][data-nova-lazy]'));
-    lazyPromise = Promise.all(links.map(function (l) {
+  /* startup diet CSS: styles used only by lazy screens (sticker studio 180/200, WA KPI 320, setup 450, receiving 480,
+     supplier-lookup.css) are prefetch links; each becomes a stylesheet right beside its link (same cascade order) and
+     the lazy scripts run only after they loaded, failed, or 4 s passed (offline) — no unstyled flash. */
+  function loadLazyCss() {
+    return Promise.all([].slice.call(document.querySelectorAll('link[rel="prefetch"][as="style"][data-nova-lazy-css]')).map(function (l) {
       return new Promise(function (ok) {
-        var s = document.createElement('script');
-        s.src = l.getAttribute('href');
-        s.async = false;               // dynamic scripts with async=false run in insertion order
-        s.onload = function () { ok(true); };
-        s.onerror = function () { ok(false); };
-        document.body.appendChild(s);
+        var done = false, timer = 0, el = document.createElement('link');
+        var finish = function (v) { if (done) return; done = true; clearTimeout(timer); ok(v); };
+        el.rel = 'stylesheet';
+        el.href = l.getAttribute('href');
+        el.setAttribute('data-nova-lazy-css-loaded', '1');
+        if (l.id) { el.id = l.id; l.removeAttribute('id'); }
+        el.onload = function () { finish(true); };
+        el.onerror = function () { finish(false); };
+        l.parentNode.insertBefore(el, l.nextSibling);
+        timer = setTimeout(function () { finish(false); }, 4000);
       });
     }));
+  }
+  function loadLazy() {
+    if (lazyPromise) return lazyPromise;
+    lazyPromise = loadLazyCss().then(function () {
+      var links = [].slice.call(document.querySelectorAll('link[rel="prefetch"][as="script"][data-nova-lazy]'));
+      return Promise.all(links.map(function (l) {
+        return new Promise(function (ok) {
+          var s = document.createElement('script');
+          s.src = l.getAttribute('href');
+          s.async = false;             // dynamic scripts with async=false run in insertion order
+          s.onload = function () { ok(true); };
+          s.onerror = function () { ok(false); };
+          document.body.appendChild(s);
+        });
+      }));
+    });
     return lazyPromise;
   }
   var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1, settings: 1, inbox: 1, wa: 1 };
@@ -88,9 +109,17 @@
     };
     window.NovaOpenInbox._stub = true;
   }
+  if (!window.novaReceiving) {
+    window.novaReceiving = {
+      _stub: true,
+      render: function (v) { var onRcv = document.body.dataset.activePage === 'receiving'; if (v) v.innerHTML = '<p style="padding:24px">جاري تحميل صفحة الاستلام…</p>'; loadLazy().then(function () { if (onRcv && document.body.dataset.activePage !== 'receiving') return; if (window.novaReceiving && !window.novaReceiving._stub && (!v || !v.querySelector('.rcv'))) window.novaReceiving.render(v); }, function () { if (v && (!onRcv || document.body.dataset.activePage === 'receiving')) v.innerHTML = '<p style="padding:24px">تعذر تحميل صفحة الاستلام</p>'; }); },
+      open: function (p) { loadLazy().then(function () { if (window.novaReceiving && !window.novaReceiving._stub) window.novaReceiving.open(p); }, function () {}); },
+      openOrder: function (id) { loadLazy().then(function () { if (window.novaReceiving && !window.novaReceiving._stub) window.novaReceiving.openOrder(id); }, function () {}); }
+    };
+  }
   /* /#wa (a click on a new-message notification, UX406): run the lazy WhatsApp code right away so the conversations button
      answers at once. app/130 rewrites the hash to #sale while the page is still parsing, so read the launch URL from the
-     navigation entry. (A plain /#wa still lands on the full app, as before: tests/ux/wa-app-mode.mjs, wa-edges.mjs.) */
+     navigation entry. (app/130 then opens the inbox on load: tests/ux/wa-app-mode.mjs, lazy-inbox.mjs.) */
   var bootWa = false;
   try { var navE = performance.getEntriesByType && performance.getEntriesByType('navigation')[0]; bootWa = !!navE && /#wa(?:[&?]|$)/.test(String(navE.name || '')); } catch (e) {}
   function isWaApp() {
@@ -105,6 +134,21 @@
   }
   function checkLazy() { if (!lazyPromise && lazyPageOpen()) loadLazy(); }
   window.novaLazy = { load: loadLazy };
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest && e.target.closest('#novaAiLaunch, #btnSaleLabels');
+    if (!t || t.onclick) return;
+    var p = document.getElementById('novaLabelsPanel');
+    if (p) p.classList.add('open');
+    loadLazy();
+  });
+  window.addEventListener('nova:invoice-completed', function (e) {
+    if (window.__nova190Ready || !e.detail) return;
+    window.__nova190LastInv = e.detail;
+    try { var q = JSON.parse(localStorage.getItem('nova.label.invoices.v1') || '[]'); if (!Array.isArray(q)) q = []; q.unshift(e.detail); localStorage.setItem('nova.label.invoices.v1', JSON.stringify(q.slice(0, 40))); } catch (_) {}
+  });
+  (function (p, mo) {
+    if (p) (mo = new MutationObserver(function () { if (p.classList.contains('open') && !window.__nova190Ready) { mo.disconnect(); loadLazy(); } })).observe(p, { attributes: true, attributeFilter: ['class'] });
+  })(document.getElementById('novaLabelsPanel'));
   window.addEventListener('hashchange', checkLazy);
   document.addEventListener('click', function (e) { var t = e.target && e.target.closest && e.target.closest('.nova-tab[data-page]'); if (t && LAZY_PAGES[t.getAttribute('data-page')]) loadLazy(); }, true);
   function boot() {

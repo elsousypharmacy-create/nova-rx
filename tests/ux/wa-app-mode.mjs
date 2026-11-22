@@ -1,4 +1,4 @@
-// WA-APP: /?app=whatsapp = the conversations screen on its own (no POS, no tab strip); the normal app and /#wa are unchanged.
+// WA-APP: /?app=whatsapp = the conversations screen on its own (no POS, no tab strip); the normal app is unchanged; a plain /#wa (notification link, UX406) opens the inbox inside the full app.
 // Fake data only: the history API is answered by page.route, every non-GET is aborted, no real WhatsApp send, no PIN.
 // Run: python3 -m http.server 8765 --bind 127.0.0.1 & node tests/ux/wa-app-mode.mjs
 import { chromium } from '@playwright/test';
@@ -72,10 +72,26 @@ await t('the normal app is unchanged: tab strip and POS visible, own title, no a
   assert.equal(await shown(page, '.nova-nav-row'), true); assert.equal(await shown(page, '#novaInboxView'), false);
   assert.deepEqual(errs, []); await ctx.close();
 });
-await t('a plain /#wa is not WhatsApp-only mode: full app, tab strip visible (unchanged)', async () => {
+await t('desktop: a plain /#wa opens the inbox in the full app (not WhatsApp-only mode): tab strip visible, sale tab leads back to sale', async () => {
+  const { ctx, page, errs } = await open(BASE + '#wa', { width: 1366, height: 768 });
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('app-whatsapp')), false);
+  await page.waitForSelector('#novaInboxView:not([hidden])', { timeout: 5000 });
+  assert.equal(await shown(page, '#novaInboxView'), true, '/#wa opens the conversations screen');
+  assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'inbox');
+  assert.equal(await shown(page, '.nova-nav-row'), true, 'tab strip stays in the full app');
+  await page.locator('.nova-tab[data-page="sale"]').first().click(); await page.waitForTimeout(300);
+  assert.equal(await shown(page, '.pos-root'), true, 'the sale tab leads back to the sale screen');
+  assert.equal(await shown(page, '#novaInboxView'), false);
+  assert.deepEqual(errs, []); await ctx.close();
+});
+await t('phone: a plain /#wa opens the inbox (not WhatsApp-only mode); its home button leads back to sale', async () => {
   const { ctx, page, errs } = await open(BASE + '#wa');
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('app-whatsapp')), false);
-  assert.equal(await shown(page, '.nova-nav-row'), true, 'tab strip stays in the full app');
+  await page.waitForSelector('#novaInboxView:not([hidden])', { timeout: 5000 });
+  assert.equal(await shown(page, '#novaInboxView'), true, '/#wa opens the conversations screen');
+  await page.locator('#novaInboxView .wa-home').first().click(); await page.waitForTimeout(300);
+  assert.equal(await shown(page, '.pos-root'), true, 'the home button leads back to the sale screen');
+  assert.equal(await shown(page, '#novaInboxView'), false);
   assert.deepEqual(errs, []); await ctx.close();
 });
 await browser.close(); console.log(`PASS wa app mode (NOVA): ${n} cases`);

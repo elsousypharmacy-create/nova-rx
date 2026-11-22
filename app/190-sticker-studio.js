@@ -199,4 +199,8 @@ window.addEventListener('nova:sticker-print',e=>{if(e.detail&&!e.detail.test&&!e
 refresh();
 })();
 load();bind();syncPatientInputs();syncSettingsInputs();renderQueue();renderMeds();
+if(panel.classList.contains('open')){const items=typeof window.novaCartItems==='function'?window.novaCartItems():[];if(items.length){panel.dataset.cartSig=items.map(i=>clean(i.name)+'|'+(i.qty||1)).join('~');loadInvoice({customer:'',items},null)}else if(window.__nova190LastInv){loadInvoice(window.__nova190LastInv,0)}}
+else if(window.__nova190LastInv){loadInvoice(window.__nova190LastInv,0)}
+delete window.__nova190LastInv;
+window.__nova190Ready=true;
 })();

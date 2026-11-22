@@ -80,7 +80,7 @@ html[data-nova-theme=light]{filter:invert(1) hue-rotate(180deg)}
 html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-colors]){filter:invert(1) hue-rotate(180deg)}
 @media print{html[data-nova-theme=light],html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-colors]){filter:none}}
 </style>
-<script id="NOVA_PUSH_CARD_JS" src="/assets/app-030-nova-push-card-js.a903f40dff.js"></script>
+<link rel="prefetch" as="script" id="NOVA_PUSH_CARD_JS" data-nova-lazy="1" href="/assets/app-030-nova-push-card-js.a903f40dff.js">
 <style id="NOVA_THEME_BTN_CSS">
 .nova-theme-btn{border:0;background:transparent;color:#aab6c0;font-family:inherit;font-size:12px;font-weight:700;border-radius:var(--r-1);padding:5px 10px;cursor:pointer;white-space:nowrap}
 .nova-theme-btn.active{background:#344b59;color:#e2f4fc}
@@ -98,7 +98,7 @@ function set(n){n=Number(n);if(!isFinite(n)||n<0||n>100)return false;try{localSt
 function calc(total,rate){var r=rate===undefined?get():Number(rate);return Math.round(((Number(total)||0)*r/(100+r)+Number.EPSILON)*100)/100}
 function label(rate){var r=rate===undefined?get():rate;return String(Math.round(r*100)/100)}
 return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
-  <link rel="stylesheet" href="supplier-lookup.css">
+  <link rel="prefetch" as="style" data-nova-lazy-css="1" href="supplier-lookup.css">
 <link rel="stylesheet" id="ux10-mobile-sale" href="/assets/app-060-ux10-mobile-sale.74bec81baf.css">
 <style id="ux34-tap-targets">
 /* UX34: >=44px hit areas on sale toolbar (tablet 768-1366 and mobile); toolbar stays one row via gap/padding trims */
@@ -577,7 +577,7 @@ window.NovaFmt=(function(){
 })();
 </script>
 
-<script src="/assets/app-130-pages-nav.1817161aa4.js"></script>
+<script src="/assets/app-130-pages-nav.231340f28b.js"></script>
 <link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-570-sale-approval.f801360a9e.js">
 
 <script src="/assets/app-140-ui-language.681dcf62c0.js"></script>
@@ -607,9 +607,9 @@ window.NovaFmt=(function(){
 <button id="novaAiExport" type="button" hidden>تنزيل CSV للمراجعة</button>
 <p class="ai-note">راجع كل خانة مقابل الفاتورة الأصلية. الخانات غير المقروءة تُترك فارغة. لا تربط أصنافًا أو تنشئ QR تلقائيًا قبل تأكيدها.</p>
 </div></section>
-<script src="/assets/app-160-ai-labels-panel.d82dac5e80.js"></script>
+<link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-160-ai-labels-panel.d82dac5e80.js">
 <link rel="stylesheet" href="/assets/app-170-inventory-chips.7e676e1756.css">
-<link rel="stylesheet" href="/assets/app-180-sticker-studio.43b2e8493e.css">
+<link rel="prefetch" as="style" data-nova-lazy-css="1" href="/assets/app-180-sticker-studio.43b2e8493e.css">
 <section id="novaLabelsPanel" role="dialog" aria-modal="true" aria-label="استيكرات الأدوية">
 <div class="labels-sheet">
 <header class="labels-toolbar">
@@ -661,17 +661,17 @@ window.NovaFmt=(function(){
 </footer>
 </div>
 </section>
-<script src="/assets/app-190-sticker-studio.e8e59489d9.js"></script>
-<link rel="stylesheet" id="NOVA_STICKER_ONECLICK" href="/assets/app-200-nova-sticker-oneclick.69fbacadfc.css">
+<link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-190-sticker-studio.90c2b5a7f5.js">
+<link rel="prefetch" as="style" id="NOVA_STICKER_ONECLICK" data-nova-lazy-css="1" href="/assets/app-200-nova-sticker-oneclick.69fbacadfc.css">
 <link rel="stylesheet" id="NOVA_STICKER_ONECLICK_V2" href="/assets/app-210-nova-sticker-oneclick-v2.459fc609be.css">
 
-<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><script defer src="bi-dictionary.js"></script><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="/staff-gate.js"></script><script defer src="supplier-provider.js"></script><script defer src="supplier-lookup.js"></script><link rel="prefetch" as="script" id="fix43-inbox-lib" data-nova-lazy="1" href="/assets/app-220-fix43-inbox-lib.183c7a34ba.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-230-inbox-wa.5fcebe3979.js"><link rel="stylesheet" id="ux209-wa-target" href="/assets/app-240-ux209-wa-target.7cb40295c1.css"><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="sale01-backend-flag" src="/assets/app-250-sale01-backend-flag.eba3d63ec7.js"></script><style id="sale06-onboarding-css">#novaOnboardingCard[hidden]{display:none!important}#novaOnboardingCard .nova-onb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--sp-2,8px);margin:10px 0}#novaOnboardingCard .nova-onb-grid label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#c9d2db}#novaOnboardingCard .nova-onb-grid .nova-field{width:100%;min-height:44px}#novaOnboardingCard .nova-onb-actions{display:flex;flex-wrap:wrap;gap:var(--sp-2,8px);margin:8px 0}#novaOnboardingCard .nova-onb-actions .nova-page-btn{min-height:44px}#novaOnboardingCard .nova-onb-steps{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:6px}#novaOnboardingCard .nova-onb-steps li{padding:4px 10px;border:1px solid #303841;border-radius:999px;font-size:12px;color:#dce3ea}#novaOnboardingCard .nova-onb-steps li[data-status=done]{border-color:#2f7a52;color:#8fe0b5}#novaOnboardingCard #novaOnbResult[data-kind=error]{color:#ff9b9b}#novaOnboardingCard #novaOnbResult[data-kind=ok]{color:#8fe0b5}</style><script id="sale06-onboarding" src="/assets/app-260-sale06-onboarding.1c590f4999.js"></script>
-<script id="ux81-wa-badge" src="/assets/app-270-ux81-wa-badge.6a689d762e.js"></script><link rel="stylesheet" id="ux44-mobile-totals" href="/assets/app-280-ux44-mobile-totals.22ae2004d6.css">
+<script>(function(){function fix(){document.querySelectorAll('img.elsousy-brand-mark').forEach(function(i){if(i.complete&&i.naturalWidth===0)i.style.display='none'})}document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&t.classList&&t.classList.contains('elsousy-brand-mark'))t.style.display='none'},true);fix();window.addEventListener('load',function(){fix();setTimeout(fix,1500)})})()</script><script>(function(){function u(){var c=document.getElementById('offlineChip');if(!c)return;var off=navigator.onLine===false;c.textContent=off?(localStorage.getItem('nova-rx-language')==='en'?'Offline — invoices are saved on this device':'بدون اتصال — الفواتير تُحفظ على هذا الجهاز'):'';c.hidden=!off}window.addEventListener('online',u);window.addEventListener('offline',u);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u);else u()})()</script><link rel="prefetch" as="script" href="bi-dictionary.js" data-nova-lazy="1"><script defer src="credit-ledger.js"></script><script defer src="auth-local.js"></script><script defer src="auth-permissions.js"></script><script defer src="auth-ui.js"></script><script defer src="/staff-gate.js"></script><link rel="prefetch" as="script" href="supplier-provider.js" data-nova-lazy="1"><link rel="prefetch" as="script" href="supplier-lookup.js" data-nova-lazy="1"><link rel="prefetch" as="script" id="fix43-inbox-lib" data-nova-lazy="1" href="/assets/app-220-fix43-inbox-lib.183c7a34ba.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-230-inbox-wa.5fcebe3979.js"><link rel="stylesheet" id="ux209-wa-target" href="/assets/app-240-ux209-wa-target.7cb40295c1.css"><style id="ux81-wa-css">.nova-wa-icon{position:relative}.nova-wa-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#dc2626;color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center}.nova-wa-badge[hidden]{display:none}</style><script id="sale01-backend-flag" src="/assets/app-250-sale01-backend-flag.eba3d63ec7.js"></script><link rel="stylesheet" id="sale06-onboarding-css" href="/assets/app-255-sale06-onboarding-css.bdd8c3bcab.css"><link rel="prefetch" as="script" id="sale06-onboarding" data-nova-lazy="1" href="/assets/app-260-sale06-onboarding.b7bfcb6d88.js">
+<script id="ux81-wa-badge" defer="" src="/assets/app-270-ux81-wa-badge.6a689d762e.js"></script><link rel="stylesheet" id="ux44-mobile-totals" href="/assets/app-280-ux44-mobile-totals.22ae2004d6.css">
 <script src="/assets/app-290-mobile-discount.38e3aed93a.js"></script>
 <script id="NOVA_FIX50_VV" src="/assets/app-300-nova-fix50-vv.fb5a7598b8.js"></script><script src="/assets/app-310-nav-chevrons.2164eb1f48.js"></script>
 <!-- UX430:BEGIN WhatsApp KPIs -->
-<link rel="stylesheet" id="UX430_WA_KPI_CSS" href="/assets/app-320-ux430-wa-kpi-css.e7a4062fb3.css">
-<script id="UX430_WA_KPI" src="/assets/app-330-ux430-wa-kpi.94e61d3779.js"></script>
+<link rel="prefetch" as="style" id="UX430_WA_KPI_CSS" data-nova-lazy-css="1" href="/assets/app-320-ux430-wa-kpi-css.e7a4062fb3.css">
+<link rel="prefetch" as="script" id="UX430_WA_KPI" data-nova-lazy="1" href="/assets/app-330-ux430-wa-kpi.94e61d3779.js">
 <!-- UX430:END -->
 <!-- S1-03:BEGIN offline sync scripts (verbatim copies of offline-outbox.js, stock-ledger.js, backend-client.js, pos-sync-wire.js; kept equal by tests/unit/pos-outbox-wire.check.mjs) -->
 <script src="/assets/app-340-offline-outbox.6fa02102a7.js"></script>
@@ -686,23 +686,23 @@ window.NovaFmt=(function(){
 <script src="/assets/app-430-pos-sync.80b5460f00.js"></script>
 <!-- S1-03:END -->
 <!-- SETUP-WIZARD:BEGIN -->
-<script src="/assets/app-440-home-dashboard.d8380ec354.js"></script>
-<link rel="stylesheet" id="NOVA_SETUP_WIZARD_CSS" href="/assets/app-450-nova-setup-wizard-css.1912152f61.css">
+<link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-440-home-dashboard.63f0363f42.js">
+<link rel="prefetch" as="style" id="NOVA_SETUP_WIZARD_CSS" data-nova-lazy-css="1" href="/assets/app-450-nova-setup-wizard-css.1912152f61.css">
 <!-- SETUP-WIZARD:END -->
-<script id="ux-p31-po-store" src="/assets/app-460-ux-p31-po-store.3f78c2de47.js"></script>
+<link rel="prefetch" as="script" id="ux-p31-po-store" data-nova-lazy="1" href="/assets/app-460-ux-p31-po-store.3f78c2de47.js">
 
 <script id="ux-p37-inv-per">document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-inv-per]');if(!b)return;window.__novaInvPer=b.getAttribute('data-inv-per');var t=document.querySelector('.nova-tab[data-page=invoices]');if(t)t.click();var nb=document.querySelector('[data-inv-per="'+window.__novaInvPer+'"]');if(nb)nb.focus();});</script>
-<script id="ux-p38-settings-sections" src="/assets/app-470-ux-p38-settings-sections.764222a9a7.js"></script>
-<link rel="stylesheet" id="ux-p30-receiving" href="/assets/app-480-ux-p30-receiving.c2dd2cfd32.css">
+<link rel="prefetch" as="script" id="ux-p38-settings-sections" data-nova-lazy="1" href="/assets/app-470-ux-p38-settings-sections.764222a9a7.js">
+<link rel="prefetch" as="style" id="ux-p30-receiving" data-nova-lazy-css="1" href="/assets/app-480-ux-p30-receiving.c2dd2cfd32.css">
 <link rel="stylesheet" id="nova-ui-system" href="/assets/app-490-nova-ui-system.df5f00b027.css">
-<script src="/assets/app-500-receiving.4d39a544ea.js"></script>
+<link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-500-receiving.4d39a544ea.js">
 </body>
 <script>(function(){function c(){var n=document.querySelector('.nova-nav');if(!n)return;var a=n.querySelector('.nova-tab.active');if(!a)return;var nr=n.getBoundingClientRect(),ar=a.getBoundingClientRect();if(ar.left<nr.left+24||ar.right>nr.right-24){var t=n.scrollLeft+(ar.left-nr.left)-(nr.width-ar.width)/2;n.scrollTo({left:t,behavior:'auto'})}}
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
 <link rel="stylesheet" id="ux206-mobile-cart-row" href="/assets/app-510-ux206-mobile-cart-row.3eeb883d92.css">
 <link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.4b597b7814.css">
-<script id="NOVA_INFO_TIPS" src="/assets/app-530-nova-info-tips.7e85f17416.js"></script>
-<script src="/assets/app-548-nova-providers.2af8ffa3df.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.da0e87d589.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.b257e53edb.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.5f97d1eb4d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.bf456491a6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.7e48dbcb0b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.61072010e6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-572-sale-settings.673c2fbad0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-574-excel-export.c1c71e823b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-576-shift-open.048a78672b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-578-profit-slow.6ae8fe4fee.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-580-sale-offers.308341a794.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-582-stock-count.6f380f73e7.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-584-item-limits.4d32363c1d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-586-fridge-log.0524f9bf35.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-588-destruction-record.131ac97e4e.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-590-shift-notes.9c1421db36.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-592-customer-requests.4feb663c61.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-594-ops-screens.edbde47978.js"><script src="/assets/app-562-mobile-bottom-nav.471b204e6c.js"></script>
+<link rel="prefetch" as="script" id="NOVA_INFO_TIPS" data-nova-lazy="1" href="/assets/app-530-nova-info-tips.7e85f17416.js">
+<script src="/assets/app-548-nova-providers.842cf22d2b.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.da0e87d589.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.b257e53edb.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.5f97d1eb4d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.bf456491a6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.7e48dbcb0b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.61072010e6.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-572-sale-settings.673c2fbad0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-574-excel-export.c1c71e823b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-576-shift-open.048a78672b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-578-profit-slow.6ae8fe4fee.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-580-sale-offers.308341a794.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-582-stock-count.6f380f73e7.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-584-item-limits.4d32363c1d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-586-fridge-log.0524f9bf35.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-588-destruction-record.131ac97e4e.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-590-shift-notes.9c1421db36.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-592-customer-requests.4feb663c61.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-594-ops-screens.edbde47978.js"><script src="/assets/app-562-mobile-bottom-nav.471b204e6c.js"></script>
 </html>
 
