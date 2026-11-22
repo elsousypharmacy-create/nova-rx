@@ -2504,6 +2504,7 @@
         const saleRecord = {
           id: saleKey,
           number: String(invNumber), at: now.toISOString(),
+          ...(() => { try { const me = window.novaAuth && window.novaAuth.current && window.novaAuth.current(); return me && me.id ? { cashierId: me.id, cashier: me.name } : {}; } catch (_) { return {}; } })(), // #90: who sold it (staff KPIs, payroll commission)
           customer: state.attachedCustomer ? state.attachedCustomer.name : '',
           phone: state.attachedCustomer ? state.attachedCustomer.phone : '',
           payment: tp.payment, status: 'final', tenders: tp.tenders, credit: tp.credit, collected: tp.collected, customerId: state.attachedCustomer ? state.attachedCustomer.id : undefined,

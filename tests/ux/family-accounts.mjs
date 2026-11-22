@@ -90,7 +90,7 @@ try {
     const permThrow = F.removeMember(fam.id, targetId, 'انتقال');
 
     // 4. With permission granted: head cannot be removed, empty reason refused, valid reason succeeds
-    window.novaPerms = { require: (p) => p === 'customers.edit' };
+    window.novaPerms = { require: (p) => p === 'accounts.manage' };
     const headId = fam.members[0].id;
     const removeHead = F.removeMember(fam.id, headId, 'سبب اختبار');
     const noReason = F.removeMember(fam.id, targetId, '   ');

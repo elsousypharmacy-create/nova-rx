@@ -68,7 +68,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('settings.edit');
+      return !!window.novaPerms.require('accounts.manage');
     } catch (e) {
       return false;
     }
@@ -834,7 +834,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('suppliers.pay');
+      return !!window.novaPerms.require('purchases.manage');
     } catch (e) {
       return false;
     }
@@ -2246,7 +2246,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('sale.discount');
+      return !!window.novaPerms.require('prices.edit');
     } catch (e) {
       return false;
     }
@@ -2256,7 +2256,7 @@
     if (!window.novaPerms) return false;
     if (typeof window.novaPerms.can === 'function') {
       try {
-        return !!window.novaPerms.can('sale.discount');
+        return !!window.novaPerms.can('prices.edit');
       } catch (e) {
         return false;
       }
@@ -3784,7 +3784,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('suppliers.pay');
+      return !!window.novaPerms.require('purchases.manage');
     } catch (e) {
       return false;
     }
@@ -4878,7 +4878,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('customers.edit');
+      return !!window.novaPerms.require('accounts.manage');
     } catch (e) {
       return false;
     }
@@ -5774,7 +5774,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('payroll.manage');
+      return !!window.novaPerms.require('accounts.manage');
     } catch (e) {
       return false;
     }
@@ -6814,7 +6814,7 @@
 
   function canWrite() {
     try {
-      return !!(window.novaPerms && typeof window.novaPerms.require === 'function' && window.novaPerms.require('suppliers.pay'));
+      return !!(window.novaPerms && typeof window.novaPerms.require === 'function' && window.novaPerms.require('purchases.manage'));
     } catch (e) {
       return false;
     }
@@ -7742,7 +7742,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('products.edit');
+      return !!window.novaPerms.require('prices.edit');
     } catch (e) {
       return false;
     }
@@ -8532,7 +8532,7 @@
       return false;
     }
     try {
-      return !!window.novaPerms.require('products.price');
+      return !!window.novaPerms.require('prices.edit');
     } catch (e) {
       return false;
     }
@@ -9333,7 +9333,7 @@
   function canWrite() {
     if (window.novaPerms && typeof window.novaPerms.require === 'function') {
       try {
-        return !!window.novaPerms.require('customers.credit');
+        return !!window.novaPerms.require('accounts.manage');
       } catch (e) {
         return false;
       }
@@ -10546,4 +10546,1678 @@
   } else {
     initObserver();
   }
+})();
+
+// app/624-vault-bank.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-vault-moves-v1';
+  var MAX_RECORDS = 500;
+  var CARD_ID = 'novaVaultCard';
+  var STYLE_ID = 'novaVaultStyle';
+  var TZ = 'Africa/Cairo';
+  var MOVE_TYPES = ['drawer_in', 'bank_deposit', 'bank_withdraw', 'vault_expense'];
+
+  function isEn() {
+    try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; }
+  }
+
+  var AR = {
+    title: 'الخزنة الرئيسية والبنك',
+    vault: 'رصيد الخزنة الرئيسية',
+    bank: 'رصيد البنك',
+    currency: 'ج.م',
+    moveType: 'نوع الحركة',
+    amount: 'المبلغ',
+    reason: 'السبب / البيان',
+    shiftRef: 'مرجع الوردية (اختياري)',
+    submit: 'تسجيل الحركة',
+    pullShift: 'جلب نقدية آخر وردية',
+    dayLabel: 'حركات يوم',
+    printBtn: 'طباعة كشف اليوم',
+    empty: 'لا توجد حركات مسجلة لهذا اليوم',
+    noPerm: 'ليس لديك صلاحية تسجيل حركات الخزنة',
+    saved: 'تم تسجيل الحركة بنجاح',
+    negErr: 'الرصيد غير كافٍ لإتمام هذه الحركة',
+    badAmt: 'يرجى إدخال مبلغ صحيح أكبر من صفر',
+    badReason: 'يرجى كتابة سبب الحركة',
+    dupShift: 'تم توريد هذه الوردية مسبقاً',
+    noShiftCash: 'لا توجد نقدية وردية مغلقة متاحة',
+    colTime: 'الوقت',
+    colType: 'الحركة',
+    colAmt: 'المبلغ',
+    colReason: 'البيان',
+    colBy: 'بواسطة',
+    drawer_in: 'توريد من الدرج',
+    bank_deposit: 'إيداع في البنك',
+    bank_withdraw: 'سحب من البنك',
+    vault_expense: 'مصروف من الخزنة'
+  };
+
+  var EN = {
+    title: 'Main Vault & Bank',
+    vault: 'Main Vault Balance',
+    bank: 'Bank Balance',
+    currency: 'EGP',
+    moveType: 'Move Type',
+    amount: 'Amount',
+    reason: 'Reason / Note',
+    shiftRef: 'Shift Ref (optional)',
+    submit: 'Record Move',
+    pullShift: 'Load Closed Shift Cash',
+    dayLabel: 'Daily Moves',
+    printBtn: 'Print Day Sheet',
+    empty: 'No moves recorded for this day',
+    noPerm: 'Missing permission to record vault moves',
+    saved: 'Move recorded successfully',
+    negErr: 'Insufficient balance for this move',
+    badAmt: 'Enter a valid amount greater than zero',
+    badReason: 'Reason is required',
+    dupShift: 'This shift was already handed over',
+    noShiftCash: 'No closed shift counted cash found',
+    colTime: 'Time',
+    colType: 'Type',
+    colAmt: 'Amount',
+    colReason: 'Reason',
+    colBy: 'By',
+    drawer_in: 'Drawer Handover',
+    bank_deposit: 'Bank Deposit',
+    bank_withdraw: 'Bank Withdrawal',
+    vault_expense: 'Vault Expense'
+  };
+
+  function t(k) { return (isEn() ? EN : AR)[k] || k; }
+
+  function toast(msg, kind) {
+    try { if (typeof window.showToast === 'function') window.showToast(msg, kind || 'success'); } catch (e) {}
+  }
+
+  function hasPerm(perm) {
+    try {
+      return !!(window.novaPerms && typeof window.novaPerms.require === 'function' && window.novaPerms.require(perm));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function currentUser() {
+    try {
+      var u = window.novaAuth && typeof window.novaAuth.current === 'function' && window.novaAuth.current();
+      return u && typeof u === 'object' ? { name: String(u.name || ''), role: String(u.role || '') } : { name: '', role: '' };
+    } catch (e) {
+      return { name: '', role: '' };
+    }
+  }
+
+  function normalizeDigits(str) {
+    return String(str == null ? '' : str)
+      .replace(/[\u0660-\u0669]/g, function (ch) { return String(ch.charCodeAt(0) - 0x0660); })
+      .replace(/[\u06F0-\u06F9]/g, function (ch) { return String(ch.charCodeAt(0) - 0x06F0); })
+      .replace(/\u066B/g, '.')
+      .replace(/[\u066C,]/g, '')
+      .trim();
+  }
+
+  function toPiastres(raw) {
+    var clean = normalizeDigits(raw);
+    if (!clean) return -1;
+    var n = Number(clean);
+    if (!isFinite(n) || n <= 0) return -1;
+    var c = Math.round(n * 100);
+    if (c <= 0 || Math.abs(c / 100 - n) > 1e-6) return -1;
+    return c;
+  }
+
+  function fromPiastres(c) { return Math.round(c) / 100; }
+  function fmtMoney(n) { return Number(n || 0).toFixed(2) + ' ' + t('currency'); }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  function cairoDate(ms) {
+    var d = new Date(ms || Date.now());
+    try {
+      var parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(d);
+      var m = {};
+      for (var i = 0; i < parts.length; i++) m[parts[i].type] = parts[i].value;
+      return m.year + '-' + m.month + '-' + m.day;
+    } catch (e) {
+      return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    }
+  }
+
+  function cairoTime(ms) {
+    var d = new Date(ms || Date.now());
+    try {
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone: TZ, hourCycle: 'h23', hour: '2-digit', minute: '2-digit'
+      }).format(d);
+    } catch (e) {
+      return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    }
+  }
+
+  function loadMoves() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveMoves(arr) {
+    try {
+      var trimmed = arr.length > MAX_RECORDS ? arr.slice(arr.length - MAX_RECORDS) : arr;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function computeBalances(moves) {
+    var v = 0, b = 0;
+    for (var i = 0; i < moves.length; i++) {
+      var m = moves[i];
+      if (!m || typeof m !== 'object') continue;
+      var c = (typeof m.amountCents === 'number' && isFinite(m.amountCents))
+        ? Math.round(m.amountCents)
+        : Math.round((Number(m.amount) || 0) * 100);
+      if (!isFinite(c) || c <= 0) continue;
+      if (m.type === 'drawer_in') { v += c; }
+      else if (m.type === 'bank_deposit') { v -= c; b += c; }
+      else if (m.type === 'bank_withdraw') { b -= c; v += c; }
+      else if (m.type === 'vault_expense') { v -= c; }
+    }
+    return { vault: fromPiastres(v), bank: fromPiastres(b), vaultCents: v, bankCents: b };
+  }
+
+  // The last closed shift is the last row of nova-rx-shift-closings-v1 (written by the shift close in app/130): { id, at, counted, ... }.
+  // nova-rx-shift-v1.counted is only the count being typed before the close, so it is never used here.
+  function getClosedShiftCash() {
+    var rec = null;
+    try {
+      var arr = JSON.parse(localStorage.getItem('nova-rx-shift-closings-v1') || '[]');
+      if (Array.isArray(arr) && arr.length) rec = arr[arr.length - 1];
+    } catch (e) { rec = null; }
+    if (!rec || typeof rec !== 'object' || rec.counted == null) return null;
+    var amt = Number(rec.counted);
+    if (!isFinite(amt) || amt <= 0) return null;
+    var ref = String(rec.id || ('SC' + (rec.at || '')));
+    return { amount: fromPiastres(Math.round(amt * 100)), shiftRef: ref };
+  }
+
+  function move(opts) {
+    if (!hasPerm('accounts.manage')) { // owner/manager (auth-permissions ACTIONS; an unknown action is always denied)
+      toast(t('noPerm'), 'error');
+      return { ok: false, error: 'forbidden' };
+    }
+    opts = opts || {};
+    var type = String(opts.type || '');
+    if (MOVE_TYPES.indexOf(type) === -1) return { ok: false, error: 'bad-type' };
+    var cents = toPiastres(opts.amount);
+    if (cents <= 0) {
+      toast(t('badAmt'), 'error');
+      return { ok: false, error: 'bad-amount' };
+    }
+    var reason = String(opts.reason || '').trim();
+    if (!reason) {
+      toast(t('badReason'), 'error');
+      return { ok: false, error: 'reason-required' };
+    }
+    var shiftRef = opts.shiftRef ? String(opts.shiftRef).trim() : '';
+    var list = loadMoves();
+    if (type === 'drawer_in' && shiftRef) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && list[i].type === 'drawer_in' && list[i].shiftRef === shiftRef) {
+          toast(t('dupShift'), 'error');
+          return { ok: false, error: 'duplicate-shift' };
+        }
+      }
+    }
+    var bal = computeBalances(list);
+    if ((type === 'bank_deposit' || type === 'vault_expense') && cents > bal.vaultCents) {
+      toast(t('negErr'), 'error');
+      return { ok: false, error: 'insufficient-vault' };
+    }
+    if (type === 'bank_withdraw' && cents > bal.bankCents) {
+      toast(t('negErr'), 'error');
+      return { ok: false, error: 'insufficient-bank' };
+    }
+    var now = typeof opts.at === 'number' && isFinite(opts.at) ? opts.at : Date.now();
+    var u = currentUser();
+    var rec = {
+      id: 'vm-' + now + '-' + Math.floor(Math.random() * 10000),
+      type: type,
+      amount: fromPiastres(cents),
+      amountCents: cents,
+      reason: reason,
+      shiftRef: shiftRef || null,
+      by: u.name,
+      role: u.role,
+      at: now,
+      date: cairoDate(now)
+    };
+    list.push(rec);
+    if (!saveMoves(list)) return { ok: false, error: 'storage-failed' };
+    toast(t('saved'), 'success');
+    return { ok: true, move: rec, balances: balances() };
+  }
+
+  function balances() {
+    var b = computeBalances(loadMoves());
+    return { vault: b.vault, bank: b.bank };
+  }
+
+  function list() { return loadMoves(); }
+
+  function daily(dateStr) {
+    var day = dateStr || cairoDate(Date.now());
+    var all = loadMoves();
+    var out = [];
+    for (var i = 0; i < all.length; i++) {
+      if (all[i] && all[i].date === day) out.push(all[i]);
+    }
+    return out;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent =
+      '#' + CARD_ID + '{background:#14181d;border:1px solid #343b44;border-radius:12px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}' +
+      '#' + CARD_ID + ' *{box-sizing:border-box;}' +
+      '#' + CARD_ID + ' .nv-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;}' +
+      '#' + CARD_ID + ' .nv-title{margin:0;font-size:18px;color:#79c9eb;}' +
+      '#' + CARD_ID + ' .nv-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}' +
+      '#' + CARD_ID + ' .nv-kpi{background:#0f1318;border:1px solid #343b44;border-radius:10px;padding:10px;}' +
+      '#' + CARD_ID + ' .nv-kpi-lbl{font-size:12px;color:#9fb0c0;margin-bottom:4px;}' +
+      '#' + CARD_ID + ' .nv-kpi-val{font-size:18px;font-weight:700;color:#e6edf3;}' +
+      '#' + CARD_ID + ' .nv-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}' +
+      '#' + CARD_ID + ' .nv-field{display:flex;flex-direction:column;gap:4px;min-width:0;}' +
+      '#' + CARD_ID + ' .nv-field label{font-size:12px;color:#9fb0c0;}' +
+      '#' + CARD_ID + ' .nv-input{min-height:44px;width:100%;max-width:100%;padding:8px 10px;background:#0f1318;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:14px;}' +
+      '#' + CARD_ID + ' .nv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}' +
+      '#' + CARD_ID + ' .nv-actions .btn{min-height:44px;}' +
+      '#' + CARD_ID + ' .nv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}' +
+      '#' + CARD_ID + ' .nv-tbl-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;}' +
+      '#' + CARD_ID + ' table{width:100%;border-collapse:collapse;font-size:13px;}' +
+      '#' + CARD_ID + ' th,#' + CARD_ID + ' td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:start;white-space:nowrap;}' +
+      '#' + CARD_ID + ' th{background:#0f1318;color:#79c9eb;}';
+    document.head.appendChild(s);
+  }
+
+  function printDaily(dayStr) {
+    var rows = daily(dayStr);
+    var bal = balances();
+    var w = window.open('', '_blank', 'width=720,height=600');
+    if (!w) return;
+    var doc = w.document;
+    doc.title = t('title') + ' - ' + dayStr;
+    doc.documentElement.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+    var style = doc.createElement('style');
+    style.textContent = 'body{font-family:sans-serif;padding:16px;color:#111;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:6px 8px;text-align:start;}';
+    doc.head.appendChild(style);
+    var h = doc.createElement('h2');
+    h.textContent = t('title') + ' - ' + dayStr;
+    doc.body.appendChild(h);
+    var p = doc.createElement('p');
+    p.textContent = t('vault') + ': ' + fmtMoney(bal.vault) + ' | ' + t('bank') + ': ' + fmtMoney(bal.bank);
+    doc.body.appendChild(p);
+    var tbl = doc.createElement('table');
+    var thead = doc.createElement('thead');
+    var hr = doc.createElement('tr');
+    ['colTime', 'colType', 'colAmt', 'colReason', 'colBy'].forEach(function (k) {
+      var th = doc.createElement('th');
+      th.textContent = t(k);
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr);
+    tbl.appendChild(thead);
+    var tb = doc.createElement('tbody');
+    if (!rows.length) {
+      var er = doc.createElement('tr');
+      var ed = doc.createElement('td');
+      ed.colSpan = 5;
+      ed.textContent = t('empty');
+      er.appendChild(ed);
+      tb.appendChild(er);
+    } else {
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var tr = doc.createElement('tr');
+        var vals = [cairoTime(r.at), t(r.type), fmtMoney(r.amount), r.reason, r.by || '-'];
+        for (var j = 0; j < vals.length; j++) {
+          var td = doc.createElement('td');
+          td.textContent = vals[j];
+          tr.appendChild(td);
+        }
+        tb.appendChild(tr);
+      }
+    }
+    tbl.appendChild(tb);
+    doc.body.appendChild(tbl);
+    w.focus();
+    w.print();
+  }
+
+  function renderCard(card) {
+    while (card.firstChild) card.removeChild(card.firstChild);
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var selectedDay = card.getAttribute('data-day') || cairoDate(Date.now());
+    var bal = balances();
+
+    var head = document.createElement('div');
+    head.className = 'nv-head';
+    var h3 = document.createElement('h3');
+    h3.className = 'nv-title';
+    h3.textContent = t('title');
+    head.appendChild(h3);
+    card.appendChild(head);
+
+    var kpis = document.createElement('div');
+    kpis.className = 'nv-kpis';
+    var k1 = document.createElement('div');
+    k1.className = 'nv-kpi';
+    var k1l = document.createElement('div'); k1l.className = 'nv-kpi-lbl'; k1l.textContent = t('vault');
+    var k1v = document.createElement('div'); k1v.className = 'nv-kpi-val'; k1v.id = 'nvVaultBal'; k1v.textContent = fmtMoney(bal.vault);
+    k1.appendChild(k1l); k1.appendChild(k1v);
+    var k2 = document.createElement('div');
+    k2.className = 'nv-kpi';
+    var k2l = document.createElement('div'); k2l.className = 'nv-kpi-lbl'; k2l.textContent = t('bank');
+    var k2v = document.createElement('div'); k2v.className = 'nv-kpi-val'; k2v.id = 'nvBankBal'; k2v.textContent = fmtMoney(bal.bank);
+    k2.appendChild(k2l); k2.appendChild(k2v);
+    kpis.appendChild(k1); kpis.appendChild(k2);
+    card.appendChild(kpis);
+
+    var form = document.createElement('div');
+    form.className = 'nv-form';
+
+    var fType = document.createElement('div'); fType.className = 'nv-field';
+    var lType = document.createElement('label'); lType.textContent = t('moveType');
+    var sel = document.createElement('select'); sel.className = 'nv-input'; sel.id = 'nvMoveType';
+    for (var i = 0; i < MOVE_TYPES.length; i++) {
+      var opt = document.createElement('option');
+      opt.value = MOVE_TYPES[i];
+      opt.textContent = t(MOVE_TYPES[i]);
+      sel.appendChild(opt);
+    }
+    fType.appendChild(lType); fType.appendChild(sel);
+
+    var fAmt = document.createElement('div'); fAmt.className = 'nv-field';
+    var lAmt = document.createElement('label'); lAmt.textContent = t('amount');
+    var inAmt = document.createElement('input');
+    inAmt.type = 'text'; inAmt.setAttribute('inputmode', 'decimal'); inAmt.className = 'nv-input'; inAmt.id = 'nvMoveAmt';
+    fAmt.appendChild(lAmt); fAmt.appendChild(inAmt);
+
+    var fReason = document.createElement('div'); fReason.className = 'nv-field';
+    var lReason = document.createElement('label'); lReason.textContent = t('reason');
+    var inReason = document.createElement('input');
+    inReason.type = 'text'; inReason.className = 'nv-input'; inReason.id = 'nvMoveReason';
+    fReason.appendChild(lReason); fReason.appendChild(inReason);
+
+    var fRef = document.createElement('div'); fRef.className = 'nv-field';
+    var lRef = document.createElement('label'); lRef.textContent = t('shiftRef');
+    var inRef = document.createElement('input');
+    inRef.type = 'text'; inRef.className = 'nv-input'; inRef.id = 'nvShiftRef';
+    fRef.appendChild(lRef); fRef.appendChild(inRef);
+
+    form.appendChild(fType); form.appendChild(fAmt); form.appendChild(fReason); form.appendChild(fRef);
+    card.appendChild(form);
+
+    var actions = document.createElement('div');
+    actions.className = 'nv-actions';
+    var btnSave = document.createElement('button');
+    btnSave.type = 'button'; btnSave.className = 'btn btn-primary'; btnSave.id = 'nvSaveBtn';
+    btnSave.textContent = t('submit');
+    btnSave.addEventListener('click', function () {
+      var res = move({ type: sel.value, amount: inAmt.value, reason: inReason.value, shiftRef: inRef.value });
+      if (res.ok) renderCard(card);
+    });
+    var btnShift = document.createElement('button');
+    btnShift.type = 'button'; btnShift.className = 'btn btn-secondary'; btnShift.id = 'nvPullShiftBtn';
+    btnShift.textContent = t('pullShift');
+    btnShift.addEventListener('click', function () {
+      var sc = getClosedShiftCash();
+      if (!sc) { toast(t('noShiftCash'), 'error'); return; }
+      sel.value = 'drawer_in';
+      inAmt.value = String(sc.amount);
+      inRef.value = sc.shiftRef;
+      if (!inReason.value.trim()) inReason.value = t('drawer_in');
+    });
+    actions.appendChild(btnSave);
+    actions.appendChild(btnShift);
+    card.appendChild(actions);
+
+    var bar = document.createElement('div');
+    bar.className = 'nv-bar';
+    var lDay = document.createElement('label'); lDay.textContent = t('dayLabel');
+    var inDay = document.createElement('input');
+    inDay.type = 'date'; inDay.className = 'nv-input'; inDay.style.width = 'auto'; inDay.value = selectedDay;
+    inDay.addEventListener('change', function () {
+      card.setAttribute('data-day', inDay.value || cairoDate(Date.now()));
+      renderCard(card);
+    });
+    var btnPrint = document.createElement('button');
+    btnPrint.type = 'button'; btnPrint.className = 'btn btn-secondary';
+    btnPrint.textContent = t('printBtn');
+    btnPrint.addEventListener('click', function () { printDaily(selectedDay); });
+    bar.appendChild(lDay); bar.appendChild(inDay); bar.appendChild(btnPrint);
+    card.appendChild(bar);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'nv-tbl-wrap';
+    var tbl = document.createElement('table');
+    var thead = document.createElement('thead');
+    var hr = document.createElement('tr');
+    var cols = ['colTime', 'colType', 'colAmt', 'colReason', 'colBy'];
+    for (var c = 0; c < cols.length; c++) {
+      var th = document.createElement('th');
+      th.textContent = t(cols[c]);
+      hr.appendChild(th);
+    }
+    thead.appendChild(hr);
+    tbl.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var rows = daily(selectedDay);
+    if (!rows.length) {
+      var er = document.createElement('tr');
+      var ed = document.createElement('td');
+      ed.colSpan = 5;
+      ed.textContent = t('empty');
+      er.appendChild(ed);
+      tbody.appendChild(er);
+    } else {
+      for (var r = rows.length - 1; r >= 0; r--) {
+        var item = rows[r];
+        var tr = document.createElement('tr');
+        var cells = [cairoTime(item.at), t(item.type), fmtMoney(item.amount), item.reason, item.by || '-'];
+        for (var j = 0; j < cells.length; j++) {
+          var td = document.createElement('td');
+          td.textContent = cells[j];
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+    tbl.appendChild(tbody);
+    wrap.appendChild(tbl);
+    card.appendChild(wrap);
+  }
+
+  function isReportsActive() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  var mounting = false;
+  function tryMount() {
+    if (mounting) return;
+    var pv = document.getElementById('novaPageView');
+    if (!pv) return;
+    var existing = document.getElementById(CARD_ID);
+    if (!isReportsActive()) {
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      return;
+    }
+    if (existing) return;
+    mounting = true;
+    try {
+      injectStyles();
+      var card = document.createElement('section');
+      card.id = CARD_ID;
+      renderCard(card);
+      pv.appendChild(card);
+    } finally {
+      mounting = false;
+    }
+  }
+
+  function initObserver() {
+    var pv = document.getElementById('novaPageView');
+    if (pv && typeof MutationObserver === 'function') {
+      new MutationObserver(function () { tryMount(); }).observe(pv, { childList: true });
+    }
+    if (document.body && typeof MutationObserver === 'function') {
+      new MutationObserver(function () { tryMount(); }).observe(document.body, { attributes: true, attributeFilter: ['data-active-page'] });
+    }
+    document.addEventListener('click', function (ev) {
+      if (ev.target && ev.target.closest && ev.target.closest('.nova-tab')) setTimeout(tryMount, 30);
+    });
+    tryMount();
+  }
+
+  window.novaVault = {
+    move: move,
+    balances: balances,
+    list: list,
+    daily: daily,
+    getClosedShiftCash: getClosedShiftCash,
+    mount: tryMount
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initObserver);
+  else initObserver();
+})();
+
+// app/626-staff-attendance-kpis.js
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nova-rx-staff-attendance-v1';
+  var CFG_KEY = 'nova-rx-staff-start-time-v1';
+  var MAX_RECORDS = 500;
+  var CARD_ID = 'novaStaffStatsCard';
+  var STYLE_ID = 'novaStaffStatsStyle';
+  var TZ = 'Africa/Cairo';
+  var GRACE_MIN = 10;
+
+  function isEn() {
+    try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; }
+  }
+
+  var AR = {
+    title: 'الحضور ومبيعات كل موظف',
+    checkIn: 'تسجيل حضور',
+    checkOut: 'تسجيل انصراف',
+    startTime: 'موعد بدء العمل',
+    saveTime: 'حفظ الموعد',
+    from: 'من تاريخ',
+    to: 'إلى تاريخ',
+    refresh: 'تحديث التقرير',
+    ownerOnly: 'عرض مؤشرات الموظفين متاح للمالك فقط',
+    notLogged: 'يرجى تسجيل الدخول أولاً',
+    checkedIn: 'تم تسجيل الحضور',
+    checkedOut: 'تم تسجيل الانصراف',
+    alreadyIn: 'تم تسجيل الحضور بالفعل',
+    notIn: 'لا يوجد حضور مفتوح لتسجيل الانصراف',
+    badTime: 'صيغة الوقت غير صحيحة',
+    timeSaved: 'تم حفظ موعد بدء العمل',
+    noData: 'لا توجد بيانات موظفين في هذه الفترة',
+    unattr: 'فواتير غير منسوبة لموظف',
+    currency: 'ج.م',
+    colEmp: 'الموظف',
+    colHrs: 'الساعات',
+    colLate: 'التأخير (د)',
+    colSales: 'المبيعات',
+    colRet: 'المرتجعات',
+    colDisc: 'الخصومات',
+    colSph: 'مبيعات/ساعة',
+    colRetRate: 'نسبة المرتجع',
+    colDiscRate: 'نسبة الخصم'
+  };
+
+  var EN = {
+    title: 'Attendance & Staff Sales',
+    checkIn: 'Check In',
+    checkOut: 'Check Out',
+    startTime: 'Shift Start Time',
+    saveTime: 'Save Time',
+    from: 'From Date',
+    to: 'To Date',
+    refresh: 'Refresh',
+    ownerOnly: 'Staff KPIs are restricted to owner permission',
+    notLogged: 'Please sign in first',
+    checkedIn: 'Checked in',
+    checkedOut: 'Checked out',
+    alreadyIn: 'Already checked in',
+    notIn: 'No open check-in found',
+    badTime: 'Invalid time format (HH:MM)',
+    timeSaved: 'Start time saved',
+    noData: 'No employee data in this range',
+    unattr: 'Unattributed invoices',
+    currency: 'EGP',
+    colEmp: 'Employee',
+    colHrs: 'Hours',
+    colLate: 'Late (m)',
+    colSales: 'Sales',
+    colRet: 'Returns',
+    colDisc: 'Discounts',
+    colSph: 'Sales/Hr',
+    colRetRate: 'Return %',
+    colDiscRate: 'Discount %'
+  };
+
+  function t(k) { return (isEn() ? EN : AR)[k] || k; }
+  function toast(msg, kind) {
+    try { if (typeof window.showToast === 'function') window.showToast(msg, kind || 'success'); } catch (e) {}
+  }
+
+  function hasPerm(perm) {
+    try {
+      return !!(window.novaPerms && typeof window.novaPerms.require === 'function' && window.novaPerms.require(perm));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function currentUser() {
+    try {
+      var u = window.novaAuth && typeof window.novaAuth.current === 'function' && window.novaAuth.current();
+      if (!u || typeof u !== 'object') return null;
+      var name = String(u.name || '').trim();
+      var id = String(u.id || name).trim();
+      if (!id) return null;
+      return { id: id, name: name || id, role: String(u.role || '') };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function normalizeDigits(str) {
+    return String(str == null ? '' : str)
+      .replace(/[\u0660-\u0669]/g, function (ch) { return String(ch.charCodeAt(0) - 0x0660); })
+      .replace(/[\u06F0-\u06F9]/g, function (ch) { return String(ch.charCodeAt(0) - 0x06F0); })
+      .trim();
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function r2(n) { return Math.round(n * 100) / 100; }
+
+  var cairoFmt = null;
+  try {
+    cairoFmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: TZ, hourCycle: 'h23', year: 'numeric', month: '2-digit',
+      day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  } catch (e) {}
+
+  function cairoParts(ms) {
+    var d = new Date(ms);
+    if (cairoFmt) {
+      var p = {};
+      var arr = cairoFmt.formatToParts(d);
+      for (var i = 0; i < arr.length; i++) p[arr[i].type] = +arr[i].value;
+      return p;
+    }
+    return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate(), hour: d.getHours(), minute: d.getMinutes(), second: d.getSeconds() };
+  }
+
+  function offsetMs(ms) {
+    var p = cairoParts(ms);
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(ms / 1000) * 1000;
+  }
+
+  function cairoDate(ms) {
+    var p = cairoParts(ms || Date.now());
+    return p.year + '-' + pad2(p.month) + '-' + pad2(p.day);
+  }
+
+  function cairoToMs(date, hhmm, addDays) {
+    var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+    var tm = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(hhmm);
+    if (!d || !tm) return NaN;
+    var wall = Date.UTC(+d[1], +d[2] - 1, +d[3] + (addDays || 0), +tm[1], +tm[2]);
+    var guess = wall - offsetMs(wall);
+    return wall - offsetMs(guess);
+  }
+
+  function getStartTime() {
+    try {
+      var v = localStorage.getItem(CFG_KEY);
+      if (v && /^([01]\d|2[0-3]):([0-5]\d)$/.test(v)) return v;
+    } catch (e) {}
+    return '09:00';
+  }
+
+  function setStartTime(hhmm) {
+    if (!hasPerm('accounts.manage')) { toast(t('ownerOnly'), 'error'); return { ok: false, error: 'forbidden' }; }
+    var clean = normalizeDigits(hhmm);
+    if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(clean)) { toast(t('badTime'), 'error'); return { ok: false, error: 'bad-time' }; }
+    try { localStorage.setItem(CFG_KEY, clean); } catch (e) { return { ok: false, error: 'storage-failed' }; }
+    toast(t('timeSaved'), 'success');
+    return { ok: true, startTime: clean };
+  }
+
+  function loadEvents() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveEvents(arr) {
+    try {
+      var trimmed = arr.length > MAX_RECORDS ? arr.slice(arr.length - MAX_RECORDS) : arr;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function findOpenIn(events, empId) {
+    var open = null;
+    for (var i = 0; i < events.length; i++) {
+      var e = events[i];
+      if (!e || e.empId !== empId) continue;
+      if (e.kind === 'in') open = e;
+      else if (e.kind === 'out') open = null;
+    }
+    return open;
+  }
+
+  function checkIn(opts) {
+    opts = opts || {};
+    var u = currentUser();
+    if (!u) { toast(t('notLogged'), 'error'); return { ok: false, error: 'not-logged-in' }; }
+    var events = loadEvents();
+    if (findOpenIn(events, u.id)) { toast(t('alreadyIn'), 'error'); return { ok: false, error: 'already-clocked-in' }; }
+    var now = typeof opts.at === 'number' && isFinite(opts.at) ? opts.at : Date.now();
+    var day = cairoDate(now);
+    var schedMs = cairoToMs(day, getStartTime(), 0);
+    var diffMin = isFinite(schedMs) ? Math.round((now - schedMs) / 60000) : 0;
+    var lateMin = diffMin > GRACE_MIN ? diffMin : 0;
+    var ev = {
+      id: 'att-' + now + '-' + Math.floor(Math.random() * 10000),
+      kind: 'in',
+      empId: u.id,
+      empName: u.name,
+      date: day,
+      at: now,
+      lateMinutes: lateMin
+    };
+    events.push(ev);
+    if (!saveEvents(events)) return { ok: false, error: 'storage-failed' };
+    toast(t('checkedIn'), 'success');
+    return { ok: true, event: ev };
+  }
+
+  function checkOut(opts) {
+    opts = opts || {};
+    var u = currentUser();
+    if (!u) { toast(t('notLogged'), 'error'); return { ok: false, error: 'not-logged-in' }; }
+    var events = loadEvents();
+    var open = findOpenIn(events, u.id);
+    if (!open) { toast(t('notIn'), 'error'); return { ok: false, error: 'not-clocked-in' }; }
+    var now = typeof opts.at === 'number' && isFinite(opts.at) ? opts.at : Date.now();
+    if (now < open.at) return { ok: false, error: 'bad-time' };
+    var ev = {
+      id: 'att-' + now + '-' + Math.floor(Math.random() * 10000),
+      kind: 'out',
+      empId: u.id,
+      empName: u.name,
+      date: cairoDate(now),
+      at: now,
+      inId: open.id,
+      workedMinutes: Math.max(0, Math.round((now - open.at) / 60000))
+    };
+    events.push(ev);
+    if (!saveEvents(events)) return { ok: false, error: 'storage-failed' };
+    toast(t('checkedOut'), 'success');
+    return { ok: true, event: ev };
+  }
+
+  function listPunches() {
+    if (!hasPerm('accounts.manage')) return { ok: false, error: 'forbidden', events: [] };
+    return { ok: true, events: loadEvents() };
+  }
+
+  function readAppSales() {
+    var keys = ['nova-rx-sales-v1', 'nova-rx-invoices-v1', 'nova-rx-ledger-v1', 'nova_rx_sales', 'nova-rx-returns-v1'];
+    var out = [];
+    var seen = {};
+    for (var k = 0; k < keys.length; k++) {
+      try {
+        var raw = localStorage.getItem(keys[k]);
+        if (!raw) continue;
+        var parsed = JSON.parse(raw);
+        var arr = Array.isArray(parsed)
+          ? parsed
+          : (parsed && Array.isArray(parsed.sales) ? parsed.sales : (parsed && Array.isArray(parsed.items) ? parsed.items : []));
+        for (var i = 0; i < arr.length; i++) {
+          var s = arr[i];
+          if (!s || typeof s !== 'object') continue;
+          var sid = s.id || s.invoiceId || (keys[k] + '-' + i);
+          if (seen[sid]) continue;
+          seen[sid] = 1;
+          if (keys[k] === 'nova-rx-returns-v1' && !s.type) {
+            var copy = {};
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) copy[p] = s[p];
+            copy.type = 'return';
+            out.push(copy);
+          } else {
+            out.push(s);
+          }
+        }
+      } catch (e) {}
+    }
+    return out;
+  }
+
+  function parseSaleTime(s) {
+    var v = s.at != null ? s.at : (s.timestamp != null ? s.timestamp : (s.createdAt != null ? s.createdAt : s.date));
+    if (typeof v === 'number' && isFinite(v)) return v;
+    if (typeof v === 'string' && v) {
+      var parsed = Date.parse(v);
+      if (isFinite(parsed)) return parsed;
+    }
+    return NaN;
+  }
+
+  function report(fromDate, toDate, overrideSales) {
+    if (!hasPerm('accounts.manage')) return { ok: false, error: 'forbidden' };
+    var from = fromDate || cairoDate(Date.now());
+    var to = toDate || from;
+    var fromMs = cairoToMs(from, '00:00', 0);
+    var toMs = cairoToMs(to, '00:00', 1);
+    if (!isFinite(fromMs) || !isFinite(toMs) || toMs <= fromMs) return { ok: false, error: 'bad-period' };
+
+    var map = {};
+    function ensure(id, name) {
+      if (!map[id]) {
+        map[id] = {
+          empId: id, empName: name || id,
+          workedMinutes: 0, lateMinutes: 0, openPunches: 0,
+          salesCents: 0, returnsCents: 0, discountsCents: 0, invoices: 0
+        };
+      }
+      if (name && map[id].empName === id) map[id].empName = name;
+      return map[id];
+    }
+
+    var events = loadEvents();
+    var openByEmp = {};
+    for (var i = 0; i < events.length; i++) {
+      var e = events[i];
+      if (!e || !e.empId) continue;
+      if (e.kind === 'in') {
+        openByEmp[e.empId] = e;
+        if (e.at >= fromMs && e.at < toMs) {
+          var rowIn = ensure(e.empId, e.empName);
+          rowIn.lateMinutes += Number(e.lateMinutes) || 0;
+        }
+      } else if (e.kind === 'out') {
+        var op = openByEmp[e.empId];
+        openByEmp[e.empId] = null;
+        if (op && e.at > op.at) {
+          var a = Math.max(op.at, fromMs);
+          var b = Math.min(e.at, toMs);
+          if (b > a) {
+            var rowOut = ensure(e.empId, e.empName || op.empName);
+            rowOut.workedMinutes += Math.round((b - a) / 60000);
+          }
+        }
+      }
+    }
+    var oKeys = Object.keys(openByEmp);
+    for (var oi = 0; oi < oKeys.length; oi++) {
+      var oe = openByEmp[oKeys[oi]];
+      if (oe && oe.at >= fromMs && oe.at < toMs) {
+        ensure(oe.empId, oe.empName).openPunches++;
+      }
+    }
+
+    var salesList = Array.isArray(overrideSales) ? overrideSales : readAppSales();
+    var unattributed = 0;
+    var bySale = {}; // app return rows carry only saleId: the return counts for whoever made that sale
+    for (var bi = 0; bi < salesList.length; bi++) if (salesList[bi] && salesList[bi].id && salesList[bi].type !== 'return') bySale[salesList[bi].id] = salesList[bi];
+    for (var si = 0; si < salesList.length; si++) {
+      var s = salesList[si];
+      if (!s || s.voided) continue;
+      var ts = parseSaleTime(s);
+      if (!isFinite(ts) || ts < fromMs || ts >= toMs) continue;
+      var src = (s.type === 'return' && s.saleId && bySale[s.saleId] && !(s.employeeId || s.cashierId || s.cashier)) ? bySale[s.saleId] : s;
+      var empKey = src.employeeId || src.cashierId || src.cashier || src.cashierName || src.user || src.createdBy || '';
+      empKey = String(empKey).trim();
+      if (!empKey) { unattributed++; continue; }
+      var erow = ensure(empKey, String(src.cashierName || src.cashier || empKey));
+      var tot = Number(s.total != null ? s.total : (s.grandTotal != null ? s.grandTotal : (s.amount != null ? s.amount : 0))) || 0;
+      var ref = Number(s.refunded != null ? s.refunded : (s.returnAmount != null ? s.returnAmount : 0)) || 0;
+      var disc = Number(s.discount != null ? s.discount : (s.discountTotal != null ? s.discountTotal : 0)) || 0;
+      if (s.type === 'return' || tot < 0) {
+        erow.returnsCents += Math.round(Math.abs(tot) * 100);
+      } else {
+        erow.salesCents += Math.round(Math.max(0, tot) * 100);
+        erow.returnsCents += Math.round(Math.max(0, ref) * 100);
+        erow.discountsCents += Math.round(Math.max(0, disc) * 100);
+        erow.invoices++;
+      }
+    }
+
+    var rows = [];
+    var ids = Object.keys(map);
+    for (var ri = 0; ri < ids.length; ri++) {
+      var x = map[ids[ri]];
+      var sales = x.salesCents / 100;
+      var returns = x.returnsCents / 100;
+      var netSales = (x.salesCents - x.returnsCents) / 100;
+      var discounts = x.discountsCents / 100;
+      var workedHours = r2(x.workedMinutes / 60);
+      rows.push({
+        empId: x.empId,
+        empName: x.empName,
+        workedMinutes: x.workedMinutes,
+        workedHours: workedHours,
+        lateMinutes: x.lateMinutes,
+        openPunches: x.openPunches,
+        invoices: x.invoices,
+        sales: r2(sales),
+        returns: r2(returns),
+        netSales: r2(netSales),
+        discounts: r2(discounts),
+        salesPerHour: x.workedMinutes > 0 ? r2(netSales / (x.workedMinutes / 60)) : null,
+        returnRatePct: x.salesCents > 0 ? r2((x.returnsCents / x.salesCents) * 100) : null,
+        discountRatePct: x.salesCents > 0 ? r2((x.discountsCents / x.salesCents) * 100) : null
+      });
+    }
+    return { ok: true, from: from, to: to, rows: rows, unattributedSales: unattributed };
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent =
+      '#' + CARD_ID + '{background:#14181d;border:1px solid #343b44;border-radius:12px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}' +
+      '#' + CARD_ID + ' *{box-sizing:border-box;}' +
+      '#' + CARD_ID + ' .ns-title{margin:0 0 12px 0;font-size:18px;color:#79c9eb;}' +
+      '#' + CARD_ID + ' .ns-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:12px;}' +
+      '#' + CARD_ID + ' .ns-field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 120px;}' +
+      '#' + CARD_ID + ' .ns-field label{font-size:12px;color:#9fb0c0;}' +
+      '#' + CARD_ID + ' .ns-input{min-height:44px;width:100%;max-width:100%;padding:8px 10px;background:#0f1318;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:14px;}' +
+      '#' + CARD_ID + ' .btn{min-height:44px;}' +
+      '#' + CARD_ID + ' .ns-note{font-size:13px;color:#9fb0c0;margin:8px 0;}' +
+      '#' + CARD_ID + ' .ns-tbl-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;}' +
+      '#' + CARD_ID + ' table{width:100%;border-collapse:collapse;font-size:13px;}' +
+      '#' + CARD_ID + ' th,#' + CARD_ID + ' td{padding:8px 10px;border-bottom:1px solid #343b44;text-align:start;white-space:nowrap;}' +
+      '#' + CARD_ID + ' th{background:#0f1318;color:#79c9eb;}';
+    document.head.appendChild(s);
+  }
+
+  function renderCard(card) {
+    while (card.firstChild) card.removeChild(card.firstChild);
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var today = cairoDate(Date.now());
+    var fromVal = card.getAttribute('data-from') || today;
+    var toVal = card.getAttribute('data-to') || today;
+
+    var h3 = document.createElement('h3');
+    h3.className = 'ns-title';
+    h3.textContent = t('title');
+    card.appendChild(h3);
+
+    var punchRow = document.createElement('div');
+    punchRow.className = 'ns-row';
+    var btnIn = document.createElement('button');
+    btnIn.type = 'button'; btnIn.className = 'btn btn-primary'; btnIn.id = 'nsCheckInBtn';
+    btnIn.textContent = t('checkIn');
+    btnIn.addEventListener('click', function () { checkIn(); renderCard(card); });
+    var btnOut = document.createElement('button');
+    btnOut.type = 'button'; btnOut.className = 'btn btn-secondary'; btnOut.id = 'nsCheckOutBtn';
+    btnOut.textContent = t('checkOut');
+    btnOut.addEventListener('click', function () { checkOut(); renderCard(card); });
+    punchRow.appendChild(btnIn);
+    punchRow.appendChild(btnOut);
+    card.appendChild(punchRow);
+
+    if (!hasPerm('accounts.manage')) {
+      var lock = document.createElement('p');
+      lock.className = 'ns-note';
+      lock.id = 'nsOwnerLock';
+      lock.textContent = t('ownerOnly');
+      card.appendChild(lock);
+      return;
+    }
+
+    var cfgRow = document.createElement('div');
+    cfgRow.className = 'ns-row';
+
+    var fStart = document.createElement('div'); fStart.className = 'ns-field';
+    var lStart = document.createElement('label'); lStart.textContent = t('startTime');
+    var inStart = document.createElement('input');
+    inStart.type = 'text'; inStart.className = 'ns-input'; inStart.value = getStartTime();
+    fStart.appendChild(lStart); fStart.appendChild(inStart);
+
+    var btnTime = document.createElement('button');
+    btnTime.type = 'button'; btnTime.className = 'btn btn-secondary';
+    btnTime.textContent = t('saveTime');
+    btnTime.addEventListener('click', function () { setStartTime(inStart.value); renderCard(card); });
+
+    var fFrom = document.createElement('div'); fFrom.className = 'ns-field';
+    var lFrom = document.createElement('label'); lFrom.textContent = t('from');
+    var inFrom = document.createElement('input'); inFrom.type = 'date'; inFrom.className = 'ns-input'; inFrom.value = fromVal;
+    fFrom.appendChild(lFrom); fFrom.appendChild(inFrom);
+
+    var fTo = document.createElement('div'); fTo.className = 'ns-field';
+    var lTo = document.createElement('label'); lTo.textContent = t('to');
+    var inTo = document.createElement('input'); inTo.type = 'date'; inTo.className = 'ns-input'; inTo.value = toVal;
+    fTo.appendChild(lTo); fTo.appendChild(inTo);
+
+    var btnRef = document.createElement('button');
+    btnRef.type = 'button'; btnRef.className = 'btn btn-primary';
+    btnRef.textContent = t('refresh');
+    btnRef.addEventListener('click', function () {
+      card.setAttribute('data-from', inFrom.value || today);
+      card.setAttribute('data-to', inTo.value || today);
+      renderCard(card);
+    });
+
+    cfgRow.appendChild(fStart); cfgRow.appendChild(btnTime);
+    cfgRow.appendChild(fFrom); cfgRow.appendChild(fTo); cfgRow.appendChild(btnRef);
+    card.appendChild(cfgRow);
+
+    var rep = report(fromVal, toVal);
+    var wrap = document.createElement('div');
+    wrap.className = 'ns-tbl-wrap';
+    var tbl = document.createElement('table');
+    var thead = document.createElement('thead');
+    var hr = document.createElement('tr');
+    var cols = ['colEmp', 'colHrs', 'colLate', 'colSales', 'colRet', 'colDisc', 'colSph', 'colRetRate', 'colDiscRate'];
+    for (var c = 0; c < cols.length; c++) {
+      var th = document.createElement('th');
+      th.textContent = t(cols[c]);
+      hr.appendChild(th);
+    }
+    thead.appendChild(hr);
+    tbl.appendChild(thead);
+
+    var tb = document.createElement('tbody');
+    if (!rep.ok || !rep.rows.length) {
+      var er = document.createElement('tr');
+      var ed = document.createElement('td');
+      ed.colSpan = cols.length;
+      ed.textContent = t('noData');
+      er.appendChild(ed);
+      tb.appendChild(er);
+    } else {
+      for (var i = 0; i < rep.rows.length; i++) {
+        var r = rep.rows[i];
+        var tr = document.createElement('tr');
+        var vals = [
+          r.empName,
+          String(r.workedHours),
+          String(r.lateMinutes),
+          r.sales.toFixed(2) + ' ' + t('currency'),
+          r.returns.toFixed(2) + ' ' + t('currency'),
+          r.discounts.toFixed(2) + ' ' + t('currency'),
+          r.salesPerHour == null ? '-' : (r.salesPerHour.toFixed(2) + ' ' + t('currency')),
+          r.returnRatePct == null ? '-' : (r.returnRatePct.toFixed(1) + '%'),
+          r.discountRatePct == null ? '-' : (r.discountRatePct.toFixed(1) + '%')
+        ];
+        for (var j = 0; j < vals.length; j++) {
+          var td = document.createElement('td');
+          td.textContent = vals[j];
+          tr.appendChild(td);
+        }
+        tb.appendChild(tr);
+      }
+    }
+    tbl.appendChild(tb);
+    wrap.appendChild(tbl);
+    card.appendChild(wrap);
+
+    if (rep.ok && rep.unattributedSales > 0) {
+      var un = document.createElement('p');
+      un.className = 'ns-note';
+      un.textContent = t('unattr') + ': ' + rep.unattributedSales;
+      card.appendChild(un);
+    }
+  }
+
+  function isReportsActive() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  var mounting = false;
+  function tryMount() {
+    if (mounting) return;
+    var pv = document.getElementById('novaPageView');
+    if (!pv) return;
+    var existing = document.getElementById(CARD_ID);
+    if (!isReportsActive()) {
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      return;
+    }
+    if (existing) return;
+    mounting = true;
+    try {
+      injectStyles();
+      var card = document.createElement('section');
+      card.id = CARD_ID;
+      renderCard(card);
+      pv.appendChild(card);
+    } finally {
+      mounting = false;
+    }
+  }
+
+  function initObserver() {
+    var pv = document.getElementById('novaPageView');
+    if (pv && typeof MutationObserver === 'function') {
+      new MutationObserver(function () { tryMount(); }).observe(pv, { childList: true });
+    }
+    if (document.body && typeof MutationObserver === 'function') {
+      new MutationObserver(function () { tryMount(); }).observe(document.body, { attributes: true, attributeFilter: ['data-active-page'] });
+    }
+    document.addEventListener('click', function (ev) {
+      if (ev.target && ev.target.closest && ev.target.closest('.nova-tab')) setTimeout(tryMount, 30);
+    });
+    tryMount();
+  }
+
+  window.novaStaffStats = {
+    checkIn: checkIn,
+    checkOut: checkOut,
+    setStartTime: setStartTime,
+    getStartTime: getStartTime,
+    report: report,
+    listPunches: listPunches,
+    mount: tryMount
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initObserver);
+  else initObserver();
+})();
+
+// app/628-monthly-income.js
+(function () {
+  'use strict';
+
+  var CARD_ID = 'novaIncomeCard';
+  var STYLE_ID = 'novaIncomeStyle';
+  var TZ = 'Africa/Cairo';
+
+  function isEn() {
+    try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; }
+  }
+
+  var AR = {
+    title: 'قائمة الدخل الشهرية',
+    month: 'الشهر',
+    printBtn: 'طباعة',
+    csvBtn: 'تصدير إكسل',
+    currency: 'ج.م',
+    colItem: 'البند',
+    colVal: 'القيمة',
+    grossSales: 'إجمالي المبيعات',
+    returns: 'مرتجعات المبيعات',
+    netSales: 'صافي المبيعات',
+    cogs: 'تكلفة البضاعة المباعة',
+    grossProfit: 'مجمل الربح',
+    grossMargin: 'هامش مجمل الربح',
+    drawerExp: 'مصروفات الدرج',
+    vaultExp: 'مصروفات الخزنة',
+    payrollExp: 'الرواتب والأجور',
+    totalExp: 'إجمالي المصروفات',
+    netProfit: 'صافي الربح',
+    netMargin: 'هامش صافي الربح',
+    unknownCost: 'تنبيه: توجد أصناف مباعة بتكلفة غير معروفة، عددها'
+  };
+
+  var EN = {
+    title: 'Monthly Income Statement',
+    month: 'Month',
+    printBtn: 'Print',
+    csvBtn: 'Export Excel',
+    currency: 'EGP',
+    colItem: 'Line Item',
+    colVal: 'Amount',
+    grossSales: 'Gross Sales',
+    returns: 'Sales Returns',
+    netSales: 'Net Sales',
+    cogs: 'Cost of Goods Sold',
+    grossProfit: 'Gross Profit',
+    grossMargin: 'Gross Margin',
+    drawerExp: 'Drawer Expenses',
+    vaultExp: 'Vault Expenses',
+    payrollExp: 'Payroll',
+    totalExp: 'Total Expenses',
+    netProfit: 'Net Profit',
+    netMargin: 'Net Margin',
+    unknownCost: 'Note: sold lines with unknown cost'
+  };
+
+  function t(k) { return (isEn() ? EN : AR)[k] || k; }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function c(p) { return Math.round((Number(p) || 0) * 100); }
+  function pounds(m) { return Math.round(m) / 100; }
+  function pct(num, den) { return den > 0 ? Math.round((num / den) * 10000) / 100 : null; }
+  function fmtNeg(n) { return n > 0 ? (-n).toFixed(2) : '0.00'; }
+
+  function cairoMonth(ms) {
+    var d = new Date(ms || Date.now());
+    try {
+      var parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: TZ, year: 'numeric', month: '2-digit'
+      }).formatToParts(d);
+      var m = {};
+      for (var i = 0; i < parts.length; i++) m[parts[i].type] = parts[i].value;
+      return m.year + '-' + m.month;
+    } catch (e) {
+      return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+    }
+  }
+
+  function recordMonth(rec) {
+    if (!rec || typeof rec !== 'object') return '';
+    if (typeof rec.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(rec.month)) return rec.month;
+    if (typeof rec.date === 'string' && /^\d{4}-(0[1-9]|1[0-2])/.test(rec.date)) return rec.date.slice(0, 7);
+    var v = rec.at != null ? rec.at : (rec.timestamp != null ? rec.timestamp : rec.createdAt);
+    if (typeof v === 'number' && isFinite(v)) return cairoMonth(v);
+    if (typeof v === 'string' && v) {
+      var p = Date.parse(v);
+      if (isFinite(p)) return cairoMonth(p);
+    }
+    return '';
+  }
+
+  function readArrayKeys(keys) {
+    var out = [];
+    var seen = {};
+    for (var k = 0; k < keys.length; k++) {
+      try {
+        var raw = localStorage.getItem(keys[k]);
+        if (!raw) continue;
+        var parsed = JSON.parse(raw);
+        var arr = Array.isArray(parsed)
+          ? parsed
+          : (parsed && Array.isArray(parsed.items) ? parsed.items
+            : (parsed && Array.isArray(parsed.sales) ? parsed.sales
+              : (parsed && Array.isArray(parsed.records) ? parsed.records : [])));
+        for (var i = 0; i < arr.length; i++) {
+          var r = arr[i];
+          if (!r || typeof r !== 'object') continue;
+          var id = r.id || r.invoiceId || (keys[k] + '-' + i);
+          if (seen[id]) continue;
+          seen[id] = 1;
+          out.push(r);
+        }
+      } catch (e) {}
+    }
+    return out;
+  }
+
+  function calcSaleCogs(sale) {
+    var totalCents = 0;
+    var unknown = 0;
+    if (sale.cogs != null && isFinite(Number(sale.cogs))) {
+      return { cents: c(Math.abs(Number(sale.cogs))), unknown: 0 };
+    }
+    var lines = Array.isArray(sale.lines) ? sale.lines : (Array.isArray(sale.items) ? sale.items : []);
+    for (var i = 0; i < lines.length; i++) {
+      var ln = lines[i];
+      if (!ln) continue;
+      if (Array.isArray(ln.lots) && ln.lots.length) {
+        var lineUnknown = false;
+        for (var j = 0; j < ln.lots.length; j++) {
+          var lt = ln.lots[j];
+          var lc = Number(lt && lt.cost) || 0;
+          var lq = Number(lt && lt.qty) || 0;
+          if (lq > 0) {
+            if (lc > 0) totalCents += Math.round(lc * lq * 100);
+            else lineUnknown = true;
+          }
+        }
+        if (lineUnknown) unknown++;
+      } else {
+        var uc = Number(ln.cost != null ? ln.cost : ln.unitCost) || 0;
+        var qty = Number(ln.qty != null ? ln.qty : 1) || 0;
+        if (uc > 0 && qty > 0) totalCents += Math.round(uc * qty * 100);
+        else if (qty > 0) unknown++;
+      }
+    }
+    return { cents: totalCents, unknown: unknown };
+  }
+
+  function returnCogsCents(r, sales) {
+    if (r.costReversed != null && isFinite(Number(r.costReversed))) return c(Math.abs(Number(r.costReversed))); // app/120 return rows record it
+    if (r.cogs != null && isFinite(Number(r.cogs))) return c(Math.abs(Number(r.cogs)));
+    var sale = null;
+    for (var i = 0; i < sales.length; i++) if (sales[i] && sales[i].id === r.saleId) { sale = sales[i]; break; }
+    if (!sale || !Array.isArray(sale.lines) || !Array.isArray(r.lines)) return 0;
+    var total = 0;
+    for (var k = 0; k < r.lines.length; k++) {
+      var rl = r.lines[k];
+      var ln = rl && sale.lines[Number(rl.idx)];
+      var q = Number(rl && rl.qty) || 0, lq = Number(ln && ln.qty) || 0;
+      if (!ln || q <= 0 || lq <= 0) continue;
+      var lc = calcSaleCogs({ lines: [ln] });
+      if (lc.unknown) continue;
+      total += Math.round(lc.cents * Math.min(1, q / lq));
+    }
+    return total;
+  }
+
+  function readPayrollCents(month) {
+    var store = null;
+    try { store = JSON.parse(localStorage.getItem('nova-rx-payroll-v1') || 'null'); } catch (e) { store = null; }
+    var closed = store && store.closedMonths && store.closedMonths[month];
+    var total = 0, names, i, snap;
+    if (closed && closed.snapshots && typeof closed.snapshots === 'object') {
+      names = Object.keys(closed.snapshots);
+      for (i = 0; i < names.length; i++) {
+        snap = closed.snapshots[names[i]];
+        total += Math.max(0, Math.round(Number(snap && snap.netPiasters) || 0));
+      }
+      return total;
+    }
+    try {
+      var P = window.novaPayroll, perms = window.novaPerms;
+      if (P && typeof P.employees === 'function' && typeof P.compute === 'function' && perms && typeof perms.can === 'function' && perms.can('accounts.manage')) {
+        var emps = P.employees();
+        if (Array.isArray(emps)) {
+          for (i = 0; i < emps.length; i++) {
+            var r = emps[i] && P.compute(emps[i].name, month);
+            if (r && typeof r === 'object') total += Math.max(0, Math.round(Number(r.netPiasters) || 0));
+          }
+        }
+      }
+    } catch (e) {}
+    return total;
+  }
+
+  function compute(month) {
+    var m = month || cairoMonth(Date.now());
+    if (typeof m !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(m)) return { ok: false, error: 'bad-month' };
+
+    var sales = readArrayKeys(['nova-rx-sales-v1', 'nova-rx-invoices-v1', 'nova-rx-ledger-v1', 'nova_rx_sales']);
+    var grossC = 0, retC = 0, cogsC = 0, unknownCostLines = 0;
+    for (var i = 0; i < sales.length; i++) {
+      var s = sales[i];
+      if (!s || s.voided || recordMonth(s) !== m) continue;
+      var tot = Number(s.total != null ? s.total : (s.grandTotal != null ? s.grandTotal : 0)) || 0;
+      var ref = Number(s.refunded != null ? s.refunded : (s.returnAmount != null ? s.returnAmount : 0)) || 0;
+      if (s.type === 'return' || tot < 0) {
+        retC += c(Math.abs(tot));
+        cogsC -= calcSaleCogs(s).cents;
+      } else {
+        grossC += c(Math.max(0, tot));
+        retC += c(Math.max(0, ref));
+        var cg = calcSaleCogs(s);
+        cogsC += cg.cents;
+        unknownCostLines += cg.unknown;
+      }
+    }
+
+    var extraRets = readArrayKeys(['nova-rx-returns-v1']);
+    for (var ri = 0; ri < extraRets.length; ri++) {
+      var r = extraRets[ri];
+      if (r && !r.voided && recordMonth(r) === m) {
+        retC += c(Math.abs(Number(r.total != null ? r.total : r.amount) || 0));
+        cogsC -= returnCogsCents(r, sales);
+      }
+    }
+    if (cogsC < 0) cogsC = 0;
+
+    var drawerList = readArrayKeys(['nova-rx-cash-out-v1']);
+    var drawerExpC = 0;
+    for (var di = 0; di < drawerList.length; di++) {
+      var de = drawerList[di];
+      if (!de || de.voided || recordMonth(de) !== m) continue;
+      if (/^(سداد مورد|Supplier payment)/.test(String(de.note || ''))) continue; // purchases, not an expense
+      drawerExpC += c(Math.max(0, Number(de.amount) || 0));
+    }
+
+    var vaultList = [];
+    try {
+      if (window.novaVault && typeof window.novaVault.list === 'function') vaultList = window.novaVault.list();
+      else vaultList = readArrayKeys(['nova-rx-vault-moves-v1']);
+    } catch (e) {}
+    var vaultExpC = 0;
+    for (var vi = 0; vi < vaultList.length; vi++) {
+      var vm = vaultList[vi];
+      if (vm && vm.type === 'vault_expense' && recordMonth(vm) === m) {
+        var vc = (typeof vm.amountCents === 'number' && isFinite(vm.amountCents))
+          ? Math.max(0, Math.round(vm.amountCents))
+          : c(Math.max(0, Number(vm.amount) || 0));
+        vaultExpC += vc;
+      }
+    }
+
+    var payrollExpC = readPayrollCents(m);
+    var netSalesC = grossC - retC;
+    var grossProfitC = netSalesC - cogsC;
+    var totalExpC = drawerExpC + vaultExpC + payrollExpC;
+    var netProfitC = grossProfitC - totalExpC;
+
+    return {
+      ok: true,
+      month: m,
+      grossSales: pounds(grossC),
+      returns: pounds(retC),
+      netSales: pounds(netSalesC),
+      cogs: pounds(cogsC),
+      grossProfit: pounds(grossProfitC),
+      grossMarginPct: pct(grossProfitC, netSalesC),
+      drawerExpenses: pounds(drawerExpC),
+      vaultExpenses: pounds(vaultExpC),
+      payrollExpenses: pounds(payrollExpC),
+      totalExpenses: pounds(totalExpC),
+      netProfit: pounds(netProfitC),
+      netMarginPct: pct(netProfitC, netSalesC),
+      unknownCostLines: unknownCostLines
+    };
+  }
+
+  function statementRows(data) {
+    var cur = ' ' + t('currency');
+    return [
+      [t('grossSales'), data.grossSales.toFixed(2) + cur, false],
+      [t('returns'), fmtNeg(data.returns) + cur, false],
+      [t('netSales'), data.netSales.toFixed(2) + cur, true],
+      [t('cogs'), fmtNeg(data.cogs) + cur, false],
+      [t('grossProfit'), data.grossProfit.toFixed(2) + cur, true],
+      [t('grossMargin'), data.grossMarginPct == null ? '-' : (data.grossMarginPct.toFixed(2) + '%'), false],
+      [t('drawerExp'), fmtNeg(data.drawerExpenses) + cur, false],
+      [t('vaultExp'), fmtNeg(data.vaultExpenses) + cur, false],
+      [t('payrollExp'), fmtNeg(data.payrollExpenses) + cur, false],
+      [t('totalExp'), fmtNeg(data.totalExpenses) + cur, true],
+      [t('netProfit'), data.netProfit.toFixed(2) + cur, true],
+      [t('netMargin'), data.netMarginPct == null ? '-' : (data.netMarginPct.toFixed(2) + '%'), false]
+    ];
+  }
+
+  function csvEsc(v) {
+    var s = String(v == null ? '' : v);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function toCsv(month) {
+    var data = compute(month);
+    if (!data.ok) return '';
+    var lines = [csvEsc(t('colItem')) + ',' + csvEsc(t('colVal'))];
+    var rows = statementRows(data);
+    for (var i = 0; i < rows.length; i++) {
+      lines.push(csvEsc(rows[i][0]) + ',' + csvEsc(rows[i][1]));
+    }
+    return '\uFEFF' + lines.join('\r\n');
+  }
+
+  function downloadCsv(month) {
+    var content = toCsv(month);
+    if (!content) return;
+    var blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'income-' + month + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+  }
+
+  function printStatement(month) {
+    var data = compute(month);
+    if (!data.ok) return;
+    var w = window.open('', '_blank', 'width=700,height=600');
+    if (!w) return;
+    var doc = w.document;
+    doc.title = t('title') + ' - ' + month;
+    doc.documentElement.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+    var style = doc.createElement('style');
+    style.textContent = 'body{font-family:sans-serif;padding:16px;color:#111;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #ccc;padding:8px;text-align:start;}.bold{font-weight:700;background:#f4f4f4;}';
+    doc.head.appendChild(style);
+    var h = doc.createElement('h2');
+    h.textContent = t('title') + ' - ' + month;
+    doc.body.appendChild(h);
+    var tbl = doc.createElement('table');
+    var tb = doc.createElement('tbody');
+    var rows = statementRows(data);
+    for (var i = 0; i < rows.length; i++) {
+      var tr = doc.createElement('tr');
+      if (rows[i][2]) tr.className = 'bold';
+      var td1 = doc.createElement('td'); td1.textContent = rows[i][0];
+      var td2 = doc.createElement('td'); td2.textContent = rows[i][1];
+      tr.appendChild(td1); tr.appendChild(td2);
+      tb.appendChild(tr);
+    }
+    tbl.appendChild(tb);
+    doc.body.appendChild(tbl);
+    w.focus();
+    w.print();
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent =
+      '#' + CARD_ID + '{background:#14181d;border:1px solid #343b44;border-radius:12px;padding:16px;margin-top:16px;color:#e6edf3;box-sizing:border-box;max-width:100%;}' +
+      '#' + CARD_ID + ' *{box-sizing:border-box;}' +
+      '#' + CARD_ID + ' .ni-title{margin:0 0 12px 0;font-size:18px;color:#79c9eb;}' +
+      '#' + CARD_ID + ' .ni-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}' +
+      '#' + CARD_ID + ' .ni-input{min-height:44px;padding:8px 10px;background:#0f1318;border:1px solid #343b44;border-radius:8px;color:#e6edf3;font-size:14px;}' +
+      '#' + CARD_ID + ' .btn{min-height:44px;}' +
+      '#' + CARD_ID + ' .ni-tbl-wrap{width:100%;overflow-x:auto;border:1px solid #343b44;border-radius:8px;}' +
+      '#' + CARD_ID + ' table{width:100%;border-collapse:collapse;font-size:14px;}' +
+      '#' + CARD_ID + ' th,#' + CARD_ID + ' td{padding:9px 10px;border-bottom:1px solid #343b44;text-align:start;}' +
+      '#' + CARD_ID + ' th{background:#0f1318;color:#79c9eb;}' +
+      '#' + CARD_ID + ' tr.ni-bold{background:#0f1318;font-weight:700;color:#79c9eb;}' +
+      '#' + CARD_ID + ' .ni-warn{font-size:12px;color:#f0b429;margin-top:8px;}';
+    document.head.appendChild(s);
+  }
+
+  function renderCard(card) {
+    while (card.firstChild) card.removeChild(card.firstChild);
+    card.setAttribute('dir', isEn() ? 'ltr' : 'rtl');
+
+    var selMonth = card.getAttribute('data-month') || cairoMonth(Date.now());
+    var data = compute(selMonth);
+
+    var h3 = document.createElement('h3');
+    h3.className = 'ni-title';
+    h3.textContent = t('title');
+    card.appendChild(h3);
+
+    var bar = document.createElement('div');
+    bar.className = 'ni-bar';
+    var lbl = document.createElement('label'); lbl.textContent = t('month');
+    var inp = document.createElement('input');
+    inp.type = 'month'; inp.className = 'ni-input'; inp.id = 'niMonthInput'; inp.value = selMonth;
+    inp.addEventListener('change', function () {
+      if (inp.value) { card.setAttribute('data-month', inp.value); renderCard(card); }
+    });
+    var btnPr = document.createElement('button');
+    btnPr.type = 'button'; btnPr.className = 'btn btn-secondary'; btnPr.textContent = t('printBtn');
+    btnPr.addEventListener('click', function () { printStatement(selMonth); });
+    var btnCsv = document.createElement('button');
+    btnCsv.type = 'button'; btnCsv.className = 'btn btn-primary'; btnCsv.textContent = t('csvBtn');
+    btnCsv.addEventListener('click', function () { downloadCsv(selMonth); });
+
+    bar.appendChild(lbl); bar.appendChild(inp); bar.appendChild(btnPr); bar.appendChild(btnCsv);
+    card.appendChild(bar);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'ni-tbl-wrap';
+    var tbl = document.createElement('table');
+    var thead = document.createElement('thead');
+    var hr = document.createElement('tr');
+    var th1 = document.createElement('th'); th1.textContent = t('colItem');
+    var th2 = document.createElement('th'); th2.textContent = t('colVal');
+    hr.appendChild(th1); hr.appendChild(th2);
+    thead.appendChild(hr);
+    tbl.appendChild(thead);
+
+    var tb = document.createElement('tbody');
+    if (data.ok) {
+      var rows = statementRows(data);
+      for (var i = 0; i < rows.length; i++) {
+        var tr = document.createElement('tr');
+        if (rows[i][2]) tr.className = 'ni-bold';
+        var td1 = document.createElement('td'); td1.textContent = rows[i][0];
+        var td2 = document.createElement('td'); td2.textContent = rows[i][1];
+        tr.appendChild(td1); tr.appendChild(td2);
+        tb.appendChild(tr);
+      }
+    }
+    tbl.appendChild(tb);
+    wrap.appendChild(tbl);
+    card.appendChild(wrap);
+
+    if (data.ok && data.unknownCostLines > 0) {
+      var warn = document.createElement('p');
+      warn.className = 'ni-warn';
+      warn.textContent = t('unknownCost') + ': ' + data.unknownCostLines;
+      card.appendChild(warn);
+    }
+  }
+
+  function isReportsActive() {
+    if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
+    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+  }
+
+  var mounting = false;
+  function tryMount() {
+    if (mounting) return;
+    var pv = document.getElementById('novaPageView');
+    if (!pv) return;
+    var existing = document.getElementById(CARD_ID);
+    var canView = true;
+    try { if (window.novaPerms && typeof window.novaPerms.can === 'function') canView = !!window.novaPerms.can('reports.view'); } catch (e) { canView = false; }
+    if (!isReportsActive() || !canView) {
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      return;
+    }
+    if (existing) return;
+    mounting = true;
+    try {
+      injectStyles();
+      var card = document.createElement('section');
+      card.id = CARD_ID;
+      renderCard(card);
+      pv.appendChild(card);
+    } finally {
+      mounting = false;
+    }
+  }
+
+  function initObserver() {
+    var pv = document.getElementById('novaPageView');
+    if (pv && typeof MutationObserver === 'function') {
+      new MutationObserver(function () { tryMount(); }).observe(pv, { childList: true });
+    }
+    if (document.body && typeof MutationObserver === 'function') {
+      new MutationObserver(function () { tryMount(); }).observe(document.body, { attributes: true, attributeFilter: ['data-active-page'] });
+    }
+    document.addEventListener('click', function (ev) {
+      if (ev.target && ev.target.closest && ev.target.closest('.nova-tab')) setTimeout(tryMount, 30);
+    });
+    tryMount();
+  }
+
+  window.novaIncome = {
+    compute: compute,
+    toCsv: toCsv,
+    mount: tryMount
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initObserver);
+  else initObserver();
 })();

@@ -81,7 +81,7 @@ try {
     const origSetter = window.novaItemCard.setPrice;
 
     // 1. Real app (app/554-item-card.js) has no price setter -> must refuse even when permitted
-    window.novaPerms = { require: (perm) => perm === 'products.price' };
+    window.novaPerms = { require: (perm) => perm === 'prices.edit' };
     const noSetter = window.novaOfficialPrices.apply(compared.changed, 'تحديث شهري');
 
     // Attach setter so permission & reason refusals are genuinely tested (not masked by missing setter)
@@ -104,7 +104,7 @@ try {
     const permMissing = window.novaOfficialPrices.apply(compared.changed, 'تحديث شهري');
 
     // 3. Missing reason -> must refuse even when permitted and setter exists
-    window.novaPerms = { require: (perm) => perm === 'products.price' };
+    window.novaPerms = { require: (perm) => perm === 'prices.edit' };
     const noReason = window.novaOfficialPrices.apply(compared.changed, '   ');
     const priceBeforeApply = pLow.price;
     const histBeforeApply = window.novaOfficialPrices.history().length;
