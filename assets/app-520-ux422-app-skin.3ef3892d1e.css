@@ -230,3 +230,14 @@ html body:not(.x) #novaPageView[data-view]:not([data-view=""])>.nova-page-header
 
 /* q20 look: steady digit widths for prices, totals and quantities (Gemini designer #5) */
 .invoice-table td,[id^=display],.checkout-amount-display{font-variant-numeric:tabular-nums}
+/* q24 look (Gemini designer #9, #11): desktop forms not stretched 1300px; phone strips fit or show a scroll cue; settings cards not cut */
+@media (min-width:901px){#novaPageView #novaShiftClose{max-width:760px}#novaPageView :is(#novaFridgeLog,#novaCashDrawerCard) :is(input:not([type=checkbox]),select,textarea){max-width:480px}}
+@media (max-width:900px){
+ #novaPageView .nova-settings-grid{grid-template-columns:minmax(0,1fr)}
+ html body #novaPageView .nova-set-nav{padding-inline-end:32px;-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 32px),transparent)}
+ html[dir=ltr] body #novaPageView .nova-set-nav{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
+ #novaPageView .nova-rep-seg{display:grid;grid-template-columns:repeat(3,1fr);width:100%}
+ #novaPageView .nova-rep-seg button{padding:0 8px}
+ #novaPageView .nova-settings-grid .nova-lang-switch{width:auto;flex-wrap:wrap}
+ #novaPermDetails>div{overflow-x:auto!important;max-width:100%}
+}
