@@ -35,7 +35,7 @@ try {
   assert.ok(lay.rail, 'rail mode on at 1280x800');
   assert.deepEqual(lay.tiles, [true, true, true], 'new, hold and clear in the rail tiles');
   assert.ok(lay.custTop, 'customer bar fixed above the invoice tiles');
-  assert.match(lay.custLabel, /تسجيل عميل/, 'empty customer bar says «تسجيل عميل»');
+  assert.match(lay.custLabel, /اختيار عميل/, 'empty customer bar says «اختيار عميل» (Q21-2k)');
   assert.ok(lay.noSectionLabel, 'no «الفاتورة» section label');
   assert.ok(lay.clearWide, 'clear is a separate wide button');
   assert.ok(lay.held && lay.stickers, 'held header and stickers in the rail');

@@ -310,7 +310,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === PAGE_NAME) {
       return true;
     }
-    var activeTab = document.querySelector('.nova-tab.active[data-page="' + PAGE_NAME + '"]');
+    var activeTab = document.querySelector('.nova-tab.active[data-page="' + PAGE_NAME + '"],.nova-hostmark.active[data-page="' + PAGE_NAME + '"]');
     return !!activeTab;
   }
 

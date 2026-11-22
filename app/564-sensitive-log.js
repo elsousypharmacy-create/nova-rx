@@ -1271,7 +1271,7 @@
   /* ---------- Mounting & Observer ---------- */
 
   function mountIfReportsActive() {
-    var activeReportsTab = document.querySelector('.nova-tab.active[data-page="reports"]');
+    var activeReportsTab = document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
     if (!activeReportsTab) {
       return;
     }

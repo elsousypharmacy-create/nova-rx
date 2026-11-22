@@ -875,7 +875,7 @@
   }
 
   function productsActive() {
-    return (document.body && document.body.dataset.activePage === 'products') || !!document.querySelector('.nova-tab.active[data-page="products"]');
+    return (document.body && document.body.dataset.activePage === 'products') || !!document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]');
   }
   function mountCard() {
     var pv = document.getElementById('novaPageView');

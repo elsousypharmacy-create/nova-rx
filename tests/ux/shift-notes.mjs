@@ -167,8 +167,7 @@ async function run() {
 
     // 5. Test reports card visible on reports page and no overflow at 390px
     const reportsTab = page.locator('.nova-tab[data-page="reports"]').first();
-    await page.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click());
-    await page.locator('#novaRepTabs [data-rtab="shift"]').click(); // UI-BATCH1: reports tabs
+    await page.evaluate(() => document.querySelector('.nova-tab[data-page="shift"]').click()); // Q21-2f: «الوردية» entry
     const card = page.locator('#novaPageView #novaShiftNotes');
     await card.waitFor({ state: 'visible', timeout: 5000 });
     assert.equal(await card.isVisible(), true, 'Reports card #novaShiftNotes must be visible');

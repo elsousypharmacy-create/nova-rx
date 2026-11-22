@@ -41,8 +41,7 @@ try {
   const r = await page.evaluate(() => { const s = window.novaSales.list().find(x => x.id.startsWith('c2-')); return window.novaSales.addReturn(s, { 0: 1 }, 'test'); });
   assert.ok(r.ok, 'return saved ' + JSON.stringify(r));
   let clicks = 0;
-  await page.locator('.nova-tab[data-page="reports"]').click(); clicks++; await sleep(300);
-  await page.locator('#novaRepTabs [data-rtab="shift"]').click(); clicks++; await sleep(200); // UI-BATCH1: reports tabs
+  await page.locator('.nova-tab[data-page="shift"]').click(); clicks++; await sleep(500); // Q21-2f: «الوردية» is its own entry (1 click)
   assert.ok(clicks <= 2, 'clicks ' + clicks);
   assert.ok(await page.locator('#novaShiftClose').isVisible(), 'panel visible');
   await page.locator('#novaShiftFloat').fill('100'); await page.locator('#novaShiftFloat').dispatchEvent('change'); await sleep(300);
@@ -60,7 +59,7 @@ try {
   assert.ok(txt.includes('الفرق') && txt.includes('النقدي المعدود'), 'print has shift rows: ' + txt);
   await page.reload({ waitUntil: 'load' });
   await page.waitForFunction(() => window.novaSales, null, { timeout: 8000 });
-  await page.locator('.nova-tab[data-page="reports"]').click(); await sleep(300);
+  await page.locator('.nova-tab[data-page="shift"]').click(); await sleep(500);
   assert.equal(await page.locator('#novaShiftFloat').inputValue(), '100', 'float kept after reload');
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl');
   assert.deepEqual(errs, [], 'errors');

@@ -19,7 +19,7 @@
       all.push({ id: rid('co'), at: Date.now(), amount: n, note: norm(note).slice(0, 200), by: norm(by) });
       write(CASH_KEY, all);   // never truncate: older periods' shift reports depend on it
       // the shift close on the reports page computed its expected drawer at render: re-render so it includes this cash-out
-      setTimeout(function () { var tab = document.querySelector('.nova-tab.active[data-page="reports"]'); if (tab) tab.click(); }, 0);
+      setTimeout(function () { var tab = document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]'); if (tab) tab.click(); }, 0);
       return n;
     }
   };
@@ -46,6 +46,8 @@
     },
     /* the signed-in account; without accounts on this device there is nobody to approve, so expenses stay disabled */
     currentUser: function () { var A = auth(); var me = A && A.current(); return me ? { id: me.id, name: me.name, role: me.role } : null; },
+    /* Q21-2g: with no accounts on this device the one user is the owner (small drawer expenses only; approvals still need accounts) */
+    deviceOwner: function () { var A = auth(); return A ? null : { id: 'device-owner', name: 'صاحب الجهاز', role: 'owner' }; },
     verifyApprover: function (name, password) {
       var A = auth();
       if (!A || typeof A.verifyAccount !== 'function') return Promise.resolve(null);
@@ -95,7 +97,7 @@
     });
     return lazyPromise;
   }
-  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1, settings: 1, inbox: 1, wa: 1 };
+  var LAZY_PAGES = { reports: 1, receiving: 1, products: 1, customers: 1, settings: 1, inbox: 1, wa: 1, tools: 1, shift: 1 };
   var inboxOpenPending = false;
   if (!window.NovaOpenInbox) {
     window.NovaOpenInbox = function () {

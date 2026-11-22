@@ -1,3 +1,46 @@
+/* Q21-2a ROLE NAV: the top nav shows each person only what their role uses. Staff (cashier, pharmacist): البيع، الفواتير، العملاء،
+   النواقص، الوردية. Owner/manager: البيع، الفواتير، العملاء، الوردية، المخزون، التقارير، الأدوات + ⚙ (النواقص and استلام are in المخزون
+   and الأدوات). An entry with data-nav-need="a b" shows when the signed-in role may do any of those actions (auth-permissions.js); with
+   accounts on the device it stays hidden until the permissions are known (fail closed). No accounts = single user = owner. This is a view
+   filter, not a security boundary: every screen keeps its own checks. */
+(function () {
+  'use strict';
+  if (window.novaNavRoles) return;
+  function accounts() {
+    var A = window.novaAuth;
+    if (A && typeof A.hasAccounts === 'function') { try { return !!A.hasAccounts(); } catch (e) { return true; } }
+    try { var v = localStorage.getItem('nova.auth.accounts'); if (v == null) return false; var a = JSON.parse(v); return !Array.isArray(a) || a.length > 0; } catch (e) { return true; }
+  }
+  function can(action) {
+    if (!accounts()) return true;
+    var P = window.novaPerms;
+    if (P && typeof P.can === 'function') { try { return !!P.can(action); } catch (e) { return false; } }
+    return false;
+  }
+  function allowed(el) {
+    var need = el.getAttribute('data-nav-need');
+    if (need) return need.split(' ').some(can);
+    if (el.hasAttribute('data-nav-staff')) return !can('accounts.manage');
+    return true;
+  }
+  var sig = '';
+  function apply() {
+    var items = document.querySelectorAll('.nova-nav [data-nav-need], .nova-nav [data-nav-staff]');
+    var admin = can('accounts.manage');
+    var s = [].map.call(items, function (el) { return allowed(el) ? 1 : 0; }).join('') + (admin ? 'A' : 'S');
+    if (s === sig) return; sig = s;
+    [].forEach.call(items, function (el, i) { el.hidden = s.charAt(i) !== '1'; });
+    document.documentElement.classList.toggle('nova-role-admin', admin);
+    document.documentElement.classList.add('nova-nav-ready');
+    try { window.dispatchEvent(new Event('nova-nav-roles')); } catch (e) {}
+  }
+  window.novaNavRoles = { apply: apply, allowed: allowed, can: can };
+  apply();
+  // sign-in / sign-out and the late permissions module change the answer: cheap re-check
+  setInterval(apply, 1500);
+  window.addEventListener('storage', apply);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
+})();
 /* NAV-01 (owner decision 2026-11-20): phone bottom navigation. On screens <= 780px a fixed bottom bar with 5 targets
    (البيع، الفواتير، العملاء، المخزون، المزيد) replaces the horizontally scrolling top tabs. «المزيد» opens a sheet with the rest
    (النواقص، استلام الطلبيات، التقارير، الإعدادات). Every button just clicks the existing .nova-tab of that page, so routing,
@@ -5,19 +48,27 @@
 (function () {
   'use strict';
   if (window.__novaBottomNav) return; window.__novaBottomNav = true;
-  var MAIN = [
-    ['sale', 'البيع', 'M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6 M10 20.5h.01 M17 20.5h.01'],
-    ['invoices', 'الفواتير', 'M7 3h10v18l-2.5-1.5L12 21l-2.5-1.5L7 21z M10 8h4 M10 12h4'],
-    ['customers', 'العملاء', 'M16 20v-1.5a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4V20 M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M20 20v-1.5a4 4 0 0 0-3-3.8 M15.5 4.2a3.5 3.5 0 0 1 0 6.6'],
-    ['products', 'المخزون', 'M21 8 12 3 3 8v8l9 5 9-5z M3 8l9 5 9-5 M12 13v8']
-  ];
+  var ICON = {
+    sale: 'M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6 M10 20.5h.01 M17 20.5h.01',
+    invoices: 'M7 3h10v18l-2.5-1.5L12 21l-2.5-1.5L7 21z M10 8h4 M10 12h4',
+    customers: 'M16 20v-1.5a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4V20 M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M20 20v-1.5a4 4 0 0 0-3-3.8 M15.5 4.2a3.5 3.5 0 0 1 0 6.6',
+    products: 'M21 8 12 3 3 8v8l9 5 9-5z M3 8l9 5 9-5 M12 13v8',
+    shift: 'M4 7h16v12H4z M4 11h16 M9 15h6 M8 7V5h8v2',
+    purchases: 'M4 6h16 M4 12h10 M4 18h7 M18 14v6 M15 17h6'
+  };
+  // Q21-2b: owner/manager — البيع، الفواتير، الوردية، المخزون + «المزيد»; staff — البيع، الفواتير، العملاء، النواقص، الوردية (no «المزيد»)
+  var ADMIN_MAIN = [['sale', 'البيع'], ['invoices', 'الفواتير'], ['shift', 'الوردية'], ['products', 'المخزون']];
+  var STAFF_MAIN = [['sale', 'البيع'], ['invoices', 'الفواتير'], ['customers', 'العملاء'], ['purchases', 'النواقص', '/purchases'], ['shift', 'الوردية']];
   var MORE = [
+    ['customers', 'العملاء'],
+    ['reports', 'التقارير'],
+    ['tools', 'الأدوات'],
     ['purchases', 'النواقص', '/purchases'],
     ['receiving', 'استلام الطلبيات'],
-    ['reports', 'التقارير'],
     ['settings', 'الإعدادات']
   ];
-  var MORE_PAGES = { receiving: 1, reports: 1, settings: 1 };
+  var MORE_PAGES = { customers: 1, receiving: 1, reports: 1, settings: 1, tools: 1 };
+  function isAdmin() { return document.documentElement.classList.contains('nova-role-admin'); }
   var css = ''
     + '#novaBottomNav{display:none}'
     + '@media (max-width:780px){'
@@ -50,7 +101,7 @@
   }
   function go(page) {
     var tab = document.querySelector('.nova-tab[data-page="' + page + '"]');
-    if (tab) tab.click(); else location.hash = '#' + page;
+    if (window.novaSwitchPage) window.novaSwitchPage(page); else if (tab) tab.click(); else location.hash = '#' + page;
     setTimeout(sync, 0);
   }
   var bar = null;
@@ -68,7 +119,7 @@
     var p = activePage();
     [].forEach.call(bar.querySelectorAll('button[data-bnav]'), function (b) {
       var k = b.getAttribute('data-bnav');
-      var on = k === p || (k === 'more' && MORE_PAGES[p]);
+      var on = k === p || (k === 'more' && MORE_PAGES[p] && !bar.querySelector('[data-bnav="' + p + '"]'));
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
   }
@@ -114,14 +165,22 @@
     bar = document.createElement('nav');
     bar.id = 'novaBottomNav';
     bar.setAttribute('aria-label', 'التنقل الرئيسي (موبايل)');
-    bar.innerHTML = MAIN.map(function (m) {
-      return '<button type="button" data-bnav="' + m[0] + '">' + svg(m[2]) + '<span>' + m[1] + '</span></button>';
-    }).join('') + '<button type="button" data-bnav="more" aria-haspopup="dialog">' + svg('M5 12h.01 M12 12h.01 M19 12h.01') + '<span>المزيد</span></button>';
+    var built = '';
+    var build = function () {
+      var admin = isAdmin(), key = admin ? 'a' : 's';
+      if (built === key) return; built = key;
+      bar.innerHTML = (admin ? ADMIN_MAIN : STAFF_MAIN).map(function (m) {
+        return '<button type="button" data-bnav="' + m[0] + '"' + (m[2] ? ' data-href="' + m[2] + '"' : '') + '>' + svg(ICON[m[0]]) + '<span>' + m[1] + '</span></button>';
+      }).join('') + (admin ? '<button type="button" data-bnav="more" aria-haspopup="dialog">' + svg('M5 12h.01 M12 12h.01 M19 12h.01') + '<span>المزيد</span></button>' : '');
+      sync();
+    };
     document.body.appendChild(bar);
+    build();
+    window.addEventListener('nova-nav-roles', build);
     bar.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('button[data-bnav]'); if (!b) return;
       var k = b.getAttribute('data-bnav');
-      if (k === 'more') openMore(b); else go(k);
+      if (k === 'more') openMore(b); else if (b.getAttribute('data-href')) location.href = b.getAttribute('data-href'); else go(k);
     });
     var nav = document.querySelector('.nova-nav');
     if (nav && window.MutationObserver) new MutationObserver(sync).observe(nav, { attributes: true, attributeFilter: ['class'], subtree: true });

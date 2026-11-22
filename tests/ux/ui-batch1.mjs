@@ -1,7 +1,7 @@
 // UI-BATCH1 (queue 15): look/bug fixes only, the cashier flow is unchanged.
 // 1 pay button/dialog never covered (bottom nav, toast, handover-notes pill)  2 dominant pay button, big totals, payment order
 // 3 language/RTL leaks  4 one held-invoices UI on desktop  5 one stock number + readable invoice refs  6 receiving header reachable
-// 7 reports tabs + owner numbers hidden from cashiers.  q16: toasts never cover an open dialog's title/amount/buttons; tabs fail closed until permissions load.   SHOT_DIR=<dir> also saves after-screenshots.
+// (7 reports tabs: replaced by Q21 step 2, see q21-simplify.mjs.)  q16: toasts never cover an open dialog's title/amount/buttons.   SHOT_DIR=<dir> also saves after-screenshots.
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -79,7 +79,7 @@ try {
     await pill.waitFor({ state: 'attached', timeout: 4000 });
     assert.equal(await pill.evaluate(el => !!el.closest('#novaSaleMoreMenu') && getComputedStyle(el).position), 'static', '390: notes pill docked in the «…» menu');
     assert.match(await pill.textContent(), /\(\d+\)/, 'pill keeps its count');
-    assert.ok((await box(page, '.top-header')).height <= 150, '390: sale header stays two rows');
+    assert.ok((await box(page, '.top-header')).height <= 150, '390: sale header stays two rows: ' + (await box(page, '.top-header')).height);
     await page.locator('#btnSaleMore').click(); await page.waitForTimeout(150);
     assert.equal(await pill.isVisible(), true, '390: notes reachable from «…»');
     const pb = await pill.boundingBox();
@@ -158,7 +158,7 @@ try {
     assert.equal(await page.locator('#heldInvoicePanel').isHidden(), false, 'phone: held popup is the held UI');
     const txt = await page.locator('#heldInvoiceList').innerText();
     assert.doesNotMatch(txt, /Resume|Delete|items|[٠-٩]/, 'held popup: no English words, no Arabic-Indic digits: ' + txt);
-    assert.match(txt, /رجّعها/); assert.match(txt, /صنفان/);
+    assert.match(txt, /استرجاع/); assert.match(txt, /صنفان/);   // Q21-2k: «رجّعها» → «استرجاع»
     await shot(page, '03-held-390-after');
     await ctx.close();
   }
@@ -219,62 +219,7 @@ try {
     await shot(page, '07-receiving-390-after');
     await ctx.close();
   }
-  // ---------- 7: reports tabs; cashier does not see the owner numbers ----------
-  {
-    const { ctx, page, errors } = await open({ width: 1366, height: 768 });
-    await sell(page);
-    await page.evaluate(() => window.novaLazy && window.novaLazy.load()); await page.waitForTimeout(1500);
-    await tab(page, 'reports'); await page.waitForTimeout(800);
-    const tabs = await page.locator('#novaRepTabs [role=tab]').allInnerTexts();
-    assert.deepEqual(tabs, ['لوحة المالك', 'الوردية', 'الخزنة والبنك', 'الموردين', 'الحضور'], 'owner sees 5 tabs');
-    const vis = s => page.locator(s).first().isVisible();
-    assert.ok(await vis('#novaOwnerDashboardSection') && !(await vis('#novaShiftClose')), 'owner tab: board yes, shift close no');
-    assert.ok((await box(page, '#novaRepTabs')).y < (await box(page, '#novaOwnerDashboardSection')).y, 'tabs above the owner board');
-    assert.ok((await box(page, '#novaRepTabs')).height >= 44, 'tab strip is not collapsed');
-    await shot(page, '08-reports-owner-1366-after');
-    await page.locator('#novaRepTabs [data-rtab=shift]').click(); await page.waitForTimeout(200);
-    assert.ok(await vis('#novaShiftClose') && !(await vis('#novaOwnerDashboardSection')), 'shift tab: shift close yes, board no');
-    await page.locator('#novaRepTabs [data-rtab=vault]').click(); await page.waitForTimeout(200);
-    if (await page.locator('#novaVaultCard').count()) assert.ok(await vis('#novaVaultCard'), 'vault tab shows the vault card');
-    assert.equal(await vis('#novaShiftClose'), false);
-    await shot(page, '08-reports-vault-1366-after');
-    // a cashier (reports.view / accounts.manage denied) only gets «الوردية»
-    await page.evaluate(() => { window.novaPerms = { can: a => ['sale.create', 'sale.return'].includes(a), require: a => ['sale.create', 'sale.return'].includes(a) }; window.novaReportsTabs.apply(); });
-    await page.waitForTimeout(150);
-    assert.deepEqual(await page.locator('#novaRepTabs [role=tab]').allInnerTexts(), ['الوردية'], 'cashier: only the shift tab');
-    assert.ok(!(await vis('#novaOwnerDashboardSection')) && !(await vis('#novaKpiPeriod')) && await vis('#novaShiftClose'), 'cashier: no owner numbers, shift close visible');
-    // q17: the cashier records drawer expenses from «الوردية» (approval flow unchanged) but still cannot reach the owner tabs
-    assert.ok(await vis('#novaExpensesSection') && await vis('#novaExpensesSection [data-nsa-act=addexp]'), 'cashier: expenses form visible in the shift tab');
-    assert.equal(await page.locator('#novaRepTabs [data-rtab=suppliers], #novaRepTabs [data-rtab=owner], #novaRepTabs [data-rtab=vault], #novaRepTabs [data-rtab=staff]').count(), 0, 'cashier: no owner tabs');
-    assert.equal(await vis('#novaSupplierAccountsSection'), false, 'cashier: supplier accounts hidden');
-    await shot(page, '08-reports-cashier-1366-after');
-    assert.deepEqual(errors, [], 'reports page errors');
-    await ctx.close();
-  }
-  {
-    const { ctx, page } = await open({ width: 390, height: 844 });
-    await tab(page, 'reports'); await page.waitForTimeout(500);
-    assert.equal(await page.locator('#novaRepTabs [role=tab]').count(), 5, '390: tabs');
-    assert.ok((await box(page, '#novaRepTabs')).height >= 44, '390: tab strip is not collapsed');
-    await shot(page, '08-reports-owner-390-after');
-    await ctx.close();
-  }
-  // ---------- 1b: accounts on the device + permissions not loaded yet -> owner tabs stay hidden (fail closed) ----------
-  {
-    const acc = () => { try { localStorage.setItem('nova.auth.accounts', JSON.stringify([{ id: 'acc-owner', name: 'Owner', role: 'owner' }])); } catch {} };
-    const { ctx, page } = await open({ width: 1366, height: 768 }, 'ar', acc, /auth-permissions.js/);
-    assert.equal(await page.evaluate(() => window.novaPerms == null), true, 'permissions module blocked');
-    await page.evaluate(() => { document.querySelectorAll('#novaStaffGate, .nova-staff-gate').forEach(e => e.remove()); window.novaSwitchPage ? window.novaSwitchPage('reports') : document.querySelector('.nova-tab[data-page="reports"]').click(); });
-    await page.waitForTimeout(800);
-    assert.deepEqual(await page.locator('#novaRepTabs [role=tab]').allInnerTexts(), ['الوردية'], 'fail closed: only «الوردية» before permissions are known');
-    assert.equal(await page.locator('#novaOwnerDashboardSection').first().isVisible().catch(() => false), false, 'fail closed: owner board hidden');
-    await page.evaluate(() => { window.novaPerms = { can: () => true, require: () => true }; });
-    await page.waitForTimeout(600);
-    assert.equal(await page.locator('#novaRepTabs [role=tab]').count(), 5, 'permissions loaded (owner) -> all tabs come back by themselves');
-    await page.evaluate(() => { localStorage.removeItem('nova.auth.accounts'); window.novaPerms = null; window.novaReportsTabs.apply(); });
-    await page.waitForTimeout(150);
-    assert.equal(await page.locator('#novaRepTabs [role=tab]').count(), 5, 'no accounts on the device (single user = owner) -> all tabs');
-    await ctx.close();
-  }
+  // 7 / 1b (reports tabs, fail closed) were replaced in Q21 step 2: the reports page has no tabs any more; «الوردية» is its own entry and
+  // the role nav fails closed — see tests/ux/q21-simplify.mjs.
   console.log('ui-batch1: all checks passed');
 } finally { await browser.close(); }

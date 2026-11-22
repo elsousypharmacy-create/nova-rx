@@ -332,7 +332,7 @@
   function ensure() {
     var view = document.getElementById('novaPageView');
     if (!view) return;
-    if (!document.querySelector('.nova-tab.active[data-page="reports"]')) return;
+    if (!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]')) return;
     if (document.getElementById('novaExcelExport')) return;
     view.appendChild(buildCard());
   }

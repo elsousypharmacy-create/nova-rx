@@ -249,7 +249,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === pageName) {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="' + pageName + '"]');
+    return !!document.querySelector('.nova-tab.active[data-page="' + pageName + '"],.nova-hostmark.active[data-page="' + pageName + '"]');
   }
 
   function injectStyles() {

@@ -192,24 +192,10 @@ html body #displayChangeDue{font-size:36px!important;font-weight:800;line-height
 #novaAboutCard .nova-about-on{color:#7fd3ac}
 #novaAboutCard .nova-about-off{color:#f0d9a0}
 .nova-inv-panel{padding:0!important;display:block!important;background:#171b20!important;border:1px solid #2d343c!important;margin:0!important}
-/* UX-P29 nav: العمليات groups المشتريات + استلام الطلبيات + المخزون */
-.nova-ops{display:inline-flex;flex:none}
-.nova-ops>summary{list-style:none;cursor:pointer;display:inline-flex!important;align-items:center;gap:6px;white-space:nowrap}
-.nova-ops>summary::-webkit-details-marker{display:none}
-.nova-ops>summary::before{content:"";width:12px;height:12px;order:2;background:currentColor;opacity:.7;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .15s}
-.nova-ops[open]>summary::before{transform:rotate(180deg)}
-.nova-ops-pop{position:fixed;z-index:1000;width:290px;display:flex;flex-direction:column;gap:2px;padding:6px;background:#171b20;border:1px solid #2d343c;border-radius:12px;box-shadow:0 14px 40px #000a}
-.nova-ops-pop>.nova-ops-item{all:unset;box-sizing:border-box;display:flex!important;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 10px;border-radius:9px;cursor:pointer;color:#dfe5ea;text-decoration:none;text-align:start;background:none!important;box-shadow:none!important}
-.nova-ops-pop>.nova-ops-item::after{display:none!important}
-.nova-ops-pop>.nova-ops-item:hover,.nova-ops-pop>.nova-ops-item:focus-visible{background:#20262d!important}
-.nova-ops-pop>.nova-ops-item.active,.nova-ops-pop>.nova-ops-item[aria-current]{background:#16232b!important;color:#fff}
-.nova-ops-pop .ops-ico{flex:none;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:#1d3340;color:#8fcbe4}
-.nova-ops-pop .ops-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
-.nova-ops-pop .ops-txt b{font-size:14px;font-weight:700}
-.nova-ops-pop .ops-txt small{font-size:12px;color:#8896a4;font-weight:500}
-.nova-nav:has(.nova-ops[open]),.nova-topbar nav:has(.nova-ops[open]){-webkit-mask-image:none!important;mask-image:none!important}
-html body .nova-nav .nova-ops:has(.nova-tab.active)>summary{background:#1d3340!important;color:#bfe3f2!important;box-shadow:inset 0 0 0 1px rgba(118,184,213,.28)!important}
-.nova-nav .nova-ops:has(.nova-tab.active)>summary::after{transform:scaleX(1);opacity:1}
+/* Q21-2a/b nav: role entries (app/562) stay hidden until the role is known (fail closed); ⚙ = الإعدادات */
+html body .nova-nav .nova-tab[hidden],html:not(.nova-nav-ready) body .nova-nav .nova-tab[data-nav-need]{display:none!important}
+html body .nova-nav .nova-tab.nova-tab-gear{min-width:44px;padding-inline:10px!important;justify-content:center}
+.nova-tab-gear::before{content:"";width:20px;height:20px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'/%3E%3C/svg%3E") center/20px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'/%3E%3C/svg%3E") center/20px no-repeat}
 .nova-inv-panel>div{max-height:none!important;overflow:visible!important}/* UX-P16 invoices: backup actions as a light toolbar (not a full panel), empty state fills the page */
 @media(min-width:801px){
 #novaPageView .nova-panel.nova-p16-off{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 12px!important;display:flex!important;justify-content:flex-start;gap:8px;min-height:0}
@@ -227,14 +213,13 @@ h1:has(+.nx-i),h2:has(+.nx-i),h3:has(+.nx-i),h4:has(+.nx-i){display:inline-block
 .nx-i:focus-visible{outline:2px solid #76b8d5;outline-offset:2px}
 .nx-i::after{content:attr(data-tip);position:absolute;z-index:60;top:calc(100% + 8px);inset-inline-start:-8px;width:max-content;max-width:min(320px,80vw);padding:10px 12px;background:#0e1216;border:1px solid #3a444e;border-radius:10px;color:#e8ecef;font:400 13px/1.7 Cairo,Tahoma,sans-serif;font-style:normal;text-align:start;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.5);display:none;pointer-events:none}
 .nx-i:hover::after,.nx-i:focus::after,.nx-i:focus-visible::after{display:block}
-/* UI-BATCH1 #7: reports page tabs (130). Same cards, grouped; the header and the tab strip stay on top of the owner board. */
+/* Q21-2 page views (130): reports / stock show only their own content; «الوردية» and a single tool open as a view with their own header */
 #novaPageView.nova-rtabs-on{display:flex;flex-direction:column}
 #novaPageView.nova-rtabs-on>*{flex-shrink:0}
 #novaPageView.nova-rtabs-on>.nova-page-header{order:-2}
-#novaPageView.nova-rtabs-on>#novaRepTabs{order:-1}
-#novaPageView.nova-rtabs-on>[data-rtab-off]{display:none!important}/* a lazy card may carry an inline display */
-.nova-rtabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 14px;padding:2px}
-.nova-rtabs::-webkit-scrollbar{display:none}
-.nova-rtabs button{flex:none;min-height:44px;padding:0 16px;border-radius:999px;background:#1b2026;border:1px solid #343b44;color:#c9d3dc;font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
-.nova-rtabs button[aria-selected=true]{background:#1d3a48;border-color:#79c9eb;color:#e6f6fd}
-.nova-rtabs button:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}
+#novaPageView.nova-rtabs-on>#novaViewHead{order:-3}
+html body:not(.x) #novaPageView.nova-rtabs-on>[data-rtab-off]{display:none!important}/* a lazy card may carry an inline display */
+html body:not(.x) #novaPageView[data-view]:not([data-view=""])>.nova-page-header:not(#novaViewHead){display:none!important}
+.nova-view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nova-view-head .nova-view-back{min-height:44px}
+.nova-view-acts{display:flex;gap:8px;flex-wrap:wrap}.nova-view-acts .btn{min-height:44px}

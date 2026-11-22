@@ -670,7 +670,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -1464,7 +1464,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -2152,7 +2152,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+    return !!document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]');
   }
 
   function ensureMounted() {
@@ -2877,7 +2877,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -3691,7 +3691,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -4795,7 +4795,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -5591,7 +5591,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+    return !!document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]');
   }
 
   function ensureMounted() {
@@ -6690,7 +6690,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -7606,7 +7606,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -8388,7 +8388,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+    return !!document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]');
   }
 
   function ensureMounted() {
@@ -9257,7 +9257,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+    return !!document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]');
   }
 
   function ensureMounted() {
@@ -10518,7 +10518,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function ensureMounted() {
@@ -11054,7 +11054,7 @@
 
   function isReportsActive() {
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   var mounting = false;
@@ -11669,7 +11669,7 @@
 
   function isReportsActive() {
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   var mounting = false;
@@ -12170,7 +12170,7 @@
 
   function isReportsActive() {
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   var mounting = false;
@@ -12375,7 +12375,7 @@
     function isSalePageActive() {
       // #novaPageView is hidden on the sale screen (.pos-root), so this card lives on the reports page.
       if (document.body && document.body.dataset && document.body.dataset.activePage === 'reports') return true;
-      return Boolean(document.querySelector('.nova-tab.active[data-page="reports"]'));
+      return Boolean(document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]'));
     }
     function renderLogList() {
       var ul = document.getElementById('novaCashDrawerLogList');
@@ -12664,7 +12664,7 @@
     }
     function isProductsPageActive() {
       if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') return true;
-      return Boolean(document.querySelector('.nova-tab.active[data-page="products"]'));
+      return Boolean(document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]'));
     }
     function renderList() {
       var box = document.getElementById('novaAltBarcodesList');
@@ -12900,7 +12900,7 @@
     function isSalePageActive() {
       // #novaPageView is hidden on the sale screen (.pos-root), so this card lives on the products page.
       if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') return true;
-      return Boolean(document.querySelector('.nova-tab.active[data-page="products"]'));
+      return Boolean(document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]'));
     }
     function buildCard() {
       var card = document.createElement('section');
@@ -12979,4 +12979,110 @@
     } else {
       initObserver();
     }
+})();
+
+/* Q21-2c «الأدوات» hub (lazy). One page with every ops card as a tile, grouped and searchable. A tile opens only that card
+   (app/130 view «tool:<id>» on its host page, with «→ الأدوات» to come back). The cards keep their own code and checks. */
+(function () {
+  'use strict';
+  if (window.novaToolsHub) return;
+  var en = function () { try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; } };
+  var T = function (a, e) { return en() ? e : a; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); };
+  var GROUPS = [
+    ['money', 'فلوس', 'Money'], ['stock', 'مخزون', 'Stock'], ['suppliers', 'موردين', 'Suppliers'],
+    ['customers', 'عملاء', 'Customers'], ['legal', 'قانوني ورقابة', 'Legal & control'], ['staff', 'موظفين', 'Staff']
+  ];
+  // [card id, group, ar title, en title, ar hint]
+  var TOOLS = [
+    ['novaVaultCard', 'money', 'الخزنة والبنك', 'Vault & bank', 'رصيد الخزنة الرئيسية والإيداع في البنك'],
+    ['novaIncomeCard', 'money', 'قائمة الدخل الشهرية', 'Monthly income statement', 'المبيعات والتكلفة والمصروفات والصافي'],
+    ['novaExcelExport', 'money', 'تصدير لإكسل', 'Export to Excel', 'المبيعات والأصناف في ملف إكسل'],
+    ['novaProfitSlow', 'money', 'الربح والأصناف الراكدة', 'Profit & slow movers', 'ربح كل صنف واللي مش بيتباع'],
+    ['novaStockCount', 'stock', 'الجرد', 'Stock count', 'عدّ الرف ومقارنته بالرصيد'],
+    ['novaItemLimits', 'stock', 'الحدود ومكان الرف', 'Limits & shelf place', 'أقل كمية ومكان الصنف'],
+    ['novaExpiryClearance', 'stock', 'تصفية قريب الانتهاء', 'Near-expiry clearance', 'خصم مخطط على الأصناف اللي قربت تنتهي'],
+    ['novaShelfLabels', 'stock', 'ملصقات أسعار الرف', 'Shelf price labels', 'طباعة سعر الصنف للرف'],
+    ['novaInternalBarcodes', 'stock', 'باركود داخلي', 'Internal barcodes', 'باركود لصنف ملوش باركود'],
+    ['novaAltBarcodesCard', 'stock', 'باركودات إضافية', 'Extra barcodes', 'أكتر من باركود لنفس الصنف'],
+    ['novaGs1Card', 'stock', 'الباركود الثنائي (التتبع)', '2D barcode (tracking)', 'قراءة باركود التتبع الدوائي'],
+    ['novaOfficialPrices', 'stock', 'الأسعار الرسمية', 'Official prices', 'تحديث الأسعار من قائمة هيئة الدواء'],
+    ['novaSupplierAccountsSection', 'suppliers', 'حسابات الموردين', 'Supplier accounts', 'المستحقات والدفعات'],
+    ['novaSupplierCheques', 'suppliers', 'الشيكات الآجلة', 'Post-dated cheques', 'شيكات الموردين ومواعيدها'],
+    ['novaSupplierNotes', 'suppliers', 'إشعارات الخصم والإضافة', 'Debit / credit notes', 'تسويات مع الموردين'],
+    ['novaPharmacySwaps', 'suppliers', 'الاستلاف والتبديل', 'Pharmacy swaps', 'مع الصيدليات المجاورة'],
+    ['novaCustomerRequests', 'customers', 'طلبات العملاء', 'Customer requests', 'صنف مطلوب لعميل'],
+    ['novaFamilyAccounts', 'customers', 'حساب العائلة', 'Family accounts', 'أكتر من فرد على حساب واحد'],
+    ['novaCorporate', 'customers', 'عقود الشركات', 'Company contracts', 'الفاتورة الشهرية للشركات'],
+    ['novaDoctorRx', 'customers', 'روشتات الأطباء', 'Doctor prescriptions', 'متابعة روشتات كل طبيب'],
+    ['novaControlledRegister', 'legal', 'دفتر الأدوية المراقبة', 'Controlled drugs register', 'القيود والطباعة'],
+    ['novaDestruction', 'legal', 'محضر إعدام المنتهي', 'Destruction record', 'الأدوية المنتهية'],
+    ['novaFridgeLog', 'legal', 'حرارة التلاجة', 'Fridge temperature', 'تسجيل الحرارة كل يوم'],
+    ['novaLicenseReminders', 'legal', 'تجديد الرخص', 'Licence renewals', 'الرخص والشهادات ومواعيدها'],
+    ['novaSensitiveLogSection', 'legal', 'سجل العمليات الحساسة', 'Sensitive operations log', 'مين عمل إيه وإمتى'],
+    ['novaStaffStatsCard', 'staff', 'الحضور ومبيعات الموظفين', 'Attendance & staff sales', 'حضور وانصراف ومبيعات كل موظف'],
+    ['novaPayroll', 'staff', 'المرتبات والعمولات', 'Payroll & commissions', 'المرتب والتارجت']
+  ];
+  var HOST_PRODUCTS = { novaStockCount: 1, novaItemLimits: 1, novaDestruction: 1, novaCustomerRequests: 1, novaShelfLabels: 1, novaFamilyAccounts: 1,
+    novaInternalBarcodes: 1, novaOfficialPrices: 1, novaAltBarcodesCard: 1, novaGs1Card: 1 };
+  var QUICK = [
+    ['receiving', 'استلام فاتورة مورد', 'Receive a supplier invoice'],
+    ['purchases', 'النواقص وطلبيات الموردين', 'Shortages & supplier orders'],
+    ['shift', 'الوردية', 'Shift'],
+    ['settings', 'الإعدادات', 'Settings']
+  ];
+  var q = '';
+  function norm(x) { return (window.novaNormAr ? window.novaNormAr(x) : String(x || '').toLowerCase()).trim(); }
+  function open(id) {
+    var sw = window.novaSwitchPage; if (!sw) return;
+    sw(HOST_PRODUCTS[id] ? 'products' : 'reports', 'tool:' + id);
+  }
+  function tiles() {
+    var nq = norm(q);
+    var hits = TOOLS.filter(function (t) { return !nq || norm(t[2] + ' ' + t[3] + ' ' + t[4]).indexOf(nq) >= 0; });
+    if (!hits.length) return '<p class="nova-muted" role="status" style="padding:12px 4px">' + T('مفيش أداة بالاسم ده', 'No tool with that name') + '</p>';
+    return GROUPS.map(function (g) {
+      var gs = hits.filter(function (t) { return t[1] === g[0]; }); if (!gs.length) return '';
+      return '<section class="nth-group" data-group="' + g[0] + '"><h2>' + (en() ? g[2] : g[1]) + '</h2><div class="nth-grid">'
+        + gs.map(function (t) { return '<button type="button" class="nth-tile" data-tool="' + t[0] + '"><b>' + esc(en() ? t[3] : t[2]) + '</b>' + (en() ? '' : '<small>' + esc(t[4]) + '</small>') + '</button>'; }).join('')
+        + '</div></section>';
+    }).join('');
+  }
+  function css() {
+    if (document.getElementById('novaToolsHubCss')) return;
+    var st = document.createElement('style'); st.id = 'novaToolsHubCss';
+    st.textContent = '.nth-quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:0 0 16px}'
+      + '.nth-quick .btn{min-height:52px;font-size:15px;font-weight:700}'
+      + '.nth-search{width:100%;max-width:420px;min-height:44px;box-sizing:border-box;margin:0 0 6px}'
+      + '.nth-group h2{font-size:15px;margin:16px 2px 8px;color:#9eacb9}'
+      + '.nth-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}'
+      + '.nth-tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:64px;padding:10px 14px;text-align:start;background:#1b2027;border:1px solid #2a3139;border-radius:12px;color:#e8eef3;font:inherit;cursor:pointer}'
+      + '.nth-tile:hover{border-color:#79c9eb}.nth-tile:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}'
+      + '.nth-tile b{font-size:15px}.nth-tile small{font-size:12px;color:#8896a4}'
+      + '@media (max-width:780px){.nth-grid,.nth-quick{grid-template-columns:1fr 1fr}.nth-tile small{display:none}}';
+    document.head.appendChild(st);
+  }
+  function render(view) {
+    if (!view) view = document.getElementById('novaPageView'); if (!view) return;
+    css();
+    view.innerHTML = '<div class="nova-page-header"><div><h1>' + T('الأدوات', 'Tools') + '</h1><p>' + T('كل الأدوات في مكان واحد — دوس على الأداة تفتح لوحدها', 'Every tool in one place — tap one to open it on its own') + '</p></div>'
+      + '<input class="nova-page-search nth-search" id="novaToolsSearch" type="search" placeholder="' + T('دوّر على أداة…', 'Find a tool…') + '" aria-label="' + T('بحث في الأدوات', 'Search tools') + '"></div>'
+      + '<div class="nth-quick">' + QUICK.map(function (k) { return '<button type="button" class="btn btn-secondary" data-quick="' + k[0] + '">' + (en() ? k[2] : k[1]) + '</button>'; }).join('') + '</div>'
+      + '<div id="novaToolsGrid">' + tiles() + '</div>';
+    var inp = view.querySelector('#novaToolsSearch'); inp.value = q;
+    inp.addEventListener('input', function () { q = inp.value; var g = document.getElementById('novaToolsGrid'); if (g) g.innerHTML = tiles(); });
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var f = view.querySelector('.nth-tile'); if (f) f.click(); } });
+    view.onclick = function (e) {
+      var t = e.target.closest && e.target.closest('[data-tool]'); if (t) { open(t.getAttribute('data-tool')); return; }
+      var k = e.target.closest && e.target.closest('[data-quick]'); if (!k) return;
+      var p = k.getAttribute('data-quick');
+      if (p === 'purchases') { location.href = '/purchases'; return; }
+      if (window.novaSwitchPage) window.novaSwitchPage(p);
+    };
+  }
+  // leaving the hub clears the click handler set above
+  new MutationObserver(function () { var v = document.getElementById('novaPageView'); if (v && document.body.dataset.activePage !== 'tools') v.onclick = null; })
+    .observe(document.body, { attributes: true, attributeFilter: ['data-active-page'] });
+  window.novaToolsHub = { render: render, open: open, TOOLS: TOOLS, GROUPS: GROUPS };
+  if (document.body && document.body.dataset.activePage === 'tools') render();
 })();

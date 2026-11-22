@@ -612,7 +612,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === 'products') {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="products"]');
+    return !!document.querySelector('.nova-tab.active[data-page="products"],.nova-hostmark.active[data-page="products"]');
   }
 
   function ensureMounted() {

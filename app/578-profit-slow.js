@@ -647,7 +647,7 @@
 
   function ensure() {
     if (ensuring) return;
-    var activeReports = document.querySelector('.nova-tab.active[data-page="reports"]');
+    var activeReports = document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
     if (!activeReports) return;
     var pageView = document.getElementById('novaPageView');
     if (!pageView) return;

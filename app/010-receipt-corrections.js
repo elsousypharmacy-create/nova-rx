@@ -1,3 +1,24 @@
+/* Q21-2m PREVIEW ONLY: testers on the preview Worker (nova-rx-preview.*.workers.dev) open an empty device and hit empty invoices /
+   reports. On that host only, a device with no sales gets a few clearly marked demo invoices (numbers start with DEMO-), once. Never on any
+   other host, never when the device already has sales, and the flag stops it from coming back after the tester clears them. */
+(function () {
+  try {
+    if (!/^nova-rx-preview\./.test(location.hostname)) return;
+    var KEY = 'nova-rx-sales-v1', FLAG = 'nova.preview.demoSeeded';
+    if (localStorage.getItem(FLAG)) return;
+    var cur = JSON.parse(localStorage.getItem(KEY) || '[]');
+    localStorage.setItem(FLAG, new Date().toISOString());
+    if (Array.isArray(cur) && cur.length) return;
+    var now = Date.now(), P = [['6281001234568', 'بانادول إكسترا', 12], ['6281001234576', 'سيتريزين 10 مجم', 14.75], ['6281001234577', 'فولتارين جل 50 جم', 26], ['6281001234575', 'فيتامين د3 50,000 وحدة', 45]];
+    var pays = ['cash', 'card', 'cash', 'wallet', 'cash', 'card'];
+    var sales = pays.map(function (pay, i) {
+      var p = P[i % P.length], q = 1 + (i % 3), total = Math.round(p[2] * q * 100) / 100;
+      return { id: 'DEMO-S' + (i + 1), number: 'DEMO-' + String(i + 1).padStart(4, '0'), at: now - (i + 1) * 47 * 60000, total: total, vat: 0, payment: pay,
+        status: 'final', demo: true, lines: [{ barcode: p[0], name: p[1], price: p[2], qty: q, discount: 0 }] };
+    });
+    localStorage.setItem(KEY, JSON.stringify(sales));
+  } catch (e) {}
+})();
 
 /* Receipt corrections share the existing device stores. Call mutations under the stock lock. */
 (function (root) {

@@ -636,14 +636,14 @@
   function buildSection(data) {
     var section = document.createElement('section');
     section.id = SECTION_ID;
-    section.setAttribute('aria-label', 'لوحة المالك');
+    section.setAttribute('aria-label', 'تقرير اليوم');
 
     var head = document.createElement('div');
     head.className = 'nova-od-head';
 
     var title = document.createElement('h2');
     title.className = 'nova-od-title';
-    title.textContent = 'لوحة المالك';
+    title.textContent = 'تقرير اليوم';
     head.appendChild(title);
 
     section.appendChild(head);
@@ -786,7 +786,7 @@
   }
 
   function isReportsActive() {
-    return !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    return !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
   }
 
   function mountIfNeeded() {

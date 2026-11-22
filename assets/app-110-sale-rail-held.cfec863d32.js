@@ -79,7 +79,7 @@
     if (on && c.attached) renderCard(c);
     if (add && on) {
       var lab = add.querySelector('.nx-rail-label span'), sub = add.querySelector('.nx-rail-sub');
-      if (lab) lab.textContent = isEn() ? 'Register customer' : 'تسجيل عميل';
+      if (lab) lab.textContent = isEn() ? 'Choose customer' : 'اختيار عميل';
       if (sub) sub.textContent = isEn() ? 'Cash sale without a customer' : 'بيع نقدي من غير عميل';
       // no aria-label in the rail: the visible text names it and the translator has nothing to rewrite
       add.removeAttribute('aria-label');
@@ -96,7 +96,7 @@
     if (!on) { heldBox.innerHTML = ''; return; }
     var list = [];
     try { var s = JSON.parse(localStorage.getItem(HELD_KEY) || '[]'); if (Array.isArray(s)) list = s.filter(function (x) { return x && Array.isArray(x.lines); }); } catch (e) {}
-    var first = list, back = isEn() ? 'Resume' : 'رجّعها', del = isEn() ? 'Delete' : 'حذف'; // UI-BATCH1: the rail is the one held list on desktop
+    var first = list, back = isEn() ? 'Resume' : 'استرجاع', del = isEn() ? 'Delete' : 'حذف'; // UI-BATCH1: the rail is the one held list on desktop
     var html = first.map(function (x) {
       var who = x.customerName ? ' · <span class="nx-rail-name">' + esc(x.customerName) + '</span>' : '';
       return '<div class="nova-rail-row">' + SVG.clock + '<span class="nx-meta">' + esc(x.saleNumber || x.id) + ' · ' + esc(itemsText(x.lines.length)) + who + '</span><button type="button" data-rail-resume="' + esc(x.id) + '" aria-label="' + back + ' ' + esc(x.saleNumber || x.id) + '">' + back + '</button><button type="button" class="nx-del" data-rail-delete="' + esc(x.id) + '" aria-label="' + del + ' ' + esc(x.saleNumber || x.id) + '">' + del + '</button></div>';

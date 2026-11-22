@@ -15,7 +15,7 @@ await page.addInitScript(() => { window.NOVA_STOCK_PROBE = true; });
 await page.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'en'); localStorage.removeItem('nova.activePage'); } catch {} });
 await page.goto(BASE, { waitUntil: 'load' });
 await page.waitForFunction(() => window.novaAuth && window.novaAuthUI && window.novaPerms && window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE', null, { timeout: 8000 });
-const openTab = p => page.locator(`.nova-tab[data-page=${p}]`).click();
+const openTab = p => page.evaluate(p => window.novaSwitchPage ? window.novaSwitchPage(p) : document.querySelector(`.nova-tab[data-page=${p}]`).click(), p);   // Q21-2: a cashier has no settings entry in the nav (view filter); the page itself still guards itself
 await t('no accounts yet: export downloads without a prompt', async () => {
   await openTab('invoices');
   const [d] = await Promise.all([page.waitForEvent('download'), page.evaluate(()=>{const k=document.querySelector('#novaPageView .nova-kebab');if(k)k.open=true}).then(()=>page.locator('#novaSalesExport').click())]);

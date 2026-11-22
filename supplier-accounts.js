@@ -145,6 +145,15 @@
       x.status = ok ? 'approved' : 'rejected'; x.decidedBy = approver; x.decidedAt = now(); x.reason = reason || '';
       save(s);
     }
+    /* Q21-2g (A's decision): a small drawer expense (<= 200 EGP) is approved in the same step by the person who records it; it stays in
+       the list (and the sensitive log) with who/when/reason. Anything larger must go through addExpense + a second person's approval. */
+    var QUICK_MAX_CENTS = 20000;
+    function addQuickExpense(e) {
+      if (cents(e && e.amount) > QUICK_MAX_CENTS) fail('needs-approval');
+      var id = addExpense(e), s = load(), x = find(s.expenses, id);
+      if (x.status === 'draft') { x.status = 'approved'; x.decidedBy = x.createdBy; x.decidedAt = now(); x.reason = 'quick'; save(s); }
+      return id;
+    }
     function approveExpense(id, approver) { decide(id, approver, true); }
     function rejectExpense(id, approver, reason) { decide(id, approver, false, reason); }
     function payExpense(id, at) {
@@ -192,7 +201,7 @@
     }
 
     return { setSupplier: setSupplier, addInvoice: addInvoice, pay: pay, credit: credit, creditBalance: creditBalance, reverse: reverse, balance: balance, aging: aging,
-      discountsAvailable: discountsAvailable, addExpense: addExpense, approveExpense: approveExpense, rejectExpense: rejectExpense,
+      discountsAvailable: discountsAvailable, addExpense: addExpense, addQuickExpense: addQuickExpense, QUICK_MAX: QUICK_MAX_CENTS / 100, approveExpense: approveExpense, rejectExpense: rejectExpense,
       payExpense: payExpense, expenses: expenses, addBankEntry: addBankEntry, reconcile: reconcile };
   }
 

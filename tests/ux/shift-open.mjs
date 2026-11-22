@@ -22,7 +22,7 @@ try {
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForFunction(() => window.novaLazy && window.novaLazy.load);
   await page.evaluate(() => window.novaLazy.load());
-  const openReports = async () => { await page.evaluate(() => { const t = document.querySelector('.nova-tab[data-page="reports"]'); t.click(); }); await page.waitForSelector('#novaShiftOpenBox'); };
+  const openReports = async () => { await page.evaluate(() => { const t = document.querySelector('.nova-tab[data-page="shift"]'); t.click(); }); await page.waitForSelector('#novaShiftOpenBox'); };
   await openReports();
   assert.match(await page.locator('#novaShiftOpenBox').innerText(), /الوردية مش مفتوحة/);
   await page.click('#novaShiftOpenBtn');

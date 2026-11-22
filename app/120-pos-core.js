@@ -884,7 +884,8 @@
               <div style="color:var(--text-dim);font-size:11px;margin-top:6px">${en ? "Enter = register · clear the box and Enter = cash sale" : "Enter = تسجيل · امسح الخانة وEnter = بيع نقدي"}</div>
             </div>` : `
             <div style="padding:12px; color:var(--text-dim); text-align:center; font-size:12px;">
-              ${en ? "No customer with this name. Type their mobile number to register them, or clear the box and press Enter for a cash sale." : "مفيش عميل بالاسم ده. اكتب رقم موبايله عشان تسجّله، أو امسح الخانة واضغط Enter لبيع نقدي."}
+              ${en ? "No customer and no medicine with this name. Type a mobile number to register a customer, or record it as a shortage." : "مفيش عميل ولا صنف بالاسم ده. اكتب رقم موبايله عشان تسجّله عميل، أو سجّله نقص."}
+              <div><button type="button" class="btn btn-secondary" id="novaShortageBtn" style="min-height:44px;margin-top:8px">${en ? "Record shortage" : "سجّل نقص"}</button></div>
             </div>`;
           elements.suggestionsBox.classList.add("open");
           return;
@@ -935,7 +936,7 @@
 
         const q = state.searchQuery;
         const heading = state.mode === "CUSTOMER"
-          ? `<div class="sugg-sub" style="padding:8px 12px">${novaEn() ? "Matching medicines" : "أصناف مطابقة"}</div>`
+          ? `<div class="sugg-sub" style="padding:8px 12px">${novaEn() ? "No customer with this name — matching medicines" : "مفيش عميل بالاسم ده — أصناف مطابقة"}</div>`
           : "";
         elements.suggestionsBox.innerHTML = heading + matches.map((prod, idx) => {
           const str = extractStrength(prod), pk = extractPack(prod), gen = prod.generic || prod.activeIngredient || "";
@@ -2972,7 +2973,7 @@
       }
       function renderHeldInvoices() {
         heldCount.textContent = heldInvoices.length;
-        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || (novaEn() ? 'Walk-in' : 'عميل نقدي'))}</strong><small>${heldEscape(window.NovaFmt.formatDateTime(x.created))} · ${novaEn() ? x.lines.length + (x.lines.length === 1 ? ' item' : ' items') : window.NovaFmt.pluralItems(x.lines.length)}</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">${novaEn() ? 'Resume' : 'رجّعها'}</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">${novaEn() ? 'Delete' : 'حذف'}</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">' + (novaEn() ? 'No held invoices' : 'لا توجد فواتير معلقة') + '</div>';
+        heldList.innerHTML = heldInvoices.length ? heldInvoices.map(x => `<div class="nova-held-row"><div class="nova-held-meta"><strong>${heldEscape(x.saleNumber || x.id)} · ${heldEscape(x.customerName || (novaEn() ? 'Walk-in' : 'عميل نقدي'))}</strong><small>${heldEscape(window.NovaFmt.formatDateTime(x.created))} · ${novaEn() ? x.lines.length + (x.lines.length === 1 ? ' item' : ' items') : window.NovaFmt.pluralItems(x.lines.length)}</small></div><div class="nova-held-row-actions"><button type="button" data-held-resume="${heldEscape(x.id)}">${novaEn() ? 'Resume' : 'استرجاع'}</button><button type="button" class="nova-held-delete" data-held-delete="${heldEscape(x.id)}">${novaEn() ? 'Delete' : 'حذف'}</button></div></div>`).join('') : '<div style="text-align:center;color:#a9b9c6;padding:18px 6px;font-size:12px">' + (novaEn() ? 'No held invoices' : 'لا توجد فواتير معلقة') + '</div>';
       }
       function holdCurrentInvoice() {
         if (!state.invoiceLines.length) { showToast('Add products before holding an invoice.'); return; }

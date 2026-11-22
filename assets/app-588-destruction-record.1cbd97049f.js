@@ -774,7 +774,7 @@
     if (document.body && document.body.dataset && document.body.dataset.activePage === PAGE_NAME) {
       return true;
     }
-    return !!document.querySelector('.nova-tab.active[data-page="' + PAGE_NAME + '"]');
+    return !!document.querySelector('.nova-tab.active[data-page="' + PAGE_NAME + '"],.nova-hostmark.active[data-page="' + PAGE_NAME + '"]');
   }
 
   function mountIfNeeded() {

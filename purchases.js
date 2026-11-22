@@ -593,6 +593,11 @@ async function loadStock(auto = false) {
           ? 'مصدر المشتريات يحتاج تحديث السيرفر؛ لم يتم تحميل بيانات قديمة بدلًا منه'
           : 'تعذر الاتصال بمصدر المخزون؛ أعد المحاولة';
       status(loadError, true);
+      if (code !== 'pin-required' && code !== 'source-not-ready') {
+        const msg = loadError;
+        openLocal(false);   // Q21-2l: was an empty page with only «أعد المحاولة»
+        status(msg + ' — شغالين على القائمة اللي على الجهاز', true);
+      }
     }
   } finally {
     loadingStock = false;

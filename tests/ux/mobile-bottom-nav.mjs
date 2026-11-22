@@ -24,8 +24,8 @@ try {
   await bar.locator('[data-bnav="products"]').click();
   await p.waitForFunction(() => document.querySelector('.nova-tab.active[data-page="products"]'));
   assert.equal(await bar.locator('[data-bnav="products"]').getAttribute('aria-current'), 'page');
-  await bar.locator('[data-bnav="customers"]').click();
-  await p.waitForFunction(() => document.querySelector('.nova-tab.active[data-page="customers"]'));
+  await bar.locator('[data-bnav="shift"]').click(); // Q21-2b: owner bar = البيع، الفواتير، الوردية، المخزون، المزيد
+  await p.waitForFunction(() => document.querySelector('.nova-tab.active[data-page="shift"]'));
   // more sheet: Esc closes and returns focus; item opens the page and marks «المزيد»
   await bar.locator('[data-bnav="more"]').click();
   const sheet = p.locator('#novaMoreSheet [role="dialog"]');

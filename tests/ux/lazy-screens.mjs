@@ -27,15 +27,13 @@ try {
   assert.equal(await p1.evaluate(() => typeof window.NovaSupplierAccounts.createSupplierAccounts), 'function');
   assert.equal(await p1.evaluate(() => document.querySelectorAll('script[src*="app-552-supplier-returns"]').length), 1, 'loaded once');
   await p1.evaluate(() => { location.hash = '#reports'; });
-  await p1.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'suppliers'); } catch {} }); // UI-BATCH1: reports tabs
-  await p1.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click());
+  await p1.evaluate(() => window.novaSwitchPage('reports', 'tool:novaSupplierAccountsSection')); // Q21-2c: supplier accounts = a tool
   await p1.locator('#novaSupplierAccountsSection').waitFor({ timeout: 10000 });
   assert.equal(await p1.evaluate(() => document.querySelectorAll('script[src*="app-550-supplier-accounts-ui"]').length), 1, 'still loaded once');
   // 3) opening the reports page directly also works
   const p2 = await open();
   await p2.goto(BASE + (BASE.includes('127.0.0.1') ? 'index.html' : '') + '#reports');
-  await p2.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'suppliers'); } catch {} }); // UI-BATCH1: reports tabs
-  await p2.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click());
+  await p2.evaluate(() => window.novaSwitchPage('reports', 'tool:novaSupplierAccountsSection'));
   await p2.locator('#novaSupplierAccountsSection').waitFor({ timeout: 10000 });
   assert.deepEqual(errors, [], 'no page errors');
   console.log('lazy-screens PASS');

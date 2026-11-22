@@ -1184,7 +1184,7 @@
   }
 
   function mountRegisterIfNeeded() {
-    var activeReports = document.querySelector('.nova-tab.active[data-page="reports"]');
+    var activeReports = document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
     if (!activeReports) { unlockedBy = null; return; }
     var me = currentUser();
     if (unlockedBy && (!me || me.id !== unlockedBy.id)) unlockedBy = null;

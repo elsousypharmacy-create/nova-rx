@@ -2,6 +2,8 @@
 (function(){
  const nav=document.querySelector('.nova-nav'),view=document.getElementById('novaPageView'),pos=document.querySelector('.pos-root');
  const tabs=[...document.querySelectorAll('.nova-tab')];
+ /* Q21-2: «الوردية» and a single tool are views of the reports/stock page. Cards that wait for '.nova-tab.active[data-page=reports|products]' still find one: a hidden host marker (after the real tabs). */
+ const hosts={};['reports','products'].forEach(p=>{const h=document.createElement('span');h.className='nova-hostmark';h.dataset.page=p;h.hidden=true;h.setAttribute('aria-hidden','true');nav.appendChild(h);hosts[p]=h});
  const data=()=>window.NOVA_DEMO||{products:[],customers:[]};
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const tr=(ar,en)=>localStorage.getItem('nova-rx-language')==='en'?en:ar;
@@ -142,6 +144,7 @@ window.novaStockNow=(()=>{let c=null;return p=>{const s=Number(p&&p.stock);if(!p
 function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'ok',en=localStorage.getItem('nova-rx-language')==='en',lb=en?(out?'Out':low?'Low':'In stock'):(out?'نفد':low?'منخفض':'متوفر'),ic=out?'\u2715':low?'\u26A0':'\u2713';return '<td class="pc-stock"'+(low||out?' data-low="1"':'')+' data-stock-state="'+st+'" data-label="'+(en?'Stock':'الرصيد')+'"><span class="nova-stock nova-stock-'+st+(low||out?' nova-low-badge':'')+'" role="img" aria-label="'+lb+': '+esc(n)+'" title="'+lb+'"><span class="nova-stock-ic" aria-hidden="true">'+ic+'</span><span class="nova-stock-n">'+esc(n)+'</span><span class="nova-stock-t">'+lb+'</span></span></td>'}window.novaStockChip=novaStockChip;
  let novaStockFilter='all';
  function render(page,filter=''){
+ if(page==='tools'){const H=window.novaToolsHub;if(H)H.render(view);else{view.innerHTML='<p style="padding:24px">'+tr('جاري تحميل الأدوات…','Loading tools…')+'</p>';if(window.novaLazy)window.novaLazy.load().then(()=>{if(document.body.dataset.activePage==='tools'&&window.novaToolsHub)window.novaToolsHub.render(view)},()=>{view.innerHTML='<p style="padding:24px">'+tr('تعذر تحميل الأدوات','Could not load the tools')+'</p>'})}return}
  if(page==='receiving'){if(window.novaReceiving)window.novaReceiving.render(view);else view.innerHTML='<p style="padding:24px">تعذر تحميل صفحة الاستلام</p>';return}
  const nAr=window.novaNormAr||(window.novaNormAr=x=>String(x==null?'':x).toLowerCase().replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g,'').replace(/[\u0622\u0623\u0625\u0671]/g,'\u0627').replace(/\u0649/g,'\u064A').replace(/\u0629/g,'\u0647').replace(/\u0624/g,'\u0648').replace(/\u0626/g,'\u064A').replace(/[\u0660-\u0669]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[\u06F0-\u06F9]/g,d=>String(d.charCodeAt(0)-0x6F0)));
  const hl=(txt,nq)=>{txt=String(txt==null?'':txt);if(!nq)return esc(txt);let f='';const map=[];for(let i=0;i<txt.length;i++){const c=nAr(txt[i]);for(let j=0;j<c.length;j++){f+=c[j];map.push(i)}}const at=f.indexOf(nq);if(at<0)return esc(txt);const a=map[at],b=map[at+nq.length-1]+1;return esc(txt.slice(0,a))+'<mark class="nova-hl">'+esc(txt.slice(a,b))+'</mark>'+esc(txt.slice(b))};
@@ -157,7 +160,7 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
  const LOW_T=30,nearSet=new Set();try{products.forEach(p=>{if(window.novaStock.hasLots(p.barcode)&&window.novaStock.lots(p.barcode).some(l=>l.onHand>0&&(l.nearExpiry||l.expired)))nearSet.add(String(p.barcode))})}catch(_){}
  const fTests={all:()=>true,low:p=>window.novaStockNow(p)>0&&window.novaStockNow(p)<LOW_T,out:p=>window.novaStockNow(p)<=0,near:p=>nearSet.has(String(p.barcode))};
  const fCount=k=>list.filter(fTests[k]).length;const fAct=real?'all':novaStockFilter;const shown=real?list.slice(0,300):list.filter(fTests[fAct]);
- const fLbl={all:tr('الكل','All'),low:tr('نواقص','Low'),out:tr('نفد','Out'),near:tr('قريب الانتهاء','Near expiry')};
+ const fLbl={all:tr('الكل','All'),low:tr('رصيد قليل','Low'),out:tr('نفد','Out'),near:tr('قريب الانتهاء','Near expiry')};
  const fEmpty={low:tr('لا توجد نواقص مطابقة','No matching low-stock items'),out:tr('لا توجد أصناف نفدت','No out-of-stock items'),near:tr('لا توجد أصناف قريبة الانتهاء','No near-expiry items'),all:tr('لا توجد نتائج مطابقة','No matching results')};
  const chipBar=real?'':'<div class="nova-stock-chips" id="novaStockChips" role="group" title="'+tr('نواقص: أقل من 30 وحدة · نفد: صفر · قريب الانتهاء: ضمن مهلة التحذير','Low: under 30 units · Out: zero · Near expiry: within warning window')+'" aria-label="'+tr('تصفية المخزون','Stock filter')+'">'+['all','low','out','near'].map(k=>'<button type="button" class="nova-stock-chip'+(fAct===k?' active':'')+'" data-stock-filter="'+k+'" aria-pressed="'+(fAct===k)+'">'+fLbl[k]+' <b data-chip-count="'+k+'">'+fCount(k)+'</b></button>').join('')+'<span class="nova-stock-legend" title="'+tr('نواقص: رصيد أقل من 30 وحدة. نفد: رصيد صفر. قريب الانتهاء: تشغيلة منتهية أو ضمن مهلة التحذير','Low: stock under 30. Out: zero stock. Near expiry: a lot expired or within the warning window')+'">'+tr('نواقص = أقل من '+LOW_T+' وحدة · نفد = 0 · قريب الانتهاء = ضمن '+window.novaStock.nearExpiryDays()+' يومًا','Low = under '+LOW_T+' · Out = 0 · Near expiry = within '+window.novaStock.nearExpiryDays()+' days')+'</span></div>';
  const catAr={Topical:'موضعي',ENT:'أنف وأذن وحنجرة',Chronic:'مزمن',Analgesic:'مسكنات',Antibiotic:'مضاد حيوي',Lipid:'دهون','GI Care':'جهاز هضمي',Vitamins:'فيتامينات',Antihistamine:'مضاد هيستامين'};
@@ -176,13 +179,13 @@ function novaStockChip(n){const out=n<=0,low=!out&&n<30,st=out?'out':low?'low':'
   +(window.novaTransfers.list().map(t=>'<tr data-trf="'+esc(t.id)+'"><td>'+esc(t.name||t.key)+'</td><td>'+esc(t.branch)+'</td><td>'+(t.direction==='out'?'صادر':'وارد')+'</td><td>'+esc(t.sentQty!==undefined?t.sentQty:t.qty)+'</td><td data-status="'+esc(t.status)+'">'+esc(trfSt[t.status]||t.status)+'</td><td>'+(t.diff?esc(t.diff):'—')+'</td><td>'+(t.status==='requested'?'<button type="button" class="btn btn-secondary" data-trf-send="'+esc(t.id)+'" style="min-height:44px;min-width:44px">إرسال</button>':t.status==='in-transit'?'<button type="button" class="btn btn-secondary" data-trf-recv="'+esc(t.id)+'" style="min-height:44px;min-width:44px">استلام</button>':'')+'</td></tr>').join('')||'<tr><td colspan="7" class="nova-muted">لا توجد تحويلات</td></tr>')
   +'</tbody></table></div></section>':'';
  const when=real&&cat.exportedAt?window.NovaFmt.formatDateTime(cat.exportedAt):'';
- content=head(tr('المخزون','Stock')+' <small class="nova-inv-count">'+products.length.toLocaleString('en-US')+tr(' صنف',' items')+'</small>',real?tr('قائمة أسعار حقيقية من STOCK LIVE','Real price list from STOCK LIVE')+(when?' ('+tr('آخر تحديث ','Last updated ')+when+')':tr(' — وقت التحديث غير متاح',' — Update time unavailable'))+tr(' — الأسعار فقط؛ الرصيد والتصنيف غير متوفرين من المصدر',' — Prices only; stock and category are not available from the source'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false).replace(/<\/div>$/,'<div class="nova-products-toolbar nova-inv-tools"><span class="nova-search-wrap"><input class="nova-page-search" id="novaFilter" placeholder="ابحث بالاسم أو الباركود…" aria-label="بحث في المخزون"><button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span><button type="button" id="novaManualReceive" class="nova-inventory-action nova-inv-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg><span>استلام بضاعة</span></button><details class="nova-kebab nova-inv-more"><summary aria-label="أدوات المخزون" title="أدوات المخزون">⋯</summary><div class="nova-kebab-pop"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 9h8M8 12h8M8 15h5"/></svg><span>قراءة فاتورة مشتريات</span></button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span>طباعة استيكرات الأدوية</span></button><a href="#receiving" class="nova-inventory-action secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span>صفحة استلام الطلبيات</span></a></div></details></div></div>')
- +(real?'<div class="nova-inv-meta"><div class="nova-kpis nova-kpis-compact" id="novaProductsKpis">'+(q?kpi('نتيجة البحث',list.length):'')+nearKpi(products)+'</div><span class="nova-stock-notice" id="novaStockNotice" role="note">'+tr('الأسعار من STOCK LIVE · الرصيد غير متوفر من المصدر','Prices from STOCK LIVE · stock not available from the source')+'</span>'+dupBlock+'</div>'
+ content=head(tr('المخزون','Stock')+' <small class="nova-inv-count">'+products.length.toLocaleString('en-US')+tr(' صنف',' items')+'</small>',real?tr('قائمة أسعار حقيقية من STOCK LIVE','Real price list from STOCK LIVE')+(when?' ('+tr('آخر تحديث ','Last updated ')+when+')':tr(' — وقت التحديث غير متاح',' — Update time unavailable'))+tr(' — الأسعار من المصدر؛ الرصيد من حركة الجهاز',' — Prices from the source; stock from this device'):'قائمة الأصناف المتاحة في بيانات العرض — بدون تعديل المخزون الحقيقي',false).replace(/<\/div>$/,'<div class="nova-products-toolbar nova-inv-tools"><span class="nova-search-wrap"><input class="nova-page-search" id="novaFilter" placeholder="ابحث بالاسم أو الباركود…" aria-label="بحث في المخزون"><button type="button" id="novaFilterClear" class="nova-search-clear" aria-label="'+tr('مسح البحث','Clear search')+'" title="'+tr('مسح البحث','Clear search')+'" hidden>×</button></span><button type="button" id="novaManualReceive" class="nova-inventory-action nova-inv-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg><span>استلام بضاعة</span></button><details class="nova-kebab nova-inv-more"><summary aria-label="أدوات المخزون" title="أدوات المخزون">⋯</summary><div class="nova-kebab-pop"><button type="button" id="novaInventoryPurchase" class="nova-inventory-action"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 9h8M8 12h8M8 15h5"/></svg><span>قراءة فاتورة مشتريات</span></button><button type="button" id="novaInventoryLabels" class="nova-inventory-action secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span>طباعة استيكرات الأدوية</span></button><a href="#receiving" class="nova-inventory-action secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span>صفحة استلام الطلبيات</span></a></div></details></div></div>')
+ +(real?'<div class="nova-inv-meta"><div class="nova-kpis nova-kpis-compact" id="novaProductsKpis">'+(q?kpi('نتيجة البحث',list.length):'')+nearKpi(products)+'</div><span class="nova-stock-notice" id="novaStockNotice" role="note">'+tr('الأسعار من STOCK LIVE · الرصيد بيظهر بعد الجرد أو الاستلام على الجهاز','Prices from STOCK LIVE · stock shows after a count or a receipt on this device')+'</span>'+dupBlock+'</div>'
  :'<div class="nova-kpis nova-kpis-prod">'+kpi('عدد الأصناف',products.length)+kpi('إجمالي الوحدات',Math.round(products.reduce((s,p)=>s+(Number(window.novaStockNow(p))||0),0)*100)/100)+'<button type="button" id="novaLowKpi" class="nova-kpi nova-kpi-btn'+(fAct==='low'?' active':'')+'" aria-pressed="'+(fAct==='low')+'" title="'+tr('نقص مسجّل','Logged shortages')+': '+window.novaShortages.list().length+' — '+tr('أقل من '+LOW_T+' وحدة؛ اضغط للتصفية','under '+LOW_T+' units; click to filter')+'"><small>'+tr('مخزون منخفض (أقل من 30)','Low Stock (under 30)')+'</small><strong>'+products.filter(fTests.low).length+'</strong>'+(fAct==='low'?'<span class="nova-chip">'+tr('عرض الكل','Show all')+'</span>':'')+'</button>'+kpi('قيمة المخزون بسعر البيع',money(products.reduce((s,p)=>s+window.novaStockNow(p)*p.price,0)))+nearKpi(products)+'</div>')
  +chipBar+(real?'':dupBlock)+trfBlock+(()=>{const cols=[['الصنف',p=>'<td class="pc-name" data-label="الصنف">'+nameOf(p)+'</td>'],['الباركود',p=>'<td dir="ltr" class="pc-bar" data-label="الباركود">'+hl(p.barcode,q)+'</td>'],['السعر',p=>'<td class="pc-price" data-label="السعر">'+money(p.price)+'</td>']];
  if(shown.some(p=>packOf(p)))cols.push(['العبوة',p=>'<td data-pack class="pc-pack" data-label="العبوة">'+(packOf(p)?esc(packOf(p)):'<span class="nova-muted" title="'+tr('غير متوفر من المصدر','Not available from the source')+'">'+'—</span>')+'</td>']);
- if(!real){cols.push(['الرصيد',p=>window.novaStockChip(window.novaStockNow(p))],['التصنيف',p=>'<td class="pc-cat" data-label="التصنيف">'+catLbl(p.category)+'</td>']);}
- if(shown.some(p=>expInfo(p)))cols.push(['أقرب صلاحية',expBadge]);
+ const stockOf=p=>{const n=window.novaStockNow?window.novaStockNow(p):p.stock;if(n!=null&&n!==''&&Number.isFinite(Number(n)))return Number(n);try{const k=String(p.barcode||'');if(window.novaStock&&window.novaStock.hasLots(k)){const v=window.novaStock.available(k);if(Number.isFinite(v))return v}}catch(e){}return null};
+ cols.push(['الرصيد',p=>{const n=stockOf(p);return n==null?'<td class="pc-stock" data-stock-state="unknown" data-label="الرصيد"><span class="nova-muted" title="'+tr('ما اتعدّش لسه — اعمل جرد أو استلام','Not counted yet — do a stock count or receive it')+'">—</span></td>':window.novaStockChip(n)}],['أقرب صلاحية',expBadge]);if(!real)cols.push(['التصنيف',p=>'<td class="pc-cat" data-label="التصنيف">'+catLbl(p.category)+'</td>']);
  const SK={'الصنف':'name','السعر':'price','الرصيد':'stock'},ss=(window.__novaSort&&(window.__novaSort.page||'products')==='products')?window.__novaSort:{},sh=ss.key?shown.slice().sort((a,b)=>{const x=a[ss.key],y=b[ss.key],r=ss.key==='name'?String(x).localeCompare(String(y),'ar'):(Number(x)||0)-(Number(y)||0);return ss.dir==='desc'?-r:r}):shown;
  const hd=cols.map(c=>{const k=SK[c[0]];if(!k)return c[0];const on=ss.key===k,d=on?ss.dir:'none';return '<button type="button" class="nova-sort-btn" data-sort="'+k+'" data-sort-dir="'+d+'"><span>'+c[0]+'</span><svg class="nova-sort-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(d==='asc'?'<path d="M12 19V5M5 12l7-7 7 7"/>':d==='desc'?'<path d="M12 5v14M19 12l-7 7-7-7"/>':'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>')+'</svg></button>'});
  const rowFn=p=>'<tr tabindex="0" class="nova-row-focus">'+cols.map(c=>c[1](p)).join('')+'</tr>';window.__novaRowRest=sh.length>40?{items:sh.slice(40),fn:rowFn}:null;return cards(hd,rows(sh.slice(0,40),rowFn)).replace('nova-data-table nova-cards','nova-data-table nova-cards nova-prod-cards').replace('class="nova-panel"','class="nova-panel nova-prod-panel"').replace('لا توجد نتائج مطابقة',fEmpty[fAct]);})().replace('البيانات التجريبية',real?'أسعار STOCK LIVE':'الأصناف <span class="nova-demo-chip">عرض تجريبي</span>')+(real&&list.length>shown.length?'<div class="nova-empty">'+tr('يعرض أول '+shown.length+' من '+list.length+' صنف — اكتب في البحث لتضييق النتيجة','Showing the first '+shown.length+' of '+list.length+' items — type in search to narrow the list')+'</div>':'');
@@ -254,7 +257,7 @@ const sv=window.novaSales?window.novaSales.list():[];const day=new Date().toDate
  const keep=[];allT.forEach(t=>{const m=money(t[2]);if(!(Math.abs(t[2])>0.004)||shown.has(m))return;shown.add(m);keep.push('<div class="nova-kpi nova-kpi-total" data-kpi-total="'+t[0]+'"><small>'+t[1]+'</small><strong>'+m+'</strong></div>')});
  return periodGrp+(keep.length?'<section class="nova-kpi-group nova-kpi-group-quiet" id="novaKpiTotals" aria-label="'+tr('الإجمالي على هذا الجهاز','Totals on this device')+'"><h3 class="nova-kpi-group-title">'+tr('الإجمالي على هذا الجهاز','Totals on this device')+'</h3><div class="nova-kpis nova-kpis-totals">'+keep.join('')+'</div></section>':'')};
  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,10);
- const realBlock=sv.length?perBar+repKpiHtml()
+ const realBlock=(sv.length||(document.body&&document.body.dataset.novaView==='shift'))?perBar+repKpiHtml()
   +'<div class="nova-panel" id="novaPayBreakdown"><div class="nova-panel-title">'+tr('تقسيم طرق الدفع','Payment-method breakdown')+' — '+pl+'</div>'+(()=>{const payTot=split.cash+split.card+split.credit+split.wallet+split.instapay+split.fawry;window.__novaPayTot=payTot;return [['cash',tr('نقدي','Cash'),split.cash],['card',tr('بطاقة','Card'),split.card],['credit',tr('آجل','Credit'),split.credit],['wallet',tr('محفظة موبايل','Mobile wallet'),split.wallet],['instapay',tr('إنستاباي','InstaPay'),split.instapay],['fawry',tr('فوري','Fawry'),split.fawry],['returns',tr('مرتجعات','Returns'),-retToday]]})().filter(t=>t[0]==='returns'?retToday>0:(['cash','card','credit'].includes(t[0])||t[2]>0)).map(t=>{const payTot=window.__novaPayTot||0;const pc=t[0]==='returns'||!payTot?'':' <small data-pay-share style="color:#9eacb9">('+Math.round(t[2]/payTot*100)+'%)</small>';return '<div data-pay-row="'+t[0]+'" data-amount="'+t[2].toFixed(2)+'" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a3139"><span>'+t[1]+pc+'</span><strong>'+money(t[2])+'</strong></div>'}).join('')+'</div>'
   +(()=>{const pr=rets.filter(r=>inPer(r.at)),g={};pr.forEach(r=>{const k=retCat(r.reason);g[k]=g[k]||{n:0,amt:0};g[k].n++;g[k].amt+=Number(r.amount)||0});const cats=RET_REASONS.concat([['__other',tr('أخرى','Other')]]);return '<div class="nova-panel" id="novaRetReasons"><div class="nova-panel-title">'+tr('أسباب المرتجعات','Return reasons')+' — '+pl+'</div>'+(pr.length?cats.filter(c=>g[c[0]]).map(c=>'<div data-ret-reason-row="'+(c[0]==='__other'?'other':esc(c[0]))+'" data-count="'+g[c[0]].n+'" data-amount="'+g[c[0]].amt.toFixed(2)+'" style="display:flex;justify-content:space-between;gap:var(--sp-2);padding:6px 0;border-bottom:1px solid #2a3139"><span>'+esc(c[1])+' ('+g[c[0]].n+')</span><strong>'+money(g[c[0]].amt)+'</strong></div>').join(''):'<div data-ret-reasons-empty style="color:#9eacb9">'+tr('لا مرتجعات في هذه الفترة','No returns in this period')+'</div>')+'</div>'})()
   +'<div class="nova-panel" id="novaShiftClose"><div class="nova-panel-title">'+tr('قفل الوردية','Close shift')+' — '+pl+'</div>'
@@ -529,9 +532,10 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
  };
  if(input){input.value=filter;const clr=document.getElementById('novaFilterClear');if(clr){clr.hidden=!filter;clr.onclick=()=>{render(page,'');const n=document.getElementById('novaFilter');if(n)n.focus()}}const cc=document.getElementById('novaCustClear');if(cc)cc.onclick=()=>{render(page,'');const n=document.getElementById('novaFilter');if(n)n.focus()};input.addEventListener('input',e=>{const v=e.target.value;render(page,v);const next=document.getElementById('novaFilter');next.focus();next.setSelectionRange(v.length,v.length)})}
  }
- function switchPage(page){if(!['sale','invoices','products','customers','reports','settings','receiving'].includes(page))page='sale';if(!document.documentElement.classList.contains('nova-embed'))try{localStorage.setItem('nova.activePage',page)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===page));if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page),nv=at&&at.offsetParent&&at.closest('.nova-nav');if(nv)try{const r=at.getBoundingClientRect(),nr=nv.getBoundingClientRect();nv.scrollTo({left:nv.scrollLeft+(r.left-nr.left)-(nr.width-r.width)/2,behavior:'smooth'})}catch(e){}}/* UI-BATCH1: scrollIntoView on the hidden «العمليات» item scrolled the receiving page under the top bar on phones */const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale){render(page);try{window.scrollTo(0,0)}catch(e){}}if(page==='invoices')document.getElementById('novaFilter')?.focus();history.replaceState(null,'','#'+page)}
- window.addEventListener('nova-catalog',()=>{const act=tabs.find(t=>t.classList.contains('active'));if(act&&act.dataset.page==='products'){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
- nav.addEventListener('click',e=>{if(e.target.closest('[data-nav-receive]')){e.preventDefault();switchPage('products');openReceive();return}const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page)});
+ function switchPage(page,vw){vw=vw||'';if(page==='shift'){page='reports';vw='shift'}if(!['sale','invoices','products','customers','reports','settings','receiving','tools'].includes(page)){page='sale';vw=''}const key=vw==='shift'?'shift':/^tool:/.test(vw)?'tools':page;if(!document.documentElement.classList.contains('nova-embed'))try{localStorage.setItem('nova.activePage',key)}catch(e){};tabs.forEach(t=>t.classList.toggle('active',t.dataset.page===key));Object.keys(hosts).forEach(p=>hosts[p].classList.toggle('active',!!vw&&p===page));document.body.dataset.novaView=vw;if(window.matchMedia&&matchMedia('(max-width:780px)').matches){const at=tabs.find(t=>t.dataset.page===page),nv=at&&at.offsetParent&&at.closest('.nova-nav');if(nv)try{const r=at.getBoundingClientRect(),nr=nv.getBoundingClientRect();nv.scrollTo({left:nv.scrollLeft+(r.left-nr.left)-(nr.width-r.width)/2,behavior:'smooth'})}catch(e){}}/* UI-BATCH1: scrollIntoView on the hidden «العمليات» item scrolled the receiving page under the top bar on phones */const sale=page==='sale';document.body.dataset.activePage=page;pos.hidden=!sale;pos.style.display=sale?'flex':'none';view.hidden=sale;if(!sale){render(page);try{window.scrollTo(0,0)}catch(e){}}if(page==='invoices')document.getElementById('novaFilter')?.focus();history.replaceState(null,'','#'+key)}
+ window.novaSwitchPage=switchPage;
+ window.addEventListener('nova-catalog',()=>{if(document.body.dataset.activePage==='products'&&!document.body.dataset.novaView){const f=document.getElementById('novaFilter');render('products',f?f.value:'')}});
+ nav.addEventListener('click',e=>{if(e.target.closest('[data-nav-receive]')){e.preventDefault();switchPage('products');openReceive();return}const tab=e.target.closest('[data-page]');if(tab)switchPage(tab.dataset.page,tab.classList.contains('nova-hostmark')?document.body.dataset.novaView:'')});
  const hashPage=()=>location.hash.slice(1).split('&')[0];
  const wantReceive=()=>/[#&]receive=1(&|$)/.test(location.hash);
  const openReceive=(n=0)=>{const b=document.getElementById('novaInventoryPurchase'),pn=document.getElementById('novaAiPanel');if(b&&pn)pn.classList.add('open');else if(n<50)setTimeout(()=>openReceive(n+1),100)};
@@ -593,97 +597,90 @@ function novaReturnNotice(sale,ret,canUndo,rerender){
     return { reason: reason, by: me.name, role: me.role, approvedBy: v.name, approverId: v.id };
   };
 })();
-/* UI-BATCH1 #7: the reports page is split into tabs. Same cards, only grouped (cards mounted later by lazy modules are grouped as they arrive).
-   Who sees what uses the existing permissions: owner numbers need reports.view; vault/bank, suppliers and staff need accounts.manage;
-   «الوردية» (shift close, handover notes, cash drawer, fridge, controlled register, expenses — q17) is for everyone. A hidden tab is a view filter, not a security boundary. */
+/* Q21-2 SIMPLIFY (replaces the UI-BATCH1 reports tabs). The reports and stock pages show only their own content; the ops cards that
+   used to pile up under them live in «الأدوات» (app/594 hub) and open one at a time («tool:<id>» view on their host page); «الوردية»
+   is its own nav entry (view «shift» on the reports page: open shift, drawer, expenses, close, notes — at the top). Who sees which nav
+   entry follows the permissions (fail closed while they load, see app/562). A hidden card is a view filter, not a security boundary. */
 (function () {
-  var TABS = [
-    ['owner', 'لوحة المالك', 'Owner board', 'reports.view'],
-    ['shift', 'الوردية', 'Shift', ''],
-    ['vault', 'الخزنة والبنك', 'Vault & bank', 'accounts.manage'],
-    ['suppliers', 'الموردين', 'Suppliers', 'accounts.manage'],
-    ['staff', 'الحضور', 'Attendance', 'accounts.manage']
-  ];
-  var MAP = { novaShiftClose: 'shift', novaShiftNotes: 'shift', novaCashDrawerCard: 'shift', novaFridgeLog: 'shift', novaControlledRegister: 'shift', novaExpensesSection: 'shift',
-    novaVaultCard: 'vault', novaSupplierAccountsSection: 'suppliers', novaSupplierCheques: 'suppliers', novaSupplierNotes: 'suppliers', novaPharmacySwaps: 'suppliers',
-    novaStaffStatsCard: 'staff', novaPayroll: 'staff' };
-  var KEY = 'nova.reportsTab', BAR = 'novaRepTabs', busy = false, queued = false, waiting = 0;
+  var HIDE = { reports: ['novaVaultCard', 'novaIncomeCard', 'novaSupplierAccountsSection', 'novaSupplierCheques', 'novaSupplierNotes', 'novaPharmacySwaps', 'novaCorporate',
+    'novaDoctorRx', 'novaLicenseReminders', 'novaSensitiveLogSection', 'novaStaffStatsCard', 'novaPayroll', 'novaExpiryClearance', 'novaFridgeLog', 'novaControlledRegister',
+    'novaShiftNotes', 'novaCashDrawerCard', 'novaExpensesSection', 'novaShiftClose'],
+    products: ['novaStockCount', 'novaItemLimits', 'novaDestruction', 'novaCustomerRequests', 'novaShelfLabels', 'novaFamilyAccounts', 'novaInternalBarcodes', 'novaOfficialPrices',
+    'novaAltBarcodesCard', 'novaGs1Card'] };
+  var SHIFT = ['novaShiftClose', 'novaCashDrawerCard', 'novaExpensesSection', 'novaShiftNotes', 'novaFridgeLog', 'novaControlledRegister'];
+  var HEAD = 'novaViewHead', busy = false, queued = false, waiting = 0;
   function en() { try { return localStorage.getItem('nova-rx-language') === 'en'; } catch (e) { return false; } }
-  function can(action) {
-    if (!action) return true;
-    var P = window.novaPerms;
-    if (P && typeof P.can === 'function') { try { return !!P.can(action); } catch (e) { return false; } }
-    // q16 FAIL CLOSED: permissions not loaded yet. A single-user device (no accounts) is the owner; with accounts
-    // (or when we cannot tell) the gated tabs stay hidden until novaPerms is known, then apply() runs again.
-    if (!accountsOnDevice()) return true;
-    waiting = waiting || 1; return false;
-  }
+  function T(a, e) { return en() ? e : a; }
   function accountsOnDevice() {
     var A = window.novaAuth;
     if (A && typeof A.hasAccounts === 'function') { try { return !!A.hasAccounts(); } catch (e) { return true; } }
     try { var v = localStorage.getItem('nova.auth.accounts'); if (v == null) return false; var a = JSON.parse(v); return !Array.isArray(a) || a.length > 0; } catch (e) { return true; }
   }
-  function allowed() { return TABS.filter(function (t) { return can(t[3]); }); }
-  function current(list) {
-    var saved = ''; try { saved = sessionStorage.getItem(KEY) || ''; } catch (e) {}
-    for (var i = 0; i < list.length; i++) if (list[i][0] === saved) return saved;
-    return list[0][0];
+  function can(action) {
+    var P = window.novaPerms;
+    if (P && typeof P.can === 'function') { try { return !!P.can(action); } catch (e) { return false; } }
+    if (!accountsOnDevice()) return true;   // a single-user device (no accounts) is the owner
+    waiting = waiting || 1; return false;   // fail closed until the permissions load, then apply() runs again
   }
-  function tabOf(el) {
-    if (el.id === BAR || el.classList.contains('nova-page-header')) return '';
-    return MAP[el.id] || 'owner';
-  }
+  function hostOf(id) { return HIDE.products.indexOf(id) >= 0 ? 'products' : 'reports'; }
+  function titleOf(el) { var h = el && el.querySelector('h1,h2,h3,.nova-panel-title,summary'); return h ? h.textContent.trim().replace(/\s+/g, ' ') : ''; }
   function apply() {
     queued = false;
-    var view = document.getElementById('novaPageView');
+    var view = document.getElementById('novaPageView'), body = document.body;
     if (!view || busy) return;
-    if (document.body.dataset.activePage !== 'reports') { view.classList.remove('nova-rtabs-on'); return; }
+    var page = body.dataset.activePage, v = body.dataset.novaView || '';
+    var head = document.getElementById(HEAD);
+    if (page !== 'reports' && page !== 'products') { view.classList.remove('nova-rtabs-on'); view.removeAttribute('data-view'); if (head) head.remove(); return; }
     busy = true;
     try {
       var wasWaiting = waiting; waiting = 0;
-      var list = allowed(), cur = current(list), bar = document.getElementById(BAR);
-      var head = view.querySelector(':scope > .nova-page-header');
-      if (!bar) {
-        bar = document.createElement('div'); bar.id = BAR; bar.className = 'nova-rtabs'; bar.setAttribute('role', 'tablist');
-        bar.addEventListener('click', function (e) {
-          var b = e.target.closest('[data-rtab]'); if (!b) return;
-          try { sessionStorage.setItem(KEY, b.getAttribute('data-rtab')); } catch (x) {}
-          apply();
-        });
-        bar.addEventListener('keydown', function (e) {
-          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-          var bs = Array.prototype.slice.call(bar.querySelectorAll('[data-rtab]')), i = bs.indexOf(document.activeElement); if (i < 0) return;
-          var rtl = getComputedStyle(bar).direction === 'rtl', step = (e.key === 'ArrowLeft') === rtl ? 1 : -1;
-          var nb = bs[(i + step + bs.length) % bs.length]; e.preventDefault(); nb.click(); var again = bar.querySelector('[data-rtab="' + nb.getAttribute('data-rtab') + '"]'); if (again) again.focus();
-        });
-      }
-      var sig = list.map(function (t) { return t[0]; }).join(',') + '|' + cur + '|' + (en() ? 'en' : 'ar');
-      if (bar.getAttribute('data-sig') !== sig) {
-        bar.setAttribute('data-sig', sig);
-        bar.innerHTML = list.map(function (t) {
-          var on = t[0] === cur;
-          return '<button type="button" role="tab" data-rtab="' + t[0] + '" aria-selected="' + on + '" tabindex="' + (on ? '0' : '-1') + '">' + (en() ? t[2] : t[1]) + '</button>';
-        }).join('');
-      }
-      var want = head ? head.nextSibling : view.firstChild;
-      if (bar.parentNode !== view || (head && bar.previousSibling !== head)) view.insertBefore(bar, want === bar ? bar.nextSibling : want);
+      if (page === 'reports' && !v && !can('reports.view')) v = 'shift';   // no owner numbers: the reports page is the shift page
+      var mode = page === 'reports' && v === 'shift' ? 'shift' : /^tool:/.test(v) ? 'tool' : '';
+      var keep = mode === 'shift' ? SHIFT : mode === 'tool' ? [v.slice(5)] : null, hide = HIDE[page];
       view.classList.add('nova-rtabs-on');
+      view.setAttribute('data-view', mode);
+      if (mode) {
+        if (!head) { head = document.createElement('div'); head.id = HEAD; head.className = 'nova-page-header nova-view-head'; }
+        var card = mode === 'tool' ? document.getElementById(keep[0]) : null;
+        var sig = mode + '|' + (card ? titleOf(card) : '') + '|' + (en() ? 'en' : 'ar');
+        if (head.getAttribute('data-sig') !== sig) {
+          head.setAttribute('data-sig', sig);
+          head.innerHTML = mode === 'shift'
+            ? '<div><h1>' + T('الوردية', 'Shift') + '</h1><p>' + T('فتح الوردية، عدّ الدرج، المصروفات، وقفل الوردية', 'Open the shift, count the drawer, expenses, close the shift') + '</p></div>'
+            + '<div class="nova-view-acts"><button type="button" class="btn btn-secondary" data-shift-go="count">' + T('عدّ الدرج', 'Count the drawer') + '</button><button type="button" class="btn btn-secondary" data-shift-go="expense">' + T('مصروف من الدرج', 'Drawer expense') + '</button><button type="button" class="btn btn-primary" data-shift-go="close">' + T('قفل الوردية', 'Close the shift') + '</button></div>'
+            : '<div><h1>' + (card ? titleOf(card) : T('جاري التحميل…', 'Loading…')) + '</h1></div><button type="button" class="btn btn-secondary nova-view-back" data-view-back>' + T('→ الأدوات', '← Tools') + '</button>';
+        }
+        if (head.parentNode !== view) view.insertBefore(head, view.firstChild);   // CSS order puts it on top: never fight other cards for the first slot
+      } else if (head) head.remove();
       Array.prototype.forEach.call(view.children, function (el) {
-        var t = tabOf(el), off = !!t && t !== cur;
+        if (el.id === HEAD) return;
+        var off = keep ? keep.indexOf(el.id) < 0 : hide.indexOf(el.id) >= 0;
         if (off) { if (!el.hasAttribute('data-rtab-off')) el.setAttribute('data-rtab-off', ''); }
         else if (el.hasAttribute('data-rtab-off')) el.removeAttribute('data-rtab-off');
+        var o = keep ? String(keep.indexOf(el.id) + 1) : '';
+        if (el.style.order !== o) el.style.order = o;
       });
-      if (waiting) { waiting = wasWaiting + 1; if (waiting < 100) setTimeout(schedule, 150); } // re-check until permissions load (~15 s)
+      if (waiting) { waiting = wasWaiting + 1; if (waiting < 100) setTimeout(schedule, 150); }   // re-check until permissions load (~15 s)
     } finally { busy = false; }
   }
   function schedule() { if (queued) return; queued = true; Promise.resolve().then(apply); }
   function init() {
     var view = document.getElementById('novaPageView'); if (!view) return;
-    new MutationObserver(function () { if (!busy) schedule(); }).observe(view, { childList: true });
-    new MutationObserver(schedule).observe(document.body, { attributes: true, attributeFilter: ['data-active-page', 'class'] });
+    new MutationObserver(function () { if (!busy) schedule(); }).observe(view, { childList: true, subtree: false });
+    new MutationObserver(schedule).observe(document.body, { attributes: true, attributeFilter: ['data-active-page', 'data-nova-view', 'class'] });
     new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: ['lang', 'dir'] });
-    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.nova-lang-btn')) setTimeout(schedule, 0); });
-    window.novaReportsTabs = { apply: apply, tabOf: tabOf, TABS: TABS };
+    document.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('.nova-lang-btn')) setTimeout(schedule, 0);
+      if (e.target.closest && e.target.closest('[data-view-back]') && window.novaSwitchPage) window.novaSwitchPage('tools');
+      var go = e.target.closest && e.target.closest('[data-shift-go]');
+      if (go) {
+        var k = go.getAttribute('data-shift-go');
+        var el = k === 'count' ? document.getElementById('novaShiftDenomBtn') : k === 'expense' ? document.querySelector('#novaExpensesSection [data-nsa-act=addexp]') : document.getElementById('novaShiftCount');
+        if (!el) return;
+        if (k === 'close') { try { el.scrollIntoView({ block: 'center' }); } catch (x) {} el.focus(); } else el.click();
+      }
+    });
+    window.novaPageViews = { apply: apply, HIDE: HIDE, SHIFT: SHIFT, hostOf: hostOf, openTool: function (id) { if (window.novaSwitchPage) window.novaSwitchPage(hostOf(id), 'tool:' + id); } };
     schedule();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

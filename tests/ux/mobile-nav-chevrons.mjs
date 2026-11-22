@@ -36,7 +36,7 @@ try {
   const o = await m.evaluate(() => { const n = document.querySelector('.nova-nav'); return { sw: n.scrollWidth, cw: n.clientWidth, dir: getComputedStyle(n).direction }; });
   assert.ok(o.sw > o.cw, 'nav overflows on mobile');
   assert.equal(o.dir, 'rtl');
-  assert.equal(await m.locator('.nova-nav .nova-tab').count(), 7, '7 destinations');
+  assert.equal(await m.locator('.nova-nav .nova-tab:not([hidden])').count(), 8, '8 destinations (Q21-2b owner nav: البيع … الأدوات + ⚙)');
   assert.ok(await vis(m, '#novaNavNext'), 'next chevron visible at start');
   assert.ok(!(await vis(m, '#novaNavPrev')), 'prev chevron hidden at start');
   let guard = 0;

@@ -76,11 +76,14 @@ await t('typing part of a barcode lists that product (partial barcode search)', 
 await t('Products tab: real list, honest labels (prices only, no stock), capped rows, search, re-renders when data arrives', async () => {
   await real.page.evaluate(() => document.querySelector('.nova-tab[data-page=products]').click()); await real.page.waitForTimeout(400);
   const txt = await real.page.locator('#novaPageView').innerText();
-  assert.ok(txt.includes('STOCK LIVE') && txt.includes('غير متوفر'), 'says prices only, stock unavailable');
+  assert.ok(txt.includes('STOCK LIVE') && txt.includes('بعد الجرد'), 'says prices only; stock shows after a count (Q21-2i)');
   const stockKpi = await real.page.locator('#novaStockNotice').innerText(); // UX212: compact notice chip replaces the stock KPI card
-  assert.ok(stockKpi.includes('غير متوفر'), 'the stock KPI says unavailable, not a number: ' + stockKpi.replace(/\n/g, ' '));
+  assert.ok(stockKpi.includes('بعد الجرد'), 'the stock notice says when stock appears, not a number: ' + stockKpi.replace(/\n/g, ' '));
   const cells = await real.page.locator('#novaRows tr:first-child td').allInnerTexts();
-  assert.ok(cells.length <= 4, 'empty stock/category columns are hidden, no made-up numbers: ' + cells.length);
+  // Q21-2i: «الرصيد» + «أقرب صلاحية» are always there; uncounted items show «—», never a made-up number
+  const stockCell = await real.page.locator('#novaRows tr:first-child td.pc-stock').innerText();
+  assert.equal(stockCell.trim(), '—', 'uncounted stock shows —, no made-up number');
+  assert.ok(cells.length <= 6, 'no category column on real data: ' + cells.length);
   assert.ok(txt.includes(String(rows.length)), 'shows the item count');
   assert.ok(!txt.includes('البيانات التجريبية'), 'no demo label on real data');
   assert.ok(await real.page.locator('#novaRows tr').count() <= 300, 'rows are capped');

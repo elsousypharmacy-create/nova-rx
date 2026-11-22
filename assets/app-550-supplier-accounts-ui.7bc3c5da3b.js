@@ -52,6 +52,7 @@
     'missing-category': () => t('اختار بند المصروف.', 'Select an expense category.'),
     'bad-category': () => t('بند المصروف غير مسموح به.', 'Invalid expense category.'),
     'missing-user': () => t('لازم يكون في مستخدم مسجل دخول.', 'A logged-in user is required.'),
+    'needs-approval': () => t('المبلغ أكبر من 200 ج.م — محتاج اعتماد مدير.', 'Over 200 EGP — needs a manager approval.'),
     'self-approval': () => t('ماينفعش اللي سجّل المصروف هو نفسه اللي يعتمده.', 'Creator cannot approve or reject their own expense.'),
     'not-draft': () => t('المصروف ده اتاخد فيه قرار قبل كده.', 'This expense has already been decided.'),
     'not-approved': () => t('ماينفعش تصرف مصروف قبل ما يتعتمد.', 'Expense must be approved before payment.'),
@@ -914,29 +915,31 @@
     const acct = getAcct();
     const provider = getProvider();
     if (!acct) return;
-    const user = provider && typeof provider.currentUser === 'function' ? provider.currentUser() : null;
+    const user = (provider && typeof provider.currentUser === 'function' ? provider.currentUser() : null) || (provider && typeof provider.deviceOwner === 'function' ? provider.deviceOwner() : null);
     if (!user || !user.id) {
       state.flash = { kind: 'err', text: ERR_LABELS['missing-user']() };
       renderSection();
       return;
     }
+    const quickMax = typeof acct.addQuickExpense === 'function' ? acct.QUICK_MAX || 200 : 0;
 
     const catOptions = CATEGORIES.map((c) => `<option value="${esc(c)}">${esc(CAT_LABELS[c]())}</option>`).join('');
 
     openDialog({
-      title: t('إضافة مصروف جديد (يحتاج اعتماد)', 'Add New Expense (Requires Approval)'),
+      title: t('مصروف من الدرج', 'Drawer expense'),
       bodyHtml: `
         <form data-nsa-form>
           <div class="nsa-field">
             <label for="nsaExpAmt">${esc(t('المبلغ (ج.م)', 'Amount (EGP)'))}</label>
             <input id="nsaExpAmt" type="number" step="0.01" min="0.01" required />
+            <div class="nsa-muted" id="nsaExpHint" style="font-size:12px;margin-top:4px">${esc(quickMax ? t('لحد ' + quickMax + ' ج.م بيتصرف من الدرج على طول. أكتر من كده محتاج اعتماد مدير.', 'Up to ' + quickMax + ' EGP is paid from the drawer at once. More needs a manager approval.') : '')}</div>
           </div>
           <div class="nsa-field">
             <label for="nsaExpCat">${esc(t('البند', 'Category'))}</label>
             <select id="nsaExpCat" required>${catOptions}</select>
           </div>
           <div class="nsa-field">
-            <label for="nsaExpDoc">${esc(t('رقم المستند / الإيصال', 'Document / Receipt Ref'))}</label>
+            <label for="nsaExpDoc">${esc(t('السبب / رقم الإيصال', 'Reason / receipt ref'))}</label>
             <input id="nsaExpDoc" type="text" required placeholder="${esc(t('مثال: إيصال كهرباء 441', 'e.g. Receipt #441'))}" />
           </div>
           <div class="nsa-field">
@@ -945,11 +948,14 @@
           </div>
           <div class="nsa-dialog-foot">
             <button type="button" class="btn btn-secondary" data-nsa-close>${esc(t('إلغاء', 'Cancel'))}</button>
-            <button type="submit" class="btn btn-primary">${esc(t('تسجيل للاعتماد', 'Submit for Approval'))}</button>
+            <button type="submit" class="btn btn-primary" id="nsaExpGo">${esc(t('اصرف من الدرج', 'Pay from the drawer'))}</button>
           </div>
         </form>
       `,
       onMount: (dlg, close) => {
+        const amtEl = dlg.querySelector('#nsaExpAmt'), goEl = dlg.querySelector('#nsaExpGo');
+        const syncGo = () => { const a = parseAmount(amtEl.value); goEl.textContent = !quickMax || (!isNaN(a) && a > quickMax) ? t('تسجيل للاعتماد', 'Submit for Approval') : t('اصرف من الدرج', 'Pay from the drawer'); };
+        amtEl.addEventListener('input', syncGo); syncGo();
         dlg.querySelector('[data-nsa-form]').addEventListener('submit', (e) => {
           e.preventDefault();
           const amt = parseAmount(dlg.querySelector('#nsaExpAmt').value);
@@ -960,6 +966,18 @@
           const cat = dlg.querySelector('#nsaExpCat').value;
           const doc = dlg.querySelector('#nsaExpDoc').value.trim();
           const note = dlg.querySelector('#nsaExpNote').value.trim();
+          if (quickMax && amt <= quickMax) {
+            // one step: record + approve (same person, logged) + pay from the drawer
+            let id = '';
+            try {
+              id = acct.addQuickExpense({ id: genId('exp'), amount: amt, category: cat, document: doc, createdBy: String(user.id), note: note });
+            } catch (err) { showDialogErr(dlg, errMsg(err)); return; }
+            close();
+            const x = acct.expenses().find((v) => v.id === id);
+            if (x) handlePayExpense(x); else renderSection();
+            return;
+          }
+          if (!(provider && typeof provider.currentUser === 'function' && provider.currentUser())) { showDialogErr(dlg, ERR_LABELS['missing-user']()); return; }
           try {
             acct.addExpense({
               id: genId('exp'),
@@ -1339,7 +1357,7 @@
     // AUDIT-03 integration: #novaRetReasons exists only when there are sales; otherwise mount at the end of the open reports page
     const anchor = document.getElementById(ANCHOR_ID);
     const view = document.getElementById('novaPageView');
-    const onReports = !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    const onReports = !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
     if (!anchor && !(onReports && view)) return;
 
     ensureStyles();
@@ -1358,7 +1376,7 @@
   function tryMountExpenses() {
     if (document.getElementById(EXP_ID)) return;
     const view = document.getElementById('novaPageView');
-    const onReports = !!document.querySelector('.nova-tab.active[data-page="reports"]');
+    const onReports = !!document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]');
     if (!(onReports && view) && !document.getElementById(ANCHOR_ID)) return;
     if (!view) return;
     ensureStyles();
@@ -1375,7 +1393,7 @@
     tryMount();
     if (!document.body) return;
     const observer = new MutationObserver(() => {
-      if ((!document.getElementById(SECTION_ID) || !document.getElementById(EXP_ID)) && (document.getElementById(ANCHOR_ID) || document.querySelector('.nova-tab.active[data-page="reports"]'))) {
+      if ((!document.getElementById(SECTION_ID) || !document.getElementById(EXP_ID)) && (document.getElementById(ANCHOR_ID) || document.querySelector('.nova-tab.active[data-page="reports"],.nova-hostmark.active[data-page="reports"]'))) {
         tryMount();
       }
     });

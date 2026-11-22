@@ -20,7 +20,7 @@ for (const [theme, lang] of [['dark', 'ar'], ['light', 'ar'], ['dark', 'en']]) {
   assert.ok(b.vis && b.h >= 64 && b.w >= 200, 'big enough: ' + b.w + 'x' + b.h);
   assert.notEqual(b.bg, 'rgba(0, 0, 0, 0)', 'filled, not transparent'); assert.equal(b.border, 'solid', 'solid border, not dashed'); assert.ok(b.fs >= 16, 'text at least 16px: ' + b.fs);
   assert.ok(ratio(b.fg, b.bg) >= 4.5, 'label contrast ' + ratio(b.fg, b.bg).toFixed(2)); assert.ok(ratio(b.subColor, b.bg) >= 4.5, 'sub text contrast'); assert.ok(ratio(b.keyColor, b.bg) >= 4.5, 'F3 hint contrast');
-  assert.match(b.text, lang === 'en' ? /Register customer/ : /تسجيل عميل/); assert.match(b.text, /F3/);
+  assert.match(b.text, lang === 'en' ? /(Register|Choose) customer/ : /اختيار عميل/); assert.match(b.text, /F3/);   // Q21-2k: «تسجيل عميل» → «اختيار عميل»
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/ux417-${theme}-${lang}.png`, clip: { x: 1010, y: 48, width: 270, height: 200 } });
   // it still does its job: click -> customer search mode (the search box asks for a customer)
   await page.locator('#btnAddLoyalty').click(); await page.waitForTimeout(300);
