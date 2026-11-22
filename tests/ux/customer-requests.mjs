@@ -192,6 +192,7 @@ try {
     tab.click();
     return true;
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaCustomerRequests'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   assert.equal(tabClicked, true, 'products tab exists and was clicked');
 
   await page.waitForSelector('#novaCustomerRequests', { timeout: 5000 });

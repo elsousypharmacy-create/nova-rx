@@ -136,7 +136,7 @@ output.rcv-lt{display:flex;align-items:center;min-height:40px;font-weight:700;co
  .rcv-dlg{max-height:none;height:100%;border-radius:0;overflow-y:auto}
  .rcv-dlg>*{flex-shrink:0}
  .rcv-dlg .rcv-grid{overflow:visible;min-height:0;flex:0 0 auto}
- .rcv-dlg-f{margin-top:auto}
+ .rcv-dlg-f{margin-top:auto;position:sticky;bottom:0;z-index:2;background:#14181d}
  .rcv-dlg-btns{width:100%}.rcv-dlg-btns .rcv-btn{flex:1}
  .rcv-ov input{font-size:16px}
 }

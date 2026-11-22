@@ -126,6 +126,7 @@ try {
     if (!tab) throw new Error('reports tab not found');
     tab.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaDoctorRx'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaDoctorRx', { timeout: 5000 });
   assert.equal(await page.locator('#novaDoctorRx').count(), 1, 'card mounted once on reports');
 

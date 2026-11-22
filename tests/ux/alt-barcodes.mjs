@@ -69,6 +69,7 @@ try {
   await page.evaluate(() => window.novaLazy.load());
   await page.waitForFunction(() => !!window.novaAltBarcodes);
   await page.evaluate(() => { const b = document.querySelector('.nova-tab[data-page="products"]'); if (b) b.click(); });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaAltBarcodesCard'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaAltBarcodesCard', { state: 'visible', timeout: 5000 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'no overflow at 390px');
 

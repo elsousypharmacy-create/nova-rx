@@ -722,13 +722,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 30px 16px;
-      border: 1px dashed var(--border-subtle);
-      border-radius: var(--r-2);
-      background: rgba(15, 23, 42, 0.5);
       text-align: center;
       gap: var(--sp-3);
-      color: var(--text-dim);
     }
 
     .customer-empty-box svg {
@@ -748,10 +743,6 @@
 
     /* Active Customer Card */
     .cust-card {
-      background: #111418;
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-2);
-      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: var(--sp-3);
@@ -891,10 +882,6 @@
     }
 
     .past-inv-card {
-      background: #111418;
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--r-1);
-      padding: 8px 10px;
       display: flex;
       flex-direction: column;
       gap: var(--sp-2);
@@ -966,7 +953,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.75);
+      background: #000b;
       backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
@@ -991,11 +978,9 @@
     }
 
     .modal-card {
-      background: #111418;
-      border: 1px solid #333b44;
+      border: 1px solid;
       border-radius: var(--r-2);
       width: 90%;
-      max-width: 520px;
       box-shadow: var(--shadow-lg);
       display: flex;
       flex-direction: column;
@@ -1010,8 +995,7 @@
 
     .modal-header {
       padding: 12px 16px;
-      background: #111418;
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1032,8 +1016,7 @@
 
     .modal-footer {
       padding: 12px 16px;
-      background: #111418;
-      border-top: 1px solid var(--border-subtle);
+      border-top: 1px solid;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -1122,10 +1105,8 @@
     }
 
     .change-due-box {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid;
       padding: 10px 14px;
-      border-radius: var(--r-1);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1304,9 +1285,9 @@ table.invoice-table tbody tr:hover{background:#171d23}
 .btn-checkout:hover{background:#328db5;box-shadow:none}
 .sidebar-title{color:#eef1f4;font-size:14px}
 .sidebar-body{background:#090b0e;padding:12px;gap:var(--sp-3)}
-.customer-empty-box{background:#12161b;border:1px dashed #39414a;border-radius:var(--r-2);color:#aab6c1;padding:25px 12px}
+.customer-empty-box{background:#15191e;border:1px dashed #39434c;border-radius:var(--r-2);color:#aab6c1;padding:25px 12px}
 .customer-empty-text{color:#bec7d0;font-size:13px}.customer-empty-sub{color:#8795a3;font-size:12px}
-.cust-card,.past-inv-card{background:#15191e;border:1px solid #2c333b;border-radius:var(--r-2);padding:12px;box-shadow:none}
+.cust-card,.past-inv-card{background:#191e24;border:1px solid #303841;border-radius:var(--r-2);padding:12px;box-shadow:none}
 .cust-name{color:#f1f3f5;font-size:16px}.cust-phone{color:#a7b3be;font-size:12px}
 .cust-stat-pill{background:#222830;color:#abb8c4;border-radius:var(--r-1);padding:6px 8px;font-size:12px}
 .cust-stat-pill strong{color:#f1f3f5}
@@ -1322,9 +1303,6 @@ table.invoice-table tbody tr:hover{background:#171d23}
 .past-item-row{color:#dbe3e9;font-size:12px}.past-item-price{color:#8dcde9;font-size:12px}
 .btn-add-history{width:34px;height:34px;background:#1c2b36;border:1px solid #345063;color:#95d5f1;border-radius:var(--r-1)}
 .btn-add-history:hover{background:#257fa9;color:#f1f3f5}
-.modal-backdrop{background:#000b}
-.modal-card{background:#171b21;border:1px solid #343c45;border-radius:var(--r-2);color:#eaf0f4}
-.modal-header,.modal-footer{background:#11151a;border-color:#2c333b}
 .modal-header h3{color:#f2f4f6}.modal-body{color:#e3eaf0}
 .checkout-amount-display{background:#0e1419;border:1px solid #303d47;border-radius:var(--r-2)}
 .checkout-amount-display .label{color:#9eacb9}.checkout-amount-display .val{color:#90d7f3}
@@ -1360,10 +1338,8 @@ body,.pos-root{background:#08090b;color:#f1f3f5}
 table.invoice-table th{background:#1a1f25;color:#b6bec7}
 table.invoice-table td{color:#e3e8ec}
 table.invoice-table tbody tr:hover{background:#1d242b}
-.cust-card,.past-inv-card{background:#191e24;border-color:#303841}
 .cust-stat-pill,.sugg-tag{background:#252b32;color:#c3cbd3}
 .cust-stat-pill strong{color:#f1f3f5}
-.customer-empty-box{background:#15191e;border-color:#39434c}
 .offers-section{background:#15231f;border-color:#2e5548}
 .offers-header,.offer-item{color:#a8d7c6}
 #btnRefreshApp{background:#222830;color:#e1e6eb;border-color:#38414a}
@@ -1377,8 +1353,7 @@ table.invoice-table tbody tr:hover{background:#1d242b}
 .suggestion-item.selected,.suggestion-item:hover{background:#29323a}
 .qty-control,.input-grp,.qty-input,.input-grp input{background:#11161b!important;color:#f1f3f5!important;border-color:#39434c}
 .discount-controls{background:#191e24;border-color:#303841}
-.modal-card{background:#191e24;border-color:#39434c;color:#f1f3f5}
-.modal-header,.modal-footer,.checkout-amount-display{background:#14181d;border-color:#303841}
+.modal-card{color:#f1f3f5}
 .pay-method-btn,.quick-cash-btn{background:#252b32;border-color:#414b55;color:#e2e8ec}
 .pay-method-btn.active{background:#203847;border-color:#76b8d5}
 
@@ -1421,7 +1396,6 @@ body{font-family:"Cairo",Tahoma,Arial,sans-serif}
 .nova-page-header p{font-size:12px;color:#a4adb7;margin-top:5px}
 .nova-page-search{min-height:44px;max-width:380px;width:100%;border:1px solid #38424b;border-radius:var(--r-2);background:#15191e;color:#f1f3f5;padding:8px 13px;font:inherit;font-size:13px}
 .nova-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-3);margin-bottom:20px}
-.nova-kpi,.nova-panel{background:#171b20;border:1px solid #2d343c;border-radius:var(--r-2);padding:17px}
 .nova-kpi small{display:block;color:#9da9b4;font-size:12px}.nova-kpi strong{display:block;color:#f0f3f5;font-size:23px;margin-top:7px;font-weight:800}
 .nova-panel{padding:0;overflow:hidden}.nova-panel-title{padding:16px 18px;color:#e9eef2;font-size:14px;font-weight:700;border-bottom:1px solid #2d343c}
 .nova-data-table{border-collapse:collapse;width:100%;text-align:right}
@@ -1703,12 +1677,12 @@ html,body{background:#090a0d!important;color:#f2f3f5!important}
 .nova-sale-actions .nova-new-sale:hover{background:#344e68!important}
 .nova-sale-actions .nova-held-action,.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action{background:#22262d!important;border-color:#393f48!important;color:#d9dee5!important}
 .nova-sale-actions .nova-held-action:hover,.nova-sale-actions .nova-customer-action:hover,.nova-sale-actions .nova-more-action:hover{background:#2c323a!important}
-.suggestions-dropdown,.modal-card{background:#1a1e24!important;border-color:#3b4652!important}
+/* q20 phase 3: the ONE dialog surface (.ds-dialog = alias for new screens) */
+.suggestions-dropdown,.modal-card,.ds-dialog{background:#1a1e24!important;border-color:#3b4652!important}
 .suggestion-item.selected,.suggestion-item:hover{background:#252d36!important;border-left-color:#7999b9!important}
 .qty-control,.input-grp,.qty-input,.input-grp input{background:#15191f!important;border-color:#363e48!important}
 .discount-controls,.checkout-amount-display,.modal-header,.modal-footer{background:#191d23!important;border-color:#323942!important}
 .pay-method-btn.active{background:#27384a!important;border-color:#6c8faf!important}
-.nova-panel,.nova-kpi,.nova-card{border-color:#343b44!important;background:#191d23!important}
 .nova-page-header h1{color:#f2f3f5!important}
 :focus-visible{outline-color:#8eaccb!important}
 @media(max-width:780px){
@@ -1733,7 +1707,8 @@ html,body{background:#090a0d!important;color:#f2f3f5!important}
 .nova-sale-actions .nova-new-sale:hover{background:#30465b!important}
 .nova-sale-actions .nova-held-action,.nova-sale-actions .nova-customer-action,.nova-sale-actions .nova-more-action{background:#1d2127!important;border:1px solid #323840!important;color:#d2d8df!important}
 .nova-sale-actions .nova-held-action:hover,.nova-sale-actions .nova-customer-action:hover,.nova-sale-actions .nova-more-action:hover{background:#272d34!important}
-.nova-panel,.nova-kpi,.nova-card{background:#171a1f!important;border:1px solid #2b3037!important;box-shadow:none!important;border-radius:var(--r-2)!important}
+/* q20: the ONE card (design system phase 2); .ds-card = alias for new screens */
+.ds-card,.nova-panel,.nova-kpi,.nova-card{background:#171a1f!important;border:1px solid #2b3037!important;box-shadow:none!important;border-radius:var(--r-2)!important}
 .nova-kpi{padding:14px!important}
 .nova-panel{box-shadow:0 3px 16px #00000016!important}
 .customer-sidebar,.sidebar-body{background:#0f1115!important}

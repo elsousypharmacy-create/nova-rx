@@ -159,6 +159,7 @@ async function run() {
 
     await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'shift'); } catch {} }); // UI-BATCH1: reports tabs
     await page.click('.nova-tab[data-page="reports"]');
+    await page.evaluate(id => window.novaPageViews.openTool(id), 'novaFridgeLog'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
     await page.waitForSelector('#novaFridgeLog', { state: 'visible', timeout: 5000 });
 
     await page.setViewportSize({ width: 390, height: 844 });

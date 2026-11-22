@@ -147,6 +147,7 @@ try {
     const t = document.querySelector('.nova-tab[data-page="products"]');
     if (t) t.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaFamilyAccounts'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaFamilyAccounts', { timeout: 5000 });
   assert.equal(await page.locator('#novaFamilyAccounts').count(), 1, 'card mounted once');
 

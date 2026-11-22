@@ -121,6 +121,7 @@ try {
   assert.equal(await page.evaluate(() => window.novaExcelExport.salesRows('2099-12-31', '2024-01-01').length), 4, 'inverted range is swapped');
 
   await page.click('.nova-tab[data-page="reports"]');
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaExcelExport'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaExcelExport', { state: 'visible' });
 
   const [download] = await Promise.all([

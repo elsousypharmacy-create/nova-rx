@@ -50,6 +50,7 @@ try {
 
   // products page shows the card
   await page.evaluate(() => { const t = document.querySelector('.nova-tab[data-page="products"]'); if (t) t.click(); });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaStockCount'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaStockCount', { timeout: 10000 });
 
   const setup = await page.evaluate(() => {

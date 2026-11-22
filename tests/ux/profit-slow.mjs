@@ -155,6 +155,7 @@ try {
   assert.equal(result.slow.totalCostValue, 100);
 
   await page.click('.nova-tab[data-page="reports"]');
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaProfitSlow'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaProfitSlow');
   await page.waitForSelector('#novaProfitSlow [data-nps-tab="profit"]');
   await page.waitForSelector('#novaProfitSlow [data-nps-tab="slow"]');

@@ -250,6 +250,7 @@ try {
     const tab = document.querySelector('.nova-tab[data-page="reports"]');
     if (tab) tab.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaCorporate'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaCorporate', { timeout: 5000 });
   assert.equal(await page.locator('#novaCorporate').count(), 1, 'Card mounted once');
 

@@ -171,6 +171,7 @@ try {
     const tab = document.querySelector('.nova-tab[data-page="products"]');
     if (tab) tab.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaInternalBarcodes'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaInternalBarcodes', { state: 'visible', timeout: 5000 });
   assert.equal(await page.locator('#novaInternalBarcodes').count(), 1, 'card mounted once on products page');
   assert.equal(await page.locator('#novaInternalBarcodes').isVisible(), true, 'card is visible on products page');

@@ -240,6 +240,7 @@ function startServer() {
     // Navigate to products page and verify card renders + no overflow at 390px
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(() => { const t = document.querySelector('.nova-tab[data-page="products"]'); if (t) t.click(); });
+    await page.evaluate(id => window.novaPageViews.openTool(id), 'novaDestruction'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
     await page.waitForSelector('#novaDestruction', { state: 'visible', timeout: 5000 });
     const visible = await page.isVisible('#novaDestruction');
     assert.strictEqual(visible, true, '#novaDestruction card must be visible on products page');

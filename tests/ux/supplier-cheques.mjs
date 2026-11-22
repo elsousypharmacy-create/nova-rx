@@ -139,6 +139,7 @@ try {
     const tab = document.querySelector('.nova-tab[data-page="reports"]');
     if (tab) tab.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaSupplierCheques'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaSupplierCheques', { timeout: 5000 });
   assert.equal(await page.locator('#novaSupplierCheques').count(), 1, 'mounted once');
 

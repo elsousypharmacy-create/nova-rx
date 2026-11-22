@@ -115,6 +115,7 @@ async function main() {
   await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'shift'); } catch {} }); // UI-BATCH1: reports tabs
   const reportsTab = page.locator('.nova-tab[data-page="reports"]');
   await reportsTab.click();
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaControlledRegister'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
 
   const reg = page.locator('#novaControlledRegister');
   await reg.waitFor({ state: 'visible', timeout: 5000 });

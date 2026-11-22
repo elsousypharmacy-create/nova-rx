@@ -100,6 +100,7 @@ try {
   assert.equal(r.plain, null, 'plain EAN-13 is not GS1'); assert.equal(r.cut, null); assert.equal(r.notStr, null);
 
   await page.evaluate(() => { const x = document.querySelector('.nova-tab[data-page="products"]'); if (x) x.click(); });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaGs1Card'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaGs1Card', { state: 'visible', timeout: 5000 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'no overflow at 390px');
   await page.fill('#novaGs1Input', ']d201062810012345691722011510OLD01');

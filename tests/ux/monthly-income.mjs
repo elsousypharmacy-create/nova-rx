@@ -98,6 +98,7 @@ try {
   assert(!res.emptyCsv.includes('-0.00'), 'no negative zero in CSV');
 
   await page.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click()); // at 390px the top tabs are hidden behind the bottom bar (app/562)
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaIncomeCard'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaIncomeCard', { timeout: 5000 });
   // a role without reports.view (e.g. cashier) gets no income card
   const hidden = await page.evaluate(() => { const real = window.novaPerms; window.novaPerms = { can: () => false, require: () => false }; document.getElementById('novaIncomeCard').remove(); window.novaIncome.mount(); const gone = !document.getElementById('novaIncomeCard'); window.novaPerms = real; window.novaIncome.mount(); return gone && !!document.getElementById('novaIncomeCard'); });

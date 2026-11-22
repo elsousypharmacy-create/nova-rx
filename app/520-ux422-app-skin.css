@@ -23,8 +23,9 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-page-header p{font-size:var(--nx-fs-sm);color:var(--nx-text-muted);margin-top:var(--nx-sp-1)}
 /* --- cards: KPI, panels, settings --- */
 #novaPageView .nova-kpis{gap:var(--nx-sp-3)}
-#novaPageView .nova-kpi,#novaPageView .nova-panel,#novaPageView .nova-setting-card,.nova-page-view .nova-kpi,.nova-page-view .nova-panel,.nova-page-view .nova-setting-card{background:linear-gradient(180deg,#191e24 0%,var(--nx-bg-panel) 100%);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1);transition:border-color var(--nx-dur-base) var(--nx-ease),box-shadow var(--nx-dur-base) var(--nx-ease),transform var(--nx-dur-base) var(--nx-ease)}
-#novaPageView .nova-kpi:hover,#novaPageView .nova-setting-card:hover{border-color:#3a4652;box-shadow:var(--nx-shadow-2)}
+#novaPageView .nova-setting-card,.nova-page-view .nova-setting-card{background:linear-gradient(180deg,#191e24 0%,var(--nx-bg-panel) 100%);border-color:var(--nx-border-subtle);border-radius:var(--nx-r-3);box-shadow:var(--nx-shadow-1)}
+#novaPageView .nova-kpi,#novaPageView .nova-setting-card,.nova-page-view .nova-kpi,.nova-page-view .nova-setting-card{transition:border-color var(--nx-dur-base) var(--nx-ease),box-shadow var(--nx-dur-base) var(--nx-ease),transform var(--nx-dur-base) var(--nx-ease)}
+#novaPageView .nova-setting-card:hover{border-color:#3a4652;box-shadow:var(--nx-shadow-2)}
 #novaPageView button.nova-kpi-btn:hover{transform:translateY(-1px)}
 #novaPageView button.nova-kpi-btn:active{transform:none}
 #novaPageView .nova-kpi small{font-size:var(--nx-fs-xs);font-weight:var(--nx-fw-semibold);color:var(--nx-text-muted);letter-spacing:.2px}
@@ -182,6 +183,9 @@ html body #displayChangeDue{font-size:36px!important;font-weight:800;line-height
  .nova-inv-tools{width:100%;flex-wrap:wrap!important}
  .nova-inv-tools .nova-search-wrap{width:100%;order:-1}
  .nova-inv-tools .nova-inv-primary{flex:1;justify-content:center}
+ body[data-nova-view="shift"] #novaShiftClose{padding-bottom:72px}
+ body[data-nova-view="shift"] .nova-shift-acts{position:fixed;inset-inline:0;bottom:var(--nova-bbar-h,0px);z-index:850;padding:8px 12px;background:#14181d;border-top:1px solid #2a3139;flex-wrap:nowrap!important}
+ body[data-nova-view="shift"] .nova-shift-acts .btn{flex:1}
 }
 /* UX-P35 about card: visible facts instead of hidden paragraphs */
 #novaAboutCard .nova-about{margin:8px 0 0;display:flex;flex-direction:column}
@@ -223,3 +227,6 @@ html body:not(.x) #novaPageView[data-view]:not([data-view=""])>.nova-page-header
 .nova-view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .nova-view-head .nova-view-back{min-height:44px}
 .nova-view-acts{display:flex;gap:8px;flex-wrap:wrap}.nova-view-acts .btn{min-height:44px}
+
+/* q20 look: steady digit widths for prices, totals and quantities (Gemini designer #5) */
+.invoice-table td,[id^=display],.checkout-amount-display{font-variant-numeric:tabular-nums}

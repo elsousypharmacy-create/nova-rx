@@ -98,6 +98,7 @@ try {
 
   await page.evaluate(() => { try { sessionStorage.setItem('nova.reportsTab', 'staff'); } catch {} }); // UI-BATCH1: reports tabs
   await page.evaluate(() => document.querySelector('.nova-tab[data-page="reports"]').click()); // at 390px the top tabs are hidden behind the bottom bar (app/562)
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaStaffStatsCard'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaStaffStatsCard', { timeout: 5000 });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > 390);
   assert(!overflow, 'no horizontal overflow at 390px');

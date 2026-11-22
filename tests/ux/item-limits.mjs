@@ -112,6 +112,7 @@ try {
   assert.equal(result.afterDenied.min, 5);
 
   await page.evaluate(() => { const t = document.querySelector('.nova-tab[data-page="products"]'); if (t) t.click(); });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaItemLimits'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaItemLimits', { timeout: 5000 });
   const belowText = await page.locator('#nilBelowWrap').textContent();
   assert.ok(belowText && belowText.includes('باراسيتامول اختبار'), 'Expected product A row in below-minimum table');

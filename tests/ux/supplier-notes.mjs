@@ -204,6 +204,7 @@ try {
     const tab = document.querySelector('.nova-tab[data-page="reports"]');
     if (tab) tab.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaSupplierNotes'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaSupplierNotes', { timeout: 5000 });
   assert.equal(await page.locator('#novaSupplierNotes').count(), 1, 'mounted once');
 

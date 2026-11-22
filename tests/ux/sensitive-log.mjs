@@ -104,6 +104,7 @@ async function run() {
     var reportsTab = page.locator('.nova-tab[data-page="reports"]');
     await reportsTab.waitFor({ state: 'visible', timeout: 10000 });
     await reportsTab.click();
+    await page.evaluate(id => window.novaPageViews.openTool(id), 'novaSensitiveLogSection'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
 
     await page.evaluate(function () {
       if (window.novaLazy && typeof window.novaLazy.load === 'function') {

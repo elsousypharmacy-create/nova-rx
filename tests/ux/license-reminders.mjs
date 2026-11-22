@@ -161,6 +161,7 @@ try {
     if (!tab) throw new Error('reports tab not found');
     tab.click();
   });
+  await page.evaluate(id => window.novaPageViews.openTool(id), 'novaLicenseReminders'); await page.waitForTimeout(400); // Q21-2c: the card is a tool in «الأدوات»
   await page.waitForSelector('#novaLicenseReminders', { timeout: 5000 });
   assert.equal(await page.locator('#novaLicenseReminders').count(), 1, 'mounted once');
 
