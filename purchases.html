@@ -337,4 +337,12 @@ var ctrl=window.__purHistoryCtrl=window.mountInvoiceHistory(ph,{onStartReceive:f
 if(th)th.addEventListener('click',function(){ctrl.refresh();});
 window.addEventListener('hashchange',function(){if(location.hash.indexOf('history')!==-1)ctrl.refresh();});
 window.addEventListener('storage',function(e){if(!e.key||e.key==='nova-rx-receipts-v1'||e.key==='nova.purchase.orders')ctrl.refresh();});
+})();</script><script>(function(){
+var pn=document.getElementById('panelNeeds'),sb=document.getElementById('needsStateBox');
+function armNeeds(){if(!pn||!sb)return;clearTimeout(pn.__t15);pn.__t15=setTimeout(function(){if(pn.getAttribute('data-state')==='loading'){sb.innerHTML='<div class="stock-skeleton" role="alert"><span>تعذر تحميل النواقص خلال 15 ثانية.</span><button type="button" id="retryNeeds15" class="primary">إعادة المحاولة</button></div>';var rb=document.getElementById('retryNeeds15');if(rb)rb.onclick=function(){var lb=document.getElementById('load');if(lb)lb.click();else location.reload();};}},15000);}
+if(pn){new MutationObserver(function(){if(pn.getAttribute('data-state')!=='loading')clearTimeout(pn.__t15);}).observe(pn,{attributes:true,attributeFilter:['data-state']});armNeeds();}
+var tr=document.getElementById('tabReceive'),rf=document.getElementById('receiveFrame'),rl=document.getElementById('receiveLoading');
+function armReceive(){if(!rf||!rl)return;clearTimeout(rf.__t15);rf.__t15=setTimeout(function(){if(!rl.hidden){rl.innerHTML='تعذر تحميل شاشة الاستلام خلال 15 ثانية. <button type="button" id="retryReceive15" class="primary">إعادة المحاولة</button>';var rb=document.getElementById('retryReceive15');if(rb)rb.onclick=function(){rl.textContent='جارٍ تحميل شاشة الاستلام…';rf.src=rf.getAttribute('data-src')||'/?embed=receiving#receiving';armReceive();};}},15000);}
+if(rf){rf.addEventListener('load',function(){clearTimeout(rf.__t15);});}
+if(tr){tr.addEventListener('click',armReceive);}
 })();</script></body></html>
