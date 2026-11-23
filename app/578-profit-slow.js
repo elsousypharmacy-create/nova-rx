@@ -82,9 +82,17 @@
   }
 
   function getSalesList() {
-    if (!window.novaSales || typeof window.novaSales.list !== 'function') return [];
-    var list = window.novaSales.list();
-    return Array.isArray(list) ? list : [];
+    var list = (window.novaSales && typeof window.novaSales.list === 'function')
+      ? window.novaSales.list()
+      : null;
+    if (Array.isArray(list) && list.length > 0) return list;
+    try {
+      var raw = window.localStorage && window.localStorage.getItem('nova-rx-sales-v1');
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
   }
 
   function isSaleCancelled(id) {
@@ -131,7 +139,7 @@
     for (sIdx = 0; sIdx < sales.length; sIdx++) {
       sale = sales[sIdx];
       if (!sale || isSaleCancelled(sale.id)) continue;
-      atMs = Date.parse(sale.at);
+      atMs = typeof sale.at === 'number' ? sale.at : Date.parse(sale.at || sale.createdAt || sale.date);
       if (isNaN(atMs)) continue;
       if (typeof fromMs === 'number' && !isNaN(fromMs) && atMs < fromMs) continue;
       if (typeof toMs === 'number' && !isNaN(toMs) && atMs > toMs) continue;
