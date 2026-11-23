@@ -1875,7 +1875,7 @@
         const needCust = !tp.ok && tp.error === "credit-needs-customer";
         const hint = document.getElementById("checkoutCreditHint");
         const split = state.checkoutPaymentMethod === 'split';
-        if (hint) hint.hidden = !(needCust || (split && !state.attachedCustomer));
+        if (hint) hint.hidden = !needCust;
         const creditInput = document.getElementById('inputCreditAmount');
         creditInput.disabled = !state.attachedCustomer;
         creditInput.setAttribute('aria-describedby', 'checkoutCreditHint');
@@ -1889,6 +1889,7 @@
           const remaining = Math.round((grandTotal - assigned) * 100) / 100;
           allocation.textContent = ((localStorage.getItem("nova-rx-language") === "en") ? 'Allocated: ' : 'الموزّع: ') + formatMoney(assigned) + ' · ' +
             (remaining < 0 ? ((localStorage.getItem("nova-rx-language") === "en") ? 'Excess: ' : 'الزيادة: ') : ((localStorage.getItem("nova-rx-language") === "en") ? 'Remaining: ' : 'المتبقي: ')) + formatMoney(Math.abs(remaining));
+          allocation.style.color = remaining > 0 ? 'var(--accent-red, #ff6b6b)' : '';
         }
         const wh = document.getElementById('walletRefHint');
         if (wh) {
@@ -2625,8 +2626,10 @@
         state.customerGateSkipped = true;
         state.customerGatePending = false;
         renderInvoice();
-        if (previewReceipt) { elements.btnReceiptNewSale.focus(); showToast("Payment confirmed & Invoice completed!"); }
-        else { finalizeNewSale(); window.novaReceipt.autoPrint(saleRecord); } // q17 B: print now, clean new sale (a failed print leaves its retry toast)
+        elements.checkoutModal.classList.remove("active");
+        const savedMsg = (novaEn() ? "Invoice saved: " : "تم حفظ الفاتورة: " /* Invoice saved */) + invNumber;
+        if (previewReceipt) { elements.btnReceiptNewSale.focus(); showToast(savedMsg); }
+        else { finalizeNewSale(); showToast(savedMsg); window.novaReceipt.autoPrint(saleRecord); } // q17 B: print now, clean new sale (a failed print leaves its retry toast)
       }
 
       function startNewSale(alreadySaved = false) {
@@ -2820,10 +2823,20 @@
           return out;
         }
         function open(sale, opts = {}) {
-          currentSale = sale;
+          const s = Object.assign({}, sale);
+          const linesSum = Math.round((s.lines || []).reduce((sum, l) => sum + (((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0)), 0) * 100) / 100;
+          if (s.subtotal == null || !Number.isFinite(Number(s.subtotal))) s.subtotal = linesSum;
+          const tot = Number(s.total) || linesSum;
+          if (s.vat == null || (Number(s.vat) === 0 && tot > 0 && s.vatRate == null)) s.vat = window.novaVat ? window.novaVat.calc(tot) : Math.round((tot * 14 / 114) * 100) / 100;
+          if (s.received == null || !Number.isFinite(Number(s.received))) {
+            const cashT = Array.isArray(s.tenders) ? s.tenders.filter(t => t && t.method === 'cash').reduce((a, t) => a + (Number(t.amount) || 0), 0) : 0;
+            s.received = s.payment === 'cash' ? tot : cashT;
+          }
+          if (s.change == null || !Number.isFinite(Number(s.change))) s.change = Math.max(0, Math.round(((Number(s.received) || 0) - tot) * 100) / 100);
+          currentSale = s;
           fromCheckout = !!opts.fromCheckout;
           currentCopy = !!opts.copy;
-          currentCopyNo = currentCopy ? (opts.copyNo || bumpReprint(sale.number)) : 0;
+          currentCopyNo = currentCopy ? (opts.copyNo || bumpReprint(s.number)) : 0;
           setWidth(getWidth());
           applyPrinterState();
           render();
@@ -3083,10 +3096,30 @@
           if (chip) chip.addEventListener("click", () => { elements.helpModal.classList.add("active"); elements.btnCloseHelp.focus(); });
         })();
 
-        elements.btnHelpShortcuts.addEventListener("click", () => {
-          elements.helpModal.classList.add("active");
-          elements.btnCloseHelp.focus();
-        });
+        const syncHelpPayOrder = () => {
+          const rows = elements.helpModal && [...elements.helpModal.querySelectorAll("tr,li,.shortcut-row")];
+          if (!rows || !rows.length) return;
+          const findK = k => rows.find(r => r.textContent.includes(k));
+          const r12 = findK("F12"), r10 = findK("F10"), r11 = findK("F11");
+          if (r12 && r10 && r11 && r12.parentNode === r10.parentNode && r10.parentNode === r11.parentNode) {
+            const p = r12.parentNode; p.insertBefore(r10, r12.nextSibling); p.insertBefore(r11, r10.nextSibling);
+          }
+        };
+        const openHelp = () => { syncHelpPayOrder(); elements.helpModal.classList.add("active"); elements.btnCloseHelp.focus(); };
+        elements.btnHelpShortcuts.addEventListener("click", openHelp);
+        document.addEventListener("keydown", e => {
+          if (e.key === "Escape" && elements.helpModal.classList.contains("active")) {
+            e.preventDefault(); e.stopPropagation();
+            elements.helpModal.classList.remove("active");
+            elements.mainSearchInput.focus();
+          }
+        }, true);
+        const lblPanel = document.getElementById("novaLabelsPanel");
+        if (lblPanel && window.MutationObserver) {
+          new MutationObserver(() => {
+            if (!lblPanel.classList.contains("open") && (!document.body.dataset.activePage || document.body.dataset.activePage === "sale")) elements.mainSearchInput.focus();
+          }).observe(lblPanel, { attributes: true, attributeFilter: ["class"] });
+        }
 
         elements.btnCloseHelp.addEventListener("click", () => { elements.helpModal.classList.remove("active"); elements.mainSearchInput.focus(); });
         elements.btnDismissHelp.addEventListener("click", () => { elements.helpModal.classList.remove("active"); elements.mainSearchInput.focus(); });
@@ -3331,11 +3364,14 @@
             const val = btn.getAttribute("data-val");
             const { grandTotal } = recalculateFinancials(), dueNow = dueForMethod(grandTotal, state.checkoutPaymentMethod).due;
             let amount = dueNow;
-            if (val !== "exact") {
+            if (val === "exact" && state.checkoutPaymentMethod === "split") {
+              const n = id => Math.max(0, Number(document.getElementById(id).value) || 0);
+              amount = Math.max(0, Math.round((dueNow - n("inputCardAmount") - n("inputCreditAmount")) * 100) / 100);
+            } else if (val !== "exact") {
               amount = parseFloat(val);
             }
             elements.inputCashReceived.value = amount.toFixed(2);
-            updateChangeDue(amount, dueNow);
+            refreshChange();
             elements.inputCashReceived.focus();
           });
         });

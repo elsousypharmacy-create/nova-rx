@@ -388,6 +388,63 @@
     }
 
     renderLimitSection(section, customerId);
+    mountCustomerEdit(card, actions, customerId);
+  }
+
+  function mountCustomerEdit(card, actions, customerId) {
+    if (!actions || actions.querySelector('[data-ce-btn]')) return;
+    var custs = (window.NOVA_DEMO && Array.isArray(window.NOVA_DEMO.customers)) ? window.NOVA_DEMO.customers : [];
+    var cust = custs.find(function (c) { return String(c.id) === String(customerId); });
+    if (!cust) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'nova-return-btn btn btn-secondary';
+    btn.style.minHeight = '44px';
+    btn.setAttribute('data-ce-btn', '');
+    btn.textContent = 'تعديل البيانات'; // Edit details
+    actions.insertBefore(btn, actions.firstChild);
+
+    var wrap = document.createElement('div');
+    wrap.id = 'novaCustEditWrap';
+    card.insertBefore(wrap, actions);
+
+    btn.addEventListener('click', function () {
+      if (wrap.firstChild) { wrap.innerHTML = ''; return; }
+      wrap.innerHTML = ''
+        + '<div data-ce-form style="margin-top:12px;padding:10px;background:#1b2027;border:1px solid #343b44;border-radius:10px">'
+        +   '<label for="novaCeName" style="display:block;font-size:13px;margin-bottom:4px">الاسم</label>' // Name
+        +   '<input id="novaCeName" type="text" value="' + escHtml(cust.name) + '" style="width:100%;min-height:40px;padding:6px 10px;background:#14181d;color:#e8eef3;border:1px solid #343b44;border-radius:8px;box-sizing:border-box;margin-bottom:8px">'
+        +   '<label for="novaCePhone" style="display:block;font-size:13px;margin-bottom:4px">رقم الهاتف (9 إلى 15 رقمًا)</label>' // Phone number (9 to 15 digits)
+        +   '<input id="novaCePhone" type="tel" inputmode="tel" dir="ltr" value="' + escHtml(cust.phone) + '" style="width:100%;min-height:40px;padding:6px 10px;background:#14181d;color:#e8eef3;border:1px solid #343b44;border-radius:8px;box-sizing:border-box;text-align:left">'
+        +   '<div data-ce-err role="alert" style="color:#ff8a8f;font-size:12px;min-height:18px;margin-top:6px"></div>'
+        +   '<div style="display:flex;gap:8px;margin-top:6px">'
+        +     '<button type="button" class="btn btn-primary" data-ce-save style="min-height:40px;flex:1">حفظ</button>' // Save
+        +     '<button type="button" class="btn btn-secondary" data-ce-cancel style="min-height:40px">إلغاء</button>' // Cancel
+        +   '</div>'
+        + '</div>';
+      var nm = wrap.querySelector('#novaCeName'), ph = wrap.querySelector('#novaCePhone'), err = wrap.querySelector('[data-ce-err]');
+      var digits = function (v) { return normalizeDigits(v).replace(/[^0-9]/g, ''); };
+      nm.focus();
+      wrap.querySelector('[data-ce-cancel]').addEventListener('click', function () { wrap.innerHTML = ''; btn.focus(); });
+      wrap.querySelector('[data-ce-save]').addEventListener('click', function () {
+        var name = nm.value.trim(), phone = digits(ph.value);
+        if (!name) { err.textContent = 'اكتب اسم العميل'; nm.focus(); return; } // Enter customer name
+        if (phone.length < 9 || phone.length > 15) { err.textContent = 'رقم الهاتف من 9 إلى 15 رقمًا'; ph.focus(); return; } // Phone number must be 9 to 15 digits
+        var dup = custs.find(function (c) { return String(c.id) !== String(cust.id) && digits(c.phone) === phone; });
+        if (dup) { err.textContent = 'هذا الرقم مسجّل بالفعل للعميل: ' + dup.name; ph.focus(); return; } // This number is already registered to customer
+        cust.name = name; cust.phone = phone;
+        try { window.localStorage.setItem('nova-rx-demo-customers-v1', JSON.stringify(custs.filter(function (x) { return String(x.id).indexOf('DEMO-') === 0; }))); } catch (e) {}
+        var title = card.querySelector('#novaCustDetailT'); if (title) title.textContent = name;
+        var row = document.querySelector('tr[data-cust-row="' + String(cust.id).replace(/"/g, '') + '"]');
+        if (row) {
+          var ar = row.querySelector('.nova-cust-ar'); if (ar) ar.textContent = name;
+          var en = row.querySelector('.nova-cust-en'); if (en) en.textContent = '';
+          var pTd = row.querySelector('.nova-cust-phone'); if (pTd) pTd.textContent = phone;
+        }
+        wrap.innerHTML = '';
+        notify('تم تحديث بيانات العميل'); // Customer details updated
+      });
+    });
   }
 
   // --- 2. Customers List Badges ---

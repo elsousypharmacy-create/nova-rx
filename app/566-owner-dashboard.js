@@ -138,6 +138,14 @@
       }
     }
 
+    var shiftObj = safeReadJSON('nova-rx-shift-v1') || {};
+    var shiftOpenedAt = toNum(shiftObj.openedAt);
+    var shiftFloat = toNum(shiftObj.float);
+    if (!isFinite(shiftFloat)) shiftFloat = 0;
+    var inDrawer = function (ms) {
+      return isFinite(shiftOpenedAt) && shiftOpenedAt > 0 ? (isFinite(ms) && ms >= shiftOpenedAt) : inRange(ms, today);
+    };
+
     var salesTodayGross = 0;
     var invoicesToday = 0;
     var cashSalesToday = 0;
@@ -153,11 +161,20 @@
       if (inRange(sAt, today)) {
         salesTodayGross += sTotal;
         invoicesToday += 1;
-        if (sale.payment === 'cash') {
-          cashSalesToday += sTotal;
-        }
       } else if (inRange(sAt, lastWeek)) {
         salesLastWeekGross += sTotal;
+      }
+      if (inDrawer(sAt)) {
+        if (Array.isArray(sale.tenders) && sale.tenders.length) {
+          for (var ti = 0; ti < sale.tenders.length; ti++) {
+            if (sale.tenders[ti] && sale.tenders[ti].method === 'cash') {
+              var ta = toNum(sale.tenders[ti].amount);
+              if (isFinite(ta)) cashSalesToday += ta;
+            }
+          }
+        } else if (sale.payment === 'cash') {
+          cashSalesToday += sTotal;
+        }
       }
     }
 
@@ -175,11 +192,11 @@
 
       if (inRange(rAt, today)) {
         returnsToday += rAmt;
-        if (linkedSale && linkedSale.payment === 'cash') {
-          cashRefundsToday += rAmt;
-        }
       } else if (inRange(rAt, lastWeek)) {
         returnsLastWeek += rAmt;
+      }
+      if (inDrawer(rAt) && (ret.method === 'cash' || (!ret.method && linkedSale && linkedSale.payment === 'cash'))) {
+        cashRefundsToday += rAmt;
       }
     }
 
@@ -189,8 +206,24 @@
       if (!co) continue;
       var coAt = toMs(co.at);
       var coAmt = toNum(co.amount);
-      if (inRange(coAt, today) && isFinite(coAmt)) {
+      if (inDrawer(coAt) && isFinite(coAmt) && coAmt > 0) {
         cashOutsToday += coAmt;
+      }
+    }
+
+    var cashDebtToday = 0;
+    var creditRaw = safeReadJSON('nova.credit');
+    if (creditRaw && Array.isArray(creditRaw.moves)) {
+      var revMap = {};
+      for (i = 0; i < creditRaw.moves.length; i++) {
+        var mv = creditRaw.moves[i];
+        if (mv && mv.type === 'reversal' && mv.target) revMap[mv.target] = true;
+      }
+      for (i = 0; i < creditRaw.moves.length; i++) {
+        var cm = creditRaw.moves[i];
+        if (cm && cm.type === 'collection' && !revMap[cm.id] && (cm.method || 'cash') === 'cash' && inDrawer(toMs(cm.at))) {
+          cashDebtToday += (toNum(cm.cents) || 0) / 100;
+        }
       }
     }
 
@@ -202,7 +235,7 @@
     }
 
     var expectedCash = (hasSalesApi || hasCashOutStore)
-      ? (cashSalesToday - cashRefundsToday - cashOutsToday)
+      ? Math.round((shiftFloat + cashSalesToday - cashRefundsToday + cashDebtToday - cashOutsToday) * 100) / 100
       : null;
 
     return {

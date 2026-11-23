@@ -9086,18 +9086,21 @@
 
     card.appendChild(el('h3', '', t('تحديث الأسعار الرسمية من قائمة هيئة الدواء', 'Official Price List Update')));
 
-    if (!getPriceSetter()) {
+    var hasSetter = !!getPriceSetter();
+    if (!hasSetter) {
       card.appendChild(el('div', 'nop-notice', t('التسعير مش متاح من هنا', 'Pricing is not available from here')));
     }
 
     var ta = el('textarea', 'nop-textarea');
     ta.id = 'nopInput';
     ta.placeholder = t('الصق القائمة هنا (باركود، الاسم، السعر)...', 'Paste CSV/TSV list here (barcode, name, price)...');
+    if (!hasSetter) ta.disabled = true;
     card.appendChild(ta);
 
     var actions = el('div', 'nop-actions');
     var analyzeBtn = el('button', 'btn btn-primary', t('حلّل', 'Analyze'));
     analyzeBtn.type = 'button';
+    if (!hasSetter) analyzeBtn.disabled = true;
     analyzeBtn.id = 'nopAnalyzeBtn';
 
     var applyBtn = el('button', 'btn btn-secondary', t('طبّق على المختار', 'Apply Selected'));

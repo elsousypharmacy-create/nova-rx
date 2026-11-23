@@ -107,7 +107,13 @@
     st.openedBy = currentUserName();
     delete st.counted;
     delete st.denoms;
+    delete st.closedId;
+    delete st.closedAt;
     writeJson(SHIFT_KEY, st);
+    var sumBox = document.getElementById('novaShiftSummary');
+    if (sumBox && sumBox.parentNode) sumBox.parentNode.removeChild(sumBox);
+    var msgEl = document.getElementById('novaShiftMsg');
+    if (msgEl) msgEl.textContent = '';
     var fltInput = document.getElementById('novaShiftFloat');
     if (fltInput) {
       fltInput.value = String(num);
@@ -372,6 +378,7 @@
   window.novaShiftOpen = {
     state: getState,
     open: openShift,
+    openDialog: showOpenDialog,
     denomTotal: denomTotal
   };
 
