@@ -10,7 +10,8 @@ html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width
 html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}
 }
 @media(min-width:1100px) and (orientation:landscape){
-html body .invoice-footer{min-height:108px!important}
+html body .invoice-footer{height:auto!important;min-height:108px!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-wrap:wrap!important;align-items:center}
+html body .invoice-footer .totals-box,html body .invoice-footer .totals-summary{height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column}
 }
 @media(orientation:portrait) and (min-width:700px){
 html body .pos-root{flex-direction:column!important;height:auto!important;min-height:calc(100dvh - 104px)!important;overflow:visible!important}

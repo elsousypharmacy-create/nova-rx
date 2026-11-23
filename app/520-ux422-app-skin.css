@@ -49,6 +49,7 @@ body{font-family:var(--nx-font);text-rendering:optimizeLegibility}
 #novaPageView .nova-chip,#novaPageView .nova-stock-chip{transition:background-color var(--nx-dur-fast) var(--nx-ease),border-color var(--nx-dur-fast) var(--nx-ease),color var(--nx-dur-fast) var(--nx-ease)}
 #novaPageView .nova-page-search,#novaPageView .nova-field{border-radius:var(--nx-r-2);background:var(--nx-bg-panel);border-color:#333c46;transition:border-color var(--nx-dur-fast) var(--nx-ease),box-shadow var(--nx-dur-fast) var(--nx-ease)}
 #novaPageView .nova-page-search:hover{border-color:#3f4a55}
+#novaPageView :is(input,textarea)::placeholder,.pos-root :is(input,textarea)::placeholder{color:#9aa7b5!important;opacity:1}
 #novaPageView .nova-page-search:focus,#novaPageView .nova-field:focus{outline:none;border-color:var(--nx-border-focus);box-shadow:0 0 0 3px rgba(118,184,213,.18)}
 #novaPageView .nova-empty{color:var(--nx-text-muted);line-height:var(--nx-lh-base)}
 #novaPageView .nova-lang-switch{border-radius:var(--nx-r-2)}
@@ -105,8 +106,13 @@ html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.
 .btn-sm{min-height:var(--ds-h-sm)}@media(max-width:640px){.btn-sm{min-height:var(--ds-h)}}
 /* UI-BATCH1: «إتمام الدفع (F9)» and its confirm «تأكيد البيع» are the one dominant action (bigger + brighter than everything else on the sale screen); empty cart keeps the dashed disabled look (040) */
 :is(#novaPageView,.nova-page-view,.pos-root) .btn-checkout:not(:disabled),#checkoutModal #btnConfirmPayment:not(:disabled){background:#1e9a60!important;border-color:#55d497!important;color:#fff!important;font-size:20px!important;font-weight:800!important;box-shadow:0 4px 16px rgba(30,154,96,.38)!important}
+#checkoutModal #btnConfirmPayment:disabled{background:var(--ds-surface-2,#20262d)!important;border-color:var(--ds-border,#343b44)!important;color:#6b7785!important;opacity:.65!important;cursor:not-allowed!important;box-shadow:none!important}
 :is(#novaPageView,.nova-page-view,.pos-root) .btn-checkout:hover:not(:disabled),#checkoutModal #btnConfirmPayment:hover:not(:disabled){background:#23ad6c!important}
 #checkoutModal #btnConfirmPayment{min-height:52px}
+#checkoutModal .modal-content,#checkoutModal [role="dialog"]{display:flex!important;flex-direction:column!important;max-height:92dvh!important;overflow:hidden!important}
+#checkoutModal .modal-body{overflow-y:auto!important;flex:1 1 auto!important;min-height:0!important}
+#checkoutModal .modal-footer{position:sticky!important;bottom:0!important;flex:0 0 auto!important;background:var(--ds-bg,#14181d)!important;border-top:1px solid var(--ds-border,#343b44)!important;z-index:2}
+#checkoutModal .pay-methods{flex-wrap:wrap!important}
 /* UI-BATCH1 z-index scale - use these values only, never add a new one:
    20 sticky sale totals, 25 sale header, 60 dropdowns/suggestions, 110-120 header popovers, 900 phone bottom nav (#novaBottomNav),
    950 more-sheet, 960 handover-notes panel, 1000 dialogs (.modal-backdrop, customer gate), 1200-1300 sale sub-dialogs,
@@ -128,6 +134,7 @@ html body :is(#novaPageView,.app>main,dialog,.rcv-ov) :is(.btn-secondary,button.
 #novaPageView #novaDupes,#novaPageView #novaDupes *{font-size:13px}
 #novaPageView table th,.nova-page-view table th{font-size:13px}
 #novaPageView .nova-kpi-delta[data-dir=up]{color:#3ddc84}#novaPageView .nova-kpi-delta[data-dir=down]{color:#ff8a8f}
+#helpModal.modal-backdrop.active{background:rgba(0,0,0,.72)!important}
 /* UX-P14 one type scale for the whole app (same as purchases): 23 title / 17 section / 15 card / 14 body+controls / 13 meta; nothing below 13 */
 html body :is(th,small,kbd,.kbd-hint,.nova-sale-number,.nova-held-count,#totalItemsCount,#displaySubtotal,#displayVatLabel,#displayVat,.sidebar-title,.customer-empty-sub,#btnAttachLoyalty,.checkout-mock-note,#modalCustomerInfo,.nova-checkout-customer,.quick-cash-btn,.nova-receipt-width-btn,.nova-printer-toggle,.nova-stock-notice,.nova-product-en-name,.nova-sale-labels,.tot-row span:not(#displayGrandTotal),#novaStockNotice,#btnDismissHelp kbd,.nova-demo-label,.pharmacy-banner-copy span,.nova-held-action span,.discount-title,.discount-title+*,.input-grp label,.input-grp span,.checkout-amount-display .label,.change-due-box .title,.nova-setting-card p,[id*="heckout"] label,[class*="checkout"] label){font-size:13px!important}
 html body :is(#btnCancelCheckout,#btnPrintReceiptBtn,#btnReprintReceipt,#btnExportReceiptPdf,#btnReceiptNewSale,#btnDismissHelp,#btnAttachLoyalty,.quick-cash-btn,.nova-checkout-customer){font-size:14px!important}

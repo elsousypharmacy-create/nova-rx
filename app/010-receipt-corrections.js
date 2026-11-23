@@ -13,7 +13,9 @@
     var pays = ['cash', 'card', 'cash', 'wallet', 'cash', 'card'];
     var sales = pays.map(function (pay, i) {
       var p = P[i % P.length], q = 1 + (i % 3), total = Math.round(p[2] * q * 100) / 100;
-      return { id: 'DEMO-S' + (i + 1), number: 'DEMO-' + String(i + 1).padStart(4, '0'), at: now - (i + 1) * 47 * 60000, total: total, vat: 0, payment: pay,
+      var vat = window.novaVat ? window.novaVat.calc(total) : Math.round((total * 14 / 114) * 100) / 100;
+      return { id: 'DEMO-S' + (i + 1), number: 'DEMO-' + String(i + 1).padStart(4, '0'), at: now - (i + 1) * 47 * 60000, subtotal: total, discount: 0, total: total, vat: vat,
+        received: pay === 'cash' ? total : 0, change: 0, tenders: [{ method: pay, amount: total }], payment: pay,
         status: 'final', demo: true, lines: [{ barcode: p[0], name: p[1], price: p[2], qty: q, discount: 0 }] };
     });
     localStorage.setItem(KEY, JSON.stringify(sales));

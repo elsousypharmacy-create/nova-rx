@@ -150,7 +150,7 @@
   'استلم فاتورة المورد وأضفها للمخزون بالتشغيلة والصلاحية.':'Receive the supplier invoice into stock with lot and expiry.','قراءة فاتورة بالصورة':'Read invoice from photo','استلام فاتورة':'Receive invoice','استلامات النهارده':'Received today','طلبيات مستنية':'Pending orders','من صفحة المشتريات':'from the purchases page','استلامات الشهر':'This month','لسه مفيش':'None yet',
   'طلبيات مستنية الاستلام':'Orders waiting to be received','آخر الاستلامات':'Latest receipts','لسه مفيش استلامات':'No receipts yet','مفيش طلبيات مستنية. الطلبيات اللي بتتأكد من صفحة المشتريات هتظهر هنا.':'No pending orders. Orders confirmed on the purchases page appear here.','لما المندوب يوصل، اضغط «استلام فاتورة» واكتب الأصناف، أو صوّر الفاتورة.':'When the delivery arrives, press «Receive invoice» and enter the items, or photograph the invoice.',
   'التاريخ':'Date','المورد':'Supplier','رقم الفاتورة':'Invoice no.','الأصناف':'Items','الإجمالي':'Total','استلم':'Receive','مستني':'Waiting','وصل جزء':'Partly received','الفترة':'Period',
-  'الفاتورة':'Invoice','سجل العميل':'Customer history'};
+  'الفاتورة':'Invoice','سجل العميل':'Customer history','رجوع للكاشير':'Back to cashier','جارٍ تحميل المحادثات…':'Loading conversations…','تعذر تحميل المحادثات خلال 10 ثوانٍ.':'Could not load conversations within 10 seconds.','إعادة المحاولة':'Retry','تعذر تحميل النواقص خلال 15 ثانية.':'Could not load shortages within 15 seconds.','تعذر تحميل شاشة الاستلام خلال 15 ثانية.':'Could not load receiving screen within 15 seconds.','أوفلاين':'Offline','غير متصل بالإنترنت':'Offline','بدون إنترنت':'Offline'};
  for(const [k,v] of Object.entries(enUx))if(!(k in toEn))toEn[k]=v;
  const arExtra={'CHECKOUT':'إتمام الدفع','NET TOTAL':'الإجمالي النهائي','F9 / Pay':'F9 / دفع','items)':'صنف)',
   'Added to invoice:':'تمت الإضافة للفاتورة:','Scanned product added:':'تمت إضافة المنتج بالباركود:','Barcode match added:':'تمت الإضافة بالباركود:','Product added:':'تمت إضافة المنتج:',
@@ -221,9 +221,11 @@
  function apply(){
   if(busy)return;busy=true;
   const lang=localStorage.getItem(langKey)==='en'?'en':'ar';
-  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  const dir=lang==='ar'?'rtl':'ltr';
+  document.documentElement.lang=lang;document.documentElement.dir=dir;
   document.body.classList.toggle('lang-ar',lang==='ar');
   document.body.classList.toggle('lang-en',lang==='en');
+  document.querySelectorAll('#novaPageView [dir]').forEach(el=>{if(el.getAttribute('dir')!==dir)el.setAttribute('dir',dir)});
   document.querySelectorAll('.nova-lang-btn').forEach(b=>{b.classList.toggle('active',b.dataset.lang===lang);b.setAttribute('aria-pressed',String(b.dataset.lang===lang))});
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
@@ -259,6 +261,6 @@
  const observer=new MutationObserver(()=>{if(busy||scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;apply()})});
  observer.observe(document.body,{childList:true,subtree:true,characterData:true});
  /* Delegated: the settings page renders these buttons after load, so per-button listeners never bound. */
- document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.nova-lang-btn');if(!b)return;try{localStorage.setItem(langKey,b.dataset.lang)}catch(_){}apply()});
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.nova-lang-btn');if(!b)return;try{localStorage.setItem(langKey,b.dataset.lang)}catch(_){}apply();try{window.dispatchEvent(new CustomEvent('nova:lang-change',{detail:{lang:b.dataset.lang}}))}catch(_){}const t=document.querySelector('.nova-tab.active');if(t&&t.dataset.page&&t.dataset.page!=='sale')setTimeout(()=>{t.click();apply()},0)});
  apply();
 })();

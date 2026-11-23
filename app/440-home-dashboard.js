@@ -35,14 +35,41 @@
       row(true, T('الصيدلية', 'Pharmacy'), '<div class="nsw-hint">' + esc(name) + '</div>', '') +
       row(null, T('الأصناف والرصيد', 'Products and stock'), '<div class="nsw-hint">' + T('ارفع ملف الأصناف من صفحة الأصناف، وبعده الرصيد الافتتاحي.', 'Upload your product file from the Products page, then the opening balance.') + '</div>', '<button type="button" class="btn" data-nsw="products">' + T('افتح الأصناف', 'Open products') + '</button>') +
       '<div data-nsw-slot="sup">' + row(null, T('الموردين', 'Suppliers'), '<div class="nsw-hint">…</div>', '') + '</div>' +
-      row(null, T('واتس اب', 'WhatsApp'), '<div class="nsw-hint">' + T('افتح المحادثات وتأكد إن الرسائل بتوصل.', 'Open the conversations and make sure messages arrive.') + '</div>', '<a class="btn" href="/whatsapp">' + T('افتح المحادثات', 'Open conversations') + '</a>') +
+      row(null, T('واتس اب', 'WhatsApp'), '<div class="nsw-hint">' + T('افتح المحادثات وتأكد إن الرسائل بتوصل.', 'Open the conversations and make sure messages arrive.') + '</div>', '<button type="button" class="btn" data-nsw="wa">' + T('افتح المحادثات', 'Open conversations') + '</button>') +
       syncRow() + '</div>';
     var slot = el.querySelector('[data-nsw-slot="sup"]');
     if (slot) slot.innerHTML = await suppliersRow();
+    function openWaOverlay() {
+      var old = document.getElementById('novaWaOverlay');
+      if (old && old.parentNode) old.parentNode.removeChild(old);
+      var ov = document.createElement('div');
+      ov.id = 'novaWaOverlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0b0d10;display:flex;flex-direction:column;';
+      ov.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#14181d;border-bottom:1px solid #343b44;"><button type="button" class="btn btn-secondary" data-wa-back>' + T('رجوع للكاشير', 'Back to cashier') + '</button><strong>' + T('المحادثات', 'Chats') + '</strong></div>' +
+        '<div data-wa-st style="padding:14px;color:#a4adb7;">' + T('جارٍ تحميل المحادثات…', 'Loading conversations…') + '</div>' +
+        '<iframe src="/whatsapp" title="' + T('المحادثات', 'Chats') + '" style="flex:1;border:0;width:100%;display:none;"></iframe>';
+      document.body.appendChild(ov);
+      var fr = ov.querySelector('iframe'), st = ov.querySelector('[data-wa-st]'), tm;
+      function arm() {
+        clearTimeout(tm);
+        st.style.display = 'block';
+        st.textContent = T('جارٍ تحميل المحادثات…', 'Loading conversations…');
+        fr.style.display = 'none';
+        tm = setTimeout(function () {
+          st.innerHTML = '<span>' + T('تعذر تحميل المحادثات خلال 10 ثوانٍ.', 'Could not load conversations within 10 seconds.') + '</span> <button type="button" class="btn btn-primary" data-wa-retry>' + T('إعادة المحاولة', 'Retry') + '</button>';
+        }, 10000);
+      }
+      fr.onload = function () { clearTimeout(tm); st.style.display = 'none'; fr.style.display = 'block'; };
+      ov.onclick = function (ev) {
+        if (ev.target.closest && ev.target.closest('[data-wa-back]')) { clearTimeout(tm); ov.remove(); go('sale'); }
+        else if (ev.target.closest && ev.target.closest('[data-wa-retry]')) { arm(); fr.src = '/whatsapp'; }
+      };
+      arm();
+    }
     el.onclick = function (e) {
       var b = e.target.closest && e.target.closest('[data-nsw]'); if (!b) return;
       var a = b.getAttribute('data-nsw');
-      if (a === 'refresh') render(el); else if (a === 'products') go('products'); else if (a === 'purchases') go('purchases');
+      if (a === 'refresh') render(el); else if (a === 'products') go('products'); else if (a === 'purchases') go('purchases'); else if (a === 'wa') openWaOverlay();
     };
   }
   root.novaSetup = { mount: function (el) { if (!el) return; try { render(el); } catch (e) { el.innerHTML = ''; } } };

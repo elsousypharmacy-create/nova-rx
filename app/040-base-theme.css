@@ -675,8 +675,8 @@
     .empty-invoice-state .nova-first-run-hint:not([hidden]) + .empty-invoice-sub{display:none}
     .empty-invoice-state .nova-first-run-hint ol{margin:0 0 6px;line-height:1.7}
     /* UX216: disabled pay button, opaque, text >=4.5:1 on its bg, clearly "off" (dashed border). */
-    #btnCheckout.btn-checkout:disabled,#btnCheckout.btn-checkout:disabled:hover{opacity:1!important;background:#1d2730!important;border:1px dashed #6f8596!important;color:#c9d6de!important;box-shadow:none!important;cursor:not-allowed}
-    #btnCheckout.btn-checkout:disabled kbd{background:#10161b!important;color:#c9d6de!important}
+    #btnCheckout.btn-checkout:disabled,#btnCheckout.btn-checkout:disabled:hover{opacity:1!important;background:#141d25!important;border:1px dashed #8fa8bc!important;color:#eef4f8!important;box-shadow:none!important;cursor:not-allowed}
+    #btnCheckout.btn-checkout:disabled kbd{background:#0c1116!important;color:#eef4f8!important}
     .btn-checkout kbd {
       background: rgba(0, 0, 0, 0.35);
       padding: 1px 6px;
@@ -1694,7 +1694,7 @@ html,body{background:#090a0d!important;color:#f2f3f5!important}
 /* Premium polish v2 — restrained blue, neutral surfaces, consistent controls */
 .nova-nav-row{box-shadow:0 1px 0 #ffffff05}
 .nova-nav-row>.nova-nav-brand{border-inline-start:1px solid #292e35!important}
-.nova-nav-row>.nova-nav-brand .nova-brand-name>span{color:#94acc5!important}
+.nova-nav-row>.nova-nav-brand .nova-brand-name>span{color:#79c9eb!important}
 .nova-tab{background:transparent!important;color:#aab1bb!important;transition:background .15s,color .15s!important}
 .nova-tab.active{background:#20252c!important;color:#e1e9f3!important;box-shadow:inset 0 -2px 0 #6485a7!important}
 .nova-tab:hover:not(.active){background:#1e2329!important;color:#e5eaf0!important}
