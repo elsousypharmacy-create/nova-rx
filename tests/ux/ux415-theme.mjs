@@ -66,7 +66,7 @@ const pix = async (page, x, y) => { const buf = await page.screenshot({ clip: { 
   assert.deepEqual(btns, [['time', 'تلقائي حسب الوقت', 'true', true], ['dark', 'داكن', 'false', false], ['light', 'فاتح', 'false', false], ['auto', 'حسب الجهاز', 'false', false]], 'four choices, by-time pressed: ' + JSON.stringify(btns));
   for (const b of await card.locator('[data-nova-theme-btn]').all()) { const bb = await b.boundingBox(); assert.ok(bb.width >= 44 && bb.height >= 40, 'touch size ' + JSON.stringify(bb)); }
   await card.locator('[data-nova-theme-btn=light]').click(); await page.waitForTimeout(300);
-  let r = await root(page); assert.equal(r.t, 'light'); assert.equal(r.p, 'light'); assert.ok(/invert/.test(r.f), r.f); assert.equal(r.ls, 'light'); assert.equal(r.tc, '#f2f3f5', 'browser bar colour follows');
+  let r = await root(page); assert.equal(r.t, 'light'); assert.equal(r.p, 'light'); assert.equal(r.f, 'none', 'native light tokens, no invert filter'); assert.equal(r.ls, 'light'); assert.equal(r.tc, '#f5f5f7', 'browser bar colour follows');
   assert.equal(await card.locator('[data-nova-theme-btn=light]').getAttribute('aria-pressed'), 'true'); assert.ok(await card.locator('[data-nova-theme-btn=light]').evaluate((b) => b.classList.contains('active')) && !(await card.locator('[data-nova-theme-btn=time]').evaluate((b) => b.classList.contains('active'))), 'highlight follows the choice'); assert.equal(await card.locator('[data-nova-theme-btn=dark]').getAttribute('aria-pressed'), 'false');
   assert.ok(await bright(page) > 200, 'light page is light: ' + await bright(page));
   if (SHOTS) await page.screenshot({ path: SHOTS + '/ux416-settings-light.png' });
@@ -100,7 +100,7 @@ const pix = async (page, x, y) => { const buf = await page.screenshot({ clip: { 
   const c = await pix(page, Math.round(box.x + box.width / 2), Math.round(box.y + box.height / 2));
   assert.ok(c.every((v, i) => Math.abs(v - [0x4a, 0x90, 0xa4][i]) <= 6), 'the photo keeps its colours (#4a90a4): ' + c);
   const bg = await pix(page, 195, 700); assert.ok(bg.every((v) => v > 200), 'chat background is light: ' + bg);
-  assert.ok(/invert/.test(await page.locator('img.wa-mimg').evaluate((e) => getComputedStyle(e).filter)), 'photo is re-inverted');
+  assert.equal(await page.locator('img.wa-mimg').evaluate((e) => getComputedStyle(e).filter), 'none', 'photo needs no re-invert filter');
   if (SHOTS) await page.screenshot({ path: SHOTS + '/ux416-chat-light.png' });
   await page.emulateMedia({ media: 'print' }); const pf = await page.evaluate(() => [getComputedStyle(document.documentElement).filter, getComputedStyle(document.querySelector('img.wa-mimg')).filter]); assert.deepEqual(pf, ['none', 'none'], 'printing is never inverted');
   await page.emulateMedia({ media: 'screen' });
@@ -118,9 +118,9 @@ const pix = async (page, x, y) => { const buf = await page.screenshot({ clip: { 
   const card = page.locator('#novaThemeCard'); await card.waitFor(); await page.waitForTimeout(300);
   const t = (await card.innerText()).replace(/\s+/g, ' '); assert.ok(/Appearance/.test(t) && /Dark/.test(t) && /Light/.test(t) && /Auto/.test(t), t); assert.ok(!/[؀-ۿ]/.test(t), 'no Arabic left in English mode: ' + t); await ctx.close(); ok('English labels for the appearance card');
 }
-{ // other pages: purchases page follows the same choice; the old --nx light tokens do not double-invert
+{ // other pages: purchases page follows the same choice with native light palette
   const { ctx, page, errors } = await open({ pref: 'light', path: 'purchases.html' });
-  const r = await root(page); assert.equal(r.t, 'light'); assert.ok(/invert/.test(r.f)); assert.ok(await bright(page) > 200, 'purchases page is light: ' + await bright(page));
+  const r = await root(page); assert.equal(r.t, 'light'); assert.equal(r.f, 'none'); assert.ok(await bright(page) > 200, 'purchases page is light: ' + await bright(page));
   assert.equal(await page.evaluate(() => document.documentElement.getAttribute('data-theme')), 'dark', 'the page keeps its own data-theme (ux-tokens light palette is NOT switched on)');
   if (SHOTS) await page.screenshot({ path: SHOTS + '/ux416-purchases-light.png' }); assert.deepEqual(errors, []); await ctx.close(); ok('purchases page follows the saved choice and does not double-invert');
 }

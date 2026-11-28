@@ -229,7 +229,93 @@ try {
   assert.equal(maskStyle.webkitMask, 'none', 'Mobile purchases nav has no webkit-mask clipping');
   await mobCtx.close();
   console.log('ok - mobile /purchases nav has no edge clipping');
-  console.log('PASS commercial-readiness: 6 groups');
+
+  // 7. Native Light Mode + Bulk CSV Import + 3-Step Quick Setup Wizard (clean buyer profile)
+  const b3Ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'ar-EG', serviceWorkers: 'block' });
+  await blockExternal(b3Ctx);
+  const bp = await b3Ctx.newPage();
+  const b3Errs = [];
+  bp.on('pageerror', e => b3Errs.push(String(e)));
+
+  await bp.addInitScript(() => {
+    try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.setItem('nova-theme', 'light'); } catch {}
+  });
+  await bp.goto(BASE + '/index.html#sale', { waitUntil: 'load' });
+  await bp.waitForSelector('#mainSearchInput');
+
+  const lightCheck = await bp.evaluate(() => {
+    const csHtml = getComputedStyle(document.documentElement);
+    const csBody = getComputedStyle(document.body);
+    return {
+      attr: document.documentElement.getAttribute('data-nova-theme'),
+      filter: csHtml.filter,
+      bodyBg: csBody.backgroundColor
+    };
+  });
+  assert.equal(lightCheck.attr, 'light');
+  assert.equal(lightCheck.filter, 'none', 'Native Light Mode must not use filter:invert');
+  assert.equal(lightCheck.bodyBg, 'rgb(245, 245, 247)', 'Apple Light Mode body background');
+
+  // Bulk CSV Import
+  await bp.click('.nova-tab[data-page="products"]');
+  await bp.waitForSelector('#novaImportProductsBtn');
+  await bp.click('#novaImportProductsBtn');
+  await bp.waitForSelector('#novaImportModal');
+  await bp.fill('#novaImpText', 'الاسم,الباركود,السعر,العبوة,التصنيف,الرصيد\nأدفيل ليكوي جيل 20,6227770003344,142.5,20 كبسولة,مسكنات,25');
+  await bp.waitForFunction(() => !document.getElementById('novaImpOk').disabled);
+  const prevRows = await bp.locator('#novaImpPreview tbody tr').count();
+  assert.equal(prevRows, 1, 'Preview shows parsed CSV row');
+  await bp.click('#novaImpOk');
+  await bp.waitForSelector('#novaImportModal', { state: 'detached' });
+  await bp.fill('#novaFilter', '6227770003344');
+  await bp.waitForTimeout(150);
+  const impRow = await bp.locator('.nova-prod-panel tbody tr').first().innerText();
+  assert.ok(impRow.includes('أدفيل ليكوي جيل 20') && impRow.includes('142.50'), 'Bulk CSV imported item visible: ' + impRow);
+
+  // Add imported item to cart on Light Mode POS and verify green/white checkout CTA contrast
+  await bp.click('.nova-tab[data-page="sale"]');
+  await bp.fill('#mainSearchInput', '6227770003344');
+  await bp.keyboard.press('Enter');
+  await bp.waitForFunction(() => document.querySelectorAll('#invoiceTableBody tr').length >= 1 && !document.getElementById('btnCheckout').disabled);
+  await bp.waitForFunction(() => getComputedStyle(document.getElementById('btnCheckout')).backgroundColor === 'rgb(22, 163, 74)');
+  const payActive = await bp.evaluate(() => {
+    const btn = document.getElementById('btnCheckout');
+    const cs = getComputedStyle(btn);
+    return { disabled: btn.disabled, bg: cs.backgroundColor, color: cs.color };
+  });
+  assert.equal(payActive.disabled, false);
+  assert.equal(payActive.bg, 'rgb(22, 163, 74)', 'Active pay CTA uses crisp emerald green in Light Mode');
+  assert.equal(payActive.color, 'rgb(255, 255, 255)', 'Active pay CTA uses pure white text');
+
+  // 3-Step Quick Setup Wizard -> hides demo badge + sets pharmacy identity & owner account
+  await bp.click('.nova-tab[data-page="settings"]');
+  await bp.waitForSelector('#novaOpenQuickSetupBtn');
+  await bp.click('#novaOpenQuickSetupBtn');
+  await bp.waitForSelector('#novaQuickSetupModal');
+  await bp.fill('#novaQsName', 'صيدلية النور');
+  await bp.fill('#novaQsOwner', 'د. سارة علي');
+  await bp.fill('#novaQsBranch', 'فرع المعادي');
+  await bp.click('#novaQsStep1Next');
+  await bp.waitForSelector('#novaQsAdminPw');
+  await bp.fill('#novaQsAdminPw', 'OwnerPass123');
+  await bp.click('#novaQsStep2Ok');
+  await bp.waitForSelector('#novaQsStartSale');
+  await bp.click('#novaQsStartSale');
+  await bp.waitForSelector('#novaQuickSetupModal', { state: 'detached' });
+  const postSetup = await bp.evaluate(() => ({
+    banner: document.querySelector('.pharmacy-banner-copy strong')?.textContent || '',
+    demoHidden: !!document.querySelector('.nova-demo-label')?.hidden,
+    hasAcc: !!(window.novaAuth && window.novaAuth.hasAccounts()),
+    curRole: window.novaAuth?.current()?.role || ''
+  }));
+  assert.equal(postSetup.banner, 'صيدلية النور');
+  assert.equal(postSetup.demoHidden, true, 'Demo pill hides after pharmacy profile customization');
+  assert.equal(postSetup.hasAcc, true);
+  assert.equal(postSetup.curRole, 'owner');
+  assert.deepEqual(b3Errs, [], 'No pageerrors on Batch 3 checks');
+  await b3Ctx.close();
+  console.log('ok - Native Light Mode, Bulk CSV import, and 3-step Quick Setup verified');
+  console.log('PASS commercial-readiness: 7 groups');
 } finally {
   await browser.close();
   srv.close();

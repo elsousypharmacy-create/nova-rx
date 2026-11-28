@@ -397,7 +397,11 @@ function updatePanelVisibility() {
   if (panel) panel.dataset.state = stateName;
 
   if (stagePill) {
-    stagePill.textContent = showOpenChrome ? 'مرحلة 2 من 5 · راجع الكميات' : 'مرحلة 1 من 5 · افتح النواقص';
+    const emptyReady = showOpenChrome && rawItems.length === 0;
+    stagePill.hidden = emptyReady;
+    if (!emptyReady) {
+      stagePill.textContent = showOpenChrome ? 'مرحلة 2 من 5 · راجع الكميات' : 'مرحلة 1 من 5 · افتح النواقص';
+    }
   }
 
   if (lockWrap) lockWrap.hidden = !(isLocked || (pinAsk && isReady));

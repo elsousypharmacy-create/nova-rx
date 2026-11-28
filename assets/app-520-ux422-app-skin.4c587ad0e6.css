@@ -256,4 +256,121 @@ html body:not(.x) #novaPageView[data-view]:not([data-view=""])>.nova-page-header
 .nova-prof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 14px;margin-top:8px}
 .nova-prof-wide{grid-column:1/-1}
 .nova-prof-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-#novaProductModal label{display:block;margin:6px 0 4px;font-size:13px;color:#a4adb7}
+#novaProductModal label,#novaImportModal label,#novaQuickSetupModal label{display:block;margin:6px 0 4px;font-size:13px;color:var(--nx-text-muted,#a4adb7)}
+
+/* --- Batch 3 Apple Polish: glass modals, calm .nx-i, crisp checkout, Native Light Mode --- */
+.modal-backdrop,#novaProductModal,#novaImportModal,#novaQuickSetupModal,.nova-ic-backdrop{backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%)}
+.modal-backdrop.active .modal-card,.nova-prod-dlg-card,#novaImportModal .nova-prod-dlg-card,#novaQuickSetupModal .nova-prod-dlg-card{animation:nx-pop .16s cubic-bezier(.2,.8,.2,1)}
+@keyframes nx-pop{from{opacity:0;transform:scale(.97) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@media (prefers-reduced-motion:reduce){.modal-backdrop.active .modal-card,.nova-prod-dlg-card{animation:none}}
+
+/* Calm Apple-style subtle info triggers (less visual noise than big 32px circles) */
+html body button.nx-i,html body #novaPageView button.nx-i,html body #novaPageView .nova-page-header button.nx-i,.nx-i{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;font-size:11px!important;opacity:.55;border-color:rgba(164,173,183,.38);transition:opacity .15s ease,border-color .15s ease,background-color .15s ease}
+.nx-i:hover,.nx-i:focus-visible{opacity:1}
+
+/* Checkout modal polish: single-line payment tiles + bold centered amount */
+#checkoutModal .pay-methods-grid .pay-method-btn{font-size:12.5px!important;line-height:1.25;padding:10px 8px!important;min-height:46px}
+#checkoutModal #inputCashReceived{text-align:center!important;font-size:26px!important;height:54px!important;letter-spacing:.4px}
+.nova-demo-label[hidden]{display:none!important}
+
+/* Apple Native Light Mode (replaces filter:invert) */
+html[data-nova-theme=light]{
+ --bg-base:#f5f5f7;--bg-panel:#ffffff;--bg-surface:#f0f2f5;--bg-surface-hover:#e6eaf0;--bg-surface-active:#dce2ea;
+ --border-subtle:#e2e6ec;--border-focus:#0071a4;--text-main:#1d1d1f;--text-muted:#525c68;--text-dim:#6e7781;
+ --accent-cyan:#0071a4;--accent-cyan-light:#0071a4;
+ --nx-bg-base:#f5f5f7;--nx-bg-panel:#ffffff;--nx-bg-surface:#f0f2f5;--nx-bg-elevated:#ffffff;
+ --nx-border-subtle:#e2e6ec;--nx-border-focus:#0071a4;--nx-text-main:#1d1d1f;--nx-text-muted:#525c68;--nx-text-dim:#6e7781;
+ --nx-accent:#0071a4;--nx-on-accent:#ffffff;
+ --nx-shadow-1:0 1px 3px rgba(0,0,0,.07);--nx-shadow-2:0 8px 24px rgba(0,0,0,.09);
+ --ds-bg:#ffffff;--ds-surface-1:#ffffff;--ds-surface-2:#f0f2f5;--ds-surface-3:#e6eaf0;--ds-border:#d8dee6;
+ --ds-text:#1d1d1f;--ds-text-muted:#525c68;--ds-accent:#0071a4;--ds-accent-hover:#005f8a;--ds-accent-border:#0071a4;--ds-accent-text:#ffffff;
+ --ui-soft:#e6f4fa;--ui-soft-t:#005f8a;--ui-surface:#ffffff;--ui-surface-2:#f0f2f5;--ui-border:#e2e6ec;--ui-text:#1d1d1f;--ui-muted:#525c68;
+ color-scheme:light;
+}
+html[data-nova-theme=light],html[data-nova-theme=light] body{background:#f5f5f7!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .nova-nav-row,html[data-nova-theme=light] .nova-nav{background:rgba(255,255,255,.94)!important;border-bottom-color:#e2e6ec!important}
+html[data-nova-theme=light] .nova-nav-row>.nova-nav-brand{background:#ffffff!important;border-inline-start-color:#e2e6ec!important}
+html[data-nova-theme=light] .nova-nav-brand,html[data-nova-theme=light] .nova-brand-name,html[data-nova-theme=light] .nova-nav-row>.nova-nav-brand .nova-brand-name{color:#1d1d1f!important}
+html[data-nova-theme=light] .nova-nav-row>.nova-nav-brand .nova-brand-name>span{color:#0071a4!important}
+html[data-nova-theme=light] .nova-nav .nova-tab{color:#525c68!important}
+html[data-nova-theme=light] .nova-nav .nova-tab:hover:not(.active){background:#eef1f5!important;color:#1d1d1f!important}
+html[data-nova-theme=light] body .nova-nav button.nova-tab.active,html[data-nova-theme=light] body .nova-nav .nova-tab.active{background:#e6f4fa!important;color:#005f8a!important;box-shadow:inset 0 0 0 1px rgba(0,113,164,.25)!important}
+html[data-nova-theme=light] .nova-nav .nova-tab.active::after{background:#0071a4!important}
+html[data-nova-theme=light] .nova-refresh-icon,html[data-nova-theme=light] .nova-demo-label{color:#525c68!important;border-color:#d8dee6!important;background:#f0f2f5!important}
+html[data-nova-theme=light] .pos-root,html[data-nova-theme=light] .pos-root .main-workspace,html[data-nova-theme=light] .pos-root .customer-sidebar,html[data-nova-theme=light] .pos-root .sidebar-body,html[data-nova-theme=light] .pos-root .table-container,html[data-nova-theme=light] #novaPageView{background:#f5f5f7!important;color:#1d1d1f!important;border-color:#e2e6ec!important}
+html[data-nova-theme=light] .pos-root .search-container{background:#ffffff!important;border-bottom-color:#e2e6ec!important}
+html[data-nova-theme=light] .pos-root .top-header,html[data-nova-theme=light] .pos-root .invoice-footer,html[data-nova-theme=light] body.nova-rail .pos-root>.customer-sidebar{background:#ffffff!important;border-color:#e2e6ec!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .pos-root .top-header button:not(.btn-primary):not(.nova-btn-danger){background:#f0f2f5!important;color:#1d1d1f!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .pharmacy-banner-copy strong{color:#1d1d1f!important}
+html[data-nova-theme=light] .pharmacy-banner-copy span{color:#6e7781!important}
+html[data-nova-theme=light] .main-search-input,html[data-nova-theme=light] .search-container .main-search-box,html[data-nova-theme=light] #novaPageView .nova-page-search,html[data-nova-theme=light] #novaPageView .nova-field{background:#ffffff!important;color:#1d1d1f!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .search-mode-tag{background:#e6f4fa!important;color:#005f8a!important;border-color:#b8ddec!important}
+html[data-nova-theme=light] .suggestions-dropdown{background:#ffffff!important;border-color:#d5dbe2!important;box-shadow:0 12px 32px rgba(0,0,0,.12)!important}
+html[data-nova-theme=light] .suggestion-item{background:#ffffff!important;color:#1d1d1f!important;border-bottom-color:#eef1f5!important}
+html[data-nova-theme=light] .suggestion-item:hover,html[data-nova-theme=light] .suggestion-item.selected{background:#eef6fa!important}
+html[data-nova-theme=light] .invoice-table th,html[data-nova-theme=light] #novaPageView table th{background:#f0f2f5!important;color:#525c68!important;border-color:#e2e6ec!important}
+html[data-nova-theme=light] .invoice-table td,html[data-nova-theme=light] #novaPageView table td{background:#ffffff!important;color:#1d1d1f;border-color:#eef1f5!important}
+html[data-nova-theme=light] .invoice-table .item-title{color:#1d1d1f!important}
+html[data-nova-theme=light] .invoice-table .item-sub,html[data-nova-theme=light] .invoice-table .item-meta{color:#525c68!important}
+html[data-nova-theme=light] .qty-control,html[data-nova-theme=light] .qty-input{background:#f0f2f5!important;border-color:#d5dbe2!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .qty-btn{background:#ffffff!important;color:#1d1d1f!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .input-grp,html[data-nova-theme=light] .input-grp input{background:#ffffff!important;border-color:#d5dbe2!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .input-grp label,html[data-nova-theme=light] .input-grp span{color:#525c68!important}
+html[data-nova-theme=light] .totals-breakdown,html[data-nova-theme=light] .totals-breakdown .tot-row,html[data-nova-theme=light] .totals-breakdown .tot-row span,html[data-nova-theme=light] .tot-row.grand-total,html[data-nova-theme=light] .tot-row.grand-total span:first-child,html[data-nova-theme=light] #totalItemsCount,html[data-nova-theme=light] #displaySubtotal,html[data-nova-theme=light] #displayVat{color:#1d1d1f!important}
+html[data-nova-theme=light] #heldInvoiceCount,html[data-nova-theme=light] .nova-held-count{background:#fef3c7!important;color:#92400e!important;border:1px solid #f59e0b!important}
+html[data-nova-theme=light] td[data-debt]{color:#b42318!important;font-weight:700}
+html[data-nova-theme=light] .nx-i{color:#525c68!important;border-color:rgba(82,92,104,.38)!important}
+html[data-nova-theme=light] .nx-i:hover,html[data-nova-theme=light] .nx-i:focus-visible{color:#0071a4!important;border-color:#0071a4!important;background:#e6f4fa!important}
+html[data-nova-theme=light] #novaPageView .nova-data-table tbody tr:hover td{background:#f6f9fc!important}
+html[data-nova-theme=light] .discount-controls,html[data-nova-theme=light] .discount-box,html[data-nova-theme=light] .nova-sale-number{background:#f5f5f7!important;border-color:#dce2ea!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .discount-controls input,html[data-nova-theme=light] #novaPageView :is(input,select,textarea):not([type=checkbox]):not([type=radio]){background:#ffffff!important;color:#1d1d1f!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] #novaPageView :is(input,textarea)::placeholder,html[data-nova-theme=light] .pos-root :is(input,textarea)::placeholder{color:#7a8490!important}
+html[data-nova-theme=light] body.nova-rail .nova-rail-tiles>.btn,html[data-nova-theme=light] body.nova-rail .nova-rail-foot>#btnSaleLabels{background:#f7f8fa!important;border-color:#dde2e8!important;color:#1d1d1f!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important}
+html[data-nova-theme=light] body.nova-rail .nova-rail-tiles>.btn svg{color:#3c4652!important}
+html[data-nova-theme=light] body.nova-rail .nova-rail-tiles>#btnClearInvoice,html[data-nova-theme=light] body.nova-rail .nova-rail-tiles>#btnClearInvoice svg{color:#b42318!important;border-color:#f0c6c3!important}
+html[data-nova-theme=light] body.nova-rail .nova-rail-cust>#btnAddLoyalty{background:#e6f4fa!important;border-color:#98cde2!important;color:#00537a!important}
+html[data-nova-theme=light] body.nova-rail .nova-rail-cust>#btnAddLoyalty .nx-rail-sub,html[data-nova-theme=light] body.nova-rail .nova-rail-cust>#btnAddLoyalty .nx-k{color:#0b5f85!important}
+html[data-nova-theme=light] #novaCustCard{background:#e6f4fa!important;border-color:#76b8d5!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .unit-seg{background:#f0f2f5!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .unit-seg-btn{color:#1d1d1f!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .unit-seg-btn[aria-checked=true]{background:#0071a4!important;color:#ffffff!important}
+html[data-nova-theme=light] .unit-seg-btn[aria-checked=true] small{color:#e6f4fa!important}
+html[data-nova-theme=light] :is(#novaPageView,.nova-page-view,.pos-root) .btn-checkout:not(:disabled),html[data-nova-theme=light] #btnCheckout.btn-checkout:not(:disabled),html[data-nova-theme=light] #checkoutModal #btnConfirmPayment:not(:disabled){background:#16a34a!important;border-color:#15803d!important;color:#ffffff!important;box-shadow:0 4px 16px rgba(22,163,74,.28)!important}
+html[data-nova-theme=light] :is(#novaPageView,.nova-page-view,.pos-root) .btn-checkout:hover:not(:disabled),html[data-nova-theme=light] #btnCheckout.btn-checkout:hover:not(:disabled),html[data-nova-theme=light] #checkoutModal #btnConfirmPayment:hover:not(:disabled){background:#15803d!important}
+html[data-nova-theme=light] #btnCheckout.btn-checkout:disabled,html[data-nova-theme=light] #btnCheckout.btn-checkout:disabled:hover,html[data-nova-theme=light] .btn-checkout:disabled{background:#e8ecf0!important;border:1px dashed #b8c2cc!important;color:#525c68!important;box-shadow:none!important}
+html[data-nova-theme=light] .grand-total-val,html[data-nova-theme=light] #displayGrandTotal{color:#005f8a!important}
+html[data-nova-theme=light] #novaPageView .nova-setting-card,html[data-nova-theme=light] #novaPageView .nova-panel,html[data-nova-theme=light] #novaPageView .nova-kpi{background:#ffffff!important;border-color:#e2e6ec!important;color:#1d1d1f!important;box-shadow:0 1px 3px rgba(0,0,0,.06)!important}
+html[data-nova-theme=light] body #novaPageView .nova-set-nav{background:#ffffff!important;border-color:#e2e6ec!important;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+html[data-nova-theme=light] body #novaPageView .nova-set-nav a{color:#525c68!important}
+html[data-nova-theme=light] body #novaPageView .nova-set-nav a:hover{background:#f0f2f5!important;color:#1d1d1f!important}
+html[data-nova-theme=light] body #novaPageView .nova-set-nav a[aria-current]{background:#e6f4fa!important;color:#00537a!important;box-shadow:inset 0 0 0 1px rgba(0,113,164,.25)!important}
+html[data-nova-theme=light] #novaSetupCard .nsw-row,html[data-nova-theme=light] .nova-auth-form,html[data-nova-theme=light] .nova-devices-settings li{background:#f7f8fa!important;border-color:#e2e6ec!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .nova-lang-switch{background:#f0f2f5!important;border-color:#d8dee6!important}
+html[data-nova-theme=light] .nova-page-header h1,html[data-nova-theme=light] .nova-setting-card h3,html[data-nova-theme=light] .nova-panel-title,html[data-nova-theme=light] .nova-kpi strong{color:#1d1d1f!important}
+html[data-nova-theme=light] .nova-page-header p,html[data-nova-theme=light] .nova-setting-card p,html[data-nova-theme=light] .nova-kpi small{color:#525c68!important}
+html[data-nova-theme=light] :is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-secondary,.nova-inventory-action.secondary,.nova-page-btn,.nova-hold-action,.nova-held-action,.nova-customer-action,.nova-more-action,.nova-new-sale),html[data-nova-theme=light] #novaSetupCard .btn,html[data-nova-theme=light] .nova-receipt-width-btn{background:#f0f2f5!important;border-color:#d5dbe2!important;color:#1d1d1f!important}
+html[data-nova-theme=light] :is(#novaPageView,.nova-page-view,.pos-root) :is(.btn-primary,.nova-inventory-action:not(.secondary)),html[data-nova-theme=light] .nova-receipt-width-btn.active{background:#0071a4!important;border-color:#0071a4!important;color:#ffffff!important}
+html[data-nova-theme=light] .change-due-box{background:#ecfdf3!important;border-color:#86efac!important}
+html[data-nova-theme=light] .change-due-box span.title{color:#166534!important}
+html[data-nova-theme=light] .change-due-box span.amount{color:#14532d!important}
+html[data-nova-theme=light] .nova-inv-panel{background:#ffffff!important;border-color:#e2e6ec!important}
+html[data-nova-theme=light] .nova-theme-btn,html[data-nova-theme=light] .nova-lang-btn,html[data-nova-theme=light] .nova-stock-chip{color:#3c4652!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .nova-theme-btn.active,html[data-nova-theme=light] .nova-lang-btn.active,html[data-nova-theme=light] .nova-stock-chip.active{background:#0071a4!important;color:#ffffff!important;border-color:#0071a4!important}
+html[data-nova-theme=light] .modal-card,html[data-nova-theme=light] .nova-prod-dlg-card,html[data-nova-theme=light] .nova-ic-dialog,html[data-nova-theme=light] .nova-ic-sec{background:#ffffff!important;border-color:#d8dee6!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .nova-prod-dlg-card :is(input,textarea,select),html[data-nova-theme=light] .modal-card :is(input,textarea,select){background:#f8f9fb!important;color:#1d1d1f!important;border-color:#d5dbe2!important}
+html[data-nova-theme=light] .nova-prod-dlg-card p,html[data-nova-theme=light] #novaImpPreview{color:#525c68!important}
+html[data-nova-theme=light] #novaImpErr,html[data-nova-theme=light] #novaQsErr,html[data-nova-theme=light] #novaNpErr{color:#b42318!important}
+html[data-nova-theme=light] #novaImpPreview>div{color:#166534!important}
+html[data-nova-theme=light] .modal-header,html[data-nova-theme=light] .modal-footer,html[data-nova-theme=light] .checkout-amount-display,html[data-nova-theme=light] .nova-ic-head,html[data-nova-theme=light] .nova-ic-foot{background:#f5f5f7!important;border-color:#e2e6ec!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .checkout-amount-display .val{color:#0071a4!important}
+html[data-nova-theme=light] .pay-method-btn,html[data-nova-theme=light] .quick-cash-btn{background:#f0f2f5!important;border-color:#d5dbe2!important;color:#1d1d1f!important}
+html[data-nova-theme=light] .pay-method-btn.active{background:#e6f4fa!important;border-color:#0071a4!important;color:#00537a!important}
+html[data-nova-theme=light] .toast{background:rgba(255,255,255,.94)!important;border-color:#98cde2!important;color:#1d1d1f!important;box-shadow:0 8px 28px rgba(0,0,0,.14)!important}
+html[data-nova-theme=light] #novaBottomNav{background:rgba(255,255,255,.95)!important;border-top-color:#e2e6ec!important}
+html[data-nova-theme=light] #novaBottomNav button{color:#525c68!important}
+html[data-nova-theme=light] #novaBottomNav button[aria-current]{color:#0071a4!important}
+html[data-nova-theme=light] #novaInboxView,html[data-nova-theme=light] #novaInboxView .wa-root,html[data-nova-theme=light] #novaInboxView .wa-side,html[data-nova-theme=light] #novaInboxView .wa-list,html[data-nova-theme=light] #novaInboxView .wa-chat,html[data-nova-theme=light] #novaInboxView .wa-msgs{background:#f5f5f7!important;color:#1d1d1f!important;border-color:#e2e6ec!important}
+html[data-nova-theme=light] #novaInboxView .wa-head,html[data-nova-theme=light] #novaInboxView .wa-side-head,html[data-nova-theme=light] #novaInboxView .wa-composer{background:#ffffff!important;border-color:#e2e6ec!important;color:#1d1d1f!important}
+html[data-nova-theme=light] #novaInboxView .wa-conv{background:#ffffff!important;color:#1d1d1f!important;border-color:#eef1f5!important}
+html[data-nova-theme=light] #novaInboxView .wa-msg{color:#1d1d1f!important}
+html[data-nova-theme=light] #novaInboxView #waInput{background:#f0f2f5!important;color:#1d1d1f!important;border-color:#d5dbe2!important}

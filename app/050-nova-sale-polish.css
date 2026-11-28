@@ -3,8 +3,8 @@
 #nova-wa-nav{display:none!important}
 #novaAiLaunch{background:#203d4c!important;border:1px solid #47758b!important;color:#e3f5ff!important;box-shadow:0 6px 22px #0006!important}
 #novaAiLaunch:hover{background:#2b5165!important}
-.toast-container{top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%);align-items:center;z-index:9000}
-.toast{max-width:min(380px,92vw)}.toast>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.toast-container{top:calc(56px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:50%!important;transform:translateX(-50%);align-items:center;z-index:9000}
+.toast{max-width:min(380px,92vw);backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);border-radius:999px!important;box-shadow:0 8px 28px rgba(0,0,0,.35)}.toast>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media(min-width:900px) and (orientation:landscape){
 html body .main-workspace{flex:1 1 auto!important;width:auto!important;max-width:none!important}
 html body .customer-sidebar{flex:0 0 clamp(230px,21%,270px)!important;width:clamp(230px,21%,270px)!important;max-width:270px!important}

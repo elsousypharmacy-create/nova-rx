@@ -1,15 +1,22 @@
 
-/* UX210: compact single-row sale header on phones; F1 chip hidden on touch */
+/* UX210+Batch3: Apple-clean mobile sale header on phones; F1 chip hidden on touch */
 @media (max-width:600px){
- .top-header{padding:6px 9px!important;gap:4px!important}
- .top-header .brand-section{flex:1 1 100%}
- .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:wrap!important;gap:4px!important;flex:1 1 100%;justify-content:flex-start}
- .nova-sale-actions .nova-hold-action,.nova-sale-actions .nova-held-action{padding:0!important;width:44px!important;min-width:44px!important;justify-content:center;position:relative}
+ .top-header{padding:6px 10px!important;gap:6px!important}
+ .top-header .brand-section{flex:1 1 100%;justify-content:space-between;align-items:center;gap:8px!important}
+ .pharmacy-banner-identity{gap:6px!important;min-width:0}
+ .pharmacy-banner-copy span{display:none!important}
+ .pharmacy-banner-copy strong{font-size:13px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:165px}
+ .top-header .header-actions,.top-header .nova-sale-actions{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;gap:5px!important;flex:1 1 100%;justify-content:flex-start}
+ .top-header .header-actions::-webkit-scrollbar,.top-header .nova-sale-actions::-webkit-scrollbar{display:none}
+ .nova-sale-actions .nova-hold-action,.nova-sale-actions .nova-held-action{padding:0 8px!important;width:auto!important;min-width:44px!important;justify-content:center;gap:4px;position:relative;flex:none}
  .nova-sale-actions .nova-hold-action>span,.nova-sale-actions .nova-held-action>span:not(.nova-held-count){display:none}
- .nova-sale-actions .nova-held-action .nova-held-count{position:absolute;top:1px;inset-inline-end:2px;font-size:10px}
- .nova-sale-actions .nova-sale-number{font-size:11px;max-width:none;overflow:visible;text-overflow:clip;white-space:nowrap;flex:0 0 auto;padding:7px 6px}
+ .nova-sale-actions .nova-held-action .nova-held-count{position:static;font-size:11px;font-weight:700}
+ .nova-sale-actions .nova-sale-number{font-size:11px;max-width:none;overflow:visible;text-overflow:clip;white-space:nowrap;flex:0 0 auto;padding:6px 8px}
+ .nova-sale-actions .nova-clear-invoice{font-size:12px!important;padding:0 10px!important;white-space:nowrap;flex:none}
+ .nova-sale-actions .nova-sale-labels{font-size:12px!important;padding:0 10px!important;white-space:nowrap;flex:none}
  .empty-invoice-state{height:auto!important;min-height:0!important;padding:18px 0}
- .nova-sale-actions .nova-new-sale{width:auto!important;min-width:48px!important;padding:0 8px!important;flex:none}
+ .nova-sale-actions .nova-new-sale{width:auto!important;min-width:44px!important;padding:0 10px!important;font-size:12px!important;white-space:nowrap;flex:none}
+ .main-search-input{font-size:14px!important;padding-inline:10px!important}
 }
 @media (hover:none),(pointer:coarse){.nova-help-chip{display:none!important}}
 /* UX10: mobile sale layout (toast/FAB/totals/table) */

@@ -63,11 +63,11 @@ if (navigator.locks?.request) navigator.locks.request('nova-rx-stock', () => Nov
   <link rel="apple-touch-icon" href="/icon.svg">
   <script src="/assets/app-020-wa-home-screen-name.72f7f62119.js"></script>
 <script id="NOVA_THEME_JS">
-/* UX416+q17 theme (own attribute data-nova-theme; «light» = page colour-inverted, photos kept). localStorage nova-theme: time (default: light 07:00-18:59, else dark, re-checked every 15 min) | dark | light | auto (device). In <head>: no flash. */
+/* UX416+q17+Batch3 Native Light & Dark theme (own attribute data-nova-theme). localStorage nova-theme: time (default: light 07:00-18:59, else dark, re-checked every 15 min) | dark | light | auto (device). In <head>: no flash. */
 (function(){var K='nova-theme',d=document.documentElement,mq=window.matchMedia&&matchMedia('(prefers-color-scheme: light)');
 function pref(){var p='';try{p=localStorage.getItem(K)}catch(e){}return /^(dark|light|auto)$/.test(p)?p:'time'}
 function resolved(p){var h=new Date().getHours();return p==='light'||(p==='auto'&&mq&&mq.matches)||(p==='time'&&h>6&&h<19)?'light':'dark'}
-function apply(){var p=pref(),r=resolved(p);d.setAttribute('data-nova-theme',r);d.setAttribute('data-nova-theme-pref',p);var m=document.querySelector('meta[name=theme-color]');if(m){if(!m.__nd)m.__nd=m.getAttribute('content');m.setAttribute('content',r==='light'?'#f2f3f5':m.__nd)}
+function apply(){var p=pref(),r=resolved(p);d.setAttribute('data-nova-theme',r);d.setAttribute('data-nova-theme-pref',p);var m=document.querySelector('meta[name=theme-color]');if(m){if(!m.__nd)m.__nd=m.getAttribute('content');m.setAttribute('content',r==='light'?'#f5f5f7':m.__nd)}
 try{var bs=document.querySelectorAll('[data-nova-theme-btn]');for(var i=0;i<bs.length;i++){var on=bs[i].getAttribute('data-nova-theme-btn')===p;bs[i].classList.toggle('active',on);bs[i].setAttribute('aria-pressed',on?'true':'false')}}catch(e){}}
 window.NovaTheme={pref:pref,resolved:function(){return resolved(pref())},set:function(p){try{localStorage.setItem(K,/^(dark|light|auto)$/.test(p)?p:'time')}catch(e){}apply()},apply:apply};
 apply();setInterval(function(){if(pref()=='time')apply()},9e5);if(mq){var f=function(){if(pref()==='auto')apply()};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f)}
@@ -76,9 +76,8 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 })();
 </script>
 <style id="NOVA_THEME_CSS">
-html[data-nova-theme=light]{filter:invert(1) hue-rotate(180deg)}
-html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-colors]){filter:invert(1) hue-rotate(180deg)}
-@media print{html[data-nova-theme=light],html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-colors]){filter:none}}
+html[data-nova-theme=light]{color-scheme:light;background:#f5f5f7;color:#1d1d1f}
+html[data-nova-theme=light] body{background:#f5f5f7;color:#1d1d1f}
 </style>
 <link rel="prefetch" as="script" id="NOVA_PUSH_CARD_JS" data-nova-lazy="1" href="/assets/app-030-nova-push-card-js.a903f40dff.js">
 <style id="NOVA_THEME_BTN_CSS">
@@ -90,7 +89,7 @@ html[data-nova-theme=light] :is(img,video,canvas,picture,iframe,[data-keep-color
 </style>
 
   <link rel="stylesheet" href="/assets/app-040-base-theme.c6ee460f00.css">
-<link rel="stylesheet" id="NOVA_SALE_POLISH" href="/assets/app-050-nova-sale-polish.df55b99a6e.css">
+<link rel="stylesheet" id="NOVA_SALE_POLISH" href="/assets/app-050-nova-sale-polish.47c2f77eeb.css">
 <script>try{var __l=localStorage.getItem('nova-rx-language')==='en'?'en':'ar',__d=document.documentElement;__d.lang=__l;__d.dir=__l==='ar'?'rtl':'ltr'}catch(e){}</script><style id="ux214-boot">/* UX214: app content stays hidden (splash covers it) until first-load i18n/layout settles, so load-time text swaps cause no layout shift. */html.nova-boot body>*:not(#novaSplash){opacity:0}</style><script>document.documentElement.classList.add('nova-boot');setTimeout(function(){document.documentElement.classList.remove('nova-boot')},4000)</script>
 <script>/* UX29: single VAT-rate source (percent, tax-included). SALE-02: default 14 = Egypt VAT (ضريبة القيمة المضافة 14%); owner/accountant can change it in Settings. */
 window.novaVat=(function(){var K='nova-rx-vat-rate',D=14;function get(){try{var v=localStorage.getItem(K);if(v===null||v==='')return D;var n=Number(v);return isFinite(n)&&n>=0&&n<=100?n:D}catch(e){return D}}
@@ -99,7 +98,7 @@ function calc(total,rate){var r=rate===undefined?get():Number(rate);return Math.
 function label(rate){var r=rate===undefined?get():rate;return String(Math.round(r*100)/100)}
 return{get:get,set:set,calc:calc,label:label,DEFAULT:D}})();</script>
   <link rel="prefetch" as="style" data-nova-lazy-css="1" href="supplier-lookup.css">
-<link rel="stylesheet" id="ux10-mobile-sale" href="/assets/app-060-ux10-mobile-sale.d57ddc3d5e.css">
+<link rel="stylesheet" id="ux10-mobile-sale" href="/assets/app-060-ux10-mobile-sale.a206eddf6b.css">
 <style id="ux34-tap-targets">
 /* UX34: >=44px hit areas on sale toolbar (tablet 768-1366 and mobile); toolbar stays one row via gap/padding trims */
 .nova-sale-actions #btnNewSale,.nova-sale-actions #holdCurrentInvoice,.nova-sale-actions #btnHeldInvoices,.nova-sale-actions #btnAddLoyalty,.nova-sale-actions #btnSaleMore,#btnRefreshApp{min-height:44px!important;min-width:44px!important;box-sizing:border-box}
@@ -554,7 +553,7 @@ window.NovaFmt=(function(){
   return {formatDateTime:formatDateTime,formatDate:formatDate,pluralItems:pluralItems,payLabel:payLabel,PAY:PAY};
 })();
 </script>
-  <script src="/assets/app-120-pos-core.8071795d2e.js"></script>
+  <script src="/assets/app-120-pos-core.db1394f0a7.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { var swUrl = '/sw.js?v=7'; fetch(swUrl, {method:'HEAD', cache:'no-store'}).then(function(r){ if (r && r.ok) return navigator.serviceWorker.register(swUrl, {updateViaCache:'none'}); }).catch(function(){}); }); }</script>
 <script>
 (function(){
@@ -576,10 +575,10 @@ window.NovaFmt=(function(){
 })();
 </script>
 
-<script src="/assets/app-130-pages-nav.51b21ec91b.js"></script>
+<script src="/assets/app-130-pages-nav.f7cb0d19b0.js"></script>
 <link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-570-sale-approval.f801360a9e.js">
 
-<script src="/assets/app-140-ui-language.5cbd33d3f9.js"></script>
+<script src="/assets/app-140-ui-language.931d7bc821.js"></script>
 <script>
 (function(){
  const toggle=document.getElementById('btnSaleMore');const menu=document.getElementById('novaSaleMoreMenu');
@@ -700,7 +699,7 @@ window.NovaFmt=(function(){
 function init(){var n=document.querySelector('.nova-nav');if(!n)return;n.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.nova-tab');if(t&&t.scrollIntoView)t.scrollIntoView({inline:'center',block:'nearest',behavior:'auto'});setTimeout(c,60)});new MutationObserver(function(){requestAnimationFrame(c)}).observe(n,{attributes:true,subtree:true,attributeFilter:['class']});c();window.addEventListener('resize',c)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(c,300)})})();</script>
 <link rel="stylesheet" id="ux206-mobile-cart-row" href="/assets/app-510-ux206-mobile-cart-row.350acac56a.css">
-<link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.80ac82e040.css">
+<link rel="stylesheet" id="UX422_APP_SKIN" href="/assets/app-520-ux422-app-skin.4c587ad0e6.css">
 <link rel="prefetch" as="script" id="NOVA_INFO_TIPS" data-nova-lazy="1" href="/assets/app-530-nova-info-tips.7e85f17416.js">
 <script src="/assets/app-548-nova-providers.3098bbfad9.js"></script><link rel="prefetch" as="script" data-nova-lazy="1" href="/supplier-accounts.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-550-supplier-accounts-ui.7bc3c5da3b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-552-supplier-returns.29df5538d0.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-554-item-card.c0bc59f757.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-556-credit-limit.c1c25c597f.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-558-full-backup.b701ef80ed.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-560-controlled-drugs.83c788b486.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-564-sensitive-log.903725c310.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-566-owner-dashboard.ab63cc789b.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-572-sale-settings.f8437c6744.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-574-excel-export.cc981727fd.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-576-shift-open.6f1267ec3c.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-578-profit-slow.3651acc274.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-580-sale-offers.24a4f98146.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-582-stock-count.e9b355fd11.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-584-item-limits.cb9243986d.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-586-fridge-log.6f90bfc348.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-588-destruction-record.1cbd97049f.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-590-shift-notes.14f6de90ac.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-592-customer-requests.c190bc65d9.js"><link rel="prefetch" as="script" data-nova-lazy="1" href="/assets/app-594-ops-screens.cf5d980095.js"><script src="/assets/app-562-mobile-bottom-nav.a69a59d1bb.js"></script>
 </html>

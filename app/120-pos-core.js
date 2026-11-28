@@ -686,12 +686,90 @@
           if (!Array.isArray(arr)) return { ok: false };
           const next = arr.filter(x => x && String(x.id) !== String(id));
           if (next.length === arr.length) return { ok: false, error: "not-found" };
-          writeJsonSafe(CUSTOM_ITEMS_KEY, next);
+          if (!writeJsonSafe(CUSTOM_ITEMS_KEY, next)) return { ok: false, error: "storage", message: "تعذر حفظ التعديل على هذا الجهاز." };
           applyLocalCatalogCustomizations();
           activeSearchIdx = null;
           if (window.novaCatalog) window.novaCatalog.count = DEMO_PRODUCTS.length;
           window.dispatchEvent(new CustomEvent("nova-catalog"));
           return { ok: true };
+        },
+        importItems: rows => {
+          const en = novaEn();
+          if (!canEditCatalog()) return { ok: false, error: "permission", message: en ? "Importing items is restricted to managers or owners." : "استيراد الأصناف متاح للمدير أو المالك فقط." };
+          if (!Array.isArray(rows) || !rows.length) return { ok: false, error: "empty", message: en ? "No valid products to import." : "لا توجد أصناف صالحة للاستيراد." };
+          const customArr = readJsonSafe(CUSTOM_ITEMS_KEY, []);
+          const nextCustom = Array.isArray(customArr) ? customArr.slice() : [];
+          const ovs = readJsonSafe(ITEM_OVERRIDES_KEY, {});
+          const nextOvs = ovs && typeof ovs === "object" && !Array.isArray(ovs) ? Object.assign({}, ovs) : {};
+          const byBc = new Map();
+          DEMO_PRODUCTS.forEach(p => {
+            if (!p) return;
+            for (const b of [p.barcode, p.gtin, ...(Array.isArray(p.barcodes) ? p.barcodes : [])]) {
+              const nb = normCode(b || "");
+              if (nb && !byBc.has(nb)) byBc.set(nb, p);
+            }
+          });
+          let added = 0, updated = 0, skipped = 0;
+          const seedBase = Date.now().toString(36).toUpperCase();
+          rows.forEach((raw, idx) => {
+            if (!raw || typeof raw !== "object") { skipped++; return; }
+            const name = String(raw.name || "").trim().slice(0, 160);
+            const price = Number(raw.price);
+            if (!name || !Number.isFinite(price) || price <= 0) { skipped++; return; }
+            const roundedPrice = Math.round(price * 100) / 100;
+            let barcode = String(raw.barcode || "").trim().slice(0, 64);
+            if (!barcode) barcode = "NOVA-" + seedBase + "-" + String(idx + 1);
+            const pack = String(raw.pack || "").trim().slice(0, 80);
+            const cat = String(raw.category || "").trim().slice(0, 80);
+            const hasStock = raw.stock !== undefined && raw.stock !== null && String(raw.stock).trim() !== "";
+            const stockVal = hasStock ? Number(raw.stock) : null;
+            const cleanStock = stockVal !== null && Number.isFinite(stockVal) && stockVal >= 0 ? Math.round(stockVal * 100) / 100 : null;
+            const nb = normCode(barcode);
+            const existing = nb ? byBc.get(nb) : null;
+            if (existing) {
+              const exId = String(existing.id || "");
+              const ci = nextCustom.find(x => x && String(x.id) === exId);
+              if (ci) {
+                ci.name = name;
+                ci.barcode = barcode;
+                ci.price = roundedPrice;
+                if (pack) ci.pack = pack;
+                if (cat) ci.category = cat;
+                if (cleanStock !== null) ci.stock = cleanStock;
+              } else {
+                const ovKey = exId || String(existing.barcode);
+                nextOvs[ovKey] = {
+                  name,
+                  barcode,
+                  price: roundedPrice,
+                  pack: pack || (existing.pack || ""),
+                  category: cat || (existing.category || "")
+                };
+              }
+              updated++;
+            } else {
+              const id = "CUST-" + Date.now() + "-" + idx + "-" + Math.random().toString(36).slice(2, 5);
+              const rec = { id, barcode, name, pack, generic: String(raw.generic || "").trim(), price: roundedPrice, stock: cleanStock, category: cat, custom: true };
+              nextCustom.push(rec);
+              if (nb) byBc.set(nb, rec);
+              added++;
+            }
+          });
+          if (!added && !updated) return { ok: false, error: "empty", message: en ? "No valid products found (name and price > 0 required)." : "لم يتم العثور على أصناف صالحة (يلزم اسم وسعر أكبر من صفر)." };
+          let prevCustomRaw = null;
+          try { prevCustomRaw = localStorage.getItem(CUSTOM_ITEMS_KEY); } catch (_) {}
+          if (!writeJsonSafe(CUSTOM_ITEMS_KEY, nextCustom)) {
+            return { ok: false, error: "storage", message: en ? "Could not save imported products on this device." : "تعذر حفظ الأصناف المستوردة على هذا الجهاز." };
+          }
+          if (!writeJsonSafe(ITEM_OVERRIDES_KEY, nextOvs)) {
+            try { if (prevCustomRaw === null) localStorage.removeItem(CUSTOM_ITEMS_KEY); else localStorage.setItem(CUSTOM_ITEMS_KEY, prevCustomRaw); } catch (_) {}
+            return { ok: false, error: "storage", message: en ? "Could not save imported products on this device." : "تعذر حفظ الأصناف المستوردة على هذا الجهاز." };
+          }
+          applyLocalCatalogCustomizations();
+          activeSearchIdx = null;
+          if (window.novaCatalog) window.novaCatalog.count = DEMO_PRODUCTS.length;
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+          return { ok: true, added, updated, skipped, total: added + updated };
         }
       };
       const PROFILE_KEY = "nova-rx-pharmacy-profile-v1";
@@ -723,6 +801,10 @@
             receiptFooter: String(s.receiptFooter || "").trim()
           };
         }
+        function syncDemoBadge() {
+          const hideDemo = isCustomized() || (window.novaCatalog && window.novaCatalog.source === "STOCK LIVE");
+          document.querySelectorAll(".nova-demo-label").forEach(el => { el.hidden = !!hideDemo; });
+        }
         function apply() {
           const p = get();
           const strong = document.querySelector(".pharmacy-banner-copy strong");
@@ -732,9 +814,11 @@
           if (!document.documentElement.classList.contains("app-whatsapp") && document.title) {
             document.title = "NOVA Rx | " + p.name;
           }
+          syncDemoBadge();
           try { window.dispatchEvent(new CustomEvent("nova-profile-change", { detail: p })); } catch (_) {}
           return p;
         }
+        window.addEventListener("nova-catalog", syncDemoBadge);
         function save(patch) {
           if (!canEditCatalog()) return { ok: false, error: "permission", message: "التغيير للمدير أو المالك بس." };
           const cur = readRaw() || {};

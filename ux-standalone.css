@@ -2,7 +2,7 @@
    Loaded AFTER each page's own CSS; maps page-local variables onto the UX420 --nx-* tokens so dark (Black Edition) and
    light (data-theme=light) stay consistent. Additive: no index.html / conversations selectors. Logical properties, RTL-first. */
 html[data-nx-page]{color-scheme:dark}
-html[data-nx-page][data-theme=light]{color-scheme:light}
+html[data-nx-page][data-theme=light],html[data-nx-page][data-nova-theme=light]{color-scheme:light;--nx-bg-base:#f5f5f7;--nx-bg-panel:#ffffff;--nx-bg-surface:#f0f2f5;--nx-bg-elevated:#e6eaf0;--nx-border-subtle:#e2e6ec;--nx-border-focus:#0071a4;--nx-text-main:#1d1d1f;--nx-text-muted:#525c68;--nx-text-dim:#6e7781;--nx-accent:#0071a4;--nx-on-accent:#ffffff}
 html[data-nx-page] body{font-family:var(--nx-font);-webkit-font-smoothing:antialiased;overflow-wrap:anywhere}
 html[data-nx-page] :focus-visible{outline:var(--nx-focus-ring) solid var(--nx-border-focus);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){html[data-nx-page] *{transition-duration:0ms!important;animation-duration:0ms!important}}

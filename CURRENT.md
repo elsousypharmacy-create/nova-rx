@@ -1,5 +1,5 @@
 # NOVA Rx — CURRENT (snapshot, 60 lines max; read this, not all of HANDOFF.md)
-Last updated: 2026-11-28 (Batch 2 catalog CRUD, white-label profile, English/mobile fixes + preview rcv32). GitHub `main` wins; old log: `docs/archive/current-history/CURRENT-until-2026-11-23.md`.
+Last updated: 2026-11-28 (Batch 3 Apple Native Light Mode, bulk CSV import, 3-step setup wizard, mobile/modal polish + preview rcv33). GitHub `main` wins; old log: `docs/archive/current-history/CURRENT-until-2026-11-23.md`.
 
 ## Boot order
 1. `AGENTS.md`  2. `CURRENT.md`  3. Relevant section of `HANDOFF.md` + Issue #87  4. `docs/skills/nova/SKILL.md`  5. `docs/ERP_MASTER_PLAN.md` & `reports/erp-roadmap.json` for scope/acceptance. Related: `docs/procurement/SUPPLIER_OPERATION_RECONCILIATION_DESIGN.md`, `.github/workflows/deploy-worker.yml`, `tests/unit/worker-gemini-route.check.mjs`.
@@ -15,7 +15,8 @@ Last updated: 2026-11-28 (Batch 2 catalog CRUD, white-label profile, English/mob
 ## Merged to main
 - PR `#584` (`ff80d56`): slimmed `CURRENT.md`; `4ab71bf`: governance update (`AGENTS.md`).
 - `e5e5a97` + `4839998` (`rcv31`): Batch 1 fixes (shift double-close guard, async autoPrint, live stock/customer refresh, lazy receiving embed, receiving mouse click, settings card layout) deployed to preview; `Non-WhatsApp UX checkout and page regression checks`, `Perf budget`, `Secret scan` green.
-- Batch 2: catalog add/edit (`novaCatalogApi` + `#novaAddProductBtn` + Item Card edit), white-label Pharmacy Profile (`novaPharmacyProfile`), English settings sub-tabs, `/purchases` mobile nav unclipped, 5 legacy UX tests fixed, `commercial-readiness.mjs` E2E + backup/restore drill.
+- Batch 2 (`09ca08a`, `rcv32`): catalog add/edit (`novaCatalogApi` + `#novaAddProductBtn` + Item Card edit), white-label Pharmacy Profile (`novaPharmacyProfile`), English settings sub-tabs, `/purchases` mobile nav unclipped, 5 legacy UX tests fixed, `commercial-readiness.mjs` E2E + backup/restore drill.
+- Batch 3 (`rcv33`): Apple Native Light Mode (`#f5f5f7`/`#ffffff`/`#0071a4`/`#16a34a` replacing `filter:invert(1)` across main POS, settings, WA inbox & `/purchases`), bulk CSV/Excel import (`novaCatalogApi.importItems` + `#novaImportProductsBtn` / `#novaImportModal`), 3-step buyer setup wizard (`novaOpenQuickSetup` + auto-hide `.nova-demo-label`), top-center toast & mobile 390px header/modal polish.
 
 ## Open PRs
 - Check GitHub for legacy draft PRs (`#553`, `#566`) and issues (`#545`, `#550`) before acting.

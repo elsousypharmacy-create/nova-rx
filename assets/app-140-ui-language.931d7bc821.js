@@ -142,7 +142,8 @@
   'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.',
   'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)',
   '+ إضافة صنف':'+ Add product','تعديل الصنف':'Edit product','تعديل بيانات الصنف':'Edit product details','حفظ التعديلات':'Save changes','اسم الصنف':'Product name','السعر (ج.م)':'Price (EGP)','التصنيف / الرف':'Category / Shelf',
-  'بيانات الصيدلية':'Pharmacy profile','اسم الصيدلية':'Pharmacy name','اسم الصيدلي / المالك':'Pharmacist / Owner','اسم الفرع':'Branch name','رقم الهاتف':'Phone number','العنوان (اختياري)':'Address (optional)','رسالة أسفل الإيصال (اختياري)':'Receipt footer note (optional)','حفظ بيانات الصيدلية':'Save pharmacy profile','استعادة الافتراضي':'Restore defaults'
+  'بيانات الصيدلية':'Pharmacy profile','اسم الصيدلية':'Pharmacy name','اسم الصيدلي / المالك':'Pharmacist / Owner','اسم الفرع':'Branch name','رقم الهاتف':'Phone number','العنوان (اختياري)':'Address (optional)','رسالة أسفل الإيصال (اختياري)':'Receipt footer note (optional)','حفظ بيانات الصيدلية':'Save pharmacy profile','استعادة الافتراضي':'Restore defaults',
+  'استيراد CSV/Excel':'Import CSV/Excel','استيراد أصناف من ملف':'Import products from file','تحميل قالب CSV جاهز':'Download CSV template','تأكيد الاستيراد':'Confirm import','معالج البدء السريع (3 خطوات)':'Quick setup wizard (3 steps)'
  };
  for(const [k,v] of Object.entries(enExtra))if(!(k in toEn))toEn[k]=v;
  /* UX-P29..P38 labels (operations menu, stock page, settings sections, receiving page) */
