@@ -3729,16 +3729,13 @@
         });
 
         // Receipt Modal Events
-        elements.btnCloseReceipt.addEventListener("click", () => {
+        const closeReceiptModal = () => {
           const cur = window.novaReceipt && window.novaReceipt.current();
           elements.receiptModal.classList.remove("active");
-          if (!cur || cur.fromCheckout) startNewSale();
-        });
-        elements.btnReceiptNewSale.addEventListener("click", () => {
-          const cur = window.novaReceipt && window.novaReceipt.current();
-          elements.receiptModal.classList.remove("active");
-          if (!cur || cur.fromCheckout) startNewSale();
-        });
+          if ((!cur || cur.fromCheckout) && (document.body.dataset.activePage || "sale") === "sale") startNewSale();
+        };
+        elements.btnCloseReceipt.addEventListener("click", closeReceiptModal);
+        elements.btnReceiptNewSale.addEventListener("click", closeReceiptModal);
         elements.btnPrintReceiptBtn.addEventListener("click", () => {
           window.novaReceipt.print();
         });
@@ -3798,8 +3795,7 @@
             elements.inputFixedDiscount.select();
           } else if (e.key === "Enter" && elements.receiptModal.classList.contains("active")) {
             e.preventDefault();
-            elements.receiptModal.classList.remove("active");
-            startNewSale();
+            closeReceiptModal();
           } else if (e.key === "F2") {
             e.preventDefault();
             startNewSale();
@@ -3835,8 +3831,7 @@
             if (elements.checkoutModal.classList.contains("active")) {
               closeCheckout();
             } else if (elements.receiptModal.classList.contains("active")) {
-              elements.receiptModal.classList.remove("active");
-              startNewSale();
+              closeReceiptModal();
             } else if (elements.helpModal.classList.contains("active")) {
               elements.helpModal.classList.remove("active");
               elements.mainSearchInput.focus();

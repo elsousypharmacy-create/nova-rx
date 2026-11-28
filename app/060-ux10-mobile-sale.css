@@ -16,6 +16,8 @@
  .nova-sale-actions .nova-sale-labels{font-size:12px!important;padding:0 10px!important;white-space:nowrap;flex:none}
  .empty-invoice-state{height:auto!important;min-height:0!important;padding:18px 0}
  .nova-sale-actions .nova-new-sale{width:auto!important;min-width:44px!important;padding:0 10px!important;font-size:12px!important;white-space:nowrap;flex:none}
+ .nova-sale-actions .nova-sale-shortcut{min-width:44px!important;min-height:44px!important;width:44px!important;padding:0!important;justify-content:center;flex:none}
+ .nova-sale-actions .nova-sale-shortcut>span{display:none!important}
  .main-search-input{font-size:14px!important;padding-inline:10px!important}
 }
 @media (hover:none),(pointer:coarse){.nova-help-chip{display:none!important}}

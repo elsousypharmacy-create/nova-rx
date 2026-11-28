@@ -47,7 +47,7 @@ try {
   // ---- owner, desktop ----
   {
     const { ctx, page, errors } = await open({ width: 1366, height: 800 });
-    assert.deepEqual(await topNav(page), ['البيع', 'الفواتير', 'العملاء', 'الوردية', 'المخزون', 'التقارير', 'الأدوات', 'الإعدادات'], 'owner top nav');
+    assert.deepEqual(await topNav(page), ['البيع', 'الوردية', 'المخزون', 'التقارير', 'الأدوات', 'الإعدادات'], 'owner top nav');
     assert.equal(await page.locator('#novaOpsNav, .nova-ops').count(), 0, 'no «العمليات» dropdown');
     await shot(page, 'q21-owner-sale-1366');
     // f) «الوردية»: its own entry, the actions on top without scrolling
@@ -110,7 +110,7 @@ try {
     assert.equal(await page.evaluate(() => location.hash + ' ' + document.body.dataset.novaView), '#shift shift', 'a reload keeps «الوردية»');
     // a) cashier: only the daily entries
     await asCashier(page); await page.waitForTimeout(200);
-    assert.deepEqual(await topNav(page), ['البيع', 'الفواتير', 'العملاء', 'النواقص', 'الوردية'], 'cashier top nav');
+    assert.deepEqual(await topNav(page), ['البيع', 'النواقص', 'الوردية'], 'cashier top nav');
     await page.locator('.nova-tab[data-page=sale]').click(); await page.waitForTimeout(300);
     // a cashier who reaches the reports page by its address only gets the shift view
     await page.evaluate(() => window.novaSwitchPage('reports')); await page.waitForTimeout(1200);
@@ -144,10 +144,31 @@ try {
     const acc = () => { try { localStorage.setItem('nova.auth.accounts', JSON.stringify([{ id: 'o', name: 'Owner', role: 'owner' }])); } catch {} };
     const { ctx, page } = await open({ width: 1366, height: 800 }, acc, /auth-permissions\.js/);
     await page.evaluate(() => document.querySelectorAll('#novaStaffGate, .nova-staff-gate').forEach(e => e.remove()));
-    assert.deepEqual(await topNav(page), ['البيع', 'الفواتير', 'العملاء', 'النواقص', 'الوردية'], 'fail closed: admin entries hidden until permissions are known');
+    assert.deepEqual(await topNav(page), ['البيع', 'النواقص', 'الوردية'], 'fail closed: admin entries hidden until permissions are known');
     await page.evaluate(() => { window.novaPerms = { can: () => true, require: () => true }; });
     await page.waitForTimeout(1800);
-    assert.deepEqual(await topNav(page), ['البيع', 'الفواتير', 'العملاء', 'الوردية', 'المخزون', 'التقارير', 'الأدوات', 'الإعدادات'], 'permissions loaded (owner) → admin entries come back');
+    assert.deepEqual(await topNav(page), ['البيع', 'الوردية', 'المخزون', 'التقارير', 'الأدوات', 'الإعدادات'], 'permissions loaded (owner) → admin entries come back');
+
+    // Batch 5: Invoices & Customers shortcuts live in POS header with instant return to open sale
+    await page.click('#btnSaleInvoices');
+    assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'invoices', 'POS shortcut opens invoices');
+    assert.ok(await page.locator('[data-back-sale]').isVisible(), 'subpage back button visible on invoices');
+    // Escape closes active receipt modal without leaving invoices or triggering startNewSale()
+    await page.evaluate(() => document.getElementById('receiptModal')?.classList.add('active'));
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'invoices', 'Escape with open receipt modal stays on invoices');
+    assert.equal(await page.evaluate(() => document.getElementById('receiptModal')?.classList.contains('active')), false, 'Escape closes receipt modal');
+    assert.equal(await page.locator('#novaInvoiceActionDialog').count(), 0, 'Escape on receipt modal does not trigger new-sale action dialog');
+    assert.equal(await page.evaluate(() => (document.getElementById('toastContainer')?.innerText || '').includes('الفاتورة الجديدة جاهزة')), false, 'Escape on receipt modal does not trigger new-sale toast');
+    await page.click('.nova-subpill[data-page="customers"]');
+    assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'customers', 'subpill switches to customers');
+    await page.click('[data-back-sale]');
+    assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'sale', 'back button returns to sale');
+    assert.equal(await page.locator('.nova-tab[data-page="invoices"]').count(), 1, 'single invoices tab after return to sale');
+    await page.click('#btnSaleCustomers');
+    assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'customers', 'POS shortcut opens customers');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => document.body.dataset.activePage), 'sale', 'Escape returns to sale');
     await ctx.close();
   }
   console.log('q21-simplify: all checks passed');

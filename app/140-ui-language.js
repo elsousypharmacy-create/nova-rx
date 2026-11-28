@@ -138,6 +138,7 @@
   'اطلعت على التحذير':'Warning reviewed','تضمين في الطباعة':'Include in print','استبعاد من الطباعة':'Exclude from print',
   'دواء بدون اسم':'Unnamed medicine','مراجعة وطباعة':'Review and print','عدد النسخ':'Copies',
   'ابحث في المنتجات السابقة...':'Search past purchases...','البحث في المنتجات السابقة':'Search past purchases',
+  'رجوع للبيع':'Back to Sale','الفواتير والمرتجعات':'Invoices & Returns','العملاء والمديونيات':'Customers & Credit','التنقل السريع':'Quick navigation',
   '🔐 مفاتيح API والتكاملات':'🔐 API keys & integrations','قراءة فاتورة مشتريات':'Read purchase invoice','مفاتيح API والتكاملات':'API keys & integrations','إدارة المفاتيح':'Manage keys','توليد تاني':'Generate again','معاينة الاستيكرات':'Preview stickers','معاينة الاستيكر':'Preview sticker','⚙️ إدارة المفاتيح':'⚙️ Manage keys',
   'إدارة مفاتيح Gemini وواتساب وربط الصيدلية من مكان واحد. لا تُحفظ المفاتيح في المتصفح.':'Manage Gemini, WhatsApp and pharmacy keys in one place. Keys are not stored in the browser.',
   'التشغيلات والصلاحية':'Lots & Expiry','حظر بيع الصنف المنتهي تلقائيًا وتنبيه قرب انتهاء الصلاحية حسب المدة المحددة.':'Block selling expired stock by default and warn before expiry within the configured window.','تنبيه قرب الانتهاء (بالأيام)':'Near-expiry warning (days)',
