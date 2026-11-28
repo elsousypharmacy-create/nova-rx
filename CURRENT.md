@@ -1,9 +1,9 @@
 # NOVA Rx — CURRENT (snapshot, 60 lines max; read this, not all of HANDOFF.md)
-Last updated: 2026-11-23 (slimmed; main @ fe25179, last app commit f27ecb1 = preview rcv29). If this disagrees with GitHub, GitHub wins: fix this file in the same reviewed PR. Old state log: docs/archive/current-history/CURRENT-until-2026-11-23.md.
+Last updated: 2026-11-28 (PR #584 merged; main @ c806e47, last app commit f3c3e1a; preview still rcv29). If this disagrees with GitHub, GitHub wins: fix this file in the same reviewed PR. Old state log: docs/archive/current-history/CURRENT-until-2026-11-23.md.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue/PR number, or last 60 lines) and Issue #87 since your last checkpoint  4. docs/skills/nova/SKILL.md  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when acceptance or scope matters.
-Nothing new for you here or on #87? Stop and report IDLE. Governance: AGENTS.md (two Claude sessions; owner-only gates in AGENTS.md and the last section below).
+Nothing new for you here or on #87? Stop and report IDLE. Governance: AGENTS.md (Antigravity lead manager + primary implementer; Claude on request; owner-only gates below).
 
 ## Status words (never mark done on CODED alone)
 CODED = written/pushed, nothing proven · TESTED = named tests passed (command + result) · MERGED = on main after review · DEPLOYED = preview/prod artifact published · LIVE_VERIFIED = checked in the live app · ACCEPTED = roadmap `verified` + evidence (AGENTS.md). Unproven = UNVERIFIED. (AGENTS.md names CODE_PUSHED/CI_PASS/REVIEWED/INTEGRATED too.)
@@ -31,17 +31,16 @@ Evidence: HANDOFF.md, Issue #87, the git log; per-item detail in the archive fil
 - Risks: one shared PIN on legacy paths; sales/invoices device-local; unauthenticated scanSearch/scanLookup in Apps Script; shortages-plan «signature» is an unkeyed hash. Not inspected: Apps Script server, legacy POS link, bot, cameras, finance/HR.
 - Stale-looking open items, UNVERIFIED: PR #553 (draft), #566, Issues #545, #550 (draft PR #551/#549 chain). Check on GitHub before acting.
 
-## 4. Active Work (who is on what; unchanged from AGENTS.md)
-- Claude 2: lead manager + reviewer (priorities, PR sequencing, merges after gates, roadmap/CURRENT truth, review of Claude 1), BUY lane, SEC-05, UX-01 audit, FND-02.
-- Claude 1: lead implementer: CAT, INV, POS, SEC-03.
-- Recent commits name «Claude A/B» with Gemini drafts/reviews; the mapping to Claude 1/2 is UNVERIFIED (see report). Current claims: read Issue #87, not this file.
-- Rules: one accountable claimant per task; author ≠ reviewer; nobody merges their own work; max 3 active implementation PRs; re-read #87 before every claim.
+## 4. Active Work (updated 2026-11-28 per owner decision)
+- Antigravity: lead manager and primary implementer (Phase 1 core pharmacy features only: POS, credit, discount limits, inventory/expiry, purchases/receiving, customers, shifts, reports, RBAC, backup, offline).
+- Claude sessions: secondary implementer/reviewer on request only. Frozen until Phase 1 finishes: AI, WhatsApp, stickers, loyalty, multi-branch/SaaS.
+- Rules: one accountable claimant per task; author ≠ reviewer (independent review before push/merge); owner-only gates below unchanged.
 
-## 5. Next Actions (in order)
-1. Find why Playwright POS smoke fails on main and fix it (blocks trusting any DEPLOYED claim).
-2. Go-live checklist with the owner (docs/product/GO-LIVE.md); LIVE_VERIFIED on a real phone/printer for the preview.
-3. Close the stale PR/Issue chain (#549/#550/#551/#553/#566) or re-claim it on #87.
-4. Preview rcv29 LIVE_VERIFIED check; prune worker/live (owner).
+## 5. Next Actions (Phase 1 order)
+1. Build & publish preview `rcv30` from `main` (includes Nov 23 audit fixes) and re-verify live.
+2. Fix `/purchases` hang, receiving mouse/layout overlap, settings form overlap, and live inventory/customer refresh.
+3. Fix `Playwright POS smoke` on `main` and run go-live checklist on owner phone/printer (`docs/product/GO-LIVE.md`).
+4. Close stale PR/Issue chain (#553/#566/#545/#550) after Phase 1 stabilizes; prune `worker/live` (owner).
 
 ## Waiting on the owner (do not act on these or ask routine questions)
 Database/storage choice (docs/erp/FND-02_STORAGE_ADR_DRAFT.md §9), pricing/tax policy, packaging data source, light theme yes/no, audit retention and signing-key name, tablet trial of /purchases, any real supplier order/payment/deploy. Never without his specific approval: supplier cart writes/orders/checkout, payments, secrets/credentials, unlocking an unknown supplier operation, production deploy, destructive deletes/migrations, storage product, spending money.
