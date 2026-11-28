@@ -19,9 +19,18 @@ try {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(String(e))); page.on('console', m => { if (m.type() === 'error' && !/emergency\/stock\.json/.test(m.location().url || '')) errs.push(m.text() + ' @ ' + (m.location().url || '')); });
   await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
-  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
+  await (await page.addInitScript({ content: "try{window.NOVA_STOCK_PROBE=true;var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); } localStorage.setItem('nova-rx-language', 'ar'); localStorage.removeItem('nova.activePage'); } catch {} });
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForFunction(() => window.novaCatalog && window.novaCatalog.source === 'STOCK LIVE' && window.novaSales, null, { timeout: 8000 });
+
+  // open the shift first with float 100 via #novaShiftOpenBtn (576-shift-open.js)
+  await page.locator('.nova-tab[data-page="shift"]').click();
+  await page.locator('#novaShiftOpenBtn').click();
+  const openDlg = page.locator('[role="dialog"]', { hasText: 'رصيد الدرج' });
+  await openDlg.locator('input[type="number"]').fill('100');
+  await openDlg.locator('button[type="submit"]').click();
+  await sleep(200);
+  await page.locator('.nova-tab[data-page="sale"]').click();
 
   // complete a local cash sale
   const i = page.locator('#mainSearchInput'); await i.fill('جافيسكون'); await sleep(300);
@@ -44,7 +53,6 @@ try {
   await page.locator('.nova-tab[data-page="shift"]').click(); clicks++; await sleep(500); // Q21-2f: «الوردية» is its own entry (1 click)
   assert.ok(clicks <= 2, 'clicks ' + clicks);
   assert.ok(await page.locator('#novaShiftClose').isVisible(), 'panel visible');
-  await page.locator('#novaShiftFloat').fill('100'); await page.locator('#novaShiftFloat').dispatchEvent('change'); await sleep(300);
   const d = await page.evaluate(() => window.__novaRepData);
   const exp = 100 + d.split.cash - d.cashReturns + d.cashDebt;
   assert.equal(d.split.cash > 0, true); assert.ok(d.cashReturns > 0, 'has cash return');
@@ -54,7 +62,7 @@ try {
   await page.locator('#novaShiftCount').fill((exp - 5).toFixed(2)); await sleep(100);
   assert.equal(await page.locator('#novaShiftDiff').getAttribute('data-diff'), '-5.00');
   const col = await page.locator('#novaShiftDiff').evaluate(e => getComputedStyle(e).color);
-  assert.equal(col, 'rgb(255, 93, 93)', 'red'); assert.match(await page.locator('#novaShiftDiff').textContent(), /−5\.00/);
+  assert.equal(col, 'rgb(255, 107, 107)', 'red'); assert.match(await page.locator('#novaShiftDiff').textContent(), /−5\.00/);
   const txt = await page.evaluate(() => { let h = ''; window.print = () => { const e = document.getElementById('novaDayReport'); h = e ? e.innerText : 'MISSING'; }; document.getElementById('novaShiftPrint').click(); return h; });
   assert.ok(txt.includes('الفرق') && txt.includes('النقدي المعدود'), 'print has shift rows: ' + txt);
   await page.reload({ waitUntil: 'load' });

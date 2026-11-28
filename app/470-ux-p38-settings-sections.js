@@ -3,9 +3,9 @@
  function secOf(c){var id=c.id,h=((c.querySelector('h2,h3,h4')||{}).textContent)||'';
   if(id==='novaSetupCard'||id==='novaOnboardingCard')return 'setup';
   if(id==='novaAuthCard')return 'accounts';if(id==='novaDevicesCard')return 'devices';if(id==='novaAboutCard')return 'about';
-  if(id==='novaBackendCard'||/API|التكاملات/.test(h))return 'sync';
-  if(c.querySelector('.nova-lang-switch')||/ضريبة/.test(h))return 'general';
-  if(/التشغيلات|الصلاحية/.test(h))return 'stock';if(/الموردين/.test(h))return 'suppliers';return 'general'}
+  if(id==='novaBackendCard'||/API|التكاملات|Integrations/i.test(h))return 'sync';
+  if(id==='novaPharmacyProfileCard'||id==='novaSaleSettingsCard'||id==='novaOffersCard'||id==='novaFullBackupCard'||c.querySelector('.nova-lang-switch')||/ضريبة|VAT|Tax/i.test(h))return 'general';
+  if(/التشغيلات|الصلاحية|Lots|Expiry/i.test(h))return 'stock';if(/الموردين|Suppliers/i.test(h))return 'suppliers';return 'general'}
  function enhance(){var g=document.querySelector('#novaPageView .nova-settings-grid');if(!g||g.getAttribute('data-secs'))return;g.setAttribute('data-secs','1');
   var cards=[].filter.call(g.children,function(c){return c.classList.contains('nova-setting-card')}),groups={};
   cards.forEach(function(c){var s=secOf(c);c.setAttribute('data-sec',s);(groups[s]=groups[s]||[]).push(c)});

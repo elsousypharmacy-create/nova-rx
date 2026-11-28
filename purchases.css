@@ -60,8 +60,8 @@ main{padding:10px 14px}.controls{padding:9px 12px;gap:var(--sp-3);flex-wrap:nowr
 /* UX45: brand status dot + tab strip (active tab kept in view on mobile) */
 .nova-topbar .brand{display:inline-flex;align-items:center;gap:var(--sp-2)}.nova-topbar .brand .pharmacy-banner-live{display:inline-flex;width:8px;height:8px;border-radius:50%;background:#60b99b;box-shadow:0 0 0 3px #60b99b33}.nova-topbar .brand .pharmacy-banner-live b{display:none}
 @media(max-width:800px){.nova-topbar nav{scrollbar-width:none;scroll-padding-inline:var(--sp-4)}.nova-topbar nav::-webkit-scrollbar{display:none}}
-/* UX205: edge-fade scroll hint + scroll-snap on mobile nav */
-@media(max-width:800px){.nova-topbar nav{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}.nova-topbar nav a{scroll-snap-align:center}}
+/* UX205: edge-fade scroll hint + scroll-snap on mobile nav (avoid mask clipping first/last Arabic tabs on 428px phones) */
+@media(max-width:800px){.nova-topbar nav{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding-inline:10px;scroll-padding-inline:10px}.nova-topbar nav a{scroll-snap-align:start}}
 @media (hover:none),(pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=color]):not([type=button]):not([type=submit]){font-size:16px!important}}
 /* UX326: desktop #selectAll hit area (44x44 label) fits entirely inside its own header cell */
 @media(min-width:801px){.products thead th:first-child{width:44px;padding-inline:0;text-align:center}.products thead th:first-child .select-all-label{vertical-align:middle}}

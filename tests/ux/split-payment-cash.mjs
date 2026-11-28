@@ -10,14 +10,16 @@ try {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'ar-EG' });
   await ctx.route('**/*', r => {
     const u = r.request().url();
-    return u.startsWith(new URL(BASE).origin) || u.startsWith('data:') ? r.continue() : r.abort();
+    if (u.startsWith(new URL(BASE).origin) || u.startsWith('data:')) return r.continue();
+    if (/^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(u)) return r.fulfill({ status: 200, contentType: 'text/css', body: '' });
+    return r.abort();
   });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   await page.route('**/emergency/stock.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: snapshot }));
-  await (await page.addInitScript({ content: "try{var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => {
+  await (await page.addInitScript({ content: "try{window.NOVA_STOCK_PROBE=true;var P=function(){localStorage.setItem('nova-rx-receipt-preview','1')},C=Storage.prototype.clear;Storage.prototype.clear=function(){C.call(this);if(this===localStorage)P()};P()}catch(e){}" }), page).addInitScript(() => {
     try {
       if (!sessionStorage.getItem('seeded')) { localStorage.clear(); sessionStorage.setItem('seeded', '1'); }
       localStorage.setItem('nova-rx-language', 'ar');
@@ -45,12 +47,12 @@ try {
   await page.locator('#inputCardAmount').press('Enter');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'inputCashReceived');
 
-  // card > total rejected with toast
+  // card > total disabled at confirm + allocation/modal stays open
   await page.locator('#inputCardAmount').fill(String(total + 10));
   assert.equal(await page.inputValue('#inputCashReceived'), '0.00');
-  await page.click('#btnConfirmPayment');
+  assert.equal(await page.locator('#btnConfirmPayment').isDisabled(), true, 'confirm disabled when card > total');
   assert.ok(await page.evaluate(() => document.getElementById('checkoutModal').classList.contains('active')), 'modal stays open');
-  assert.ok(await page.evaluate(() => /أكبر من الإجمالي/.test(document.body.innerText)), 'over-allocation toast');
+  assert.ok(await page.evaluate(() => /الزيادة|أكبر من الإجمالي/.test(document.body.innerText)), 'over-allocation warning shown');
 
   // valid split completes; receipt not showing change = card amount
   await page.locator('#inputCardAmount').fill(String(card));

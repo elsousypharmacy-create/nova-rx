@@ -495,8 +495,10 @@
           }
           if (out.length < 50) return false; // an almost empty file is not a catalog: keep the demo data
           DEMO_PRODUCTS.splice(0, DEMO_PRODUCTS.length, ...out);
+          applyLocalCatalogCustomizations();
+          activeSearchIdx = null;
           const ts = Date.parse(j && j.exportedAt);
-          window.novaCatalog = { source: "STOCK LIVE", exportedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null, count: out.length };
+          window.novaCatalog = { source: "STOCK LIVE", exportedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null, count: DEMO_PRODUCTS.length };
           window.dispatchEvent(new CustomEvent("nova-catalog"));
           return true;
         };
@@ -510,7 +512,263 @@
           if (apply(txt)) { try { if (txt.length < 2500000) lsSet(SNAP_KEY, txt); } catch (e) {} }
         }).catch(() => {});
       }
+      const CUSTOM_ITEMS_KEY = "nova-rx-custom-items-v1";
+      const ITEM_OVERRIDES_KEY = "nova-rx-item-overrides-v1";
+      function readJsonSafe(key, fallback) {
+        try { const raw = localStorage.getItem(key); if (!raw) return fallback; const p = JSON.parse(raw); return p == null ? fallback : p; } catch (_) { return fallback; }
+      }
+      function writeJsonSafe(key, val) {
+        try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (_) { return false; }
+      }
+      function applyLocalCatalogCustomizations() {
+        const overrides = readJsonSafe(ITEM_OVERRIDES_KEY, {});
+        const customRaw = readJsonSafe(CUSTOM_ITEMS_KEY, []);
+        const customs = Array.isArray(customRaw) ? customRaw.filter(x => x && x.id && x.name && Number.isFinite(Number(x.price)) && Number(x.price) > 0) : [];
+        const customIds = new Set(customs.map(x => String(x.id)));
+        // Remove stale custom entries that were deleted
+        for (let i = DEMO_PRODUCTS.length - 1; i >= 0; i--) {
+          if (DEMO_PRODUCTS[i] && DEMO_PRODUCTS[i].custom && !customIds.has(String(DEMO_PRODUCTS[i].id))) {
+            DEMO_PRODUCTS.splice(i, 1);
+          }
+        }
+        if (overrides && typeof overrides === "object") {
+          DEMO_PRODUCTS.forEach(p => {
+            if (!p) return;
+            const ov = overrides[String(p.id || "")] || overrides[String(p.barcode || "")];
+            if (!ov || typeof ov !== "object") return;
+            if (ov.name && String(ov.name).trim()) p.name = String(ov.name).trim();
+            if (ov.barcode && String(ov.barcode).trim()) p.barcode = String(ov.barcode).trim();
+            if (ov.price != null && Number.isFinite(Number(ov.price)) && Number(ov.price) > 0) p.price = Math.round(Number(ov.price) * 100) / 100;
+            if (ov.pack !== undefined) { p.pack = String(ov.pack || "").trim(); p.form = p.pack; }
+            if (ov.category !== undefined) p.category = String(ov.category || "").trim();
+          });
+        }
+        customs.forEach(ci => {
+          const item = {
+            id: String(ci.id),
+            barcode: String(ci.barcode || ci.id).trim(),
+            name: String(ci.name).trim(),
+            pack: String(ci.pack || "").trim(),
+            generic: String(ci.generic || "").trim(),
+            form: String(ci.pack || ci.form || "").trim(),
+            price: Math.round(Number(ci.price) * 100) / 100,
+            stock: ci.stock != null && ci.stock !== "" && Number.isFinite(Number(ci.stock)) ? Math.round(Number(ci.stock) * 100) / 100 : null,
+            category: String(ci.category || "").trim(),
+            custom: true
+          };
+          const ov = overrides && typeof overrides === "object" ? overrides[item.id] : null;
+          if (ov && typeof ov === "object") {
+            if (ov.name && String(ov.name).trim()) item.name = String(ov.name).trim();
+            if (ov.barcode && String(ov.barcode).trim()) item.barcode = String(ov.barcode).trim();
+            if (ov.price != null && Number.isFinite(Number(ov.price)) && Number(ov.price) > 0) item.price = Math.round(Number(ov.price) * 100) / 100;
+            if (ov.pack !== undefined) { item.pack = String(ov.pack || "").trim(); item.form = item.pack; }
+            if (ov.category !== undefined) item.category = String(ov.category || "").trim();
+          }
+          const idx = DEMO_PRODUCTS.findIndex(p => p && String(p.id) === item.id);
+          if (idx >= 0) DEMO_PRODUCTS[idx] = Object.assign({}, DEMO_PRODUCTS[idx], item);
+          else DEMO_PRODUCTS.push(item);
+        });
+      }
+      function canEditCatalog() {
+        const A = window.novaAuth;
+        if (A && typeof A.hasAccounts === "function") {
+          try {
+            if (!A.hasAccounts()) return true;
+            const me = A.current && A.current();
+            return !!(me && (me.role === "manager" || me.role === "owner"));
+          } catch (_) { return false; }
+        }
+        // Fail closed while auth-local.js (deferred) is loading if any accounts exist on device.
+        try {
+          const raw = localStorage.getItem("nova.auth.accounts");
+          if (raw == null) return true;
+          const arr = JSON.parse(raw);
+          return Array.isArray(arr) && arr.length === 0;
+        } catch (_) { return false; }
+      }
+      window.novaCatalogApi = {
+        canEdit: canEditCatalog,
+        getCustomItems: () => { const a = readJsonSafe(CUSTOM_ITEMS_KEY, []); return Array.isArray(a) ? a : []; },
+        getOverrides: () => { const o = readJsonSafe(ITEM_OVERRIDES_KEY, {}); return o && typeof o === "object" && !Array.isArray(o) ? o : {}; },
+        refresh: () => {
+          applyLocalCatalogCustomizations();
+          activeSearchIdx = null;
+          if (window.novaCatalog) window.novaCatalog.count = DEMO_PRODUCTS.length;
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+        },
+        addItem: input => {
+          if (!canEditCatalog()) return { ok: false, error: "permission", message: "إضافة الأصناف متاحة للمدير أو المالك فقط." };
+          const inp = input && typeof input === "object" ? input : {};
+          const name = String(inp.name || "").trim();
+          const price = Number(inp.price);
+          if (!name) return { ok: false, error: "name", message: "اكتب اسم الصنف." };
+          if (!Number.isFinite(price) || price <= 0) return { ok: false, error: "price", message: "اكتب سعر بيع صحيح أكبر من صفر." };
+          let barcode = String(inp.barcode || "").trim();
+          if (!barcode) barcode = "NOVA-" + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 90 + 10);
+          const nq = normCode(barcode);
+          if (nq && DEMO_PRODUCTS.some(p => p && (normCode(p.barcode) === nq || normCode(p.gtin) === nq || (Array.isArray(p.barcodes) && p.barcodes.some(b => normCode(b) === nq))))) {
+            return { ok: false, error: "duplicate-barcode", message: "الباركود ده مسجّل بالفعل لصنف تاني." };
+          }
+          const id = "CUST-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+          const stockVal = inp.stock !== undefined && inp.stock !== null && String(inp.stock).trim() !== "" ? Number(inp.stock) : null;
+          const rec = {
+            id,
+            barcode,
+            name,
+            pack: String(inp.pack || "").trim(),
+            generic: String(inp.generic || "").trim(),
+            price: Math.round(price * 100) / 100,
+            stock: stockVal !== null && Number.isFinite(stockVal) && stockVal >= 0 ? Math.round(stockVal * 100) / 100 : null,
+            category: String(inp.category || "").trim(),
+            custom: true
+          };
+          const list = readJsonSafe(CUSTOM_ITEMS_KEY, []);
+          const arr = Array.isArray(list) ? list : [];
+          arr.push(rec);
+          if (!writeJsonSafe(CUSTOM_ITEMS_KEY, arr)) return { ok: false, error: "storage", message: "تعذر حفظ الصنف على هذا الجهاز." };
+          applyLocalCatalogCustomizations();
+          activeSearchIdx = null;
+          if (window.novaCatalog) window.novaCatalog.count = DEMO_PRODUCTS.length;
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+          const saved = DEMO_PRODUCTS.find(p => p && p.id === id) || rec;
+          return { ok: true, item: saved };
+        },
+        updateItem: (key, patch) => {
+          if (!canEditCatalog()) return { ok: false, error: "permission", message: "تعديل الأصناف متاح للمدير أو المالك فقط." };
+          const qk = String(key || "").trim();
+          const nqk = normCode(qk);
+          const target = DEMO_PRODUCTS.find(p => p && (String(p.id) === qk || String(p.barcode) === qk || (nqk && normCode(p.barcode) === nqk)));
+          if (!target) return { ok: false, error: "not-found", message: "الصنف غير موجود." };
+          const pt = patch && typeof patch === "object" ? patch : {};
+          const nextName = pt.name !== undefined ? String(pt.name || "").trim() : target.name;
+          const nextPrice = pt.price !== undefined ? Number(pt.price) : target.price;
+          const nextBarcode = pt.barcode !== undefined ? String(pt.barcode || "").trim() : target.barcode;
+          const nextPack = pt.pack !== undefined ? String(pt.pack || "").trim() : (target.pack || "");
+          const nextCat = pt.category !== undefined ? String(pt.category || "").trim() : (target.category || "");
+          if (!nextName) return { ok: false, error: "name", message: "اسم الصنف مطلوب." };
+          if (!Number.isFinite(nextPrice) || nextPrice <= 0) return { ok: false, error: "price", message: "سعر البيع لازم يكون أكبر من صفر." };
+          if (!nextBarcode) return { ok: false, error: "barcode", message: "الباركود مطلوب." };
+          const nextNq = normCode(nextBarcode);
+          if (nextNq && DEMO_PRODUCTS.some(p => p && p !== target && (normCode(p.barcode) === nextNq || normCode(p.gtin) === nextNq || (Array.isArray(p.barcodes) && p.barcodes.some(b => normCode(b) === nextNq))))) {
+            return { ok: false, error: "duplicate-barcode", message: "الباركود ده مسجّل لصنف تاني." };
+          }
+          const targetId = String(target.id || "");
+          const customArr = readJsonSafe(CUSTOM_ITEMS_KEY, []);
+          let savedCustom = false;
+          if (Array.isArray(customArr)) {
+            const ci = customArr.find(x => x && String(x.id) === targetId);
+            if (ci) {
+              ci.name = nextName;
+              ci.barcode = nextBarcode;
+              ci.price = Math.round(nextPrice * 100) / 100;
+              ci.pack = nextPack;
+              ci.category = nextCat;
+              if (!writeJsonSafe(CUSTOM_ITEMS_KEY, customArr)) return { ok: false, error: "storage", message: "تعذر حفظ التعديل على هذا الجهاز." };
+              savedCustom = true;
+            }
+          }
+          if (!savedCustom) {
+            const ovs = readJsonSafe(ITEM_OVERRIDES_KEY, {});
+            const map = ovs && typeof ovs === "object" && !Array.isArray(ovs) ? ovs : {};
+            const ovKey = String(target.id || target.barcode);
+            map[ovKey] = { name: nextName, barcode: nextBarcode, price: Math.round(nextPrice * 100) / 100, pack: nextPack, category: nextCat };
+            if (!writeJsonSafe(ITEM_OVERRIDES_KEY, map)) return { ok: false, error: "storage", message: "تعذر حفظ التعديل على هذا الجهاز." };
+          }
+          applyLocalCatalogCustomizations();
+          activeSearchIdx = null;
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+          const updated = DEMO_PRODUCTS.find(p => p && String(p.id || "") === targetId) || target;
+          return { ok: true, item: updated };
+        },
+        removeCustomItem: id => {
+          if (!canEditCatalog()) return { ok: false, error: "permission", message: "الحذف متاح للمدير أو المالك فقط." };
+          const arr = readJsonSafe(CUSTOM_ITEMS_KEY, []);
+          if (!Array.isArray(arr)) return { ok: false };
+          const next = arr.filter(x => x && String(x.id) !== String(id));
+          if (next.length === arr.length) return { ok: false, error: "not-found" };
+          writeJsonSafe(CUSTOM_ITEMS_KEY, next);
+          applyLocalCatalogCustomizations();
+          activeSearchIdx = null;
+          if (window.novaCatalog) window.novaCatalog.count = DEMO_PRODUCTS.length;
+          window.dispatchEvent(new CustomEvent("nova-catalog"));
+          return { ok: true };
+        }
+      };
+      const PROFILE_KEY = "nova-rx-pharmacy-profile-v1";
+      const PROFILE_DEFAULTS = {
+        name: "صيدلية السوسي",
+        owner: "د. أحمد السوسي",
+        branch: "الفرع الرئيسي",
+        phone: "01143404023",
+        address: "",
+        receiptFooter: ""
+      };
+      window.novaPharmacyProfile = (function () {
+        function readRaw() {
+          try { const v = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null"); return v && typeof v === "object" && !Array.isArray(v) ? v : null; } catch (_) { return null; }
+        }
+        function isCustomized() {
+          const s = readRaw();
+          if (!s) return false;
+          return Object.keys(PROFILE_DEFAULTS).some(k => s[k] !== undefined && String(s[k]).trim() !== "" && String(s[k]).trim() !== PROFILE_DEFAULTS[k]);
+        }
+        function get() {
+          const s = readRaw() || {};
+          return {
+            name: String(s.name || "").trim() || PROFILE_DEFAULTS.name,
+            owner: s.owner !== undefined ? String(s.owner).trim() : PROFILE_DEFAULTS.owner,
+            branch: String(s.branch || "").trim() || PROFILE_DEFAULTS.branch,
+            phone: s.phone !== undefined ? String(s.phone).trim() : PROFILE_DEFAULTS.phone,
+            address: String(s.address || "").trim(),
+            receiptFooter: String(s.receiptFooter || "").trim()
+          };
+        }
+        function apply() {
+          const p = get();
+          const strong = document.querySelector(".pharmacy-banner-copy strong");
+          const span = document.querySelector(".pharmacy-banner-copy span");
+          if (strong) strong.textContent = p.name;
+          if (span) span.textContent = p.owner;
+          if (!document.documentElement.classList.contains("app-whatsapp") && document.title) {
+            document.title = "NOVA Rx | " + p.name;
+          }
+          try { window.dispatchEvent(new CustomEvent("nova-profile-change", { detail: p })); } catch (_) {}
+          return p;
+        }
+        function save(patch) {
+          if (!canEditCatalog()) return { ok: false, error: "permission", message: "التغيير للمدير أو المالك بس." };
+          const cur = readRaw() || {};
+          const pt = patch && typeof patch === "object" ? patch : {};
+          const next = {
+            name: pt.name !== undefined ? String(pt.name || "").trim() : (cur.name || PROFILE_DEFAULTS.name),
+            owner: pt.owner !== undefined ? String(pt.owner || "").trim() : (cur.owner !== undefined ? cur.owner : PROFILE_DEFAULTS.owner),
+            branch: pt.branch !== undefined ? String(pt.branch || "").trim() : (cur.branch || PROFILE_DEFAULTS.branch),
+            phone: pt.phone !== undefined ? String(pt.phone || "").trim() : (cur.phone !== undefined ? cur.phone : PROFILE_DEFAULTS.phone),
+            address: pt.address !== undefined ? String(pt.address || "").trim() : (cur.address || ""),
+            receiptFooter: pt.receiptFooter !== undefined ? String(pt.receiptFooter || "").trim() : (cur.receiptFooter || "")
+          };
+          if (!next.name) return { ok: false, error: "name", message: "اسم الصيدلية مطلوب." };
+          if (!writeJsonSafe(PROFILE_KEY, next)) return { ok: false, error: "storage", message: "تعذر حفظ بيانات الصيدلية." };
+          apply();
+          return { ok: true, profile: get() };
+        }
+        function reset() {
+          if (!canEditCatalog()) return { ok: false, error: "permission", message: "التغيير للمدير أو المالك بس." };
+          try { localStorage.removeItem(PROFILE_KEY); } catch (_) {}
+          apply();
+          return { ok: true, profile: get() };
+        }
+        window.addEventListener("storage", e => {
+          if (!e) return;
+          if (e.key === PROFILE_KEY) apply();
+          if (e.key === CUSTOM_ITEMS_KEY || e.key === ITEM_OVERRIDES_KEY) { window.novaCatalogApi.refresh(); }
+        });
+        return { KEY: PROFILE_KEY, DEFAULTS: PROFILE_DEFAULTS, isCustomized, get, apply, save, reset };
+      })();
       loadRealPrices();
+      applyLocalCatalogCustomizations();
+      if (window.novaCatalog) window.novaCatalog.count = DEMO_PRODUCTS.length;
+      window.novaPharmacyProfile.apply();
       window.novaCartItems=()=>{try{return state.invoiceLines.map(x=>({name:x.name,qty:x.qty}))}catch(e){return[]}};
       const state = {
         mode: "PRODUCT", // "CUSTOMER" or "PRODUCT"
@@ -2732,11 +2990,15 @@
             const tot = ((Number(l.price) || 0) * (Number(l.qty) || 0)) - (Number(l.discount) || 0);
             return `<tr><td>${escH(dispName(l.name))}</td><td dir="ltr">${Number(l.qty) || 0}</td><td dir="ltr">${(Number(l.price) || 0).toFixed(2)}</td><td dir="ltr">${tot.toFixed(2)}</td></tr>`;
           }).join('');
+          const prof = window.novaPharmacyProfile ? window.novaPharmacyProfile.get() : { name: 'صيدلية السوسي', branch: '', phone: '', address: '', receiptFooter: '' };
+          const custProf = !!(window.novaPharmacyProfile && window.novaPharmacyProfile.isCustomized());
+          const profMeta = custProf ? [prof.branch, prof.phone, prof.address].filter(Boolean).join(' · ') : '';
           const tendersTxt = Array.isArray(s.tenders) && s.tenders.length ? s.tenders.map(t => `${window.NovaFmt.payLabel(t.method)} ${(Number(t.amount) || 0).toFixed(2)}${t.ref ? ' #' + t.ref : ''}`).join(' + ') : '';
           const html = `<div dir="rtl" lang="ar" class="nova-receipt-doc" data-receipt-number="${escH(s.number)}" data-is-copy="${currentCopy ? 'true' : 'false'}" style="color:#000">
             ${copyBanner}
             <div style="text-align:center;border-bottom:1px dashed #94a3b8;padding-bottom:6px;margin-bottom:6px">
-              <div style="font-weight:800;font-size:14px">صيدلية السوسي — NOVA Rx</div>
+              <div style="font-weight:800;font-size:14px">${escH(prof.name)} — NOVA Rx</div>
+              ${profMeta ? `<div style="font-size:11px;color:#334155">${escH(profMeta)}</div>` : ''}
               <div style="font-size:12px">إيصال بيع ضريبي مبسط (${w})</div>
             </div>
             <div style="font-size:12px;margin-bottom:6px">
@@ -2760,6 +3022,7 @@
               <div style="display:flex;justify-content:space-between"><span>الباقي:</span><span dir="ltr">${(Number(s.change) || 0).toFixed(2)} ج.م</span></div>
             </div>
             <div class="nova-receipt-barcode">${barcodeSvg(s.number)}</div>
+            ${custProf && prof.receiptFooter ? `<div style="text-align:center;font-size:11px;color:#334155;margin-top:4px">${escH(prof.receiptFooter)}</div>` : ''}
           </div>`;
           elements.receiptSlipContent.setAttribute('data-width', w);
           elements.receiptSlipContent.innerHTML = html;
@@ -2772,9 +3035,14 @@
           const enc = new TextEncoder();
           const u16Hex = str => '<FEFF' + Array.from(String(str || '')).map(ch => ch.charCodeAt(0).toString(16).padStart(4, '0').toUpperCase()).join('') + '>';
           const ascii = str => '(' + String(str || '').replace(/[()\\]/g, '\\$&').replace(/[^\x20-\x7E]/g, '?') + ')';
+          const prof = window.novaPharmacyProfile ? window.novaPharmacyProfile.get() : { name: 'صيدلية السوسي', branch: '', phone: '', address: '', receiptFooter: '' };
+          const custProf = !!(window.novaPharmacyProfile && window.novaPharmacyProfile.isCustomized());
           const lines = [
             isCopy ? `نسخة مكررة — COPY #${copyNo}` : 'نسخة أصلية — ORIGINAL',
-            'صيدلية السوسي — NOVA Rx Pharmacy',
+            `${prof.name} — NOVA Rx Pharmacy`,
+            ...(custProf && prof.branch ? [`الفرع / Branch: ${prof.branch}`] : []),
+            ...(custProf && prof.phone ? [`الهاتف / Phone: ${prof.phone}`] : []),
+            ...(custProf && prof.address ? [`العنوان / Address: ${prof.address}`] : []),
             `رقم الفاتورة / Invoice: ${s.number}`,
             `التاريخ / Date: ${s.at || new Date().toISOString()}`,
             `العميل / Customer: ${s.customer || 'عميل نقدي'}`,

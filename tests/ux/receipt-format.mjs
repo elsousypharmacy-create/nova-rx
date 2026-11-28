@@ -48,12 +48,22 @@ check(/\d{2}\/\d{2}\/\d{4}/.test(t1) && !/[٠-٩]/.test(t1), 'receipt date DD/MM
 check(t1.includes('13/11/2026 21:04'), 'receipt date+time format');
 check(t1.includes('صنف واحد') && t2.includes('صنفان') && t3.includes('3 أصناف'), 'subtotal plural 1/2/3');
 // invoices table
-await page.evaluate(() => { const m = (n) => ({ id: 'I' + n, number: 'S-' + n, at: new Date(2026, 10, 13, 21, 4).toISOString(), customer: 'عميل', lines: [{ name: 'x', qty: 1, price: 1, discount: 0 }], subtotal: 1, discount: 0, vat: 0, total: 1, payment: 'cash' }); localStorage.setItem('nova.sales', JSON.stringify([m(1)])); });
+await page.evaluate(() => {
+  const m = (n) => ({ id: 'I' + n, number: 'S-' + n, at: new Date(2026, 10, 13, 21, 4).toISOString(), customer: 'عميل', lines: [{ name: 'x', qty: 1, price: 1, discount: 0 }], subtotal: 1, discount: 0, vat: 0, total: 1, payment: 'cash' });
+  if (window.novaSales && window.novaSales.add) window.novaSales.add(m(1));
+  else localStorage.setItem('nova-rx-sales-v1', JSON.stringify([m(1)]));
+});
 const hasList = await page.evaluate(() => !!(window.novaSales && window.novaSales.list));
 if (hasList) {
   await page.evaluate(() => window.novaSales.list().length || 0);
-  const src = await page.evaluate(() => document.documentElement.outerHTML.includes("window.NovaFmt.formatDateTime(x.at)"));
-  check(src, 'invoices list uses NovaFmt.formatDateTime');
+  await page.click('#btnCloseReceipt');
+  await page.click('.nova-tab[data-page="invoices"]');
+  await page.waitForSelector('.nova-invoice-row');
+  const renderedDate = await page.evaluate(() => {
+    const row = document.querySelector('.nova-invoice-row td:nth-child(2)');
+    return row ? row.textContent.trim() : '';
+  });
+  check(renderedDate === '13/11/2026 21:04', 'invoices list uses NovaFmt.formatDateTime (got ' + renderedDate + ')');
 }
 await browser.close(); server.close();
 process.exit(fail ? 1 : 0);

@@ -880,6 +880,29 @@
       }
     }
 
+    var editHtml = '';
+    if (state.showEdit) {
+      editHtml = '<div class="nova-ic-sec" id="nova-ic-edit-sec">'
+        + '<h3>تعديل بيانات الصنف</h3>'
+        + '<form id="nova-ic-edit-form">'
+        + '<div class="nova-ic-adj-form">'
+        + '<div class="nova-ic-field nova-ic-field-wide"><label for="nova-ic-edit-name">اسم الصنف</label>'
+        + '<input id="nova-ic-edit-name" name="name" type="text" maxlength="160" value="' + esc(product.name || '') + '" required /></div>'
+        + '<div class="nova-ic-field"><label for="nova-ic-edit-barcode">الباركود</label>'
+        + '<input id="nova-ic-edit-barcode" name="barcode" type="text" dir="ltr" maxlength="64" value="' + esc(product.barcode || product.code || '') + '" required /></div>'
+        + '<div class="nova-ic-field"><label for="nova-ic-edit-price">السعر (ج.م)</label>'
+        + '<input id="nova-ic-edit-price" name="price" type="number" min="0.01" step="0.01" dir="ltr" value="' + esc(product.price != null ? product.price : '') + '" required /></div>'
+        + '<div class="nova-ic-field"><label for="nova-ic-edit-pack">العبوة</label>'
+        + '<input id="nova-ic-edit-pack" name="pack" type="text" maxlength="80" value="' + esc(product.pack || product.form || '') + '" placeholder="مثال: 30 قرص" /></div>'
+        + '<div class="nova-ic-field"><label for="nova-ic-edit-cat">التصنيف / الرف</label>'
+        + '<input id="nova-ic-edit-cat" name="category" type="text" maxlength="80" value="' + esc(product.category || '') + '" placeholder="مثال: مسكنات أو رف A2" /></div>'
+        + '</div>'
+        + '<div class="nova-ic-adj-btns">'
+        + '<button type="submit" class="btn btn-primary" id="nova-ic-edit-submit">حفظ التعديلات</button>'
+        + '<button type="button" class="btn btn-secondary" data-ic-act="cancel-edit">إلغاء</button>'
+        + '</div></form></div>';
+    }
+
     var dlg = state.dialog;
     dlg.innerHTML = ''
       + '<div class="nova-ic-head">'
@@ -887,6 +910,7 @@
       + '    <h2 class="nova-ic-title" id="nova-ic-title">' + esc(product.name || 'كارت الصنف') + '</h2>'
       + '    <div class="nova-ic-meta">'
       + '      <span>الباركود: <strong dir="ltr">' + esc(product.barcode || product.code || '—') + '</strong></span>'
+      + '      <span>السعر: <strong dir="ltr">' + esc(fmtCost(product.price || 0)) + '</strong></span>'
       + '      <span>الرصيد الحالي: <strong dir="ltr" data-ic-onhand>' + esc(fmtQty(totalOnHand)) + '</strong></span>'
       + '      <span>عدد التشغيلات: <strong dir="ltr">' + String(lots.length) + '</strong></span>'
       + '    </div>'
@@ -895,6 +919,7 @@
       + '</div>'
       + '<div class="nova-ic-body">'
       + bannerHtml
+      + editHtml
       + adjHtml
       + '  <div class="nova-ic-sec"><h3>التشغيلات</h3>' + lotsHtml + '</div>'
       + '  <div class="nova-ic-sec"><h3>حركة الصنف</h3>' + tlHtml + checkHtml + '</div>'
@@ -902,6 +927,7 @@
       + '<div class="nova-ic-foot">'
       + '  <div class="nova-ic-actions">'
       + '    <button type="button" class="btn btn-primary" data-ic-act="open-adj">تسوية (تالف / استخدام داخلي)</button>'
+      + '    <button type="button" class="btn btn-secondary" data-ic-act="open-edit">تعديل الصنف</button>'
       + '    <button type="button" class="btn btn-secondary" data-ic-act="print">طباعة الكارت</button>'
       + '  </div>'
       + '  <button type="button" class="btn btn-secondary" data-ic-act="close">إغلاق</button>'
@@ -938,6 +964,7 @@
           renderDialogContent(state);
           return;
         }
+        state.showEdit = false;
         state.showAdjust = true;
         state.banner = null;
         if (!state.attemptId) state.attemptId = makeAttemptId();
@@ -952,6 +979,64 @@
       cancelAdjBtn.addEventListener('click', function () {
         state.showAdjust = false;
         state.banner = null;
+        renderDialogContent(state);
+      });
+    }
+
+    var openEditBtn = dlg.querySelector('[data-ic-act="open-edit"]');
+    if (openEditBtn) {
+      openEditBtn.addEventListener('click', function () {
+        var api = window.novaCatalogApi;
+        if (api && typeof api.canEdit === 'function' && !api.canEdit()) {
+          state.banner = { type: 'err', text: 'تعديل الأصناف للمدير أو المالك فقط.' };
+          renderDialogContent(state);
+          return;
+        }
+        state.showAdjust = false;
+        state.showEdit = true;
+        state.banner = null;
+        renderDialogContent(state);
+        var nmInput = dlg.querySelector('#nova-ic-edit-name');
+        if (nmInput) nmInput.focus();
+      });
+    }
+
+    var cancelEditBtn = dlg.querySelector('[data-ic-act="cancel-edit"]');
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener('click', function () {
+        state.showEdit = false;
+        state.banner = null;
+        renderDialogContent(state);
+      });
+    }
+
+    var editForm = dlg.querySelector('#nova-ic-edit-form');
+    if (editForm) {
+      editForm.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var api = window.novaCatalogApi;
+        if (!api || typeof api.updateItem !== 'function') {
+          state.banner = { type: 'err', text: 'تعديل الأصناف غير متاح حاليًا.' };
+          renderDialogContent(state);
+          return;
+        }
+        var getV = function (sel) { var el = dlg.querySelector(sel); return el ? el.value : ''; };
+        var res = api.updateItem(state.product.id || state.key, {
+          name: getV('#nova-ic-edit-name'),
+          barcode: getV('#nova-ic-edit-barcode'),
+          price: getV('#nova-ic-edit-price'),
+          pack: getV('#nova-ic-edit-pack'),
+          category: getV('#nova-ic-edit-cat')
+        });
+        if (!res || !res.ok) {
+          state.banner = { type: 'err', text: (res && res.message) || 'تعذر حفظ التعديلات.' };
+          renderDialogContent(state);
+          return;
+        }
+        state.product = res.item || state.product;
+        state.key = keyOf(state.product) || state.key;
+        state.showEdit = false;
+        state.banner = { type: 'ok', text: 'تم حفظ تعديلات الصنف' };
         renderDialogContent(state);
       });
     }
@@ -1058,6 +1143,7 @@
       dialog: dialog,
       previousFocus: document.activeElement,
       showAdjust: false,
+      showEdit: false,
       saving: false,
       attemptId: makeAttemptId(),
       banner: null,

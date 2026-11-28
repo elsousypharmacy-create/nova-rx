@@ -57,7 +57,7 @@ try {
   const cell = page.locator('td[data-debt]', { has: page.locator('[data-pay-debt]') }).first();
   await cell.waitFor();
   assert.match(await cell.innerText(), /\d/, 'debt shown');
-  assert.equal(await cell.evaluate(e => getComputedStyle(e).color), 'rgb(255, 93, 93)', 'debt red');
+  assert.equal(await cell.evaluate(e => getComputedStyle(e).color), 'rgb(255, 138, 143)', 'debt red');
   await click('[data-pay-debt]');                              // 2
   assert.equal(await page.locator('#novaPayAmt').inputValue(), String(debt), 'prefilled full balance');
   assert.equal(await page.locator('#novaPayMethod').inputValue(), 'cash', 'default cash');

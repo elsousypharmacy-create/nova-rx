@@ -248,8 +248,12 @@ html body:not(.x) #novaPageView[data-view]:not([data-view=""])>.nova-page-header
  #novaPageView .nova-settings-grid .nova-lang-switch{width:auto;flex-wrap:wrap}
  #novaPermDetails>div{overflow-x:auto!important;max-width:100%}
 }
-#novaSaleSettingsCard label,#novaOffersCard label{display:block;margin:10px 0 4px;font-size:13px;color:var(--nx-text-muted,#a4adb7)}
+#novaSaleSettingsCard label,#novaOffersCard label,#novaPharmacyProfileCard label{display:block;margin:10px 0 4px;font-size:13px;color:var(--nx-text-muted,#a4adb7)}
 #novaSaleSettingsCard label.nova-check-row{display:flex;align-items:center;gap:8px;margin:12px 0 6px;color:var(--nx-text-main,#e7ebf0)}
-#novaSaleSettingsCard .form-control,#novaOffersCard .form-control{display:block;width:100%;max-width:100%;box-sizing:border-box;min-height:44px;padding:8px 12px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-2,8px);font:inherit;font-size:14px}
-#novaSaleSettingsCard .btn,#novaOffersCard .btn{margin-top:12px}
+#novaSaleSettingsCard .form-control,#novaOffersCard .form-control,#novaPharmacyProfileCard .form-control{display:block;width:100%;max-width:100%;box-sizing:border-box;min-height:44px;padding:8px 12px;background:#0e1419;color:#e7ebf0;border:1px solid #303841;border-radius:var(--r-2,8px);font:inherit;font-size:14px}
+#novaSaleSettingsCard .btn,#novaOffersCard .btn,#novaPharmacyProfileCard .btn{margin-top:12px}
 #novaOffersCard h3:not(:first-child){margin-top:18px;padding-top:12px;border-top:1px solid #2a3139}
+.nova-prof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 14px;margin-top:8px}
+.nova-prof-wide{grid-column:1/-1}
+.nova-prof-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+#novaProductModal label{display:block;margin:6px 0 4px;font-size:13px;color:#a4adb7}

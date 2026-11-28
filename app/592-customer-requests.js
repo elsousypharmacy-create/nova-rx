@@ -298,7 +298,10 @@
     if (!rec || !rec.phone) return null;
     var phone = normalizePhone(rec.phone);
     if (!phone) return null;
-    var msg = 'أهلاً ' + rec.customer + '، ' + rec.item + ' وصل صيدلية السوسي. هنحجزه لك لحد بكرة.';
+    var phName = (window.novaPharmacyProfile && typeof window.novaPharmacyProfile.get === 'function')
+      ? window.novaPharmacyProfile.get().name
+      : 'صيدلية السوسي';
+    var msg = 'أهلاً ' + rec.customer + '، ' + rec.item + ' وصل ' + phName + '. هنحجزه لك لحد بكرة.';
     return 'https://wa.me/20' + phone.slice(1) + '?text=' + encodeURIComponent(msg);
   }
 
