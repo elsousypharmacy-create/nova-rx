@@ -315,7 +315,73 @@ try {
   assert.deepEqual(b3Errs, [], 'No pageerrors on Batch 3 checks');
   await b3Ctx.close();
   console.log('ok - Native Light Mode, Bulk CSV import, and 3-step Quick Setup verified');
-  console.log('PASS commercial-readiness: 7 groups');
+
+  // 8. Tabbed Settings + Search + Categorized Tools Hub (Batch 4 declutter)
+  const b4Ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'ar-EG', serviceWorkers: 'block' });
+  await blockExternal(b4Ctx);
+  const p4 = await b4Ctx.newPage();
+  const b4Errs = [];
+  p4.on('pageerror', e => b4Errs.push(String(e)));
+  await p4.addInitScript(() => { try { localStorage.setItem('nova-rx-language', 'ar'); localStorage.setItem('nova-theme', 'dark'); } catch {} });
+  await p4.goto(BASE + '/index.html#settings', { waitUntil: 'load' });
+  await p4.waitForSelector('#novaSetSearch');
+  await p4.waitForSelector('#novaThemeCard');
+  const secInit = await p4.evaluate(() => ({
+    themeVis: document.getElementById('novaThemeCard').offsetParent !== null,
+    authVis: document.getElementById('novaAuthCard').offsetParent !== null,
+    hasAllLink: !!document.querySelector('.nova-set-nav [data-set-sec="all"]')
+  }));
+  assert.equal(secInit.themeVis, true, 'Default General tab is visible');
+  assert.equal(secInit.authVis, false, 'Accounts tab hidden on General tab');
+  assert.equal(secInit.hasAllLink, true, 'All sections link present');
+  await p4.click('.nova-set-nav [data-set-sec="accounts"]');
+  const afterTab = await p4.evaluate(() => ({
+    themeVis: document.getElementById('novaThemeCard').offsetParent !== null,
+    authVis: document.getElementById('novaAuthCard').offsetParent !== null
+  }));
+  assert.equal(afterTab.themeVis, false, 'General hides after switching to Accounts');
+  assert.equal(afterTab.authVis, true, 'Accounts reveals after click');
+  await p4.fill('#novaSetSearch', 'المظهر');
+  const afterSearch = await p4.evaluate(() => ({
+    themeVis: document.getElementById('novaThemeCard').offsetParent !== null,
+    authVis: document.getElementById('novaAuthCard').offsetParent !== null
+  }));
+  assert.equal(afterSearch.themeVis, true, 'Settings search finds Theme across tabs');
+  assert.equal(afterSearch.authVis, false, 'Settings search hides non-matching Auth card');
+
+  await p4.click('.nova-tab[data-page="tools"]');
+  await p4.waitForSelector('#novaToolsCats');
+  assert.equal(await p4.locator('#novaToolsCats [data-cat]').count(), 7, 'All + 6 group category pills');
+  await p4.click('#novaToolsCats [data-cat="legal"]');
+  const catState = await p4.evaluate(() => ({
+    groups: [...document.querySelectorAll('#novaToolsGrid .nth-group')].map(e => e.dataset.group),
+    tiles: document.querySelectorAll('#novaToolsGrid .nth-tile').length
+  }));
+  assert.deepEqual(catState.groups, ['legal'], 'Tools category pill filters cleanly to Legal group');
+  assert.equal(catState.tiles, 5, 'Legal group has 5 tools');
+
+  // Verify Reports Bento hides #novaSupplierAccountsSection AND Tool view opens it alone
+  await p4.evaluate(() => {
+    localStorage.setItem('nova-rx-sales-v1', JSON.stringify([{ id: 'S9', number: '2026-00009', at: Date.now(), total: 100, vat: 12, payment: 'cash', customer: 'عميل', status: 'final', lines: [{ name: 'صنف', price: 100, qty: 1, discount: 0 }] }]));
+    if (window.novaLazy) return window.novaLazy.load();
+  });
+  await p4.click('.nova-tab[data-page="reports"]');
+  await p4.waitForSelector('#novaPayBreakdown');
+  await p4.waitForTimeout(300);
+  const repCheck = await p4.evaluate(() => {
+    const sup = document.getElementById('novaSupplierAccountsSection');
+    return { inBento: !!document.querySelector('.nova-rep-bento #novaSupplierAccountsSection'), supVisible: !!(sup && sup.offsetParent !== null) };
+  });
+  assert.equal(repCheck.inBento, false, 'Supplier Accounts must mount outside .nova-rep-bento');
+  assert.equal(repCheck.supVisible, false, 'Supplier Accounts stays hidden on main Reports view');
+  await p4.click('.nova-tab[data-page="tools"]');
+  await p4.click('#novaToolsCats [data-cat="suppliers"]');
+  await p4.click('[data-tool="novaSupplierAccountsSection"]');
+  await p4.waitForFunction(() => { const el = document.getElementById('novaSupplierAccountsSection'); return el && el.offsetParent !== null; });
+  assert.deepEqual(b4Errs, [], 'No pageerrors on Batch 4 checks');
+  await b4Ctx.close();
+  console.log('ok - Tabbed Settings, Search, and Categorized Tools Hub verified');
+  console.log('PASS commercial-readiness: 8 groups');
 } finally {
   await browser.close();
   srv.close();

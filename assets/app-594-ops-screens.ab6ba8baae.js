@@ -13034,15 +13034,29 @@
     ['shift', 'الوردية', 'Shift'],
     ['settings', 'الإعدادات', 'Settings']
   ];
-  var q = '';
+  var q = '', activeCat = 'all';
   function norm(x) { return (window.novaNormAr ? window.novaNormAr(x) : String(x || '').toLowerCase()).trim(); }
   function open(id) {
     var sw = window.novaSwitchPage; if (!sw) return;
     sw(HOST_PRODUCTS[id] ? 'products' : 'reports', 'tool:' + id);
   }
+  function catBar() {
+    var total = TOOLS.length;
+    var pills = [['all', T('الكل', 'All'), total]].concat(GROUPS.map(function (g) {
+      return [g[0], en() ? g[2] : g[1], TOOLS.filter(function (t) { return t[1] === g[0]; }).length];
+    }));
+    return '<div class="nth-cats" id="novaToolsCats" role="tablist" aria-label="' + T('تصنيفات الأدوات', 'Tool categories') + '">'
+      + pills.map(function (p) {
+        var on = activeCat === p[0] && !norm(q);
+        return '<button type="button" class="nth-cat' + (on ? ' active' : '') + '" data-cat="' + p[0] + '" aria-pressed="' + on + '"><span>' + esc(p[1]) + '</span><b>' + p[2] + '</b></button>';
+      }).join('') + '</div>';
+  }
   function tiles() {
     var nq = norm(q);
-    var hits = TOOLS.filter(function (t) { return !nq || norm(t[2] + ' ' + t[3] + ' ' + t[4]).indexOf(nq) >= 0; });
+    var hits = TOOLS.filter(function (t) {
+      if (!nq && activeCat !== 'all' && t[1] !== activeCat) return false;
+      return !nq || norm(t[2] + ' ' + t[3] + ' ' + t[4]).indexOf(nq) >= 0;
+    });
     if (!hits.length) return '<p class="nova-muted" role="status" style="padding:12px 4px">' + T('مفيش أداة بالاسم ده', 'No tool with that name') + '</p>';
     return GROUPS.map(function (g) {
       var gs = hits.filter(function (t) { return t[1] === g[0]; }); if (!gs.length) return '';
@@ -13054,15 +13068,24 @@
   function css() {
     if (document.getElementById('novaToolsHubCss')) return;
     var st = document.createElement('style'); st.id = 'novaToolsHubCss';
-    st.textContent = '.nth-quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:0 0 16px}'
-      + '.nth-quick .btn{min-height:52px;font-size:15px;font-weight:700}'
+    st.textContent = '.nth-quick-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;padding:10px 12px;background:#14181e;border:1px solid #252c34;border-radius:12px}'
+      + '.nth-quick-lbl{font-size:12px;font-weight:700;color:#8896a4;margin-inline-end:4px}'
+      + '.nth-quick{display:flex;flex-wrap:wrap;gap:8px;flex:1}'
+      + '.nth-quick .btn{min-height:40px;font-size:13px;font-weight:700;padding:0 12px}'
+      + '.nth-cats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}'
+      + '.nth-cat{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border-radius:999px;background:#171c22;border:1px solid #2a3139;color:#a4adb7;font:inherit;font-size:13px;font-weight:700;cursor:pointer}'
+      + '.nth-cat b{font-size:11px;opacity:.75;font-weight:700}'
+      + '.nth-cat:hover{border-color:#79c9eb;color:#e8eef3}'
+      + '.nth-cat.active{background:#1d3340;border-color:#4b8ea9;color:#bfe3f2}'
       + '.nth-search{width:100%;max-width:420px;min-height:44px;box-sizing:border-box;margin:0 0 6px}'
-      + '.nth-group h2{font-size:15px;margin:16px 2px 8px;color:#9eacb9}'
-      + '.nth-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}'
-      + '.nth-tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:64px;padding:10px 14px;text-align:start;background:#1b2027;border:1px solid #2a3139;border-radius:12px;color:#e8eef3;font:inherit;cursor:pointer}'
-      + '.nth-tile:hover{border-color:#79c9eb}.nth-tile:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}'
-      + '.nth-tile b{font-size:15px}.nth-tile small{font-size:12px;color:#8896a4}'
-      + '@media (max-width:780px){.nth-grid,.nth-quick{grid-template-columns:1fr 1fr}.nth-tile small{display:none}}';
+      + '.nth-group h2{font-size:14px;font-weight:800;margin:18px 2px 10px;color:#9eacb9;display:flex;align-items:center;gap:8px}'
+      + '.nth-group[data-group="money"] h2::before,.nth-group[data-group="stock"] h2::before,.nth-group[data-group="suppliers"] h2::before,.nth-group[data-group="customers"] h2::before,.nth-group[data-group="legal"] h2::before,.nth-group[data-group="staff"] h2::before{content:"";width:8px;height:8px;border-radius:50%;display:inline-block}'
+      + '.nth-group[data-group="money"] h2::before{background:#34d399}.nth-group[data-group="stock"] h2::before{background:#38bdf8}.nth-group[data-group="suppliers"] h2::before{background:#fbbf24}.nth-group[data-group="customers"] h2::before{background:#a78bfa}.nth-group[data-group="legal"] h2::before{background:#fb7185}.nth-group[data-group="staff"] h2::before{background:#60a5fa}'
+      + '.nth-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}'
+      + '.nth-tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:68px;padding:12px 14px;text-align:start;background:#171c22;border:1px solid #2a3139;border-radius:12px;color:#e8eef3;font:inherit;cursor:pointer;transition:border-color .15s ease,transform .15s ease}'
+      + '.nth-tile:hover{border-color:#79c9eb;transform:translateY(-1px)}.nth-tile:focus-visible{outline:2px solid #79c9eb;outline-offset:2px}'
+      + '.nth-tile b{font-size:14px}.nth-tile small{font-size:12px;color:#8896a4;line-height:1.45}'
+      + '@media (max-width:780px){.nth-grid{grid-template-columns:1fr 1fr}.nth-tile small{display:none}.nth-quick-wrap{padding:8px}}';
     document.head.appendChild(st);
   }
   function render(view) {
@@ -13070,12 +13093,18 @@
     css();
     view.innerHTML = '<div class="nova-page-header"><div><h1>' + T('الأدوات', 'Tools') + '</h1><p>' + T('كل الأدوات في مكان واحد — دوس على الأداة تفتح لوحدها', 'Every tool in one place — tap one to open it on its own') + '</p></div>'
       + '<input class="nova-page-search nth-search" id="novaToolsSearch" type="search" placeholder="' + T('دوّر على أداة…', 'Find a tool…') + '" aria-label="' + T('بحث في الأدوات', 'Search tools') + '"></div>'
-      + '<div class="nth-quick">' + QUICK.map(function (k) { return '<button type="button" class="btn btn-secondary" data-quick="' + k[0] + '">' + (en() ? k[2] : k[1]) + '</button>'; }).join('') + '</div>'
+      + catBar()
+      + '<div class="nth-quick-wrap"><span class="nth-quick-lbl">' + T('انتقال سريع', 'Quick jump') + '</span><div class="nth-quick">' + QUICK.map(function (k) { return '<button type="button" class="btn btn-secondary" data-quick="' + k[0] + '">' + (en() ? k[2] : k[1]) + '</button>'; }).join('') + '</div></div>'
       + '<div id="novaToolsGrid">' + tiles() + '</div>';
     var inp = view.querySelector('#novaToolsSearch'); inp.value = q;
-    inp.addEventListener('input', function () { q = inp.value; var g = document.getElementById('novaToolsGrid'); if (g) g.innerHTML = tiles(); });
+    inp.addEventListener('input', function () {
+      q = inp.value;
+      var cb = document.getElementById('novaToolsCats'); if (cb) cb.outerHTML = catBar();
+      var g = document.getElementById('novaToolsGrid'); if (g) g.innerHTML = tiles();
+    });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var f = view.querySelector('.nth-tile'); if (f) f.click(); } });
     view.onclick = function (e) {
+      var c = e.target.closest && e.target.closest('[data-cat]'); if (c) { activeCat = c.getAttribute('data-cat') || 'all'; q = ''; inp.value = ''; var cb = document.getElementById('novaToolsCats'); if (cb) cb.outerHTML = catBar(); var g = document.getElementById('novaToolsGrid'); if (g) g.innerHTML = tiles(); return; }
       var t = e.target.closest && e.target.closest('[data-tool]'); if (t) { open(t.getAttribute('data-tool')); return; }
       var k = e.target.closest && e.target.closest('[data-quick]'); if (!k) return;
       var p = k.getAttribute('data-quick');

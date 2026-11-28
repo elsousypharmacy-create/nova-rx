@@ -1361,14 +1361,15 @@
     if (!anchor && !(onReports && view)) return;
 
     ensureStyles();
-    const target = anchor ? (anchor.closest('.nova-panel') || anchor) : null;
+    let target = anchor ? (anchor.closest('.nova-panel') || anchor) : null;
+    while (target && view && target.parentNode && target.parentNode !== view) target = target.parentNode;
     const section = document.createElement('section');
     section.id = SECTION_ID;
     section.className = 'nova-panel';
     section.setAttribute('aria-label', t('حسابات الموردين', 'Supplier Accounts'));
 
     if (target && target.parentNode) target.parentNode.insertBefore(section, target.nextSibling);
-    else view.appendChild(section);
+    else if (view) view.appendChild(section);
     attachSectionEvents(section);
     renderSection();
   }
