@@ -431,6 +431,10 @@
       msg('');
     });
     box.addEventListener('focusout', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-f') === 'exp') { var r = e.target.closest('.rcv-line'); if (r) { r.dataset.touched = '1'; sum(); } } });
+    box.addEventListener('mousedown', function (e) {
+      var b = e.target.closest('[data-pick]');
+      if (b) { e.preventDefault(); pick(lineOf(b), +b.getAttribute('data-pick')); }
+    });
     box.addEventListener('click', function (e) {
       var b = e.target.closest('[data-pick]'); if (b) { pick(lineOf(b), +b.getAttribute('data-pick')); return; }
       if (e.target.closest('[data-rcv-del]')) { var i = lineOf(e.target); st.lines.splice(i, 1); if (!st.lines.length) st.lines.push(blankLine()); draw(); }

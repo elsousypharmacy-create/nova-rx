@@ -1875,7 +1875,7 @@
         const needCust = !tp.ok && tp.error === "credit-needs-customer";
         const hint = document.getElementById("checkoutCreditHint");
         const split = state.checkoutPaymentMethod === 'split';
-        if (hint) hint.hidden = !needCust;
+        if (hint) hint.hidden = !(needCust || (split && !state.attachedCustomer));
         const creditInput = document.getElementById('inputCreditAmount');
         creditInput.disabled = !state.attachedCustomer;
         creditInput.setAttribute('aria-describedby', 'checkoutCreditHint');
@@ -1889,7 +1889,7 @@
           const remaining = Math.round((grandTotal - assigned) * 100) / 100;
           allocation.textContent = ((localStorage.getItem("nova-rx-language") === "en") ? 'Allocated: ' : 'الموزّع: ') + formatMoney(assigned) + ' · ' +
             (remaining < 0 ? ((localStorage.getItem("nova-rx-language") === "en") ? 'Excess: ' : 'الزيادة: ') : ((localStorage.getItem("nova-rx-language") === "en") ? 'Remaining: ' : 'المتبقي: ')) + formatMoney(Math.abs(remaining));
-          allocation.style.color = remaining > 0 ? 'var(--accent-red, #ff6b6b)' : '';
+          if (allocation.style) allocation.style.color = remaining > 0 ? 'var(--accent-red, #ff6b6b)' : '';
         }
         const wh = document.getElementById('walletRefHint');
         if (wh) {
@@ -2861,7 +2861,7 @@
           }
           applyPrinterState();
           pendingJob = null;
-          if (window.novaDevicePrint && window.novaDevicePrint.hasGateway() && currentSale) { window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0).then(function (r) { if (!r.ok) { if (opts.auto || !elements.receiptModal.classList.contains('active')) printFailed(r.message_ar); else showToast(r.message_ar, 'error'); } }); } else { try { window.print(); } catch (_) {} } // S3-01: device gateway when configured, else the browser print
+          if (window.novaDevicePrint && window.novaDevicePrint.hasGateway() && currentSale) { window.novaDevicePrint.printInvoice(currentSale, currentCopy ? currentCopyNo : 0).then(function (r) { if (!r.ok) { if (opts.auto || !elements.receiptModal.classList.contains('active')) printFailed(r.message_ar); else showToast(r.message_ar, 'error'); } }); } else if (opts.auto) { setTimeout(() => { try { window.print(); } catch (_) {} }, 50); } else { try { window.print(); } catch (_) {} } // S3-01: device gateway when configured, else the browser print (defer autoPrint outside lock)
           return { ok: true, saleNumber: currentSale && currentSale.number, copy: currentCopy, copyNo: currentCopyNo, width: getWidth() };
         }
         // q17 B: after «تأكيد البيع» the receipt prints right away (same print path), no preview. Setting

@@ -114,6 +114,8 @@
     if (sumBox && sumBox.parentNode) sumBox.parentNode.removeChild(sumBox);
     var msgEl = document.getElementById('novaShiftMsg');
     if (msgEl) msgEl.textContent = '';
+    var closeBtn = document.getElementById('novaShiftDo');
+    if (closeBtn) closeBtn.disabled = false;
     var fltInput = document.getElementById('novaShiftFloat');
     if (fltInput) {
       fltInput.value = String(num);

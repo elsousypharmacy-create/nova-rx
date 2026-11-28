@@ -1,5 +1,5 @@
 # NOVA Rx — CURRENT (snapshot, 60 lines max; read this, not all of HANDOFF.md)
-Last updated: 2026-11-28 (PR #584 merged; main @ c806e47, last app commit f3c3e1a; preview still rcv29). If this disagrees with GitHub, GitHub wins: fix this file in the same reviewed PR. Old state log: docs/archive/current-history/CURRENT-until-2026-11-23.md.
+Last updated: 2026-11-28 (Batch 1 fixes + preview rcv31). If this disagrees with GitHub, GitHub wins: fix this file in the same reviewed PR. Old state log: docs/archive/current-history/CURRENT-until-2026-11-23.md.
 
 ## Boot order (cheap first)
 1. AGENTS.md  2. this file  3. ONLY the HANDOFF.md section for your task (grep its issue/PR number, or last 60 lines) and Issue #87 since your last checkpoint  4. docs/skills/nova/SKILL.md  5. docs/ERP_MASTER_PLAN.md and reports/erp-roadmap.json only when acceptance or scope matters.
@@ -37,10 +37,9 @@ Evidence: HANDOFF.md, Issue #87, the git log; per-item detail in the archive fil
 - Rules: one accountable claimant per task; author ≠ reviewer (independent review before push/merge); owner-only gates below unchanged.
 
 ## 5. Next Actions (Phase 1 order)
-1. Build & publish preview `rcv30` from `main` (includes Nov 23 audit fixes) and re-verify live.
-2. Fix `/purchases` hang, receiving mouse/layout overlap, settings form overlap, and live inventory/customer refresh.
-3. Fix `Playwright POS smoke` on `main` and run go-live checklist on owner phone/printer (`docs/product/GO-LIVE.md`).
-4. Close stale PR/Issue chain (#553/#566/#545/#550) after Phase 1 stabilizes; prune `worker/live` (owner).
+1. Batch 1 (DONE, rcv31): shift double-close guard, async autoPrint, live stock/customer refresh, lazy receiving embed, receiving mouse pick, settings card layout, CI smoke unit fixes.
+2. Batch 2: `/purchases` mobile top-nav clipping, stale test maintenance (`shift-close.mjs`, `split-payment-cash.mjs`, `receipt-format.mjs`, `customer-debt-payment.mjs`).
+3. Run go-live checklist on owner phone/printer (`docs/product/GO-LIVE.md`) and close stale PR/Issue chain (#553/#566/#545/#550); prune `worker/live` (owner).
 
 ## Waiting on the owner (do not act on these or ask routine questions)
 Database/storage choice (docs/erp/FND-02_STORAGE_ADR_DRAFT.md §9), pricing/tax policy, packaging data source, light theme yes/no, audit retention and signing-key name, tablet trial of /purchases, any real supplier order/payment/deploy. Never without his specific approval: supplier cart writes/orders/checkout, payments, secrets/credentials, unlocking an unknown supplier operation, production deploy, destructive deletes/migrations, storage product, spending money.

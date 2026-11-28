@@ -101,10 +101,10 @@
 .rcv-err{color:#ff8a80;font-size:12px;min-height:0}.rcv-err:empty{display:none}
 output.rcv-lt{display:flex;align-items:center;min-height:40px;font-weight:700;color:#e8eef3;text-align:start}
 .rcv-line{margin:0 18px;padding:12px!important;border:1px solid #2a313a;border-radius:10px;background:#101418;align-items:start!important}
-.rcv-grid{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-bottom:4px;min-height:60px}
+.rcv-grid{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-bottom:4px;min-height:220px}
 .rcv-pick{position:relative}
 .rcv-pick input[data-ok]{border-color:#2f5d4a;background:#0d1512}
-.rcv-sug{position:absolute;inset-inline:0;top:calc(100% + 4px);z-index:5;background:#1a1f25;border:1px solid #2d343c;border-radius:10px;box-shadow:0 10px 30px #000a;padding:4px;max-height:240px;overflow:auto}
+.rcv-sug{position:absolute;inset-inline:0;top:calc(100% + 4px);z-index:25;background:#1a1f25;border:1px solid #2d343c;border-radius:10px;box-shadow:0 10px 30px #000a;padding:4px;max-height:240px;overflow:auto}
 .rcv-sug button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;gap:8px;width:100%;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:14px;color:#dfe5ea}
 .rcv-sug button:hover,.rcv-sug button:focus-visible{background:#263039}
 .rcv-sug small{color:#8896a4}
